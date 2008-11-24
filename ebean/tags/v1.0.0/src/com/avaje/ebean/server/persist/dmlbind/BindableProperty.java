@@ -1,0 +1,84 @@
+/**
+ * Copyright (C) 2006  Robin Bygrave
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
+package com.avaje.ebean.server.persist.dmlbind;
+
+import java.sql.SQLException;
+
+import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
+
+/**
+ * Bindable for a single BeanProperty.
+ */
+public class BindableProperty implements Bindable {
+	
+	final BeanProperty prop;
+		
+	public BindableProperty(BeanProperty prop) {
+		this.prop = prop;
+	}
+	
+	public String toString() {
+		return prop.toString();
+	}
+	
+	public void dmlAppend(GenerateDmlRequest request,boolean checkIncludes){
+		if (checkIncludes && !request.isIncluded(prop)){
+			return;
+		}
+		request.appendColumn(prop.getDbColumn());
+	}
+	
+	/**
+	 * Used for dynamic where clause generation.
+	 */
+	public void dmlWhere(GenerateDmlRequest request,boolean checkIncludes, Object bean){
+		if (checkIncludes && !request.isIncluded(prop)){
+			return;
+		}
+		dmlWhereProperty(request, bean, prop);
+	}
+	
+	public void dmlWhereProperty(GenerateDmlRequest request, Object bean, BeanProperty prop){
+		Object value = prop.getValue(bean);
+        if (value != null){
+        	request.appendColumn(prop.getDbColumn());
+
+        } else {
+        	request.appendColumnIsNull(prop.getDbColumn());
+
+        }
+	}
+	
+    /**
+     * Bind a value in a Insert SET clause.
+     */
+	public void dmlBind(BindableRequest request,boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
+		if (checkIncludes && !request.isIncluded(prop)){
+			return;
+		}
+        Object value = null;
+        if (bean != null) {    
+            value = prop.getValue(bean);
+        }
+        //value = prop.getDefaultValue();
+	    request.bind(value, prop, prop.getName(), bindNull);
+    }
+}
