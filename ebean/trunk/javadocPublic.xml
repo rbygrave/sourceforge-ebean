@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" 
+        	classpath="D:\apps\jarlib\lucene-core-1.9.1.jar;D:\apps\jarlib\javax.persistence.jar;D:\apps\jarlib\jta.jar;D:\apps\jarlib\javax.servlet.jar;D:\apps\jarlib\jug-lgpl-2.0.0.jar" 
+        	destdir="doc" doctitle="Ebean Public API" nodeprecated="false" nodeprecatedlist="false" 
+        	noindex="false" nonavbar="false" notree="false" 
+        	overview="D:\dev\workspace\ebean\src\com\avaje\ebean\overview.html"
+    		stylesheetfile="D:\dev\workspace\ebean\src\com\avaje\ebean\stylesheet.css"
+        	packagenames="com.avaje.ebean.io,com.avaje.ebean.annotation,com.avaje.ebean,com.avaje.ebean.bean,com.avaje.ebean.expression,com.avaje.ebean.validation,com.avaje.ebean.control,com.avaje.ebean.meta" 
+        	source="1.5" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
