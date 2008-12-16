@@ -91,6 +91,7 @@ public class JoinDefineManual {
 			if (column.hasNullColumn()) {
 				String localTable = joinInfo.getDescriptor().getBaseTable();
 				TableInfo tableInfo = dictionaryInfo.getTableInfo(localTable);
+				Assert.notNull(tableInfo, "TableInfo for "+localTable+" not found?");
 
 				// the column set is always the foreign one so really
 				// should be referencedColumnName but just getting the
@@ -104,6 +105,7 @@ public class JoinDefineManual {
 
 				// pk is the localDbColumn for OneToMany type joins
 				column.setLocalDbColumn(pkCols[0].getName());
+			
 			}
 		}
 
