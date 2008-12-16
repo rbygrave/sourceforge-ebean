@@ -486,6 +486,15 @@ public class TableInfo implements Serializable {
 		if (fkeysLoaded) {
 			return;
 		}
+		
+		if (!tableType.equalsIgnoreCase("TABLE")){
+			// bypass trying to load foreign keys and unique indexes
+			// for VIEWS etc (anything that isn't a TABLE)
+			exportedKeys = EMPTY_FKEY;
+			importedKeys = EMPTY_FKEY;
+			fkeysLoaded = true;
+			return;
+		}
 
 		ResultSet rsetExported = null;
 		ResultSet rsetImported = null;
