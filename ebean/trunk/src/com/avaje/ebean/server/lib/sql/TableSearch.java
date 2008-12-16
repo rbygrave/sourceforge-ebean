@@ -34,7 +34,7 @@ public class TableSearch {
 
 	private static final Logger logger = LogFactory.get(TableSearch.class);
 	
-    private static final String[] TABLE_TYPES = { "TABLE" };
+    private static final String[] TABLE_TYPES = { "TABLE", "VIEW" };
 
     private final String[] types;
 
