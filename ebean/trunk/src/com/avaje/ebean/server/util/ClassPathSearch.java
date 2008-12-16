@@ -21,8 +21,11 @@ package com.avaje.ebean.server.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -120,7 +123,10 @@ public class ClassPathSearch {
 	 */
 	public List<Class<?>> findClasses() throws ClassNotFoundException {
 
+		String charsetName = Charset.defaultCharset().name();
+
 		for (int h = 0; h < classPaths.length; h++) {
+			
 			String jarFileName = null;
 			Enumeration<?> files = null;
 			JarFile module = null;
@@ -128,6 +134,15 @@ public class ClassPathSearch {
 			// for each class path ...
 			File classPath = new File((URL.class).isInstance(classPaths[h]) ? ((URL) classPaths[h])
 					.getFile() : classPaths[h].toString());
+
+			try {
+				// URL Decode the path replacing %20 to space characters.
+				String path = URLDecoder.decode(classPath.getAbsolutePath(), charsetName);
+				classPath = new File(path);
+				
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
 
 			if (classPath.isDirectory()) {
 				files = getDirectoryEnumeration(classPath);
@@ -139,8 +154,7 @@ public class ClassPathSearch {
 					continue;
 				}
 				try {
-					// if our resource is a jar, instantiate a jarFile using the
-					// full path to resource
+					// our resource is a jar
 					module = new JarFile(classPath);
 					files = module.entries();
 
@@ -148,10 +162,15 @@ public class ClassPathSearch {
 					throw new ClassNotFoundException("Bad classpath. Error: ", ex);
 
 				} catch (IOException ex) {
-					String msg = "jar file '" + classPath.getName()
+					String msg = "jar file '" + classPath.getAbsolutePath()
 							+ "' could not be instantiate from file path. Error: ";
 					throw new ClassNotFoundException(msg, ex);
 				}
+			} else {
+				// this is not expected
+				String msg = "Error: expected classPath entry ["+classPath.getAbsolutePath()
+				+"] to be a directory or a .jar file but it is not either of those?";
+				logger.log(Level.SEVERE, msg);
 			}
 
 			searchFiles(files, jarFileName);
