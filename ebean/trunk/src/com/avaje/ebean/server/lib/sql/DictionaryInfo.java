@@ -29,12 +29,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import com.avaje.ebean.server.lib.GlobalProperties;
+import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.lib.log.LogFactory;
 
 /**
@@ -46,6 +49,10 @@ import com.avaje.lib.log.LogFactory;
  * </p>
  */
 public class DictionaryInfo implements Serializable {
+
+    public static final String[] DEFAULT_SINGLE_SEARCH_TYPES = { "TABLE", "VIEW", "SYNONYM", "ALIAS" };
+    
+    public static final String[] DEFAULT_REGISTER_SEARCH_TYPES = { "TABLE", "VIEW" };
 
 	private static final long serialVersionUID = -5961057842487875002L;
 
@@ -109,8 +116,7 @@ public class DictionaryInfo implements Serializable {
 	public DictionaryInfo() {
 	}
 
-	private void readObject(java.io.ObjectInputStream in) throws IOException,
-			ClassNotFoundException {
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
 
 		in.defaultReadObject();
 		logger = LogFactory.get(DictionaryInfo.class);
@@ -229,10 +235,70 @@ public class DictionaryInfo implements Serializable {
 		}
 	}
 
-	public int registerTables(String catalog, String schemaPattern, String tableNamePattern,
-			boolean withReferences) {
+	/**
+	 * Return the type of tables to search for when doing a single table search.
+	 * <p>
+	 * This typically defaults to TABLE, VIEW, SYNONYM and ALIAS and can be
+	 * configured to include other types such as SYSTEM TABLE etc.
+	 * </p>
+	 */
+	private String[] getSingleTableSearchTypes() {
 
-		TableSearch tableSearch = new TableSearch();
+		String searchTypes = GlobalProperties.getProperty("ebean.dictionary.singlesearchtypes");
+		if (searchTypes == null) {
+			// default to TABLE,VIEW
+			return DEFAULT_SINGLE_SEARCH_TYPES;
+		}
+
+		// always include TABLE and VIEW
+		LinkedHashSet<String> set = new LinkedHashSet<String>();
+		set.add("TABLE");
+		set.add("VIEW");
+
+		// add anything else from ebean.properties
+		String[] values = StringHelper.delimitedToArray(searchTypes, ",", false);
+
+		for (int i = 0; i < values.length; i++) {
+			set.add(values[i].trim().toUpperCase());
+		}
+
+		return set.toArray(new String[set.size()]);
+	}
+
+	/**
+	 * Return the type of tables to search for when doing a register tables
+	 * search.
+	 * <p>
+	 * This typically defaults to TABLE and VIEW and can be configured to
+	 * include other types such as ALIAS and SYNONYM etc.
+	 * </p>
+	 */
+	private String[] getRegisterSearchTableTypes() {
+
+		String searchTypes = GlobalProperties.getProperty("ebean.dictionary.registersearchtypes");
+		if (searchTypes == null) {
+			// default to TABLE,VIEW
+			return DEFAULT_REGISTER_SEARCH_TYPES;
+		}
+
+		// always include TABLE and VIEW
+		LinkedHashSet<String> set = new LinkedHashSet<String>();
+		set.add("TABLE");
+		set.add("VIEW");
+
+		// add anything else from ebean.properties
+		String[] values = StringHelper.delimitedToArray(searchTypes, ",", false);
+
+		for (int i = 0; i < values.length; i++) {
+			set.add(values[i].trim().toUpperCase());
+		}
+
+		return set.toArray(new String[set.size()]);
+	}
+
+	public int registerTables(String catalog, String schemaPattern, String tableNamePattern, boolean withReferences) {
+
+		TableSearch tableSearch = new TableSearch(getRegisterSearchTableTypes());
 		tableSearch.setCatalog(catalog);
 		tableSearch.setSchemaPattern(schemaPattern);
 		tableSearch.setTableNamePattern(tableNamePattern);
@@ -418,8 +484,7 @@ public class DictionaryInfo implements Serializable {
 	 *             it multiple matches where found between the source and
 	 *             destination tables.
 	 */
-	public IntersectionInfo findIntersection(String sourceTable, String destTable)
-			throws SQLException {
+	public IntersectionInfo findIntersection(String sourceTable, String destTable) throws SQLException {
 
 		synchronized (monitor) {
 			TableInfo source = getTableInfo(sourceTable);
@@ -487,12 +552,11 @@ public class DictionaryInfo implements Serializable {
 	 * dependent. Try to determine the case used in this dictionary.
 	 * 
 	 */
-	private TableInfo searchForOneTable(TableSearchName searchName,
-			String unquotedLowerCaseTableName) {
+	private TableInfo searchForOneTable(TableSearchName searchName, String unquotedLowerCaseTableName) {
 
 		synchronized (monitor) {
 
-			TableSearch tableSearch = new TableSearch();
+			TableSearch tableSearch = new TableSearch(getSingleTableSearchTypes());
 			tableSearch.setWithReferences(true);
 
 			// Hmmm, how do Databases handle quoted identifiers in metaData?
@@ -532,8 +596,8 @@ public class DictionaryInfo implements Serializable {
 					if (tableInfo != null) {
 						dictionaryCase = CaseUpper;
 						if (logger.isLoggable(Level.FINER)) {
-							logger.finer("JDBC Dictionary is in UpperCase["
-									+ unquotedLowerCaseTableName.toUpperCase() + "]");
+							logger.finer("JDBC Dictionary is in UpperCase[" + unquotedLowerCaseTableName.toUpperCase()
+									+ "]");
 						}
 
 						return tableInfo;
@@ -545,8 +609,7 @@ public class DictionaryInfo implements Serializable {
 					if (tableInfo != null) {
 						dictionaryCase = CaseLower;
 						if (logger.isLoggable(Level.FINER)) {
-							logger.finer("JDBC Dictionary is in LowerCase["
-									+ unquotedLowerCaseTableName + "]");
+							logger.finer("JDBC Dictionary is in LowerCase[" + unquotedLowerCaseTableName + "]");
 						}
 
 						return tableInfo;
@@ -576,8 +639,9 @@ public class DictionaryInfo implements Serializable {
 
 			if (rset.next()) {
 				tableInfo = registerTableInfo(tableSearch);
-				if (rset.next()){
-					throw new SQLException("Search for 1 table via catalog.schema.tableName "+tableSearch+" but found multiple matching tables?");
+				if (rset.next()) {
+					throw new SQLException("Search for 1 table via catalog.schema.tableName " + tableSearch
+							+ " but found multiple matching tables?");
 				}
 			}
 

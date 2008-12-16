@@ -34,8 +34,6 @@ public class TableSearch {
 
 	private static final Logger logger = LogFactory.get(TableSearch.class);
 	
-    private static final String[] TABLE_TYPES = { "TABLE", "VIEW" };
-
     private final String[] types;
 
     private String catalog;
@@ -56,9 +54,6 @@ public class TableSearch {
 
     public TableSearch(String[] types) {
         this.types = types;
-    }
-    public TableSearch() {
-        this(TABLE_TYPES);
     }
     
     /**
