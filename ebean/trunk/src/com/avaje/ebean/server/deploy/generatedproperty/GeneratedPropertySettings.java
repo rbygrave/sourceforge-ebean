@@ -146,6 +146,7 @@ public class GeneratedPropertySettings {
 			
 		} else {
 			if (prop.isVersionColumn()) {
+				// explicitly specified as a version column
 				if (isNumberType(prop.getPropertyType().getName())) {
 					setCounter(prop);
 				} else {
