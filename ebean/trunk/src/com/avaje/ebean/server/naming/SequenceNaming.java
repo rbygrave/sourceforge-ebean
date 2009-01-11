@@ -58,51 +58,14 @@ import com.avaje.ebean.server.plugin.PluginProperties;
  */
 public class SequenceNaming {
 
-	/**
-	 * String used to prefix the database sequence names.
-	 */
-	protected String prefix = "";
 
-	/**
-	 * String used between the table and column names used to generate database
-	 * sequence names.
-	 */
-	protected String middle = "";
-
-	/**
-	 * String used to suffix the database sequence names.
-	 */
-	protected String suffix = "";
-
-	/**
-	 * String used to suffix the database sequence names.
-	 */
-	protected String nextvalSuffix = "";
-
-	/**
-	 * String used to suffix the database sequence names.
-	 */
-	protected String nextvalPrefix = "";
-
-	/**
-	 * If true then include the db column name in the sequence.
-	 */
-	protected boolean includeColumn = false;
-
+	final PluginProperties properties;
+	
 	/**
 	 * Create loading the prefix, suffix etc for db sequence name generation.
 	 */
 	public SequenceNaming(PluginProperties properties) {
-	
-		nextvalPrefix = properties.getProperty("namingconvention.sequence.nextvalprefix", "");
-		nextvalSuffix = properties.getProperty("namingconvention.sequence.nextvalsuffix", "");
-
-		prefix = properties.getProperty("namingconvention.sequence.prefix", "");
-		suffix = properties.getProperty("namingconvention.sequence.suffix", "_SEQ");
-		middle = properties.getProperty("namingconvention.sequence.middle", "");
-
-		String incCol = properties.getProperty("namingconvention.sequence.includecolumn", "false");
-		includeColumn = incCol.equalsIgnoreCase("true");
+		this.properties = properties;
 	}
 
 	/**
@@ -110,6 +73,10 @@ public class SequenceNaming {
 	 */
 	public String getNextVal(DeployBeanDescriptor desc) {
 		String seqName = getName(desc);
+		
+		String nextvalPrefix = properties.getProperty("namingconvention.sequence.nextvalprefix", "");
+		String nextvalSuffix = properties.getProperty("namingconvention.sequence.nextvalsuffix", "");
+
 		return nextvalPrefix + seqName + nextvalSuffix;
 	}
 
@@ -122,6 +89,9 @@ public class SequenceNaming {
 
 		String baseTable = desc.getBaseTable();
 		String uidColumn = null;
+
+		boolean includeColumn = properties.getPropertyBoolean("namingconvention.sequence.includecolumn", false);
+
 		if (includeColumn) {
 			List<DeployBeanProperty> uids = desc.propertiesId();
 			if (uids.size() == 1) {
@@ -136,6 +106,13 @@ public class SequenceNaming {
 
 	public String getName(String table, String uidColumn) {
 
+
+		String prefix = properties.getProperty("namingconvention.sequence.prefix", "");
+		String suffix = properties.getProperty("namingconvention.sequence.suffix", "_SEQ");
+		String middle = properties.getProperty("namingconvention.sequence.middle", "");
+
+		boolean includeColumn = properties.getPropertyBoolean("namingconvention.sequence.includecolumn", false);
+		
 		if (includeColumn) {
 			return prefix + table + middle + uidColumn + suffix;
 		} else {
