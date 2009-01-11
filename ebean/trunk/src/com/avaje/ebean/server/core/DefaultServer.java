@@ -74,6 +74,7 @@ import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.util.ThrowablePrinter;
 import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
+import com.avaje.ebean.server.transaction.TransContext;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
@@ -328,7 +329,17 @@ public final class DefaultServer implements InternalEbeanServer {
 			Object parentBean = ebi.getParentBean();
 
 			OrmQuery<?> query = (OrmQuery<?>) createQuery(beanType);
-			query.setLazyLoadBean();
+			
+			// don't collect autoFetch usage profiling information
+			// as we just copy the data out of these fetched beans
+			// and put the data into the original bean
+			query.setUsageProfiling(false);
+			
+			if (!isLazyLoad){
+				// for refresh we want to run in our own
+				// context (not an existing transaction scoped one)
+				query.setTransactionContext(new TransContext());
+			}
 
 			if (parentBean != null) {
 				query.contextAdd(eb);
