@@ -276,7 +276,7 @@ public class CQuery implements DbReadContext {
 		queryListener = query.getListener();
 		if (queryListener == null) {
 			// normal, use the one from the transaction
-			this.transactionContext = request.getTransaction().getTransactionContext();
+			this.transactionContext = request.getTransactionContext();
 		} else {
 			// 'Row Level Transaction Context'...
 			// local transaction context that will be reset
@@ -673,10 +673,10 @@ public class CQuery implements DbReadContext {
 	 * </p>
 	 */
 	public boolean isAutoFetchProfiling() {
-		// need !query.isLazyLoadBean() because we just take the data
-		// from the lazy loaded beans and put it into the already 
+		// need query.isProfiling() because we just take the data
+		// from the lazy loaded or refreshed beans and put it into the already 
 		// existing beans which are already collecting usage information
-		return autoFetchProfiling && !query.isLazyLoadBean();
+		return autoFetchProfiling && query.isUsageProfiling();
 	}
 	
 	public ObjectGraphNode createAutoFetchNode(String extra, JoinNode joinNode) {

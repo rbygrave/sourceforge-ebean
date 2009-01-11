@@ -18,6 +18,7 @@ import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.deploy.TableJoin;
@@ -111,7 +112,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 
 	DefaultExpressionList<T> havingExpressions;
 
-	boolean lazyLoadBean;
+	boolean usageProfiling = true;
 
 	boolean useCache;
 
@@ -137,6 +138,8 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	ObjectGraphOrigin objectGraphOrigin;
 
 	int autoFetchQueryPlanHash;
+	
+	TransactionContext transactionContext;
 
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server) {
 		this.beanType = beanType;
@@ -167,6 +170,28 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 			// parse the entire query...
 			setQuery(namedQuery.getQuery());
 		}
+	}
+
+	/**
+	 * Return the TransactionContext.
+	 * <p>
+	 * If no TransactionContext is present on the query then the TransactionContext
+	 * from the Transaction is used (transaction scoped persistence context).
+	 * </p>
+	 */
+	public TransactionContext getTransactionContext() {
+		return transactionContext;
+	}
+
+	/**
+	 * Set an explicit TransactionContext (typically for a refresh query).
+	 * <p>
+	 * If no TransactionContext is present on the query then the TransactionContext
+	 * from the Transaction is used (transaction scoped persistence context).
+	 * </p>
+	 */
+	public void setTransactionContext(TransactionContext transactionContext) {
+		this.transactionContext = transactionContext;
 	}
 
 	/**
@@ -201,12 +226,12 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		this.autoFetchManager = autoFetchManager;
 	}
 
-	public boolean isLazyLoadBean() {
-		return lazyLoadBean;
+	public boolean isUsageProfiling() {
+		return usageProfiling;
 	}
 
-	public void setLazyLoadBean() {
-		this.lazyLoadBean = true;
+	public void setUsageProfiling(boolean usageProfiling) {
+		this.usageProfiling = usageProfiling;
 	}
 
 	public void setParentNode(ObjectGraphNode parentNode) {

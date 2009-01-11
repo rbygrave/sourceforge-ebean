@@ -261,7 +261,10 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			nodeBeanProp.setValue(parentBean, contextBean);
 		}
 
-		postLoad(ctx, localBean, id);
+		// return the contextBean which is either the localBean
+		// read from the resultSet and put into the context OR
+		// the 'matching' bean that already existed in the context
+		postLoad(ctx, contextBean, id);
 	}
 
 	/**

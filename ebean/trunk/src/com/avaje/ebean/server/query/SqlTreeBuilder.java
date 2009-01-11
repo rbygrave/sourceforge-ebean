@@ -455,23 +455,35 @@ public class SqlTreeBuilder {
 
 			// reverse order so get the leaves first...
 			for (int i = 0; i < extras.length; i++) {
-				create(extras[i]);
+				createExtraJoin(extras[i]);
 			}
 
 			return rootRegister.values();
 		}
 
-		private void create(String includeProp) {
+		private void createExtraJoin(String includeProp) {
 
-			SqlTreeNodeExtraJoin extraJoin = createJoinLeaf(includeProp);
+			BeanProperty property = root.getBeanDescriptor().getBeanProperty(includeProp);
+			if (property == null){
+				String msg = "Cound not find bean property ["+includeProp+"] for extra join on "+root.getBeanDescriptor().getFullName();
+				throw new PersistenceException(msg);
+			}
+			
+			if (property.isEmbedded()){
+				// no extra joins for embedded beans...
+				
+			} else {
+				// add the extra join...
+				SqlTreeNodeExtraJoin extraJoin = createJoinLeaf(includeProp);
 
-			// find root of this extra join... linking back to the
-			// parents (creating the tree) as it goes.
-			SqlTreeNodeExtraJoin root = findExtraJoinRoot(includeProp, extraJoin);
+				// find root of this extra join... linking back to the
+				// parents (creating the tree) as it goes.
+				SqlTreeNodeExtraJoin root = findExtraJoinRoot(includeProp, extraJoin);
 
-			// register the root because these are the only ones we
-			// return back.
-			rootRegister.put(root.getName(), root);
+				// register the root because these are the only ones we
+				// return back.
+				rootRegister.put(root.getName(), root);
+			}
 		}
 
 		/**
