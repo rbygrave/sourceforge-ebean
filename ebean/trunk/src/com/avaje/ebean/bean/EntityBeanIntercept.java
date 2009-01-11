@@ -98,6 +98,13 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		this.owner = (EntityBean)owner;
 	}
 
+	/**
+	 * Return the 'owning' entity bean.
+	 */
+	public EntityBean getOwner() {
+		return owner;
+	}
+	
 	public String toString() {
 		if (!loaded) {
 			return "Reference...";
