@@ -36,7 +36,7 @@ public class PluginDbConfigFactory {
 
 	private static final Logger logger = LogFactory.get(PluginDbConfigFactory.class);
 
-	private static final Class<?>[] CONS_TYPES = { PluginProperties.class, DataSource.class };
+	private static final Class<?>[] CONS_TYPES = { PluginProperties.class };
 
 	/**
 	 * Create the appropriate DbConfig.
@@ -79,6 +79,9 @@ public class PluginDbConfigFactory {
 	private PluginDbConfig byDatabaseName(PluginProperties properties, String dbName) throws SQLException {
 
 		dbName = dbName.toLowerCase();
+		if (dbName.equals("postgres83")){
+			return new Postgres83Plugin(properties);
+		} 
 		if (dbName.equals("oracle9")){
 			return new Oracle9Plugin(properties);
 		} 
@@ -163,6 +166,9 @@ public class PluginDbConfigFactory {
 		}
 		if (dbProductName.indexOf("h2") > -1) {
 			return new H2Plugin(properties);
+		}
+		if (dbProductName.indexOf("postgres") > -1) {
+			return new Postgres83Plugin(properties);
 		}
 		// use the standard one
 		return new PluginDbConfig(properties);
