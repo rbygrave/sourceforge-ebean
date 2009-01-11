@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.util.BindParams;
 
@@ -18,6 +19,24 @@ import com.avaje.ebean.util.BindParams;
  */
 public interface OrmQuery<T> extends Query<T> {
 
+	/**
+	 * Return the TransactionContext.
+	 * <p>
+	 * If no TransactionContext is present on the query then the TransactionContext
+	 * from the Transaction is used (transaction scoped persistence context).
+	 * </p>
+	 */
+	public TransactionContext getTransactionContext();
+	
+	/**
+	 * Set an explicit TransactionContext (typically for a refresh query).
+	 * <p>
+	 * If no TransactionContext is present on the query then the TransactionContext
+	 * from the Transaction is used (transaction scoped persistence context).
+	 * </p>
+	 */
+	public void setTransactionContext(TransactionContext transactionContext);
+	
 	/**
 	 * Return true if the query detail has neither select or joins specified.
 	 */
@@ -86,14 +105,19 @@ public interface OrmQuery<T> extends Query<T> {
 	public ObjectGraphNode createObjectGraphNode(String beanIndex, String path);
 
 	/**
-	 * Return true if this is a lazy load query for a bean.
+	 * Return false when this is a lazy load or refresh query for a bean.
+	 * <p>
+	 * We just take/copy the data from those beans and don't collect autoFetch
+	 * usage profiling on those lazy load or refresh beans. 
+	 * </p>
 	 */
-	public boolean isLazyLoadBean();
+	public boolean isUsageProfiling();
 
 	/**
-	 * Set to true if this is a lazy load query.
+	 * Set to false if this query should not be included in the autoFetch usage
+	 * profiling information.
 	 */
-	public void setLazyLoadBean();
+	public void setUsageProfiling(boolean usageProfiling);
 
 	/**
 	 * Return the query name.
