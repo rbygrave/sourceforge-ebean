@@ -57,7 +57,7 @@ public class BindableProperty implements Bindable {
 	}
 	
 	public void dmlWhereProperty(GenerateDmlRequest request, Object bean, BeanProperty prop){
-		Object value = prop.getValue(bean);
+		Object value = bean == null ? null : prop.getValue(bean);
         if (value != null){
         	request.appendColumn(prop.getDbColumn());
 
