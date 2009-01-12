@@ -391,6 +391,9 @@ public class SqlTreeBuilder {
 		switch (type) {
 		case ROOT:
 			return true;
+			
+		case EMBEDDED:
+			return false;
 
 		case BEAN:
 			return isIncludeBean(node);
@@ -463,19 +466,10 @@ public class SqlTreeBuilder {
 
 		private void createExtraJoin(String includeProp) {
 
-			BeanProperty property = root.getBeanDescriptor().getBeanProperty(includeProp);
-			if (property == null){
-				String msg = "Cound not find bean property ["+includeProp+"] for extra join on "+root.getBeanDescriptor().getFullName();
-				throw new PersistenceException(msg);
-			}
-			
-			if (property.isEmbedded()){
-				// no extra joins for embedded beans...
-				
-			} else {
+			SqlTreeNodeExtraJoin extraJoin = createJoinLeaf(includeProp);
+			if (extraJoin != null){
 				// add the extra join...
-				SqlTreeNodeExtraJoin extraJoin = createJoinLeaf(includeProp);
-
+			
 				// find root of this extra join... linking back to the
 				// parents (creating the tree) as it goes.
 				SqlTreeNodeExtraJoin root = findExtraJoinRoot(includeProp, extraJoin);
@@ -494,9 +488,15 @@ public class SqlTreeBuilder {
 			if (node == null){
 				throw new PersistenceException("Could not find "+propertyName+" for extra join?");
 			}
-			SqlTreeNodeExtraJoin extraJoin = new SqlTreeNodeExtraJoin(node);
-			joinRegister.put(propertyName, extraJoin);
-			return extraJoin;
+			if (node.isEmbeddedBean()){
+				// no extra join required for embedded beans
+				return null;
+				
+			} else {
+				SqlTreeNodeExtraJoin extraJoin = new SqlTreeNodeExtraJoin(node);
+				joinRegister.put(propertyName, extraJoin);
+				return extraJoin;
+			}
 		}
 
 		/**

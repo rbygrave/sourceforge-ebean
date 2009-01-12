@@ -48,7 +48,7 @@ public class FactoryEmbedded {
 		
 			List<Bindable> bindList = new ArrayList<Bindable>();
 			
-			BeanProperty[] props = embedded[j].getTargetDescriptor().propertiesBaseScalar();
+			BeanProperty[] props = embedded[j].getProperties();
 			for (int i = 0; i < props.length; i++) {
 				Bindable item = factoryProperty.create(props[i], mode, withLobs);
 				if (item != null){

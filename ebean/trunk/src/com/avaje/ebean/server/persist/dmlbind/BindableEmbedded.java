@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
@@ -63,9 +64,10 @@ public class BindableEmbedded implements Bindable {
 			return;
 		}
 		Object embBean = embProp.getValue(origBean);
-		
+		Object oldValues = getOldValue(embBean);
+
 		for (int i = 0; i < items.length; i++) {
-			items[i].dmlWhere(request, false, embBean);
+			items[i].dmlWhere(request, false, oldValues);
 		}
 	}
 	
@@ -73,12 +75,42 @@ public class BindableEmbedded implements Bindable {
 		if (checkIncludes && !bindRequest.isIncluded(embProp)){
 			return;
 		}
+		
 		// get the embedded bean
-		bean = embProp.getValue(bean);
+		Object embBean = embProp.getValue(bean);
+		if (!bindNull){
+			// get the old value of the embedded bean
+			// to bind into where clause
+			embBean = getOldValue(embBean);
+		}
 		
 		for (int i = 0; i < items.length; i++) {
-			items[i].dmlBind(bindRequest, false, bean, bindNull);
+			items[i].dmlBind(bindRequest, false, embBean, bindNull);
 		}
+	}
+	
+	/**
+	 * Get the old bean which will have the original values.
+	 * <p>
+	 * These are bound to the WHERE clause for updates.
+	 * </p>
+	 */
+	private Object getOldValue(Object embBean) {
+
+		Object oldValues = null;
+		
+		if (embBean instanceof EntityBean){
+			// get the old embedded bean (with the original values)
+			oldValues = ((EntityBean)embBean)._ebean_getIntercept().getOldValues();
+		}
+		
+		if (oldValues == null){
+			// this embedded bean was not modified 
+			// (or not an EntityBean)
+			oldValues = embBean;
+		}
+		
+		return oldValues;
 	}
 	
 }
