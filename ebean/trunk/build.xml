@@ -5,7 +5,7 @@
 	<property file="build.properties" />
 
 	<property name="name" value="ebean" />
-	<property name="version" value="1.0.1" />
+	<property name="version" value="1.0.2" />
 
 	<property name="lib.dir" value="lib" />
 	<property name="src.dir" value="src" />
@@ -13,8 +13,7 @@
 	<property name="bin.dir" value="build/bin" />
 	<property name="dist.dir" value="dist" />
 	<property name="base.dir" value="." />
-	<property name="agent.dir" value="D:\apps\jarlib" />
-
+	
 	<property name="packages" value="com.avaje.*" />
 
 	<!-- =================================================================== -->
@@ -24,7 +23,7 @@
 	<taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask" classpath="bin" />
 
 	<target name="enhance" depends="compile">
-		<ebeanEnhance classSource="${bin.dir}" packages="com.avaje.ebean.meta.**, com.avaje.ebean.server.lib*" transformArgs="debug=1" />
+		<ebeanEnhance classSource="${bin.dir}" packages="com.avaje.ebean.meta.**" transformArgs="debug=1" />
 	</target>
 
 	<!-- =================================================================== -->
@@ -90,7 +89,6 @@
 				<attribute name="Premain-Class" value="com.avaje.ebean.enhance.agent.Transformer" />
 			</manifest>
 		</jar>
-		<copy overwrite="true" failonerror="true" file="${dist.dir}/ebean-agent-${version}.jar" todir="${agent.dir}" />
 
 	</target>
 
@@ -104,7 +102,6 @@
 				<attribute name="Premain-Class" value="com.avaje.ebean.enhance.agent.Transformer" />
 			</manifest>
 		</jar>
-		<copy overwrite="true" failonerror="true" file="${dist.dir}/ebean-agent-${version}.jar" todir="${agent.dir}" />
 
 	</target>
 			
@@ -124,8 +121,7 @@
 		</jar>
 
 		<copy overwrite="true" failonerror="true" file="${dist.dir}/${name}-${version}.jar" todir="${webapp.dir}/WEB-INF/lib" />
-		<copy overwrite="true" failonerror="true" file="${dist.dir}/ebean-${version}.jar" todir="${agent.dir}" />
-
+	
 	</target>
 
 	<target name="main" depends="jar">
