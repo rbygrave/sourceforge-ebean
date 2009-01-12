@@ -147,7 +147,7 @@ public class DiffHelp {
 				} else {
 					// if ANY of the properties in an Embedded bean is
 					// different, treat the whole bean as being different
-					BeanProperty[] props = emb[i].getBeanEmbeddedMeta().getProperties();
+					BeanProperty[] props = emb[i].getProperties();
 					for (int j = 0; j < props.length; j++) {
 						Object aEmbPropVal = props[j].getValue(aval);
 						Object bEmbPropVal = props[j].getValue(bval);

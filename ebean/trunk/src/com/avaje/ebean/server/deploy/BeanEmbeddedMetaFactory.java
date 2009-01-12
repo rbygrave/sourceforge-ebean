@@ -47,6 +47,10 @@ public class BeanEmbeddedMetaFactory {
 
 			String propertyName = sourceProperties[i].getName();
 			String dbColumn = propColMap.get(propertyName);
+			if (dbColumn == null){
+				// db column not overridden so take original
+				dbColumn = sourceProperties[i].getDbColumn();
+			}
 
 			BeanPropertyOverride overrides = new BeanPropertyOverride(dbColumn, tableAlias);
 			embeddedProperties[i] = new BeanProperty(sourceProperties[i], overrides);

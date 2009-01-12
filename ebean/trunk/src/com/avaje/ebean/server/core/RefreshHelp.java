@@ -62,7 +62,7 @@ public class RefreshHelp {
 		// set of properties to exclude from the refresh because it is
 		// not a refresh but rather a lazyLoading event.
 		Set<String> excludes = null;
-		
+				
 		if (ebi != null){
 			if (isLazyLoad){
 				excludes = ebi.getLoadedProps();
@@ -89,6 +89,7 @@ public class RefreshHelp {
 			} else {
 				Object dbVal = prop.getValue(dbBean);
 				prop.setValue(o, dbVal);
+				
 				if (setOriginalOldValues){
 					// maintain original oldValues for partially loaded bean
 					prop.setValue(originalOldValues, dbVal);
@@ -105,6 +106,7 @@ public class RefreshHelp {
 			} else {
 				Object dbVal = prop.getValue(dbBean);
 				prop.setValue(o, dbVal);
+				
 				if (setOriginalOldValues){
 					// maintain original oldValues for partially loaded bean
 					prop.setValue(originalOldValues, dbVal);
@@ -123,20 +125,20 @@ public class RefreshHelp {
 			} else {
 				Object dbVal = prop.getValue(dbBean);
 				prop.setValue(o, dbVal);
-				//if (setOriginalOldValues){
-				//	// maintain original oldValues for partially loaded bean
-				//	prop.setValue(originalOldValues, dbVal);
-				//}
 			}
 		}
 		
-		if (excludes == null){
-			// it was either a reference bean... 
-			// or a real refresh (rather than lazy loading partial)
-			if (ebi != null){
-				ebi.setLoaded();	
+		if (ebi != null){
+			// the refreshed/lazy loaded bean is always fully
+			// populated so set loadedProps to null
+			ebi.setLoadedProps(null);
+			
+			if (!isLazyLoad){
+				// refresh will reset the loaded status
+				ebi.setLoaded();
 			}
 		}
+		
 	}
 
 	/**
@@ -150,18 +152,30 @@ public class RefreshHelp {
 			if (excludes != null && excludes.contains(prop.getName())){
 				// ignore this property
 			} else {
+				// the original embedded bean
 				Object oEmb = prop.getValue(o);
+				
+				// the new one from the database
 				Object dbEmb = prop.getValue(dbBean);
 	
-				BeanProperty[] props = prop.getBeanEmbeddedMeta().getProperties();
-				for (int j = 0; j < props.length; j++) {
-					Object v = props[j].getValue(dbEmb);
-					props[j].setValue(oEmb, v);
-				}
-	
-				if (oEmb instanceof EntityBean) {
-					EntityBean eb = (EntityBean) oEmb;
-					eb._ebean_getIntercept().setLoaded();
+				if (oEmb == null){
+					// original embedded bean was null
+					// so just replace the entire embedded bean
+					prop.setValue(o, dbEmb);
+					
+				} else {
+					// refresh each property of the original
+					// embedded bean
+					BeanProperty[] props = prop.getProperties();
+					for (int j = 0; j < props.length; j++) {
+						Object v = props[j].getValue(dbEmb);
+						props[j].setValue(oEmb, v);
+					}
+		
+					if (oEmb instanceof EntityBean) {
+						EntityBean eb = (EntityBean) oEmb;
+						eb._ebean_getIntercept().setLoaded();
+					}
 				}
 			}
 		}
