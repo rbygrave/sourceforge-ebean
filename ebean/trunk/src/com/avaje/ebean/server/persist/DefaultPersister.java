@@ -80,6 +80,11 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	private static final Logger logger = LogFactory.get(DefaultPersister.class);
 
 	/**
+	 * For Version columns based on int.
+	 */
+	private static Integer ZERO_INT = Integer.valueOf(0);
+
+	/**
 	 * Actually does the persisting work.
 	 */
 	private final PersistExecute persistExecute;
@@ -245,14 +250,14 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		} else {
 			Object value = versProp.getValue(bean);
-			if (value == null) {
+			if (value == null || ZERO_INT.equals(value)) {
 				insert(request);
 			} else {
 				update(request);
 			}
 		}
 	}
-
+	
 	/**
 	 * Insert the bean.
 	 */
