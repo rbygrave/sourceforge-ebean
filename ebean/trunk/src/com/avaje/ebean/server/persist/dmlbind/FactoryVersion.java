@@ -55,9 +55,12 @@ public class FactoryVersion {
 				
 				List<Bindable> bindList = new ArrayList<Bindable>();
 				
-				BeanProperty[] emVers = embedded[j].getTargetDescriptor().propertiesVersion();
-				for (int i = 0; i < emVers.length; i++) {
-					bindList.add(new BindableProperty(emVers[i]));
+				BeanProperty[] embProps = embedded[j].getProperties();
+				
+				for (int i = 0; i < embProps.length; i++) {
+					if (embProps[i].isVersion()){
+						bindList.add(new BindableProperty(embProps[i]));						
+					}
 				}
 				
 				verList.add(new BindableEmbedded(embedded[j], bindList));
