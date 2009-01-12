@@ -22,6 +22,8 @@ import java.util.ArrayList;
 public final class TxScope {
 
 	TxType type;
+	
+	String serverName;
 
 	TxIsolation isolation;
 
@@ -91,8 +93,8 @@ public final class TxScope {
 	 * Describes this TxScope instance.
 	 */
 	public String toString() {
-		return "TxScope[" + type + "] readOnly[" + readOnly + "] isolation[" + isolation + "] rollbackFor["
-				+ rollbackFor + "] noRollbackFor[" + noRollbackFor + "]";
+		return "TxScope[" + type + "] readOnly[" + readOnly + "] isolation[" + isolation + "] serverName["+serverName
+				+"] rollbackFor["+ rollbackFor + "] noRollbackFor[" + noRollbackFor + "]";
 	}
 
 	/**
@@ -137,6 +139,25 @@ public final class TxScope {
 	 */
 	public TxScope setIsolation(TxIsolation isolation) {
 		this.isolation = isolation;
+		return this;
+	}
+
+	
+	/**
+	 * Return the serverName for this transaction. If this is null then the
+	 * default server (default DataSource) will be used.
+	 */
+	public String getServerName() {
+		return serverName;
+	}
+
+	/**
+	 * Set the serverName (DataSource name) for which this transaction
+	 * will be. If the serverName is not specified (left null) then the
+	 * default server will be used. 
+	 */
+	public TxScope setServerName(String serverName) {
+		this.serverName = serverName;
 		return this;
 	}
 
