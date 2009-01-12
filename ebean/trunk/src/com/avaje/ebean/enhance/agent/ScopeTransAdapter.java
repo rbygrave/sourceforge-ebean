@@ -85,6 +85,14 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		mv.visitInsn(POP);
 	}
 	
+	private void setServerName(Object serverName){
+		
+		mv.visitVarInsn(ALOAD, posTxScope);
+		mv.visitLdcInsn(serverName.toString());
+		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/TxScope", "setServerName", "(Ljava/lang/String;)Lcom/avaje/ebean/TxScope;");
+		mv.visitInsn(POP);
+	}
+	
 	private void setReadOnly(Object readOnlyObj){
 
 		boolean readOnly = (Boolean)readOnlyObj;
@@ -175,7 +183,11 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		if (rollbackFor != null){
 			setRollbackFor(rollbackFor);
 		}
-		
+
+		Object serverName = annotationInfo.getValue("serverName");
+		if (serverName != null && !serverName.equals("")){
+			setServerName(serverName);
+		}
 
 		mv.visitVarInsn(ALOAD, posTxScope);
 		mv.visitMethodInsn(INVOKESTATIC, internalServerType.getInternalName(), "createScopeTrans", "("
