@@ -28,8 +28,6 @@ public class DeployBeanPropertyAssocOne extends DeployBeanPropertyAssoc {
 	boolean oneToOne;
 	
 	boolean oneToOneExported;
-	
-	boolean embeddedVersion;
 
 	boolean importedPrimaryKey;
 
@@ -83,20 +81,6 @@ public class DeployBeanPropertyAssocOne extends DeployBeanPropertyAssoc {
 	 */
 	public void setOneToOneExported(boolean oneToOneExported) {
 		this.oneToOneExported = oneToOneExported;
-	}
-
-	/**
-	 * Returns true if the associated bean has version properties.
-	 */
-	public boolean isEmbeddedVersion() {
-		return embeddedVersion;
-	}
-
-	/**
-	 * Set to true if the associated bean has version properties.
-	 */
-	public void setEmbeddedVersion(boolean embeddedVersion) {
-		this.embeddedVersion = embeddedVersion;
 	}
 
 	/**

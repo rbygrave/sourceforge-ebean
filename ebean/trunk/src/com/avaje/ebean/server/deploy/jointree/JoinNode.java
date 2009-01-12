@@ -20,9 +20,7 @@
 package com.avaje.ebean.server.deploy.jointree;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -53,6 +51,12 @@ public abstract class JoinNode {
 		 * A join to associated many Beans.
 		 */
 		LIST,
+		
+		/**
+		 * A place holder for Embedded Beans.
+		 * Required for extra join checking.
+		 */
+		EMBEDDED
 	}
 	
 	/**
@@ -105,16 +109,6 @@ public abstract class JoinNode {
 	
 	final PropertyDeploy[] fkeyDeployList;
 	
-	final Map<String,String> propertyDeployMap;
-	
-	private static Map<String,String> createPropertyDeployMap(PropertyDeploy[] list) {
-		Map<String,String> map = new HashMap<String, String>();
-		for (PropertyDeploy deploy : list) {
-			map.put(deploy.getLogical(), deploy.getDeploy());
-		}
-		return map;
-	}
-	
 	/**
 	 * Create the tree.
 	 */
@@ -135,9 +129,33 @@ public abstract class JoinNode {
 		this.parentTableAlias = null;
 		this.propertyPrefix = null;
 		this.tableJoin = null;
-		this.propertyDeployMap = createPropertyDeployMap(propertyDeployList);
 	}
 
+
+	/**
+	 * Used internally for Embedded Beans place holder.
+	 */
+	protected JoinNode(String name, JoinNode parent,  BeanDescriptor desc, String propertyPrefix) {
+
+		this.type = Type.EMBEDDED;
+		this.name = name;
+		this.root = parent.getRoot();
+		this.parent = parent;
+		parent.addChild(this);
+		
+		this.propertyPrefix = propertyPrefix;
+		this.desc = desc;
+		this.embeddedObjectCount = 0;
+		this.propertyDeployList = new PropertyDeploy[0];
+		this.fkeyDeployList = new PropertyDeploy[0];
+
+		this.joinDepth = parent.joinDepth;
+		this.objectDepth = parent.objectDepth;
+		this.tableJoin = null;
+		this.parentTableAlias = null;
+		this.tableAlias = null;
+	}
+	
 	/**
 	 * Used internally when building the tree.
 	 */
@@ -156,10 +174,7 @@ public abstract class JoinNode {
 		this.fkeyDeployList = deployPropertyRequest.getForeignKeys();
 		this.propertyPrefix = propertyPrefix;
 		this.embeddedObjectCount = desc.propertiesEmbedded().length;
-		this.propertyDeployMap = createPropertyDeployMap(propertyDeployList);
-
-
-
+		
 		this.joinDepth = parent.joinDepth + 1;
 		this.objectDepth = parent.objectDepth + parent.embeddedObjectCount + 1;
 
@@ -295,6 +310,13 @@ public abstract class JoinNode {
 	 */
 	public boolean isRoot() {
 		return type == Type.ROOT;
+	}
+	
+	/**
+	 * If true this is a join to a bean that has OneToMany Association.
+	 */
+	public boolean isEmbeddedBean() {
+		return type == Type.EMBEDDED;
 	}
 	
 	/**

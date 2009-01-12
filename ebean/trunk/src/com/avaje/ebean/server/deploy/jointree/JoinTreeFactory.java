@@ -45,7 +45,7 @@ public class JoinTreeFactory {
 	
 	private final boolean sysoutOnMaxDepth;
 	
-	DeployPropertyFactory deployPropertyFactory;
+	private final DeployPropertyFactory deployPropertyFactory;
 	
 	public JoinTreeFactory(PluginDbConfig dbConfig) {
 		PluginProperties properties = dbConfig.getProperties();
@@ -82,7 +82,7 @@ public class JoinTreeFactory {
 			if (sysoutOnMaxDepth){
 				System.out.println(" ## You are getting this sysout message because the 'Join Tree' for this bean");
 				System.out.println(" ## .. has hit a maximum depth of ["+maxDepth+"]. This is generally NOT EXPECTED??");
-				System.out.println(" ## .. you can specify in avaje.properties ebean.jointree.maxdepth=...");
+				System.out.println(" ## .. you can specify in ebean.properties ebean.jointree.maxdepth=...");
 				System.out.println(" ## .. to increase the maxdepth or ask for help. The join tree output is...");
 				System.out.println(" ## JOIN TREE for : "+descriptor);
 				System.out.println(root);
@@ -160,6 +160,11 @@ public class JoinTreeFactory {
 	private void buildTree(JoinTreeRequest request, JoinNode parent) {
 
 		BeanDescriptor treeDesc = parent.getBeanDescriptor();
+		
+		BeanPropertyAssocOne[] embedded = treeDesc.propertiesEmbedded();
+		for (int i = 0; i < embedded.length; i++) {
+			addEmbeddedChild(request, parent, embedded[i]);
+		}
 
 		BeanPropertyAssocOne[] ones = treeDesc.propertiesOne();
 		for (int i = 0; i < ones.length; i++) {
@@ -170,8 +175,7 @@ public class JoinTreeFactory {
 			Class<?> targetType = beanProp.getTargetType();
 
 			boolean hitMaxDepth = (subTree.getJoinDepth() >= maxDepth); 
-			//boolean contains = request.containsType(targetType);
-
+			
 			boolean masterDetail = false;
 			JoinNode grandParent = subTree.getParent().getParent();
 			if (grandParent != null){
@@ -273,6 +277,21 @@ public class JoinTreeFactory {
 		return child;
 	}
 
+	/**
+	 * Add a child node. Depth first.
+	 */
+	private JoinNode addEmbeddedChild(JoinTreeRequest request, JoinNode parent,
+			BeanPropertyAssocOne beanProp) {
+
+		BeanDescriptor forDesc = beanProp.getTargetDescriptor();
+
+		String propName = getPropName(beanProp, parent);
+
+		JoinNodeEmbeddedBean child = new JoinNodeEmbeddedBean(parent, forDesc, propName,beanProp);
+		
+		return child;
+	}
+	
 	/**
 	 * Prepend the parent table alias IF we are deeper than the first level.
 	 * Make sure this derived alias is not a keyword
