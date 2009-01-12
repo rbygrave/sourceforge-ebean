@@ -26,7 +26,6 @@ import com.avaje.ebean.ValidationException;
 import com.avaje.ebean.bean.BeanController;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.BatchControl;
@@ -103,9 +102,8 @@ public abstract class PersistRequest extends BeanRequest implements ConcurrencyM
 		this.bean = bean;
 		this.parentBean = parentBean;
 
-		BeanDescriptor desc = mgr.getBeanDescriptor();
-		controller = desc.getBeanController();
-		concurrencyMode = desc.getConcurrencyMode();
+		controller = beanDescriptor.getBeanController();
+		concurrencyMode = beanDescriptor.getConcurrencyMode();
 
 		if (bean instanceof EntityBean) {
 			intercept = ((EntityBean) bean)._ebean_getIntercept();
@@ -114,10 +112,10 @@ public abstract class PersistRequest extends BeanRequest implements ConcurrencyM
 				// with no concurrency checking
 				concurrencyMode = NONE;
 			}
-			oldValues = intercept.getOldValues();
-			isDirty = intercept.isDirty();
+			isDirty = beanDescriptor.isDirty(intercept);
 			loadedProps = intercept.getLoadedProps();
-
+			oldValues = intercept.getOldValues();
+			
 		} else {
 			loadedProps = null;
 			intercept = null;
@@ -254,13 +252,6 @@ public abstract class PersistRequest extends BeanRequest implements ConcurrencyM
 		return oldValues;
 	}
 
-	// /**
-	// * Set the old values bean.
-	// */
-	// public void setOldValues(Object oldValues) {
-	// this.oldValues = oldValues;
-	// }
-
 	/**
 	 * Return the type of this request. One of INSERT, UPDATE, DELETE, UPDATESQL
 	 * or CALLABLESQL.
@@ -275,7 +266,7 @@ public abstract class PersistRequest extends BeanRequest implements ConcurrencyM
 	 */
 	public void setType(Type type) {
 		this.type = type;
-		if (type == Type.DELETE) {
+		if (type == Type.DELETE || type == Type.UPDATE) {
 			if (oldValues == null) {
 				oldValues = bean;
 			}

@@ -41,19 +41,17 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 	final boolean embeddedVersion;
 
 	final boolean importedPrimaryKey;
-
-	final BeanEmbeddedMeta beanEmbeddedMeta;
-
+	
 	final LocalHelp localHelp;
 
+	final BeanProperty[] embeddedProps;
+	
 	/**
 	 * The information for Imported foreign Keys.
 	 */
 	ImportedId importedId;
 
-	BeanProperty[] embeddedProps;
 
-	
 	/**
 	 * Create the property.
 	 */
@@ -63,14 +61,28 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 		super(owner, descriptor, deploy);
 
 		importedPrimaryKey = deploy.isImportedPrimaryKey();
-		embeddedVersion = deploy.isEmbeddedVersion();
 		oneToOne = deploy.isOneToOne();
 		oneToOneExported = deploy.isOneToOneExported();
 
-		if (embedded && !id) {
-			beanEmbeddedMeta = BeanEmbeddedMetaFactory.create(owner, deploy, descriptor);
+		if (embedded) {
+			if (id){
+				// concatinated id type bean
+				// NB: Carefully note that this is non-recursive!!
+				BeanDescriptor d = descriptor.getBeanDescriptor(targetType);
+				embeddedProps = d.propertiesBaseScalar();
+				embeddedVersion = false;
+				
+			} else {
+				// non-id embedded bean
+				// ... take care of overriding of the db columns that 
+				// the embedded properties map to 
+				BeanEmbeddedMeta overrideMeta = BeanEmbeddedMetaFactory.create(owner, deploy, descriptor);
+				embeddedProps = overrideMeta.getProperties();
+				embeddedVersion = overrideMeta.isEmbeddedVersion();
+			}
 		} else {
-			beanEmbeddedMeta = null;
+			embeddedProps = null;
+			embeddedVersion = false;
 		}
 		localHelp = createHelp(embedded, oneToOneExported);
 	}
@@ -79,11 +91,8 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 	public void initialise() {
 		super.initialise();
 		if (!isTransient){
-			if (!oneToOneExported) {				
+			if (!embedded && !oneToOneExported) {				
 				importedId = createImportedId(this, targetDescriptor, tableJoin);
-			}
-			if (embedded) {
-				embeddedProps = targetDescriptor.propertiesBaseScalar();
 			}
 		}
 	}
@@ -107,8 +116,8 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 	 * Return meta data for the deployment of the embedded bean specific to this
 	 * property.
 	 */
-	public BeanEmbeddedMeta getBeanEmbeddedMeta() {
-		return beanEmbeddedMeta;
+	public BeanProperty[] getProperties() {
+		return embeddedProps;
 	}
 
 	/**
@@ -226,8 +235,13 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 				}
 			}
 			if (notNull && assignable) {
+				// set back to the parent bean
 				setValue(bean, embeddedBean);
+				
+				// make sure it is intercepting setters etc
+				embeddedBean._ebean_getIntercept().setLoaded();
 				return embeddedBean;
+				
 			} else {
 				return null;
 			}
@@ -243,7 +257,6 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 				embeddedProps[i].appendSelect(ctx);
 			}
 		}
-
 	}
 
 	/**

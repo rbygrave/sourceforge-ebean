@@ -47,6 +47,8 @@ public final class QueryRequest extends BeanRequest {
 	private final BeanFinder finder;
 
 	private ServerTransaction trans;
+	
+	private TransactionContext transactionContext;
 
 	private boolean createdTransaction;
 
@@ -76,13 +78,14 @@ public final class QueryRequest extends BeanRequest {
 		this.queryEngine = queryEngine;
 		this.query = query;
 		this.trans = (ServerTransaction) t;
+		
 		if (beanDescriptor != null) {
 			finder = beanDescriptor.getBeanFinder();
 		} else {
 			finder = null;
 		}
 	}
-
+	
 	/**
 	 * Return true if this is a query using generated sql. If false this query
 	 * will use raw sql (Entity bean based on raw sql select).
@@ -91,6 +94,10 @@ public final class QueryRequest extends BeanRequest {
 		return query.isSqlSelect();
 	}
 
+	public TransactionContext getTransactionContext() {
+		return transactionContext;
+	}
+	
 	public ServerTransaction getTransaction() {
 		return trans;
 	}
@@ -127,8 +134,21 @@ public final class QueryRequest extends BeanRequest {
 				createdTransaction = true;
 			}
 		}
+		this.transactionContext = determineTransactionContext(query, trans);
 	}
 
+	/**
+	 * Get the TransactionContext either explicitly set on the query or transaction scoped.
+	 */
+	private TransactionContext determineTransactionContext(OrmQuery<?> query, ServerTransaction t){
+		
+		TransactionContext ctx = query.getTransactionContext();
+		if (ctx == null){
+			ctx = t.getTransactionContext();
+		}
+		return ctx;
+	}
+	
 	/**
 	 * Will end a locally created transaction.
 	 * <p>
