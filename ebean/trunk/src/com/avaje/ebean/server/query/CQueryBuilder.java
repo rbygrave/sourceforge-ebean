@@ -182,7 +182,11 @@ public class CQueryBuilder implements Constants {
 
         OrmQuery<?> query = request.getQuery();
     	JoinTree joinTree = request.getBeanJoinTree();
-    	
+    	if (joinTree == null){
+    		String msg = "Error with query on "+request.getBeanDescriptor().getFullName();
+    		msg +=". Has it got a valid base table? (joinTree is null!)";
+    		throw new PersistenceException(msg);
+    	}
         SqlTreeBuilder selectBuilder = new SqlTreeBuilder(tableAliasPlaceHolder, query, joinTree, predicates);
         return selectBuilder.build();
     }
