@@ -34,7 +34,7 @@ public class InternalServer {
 	 */
 	public static ScopeTrans createScopeTrans(TxScope txScope) {
 		
-		EbeanServer server = Ebean.getServer(null);
+		EbeanServer server = Ebean.getServer(txScope.getServerName());
 		InternalEbeanServer iserver = (InternalEbeanServer)server;
 		return iserver.createScopeTrans(txScope);
 	}
