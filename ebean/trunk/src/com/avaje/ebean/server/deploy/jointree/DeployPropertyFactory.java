@@ -149,7 +149,7 @@ public class DeployPropertyFactory {
 				prefix = request.propertyPrefix +"."+prefix;
 			}
 			
-			BeanProperty[] props = embedProp.getBeanEmbeddedMeta().getProperties();
+			BeanProperty[] props = embedProp.getProperties();
 	    	for (int i = 0; i < props.length; i++) {        		
 	        	addProp(request, props[i], prefix);
 			}

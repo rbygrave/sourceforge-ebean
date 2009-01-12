@@ -36,6 +36,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.server.deploy.IdentityGeneration;
@@ -131,6 +132,12 @@ public class AnnotationFields extends AnnotationParser {
 		Formula formula = (Formula) get(prop, Formula.class);
 		if (formula != null) {
 			prop.setSqlFormula(formula.select(), formula.join());
+		}
+
+		Version version = (Version) get(prop, Version.class);
+		if (version != null) {
+			// explicitly specify a version column
+			prop.setVersionColumn(true);
 		}
 		
 		// Could add an annotation for GeneratedProperty
