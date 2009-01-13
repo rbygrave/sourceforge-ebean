@@ -157,25 +157,26 @@ public class BootupClasses {
 
 		boolean interesting = false;
 
-		Class<?>[] interfaces = cls.getInterfaces();
-		for (int i = 0; i < interfaces.length; i++) {
-			if (interfaces[i].equals(ScalarType.class)) {
-				scalarTypeList.add(cls);
-				interesting = true;
-			}
-			if (interfaces[i].equals(BeanController.class)) {
-				beanControllerList.add(cls);
-				interesting = true;
-			}
-			if (interfaces[i].equals(BeanFinder.class)) {
-				beanFinderList.add(cls);
-				interesting = true;
-			}
-			if (interfaces[i].equals(BeanListener.class)) {
-				beanListenerList.add(cls);
-				interesting = true;
-			}
+		if (BeanController.class.isAssignableFrom(cls)){
+			beanControllerList.add(cls);
+			interesting = true;
 		}
+		
+		if (ScalarType.class.isAssignableFrom(cls)) {
+			scalarTypeList.add(cls);
+			interesting = true;
+		}
+		
+		if (BeanFinder.class.isAssignableFrom(cls)) {
+			beanFinderList.add(cls);
+			interesting = true;
+		}
+
+		if (BeanListener.class.isAssignableFrom(cls)) {
+			beanListenerList.add(cls);
+			interesting = true;
+		}
+
 		return interesting;
 	}
 
