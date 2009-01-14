@@ -272,7 +272,7 @@ public class ClassMeta {
 	}
 
 	/**
-	 * Return true if the class has an Entity or Embeddable annotation.
+	 * Return true if the class has an Entity, Embeddable or MappedSuperclass annotation.
 	 */
 	public boolean isEntity() {
 		if (classAnnotation.contains(EnhanceConstants.ENTITY_ANNOTATION)) {
@@ -281,11 +281,14 @@ public class ClassMeta {
 		if (classAnnotation.contains(EnhanceConstants.EMBEDDABLE_ANNOTATION)) {
 			return true;
 		}
+		if (classAnnotation.contains(EnhanceConstants.MAPPEDSUPERCLASS_ANNOTATION)) {
+			return true;
+		}
 		return false;
 	}
 
 	/**
-	 * Return true for classes annotated with entity or embeddable.
+	 * Return true for classes not already enhanced and yet annotated with entity, embeddable or mappedSuperclass.
 	 */
 	public boolean isEntityEnhancementRequired() {
 		if (alreadyEnhanced) {
@@ -295,6 +298,9 @@ public class ClassMeta {
 			return true;
 		}
 		if (classAnnotation.contains(EnhanceConstants.EMBEDDABLE_ANNOTATION)) {
+			return true;
+		}
+		if (classAnnotation.contains(EnhanceConstants.MAPPEDSUPERCLASS_ANNOTATION)) {
 			return true;
 		}
 		return false;
