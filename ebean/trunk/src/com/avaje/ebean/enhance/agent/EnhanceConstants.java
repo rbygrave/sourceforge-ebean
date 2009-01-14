@@ -30,6 +30,8 @@ public interface EnhanceConstants {
 
 	public static final String EMBEDDABLE_ANNOTATION = "Ljavax/persistence/Embeddable;";
 	
+	public static final String MAPPEDSUPERCLASS_ANNOTATION = "Ljavax/persistence/MappedSuperclass;";
+	
 	public static final String IDENTITY_FIELD = "_ebean_identity";
 
     public static final String INTERCEPT_FIELD = "_ebean_intercept";
