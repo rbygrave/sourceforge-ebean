@@ -167,7 +167,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 	 */
 	public void visitEnd() {
 
-		if (!classMeta.isEnhancementRequired()){
+		if (!classMeta.isEntityEnhancementRequired()){
 			throw new NoEnhancementRequiredException();
 		}
 
