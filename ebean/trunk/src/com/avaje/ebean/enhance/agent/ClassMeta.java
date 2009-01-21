@@ -22,6 +22,8 @@ public class ClassMeta {
 
 	static final Logger logger = Logger.getLogger(ClassMeta.class.getName());
 
+	static final String OBJECT_CLASS = Object.class.getName().replace('.', '/');
+	
 	final PrintStream logout;
 
 	final int logLevel;
@@ -87,7 +89,8 @@ public class ClassMeta {
 
 	public boolean isCheckSuperClassForEntity() {
 		if (isEntity()) {
-			return !superClassName.equals(Object.class);
+			 
+			return !superClassName.equals(OBJECT_CLASS);
 		}
 		return false;
 	}
@@ -201,48 +204,49 @@ public class ClassMeta {
 	}
 
 	/**
-	 * Add all fields to the list.
+	 * Return a List of inherited fields. These are fields from inherited objects
+	 * via MappedSuperClass or Entity inheritance.
 	 */
-	public void addAllFields(ArrayList<FieldMeta> list) {
-		if (isEntity()) {
-			list.addAll(fields.values());
-		}
+	public List<FieldMeta> getInheritedFields() {
+		return getInheritedFields(new ArrayList<FieldMeta>());
 	}
-
+	
 	/**
 	 * Return the list of fields inherited from super types that are entities.
 	 */
-	public List<FieldMeta> getInheritedFields() {
+	private List<FieldMeta> getInheritedFields(List<FieldMeta> list) {
 
-		ArrayList<FieldMeta> list = new ArrayList<FieldMeta>();
+		if (list == null){
+			list = new ArrayList<FieldMeta>();
+		}
 
 		if (superMeta != null) {
-			superMeta.addAllFields(list);
+			superMeta.addFieldsForInheritance(list);
 		}
 		return list;
 	}
 
 	/**
+	 * Add all fields to the list.
+	 */
+	private void addFieldsForInheritance(List<FieldMeta> list) {
+		if (isEntity()) {
+			list.addAll(0, fields.values());
+			if (superMeta != null) {
+				superMeta.addFieldsForInheritance(list);
+			}
+		}
+	}
+	
+	/**
 	 * Return the list of all fields including ones inherited from entity super
-	 * types.
+	 * types and mappedSuperclasses.
 	 */
 	public List<FieldMeta> getAllFields() {
 
-		ArrayList<FieldMeta> list = new ArrayList<FieldMeta>();
-
-		if (superMeta != null) {
-			superMeta.addAllFields(list);
-		}
-
-		Iterator<FieldMeta> it = fields.values().iterator();
-		while (it.hasNext()) {
-			FieldMeta fm = it.next();
-			if (!fm.isObjectArray()) {
-				// add field local to this entity type
-				list.add(fm);
-			}
-		}
-
+		List<FieldMeta> list = getLocalFields();
+		getInheritedFields(list);
+		
 		return list;
 	}
 
@@ -258,17 +262,6 @@ public class ClassMeta {
 				fm.addGetSetMethods(cv, this);
 			}
 		}
-	}
-
-	/**
-	 * Return true if this class should be enhanced.
-	 */
-	public boolean isEnhancementRequired() {
-		if (isEntityEnhancementRequired()) {
-			return true;
-		}
-		// TODO: Add declarative Transaction enhancement option
-		return false;
 	}
 
 	/**
@@ -294,13 +287,7 @@ public class ClassMeta {
 		if (alreadyEnhanced) {
 			return false;
 		}
-		if (classAnnotation.contains(EnhanceConstants.ENTITY_ANNOTATION)) {
-			return true;
-		}
-		if (classAnnotation.contains(EnhanceConstants.EMBEDDABLE_ANNOTATION)) {
-			return true;
-		}
-		if (classAnnotation.contains(EnhanceConstants.MAPPEDSUPERCLASS_ANNOTATION)) {
+		if (isEntity()){
 			return true;
 		}
 		return false;
