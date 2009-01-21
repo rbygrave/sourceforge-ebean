@@ -152,10 +152,8 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 	@Override
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		classAnnotation.add(desc);
-		if (desc.equals(EnhanceConstants.ENTITY_ANNOTATION)) {
-			entity = true;
-			
-		} else if (desc.equals(EnhanceConstants.EMBEDDABLE_ANNOTATION)) {
+		if (Util.isEntityAnnotation(desc)){
+			// entity, embeddable or mappedSuperclass
 			entity = true;
 			
 		} else if (desc.equals(EnhanceConstants.AVAJE_TRANSACTIONAL_ANNOTATION)) {
