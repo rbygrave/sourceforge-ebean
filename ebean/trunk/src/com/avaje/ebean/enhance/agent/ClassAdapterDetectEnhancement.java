@@ -152,7 +152,7 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 	@Override
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		classAnnotation.add(desc);
-		if (Util.isEntityAnnotation(desc)){
+		if (isEntityAnnotation(desc)){
 			// entity, embeddable or mappedSuperclass
 			entity = true;
 			
@@ -164,6 +164,24 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 		return super.visitAnnotation(desc, visible);
 	}
 
+	/**
+	 * Return true if the annotation is for an Entity, Embeddable or MappedSuperclass.
+	 */
+	private boolean isEntityAnnotation(String desc) {
+		
+		if (desc.equals(EnhanceConstants.ENTITY_ANNOTATION)) {
+			return true;
+			
+		} else if (desc.equals(EnhanceConstants.EMBEDDABLE_ANNOTATION)) {
+			return true;
+	
+		} else if (desc.equals(EnhanceConstants.MAPPEDSUPERCLASS_ANNOTATION)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Visit the methods specifically looking for method level transactional
 	 * annotations.
