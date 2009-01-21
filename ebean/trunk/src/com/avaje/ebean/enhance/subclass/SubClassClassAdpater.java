@@ -175,7 +175,7 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 	 */
 	public void visitEnd() {
 
-		if (!classMeta.isEnhancementRequired()){
+		if (!classMeta.isEntityEnhancementRequired()){
 			throw new NoEnhancementRequiredException();
 		}
 		
