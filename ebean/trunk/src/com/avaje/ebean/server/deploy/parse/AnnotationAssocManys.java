@@ -37,6 +37,7 @@ import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import com.avaje.ebean.server.lib.sql.TableInfo;
 
 /**
  * Read the deployment annotation for Assoc Many beans.
@@ -89,25 +90,34 @@ public class AnnotationAssocManys extends AnnotationParser {
 			prop.setExtraWhere(where.clause());
 		}
 
-		JoinColumn joinColumn = (JoinColumn) get(prop, JoinColumn.class);
-		if (joinColumn != null) {
-			JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-			defineJoin.add(joinColumn);
-			util.define(defineJoin);
-		}
+		TableInfo baseTableInfo = info.getBaseTableInfo();
+		if (baseTableInfo == null){
+			// do not try to define joins manually as they will 
+			// likely fail for this database schema as the base
+			// table has not been found.
 
-		JoinColumns joinColumns = (JoinColumns) get(prop, JoinColumns.class);
-		if (joinColumns != null) {
-			JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-			defineJoin.add(joinColumns);
-			util.define(defineJoin);
-		}
-
-		JoinTable joinTable = (JoinTable) get(prop, JoinTable.class);
-		if (joinTable != null) {
-			JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-			defineJoin.add(joinTable);
-			util.define(defineJoin);
+		} else {
+			// check for manually defined joins
+			JoinColumn joinColumn = (JoinColumn) get(prop, JoinColumn.class);
+			if (joinColumn != null) {
+				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
+				defineJoin.add(joinColumn);
+				util.define(defineJoin);
+			}
+	
+			JoinColumns joinColumns = (JoinColumns) get(prop, JoinColumns.class);
+			if (joinColumns != null) {
+				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
+				defineJoin.add(joinColumns);
+				util.define(defineJoin);
+			}
+	
+			JoinTable joinTable = (JoinTable) get(prop, JoinTable.class);
+			if (joinTable != null) {
+				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
+				defineJoin.add(joinTable);
+				util.define(defineJoin);
+			}
 		}
 	}
 
