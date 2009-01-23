@@ -31,14 +31,17 @@ public class ReadAnnotations {
     public void process(DeployBeanInfo info){
         
     	try {
-	    	AnnotationClass clsAnnotations = new AnnotationClass(info);
-	    	clsAnnotations.parse();
+    		
+    		AnnotationClass clsAnnotations = new AnnotationClass(info);
+    		clsAnnotations.parse();
+    		
+    		// Set default table name if not already set via @Table
+	    	info.setDefaultTableName();
+	        
 	        new AnnotationFields(info).parse();
 	        new AnnotationAssocOnes(info).parse();
 	        new AnnotationAssocManys(info).parse();
-	        
-	        info.setDefaultTableName();
-	        
+	        	        
 	        // read the Sql annotations last because they may be
 	        // dependent on field level annotations
 	        clsAnnotations.readSqlAnnotations();

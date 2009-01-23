@@ -38,6 +38,7 @@ import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import com.avaje.ebean.server.lib.sql.DictionaryInfo;
 import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
@@ -99,9 +100,12 @@ public class DeployUtil {
 
 	private final CreateProperties createProperties;
 	
+	private final DictionaryInfo dictionaryInfo;
+	
 	public DeployUtil(DeploymentManager deploymentManager, PluginDbConfig dbConfig) {
 		this.deploymentManager = deploymentManager;
 		this.dbConfig = dbConfig;
+		this.dictionaryInfo = dbConfig.getDictionaryInfo();
 		this.typeManager = dbConfig.getTypeManager();
 		this.namingConvention = dbConfig.getNamingConvention();
 		this.sqlSelectParser = new DeploySqlSelectParser(dbConfig);
@@ -122,6 +126,13 @@ public class DeployUtil {
 		useOneToOneOptional = v.equalsIgnoreCase("true");
 
 		validatorFactoryManager = new ValidatorFactoryManager();
+	}
+	
+	/**
+	 * Return the associated DictionaryInfo.
+	 */
+	public DictionaryInfo getDictionaryInfo() {
+		return dictionaryInfo;
 	}
 	
 	public void createProperties(DeployBeanDescriptor desc) {

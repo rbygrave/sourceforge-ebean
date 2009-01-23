@@ -26,6 +26,8 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import com.avaje.ebean.server.lib.sql.DictionaryInfo;
+import com.avaje.ebean.server.lib.sql.TableInfo;
 
 /**
  * Wraps information about a bean during deployment parsing.
@@ -56,6 +58,25 @@ public class DeployBeanInfo {
 		this.descriptor = descriptor;
 	}
 
+	/**
+	 * Return the TableInfo for the base table.
+	 */
+	public TableInfo getBaseTableInfo(){
+		if (descriptor.getBaseTable() == null){
+			return null;
+		} else {
+			return getTableInfo(descriptor.getBaseTable());
+		}
+	}
+	
+	/**
+	 * Return the TableInfo for a given table name.
+	 */
+	public TableInfo getTableInfo(String tableName){
+		DictionaryInfo dictionaryInfo = util.getDictionaryInfo();
+		return dictionaryInfo.getTableInfo(tableName);
+	}
+	
 	public String toString() {
 		return ""+descriptor;
 	}
