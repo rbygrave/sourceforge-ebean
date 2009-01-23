@@ -76,7 +76,11 @@ public class ScalarTypeUtilDate {
 		
 		public Object read(ResultSet rset, int index) throws SQLException {
 			java.sql.Date d = rset.getDate(index);
-			return new java.util.Date(d.getTime());
+			if (d != null){
+				return new java.util.Date(d.getTime());
+			}
+			
+			return null;
 		}
 		
 		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
