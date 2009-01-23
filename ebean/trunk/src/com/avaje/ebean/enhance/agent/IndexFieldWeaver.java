@@ -291,20 +291,22 @@ public class IndexFieldWeaver implements Opcodes {
 		for (int i = 0; i < fields.size(); i++) {
 
 			FieldMeta fieldMeta = fields.get(i);
-
-			Label label = new Label();
-			if (i == 0) {
-				l1 = label;
+			if (fieldMeta.isPersistent()){
+				// only copy persistent fields
+				Label label = new Label();
+				if (i == 0) {
+					l1 = label;
+				}
+				mv.visitLabel(label);
+				mv.visitLineNumber(1, label);
+				mv.visitVarInsn(ALOAD, 1);
+				mv.visitVarInsn(ALOAD, 0);
+	
+				// get put the fields or if using subclassing
+				// then use the getter setter methods on the
+				// super object
+				fieldMeta.addFieldCopy(mv, classMeta);
 			}
-			mv.visitLabel(label);
-			mv.visitLineNumber(1, label);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitVarInsn(ALOAD, 0);
-
-			// get put the fields or if using subclassing
-			// then use the getter setter methods on the
-			// super object
-			fieldMeta.addFieldCopy(mv, classMeta);
 		}
 
 		Label l4 = new Label();
