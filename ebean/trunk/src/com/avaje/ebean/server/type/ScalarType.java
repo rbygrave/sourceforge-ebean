@@ -74,16 +74,30 @@ public interface ScalarType {
 	 */
 	public Class<?> getType();
 
+	/**
+	 * Read the value from the resultSet and convert if necessary to the logical
+	 * bean property value.
+	 */
 	public Object read(ResultSet rset, int index) throws SQLException;
-	
+
+	/**
+	 * Convert (if necessary) and bind the value to the preparedStatement.
+	 * <p>
+	 * value may need to be converted from the logical bean property type to the
+	 * JDBC type.
+	 * </p>
+	 */
 	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException;
 
-	
 	/**
 	 * Convert the value as necessary to the JDBC type.
 	 * <p>
 	 * Note that this should also match the type as per the getJdbcType()
 	 * method.
+	 * </p>
+	 * <p>
+	 * This is typically used when the matching type is used in a where clause
+	 * and we use this to ensure it is an appropriate jdbc type.
 	 * </p>
 	 */
 	public Object toJdbcType(Object value);
@@ -92,6 +106,10 @@ public interface ScalarType {
 	 * Convert the value as necessary to the logical Bean type.
 	 * <p>
 	 * The type as per the bean property.
+	 * </p>
+	 * <p>
+	 * This is used to automatically convert id values (typically from a string
+	 * to a int, long or UUID).
 	 * </p>
 	 */
 	public Object toBeanType(Object value);

@@ -34,6 +34,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
+
 import com.avaje.ebean.annotation.EnumMapping;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.lib.util.FactoryHelper;
@@ -107,6 +112,7 @@ public final class DefaultTypeManager implements TypeManager {
 		this.extraTypeFactory = new DefaultTypeFactory(properties);
 
 		initialiseStandard();
+		initialiseJodaTypes();
 		initialiseFromBootupSearch();
 		initialiseEnumsWithMapping();
 		initialiseFromProperties();
@@ -362,6 +368,29 @@ public final class DefaultTypeManager implements TypeManager {
 		}
 	}
 
+	/**
+	 * Detect if Joda classes are in the classpath and if so
+	 * register the Joda data types.
+	 */
+	protected void initialiseJodaTypes() {
+		try {
+			// detect if Joda classes are in the classpath
+			Class<?> jodaDateTime = Class.forName("org.joda.time.LocalDateTime");
+			if (jodaDateTime != null){
+				// Joda classes are in the classpath so register the types
+				String msg = "Registering Joda data types";
+				logger.log(Level.INFO, msg);
+				typeMap.put(LocalDateTime.class, new ScalarTypeJodaLocalDateTime());				
+				typeMap.put(LocalDate.class, new ScalarTypeJodaLocalDate());				
+				typeMap.put(LocalTime.class, new ScalarTypeJodaLocalTime());				
+				typeMap.put(DateTime.class, new ScalarTypeJodaDateTime());				
+			}
+		} catch (ClassNotFoundException e) {
+			String msg = "Joda not in classpath so not registering types";
+			logger.log(Level.FINE, msg);
+		}
+	}
+	
 	/**
 	 * Register all the standard types supported. This is the standard JDBC
 	 * types plus some other common types such as java.util.Date and
