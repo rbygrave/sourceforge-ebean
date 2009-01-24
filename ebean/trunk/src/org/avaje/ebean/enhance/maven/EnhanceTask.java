@@ -4,8 +4,10 @@ import java.io.File;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 
 import com.avaje.ebean.enhance.agent.Transformer;
+import com.avaje.ebean.enhance.ant.AntEnhanceTask;
 import com.avaje.ebean.enhance.ant.OfflineFileTransform;
 
 /**
@@ -93,13 +95,13 @@ public class EnhanceTask extends AbstractMojo {
 
 	public void execute() throws MojoExecutionException{
 		File f = new File("");
-		System.out.println("Current Directory: "+f.getAbsolutePath());
-				
+		Log log = getLog();
+		log.info("Current Directory: "+f.getAbsolutePath());
 		Transformer t = new Transformer(classSource, transformArgs);
-
-		ClassLoader cl = EnhanceTask.class.getClassLoader();
+		ClassLoader cl = AntEnhanceTask.class.getClassLoader();
+		log.info("classSource="+classSource+"  transformArgs="+transformArgs
+			+"  classDestination="+classDestination+"  packages="+packages);
 		OfflineFileTransform ft = new OfflineFileTransform(t, cl, classSource, classDestination);
-
 		ft.process(packages);
 	}
 }
