@@ -1,4 +1,4 @@
-package org.avaje.ebean.enhance.maven;
+package com.avaje.ebean.enhance.maven;
 
 import java.io.File;
 
