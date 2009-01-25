@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE beans PUBLIC
+
+"-//SPRING//DTD BEAN//EN"
+
+"http://www.springframework.org/dtd/spring-beans.dtd">
+	<!-- $URL$ -->
+	<!-- $Revision$, $Date$ -->
+
+<beans>
+	<bean id="ds1" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<!--
+			<property name="url" value="jdbc:h2:file:d:/ws2/spring1/db/testdb" />
+			<property name="username" value="sa" /> <property name="password"
+			value="" />
+		-->
+		<property name="url" value="jdbc:mysql://localhost:3306/jpa1" />
+		<property name="username" value="jpatester" />
+		<property name="password" value="test" />
+	</bean>
+	<bean id="jpaVendorAdapter" class="org.avaje.ebean.spi.jpa.EbeanJpaVendorAdapter">
+		<property name="databasePlatform" value="com.mdx.adaptor.MySQLDictionary" />
+		<property name="showSql" value="true" />
+		<property name="generateDdl" value="true" />
+	</bean>
+<!-- 
+	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter">
+		<property name="databasePlatform" value="com.mdx.adaptor.MySQLDictionary" />
+		<property name="showSql" value="true" />
+		<property name="generateDdl" value="true" />
+	</bean>
+ -->
+	<bean id="entityManager"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="ds1" />
+		<property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
+		<property name="persistenceUnitName" value="jpa1" />
+	</bean>
+	<bean id="springFinder" class="com.mdx.intf.SpringBridge"
+		singleton="true" />
+	<bean id="ebeanFactory" class="org.avaje.ebean.spi.spring.EBeanDataSourceFactory"
+		singleton="true">
+		<property name="dataSource" ref="ds1" />
+	</bean>
+	<bean id="hello" class="com.mdx.HelloImpl">
+		<property name="greeting">
+			<value>Good Morning!...</value>
+		</property>
+	</bean>
+</beans>
