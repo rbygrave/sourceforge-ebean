@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib;
+package org.avaje.ebean.server.lib;
 
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import com.avaje.lib.log.LogFactory;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Helper used by SystemProperties to evaluate expressions such as

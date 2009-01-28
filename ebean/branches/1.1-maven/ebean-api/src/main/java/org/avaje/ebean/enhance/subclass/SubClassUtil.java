@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.enhance.subclass;
+package org.avaje.ebean.enhance.subclass;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.util.InternalEbean;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.util.InternalEbean;
 
 /**
  * Helper methods for generated sub classes.

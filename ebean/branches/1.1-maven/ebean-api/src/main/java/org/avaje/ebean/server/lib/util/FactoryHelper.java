@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.lib.util;
+package org.avaje.ebean.server.lib.util;
 
 import java.lang.reflect.Constructor;
 

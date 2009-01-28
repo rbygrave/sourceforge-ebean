@@ -15,15 +15,15 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.lib.log;
+package org.avaje.lib.log;
 
 import java.util.logging.Filter;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import com.avaje.ebean.server.lib.PropertyEvaluator;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
+import org.avaje.ebean.server.lib.PropertyEvaluator;
+import org.avaje.ebean.server.lib.util.FactoryHelper;
 
 /**
  * A Helper object used to configure handlers.
