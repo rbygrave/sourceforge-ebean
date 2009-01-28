@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 public class MethodMeta {
 

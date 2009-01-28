@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
-import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.EmptyVisitor;
-import com.avaje.ebean.enhance.asm.FieldVisitor;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.ClassVisitor;
+import org.avaje.ebean.enhance.asm.EmptyVisitor;
+import org.avaje.ebean.enhance.asm.FieldVisitor;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
 
 /**
  * Holds the meta data for an entity bean class that is being enhanced.

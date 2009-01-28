@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.enhance.subclass;
+package org.avaje.ebean.enhance.subclass;
 
 /**
  * The suffix used build a generated EntityBean class. 

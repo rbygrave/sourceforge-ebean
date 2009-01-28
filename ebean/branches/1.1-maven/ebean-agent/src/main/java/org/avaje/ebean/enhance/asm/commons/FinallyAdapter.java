@@ -1,7 +1,7 @@
-package com.avaje.ebean.enhance.asm.commons;
+package org.avaje.ebean.enhance.asm.commons;
 
-import com.avaje.ebean.enhance.asm.Label;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
 
 public class FinallyAdapter extends AdviceAdapter {
 	

@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.enhance.subclass;
+package org.avaje.ebean.enhance.subclass;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.enhance.agent.EnhanceConstants;
-import com.avaje.ebean.enhance.agent.EnhanceContext;
-import com.avaje.ebean.enhance.asm.ClassReader;
-import com.avaje.ebean.enhance.asm.ClassWriter;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.enhance.agent.EnhanceConstants;
+import org.avaje.ebean.enhance.agent.EnhanceContext;
+import org.avaje.ebean.enhance.asm.ClassReader;
+import org.avaje.ebean.enhance.asm.ClassWriter;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Creates Classes that implement EntityBean for a given normal bean Class.

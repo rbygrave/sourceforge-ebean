@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -10,8 +10,8 @@ import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 
-import com.avaje.ebean.enhance.asm.ClassReader;
-import com.avaje.ebean.enhance.asm.ClassWriter;
+import org.avaje.ebean.enhance.asm.ClassReader;
+import org.avaje.ebean.enhance.asm.ClassWriter;
 
 /**
  * A Class file Transformer that enhances entity beans.

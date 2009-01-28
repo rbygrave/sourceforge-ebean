@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 /**
  * Thrown when a Class does not require entity or transaction enhancement.

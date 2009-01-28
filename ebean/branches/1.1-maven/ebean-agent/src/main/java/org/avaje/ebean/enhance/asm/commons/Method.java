@@ -27,12 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.avaje.ebean.enhance.asm.commons;
+package org.avaje.ebean.enhance.asm.commons;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.avaje.ebean.enhance.asm.Type;
+import org.avaje.ebean.enhance.asm.Type;
 
 /**
  * A named method descriptor.

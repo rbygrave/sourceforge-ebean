@@ -1,11 +1,11 @@
-package com.avaje.ebean.enhance.ant;
+package org.avaje.ebean.enhance.ant;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 
-import com.avaje.ebean.enhance.agent.InputStreamTransform;
-import com.avaje.ebean.enhance.agent.Transformer;
+import org.avaje.ebean.enhance.agent.InputStreamTransform;
+import org.avaje.ebean.enhance.agent.Transformer;
 
 /**
  * Transforms class files when they are on the file system.

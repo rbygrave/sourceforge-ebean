@@ -1,11 +1,11 @@
-package com.avaje.ebean.enhance.ant;
+package org.avaje.ebean.enhance.ant;
 
 import java.io.File;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import com.avaje.ebean.enhance.agent.Transformer;
+import org.avaje.ebean.enhance.agent.Transformer;
 
 /**
  * An ANT task that can enhance entity beans etc for use by Ebean.
@@ -31,12 +31,12 @@ import com.avaje.ebean.enhance.agent.Transformer;
  * 
  * <pre class="code">
  *   
- * 	 &lt;taskdef name=&quot;ebeanEnhance&quot; classname=&quot;com.avaje.ebean.enhance.ant.AntEnhanceTask&quot; classpath=&quot;bin&quot; /&gt;
+ * 	 &lt;taskdef name=&quot;ebeanEnhance&quot; classname=&quot;org.avaje.ebean.enhance.ant.AntEnhanceTask&quot; classpath=&quot;bin&quot; /&gt;
  * 
  *   &lt;target name=&quot;enhance&quot; depends=&quot;compile&quot;&gt;
  *       &lt;ebeanEnhance 
  *            classSource=&quot;${bin.dir}&quot; 
- *            packages=&quot;com.avaje.ebean.meta.**, com.acme.myapp.entity.**&quot; 
+ *            packages=&quot;org.avaje.ebean.meta.**, com.acme.myapp.entity.**&quot; 
  *            transformArgs=&quot;debug=1&quot; /&gt;
  *   &lt;/target&gt;
  *   
@@ -54,7 +54,6 @@ public class AntEnhanceTask extends Task {
 
 	@Override
 	public void execute() throws BuildException {
-
 		File f = new File("");
 		System.out.println("Current Directory: "+f.getAbsolutePath());
 				

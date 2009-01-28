@@ -1,11 +1,11 @@
-package com.avaje.ebean.enhance.subclass;
+package org.avaje.ebean.enhance.subclass;
 
-import com.avaje.ebean.enhance.agent.ClassMeta;
-import com.avaje.ebean.enhance.agent.EnhanceConstants;
-import com.avaje.ebean.enhance.agent.VisitMethodParams;
-import com.avaje.ebean.enhance.asm.Label;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.agent.ClassMeta;
+import org.avaje.ebean.enhance.agent.EnhanceConstants;
+import org.avaje.ebean.enhance.agent.VisitMethodParams;
+import org.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 public class SubClassConstructor implements Opcodes, EnhanceConstants{
 

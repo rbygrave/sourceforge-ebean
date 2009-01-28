@@ -27,12 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.avaje.ebean.enhance.asm.commons;
+package org.avaje.ebean.enhance.asm.commons;
 
-import com.avaje.ebean.enhance.asm.Label;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
-import com.avaje.ebean.enhance.asm.Type;
+import org.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.Type;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link com.avaje.ebean.enhance.asm.MethodAdapter} to insert before, after and around
+ * A {@link org.avaje.ebean.enhance.asm.MethodAdapter} to insert before, after and around
  * advices in methods and constructors. <p> The behavior for constructors is
  * like this: <ol>
  *

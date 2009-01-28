@@ -1,6 +1,6 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
 
 /**
  * Reads the annotation information storing it in a AnnotationInfo.
