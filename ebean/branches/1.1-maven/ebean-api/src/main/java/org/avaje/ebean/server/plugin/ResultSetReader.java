@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.plugin;
+package org.avaje.ebean.server.plugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,8 +34,8 @@ import java.util.GregorianCalendar;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.util.DataTypes;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.util.DataTypes;
+import org.avaje.ebean.util.Message;
 
 /**
  * The generic ResultSetReader that is used to read objects out of a

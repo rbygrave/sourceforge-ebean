@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,15 +29,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.lib.resource.ResourceContent;
-import com.avaje.ebean.server.lib.resource.ResourceSource;
-import com.avaje.ebean.server.lib.util.Dnode;
-import com.avaje.ebean.server.lib.util.DnodeReader;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.deploy.parse.DeployUtil;
+import org.avaje.ebean.server.lib.resource.ResourceContent;
+import org.avaje.ebean.server.lib.resource.ResourceSource;
+import org.avaje.lib.util.Dnode;
+import org.avaje.lib.util.DnodeReader;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Controls the creation and caching of BeanManager's, BeanDescriptors,

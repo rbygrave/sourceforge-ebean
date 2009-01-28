@@ -1,9 +1,9 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.annotation.SqlSelect;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Parser used to handling sql-select queries and creating DeploySqlSelect objects.

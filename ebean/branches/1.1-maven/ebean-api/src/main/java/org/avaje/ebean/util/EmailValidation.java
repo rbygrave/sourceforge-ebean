@@ -1,4 +1,4 @@
-package com.avaje.ebean.util;
+package org.avaje.ebean.util;
 
 /** 
  * Copyright 2008 Les Hazlewood 

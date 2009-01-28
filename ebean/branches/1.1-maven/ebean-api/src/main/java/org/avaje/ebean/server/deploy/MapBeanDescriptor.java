@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.server.deploy.meta.DeployMapBeanDescriptor;
-import com.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.server.deploy.meta.DeployMapBeanDescriptor;
+import org.avaje.ebean.server.type.TypeManager;
 
 /**
  * BeanDecriptor for MapBeans.

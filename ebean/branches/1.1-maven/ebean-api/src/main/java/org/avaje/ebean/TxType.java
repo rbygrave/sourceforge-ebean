@@ -1,4 +1,4 @@
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 /**
  * Used to define the transactional scope for executing a method. Matches the

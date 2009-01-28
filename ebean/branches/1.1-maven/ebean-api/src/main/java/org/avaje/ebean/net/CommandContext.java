@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.net;
+package org.avaje.ebean.net;
 
 import java.util.HashMap;
 
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.net.CommandProcessor;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.net.CommandProcessor;
 
 /**
  * The context by which a command is executed.

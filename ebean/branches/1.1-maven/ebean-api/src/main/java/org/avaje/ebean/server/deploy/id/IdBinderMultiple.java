@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.deploy.id;
+package org.avaje.ebean.server.deploy.id;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -7,10 +7,10 @@ import java.util.Map;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.DbReadContext;
-import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.lib.util.MapFromString;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.DbReadContext;
+import org.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.lib.util.MapFromString;
 
 /**
  * Bind an Id that is made up of multiple separate properties.

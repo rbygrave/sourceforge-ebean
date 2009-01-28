@@ -1,4 +1,4 @@
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 /**
  * Provides a mechanism for processing a query one bean at a time.

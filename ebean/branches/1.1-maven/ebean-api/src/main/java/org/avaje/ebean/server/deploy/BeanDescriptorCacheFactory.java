@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,14 +27,14 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.enhance.subclass.SubClassUtil;
-import com.avaje.ebean.server.core.BootupClasses;
-import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
-import com.avaje.ebean.server.deploy.parse.AnnotationBeanTable;
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.enhance.subclass.SubClassUtil;
+import org.avaje.ebean.server.core.BootupClasses;
+import org.avaje.ebean.server.deploy.meta.DeployBeanTable;
+import org.avaje.ebean.server.deploy.parse.AnnotationBeanTable;
+import org.avaje.ebean.server.deploy.parse.DeployUtil;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Both caches and creates BeanDescriptors.

@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
-import com.avaje.ebean.server.persist.mapbean.MapBeanPersister;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
+import org.avaje.ebean.server.persist.mapbean.MapBeanPersister;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 public class MapBeanManagerFactory {
 

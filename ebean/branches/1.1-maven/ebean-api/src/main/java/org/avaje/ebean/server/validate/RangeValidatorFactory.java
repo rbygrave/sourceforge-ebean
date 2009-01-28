@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.validate;
+package org.avaje.ebean.server.validate;
 
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.avaje.ebean.validation.Range;
+import org.avaje.ebean.validation.Range;
 
 /**
  * Creates a String length validator.

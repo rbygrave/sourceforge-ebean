@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -38,15 +38,15 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
-import com.avaje.ebean.annotation.Formula;
-import com.avaje.ebean.server.deploy.IdentityGeneration;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.idgen.IdGeneratorManager;
-import com.avaje.ebean.validation.Pattern;
-import com.avaje.ebean.validation.Patterns;
-import com.avaje.ebean.validation.ValidatorMeta;
+import org.avaje.ebean.annotation.Formula;
+import org.avaje.ebean.server.deploy.IdentityGeneration;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import org.avaje.ebean.server.idgen.IdGeneratorManager;
+import org.avaje.ebean.validation.Pattern;
+import org.avaje.ebean.validation.Patterns;
+import org.avaje.ebean.validation.ValidatorMeta;
 
 /**
  * Read the field level deployment annotations.

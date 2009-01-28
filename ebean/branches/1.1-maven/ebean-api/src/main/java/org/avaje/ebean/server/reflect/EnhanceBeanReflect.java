@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.reflect;
+package org.avaje.ebean.server.reflect;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBean;
 
 /**
  * A BeanReflect implementation based on the enhancement that creates EntityBean

@@ -1,9 +1,9 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import javax.persistence.NamedQuery;
 import javax.persistence.QueryHint;
 
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
 
 public class DeployNamedQuery {
 

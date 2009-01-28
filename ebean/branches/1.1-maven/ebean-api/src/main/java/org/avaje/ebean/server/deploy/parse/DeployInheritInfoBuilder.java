@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.lang.annotation.Annotation;
 import java.sql.Types;
@@ -31,10 +31,10 @@ import javax.persistence.DiscriminatorType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Inheritance;
 
-import com.avaje.ebean.server.core.BootupClasses;
-import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.core.BootupClasses;
+import org.avaje.ebean.server.deploy.InheritInfo;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Builds the InheritInfo deployment information.

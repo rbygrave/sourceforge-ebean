@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,17 +11,17 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
-import com.avaje.ebean.server.query.CQueryPredicates;
-import com.avaje.ebean.server.query.SqlTree;
-import com.avaje.ebean.server.query.SqlTreeNode;
-import com.avaje.ebean.server.query.SqlTreeNodeRoot;
-import com.avaje.ebean.server.query.SqlTreeProperties;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
+import org.avaje.ebean.server.deploy.id.IdBinder;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.deploy.jointree.PropertyDeploy;
+import org.avaje.ebean.server.query.CQueryPredicates;
+import org.avaje.ebean.server.query.SqlTree;
+import org.avaje.ebean.server.query.SqlTreeNode;
+import org.avaje.ebean.server.query.SqlTreeNodeRoot;
+import org.avaje.ebean.server.query.SqlTreeProperties;
 
 /**
  * Represents a SqlSelect raw sql query.

@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.autofetch;
+package org.avaje.ebean.server.autofetch;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.query.OrmQueryDetail;
 
 /**
  * Holds tuned query information. Is immutable so this represents the tuning at

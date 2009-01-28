@@ -17,16 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.BindParams.OrderedList;
-import com.avaje.ebean.util.BindParams.Param;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.BindParams.OrderedList;
+import org.avaje.ebean.util.BindParams.Param;
 
 /**
  * Parses the BindParams if they are using named parameters.

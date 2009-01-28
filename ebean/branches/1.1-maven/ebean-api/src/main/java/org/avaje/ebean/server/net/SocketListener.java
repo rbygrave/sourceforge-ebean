@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -26,11 +26,11 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.thread.ThreadPool;
-import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.lib.thread.ThreadPool;
+import org.avaje.ebean.server.lib.thread.ThreadPoolManager;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Serverside multithreaded socket listener. Accepts connections and dispatches
@@ -237,7 +237,7 @@ public class SocketListener implements Runnable {
                 }
             } catch (SocketException e) {
                 if (doingShutdown) {
-                    String msg = "com.avaje.lib.SocketListener> doingShutdown and accept threw:"
+                    String msg = "org.avaje.lib.SocketListener> doingShutdown and accept threw:"
                             + e.getMessage();
                     logger.info(msg);
 

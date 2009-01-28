@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.transaction;
+package org.avaje.ebean.server.transaction;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.PersistRequest;
 
 /**
  * Wraps the information representing a Inserted Updated or Deleted Bean.

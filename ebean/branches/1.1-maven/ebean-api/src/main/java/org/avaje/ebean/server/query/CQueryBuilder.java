@@ -17,20 +17,20 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.ResultSetLimit;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.plugin.PluginCore;
+import org.avaje.ebean.server.plugin.ResultSetLimit;
+import org.avaje.ebean.util.Message;
 
 /**
  * Generates the SQL SELECT statements taking into account the physical

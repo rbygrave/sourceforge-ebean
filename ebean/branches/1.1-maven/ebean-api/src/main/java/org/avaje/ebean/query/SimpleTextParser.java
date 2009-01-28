@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.avaje.ebean.query;
+package org.avaje.ebean.query;
 
 public class SimpleTextParser {
 		

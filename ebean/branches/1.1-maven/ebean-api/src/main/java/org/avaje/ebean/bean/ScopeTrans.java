@@ -17,16 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package org.avaje.ebean.bean;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.TxScope;
-import com.avaje.ebean.enhance.asm.Opcodes;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.transaction.TransactionScopeManager;
+import org.avaje.ebean.TxScope;
+import org.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.transaction.TransactionScopeManager;
 
 /**
  * Used internally to handle the scoping of transactions for methods.

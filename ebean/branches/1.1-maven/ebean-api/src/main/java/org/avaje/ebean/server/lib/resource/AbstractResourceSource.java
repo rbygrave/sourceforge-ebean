@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.lib.resource;
+package org.avaje.ebean.server.lib.resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

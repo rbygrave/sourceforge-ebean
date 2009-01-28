@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.jmx;
+package org.avaje.ebean.server.jmx;
 
 import java.util.logging.Logger;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.control.AutoFetchControl;
-import com.avaje.ebean.control.ImplicitAutoFetchMode;
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.control.AutoFetchControl;
+import org.avaje.ebean.control.ImplicitAutoFetchMode;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
 
 /**
  * Implementation of the AutoFetchControl.

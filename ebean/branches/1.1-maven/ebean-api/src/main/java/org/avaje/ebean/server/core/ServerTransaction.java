@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.sql.Connection;
 
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.server.persist.BatchControl;
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.server.persist.BatchControl;
+import org.avaje.ebean.server.transaction.TransactionEvent;
 
 /**
  * Extends Transaction with additional API required on server.

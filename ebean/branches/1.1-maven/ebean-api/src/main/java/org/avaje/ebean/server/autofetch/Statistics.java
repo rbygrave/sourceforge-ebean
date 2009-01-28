@@ -1,18 +1,18 @@
-package com.avaje.ebean.server.autofetch;
+package org.avaje.ebean.server.autofetch;
 
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.meta.AutoFetchNodeUsageStats;
-import com.avaje.ebean.meta.AutoFetchQueryStats;
-import com.avaje.ebean.meta.MetaAutoFetchStatistic;
-import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.bean.NodeUsageCollector;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.meta.AutoFetchNodeUsageStats;
+import org.avaje.ebean.meta.AutoFetchQueryStats;
+import org.avaje.ebean.meta.MetaAutoFetchStatistic;
+import org.avaje.ebean.query.OrmQueryDetail;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
 
 public class Statistics implements Serializable {
 

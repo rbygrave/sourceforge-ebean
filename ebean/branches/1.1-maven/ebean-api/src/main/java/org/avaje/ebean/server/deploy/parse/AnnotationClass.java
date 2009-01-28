@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -28,13 +28,13 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
-import com.avaje.ebean.annotation.NamedUpdate;
-import com.avaje.ebean.annotation.NamedUpdates;
-import com.avaje.ebean.annotation.Sql;
-import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
+import org.avaje.ebean.annotation.NamedUpdate;
+import org.avaje.ebean.annotation.NamedUpdates;
+import org.avaje.ebean.annotation.Sql;
+import org.avaje.ebean.annotation.SqlSelect;
+import org.avaje.ebean.server.deploy.DeployNamedQuery;
+import org.avaje.ebean.server.deploy.DeployNamedUpdate;
+import org.avaje.ebean.server.deploy.DeploySqlSelect;
 
 /**
  * Read the class level deployment annotations.

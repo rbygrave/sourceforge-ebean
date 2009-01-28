@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dmlbind;
+package org.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
+import org.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
 /**
  * Item held by Meta objects used to generate and bind bean insert update and

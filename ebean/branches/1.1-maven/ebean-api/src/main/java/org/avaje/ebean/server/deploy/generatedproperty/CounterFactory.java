@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.generatedproperty;
+package org.avaje.ebean.server.deploy.generatedproperty;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,8 +25,8 @@ import java.sql.Types;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.util.DataTypes;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.util.DataTypes;
 
 /**
  * Creates "Counter" GeneratedProperty for various types of number.

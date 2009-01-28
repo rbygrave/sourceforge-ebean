@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.type;
+package org.avaje.ebean.server.type;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 
-import com.avaje.ebean.util.BasicTypeConverter;
+import org.avaje.ebean.util.BasicTypeConverter;
 
 /**
  * ScalarType for java.util.Calendar.

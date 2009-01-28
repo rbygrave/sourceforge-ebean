@@ -1,4 +1,4 @@
-package com.avaje.ebean.query;
+package org.avaje.ebean.query;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.lib.util.StringHelper;
 
 /**
  * Represents the Properties of an Object Relational query.

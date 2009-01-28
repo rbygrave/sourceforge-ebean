@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,13 +29,13 @@ import java.util.logging.Logger;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.DefaultServerFactory;
-import com.avaje.ebean.server.core.ProtectedMethod;
-import com.avaje.ebean.server.core.ServerFactory;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.util.Assert;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.core.DefaultServerFactory;
+import org.avaje.ebean.server.core.ProtectedMethod;
+import org.avaje.ebean.server.core.ServerFactory;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.util.Assert;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Provides API access for the 'default' Database and access to other Databases.

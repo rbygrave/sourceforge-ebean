@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist;
+package org.avaje.ebean.server.persist;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.lib.log.LogFactory;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Used to hold BatchedPstmt objects for batch based execution.

@@ -1,4 +1,4 @@
-package com.avaje.ebean.query;
+package org.avaje.ebean.query;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,23 +7,23 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.expression.Expression;
-import com.avaje.ebean.expression.ExpressionList;
-import com.avaje.ebean.expression.InternalExpressionList;
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
-import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.DefaultExpressionList;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.Query;
+import org.avaje.ebean.QueryListener;
+import org.avaje.ebean.bean.CallStack;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.expression.Expression;
+import org.avaje.ebean.expression.ExpressionList;
+import org.avaje.ebean.expression.InternalExpressionList;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.server.core.TransactionContext;
+import org.avaje.ebean.server.deploy.DeployNamedQuery;
+import org.avaje.ebean.server.deploy.DeploySqlSelect;
+import org.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.DefaultExpressionList;
 
 /**
  * Default implementation of an Object Relational query.

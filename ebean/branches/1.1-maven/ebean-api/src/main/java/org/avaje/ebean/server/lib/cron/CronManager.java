@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.cron;
+package org.avaje.ebean.server.lib.cron;
 
 import java.util.Date;
 import java.util.Enumeration;
@@ -25,12 +25,12 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.ShutdownManager;
-import com.avaje.ebean.server.lib.thread.ThreadPool;
-import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.lib.ShutdownManager;
+import org.avaje.ebean.server.lib.thread.ThreadPool;
+import org.avaje.ebean.server.lib.thread.ThreadPoolManager;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Manages and Schedules Runnables.

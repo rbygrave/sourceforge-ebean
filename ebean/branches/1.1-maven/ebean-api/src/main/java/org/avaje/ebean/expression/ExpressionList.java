@@ -1,4 +1,4 @@
-package com.avaje.ebean.expression;
+package org.avaje.ebean.expression;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.Query;
-import com.avaje.ebean.QueryListener;
+import org.avaje.ebean.Query;
+import org.avaje.ebean.QueryListener;
 
 /**
  * List of Expressions that make up a where or having clause.

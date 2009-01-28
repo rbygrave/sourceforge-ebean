@@ -17,25 +17,25 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeployPropertyParser;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.ResultSetLimit;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.DeployNamedQuery;
+import org.avaje.ebean.server.deploy.DeployPropertyParser;
+import org.avaje.ebean.server.deploy.DeploySqlSelect;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.plugin.PluginCore;
+import org.avaje.ebean.server.plugin.ResultSetLimit;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Factory for SqlSelectClause based on raw sql.

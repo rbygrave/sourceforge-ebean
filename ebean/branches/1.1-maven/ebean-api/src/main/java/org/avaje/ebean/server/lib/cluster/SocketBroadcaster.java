@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.cluster;
+package org.avaje.ebean.server.lib.cluster;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -23,11 +23,11 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.net.Endpoint;
-import com.avaje.ebean.server.net.Headers;
-import com.avaje.ebean.server.net.IoConnection;
-import com.avaje.ebean.server.net.SocketClient;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.net.Endpoint;
+import org.avaje.ebean.server.net.Headers;
+import org.avaje.ebean.server.net.IoConnection;
+import org.avaje.ebean.server.net.SocketClient;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Broadcast messages across the cluster using sockets. 

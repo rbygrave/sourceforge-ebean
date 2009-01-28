@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.transaction;
+package org.avaje.ebean.server.transaction;
 
 import java.util.HashMap;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.core.TransactionContextClass;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.server.core.TransactionContext;
+import org.avaje.ebean.server.core.TransactionContextClass;
 
 /**
  * Core implementation of TransactionContext.

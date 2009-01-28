@@ -17,21 +17,21 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.ManyType;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.query.CQueryPlan;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.lib.cache.Cache;
+import org.avaje.ebean.server.query.CQueryPlan;
 
 /**
  * Wraps the objects involved in executing a Query.

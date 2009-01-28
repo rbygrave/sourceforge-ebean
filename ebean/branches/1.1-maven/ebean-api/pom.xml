@@ -1,14 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 <!-- $URL$ -->
-<!-- $Revision$, $Date$>
+<!-- $Revision$, $Date$ -->
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.avaje</groupId>
-	<artifactId>ebean${suffix}</artifactId>
+	<artifactId>ebean-api</artifactId>
 	<packaging>maven-plugin</packaging>
 	<version>1.1-SNAPSHOT</version>
 	<name>Ebean ORM Persistence Layer &amp; Mapping Tool</name>
 	<url>http://maven.apache.org</url>
+	<parent>
+        	<groupId>org.avaje</groupId>
+        	<artifactId>ebean</artifactId>
+        	<version>1.1-SNAPSHOT</version>
+ 	</parent>
 	<repositories>
 		<repository>
 			<id>maven2-repository.dev.java.net</id>
@@ -18,7 +23,6 @@
 		</repository>
 	</repositories>
 	<build>
-		<sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -26,14 +30,6 @@
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-						<includes>${jar.includes}</includes>
-						<excludes>${jar.excludes}</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -46,9 +42,6 @@
 						<configuration>
 							<tasks>
 								<property name="compile_classpath" refid="maven.compile.classpath" />
-								<!-- =================================================================== -->
-								<!--Enhance the built in @Entity beans -->
-								<!-- =================================================================== -->
 								<echo message="compile classpath: ${compile_classpath}" />
 								<taskdef name="ebeanEnhance"
 									classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
@@ -67,11 +60,6 @@
 		</plugins>
 	</build>
 	<dependencies>
-		<dependency>
-			<groupId>org.apache.ant</groupId>
-			<artifactId>ant</artifactId>
-			<version>1.7.1</version>
-		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
@@ -98,32 +86,15 @@
 			<version>3.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng-jdk15</artifactId>
+			<version>5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-util</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
-	<profiles>
-		<profile>
-			<id>ant</id>
-			<properties>
-				<jar.includes>com/avaje/ebean/enhance/ant**</jar.includes>
-				<jar.excludes />
-				<suffix>-ant</suffix>
-			</properties>
-		</profile>
-		<profile>
-			<id>agent</id>
-			<properties>
-				<jar-includes>com/avaje/ebean/enhance/asm/**/*.class,com/avaje/ebean/enhance/agent/**/*.class</jar-includes>
-				<jar.excludes />
-				<suffix>-agent</suffix>
-			</properties>
-		</profile>
-		<profile>
-			<id>main</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<suffix />
-			</properties>
-		</profile>
-	</profiles>
 </project>

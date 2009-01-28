@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.lib.cache.DoubleMap;
-import com.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
+import org.avaje.ebean.server.deploy.parse.DeployUtil;
+import org.avaje.ebean.server.lib.cache.DoubleMap;
+import org.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
 
 /**
  * Both caches and creates BeanTables.

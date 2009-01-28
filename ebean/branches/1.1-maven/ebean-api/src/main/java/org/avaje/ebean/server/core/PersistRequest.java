@@ -17,20 +17,20 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.Set;
 
-import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.ValidationException;
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.persist.BatchControl;
-import com.avaje.ebean.server.persist.BatchPostExecute;
-import com.avaje.ebean.server.persist.PersistExecute;
+import org.avaje.ebean.InvalidValue;
+import org.avaje.ebean.ValidationException;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.persist.BatchControl;
+import org.avaje.ebean.server.persist.BatchPostExecute;
+import org.avaje.ebean.server.persist.PersistExecute;
 
 /**
  * Wraps all the objects used to persist a bean.

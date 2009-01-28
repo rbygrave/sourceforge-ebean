@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
 
 /**
  * Simple socket based server. 

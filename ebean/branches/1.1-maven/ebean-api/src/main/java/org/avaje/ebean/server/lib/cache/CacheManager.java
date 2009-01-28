@@ -15,23 +15,23 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.cache;
+package org.avaje.ebean.server.lib.cache;
 
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.BackgroundThread;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.lib.cache.CacheManager;
-import com.avaje.ebean.server.lib.cache.DoubleMap;
-import com.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
-import com.avaje.ebean.server.lib.cache.Element;
-import com.avaje.ebean.server.lib.cache.MapCache;
-import com.avaje.ebean.server.lib.cache.Validator;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.BackgroundThread;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.lib.cache.Cache;
+import org.avaje.ebean.server.lib.cache.CacheManager;
+import org.avaje.ebean.server.lib.cache.DoubleMap;
+import org.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
+import org.avaje.ebean.server.lib.cache.Element;
+import org.avaje.ebean.server.lib.cache.MapCache;
+import org.avaje.ebean.server.lib.cache.Validator;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Provides access and manages the caches.

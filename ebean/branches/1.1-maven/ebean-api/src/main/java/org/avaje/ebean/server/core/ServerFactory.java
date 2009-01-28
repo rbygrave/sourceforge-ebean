@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.ServerConfiguration;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.ServerConfiguration;
 
 /**
  * Creates the EbeanServer implementations. This is used by the Ebean singleton

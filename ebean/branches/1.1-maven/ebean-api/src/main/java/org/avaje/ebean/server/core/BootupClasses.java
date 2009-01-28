@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -27,10 +27,10 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
-import com.avaje.ebean.server.type.ScalarType;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.bean.BeanListener;
+import org.avaje.ebean.server.type.ScalarType;
 
 /**
  * Interesting classes for a EbeanServer such as Embeddable, Entity,

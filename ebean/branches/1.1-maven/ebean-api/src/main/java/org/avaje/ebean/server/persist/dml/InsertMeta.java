@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
 import java.util.Set;
 
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.persist.dmlbind.Bindable;
-import com.avaje.ebean.server.persist.dmlbind.BindableDiscriminator;
-import com.avaje.ebean.server.persist.dmlbind.BindableId;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.InheritInfo;
+import org.avaje.ebean.server.persist.dmlbind.Bindable;
+import org.avaje.ebean.server.persist.dmlbind.BindableDiscriminator;
+import org.avaje.ebean.server.persist.dmlbind.BindableId;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Meta data for insert handler. The meta data is for a particular bean type. It

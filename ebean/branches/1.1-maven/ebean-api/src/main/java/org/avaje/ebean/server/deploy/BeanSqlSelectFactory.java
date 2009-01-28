@@ -1,6 +1,6 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.BeanSqlSelect.PredicatesType;
+import org.avaje.ebean.server.deploy.BeanSqlSelect.PredicatesType;
 
 public class BeanSqlSelectFactory {
 

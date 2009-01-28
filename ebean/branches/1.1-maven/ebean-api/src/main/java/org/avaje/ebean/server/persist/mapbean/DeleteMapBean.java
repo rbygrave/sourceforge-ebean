@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.mapbean;
+package org.avaje.ebean.server.persist.mapbean;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.LinkedHashMap;
 
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.server.core.ConcurrencyMode;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.persist.Binder;
 
 /**
  * Process Delete of a MapBean.

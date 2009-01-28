@@ -1,6 +1,6 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * Used to provide context during sql construction.

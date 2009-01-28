@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.plugin;
+package org.avaje.ebean.server.plugin;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,21 +28,21 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.autofetch.DefaultAutoFetchManager;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.deploy.IdentityGeneration;
-import com.avaje.ebean.server.jmx.MLogControl;
-import com.avaje.ebean.server.lib.resource.ResourceSource;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.resource.ResourceControl;
-import com.avaje.ebean.server.resource.ResourceManager;
-import com.avaje.ebean.server.type.DefaultTypeManager;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.server.autofetch.DefaultAutoFetchManager;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.deploy.IdentityGeneration;
+import org.avaje.ebean.server.jmx.MLogControl;
+import org.avaje.ebean.server.lib.resource.ResourceSource;
+import org.avaje.ebean.server.lib.sql.DictionaryInfo;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.resource.ResourceControl;
+import org.avaje.ebean.server.resource.ResourceManager;
+import org.avaje.ebean.server.type.DefaultTypeManager;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Plugin level that defines database specific settings.

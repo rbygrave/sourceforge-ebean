@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.validate;
+package org.avaje.ebean.server.validate;
 
 /**
  * Executes validation on a bean.

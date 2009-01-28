@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.autofetch;
+package org.avaje.ebean.server.autofetch;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,17 +11,17 @@ import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.control.ImplicitAutoFetchMode;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.bean.CallStack;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.bean.NodeUsageCollector;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.control.ImplicitAutoFetchMode;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.query.OrmQueryDetail;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * The manager of all the usage/query statistics as well as the tuned fetch

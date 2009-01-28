@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 
 public interface RelationalQueryEngine {

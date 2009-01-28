@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.BindParams;
 
 /**
  * A SQL Update Delete or Insert statement that can be executed. For the times
@@ -55,8 +55,8 @@ import com.avaje.ebean.util.BindParams;
  * You can sql.setAutoTableMod(false); to stop the automatic table modification
  * </p>
  * 
- * @see com.avaje.ebean.CallableSql
- * @see com.avaje.ebean.Ebean#execute(SqlUpdate)
+ * @see org.avaje.ebean.CallableSql
+ * @see org.avaje.ebean.Ebean#execute(SqlUpdate)
  */
 public final class SqlUpdate implements Serializable {
 
@@ -117,7 +117,7 @@ public final class SqlUpdate implements Serializable {
 	/**
 	 * Execute the update returning the number of rows modified.
 	 * 
-	 * @see com.avaje.ebean.Ebean#execute(SqlUpdate)
+	 * @see org.avaje.ebean.Ebean#execute(SqlUpdate)
 	 */
 	public int execute() {
 		if (server != null) {

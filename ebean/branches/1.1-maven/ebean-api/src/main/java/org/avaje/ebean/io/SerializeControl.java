@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.io;
+package org.avaje.ebean.io;
 
 /**
  * This is ONLY used for <b>subclassed</b> entity beans.
@@ -50,9 +50,9 @@ package com.avaje.ebean.io;
  */
 public class SerializeControl {
 
-    private static final String BEANS = "com.avaje.ebean.vanillabeans";
+    private static final String BEANS = "org.avaje.ebean.vanillabeans";
 
-    private static final String COLLECTIONS = "com.avaje.ebean.vanillacollections";
+    private static final String COLLECTIONS = "org.avaje.ebean.vanillacollections";
 
     private static Boolean getDefault(String key, Boolean dflt) {
         String val = System.getProperty(key);

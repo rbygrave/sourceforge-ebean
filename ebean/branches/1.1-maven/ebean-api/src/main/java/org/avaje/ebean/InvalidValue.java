@@ -1,10 +1,10 @@
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.server.validate.Validator;
+import org.avaje.ebean.server.validate.Validator;
 
 /**
  * Invalid value returned from validation rules.

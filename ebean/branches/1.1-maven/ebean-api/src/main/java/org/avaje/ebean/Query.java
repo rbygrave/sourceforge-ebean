@@ -1,13 +1,13 @@
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.expression.Expr;
-import com.avaje.ebean.expression.Expression;
-import com.avaje.ebean.expression.ExpressionList;
+import org.avaje.ebean.expression.Expr;
+import org.avaje.ebean.expression.Expression;
+import org.avaje.ebean.expression.ExpressionList;
 
 /**
  * Object relational query for finding a List, Set, Map or single entity bean.

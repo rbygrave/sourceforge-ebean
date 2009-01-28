@@ -1,4 +1,4 @@
-package com.avaje.ebean.meta;
+package org.avaje.ebean.meta;
 
 import java.io.Serializable;
 

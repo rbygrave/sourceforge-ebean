@@ -1,14 +1,14 @@
-package com.avaje.ebean.query;
+package org.avaje.ebean.query;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.SqlQueryListener;
-import com.avaje.ebean.util.BindParams;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.SqlQuery;
+import org.avaje.ebean.SqlQueryListener;
+import org.avaje.ebean.util.BindParams;
 
 /**
  * Default implementation of SQuery - SQL Query.

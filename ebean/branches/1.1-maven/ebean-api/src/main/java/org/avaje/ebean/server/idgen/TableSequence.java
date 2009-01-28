@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.idgen;
+package org.avaje.ebean.server.idgen;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,12 +25,12 @@ import java.util.logging.Logger;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * A sequence of Integer ids generated using a table to store the next id.

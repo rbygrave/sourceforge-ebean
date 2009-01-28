@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.bean;
+package org.avaje.ebean.server.bean;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,14 +6,14 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.meta.MetaAutoFetchStatistic;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.autofetch.Statistics;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.meta.MetaAutoFetchStatistic;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.server.autofetch.Statistics;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.deploy.ManyType;
 
 /**
  * Bean Finder for MetaAutoFetchStatistic.

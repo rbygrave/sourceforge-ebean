@@ -1,4 +1,4 @@
-package com.avaje.ebean.control;
+package org.avaje.ebean.control;
 
 /**
  * Management control of the logging levels.

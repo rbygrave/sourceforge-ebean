@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 /**
  * Creates Helpers specific to the type of the property (List Set or Map).

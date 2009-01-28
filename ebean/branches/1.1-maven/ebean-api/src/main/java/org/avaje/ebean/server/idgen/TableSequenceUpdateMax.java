@@ -17,19 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.idgen;
+package org.avaje.ebean.server.idgen;
 
 import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.SqlQuery;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanProperty;
 
 /**
  * Utility program that updartes the max values in a the sequence table.

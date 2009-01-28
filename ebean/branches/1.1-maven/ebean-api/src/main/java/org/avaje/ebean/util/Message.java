@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.util;
+package org.avaje.ebean.util;
 
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
  */
 public class Message {
 
-    private static final String bundle = "com.avaje.ebean.message";
+    private static final String bundle = "org.avaje.ebean.message";
 
     /**
      * Return a message that has a single argument.

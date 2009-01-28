@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.autofetch;
+package org.avaje.ebean.server.autofetch;
 
 import java.util.Iterator;
 
-import com.avaje.ebean.Query;
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.NodeUsageListener;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.control.ImplicitAutoFetchMode;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.Query;
+import org.avaje.ebean.bean.CallStack;
+import org.avaje.ebean.bean.NodeUsageListener;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.control.ImplicitAutoFetchMode;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.core.InternalEbeanServer;
 
 /**
  * Collects and manages the the profile information.

@@ -1,12 +1,12 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.sql.ResultSet;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.server.core.TransactionContextClass;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.server.core.TransactionContextClass;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.

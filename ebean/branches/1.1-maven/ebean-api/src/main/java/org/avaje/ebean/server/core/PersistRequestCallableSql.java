@@ -17,17 +17,17 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.server.persist.PersistExecute;
-import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.BindParams.Param;
+import org.avaje.ebean.CallableSql;
+import org.avaje.ebean.server.persist.PersistExecute;
+import org.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.BindParams.Param;
 
 /**
  * Persist request specifically for CallableSql.

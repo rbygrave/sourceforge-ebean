@@ -1,9 +1,9 @@
-package com.avaje.ebean.expression;
+package org.avaje.ebean.expression;
 
 import java.util.Collection;
 import java.util.Map;
 
-import com.avaje.ebean.Query;
+import org.avaje.ebean.Query;
 
 /**
  * Expression factory for creating standard expressions.

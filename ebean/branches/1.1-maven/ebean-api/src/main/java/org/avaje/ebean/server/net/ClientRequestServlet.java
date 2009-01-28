@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
 import java.io.ObjectInputStream;
 import java.util.logging.Level;
@@ -29,8 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Processes ebean requests from http clients.

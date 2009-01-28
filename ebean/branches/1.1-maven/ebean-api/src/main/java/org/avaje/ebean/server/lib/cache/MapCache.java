@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.cache;
+package org.avaje.ebean.server.lib.cache;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -23,11 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.lib.cache.Element;
-import com.avaje.ebean.server.lib.cache.MapCache;
-import com.avaje.ebean.server.lib.cache.Validator;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.cache.Cache;
+import org.avaje.ebean.server.lib.cache.Element;
+import org.avaje.ebean.server.lib.cache.MapCache;
+import org.avaje.ebean.server.lib.cache.Validator;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * The implementation of Cache based on Doug Lea's ConcurrentHashMap.

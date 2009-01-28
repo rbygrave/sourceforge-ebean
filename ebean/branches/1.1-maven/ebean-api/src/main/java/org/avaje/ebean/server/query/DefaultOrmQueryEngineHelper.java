@@ -17,22 +17,22 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
-import com.avaje.ebean.server.lib.thread.ThreadPool;
-import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.control.LogControl;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.jmx.MLogControlMBean;
+import org.avaje.ebean.server.lib.thread.ThreadPool;
+import org.avaje.ebean.server.lib.thread.ThreadPoolManager;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.plugin.PluginCore;
+import org.avaje.ebean.util.Message;
 
 /**
  * Handles the Object Relational fetching.

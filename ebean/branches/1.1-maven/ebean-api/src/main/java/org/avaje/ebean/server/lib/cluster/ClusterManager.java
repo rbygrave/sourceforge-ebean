@@ -15,20 +15,20 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.cluster;
+package org.avaje.ebean.server.lib.cluster;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.ebean.server.net.ConnectionProcessor;
-import com.avaje.ebean.server.net.Endpoint;
-import com.avaje.ebean.server.net.Headers;
-import com.avaje.ebean.server.net.SocketListener;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.net.ConnectionProcessor;
+import org.avaje.ebean.server.net.Endpoint;
+import org.avaje.ebean.server.net.Headers;
+import org.avaje.ebean.server.net.SocketListener;
+import org.avaje.lib.log.LogFactory;
+import org.avaje.lib.util.StringHelper;
 
 /**
  * Manages the cluster service.
@@ -42,7 +42,7 @@ import com.avaje.lib.log.LogFactory;
  * cluster.members=121.1.1.10:9001,121.1.1.10:9002,121.1.1.11:9001
  * 
  * ## specify the broadcast implementation, defaults to SocketBroadcast 
- * #cluster.broadcast=com.avaje.lib.cluster.SocketBroadcast
+ * #cluster.broadcast=org.avaje.lib.cluster.SocketBroadcast
  * </code></pre>
  * </p>
  */

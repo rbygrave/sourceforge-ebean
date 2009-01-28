@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dmlbind;
+package org.avaje.ebean.server.persist.dmlbind;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.PersistRequest;
 
 /**
  * Adds support for id creation for concatenated ids on intersection tables.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Can search the class path for classes using a ClassPathSearchMatcher. A

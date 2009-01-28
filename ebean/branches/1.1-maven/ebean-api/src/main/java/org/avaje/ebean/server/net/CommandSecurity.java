@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
-import com.avaje.ebean.net.Command;
-import com.avaje.ebean.net.CommandContext;
+import org.avaje.ebean.net.Command;
+import org.avaje.ebean.net.CommandContext;
 
 /**
  * Security check performed before executing the command.

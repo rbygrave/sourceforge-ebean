@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.resource;
+package org.avaje.ebean.server.resource;
 
 import java.io.File;
 
-import com.avaje.ebean.server.lib.resource.ResourceSource;
+import org.avaje.ebean.server.lib.resource.ResourceSource;
 
 /**
  * Controls access to the required resources.

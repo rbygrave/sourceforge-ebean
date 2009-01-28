@@ -1,4 +1,4 @@
-package com.avaje.ebean.util;
+package org.avaje.ebean.util;
 
 /**
  * An exception thrown when processing the deployment information.

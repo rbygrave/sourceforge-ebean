@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.reflect;
+package org.avaje.ebean.server.reflect;
 
 /**
  * Creates a BeanReflectFactory based on the enhancement that 

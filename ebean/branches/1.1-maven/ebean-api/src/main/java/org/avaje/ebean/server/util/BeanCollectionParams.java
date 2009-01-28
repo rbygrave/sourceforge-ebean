@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
-import com.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.server.deploy.ManyType;
 
 /**
  * Parameters used to create the specific Map Set or List object.

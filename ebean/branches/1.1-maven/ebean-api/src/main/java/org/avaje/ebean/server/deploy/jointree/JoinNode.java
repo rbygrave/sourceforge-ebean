@@ -17,19 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.jointree;
+package org.avaje.ebean.server.deploy.jointree;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.deploy.jointree.DeployPropertyFactory.DeployPropertyRequest;
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.ebean.server.deploy.InheritInfo;
+import org.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.server.deploy.jointree.DeployPropertyFactory.DeployPropertyRequest;
+import org.avaje.lib.util.StringHelper;
 
 /**
  * Holds the tree structure of associated beans.

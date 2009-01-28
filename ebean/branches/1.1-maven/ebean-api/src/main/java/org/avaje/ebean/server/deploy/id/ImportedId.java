@@ -1,12 +1,12 @@
-package com.avaje.ebean.server.deploy.id;
+package org.avaje.ebean.server.deploy.id;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
-import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.ebean.server.persist.dml.GenerateDmlRequest;
+import org.avaje.ebean.server.persist.dmlbind.BindableRequest;
 
 /**
  * Represents a imported property.

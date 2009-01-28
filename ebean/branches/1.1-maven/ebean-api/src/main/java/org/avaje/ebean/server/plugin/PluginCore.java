@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.plugin;
+package org.avaje.ebean.server.plugin;
 
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.lib.cluster.ClusterManager;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.lib.cluster.ClusterManager;
 
 /**
  * The core properties of a Plugin.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,13 +35,13 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
-import com.avaje.ebean.annotation.EmbeddedColumns;
-import com.avaje.ebean.annotation.Where;
-import com.avaje.ebean.server.deploy.BeanTable;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.ebean.annotation.EmbeddedColumns;
+import org.avaje.ebean.annotation.Where;
+import org.avaje.ebean.server.deploy.BeanTable;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import org.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.lib.util.StringHelper;
 
 /**
  * Read the deployment annotations for Associated One beans.

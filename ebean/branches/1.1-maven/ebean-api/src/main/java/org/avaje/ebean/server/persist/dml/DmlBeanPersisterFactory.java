@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.persist.BeanPersister;
-import com.avaje.ebean.server.persist.BeanPersisterFactory;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.persist.BeanPersister;
+import org.avaje.ebean.server.persist.BeanPersisterFactory;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Factory for creating a DmlBeanPersister for a bean type.

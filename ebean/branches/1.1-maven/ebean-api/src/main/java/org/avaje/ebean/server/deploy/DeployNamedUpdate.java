@@ -1,6 +1,6 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.annotation.NamedUpdate;
+import org.avaje.ebean.annotation.NamedUpdate;
 
 /**
  * Deployment information for a named update.

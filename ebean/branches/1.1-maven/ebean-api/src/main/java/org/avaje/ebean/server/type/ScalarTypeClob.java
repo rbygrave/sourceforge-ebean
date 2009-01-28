@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.type;
+package org.avaje.ebean.server.type;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -27,8 +27,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebean.util.BasicTypeConverter;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.util.BasicTypeConverter;
+import org.avaje.ebean.util.Message;
 
 /**
  * ScalarType for String.

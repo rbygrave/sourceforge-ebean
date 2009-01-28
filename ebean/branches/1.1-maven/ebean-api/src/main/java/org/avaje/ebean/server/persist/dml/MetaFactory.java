@@ -17,23 +17,23 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.persist.dmlbind.Bindable;
-import com.avaje.ebean.server.persist.dmlbind.BindableId;
-import com.avaje.ebean.server.persist.dmlbind.BindableList;
-import com.avaje.ebean.server.persist.dmlbind.BindableUnidirectional;
-import com.avaje.ebean.server.persist.dmlbind.FactoryAssocOnes;
-import com.avaje.ebean.server.persist.dmlbind.FactoryBaseProperties;
-import com.avaje.ebean.server.persist.dmlbind.FactoryEmbedded;
-import com.avaje.ebean.server.persist.dmlbind.FactoryId;
-import com.avaje.ebean.server.persist.dmlbind.FactoryVersion;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import org.avaje.ebean.server.persist.dmlbind.Bindable;
+import org.avaje.ebean.server.persist.dmlbind.BindableId;
+import org.avaje.ebean.server.persist.dmlbind.BindableList;
+import org.avaje.ebean.server.persist.dmlbind.BindableUnidirectional;
+import org.avaje.ebean.server.persist.dmlbind.FactoryAssocOnes;
+import org.avaje.ebean.server.persist.dmlbind.FactoryBaseProperties;
+import org.avaje.ebean.server.persist.dmlbind.FactoryEmbedded;
+import org.avaje.ebean.server.persist.dmlbind.FactoryId;
+import org.avaje.ebean.server.persist.dmlbind.FactoryVersion;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Factory for creating InsertMeta UpdateMeta and DeleteMeta.

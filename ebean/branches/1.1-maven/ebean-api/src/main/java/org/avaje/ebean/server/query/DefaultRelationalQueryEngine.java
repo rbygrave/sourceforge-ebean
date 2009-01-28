@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,25 +30,25 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.SqlQueryListener;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.query.RelationalQuery;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.RelationalQueryEngine;
-import com.avaje.ebean.server.core.RelationalQueryRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.SqlQueryListener;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.control.LogControl;
+import org.avaje.ebean.query.RelationalQuery;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.core.RelationalQueryEngine;
+import org.avaje.ebean.server.core.RelationalQueryRequest;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.jmx.MLogControlMBean;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.plugin.PluginCore;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.util.BindParamsParser;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Perform native sql fetches.

@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.server.persist.PersistExecute;
+import org.avaje.ebean.SqlUpdate;
+import org.avaje.ebean.server.persist.PersistExecute;
 
 /**
  * Persist request specifically for CallableSql.

@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.Map;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.lib.cache.CacheManager;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.server.transaction.TableState;
-import com.avaje.ebean.server.transaction.TableStateManager;
-import com.avaje.ebean.server.util.TableValidator;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.lib.cache.Cache;
+import org.avaje.ebean.server.lib.cache.CacheManager;
+import org.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.transaction.TableState;
+import org.avaje.ebean.server.transaction.TableStateManager;
+import org.avaje.ebean.server.util.TableValidator;
 
 /**
  * Default ServerCache implementation. Caching beans and lookups.

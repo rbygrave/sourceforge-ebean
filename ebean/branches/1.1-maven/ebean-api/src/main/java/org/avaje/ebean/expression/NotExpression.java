@@ -1,4 +1,4 @@
-package com.avaje.ebean.expression;
+package org.avaje.ebean.expression;
 
 
 final class NotExpression implements Expression {

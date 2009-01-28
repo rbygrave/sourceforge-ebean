@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.HashSet;
 import java.util.Stack;
 
-import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.lib.util.StringHelper;
 
 public class DefaultDbSqlContext implements DbSqlContext {
 

@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.Map;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.transaction.TableState;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.lib.cache.Cache;
+import org.avaje.ebean.server.transaction.TableState;
 
 /**
  * The cache service for server side caching of beans and lookups.

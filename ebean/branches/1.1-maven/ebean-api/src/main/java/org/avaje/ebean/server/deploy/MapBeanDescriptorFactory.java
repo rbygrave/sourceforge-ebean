@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -29,22 +29,22 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
-import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployMapBeanDescriptor;
-import com.avaje.ebean.server.lib.sql.ColumnInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.type.ScalarType;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.bean.BeanListener;
+import org.avaje.ebean.server.core.ConcurrencyMode;
+import org.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployMapBeanDescriptor;
+import org.avaje.ebean.server.lib.sql.ColumnInfo;
+import org.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.type.ScalarType;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Create a BeanDescriptor dynamically based on Table meta data.

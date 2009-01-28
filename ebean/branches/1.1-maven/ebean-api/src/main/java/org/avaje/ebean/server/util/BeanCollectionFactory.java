@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.collection.BeanList;
-import com.avaje.ebean.collection.BeanMap;
-import com.avaje.ebean.collection.BeanSet;
-import com.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.collection.BeanList;
+import org.avaje.ebean.collection.BeanMap;
+import org.avaje.ebean.collection.BeanSet;
+import org.avaje.ebean.server.deploy.ManyType;
 
 /**
  * Creates the BeanCollections.

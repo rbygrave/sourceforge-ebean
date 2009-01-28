@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
-import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.Update;
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.CallableSql;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.Update;
+import org.avaje.ebean.SqlUpdate;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
 
 
 /**

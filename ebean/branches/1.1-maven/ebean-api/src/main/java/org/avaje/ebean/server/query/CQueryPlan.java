@@ -1,6 +1,6 @@
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
-import com.avaje.ebean.meta.MetaQueryStatistic;
+import org.avaje.ebean.meta.MetaQueryStatistic;
 
 /**
  * Represents a query for a given SQL statement.

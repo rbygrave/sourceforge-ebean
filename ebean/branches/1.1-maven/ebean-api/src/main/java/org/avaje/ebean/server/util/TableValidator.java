@@ -17,16 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.core.ServerCache;
-import com.avaje.ebean.server.lib.cache.Element;
-import com.avaje.ebean.server.lib.cache.Validator;
-import com.avaje.ebean.server.transaction.TableState;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.core.ServerCache;
+import org.avaje.ebean.server.lib.cache.Element;
+import org.avaje.ebean.server.lib.cache.Validator;
+import org.avaje.ebean.server.transaction.TableState;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Validates a cached element against a list of tables.

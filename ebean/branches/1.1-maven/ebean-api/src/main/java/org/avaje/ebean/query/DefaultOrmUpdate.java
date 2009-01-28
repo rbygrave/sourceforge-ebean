@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.query;
+package org.avaje.ebean.query;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.util.BindParams;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.server.deploy.DeployNamedUpdate;
+import org.avaje.ebean.util.BindParams;
 
 /**
  * Default implementation of OrmUpdate.

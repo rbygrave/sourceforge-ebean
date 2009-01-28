@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.lib;
+package org.avaje.ebean.server.lib;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -8,9 +8,10 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
-import com.avaje.ebean.server.lib.util.GeneralException;
-import com.avaje.ebean.server.lib.util.NotFoundException;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.lib.log.LogFactory;
+import org.avaje.lib.util.GeneralException;
+import org.avaje.lib.util.NotFoundException;
+
 
 /**
  * Finds and translates the properties used to configure Ebean.

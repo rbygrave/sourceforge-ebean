@@ -1,8 +1,8 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.lib.util.StringHelper;
 
 public class BeanSqlSelect {
 

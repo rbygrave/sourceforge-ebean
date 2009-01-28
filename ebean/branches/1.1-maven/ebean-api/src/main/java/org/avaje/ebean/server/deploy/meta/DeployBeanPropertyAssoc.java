@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.meta;
+package org.avaje.ebean.server.deploy.meta;
 
-import com.avaje.ebean.server.deploy.BeanTable;
-import com.avaje.ebean.server.deploy.BeanCascadeInfo;
+import org.avaje.ebean.server.deploy.BeanTable;
+import org.avaje.ebean.server.deploy.BeanCascadeInfo;
 
 /**
  * Abstract base for properties mapped to an associated bean, list, set or map.

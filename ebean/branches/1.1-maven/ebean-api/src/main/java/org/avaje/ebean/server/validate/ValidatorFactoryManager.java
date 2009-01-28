@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.validate;
+package org.avaje.ebean.server.validate;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.validation.ValidatorMeta;
+import org.avaje.ebean.validation.ValidatorMeta;
 
 public class ValidatorFactoryManager {
 

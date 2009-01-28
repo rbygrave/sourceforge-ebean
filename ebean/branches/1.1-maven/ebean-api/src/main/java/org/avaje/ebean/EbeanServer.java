@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.util.Iterator;
 import java.util.List;
@@ -26,8 +26,8 @@ import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.control.ServerControl;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.control.ServerControl;
 
 /**
  * Provides the API for fetching and saving beans to a particular DataSource.
@@ -74,7 +74,7 @@ import com.avaje.ebean.control.ServerControl;
  * method. Example: a single thread requires more than one transaction.
  * </p>
  * 
- * @see com.avaje.ebean.Ebean
+ * @see org.avaje.ebean.Ebean
  */
 public interface EbeanServer {
 

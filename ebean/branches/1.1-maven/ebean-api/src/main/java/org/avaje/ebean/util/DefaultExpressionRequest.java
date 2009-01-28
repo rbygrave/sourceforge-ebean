@@ -1,9 +1,9 @@
-package com.avaje.ebean.util;
+package org.avaje.ebean.util;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.expression.ExpressionRequest;
-import com.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.expression.ExpressionRequest;
+import org.avaje.ebean.server.core.QueryRequest;
 
 public class DefaultExpressionRequest implements ExpressionRequest {
 

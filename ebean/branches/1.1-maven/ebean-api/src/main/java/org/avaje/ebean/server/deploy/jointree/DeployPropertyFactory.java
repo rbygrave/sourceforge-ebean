@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.jointree;
+package org.avaje.ebean.server.deploy.jointree;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.id.ImportedId;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Creates the List of DeployProperty for a given node.

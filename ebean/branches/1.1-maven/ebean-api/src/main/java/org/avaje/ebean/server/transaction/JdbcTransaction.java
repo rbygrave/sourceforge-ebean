@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.transaction;
+package org.avaje.ebean.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,10 +27,10 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.persist.BatchControl;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.core.TransactionContext;
+import org.avaje.ebean.server.persist.BatchControl;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * JDBC Connection based transaction.

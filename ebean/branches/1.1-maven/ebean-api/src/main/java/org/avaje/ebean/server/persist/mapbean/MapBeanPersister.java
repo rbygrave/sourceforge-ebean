@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.mapbean;
+package org.avaje.ebean.server.persist.mapbean;
 
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.persist.BeanPersister;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.persist.BeanPersister;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Handles insert update and delete for MapBeans.

@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.bean;
+package org.avaje.ebean.server.bean;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,13 +6,13 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.meta.MetaQueryStatistic;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.ManyType;
-import com.avaje.ebean.server.query.CQueryPlan;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.meta.MetaQueryStatistic;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.server.query.CQueryPlan;
 
 /**
  * BeanFinder for MetaQueryStatistic.

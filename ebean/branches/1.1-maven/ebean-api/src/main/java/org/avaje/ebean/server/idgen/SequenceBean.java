@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.idgen;
+package org.avaje.ebean.server.idgen;
 
-import com.avaje.ebean.MapBean;
+import org.avaje.ebean.MapBean;
 
 /**
  * Mapped to ebean_sequence table.

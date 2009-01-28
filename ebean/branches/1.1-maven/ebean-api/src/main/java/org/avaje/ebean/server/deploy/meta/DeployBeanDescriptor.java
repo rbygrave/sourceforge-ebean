@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.meta;
+package org.avaje.ebean.server.deploy.meta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,16 +26,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
-import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
-import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.server.deploy.IdentityGeneration;
-import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.reflect.BeanReflect;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.bean.BeanListener;
+import org.avaje.ebean.server.core.ConcurrencyMode;
+import org.avaje.ebean.server.deploy.BeanDescriptorOwner;
+import org.avaje.ebean.server.deploy.DeployNamedQuery;
+import org.avaje.ebean.server.deploy.DeployNamedUpdate;
+import org.avaje.ebean.server.deploy.IdentityGeneration;
+import org.avaje.ebean.server.deploy.InheritInfo;
+import org.avaje.ebean.server.reflect.BeanReflect;
 
 /**
  * Describes Beans including their deployment information.

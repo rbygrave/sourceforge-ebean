@@ -17,17 +17,17 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.util.ClassPathSearch;
-import com.avaje.ebean.server.util.ClassPathSearchFilter;
-import com.avaje.ebean.server.util.ClassPathSearchMatcher;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.util.ClassPathSearch;
+import org.avaje.ebean.server.util.ClassPathSearchFilter;
+import org.avaje.ebean.server.util.ClassPathSearchMatcher;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Searches for interesting classes such as Entities, Embedded and ScalarTypes.

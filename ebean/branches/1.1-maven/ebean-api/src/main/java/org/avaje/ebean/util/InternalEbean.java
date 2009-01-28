@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.util;
+package org.avaje.ebean.util;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.bean.NodeUsageCollector;
+import org.avaje.ebean.bean.ObjectGraphNode;
 
 /**
  * Provides non-public API for Serialization support.

@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.naming;
+package org.avaje.ebean.server.naming;
 
 /**
  * Property naming convention.

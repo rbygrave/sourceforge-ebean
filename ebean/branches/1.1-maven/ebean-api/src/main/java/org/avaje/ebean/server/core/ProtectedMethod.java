@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.ServerConfiguration;
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.BindParams;
+import org.avaje.ebean.CallableSql;
+import org.avaje.ebean.ServerConfiguration;
+import org.avaje.ebean.SqlUpdate;
+import org.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.util.BindParams;
 
 /**
  * Access to the methods hidden by public API protection.

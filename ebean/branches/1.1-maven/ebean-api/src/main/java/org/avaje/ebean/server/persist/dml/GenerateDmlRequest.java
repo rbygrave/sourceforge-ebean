@@ -1,8 +1,8 @@
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
 import java.util.Set;
 
-import com.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.BeanProperty;
 
 public class GenerateDmlRequest {
 

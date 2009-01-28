@@ -1,6 +1,6 @@
-package com.avaje.ebean.control;
+package org.avaje.ebean.control;
 
-import com.avaje.ebean.Query;
+import org.avaje.ebean.Query;
 
 /**
  * The mode for determining if autoFetch will be used for a given query when

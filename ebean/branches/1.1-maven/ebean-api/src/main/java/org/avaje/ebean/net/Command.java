@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.net;
+package org.avaje.ebean.net;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.Transaction;
+import org.avaje.ebean.Transaction;
 
 /**
  * Base command object.

@@ -1,8 +1,8 @@
-package com.avaje.ebean.server.jmx;
+package org.avaje.ebean.server.jmx;
 
-import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.control.AutoFetchControl;
-import com.avaje.ebean.control.ServerControl;
+import org.avaje.ebean.control.LogControl;
+import org.avaje.ebean.control.AutoFetchControl;
+import org.avaje.ebean.control.ServerControl;
 
 public class MServerControl implements ServerControl {
 

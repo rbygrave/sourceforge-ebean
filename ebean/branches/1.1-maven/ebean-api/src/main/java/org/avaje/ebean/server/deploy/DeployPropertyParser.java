@@ -1,10 +1,10 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
+import org.avaje.ebean.server.deploy.jointree.PropertyDeploy;
 
 /**
  * Converts logical property names to database columns with table alias.

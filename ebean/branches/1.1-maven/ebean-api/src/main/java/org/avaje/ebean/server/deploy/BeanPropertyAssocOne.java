@@ -17,17 +17,17 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.core.TransactionContextClass;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import org.avaje.ebean.InvalidValue;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.server.core.TransactionContextClass;
+import org.avaje.ebean.server.deploy.id.IdBinder;
+import org.avaje.ebean.server.deploy.id.ImportedId;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 
 /**
  * Property mapped to a joined bean.

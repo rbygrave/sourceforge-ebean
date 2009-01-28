@@ -1,14 +1,14 @@
 /**
  * 
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.TableJoin;
 
 /**
  * The select properties for a node in the SqlTree.

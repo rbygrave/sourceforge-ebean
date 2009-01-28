@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.meta;
+package org.avaje.ebean.server.deploy.meta;
 
 import java.util.List;
 
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.server.deploy.BeanDescriptorOwner;
 
 /**
  * BeanDecriptor for MapBeans.

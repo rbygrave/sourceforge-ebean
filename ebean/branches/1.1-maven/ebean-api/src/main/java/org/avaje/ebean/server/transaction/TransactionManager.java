@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.transaction;
+package org.avaje.ebean.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,20 +27,20 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.net.Constants;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.lib.cluster.ClusterManager;
-import com.avaje.ebean.server.lib.thread.ThreadPool;
-import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.ebean.server.net.CmdRemoteListenerEvent;
-import com.avaje.ebean.server.net.CmdServerTransactionEvent;
-import com.avaje.ebean.server.net.Headers;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.TxIsolation;
+import org.avaje.ebean.net.Constants;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.deploy.BeanDescriptorOwner;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.lib.cluster.ClusterManager;
+import org.avaje.ebean.server.lib.thread.ThreadPool;
+import org.avaje.ebean.server.lib.thread.ThreadPoolManager;
+import org.avaje.ebean.server.net.CmdRemoteListenerEvent;
+import org.avaje.ebean.server.net.CmdServerTransactionEvent;
+import org.avaje.ebean.server.net.Headers;
+import org.avaje.ebean.server.plugin.PluginCore;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Manages transactions.

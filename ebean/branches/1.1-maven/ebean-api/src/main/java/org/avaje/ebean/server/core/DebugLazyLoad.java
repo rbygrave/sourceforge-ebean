@@ -1,10 +1,10 @@
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.plugin.Plugin;
 
 /**
  * Helper used in producing debug output on lazy loading.
@@ -82,7 +82,7 @@ public class DebugLazyLoad {
 
 		// code that should be ignored when searching
 		// the stack trace elements 
-		ignore.add("com.avaje.ebean");
+		ignore.add("org.avaje.ebean");
 		ignore.add("java");
 		ignore.add("sun.reflect");
 

@@ -1,6 +1,6 @@
-package com.avaje.ebean.server.transaction;
+package org.avaje.ebean.server.transaction;
 
-import com.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.core.ServerTransaction;
 
 /**
  * Manages the Transactions typically held in a ThreadLocal.
