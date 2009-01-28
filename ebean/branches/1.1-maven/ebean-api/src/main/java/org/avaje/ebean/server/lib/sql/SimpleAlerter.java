@@ -22,8 +22,11 @@ import java.util.logging.Logger;
 
 import org.avaje.ebean.server.lib.ConfigProperties;
 import org.avaje.ebean.server.lib.GlobalProperties;
-import org.avaje.lib.utilimport org.avaje.liborg.avaje.lib.util.avaje.lib.util.MailMesorg.avaje.lib.utill.MailSender;
-import org.avaje.lib.util
+import org.avaje.ebean.server.lib.util.MailEvent;
+import org.avaje.ebean.server.lib.util.MailListener;
+import org.avaje.ebean.server.lib.util.MailMessage;
+import org.avaje.ebean.server.lib.util.MailSender;
+import org.avaje.lib.log.LogFactory;
 /**
  * A simple smtp email alert that sends a email message
  * on dataSourceDown and dataSourceUp etc.

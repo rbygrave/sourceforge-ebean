@@ -30,7 +30,7 @@ import org.avaje.ebean.server.lib.resource.DirectoryFinder;
 import org.avaje.ebean.server.lib.resource.FileResourceSource;
 import org.avaje.ebean.server.lib.resource.ResourceSource;
 import org.avaje.ebean.server.lib.resource.UrlResourceSource;
-import org.avaje.lib.utilption;
+import org.avaje.ebean.server.lib.util.NotFoundException;
 import org.avaje.ebean.server.plugin.PluginProperties;
 import org.avaje.lib.log.LogFactory;
 

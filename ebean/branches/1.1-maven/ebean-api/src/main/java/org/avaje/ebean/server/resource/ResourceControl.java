@@ -19,7 +19,7 @@
  */
 package org.avaje.ebean.server.resource;
 
-import org.avaje.lib.utilr;
+import org.avaje.ebean.server.lib.util.FactoryHelper;
 import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**

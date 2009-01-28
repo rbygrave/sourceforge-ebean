@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.util;
+package org.avaje.ebean.server.lib.util;
 
 import java.util.Stack;
 
@@ -23,7 +23,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.ebean.server.lib.util.StringHelper;
 
 /**
  * Parse an xml document into a Dnode tree.

@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.lib.log;
+package org.avaje.lib.log;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -24,7 +24,7 @@ import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.ebean.server.lib.util.StringHelper;
 
 /**
  * A handler that writes to a file and automatically handles daily log rotation if required.
