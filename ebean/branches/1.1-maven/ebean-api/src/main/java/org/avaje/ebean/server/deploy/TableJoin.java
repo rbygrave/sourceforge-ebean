@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
 /**
  * Represents a join to another table.

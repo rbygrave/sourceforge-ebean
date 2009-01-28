@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,10 +27,10 @@ import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.util.Message;
 
 /**
  * Insert bean handler.

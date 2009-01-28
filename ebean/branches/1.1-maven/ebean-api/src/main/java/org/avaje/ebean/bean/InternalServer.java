@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package org.avaje.ebean.bean;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.TxScope;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.TxScope;
+import org.avaje.ebean.server.core.InternalEbeanServer;
 
 /**
  * Helper object to make AOP generated code simpler.

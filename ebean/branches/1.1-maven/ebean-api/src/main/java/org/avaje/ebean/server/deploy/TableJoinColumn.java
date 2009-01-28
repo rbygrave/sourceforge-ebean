@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
 /**
  * A join pair of local and foreign properties.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist;
+package org.avaje.ebean.server.persist;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -26,14 +26,14 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.query.OrmUpdate;
-import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.query.OrmUpdate;
+import org.avaje.ebean.server.core.PersistRequestOrmUpdate;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.util.BindParamsParser;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Executes the UpdateSql requests.

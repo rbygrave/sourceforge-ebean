@@ -1,4 +1,4 @@
-package com.avaje.ebean.expression;
+package org.avaje.ebean.expression;
 
 import java.util.Iterator;
 import java.util.Map;

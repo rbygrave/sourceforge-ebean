@@ -17,14 +17,14 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BeanListener;
+import org.avaje.ebean.bean.BeanListener;
 
 /**
  * Default implementation for BeanFinderFactory.

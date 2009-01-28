@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package org.avaje.ebean.bean;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.core.QueryRequest;
 
 /**
  * Used to override the finding implementation for a bean.

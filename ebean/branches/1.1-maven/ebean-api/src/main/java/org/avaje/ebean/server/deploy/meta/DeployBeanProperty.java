@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.meta;
+package org.avaje.ebean.server.deploy.meta;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -28,12 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
-import com.avaje.ebean.server.lib.sql.ColumnInfo;
-import com.avaje.ebean.server.reflect.BeanReflectGetter;
-import com.avaje.ebean.server.reflect.BeanReflectSetter;
-import com.avaje.ebean.server.type.ScalarType;
-import com.avaje.ebean.server.validate.Validator;
+import org.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
+import org.avaje.ebean.server.lib.sql.ColumnInfo;
+import org.avaje.ebean.server.reflect.BeanReflectGetter;
+import org.avaje.ebean.server.reflect.BeanReflectSetter;
+import org.avaje.ebean.server.type.ScalarType;
+import org.avaje.ebean.server.validate.Validator;
 
 /**
  * Description of a property of a bean. Includes its deployment information such

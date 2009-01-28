@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.cache;
+package org.avaje.ebean.server.lib.cache;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
+import org.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
 
 /**
  * DoubleMap provides a Map like object for gets and will automatically create

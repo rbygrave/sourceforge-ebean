@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist;
+package org.avaje.ebean.server.persist;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,36 +28,36 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.Update;
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.query.OrmUpdate;
-import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.PersistRequestCallableSql;
-import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
-import com.avaje.ebean.server.core.PersistRequestUpdateSql;
-import com.avaje.ebean.server.core.Persister;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.idgen.IdGeneratorManager;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.CallableSql;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.Update;
+import org.avaje.ebean.SqlUpdate;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.query.OrmUpdate;
+import org.avaje.ebean.server.core.ConcurrencyMode;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.PersistRequestBean;
+import org.avaje.ebean.server.core.PersistRequestCallableSql;
+import org.avaje.ebean.server.core.PersistRequestOrmUpdate;
+import org.avaje.ebean.server.core.PersistRequestUpdateSql;
+import org.avaje.ebean.server.core.Persister;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.idgen.IdGeneratorManager;
+import org.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.plugin.PluginCore;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Persister implementation using DML.
@@ -73,7 +73,7 @@ import com.avaje.lib.log.LogFactory;
  * <li>Handles the batching and queueing</li>
  * </p>
  * 
- * @see com.avaje.ebean.server.persist.DefaultPersistExecute
+ * @see org.avaje.ebean.server.persist.DefaultPersistExecute
  */
 public final class DefaultPersister implements Persister, ConcurrencyMode {
 

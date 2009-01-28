@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.type;
+package org.avaje.ebean.server.type;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

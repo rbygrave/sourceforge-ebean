@@ -1,4 +1,4 @@
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.io.Serializable;
 import java.util.List;

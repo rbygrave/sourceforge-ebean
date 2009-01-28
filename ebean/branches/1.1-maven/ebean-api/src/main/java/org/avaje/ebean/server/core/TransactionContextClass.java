@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
-import com.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBean;
 
 /**
  * Part of the TransactionContext for a single bean type.

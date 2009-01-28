@@ -17,21 +17,21 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.util.Iterator;
 
 import javax.management.MBeanServer;
 
-import com.avaje.ebean.TxScope;
-import com.avaje.ebean.bean.ScopeTrans;
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.transaction.RemoteListenerEvent;
-import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.InternalEbean;
+import org.avaje.ebean.TxScope;
+import org.avaje.ebean.bean.ScopeTrans;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.transaction.RemoteListenerEvent;
+import org.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.util.InternalEbean;
 
 /**
  * Service Provider extension to EbeanServer.

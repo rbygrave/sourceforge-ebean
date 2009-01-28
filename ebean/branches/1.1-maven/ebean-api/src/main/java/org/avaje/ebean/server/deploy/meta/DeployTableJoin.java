@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.meta;
+package org.avaje.ebean.server.deploy.meta;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.deploy.BeanCascadeInfo;
-import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.lib.sql.Fkey;
-import com.avaje.ebean.server.lib.sql.FkeyColumn;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.server.deploy.BeanCascadeInfo;
+import org.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.server.lib.sql.Fkey;
+import org.avaje.ebean.server.lib.sql.FkeyColumn;
+import org.avaje.ebean.util.Message;
 
 /**
  * Represents a join to another table during deployment phase

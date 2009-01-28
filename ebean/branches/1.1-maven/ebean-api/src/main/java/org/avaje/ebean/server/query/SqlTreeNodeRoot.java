@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.List;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.deploy.DbReadContext;
-import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.server.deploy.DbReadContext;
+import org.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * Represents the root node of the Sql Tree.

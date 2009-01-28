@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,22 +29,22 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.ServerConfiguration;
-import com.avaje.ebean.net.Constants;
-import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.ShutdownManager;
-import com.avaje.ebean.server.lib.cluster.ClusterManager;
-import com.avaje.ebean.server.lib.sql.DataSourceManager;
-import com.avaje.ebean.server.lib.sql.TransactionIsolation;
-import com.avaje.ebean.server.net.ClusterCommandSecurity;
-import com.avaje.ebean.server.net.ClusterContextManager;
-import com.avaje.ebean.server.net.CommandProcessor;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginFactory;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.ServerConfiguration;
+import org.avaje.ebean.net.Constants;
+import org.avaje.ebean.server.deploy.parse.SqlReservedWords;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.lib.ShutdownManager;
+import org.avaje.ebean.server.lib.cluster.ClusterManager;
+import org.avaje.ebean.server.lib.sql.DataSourceManager;
+import org.avaje.ebean.server.lib.sql.TransactionIsolation;
+import org.avaje.ebean.server.net.ClusterCommandSecurity;
+import org.avaje.ebean.server.net.ClusterContextManager;
+import org.avaje.ebean.server.net.CommandProcessor;
+import org.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.plugin.PluginFactory;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Default Server side implementation of ServerFactory.

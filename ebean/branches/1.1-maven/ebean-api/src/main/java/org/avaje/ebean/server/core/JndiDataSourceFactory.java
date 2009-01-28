@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -25,7 +25,7 @@ import javax.naming.NamingException;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.ebean.server.lib.ConfigProperties;
 
 
 /**

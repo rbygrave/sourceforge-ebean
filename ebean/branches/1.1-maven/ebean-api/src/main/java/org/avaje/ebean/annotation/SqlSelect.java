@@ -17,14 +17,14 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.annotation;
+package org.avaje.ebean.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.avaje.ebean.Query;
+import org.avaje.ebean.Query;
 
 /**
  * Specify an explicit sql select statement to use for querying an entity bean.

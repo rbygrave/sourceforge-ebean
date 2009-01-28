@@ -17,14 +17,14 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.ShutdownManager;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.ebean.server.lib.ShutdownManager;
 
 /**
  * Listens for webserver server starting and stopping events.

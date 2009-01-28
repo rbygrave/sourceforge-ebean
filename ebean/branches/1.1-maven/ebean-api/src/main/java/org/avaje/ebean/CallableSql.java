@@ -17,16 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.io.Serializable;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.BindParams.Param;
+import org.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.BindParams.Param;
 
 /**
  * For making calls to stored procedures. Refer to the Ebean execute() method.
@@ -102,8 +102,8 @@ import com.avaje.ebean.util.BindParams.Param;
  * }
  * </pre>
  * 
- * @see com.avaje.ebean.SqlUpdate
- * @see com.avaje.ebean.Ebean#execute(CallableSql)
+ * @see org.avaje.ebean.SqlUpdate
+ * @see org.avaje.ebean.Ebean#execute(CallableSql)
  */
 public class CallableSql implements Serializable {
 

@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist;
+package org.avaje.ebean.server.persist;
 
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.core.PersistRequestCallableSql;
-import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
-import com.avaje.ebean.server.core.PersistRequestUpdateSql;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.PersistRequestCallableSql;
+import org.avaje.ebean.server.core.PersistRequestOrmUpdate;
+import org.avaje.ebean.server.core.PersistRequestUpdateSql;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.jmx.MLogControlMBean;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Default PersistExecute implementation using DML statements.

@@ -1,4 +1,4 @@
-package com.avaje.ebean.query;
+package org.avaje.ebean.query;
 
 import java.io.Serializable;
 import java.util.HashMap;

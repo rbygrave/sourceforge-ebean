@@ -17,18 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.transaction;
+package org.avaje.ebean.server.transaction;
 
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
-import com.avaje.ebean.server.transaction.log.LogTime;
-import com.avaje.ebean.server.transaction.log.TransactionLogger;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
+import org.avaje.ebean.server.transaction.log.LogTime;
+import org.avaje.ebean.server.transaction.log.TransactionLogger;
 
 /**
  * Manages the transaction logs.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -87,8 +87,8 @@ public class ClassPathSearchFilter {
 		excludePackage("com.mysql");
 		excludePackage("oracle.jdbc");
 		excludePackage("com.microsoft.sqlserver");
-		excludePackage("com.avaje.ebean");
-		excludePackage("com.avaje.lib");
+		excludePackage("org.avaje.ebean");
+		excludePackage("org.avaje.lib");
 	}
 
 	/**
@@ -152,11 +152,11 @@ public class ClassPathSearchFilter {
 	 */
 	public boolean isSearchPackage(String packageName) {
 		// special case... "meta" entity beans.
-		if ("com.avaje.ebean.meta".equals(packageName)) {
+		if ("org.avaje.ebean.meta".equals(packageName)) {
 			return true;
 		}
 		// special case... BeanFinders etc for "meta" beans.
-		if ("com.avaje.ebean.server.bean".equals(packageName)) {
+		if ("org.avaje.ebean.server.bean".equals(packageName)) {
 			return true;
 		}
 		if (containedIn(includePackageSet, packageName)) {

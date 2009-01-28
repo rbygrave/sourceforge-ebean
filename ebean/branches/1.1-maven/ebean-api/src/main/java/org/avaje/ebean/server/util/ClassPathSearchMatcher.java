@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.util;
+package org.avaje.ebean.server.util;
 
 /**
  * Defines interface for finding classes via a class path search.

@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.deploy.id.ImportedId;
+import org.avaje.ebean.server.deploy.id.ImportedId;
 
 /**
  * Build a map of logical to physical names for use in Orm Updates.

@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.lib.cache;
+package org.avaje.ebean.server.lib.cache;
 
 public interface DoubleMapCreateValue<K,V> {
 

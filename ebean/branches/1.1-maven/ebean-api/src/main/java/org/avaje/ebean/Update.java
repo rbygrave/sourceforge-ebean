@@ -1,4 +1,4 @@
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 /**
  * An Insert Update or Delete statement.

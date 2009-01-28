@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,19 +25,19 @@ import java.util.Iterator;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.util.DeploymentException;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.InvalidValue;
+import org.avaje.ebean.MapBean;
+import org.avaje.ebean.Query;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.deploy.id.ImportedId;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import org.avaje.ebean.util.DeploymentException;
 
 /**
  * Property mapped to a List Set or Map.

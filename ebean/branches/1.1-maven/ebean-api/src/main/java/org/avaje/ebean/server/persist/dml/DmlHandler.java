@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,16 +27,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.persist.BatchPostExecute;
-import com.avaje.ebean.server.persist.BatchedPstmt;
-import com.avaje.ebean.server.persist.BatchedPstmtHolder;
-import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.control.LogControl;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.persist.BatchPostExecute;
+import org.avaje.ebean.server.persist.BatchedPstmt;
+import org.avaje.ebean.server.persist.BatchedPstmtHolder;
+import org.avaje.ebean.server.persist.dmlbind.BindableRequest;
+import org.avaje.lib.log.LogFactory;
 
 
 /**

@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.validate;
+package org.avaje.ebean.server.validate;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import com.avaje.ebean.validation.Pattern;
+import org.avaje.ebean.validation.Pattern;
 
 /**
  * Creates a String length validator.

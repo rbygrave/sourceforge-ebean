@@ -1,6 +1,6 @@
-package com.avaje.ebean.server.jmx;
+package org.avaje.ebean.server.jmx;
 
-import com.avaje.ebean.Query;
+import org.avaje.ebean.Query;
 
 public interface MAutoFetchControlMBean {
 	

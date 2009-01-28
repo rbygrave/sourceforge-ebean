@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 /**
  * A native query defined in deployment xml.

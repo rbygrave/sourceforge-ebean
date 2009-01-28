@@ -1,8 +1,8 @@
-package com.avaje.ebean.server.autofetch;
+package org.avaje.ebean.server.autofetch;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.meta.AutoFetchQueryStats;
+import org.avaje.ebean.meta.AutoFetchQueryStats;
 
 /**
  * Used to accumulate query execution statistics.

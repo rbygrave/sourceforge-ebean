@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
 import javax.servlet.http.HttpSession;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.net.CommandContext;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.net.CommandContext;
+import org.avaje.ebean.server.core.InternalEbeanServer;
 
 /**
  * Uses HttpSession to store the CommandContext.

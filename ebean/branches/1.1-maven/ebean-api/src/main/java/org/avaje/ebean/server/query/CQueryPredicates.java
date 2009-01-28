@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -7,17 +7,17 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.expression.InternalExpressionList;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.DeployPropertyParser;
-import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.DefaultExpressionRequest;
-import com.avaje.ebean.util.BindParams.OrderedList;
+import org.avaje.ebean.expression.InternalExpressionList;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.DeployPropertyParser;
+import org.avaje.ebean.server.persist.Binder;
+import org.avaje.ebean.server.util.BindParamsParser;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.DefaultExpressionRequest;
+import org.avaje.ebean.util.BindParams.OrderedList;
 
 /**
  * Compile Query Predicates.

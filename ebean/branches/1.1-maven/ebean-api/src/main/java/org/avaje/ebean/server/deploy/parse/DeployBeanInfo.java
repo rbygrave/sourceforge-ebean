@@ -17,17 +17,17 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.util.HashMap;
 
-import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import org.avaje.ebean.server.lib.sql.DictionaryInfo;
+import org.avaje.ebean.server.lib.sql.TableInfo;
 
 /**
  * Wraps information about a bean during deployment parsing.

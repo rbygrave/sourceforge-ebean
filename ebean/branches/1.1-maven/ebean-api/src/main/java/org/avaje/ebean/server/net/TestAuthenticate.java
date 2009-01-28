@@ -17,9 +17,9 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
-import com.avaje.ebean.net.AuthenticateResponse;
+import org.avaje.ebean.net.AuthenticateResponse;
 
 /**
  * For testing purposes only. Please look at the code.

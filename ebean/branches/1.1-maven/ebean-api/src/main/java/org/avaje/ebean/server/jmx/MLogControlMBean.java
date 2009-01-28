@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.jmx;
+package org.avaje.ebean.server.jmx;
 
 public interface MLogControlMBean {
 

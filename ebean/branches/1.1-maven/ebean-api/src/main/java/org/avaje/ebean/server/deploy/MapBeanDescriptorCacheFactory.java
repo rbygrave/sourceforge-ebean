@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.sql.DictionaryInfo;
+import org.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Creates and caches MapBeanDescriptor.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.lang.annotation.Annotation;
 import java.sql.Types;
@@ -28,25 +28,25 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.server.deploy.BeanTable;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.type.ScalarType;
-import com.avaje.ebean.server.type.ScalarTypeEnum;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.server.validate.Validator;
-import com.avaje.ebean.server.validate.ValidatorFactoryManager;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.annotation.SqlSelect;
+import org.avaje.ebean.server.deploy.BeanTable;
+import org.avaje.ebean.server.deploy.DeploySqlSelect;
+import org.avaje.ebean.server.deploy.DeploySqlSelectParser;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
+import org.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import org.avaje.ebean.server.lib.sql.DictionaryInfo;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.type.ScalarType;
+import org.avaje.ebean.server.type.ScalarTypeEnum;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.server.validate.Validator;
+import org.avaje.ebean.server.validate.ValidatorFactoryManager;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Utility object to help processing deployment information.

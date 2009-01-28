@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.net;
+package org.avaje.ebean.server.net;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -25,7 +25,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * This parses and dispatches a request to the appropriate handler.

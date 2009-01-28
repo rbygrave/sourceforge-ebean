@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist;
+package org.avaje.ebean.server.persist;
 
 import java.io.ByteArrayInputStream;
 import java.io.Reader;
@@ -33,12 +33,12 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.server.type.ScalarType;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.type.ScalarType;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Binds bean values to a PreparedStatement.

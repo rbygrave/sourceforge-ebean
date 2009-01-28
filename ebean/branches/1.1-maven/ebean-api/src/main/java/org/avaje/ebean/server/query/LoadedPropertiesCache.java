@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
 
 public class LoadedPropertiesCache {
 

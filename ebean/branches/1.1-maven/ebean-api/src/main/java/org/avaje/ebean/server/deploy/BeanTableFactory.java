@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
-import com.avaje.ebean.server.deploy.parse.AnnotationBeanTable;
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
+import org.avaje.ebean.server.deploy.meta.DeployBeanTable;
+import org.avaje.ebean.server.deploy.parse.AnnotationBeanTable;
+import org.avaje.ebean.server.deploy.parse.DeployUtil;
 
 /**
  * Create a BeanTable. This essentially reads the base table and alias for a

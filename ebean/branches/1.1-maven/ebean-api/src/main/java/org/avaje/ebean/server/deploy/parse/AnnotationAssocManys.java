@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -33,11 +33,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.annotation.Where;
-import com.avaje.ebean.server.deploy.BeanTable;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.ebean.annotation.Where;
+import org.avaje.ebean.server.deploy.BeanTable;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import org.avaje.ebean.server.lib.sql.TableInfo;
 
 /**
  * Read the deployment annotation for Assoc Many beans.

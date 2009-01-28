@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.Map;
 
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
-import com.avaje.ebean.server.persist.BeanPersister;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.deploy.jointree.PropertyDeploy;
+import org.avaje.ebean.server.persist.BeanPersister;
 
 /**
  * Holds the BeanDescriptor and its associated BeanPersister and JoinTree.

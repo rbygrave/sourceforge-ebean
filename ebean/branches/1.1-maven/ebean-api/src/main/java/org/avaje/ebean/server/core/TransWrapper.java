@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 /**
  * Used to temporarily wrap a thread local based transaction.

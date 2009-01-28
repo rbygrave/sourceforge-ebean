@@ -1,10 +1,10 @@
-package com.avaje.ebean.server.deploy.xml;
+package org.avaje.ebean.server.deploy.xml;
 
 import java.io.FileInputStream;
 import java.util.List;
 
-import com.avaje.ebean.server.lib.util.Dnode;
-import com.avaje.ebean.server.lib.util.DnodeReader;
+import org.avaje.lib.util.Dnode;
+import org.avaje.lib.util.DnodeReader;
 
 public class TestXmlReader {
 

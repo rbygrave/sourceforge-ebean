@@ -1,4 +1,4 @@
-package com.avaje.ebean.control;
+package org.avaje.ebean.control;
 
 /**
  * Provides control over the services run by an EbeanServer.

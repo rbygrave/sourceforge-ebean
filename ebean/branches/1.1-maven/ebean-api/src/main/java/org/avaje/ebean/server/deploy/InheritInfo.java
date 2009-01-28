@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,10 +25,10 @@ import java.util.HashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.parse.DeployInheritInfo;
-import com.avaje.ebean.server.query.SqlTreeProperties;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.server.deploy.id.IdBinder;
+import org.avaje.ebean.server.deploy.parse.DeployInheritInfo;
+import org.avaje.ebean.server.query.SqlTreeProperties;
 
 /**
  * Represents a node in the Inheritance tree. Holds information regarding Super

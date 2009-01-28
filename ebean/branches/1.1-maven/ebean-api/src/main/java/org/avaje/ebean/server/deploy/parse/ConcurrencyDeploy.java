@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.server.core.ConcurrencyMode;
+import org.avaje.ebean.util.Message;
 
 
 /**

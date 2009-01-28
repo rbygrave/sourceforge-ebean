@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.naming;
+package org.avaje.ebean.server.naming;
 
 import java.util.List;
 
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Defines prefix and suffix etc to determine a sequence name from a table and

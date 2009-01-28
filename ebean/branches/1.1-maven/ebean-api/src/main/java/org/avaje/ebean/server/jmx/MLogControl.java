@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.jmx;
+package org.avaje.ebean.server.jmx;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.control.ServerControl;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.control.LogControl;
+import org.avaje.ebean.control.ServerControl;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Implementation of the LogControl.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -26,21 +26,21 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.deploy.BeanTable;
-import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.Fkey;
-import com.avaje.ebean.server.lib.sql.IntersectionInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.util.DeploymentException;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.server.deploy.BeanTable;
+import org.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import org.avaje.ebean.server.lib.sql.DictionaryInfo;
+import org.avaje.ebean.server.lib.sql.Fkey;
+import org.avaje.ebean.server.lib.sql.IntersectionInfo;
+import org.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.ebean.server.naming.NamingConvention;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.util.DeploymentException;
+import org.avaje.ebean.util.Message;
 
 /**
  * Defines any table joins that have not been explicitly set.

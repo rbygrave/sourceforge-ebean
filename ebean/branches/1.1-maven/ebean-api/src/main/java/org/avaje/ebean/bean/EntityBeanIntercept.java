@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package org.avaje.ebean.bean;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -26,9 +26,9 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.io.SerializeControl;
-import com.avaje.ebean.util.InternalEbean;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.io.SerializeControl;
+import org.avaje.ebean.util.InternalEbean;
 
 /**
  * This is the object added to every entity bean using byte code enhancement.

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy.generatedproperty;
+package org.avaje.ebean.server.deploy.generatedproperty;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -28,9 +28,9 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Settings used to identify GeneratedValue properties.

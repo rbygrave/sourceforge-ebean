@@ -1,14 +1,14 @@
-package com.avaje.ebean.server.autofetch;
+package org.avaje.ebean.server.autofetch;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.server.lib.BackgroundThread;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
+import org.avaje.ebean.query.OrmQueryDetail;
+import org.avaje.ebean.server.lib.BackgroundThread;
+import org.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
 
 /**
  * Handles the logging aspects for the DefaultAutoFetchListener.

@@ -1,9 +1,9 @@
-package com.avaje.ebean.meta;
+package org.avaje.ebean.meta;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
 
 /**
  * "Tuned fetch" information used by AutoFetch.

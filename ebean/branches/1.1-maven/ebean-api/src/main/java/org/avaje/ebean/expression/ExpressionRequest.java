@@ -1,8 +1,8 @@
-package com.avaje.ebean.expression;
+package org.avaje.ebean.expression;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.core.QueryRequest;
 
 /**
  * Request object used for gathering expression sql and bind values.

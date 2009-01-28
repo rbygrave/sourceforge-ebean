@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -31,9 +31,9 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.util.BasicTypeConverter;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.util.BasicTypeConverter;
 
 /**
  * [Rename to SqlRow?] Map based EntityBean implementation. Used to dynamically

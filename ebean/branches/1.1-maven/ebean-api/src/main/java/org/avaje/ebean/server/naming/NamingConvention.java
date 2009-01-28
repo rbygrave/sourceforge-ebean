@@ -17,14 +17,14 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.naming;
+package org.avaje.ebean.server.naming;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
-import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.lib.util.FactoryHelper;
+import org.avaje.lib.util.StringHelper;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Converts from database column names with underscores.

@@ -15,14 +15,14 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib;
+package org.avaje.ebean.server.lib;
 
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * A general background thread that runs registered tasks periodically.

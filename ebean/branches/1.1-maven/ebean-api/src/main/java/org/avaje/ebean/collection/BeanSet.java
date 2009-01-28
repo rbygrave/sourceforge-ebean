@@ -17,16 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.collection;
+package org.avaje.ebean.collection;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.util.InternalEbean;
+import org.avaje.ebean.Ebean;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.util.InternalEbean;
 
 /**
  * Set capable of lazy loading.

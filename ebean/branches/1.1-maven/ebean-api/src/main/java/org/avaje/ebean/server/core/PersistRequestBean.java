@@ -17,19 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.sql.SQLException;
 
 import javax.persistence.OptimisticLockException;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.persist.BatchControl;
-import com.avaje.ebean.server.persist.PersistExecute;
-import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.Message;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.control.LogControl;
+import org.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.server.persist.BatchControl;
+import org.avaje.ebean.server.persist.PersistExecute;
+import org.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.util.Message;
 
 /**
  * PersistRequest for insert update or delete of a bean.

@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean;
+package org.avaje.ebean;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.core.ProtectedMethodAPI;
-import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.BindParams;
+import org.avaje.ebean.server.core.ProtectedMethodAPI;
+import org.avaje.ebean.server.transaction.TransactionEvent;
+import org.avaje.ebean.util.BindParams;
 
 /**
  * Implements the public API protection.

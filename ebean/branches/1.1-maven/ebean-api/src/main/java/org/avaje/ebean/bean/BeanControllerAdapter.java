@@ -17,11 +17,11 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package org.avaje.ebean.bean;
 
 import java.util.Set;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.PersistRequest;
 
 /**
  * A no operation implementation of BeanController. Objects extending this need to

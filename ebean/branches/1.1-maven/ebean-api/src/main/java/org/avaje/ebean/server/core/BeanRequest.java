@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.core;
+package org.avaje.ebean.server.core;
 
 import java.sql.Connection;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanManager;
 
 /**
  * Base class for find and persist requests.

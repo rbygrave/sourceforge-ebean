@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.deploy.parse;
+package org.avaje.ebean.server.deploy.parse;
 
 import java.util.HashSet;
 

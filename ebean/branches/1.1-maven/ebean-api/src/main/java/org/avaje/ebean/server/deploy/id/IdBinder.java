@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.deploy.id;
+package org.avaje.ebean.server.deploy.id;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.DbReadContext;
-import com.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.DbReadContext;
+import org.avaje.ebean.server.deploy.DbSqlContext;
 
 /**
  * Binds id values to prepared statements.

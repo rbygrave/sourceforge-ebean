@@ -17,22 +17,22 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.OrmQueryEngine;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.core.ServerCache;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.plugin.Plugin;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.core.OrmQueryEngine;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.core.ServerCache;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.core.TransactionContext;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.plugin.Plugin;
 
 /**
  * Main Finder implementation.

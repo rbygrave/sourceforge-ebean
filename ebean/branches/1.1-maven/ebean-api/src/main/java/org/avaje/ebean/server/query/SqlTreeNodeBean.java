@@ -17,26 +17,26 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.server.core.TransactionContextClass;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.DbReadContext;
-import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.server.core.TransactionContextClass;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanProperty;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.DbReadContext;
+import org.avaje.ebean.server.deploy.DbSqlContext;
+import org.avaje.ebean.server.deploy.InheritInfo;
+import org.avaje.ebean.server.deploy.TableJoin;
+import org.avaje.ebean.server.deploy.id.IdBinder;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * Normal bean included in the query.

@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist.dml;
+package org.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.server.core.PersistRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.core.PersistRequest;
+import org.avaje.ebean.server.core.ServerTransaction;
 
 /**
  * Delete bean handler.

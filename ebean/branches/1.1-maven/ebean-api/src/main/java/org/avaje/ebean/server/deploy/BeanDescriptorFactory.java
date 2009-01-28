@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,43 +31,43 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.enhance.subclass.SubClassManager;
-import com.avaje.ebean.server.core.BootupClasses;
-import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
-import com.avaje.ebean.server.deploy.parse.DeployBeanInfo;
-import com.avaje.ebean.server.deploy.parse.DeployInheritInfoBuilder;
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.deploy.parse.MissingTableException;
-import com.avaje.ebean.server.deploy.parse.ReadAnnotations;
-import com.avaje.ebean.server.deploy.parse.TransientProperties;
-import com.avaje.ebean.server.lib.sql.ColumnInfo;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.lib.util.Dnode;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.server.reflect.BeanReflect;
-import com.avaje.ebean.server.reflect.BeanReflectFactory;
-import com.avaje.ebean.server.reflect.BeanReflectGetter;
-import com.avaje.ebean.server.reflect.BeanReflectSetter;
-import com.avaje.ebean.server.reflect.EnhanceBeanReflectFactory;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.server.validate.LengthValidatorFactory;
-import com.avaje.ebean.server.validate.NotNullValidatorFactory;
-import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.bean.BeanListener;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.enhance.subclass.SubClassManager;
+import org.avaje.ebean.server.core.BootupClasses;
+import org.avaje.ebean.server.core.ConcurrencyMode;
+import org.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoin;
+import org.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
+import org.avaje.ebean.server.deploy.parse.DeployBeanInfo;
+import org.avaje.ebean.server.deploy.parse.DeployInheritInfoBuilder;
+import org.avaje.ebean.server.deploy.parse.DeployUtil;
+import org.avaje.ebean.server.deploy.parse.MissingTableException;
+import org.avaje.ebean.server.deploy.parse.ReadAnnotations;
+import org.avaje.ebean.server.deploy.parse.TransientProperties;
+import org.avaje.ebean.server.lib.sql.ColumnInfo;
+import org.avaje.ebean.server.lib.sql.DictionaryInfo;
+import org.avaje.ebean.server.lib.sql.TableInfo;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.server.reflect.BeanReflect;
+import org.avaje.ebean.server.reflect.BeanReflectFactory;
+import org.avaje.ebean.server.reflect.BeanReflectGetter;
+import org.avaje.ebean.server.reflect.BeanReflectSetter;
+import org.avaje.ebean.server.reflect.EnhanceBeanReflectFactory;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.server.validate.LengthValidatorFactory;
+import org.avaje.ebean.server.validate.NotNullValidatorFactory;
+import org.avaje.ebean.util.Message;
+import org.avaje.lib.log.LogFactory;
+import org.avaje.lib.util.Dnode;
 
 /**
  * Creates BeanDescriptors.
@@ -943,7 +943,7 @@ public class BeanDescriptorFactory {
 			if (testBean instanceof EntityBean) {
 				// the bean already implements EntityBean
 				desc.setFactoryType(beanClass);
-				if (!beanClass.getName().startsWith("com.avaje.ebean.meta")) {
+				if (!beanClass.getName().startsWith("org.avaje.ebean.meta")) {
 					enhancedClassCount++;
 				}
 

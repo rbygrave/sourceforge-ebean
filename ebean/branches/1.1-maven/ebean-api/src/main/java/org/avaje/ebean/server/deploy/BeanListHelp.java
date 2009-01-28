@@ -1,15 +1,15 @@
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.collection.BeanList;
+import org.avaje.ebean.EbeanServer;
+import org.avaje.ebean.InvalidValue;
+import org.avaje.ebean.Query;
+import org.avaje.ebean.Transaction;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.collection.BeanList;
 
 /**
  * Helper object for dealing with Lists.

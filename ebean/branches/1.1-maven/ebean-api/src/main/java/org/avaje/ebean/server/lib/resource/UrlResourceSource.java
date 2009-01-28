@@ -15,14 +15,15 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.resource;
+package org.avaje.ebean.server.lib.resource;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.ServletContext;
 
-import com.avaje.ebean.server.lib.util.GeneralException;
+import org.avaje.lib.util.GeneralException;
+
 
 /**
  * A file system directory represented as a FileSource.

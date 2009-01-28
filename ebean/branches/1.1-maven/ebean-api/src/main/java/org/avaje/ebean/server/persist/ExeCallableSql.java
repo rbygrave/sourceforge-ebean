@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.persist;
+package org.avaje.ebean.server.persist;
 
 import java.sql.CallableStatement;
 import java.sql.SQLException;
@@ -26,14 +26,14 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.server.core.PersistRequestCallableSql;
-import com.avaje.ebean.server.core.ProtectedMethod;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.CallableSql;
+import org.avaje.ebean.server.core.PersistRequestCallableSql;
+import org.avaje.ebean.server.core.ProtectedMethod;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.util.BindParamsParser;
+import org.avaje.ebean.util.BindParams;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Handles the execution of CallableSql requests.

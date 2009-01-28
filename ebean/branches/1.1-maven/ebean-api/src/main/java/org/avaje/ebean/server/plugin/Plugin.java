@@ -17,19 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.plugin;
+package org.avaje.ebean.server.plugin;
 
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.OrmQueryEngine;
-import com.avaje.ebean.server.core.Persister;
-import com.avaje.ebean.server.core.RelationalQueryEngine;
-import com.avaje.ebean.server.core.ServerCache;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.idgen.IdGeneratorManager;
-import com.avaje.ebean.server.jmx.MLogControl;
-import com.avaje.ebean.server.transaction.TransactionManager;
-import com.avaje.ebean.server.transaction.TransactionScopeManager;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.server.core.InternalEbeanServer;
+import org.avaje.ebean.server.core.OrmQueryEngine;
+import org.avaje.ebean.server.core.Persister;
+import org.avaje.ebean.server.core.RelationalQueryEngine;
+import org.avaje.ebean.server.core.ServerCache;
+import org.avaje.ebean.server.deploy.DeploymentManager;
+import org.avaje.ebean.server.idgen.IdGeneratorManager;
+import org.avaje.ebean.server.jmx.MLogControl;
+import org.avaje.ebean.server.transaction.TransactionManager;
+import org.avaje.ebean.server.transaction.TransactionScopeManager;
 
 /**
  * Defines the functionality that may be overridden depending on the database.

@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.annotation;
+package org.avaje.ebean.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.TxType;
+import org.avaje.ebean.TxIsolation;
+import org.avaje.ebean.TxType;
 
 /**
  * Specify transaction scoping for a method.
@@ -38,7 +38,7 @@ import com.avaje.ebean.TxType;
  * <ul>
  * <li> EJB's javax.ejb.TransactionAttribute</li>
  * <li> Spring's org.springframework.transaction.annotation.Transactional</li>
- * <li> and this one, Ebean's own com.avaje.ebean.annotation.Transactional</li>
+ * <li> and this one, Ebean's own org.avaje.ebean.annotation.Transactional</li>
  * </ul>
  * Spring created their one because the EJB annotation does not support features
  * such as isolation level and specifying rollbackOn, noRollbackOn exceptions.

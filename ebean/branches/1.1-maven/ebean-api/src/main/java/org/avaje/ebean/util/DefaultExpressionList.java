@@ -1,4 +1,4 @@
-package com.avaje.ebean.util;
+package org.avaje.ebean.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.Query;
-import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.expression.Expr;
-import com.avaje.ebean.expression.Expression;
-import com.avaje.ebean.expression.ExpressionList;
-import com.avaje.ebean.expression.ExpressionRequest;
-import com.avaje.ebean.expression.InternalExpressionList;
-import com.avaje.ebean.expression.Junction;
+import org.avaje.ebean.Query;
+import org.avaje.ebean.QueryListener;
+import org.avaje.ebean.expression.Expr;
+import org.avaje.ebean.expression.Expression;
+import org.avaje.ebean.expression.ExpressionList;
+import org.avaje.ebean.expression.ExpressionRequest;
+import org.avaje.ebean.expression.InternalExpressionList;
+import org.avaje.ebean.expression.Junction;
 
 /**
  * Default implementation of ExpressionList.

@@ -17,15 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
-import com.avaje.ebean.server.persist.BeanPersister;
-import com.avaje.ebean.server.persist.BeanPersisterFactory;
-import com.avaje.ebean.server.persist.dml.DmlBeanPersisterFactory;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
+import org.avaje.lib.util.FactoryHelper;
+import org.avaje.ebean.server.persist.BeanPersister;
+import org.avaje.ebean.server.persist.BeanPersisterFactory;
+import org.avaje.ebean.server.persist.dml.DmlBeanPersisterFactory;
+import org.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Creates BeanManagers.

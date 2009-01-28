@@ -17,19 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.deploy.id.ImportedIdEmbedded;
-import com.avaje.ebean.server.deploy.id.ImportedIdMultiple;
-import com.avaje.ebean.server.deploy.id.ImportedIdSimple;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
-import com.avaje.ebean.server.lib.util.StringHelper;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.server.deploy.id.IdBinder;
+import org.avaje.ebean.server.deploy.id.ImportedId;
+import org.avaje.ebean.server.deploy.id.ImportedIdEmbedded;
+import org.avaje.ebean.server.deploy.id.ImportedIdMultiple;
+import org.avaje.ebean.server.deploy.id.ImportedIdSimple;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
+import org.avaje.lib.util.StringHelper;
 
 /**
  * Abstract base for properties mapped to an associated bean, list, set or map.

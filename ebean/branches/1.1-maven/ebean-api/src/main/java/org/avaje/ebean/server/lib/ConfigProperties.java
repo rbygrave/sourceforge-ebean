@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.lib;
+package org.avaje.ebean.server.lib;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import org.avaje.lib.PropertyEvaluator;
+import org.avaje.lib.PropertyHolder;
 
 public class ConfigProperties implements PropertyHolder {
 

@@ -17,13 +17,13 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Continue the fetch using a Background thread. The client knows when this has

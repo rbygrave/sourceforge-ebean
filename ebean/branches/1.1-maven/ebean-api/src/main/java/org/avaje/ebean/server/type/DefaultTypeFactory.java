@@ -17,12 +17,12 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.type;
+package org.avaje.ebean.server.type;
 
 import java.sql.Types;
 
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.ebean.util.BasicTypeConverter;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.ebean.util.BasicTypeConverter;
 
 /**
  * Helper to create some default ScalarType objects for Booleans,

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.type;
+package org.avaje.ebean.server.type;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -39,12 +39,12 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
-import com.avaje.ebean.annotation.EnumMapping;
-import com.avaje.ebean.server.core.BootupClasses;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
-import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.annotation.EnumMapping;
+import org.avaje.ebean.server.core.BootupClasses;
+import org.avaje.lib.util.FactoryHelper;
+import org.avaje.lib.util.StringHelper;
+import org.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Default implementation of TypeManager.

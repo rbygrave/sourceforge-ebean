@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.plugin;
+package org.avaje.ebean.server.plugin;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,9 +28,9 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.ConfigProperties;
+import org.avaje.lib.util.FactoryHelper;
+import org.avaje.lib.log.LogFactory;
 
 public class PluginDbConfigFactory {
 

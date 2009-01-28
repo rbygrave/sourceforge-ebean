@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,28 +29,28 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.core.TransactionContextClass;
-import com.avaje.ebean.server.deploy.BeanCollectionHelp;
-import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.DbReadContext;
-import com.avaje.ebean.server.deploy.ManyType;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.transaction.TransContext;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.QueryListener;
+import org.avaje.ebean.bean.ObjectGraphOrigin;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.bean.NodeUsageCollector;
+import org.avaje.ebean.bean.ObjectGraphNode;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.server.autofetch.AutoFetchManager;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.core.ServerTransaction;
+import org.avaje.ebean.server.core.TransactionContext;
+import org.avaje.ebean.server.core.TransactionContextClass;
+import org.avaje.ebean.server.deploy.BeanCollectionHelp;
+import org.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.DbReadContext;
+import org.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.server.deploy.jointree.JoinNode;
+import org.avaje.ebean.server.transaction.TransContext;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * An object that represents a SqlSelect statement.

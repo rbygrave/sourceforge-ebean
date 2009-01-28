@@ -1,4 +1,4 @@
-package com.avaje.ebean.expression;
+package org.avaje.ebean.expression;
 
 /**
  * Represents a Conjunction or a Disjunction.
@@ -12,8 +12,8 @@ public interface Junction extends Expression {
 	/**
 	 * Add an expression to the Conjunction/Disjunction.
 	 * 
-	 * @see com.avaje.ebean.expression.ExpressionList#conjunction()
-	 * @see com.avaje.ebean.expression.ExpressionList#disjunction()
+	 * @see org.avaje.ebean.expression.ExpressionList#conjunction()
+	 * @see org.avaje.ebean.expression.ExpressionList#disjunction()
 	 */
 	public Junction add(Expression expression);
 

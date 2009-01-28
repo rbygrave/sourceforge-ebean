@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.resource;
+package org.avaje.ebean.server.resource;
 
-import com.avaje.ebean.server.lib.util.FactoryHelper;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import org.avaje.lib.utilr;
+import org.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Helper to create the specific ResourceManager.

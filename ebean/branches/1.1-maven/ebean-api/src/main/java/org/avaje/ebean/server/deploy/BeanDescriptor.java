@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package org.avaje.ebean.server.deploy;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -35,25 +35,25 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.server.core.ReferenceOptions;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.id.IdBinderFactory;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyLists;
-import com.avaje.ebean.server.query.CQueryPlan;
-import com.avaje.ebean.server.reflect.BeanReflect;
-import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.server.validate.Validator;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.InvalidValue;
+import org.avaje.ebean.bean.BeanController;
+import org.avaje.ebean.bean.BeanFinder;
+import org.avaje.ebean.bean.BeanListener;
+import org.avaje.ebean.bean.EntityBean;
+import org.avaje.ebean.bean.EntityBeanIntercept;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.query.OrmQueryDetail;
+import org.avaje.ebean.server.core.ReferenceOptions;
+import org.avaje.ebean.server.deploy.id.IdBinder;
+import org.avaje.ebean.server.deploy.id.IdBinderFactory;
+import org.avaje.ebean.server.deploy.jointree.JoinTree;
+import org.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
+import org.avaje.ebean.server.deploy.meta.DeployBeanPropertyLists;
+import org.avaje.ebean.server.query.CQueryPlan;
+import org.avaje.ebean.server.reflect.BeanReflect;
+import org.avaje.ebean.server.type.TypeManager;
+import org.avaje.ebean.server.validate.Validator;
+import org.avaje.lib.log.LogFactory;
 
 /**
  * Describes Beans including their deployment information.

@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.server.lib.sql;
+package org.avaje.ebean.server.lib.sql;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.lib.log.LogFactory;
+import org.avaje.ebean.server.lib.GlobalProperties;
+import org.avaje.lib.log.LogFactory;
+import org.avaje.lib.util.StringHelper;
 
 /**
  * Reads and caches meta data from <code>java.sql.DatabaseMetaData</code>.

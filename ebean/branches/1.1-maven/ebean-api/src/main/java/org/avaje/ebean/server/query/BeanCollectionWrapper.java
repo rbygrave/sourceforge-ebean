@@ -17,21 +17,21 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package org.avaje.ebean.server.query;
 
 import java.util.Collection;
 import java.util.Map;
 
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.RelationalQuery;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.core.RelationalQueryRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.ManyType;
-import com.avaje.ebean.server.util.BeanCollectionFactory;
-import com.avaje.ebean.server.util.BeanCollectionParams;
+import org.avaje.ebean.collection.BeanCollection;
+import org.avaje.ebean.query.OrmQuery;
+import org.avaje.ebean.query.RelationalQuery;
+import org.avaje.ebean.server.core.QueryRequest;
+import org.avaje.ebean.server.core.RelationalQueryRequest;
+import org.avaje.ebean.server.deploy.BeanDescriptor;
+import org.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import org.avaje.ebean.server.deploy.ManyType;
+import org.avaje.ebean.server.util.BeanCollectionFactory;
+import org.avaje.ebean.server.util.BeanCollectionParams;
 
 /**
  * Wraps a BeanCollection with helper methods to add beans.
