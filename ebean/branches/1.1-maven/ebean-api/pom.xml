@@ -53,7 +53,7 @@
 									classname="org.avaje.ebean.enhance.ant.AntEnhanceTask"
 									classpath="${compile_classpath}" />
 								<ebeanEnhance classSource="${project.build.outputDirectory}"
-									packages="com.avaje.ebean.meta.**, com.avaje.ebean.server.lib*"
+									packages="org.avaje.ebean.meta.**, org.avaje.ebean.server.lib*"
 									transformArgs="debug=1" />
 							</tasks>
 						</configuration>
