@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.avaje</groupId>
+	<artifactId>ebean-agent</artifactId>
+	<name>Ebean enhancement agent</name>
+	<version>1.1${version.suffix}</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.avaje</groupId>
+		<artifactId>ebean</artifactId>
+		<version>1.1${version.suffix}</version>
+	</parent>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>3.0-alpha-1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-util</artifactId>
+			<version>1.1${version.suffix}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>persistence-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+	</dependencies>
+	<properties>
+		<version.suffix>-SNAPSHOT</version.suffix>
+	</properties>
+</project>
