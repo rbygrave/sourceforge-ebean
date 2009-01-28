@@ -16,6 +16,7 @@
 		<module>ebean-api</module>
 		<module>ebean-agent</module>
 		<module>ebean-util</module>
+		<module>ebean-enhance</module>
 	</modules>
 
 	<properties>

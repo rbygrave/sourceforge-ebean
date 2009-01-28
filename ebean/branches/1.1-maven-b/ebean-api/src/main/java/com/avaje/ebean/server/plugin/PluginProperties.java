@@ -31,7 +31,7 @@ import com.avaje.ebean.util.Message;
 /**
  * The deployment properties for a given server instance.
  */
-public class PluginProperties {
+public class PluginProperties implements com.avaje.ebean.server.plugin.spi.PluginProperties {
 
 	private final String name;
 
