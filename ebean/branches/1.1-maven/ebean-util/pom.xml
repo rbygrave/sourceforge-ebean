@@ -4,7 +4,8 @@
 	<groupId>org.avaje</groupId>
 	<artifactId>ebean-util</artifactId>
 	<name>Ebean core functions</name>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1${version.suffix}</version>
+	<packaging>jar</packaging>
 	<dependencies>
 	</dependencies>
 </project>

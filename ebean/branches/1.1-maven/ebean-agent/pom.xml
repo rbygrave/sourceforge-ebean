@@ -4,7 +4,13 @@
 	<groupId>org.avaje</groupId>
 	<artifactId>ebean-agent</artifactId>
 	<name>Ebean enhancement agent</name>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1${version.suffix}</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.avaje</groupId>
+		<artifactId>ebean</artifactId>
+		<version>1.1${version.suffix}</version>
+	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.ant</groupId>
@@ -19,7 +25,7 @@
 		<dependency>
 			<groupId>org.avaje</groupId>
 			<artifactId>ebean-util</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.1${version.suffix}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.persistence</groupId>
@@ -27,4 +33,7 @@
 			<version>1.0</version>
 		</dependency>
 	</dependencies>
+	<properties>
+		<version.suffix>-SNAPSHOT</version.suffix>
+	</properties>
 </project>
