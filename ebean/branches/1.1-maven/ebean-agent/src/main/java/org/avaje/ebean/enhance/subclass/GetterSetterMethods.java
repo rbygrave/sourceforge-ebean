@@ -1,12 +1,12 @@
-package com.avaje.ebean.enhance.subclass;
+package org.avaje.ebean.enhance.subclass;
 
 import java.util.List;
 
-import com.avaje.ebean.enhance.agent.ClassMeta;
-import com.avaje.ebean.enhance.agent.EnhanceConstants;
-import com.avaje.ebean.enhance.agent.FieldMeta;
-import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.agent.ClassMeta;
+import org.avaje.ebean.enhance.agent.EnhanceConstants;
+import org.avaje.ebean.enhance.agent.FieldMeta;
+import org.avaje.ebean.enhance.asm.ClassVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 public class GetterSetterMethods implements Opcodes, EnhanceConstants {
 

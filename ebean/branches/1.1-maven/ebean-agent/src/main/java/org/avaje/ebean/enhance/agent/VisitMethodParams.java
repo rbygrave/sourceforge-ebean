@@ -17,10 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
-import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.ClassVisitor;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
 
 /**
  * Utility object used to hold all the method parameters.

@@ -27,9 +27,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.avaje.ebean.enhance.asm.commons;
+package org.avaje.ebean.enhance.asm.commons;
 
-import com.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.Label;
 
 /**
  * A code generator for switch statements.

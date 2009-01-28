@@ -1,8 +1,8 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
-import com.avaje.ebean.enhance.asm.MethodAdapter;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.MethodAdapter;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 /**
  * Modify the constructor to additionally initialise the entityBeanIntercept

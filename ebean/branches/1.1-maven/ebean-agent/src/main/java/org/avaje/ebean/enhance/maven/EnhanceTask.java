@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.maven;
+package org.avaje.ebean.enhance.maven;
 
 import java.io.File;
 
@@ -6,9 +6,9 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
-import com.avaje.ebean.enhance.agent.Transformer;
-import com.avaje.ebean.enhance.ant.AntEnhanceTask;
-import com.avaje.ebean.enhance.ant.OfflineFileTransform;
+import org.avaje.ebean.enhance.agent.Transformer;
+import org.avaje.ebean.enhance.ant.AntEnhanceTask;
+import org.avaje.ebean.enhance.ant.OfflineFileTransform;
 
 /**
  * A Maven Plugin that can enhance entity beans etc for use by Ebean.
@@ -49,7 +49,7 @@ import com.avaje.ebean.enhance.ant.OfflineFileTransform;
  *      &lt;/executions>
  *      &lt;configuration>
  *        &lt;classSource>target/classes&lt;/classSource>
- *        &lt;packages>com.avaje.ebean.meta.**, com.acme.myapp.entity.**&lt;/packages>
+ *        &lt;packages>org.avaje.ebean.meta.**, com.acme.myapp.entity.**&lt;/packages>
  *        &lt;transformArgs>debug=1&lt;/transformArgs>
  *      &lt;/configuration>
  *    &lt;/plugin&gt;
@@ -57,7 +57,7 @@ import com.avaje.ebean.enhance.ant.OfflineFileTransform;
  * @author Paul Mendelson
  * @version $Revision$, $Date$
  * @since 1.0.3, Jan, 2009
- * @see com.avaje.ebean.enhance.ant.AntEnhanceTask
+ * @see org.avaje.ebean.enhance.ant.AntEnhanceTask
  * @goal enhance
  */
 public class EnhanceTask extends AbstractMojo {

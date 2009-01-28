@@ -1,14 +1,14 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
-import com.avaje.ebean.enhance.asm.ClassAdapter;
-import com.avaje.ebean.enhance.asm.EmptyVisitor;
-import com.avaje.ebean.enhance.asm.MethodAdapter;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.ClassAdapter;
+import org.avaje.ebean.enhance.asm.EmptyVisitor;
+import org.avaje.ebean.enhance.asm.MethodAdapter;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 /**
  * ClassAdapter used to detect if this class needs enhancement for entity or

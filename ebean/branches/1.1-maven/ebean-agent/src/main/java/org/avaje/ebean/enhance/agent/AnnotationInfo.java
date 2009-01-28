@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 import java.util.ArrayList;
 import java.util.HashMap;

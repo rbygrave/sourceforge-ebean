@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 /**
  * Exception thrown during enhancement when it is detected that the enhancement has already taken place.

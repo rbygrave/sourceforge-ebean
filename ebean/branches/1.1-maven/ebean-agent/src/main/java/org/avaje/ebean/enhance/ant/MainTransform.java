@@ -1,6 +1,6 @@
-package com.avaje.ebean.enhance.ant;
+package org.avaje.ebean.enhance.ant;
 
-import com.avaje.ebean.enhance.agent.Transformer;
+import org.avaje.ebean.enhance.agent.Transformer;
 
 /**
  * A utility object to run transformation from a main method.

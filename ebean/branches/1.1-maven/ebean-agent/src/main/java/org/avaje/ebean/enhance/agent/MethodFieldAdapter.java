@@ -1,10 +1,10 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
-import com.avaje.ebean.enhance.asm.Label;
-import com.avaje.ebean.enhance.asm.MethodAdapter;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.MethodAdapter;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 /**
  * Changes the method code from using PUTFIELD and GETFIELD to calling our

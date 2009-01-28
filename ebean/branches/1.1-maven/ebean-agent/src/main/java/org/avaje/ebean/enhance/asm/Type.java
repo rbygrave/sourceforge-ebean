@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.avaje.ebean.enhance.asm;
+package org.avaje.ebean.enhance.asm;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

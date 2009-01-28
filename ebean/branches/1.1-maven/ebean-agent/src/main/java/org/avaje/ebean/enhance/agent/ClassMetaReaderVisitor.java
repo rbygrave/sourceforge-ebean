@@ -1,12 +1,12 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 import java.util.logging.Logger;
 
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
-import com.avaje.ebean.enhance.asm.EmptyVisitor;
-import com.avaje.ebean.enhance.asm.FieldVisitor;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.EmptyVisitor;
+import org.avaje.ebean.enhance.asm.FieldVisitor;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 /**
  * Used by ClassMetaReader to read information about a class.

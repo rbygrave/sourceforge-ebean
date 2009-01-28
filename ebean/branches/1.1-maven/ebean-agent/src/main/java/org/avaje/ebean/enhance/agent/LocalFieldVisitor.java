@@ -1,10 +1,10 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
-import com.avaje.ebean.enhance.asm.Attribute;
-import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.EmptyVisitor;
-import com.avaje.ebean.enhance.asm.FieldVisitor;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.Attribute;
+import org.avaje.ebean.enhance.asm.ClassVisitor;
+import org.avaje.ebean.enhance.asm.EmptyVisitor;
+import org.avaje.ebean.enhance.asm.FieldVisitor;
 
 /**
  * Used to collect information about a field (specifically from field annotations).

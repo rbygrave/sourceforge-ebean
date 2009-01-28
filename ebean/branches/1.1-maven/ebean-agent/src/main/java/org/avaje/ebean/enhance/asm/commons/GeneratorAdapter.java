@@ -27,20 +27,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.avaje.ebean.enhance.asm.commons;
+package org.avaje.ebean.enhance.asm.commons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.Label;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
-import com.avaje.ebean.enhance.asm.Type;
+import org.avaje.ebean.enhance.asm.ClassVisitor;
+import org.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.Type;
 
 /**
- * A {@link com.avaje.ebean.enhance.asm.MethodAdapter} with convenient methods to generate
+ * A {@link org.avaje.ebean.enhance.asm.MethodAdapter} with convenient methods to generate
  * code. For example, using this adapter, the class below
  * 
  * <pre>

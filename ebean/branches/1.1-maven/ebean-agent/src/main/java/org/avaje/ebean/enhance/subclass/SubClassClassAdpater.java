@@ -1,22 +1,22 @@
-package com.avaje.ebean.enhance.subclass;
+package org.avaje.ebean.enhance.subclass;
 
 import java.util.logging.Logger;
 
-import com.avaje.ebean.enhance.agent.AlreadyEnhancedException;
-import com.avaje.ebean.enhance.agent.ClassMeta;
-import com.avaje.ebean.enhance.agent.EnhanceConstants;
-import com.avaje.ebean.enhance.agent.EnhanceContext;
-import com.avaje.ebean.enhance.agent.IndexFieldWeaver;
-import com.avaje.ebean.enhance.agent.InterceptField;
-import com.avaje.ebean.enhance.agent.MethodEquals;
-import com.avaje.ebean.enhance.agent.NoEnhancementRequiredException;
-import com.avaje.ebean.enhance.agent.VisitMethodParams;
-import com.avaje.ebean.enhance.asm.AnnotationVisitor;
-import com.avaje.ebean.enhance.asm.ClassAdapter;
-import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.FieldVisitor;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.agent.AlreadyEnhancedException;
+import org.avaje.ebean.enhance.agent.ClassMeta;
+import org.avaje.ebean.enhance.agent.EnhanceConstants;
+import org.avaje.ebean.enhance.agent.EnhanceContext;
+import org.avaje.ebean.enhance.agent.IndexFieldWeaver;
+import org.avaje.ebean.enhance.agent.InterceptField;
+import org.avaje.ebean.enhance.agent.MethodEquals;
+import org.avaje.ebean.enhance.agent.NoEnhancementRequiredException;
+import org.avaje.ebean.enhance.agent.VisitMethodParams;
+import org.avaje.ebean.enhance.asm.AnnotationVisitor;
+import org.avaje.ebean.enhance.asm.ClassAdapter;
+import org.avaje.ebean.enhance.asm.ClassVisitor;
+import org.avaje.ebean.enhance.asm.FieldVisitor;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
 
 public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstants {
 

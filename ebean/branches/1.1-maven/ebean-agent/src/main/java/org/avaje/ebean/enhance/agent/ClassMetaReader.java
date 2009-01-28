@@ -1,4 +1,4 @@
-package com.avaje.ebean.enhance.agent;
+package org.avaje.ebean.enhance.agent;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.enhance.asm.ClassReader;
+import org.avaje.ebean.enhance.asm.ClassReader;
 
 /**
  * Reads class information as an alternative to using a ClassLoader.

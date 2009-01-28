@@ -27,12 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.avaje.ebean.enhance.asm.commons;
+package org.avaje.ebean.enhance.asm.commons;
 
-import com.avaje.ebean.enhance.asm.Label;
-import com.avaje.ebean.enhance.asm.MethodVisitor;
-import com.avaje.ebean.enhance.asm.Opcodes;
-import com.avaje.ebean.enhance.asm.Type;
+import org.avaje.ebean.enhance.asm.Label;
+import org.avaje.ebean.enhance.asm.MethodVisitor;
+import org.avaje.ebean.enhance.asm.Opcodes;
+import org.avaje.ebean.enhance.asm.Type;
 
 /**
  * Created as a modification of AdviceAdpater by removing support for
