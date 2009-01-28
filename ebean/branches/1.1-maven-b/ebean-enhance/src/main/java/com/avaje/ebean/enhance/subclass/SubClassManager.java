@@ -23,12 +23,13 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.enhance.agent.EnhanceConstants;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import com.avaje.ebean.server.plugin.spi.PluginProperties;
+import com.avaje.lib.log.LogFactory;
 
 /**
  * Creates and caches the dynamically generated subclasses.
@@ -64,7 +65,12 @@ public class SubClassManager implements EnhanceConstants {
 			subclassFactory = (SubClassFactory) AccessController
 					.doPrivileged(new PrivilegedExceptionAction() {
 						public Object run() {
-							ClassLoader cl = Ebean.class.getClassLoader();
+							ClassLoader cl=null;
+							try {
+								cl = Class.forName("com.avaje.ebean.Ebean").getClassLoader();
+							} catch (ClassNotFoundException e) {
+								LogFactory.get(SubClassManager.class).log(Level.WARNING,"ebean",e);
+							}
 							return new SubClassFactory(cl, logLevel);
 						}
 					});
