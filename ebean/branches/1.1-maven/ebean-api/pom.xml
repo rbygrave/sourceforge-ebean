@@ -1,19 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-<!-- $URL$ -->
-<!-- $Revision$, $Date$ -->
+	<!--
+		$URL:
+		https://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/branches/1.1-maven/ebean-api/pom.xml
+		$
+	-->
+	<!--
+		$Revision$, $Date$
+	-->
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.avaje</groupId>
 	<artifactId>ebean-api</artifactId>
-	<packaging>maven-plugin</packaging>
-	<version>1.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<version>1.1${version.suffix}</version>
 	<name>Ebean ORM Persistence Layer &amp; Mapping Tool</name>
 	<url>http://maven.apache.org</url>
 	<parent>
-        	<groupId>org.avaje</groupId>
-        	<artifactId>ebean</artifactId>
-        	<version>1.1-SNAPSHOT</version>
- 	</parent>
+		<groupId>org.avaje</groupId>
+		<artifactId>ebean</artifactId>
+		<version>1.1${version.suffix}</version>
+	</parent>
 	<repositories>
 		<repository>
 			<id>maven2-repository.dev.java.net</id>
@@ -88,7 +94,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
-			<artifactId>testng-jdk15</artifactId>
+			<artifactId>testng</artifactId>
+			<classifier>jdk15</classifier>
 			<version>5.8</version>
 		</dependency>
 		<dependency>
