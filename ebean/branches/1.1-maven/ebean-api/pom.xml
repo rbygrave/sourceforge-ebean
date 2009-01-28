@@ -50,7 +50,7 @@
 								<property name="compile_classpath" refid="maven.compile.classpath" />
 								<echo message="compile classpath: ${compile_classpath}" />
 								<taskdef name="ebeanEnhance"
-									classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
+									classname="org.avaje.ebean.enhance.ant.AntEnhanceTask"
 									classpath="${compile_classpath}" />
 								<ebeanEnhance classSource="${project.build.outputDirectory}"
 									packages="com.avaje.ebean.meta.**, com.avaje.ebean.server.lib*"
@@ -100,8 +100,16 @@
 		</dependency>
 		<dependency>
 			<groupId>org.avaje</groupId>
+			<artifactId>ebean-agent</artifactId>
+			<version>1.1${version.suffix}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
 			<artifactId>ebean-util</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.1${version.suffix}</version>
 		</dependency>
 	</dependencies>
+	<properties>
+		<version.suffix>-SNAPSHOT</version.suffix>
+	</properties>
 </project>
