@@ -41,8 +41,6 @@ public class DeleteMapBean extends BaseMapBean {
 	
 	//boolean noVersionColumn;
 
-	
-	@SuppressWarnings("unchecked")
 	public DeleteMapBean(Binder binder, PersistRequest request) {
 		super(binder, request);
 		this.oldBean = (MapBean)request.getOldValues();

@@ -75,7 +75,6 @@ public class ScalarTypeEnumWithMapping implements ScalarType {
 		return beanDbMap.getBeanValue(dbValue);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Object toJdbcType(Object beanValue) {
 		
 		return beanDbMap.getDbValue(beanValue);

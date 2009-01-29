@@ -86,7 +86,6 @@ public abstract class BaseMapBean {
 	 */
 	private final int logLevel;
 	
-	@SuppressWarnings("unchecked")
 	public BaseMapBean(Binder binder, PersistRequest request) {
 		this.binder = binder;
 		this.bindValues = new BindValues();

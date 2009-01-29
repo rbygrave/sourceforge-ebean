@@ -17,35 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
-
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.server.reflect.BeanReflectSetter;
+package com.avaje.ebean.enhance.subclass;
 
 /**
- * Setter for a specific property on a MapBean.
+ * The suffix used build a generated EntityBean class. 
+ * <p>
+ * Note that the server name can be appended after 
+ * </p>
  */
-public class MapBeanSetter implements BeanReflectSetter {
-
-	private final String propertyName;
-	
-	/**
-	 * Construct for a given property.
-	 */
-	public MapBeanSetter(String propertyName){
-		this.propertyName = propertyName;
-	}
-	
-	/**
-	 * Set the property value.
-	 */
-	public void set(Object mapBean, Object value) {
-		MapBean m = (MapBean)mapBean;
-		m.set(propertyName, value);
-	}
-
-	public void setIntercept(Object bean, Object value) {
-		set(bean, value);
-	}
-
+public interface GenSuffix {
+    
+    /**
+     * The suffix added to the super class name.
+     */
+    public static final String SUFFIX = "$$EntityBean";
+    
 }

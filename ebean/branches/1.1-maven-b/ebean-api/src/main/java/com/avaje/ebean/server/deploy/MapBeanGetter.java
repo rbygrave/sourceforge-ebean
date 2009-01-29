@@ -39,7 +39,6 @@ public class MapBeanGetter implements BeanReflectGetter {
 	/**
 	 * Return the property value.
 	 */
-	@SuppressWarnings("unchecked")
 	public Object get(Object mapBean) {
 		MapBean m = (MapBean)mapBean;
 		return m.get(propertyName);

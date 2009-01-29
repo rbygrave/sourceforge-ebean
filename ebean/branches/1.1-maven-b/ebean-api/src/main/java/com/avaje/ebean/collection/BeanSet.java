@@ -118,7 +118,6 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         return set != null;
     }
 
-    @SuppressWarnings("unchecked")
 	private void init() {
         if (set == null) {
 			InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
