@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" output="ebean-util/target/classes" path="ebean-util/src/main/java"/>
+	<classpathentry kind="src" output="ebean-util/target/test-classes" path="ebean-util/src/test/java"/>
+	<classpathentry kind="src" output="ebean-enhance/target/classes" path="ebean-enhance/src/main/java"/>
+	<classpathentry kind="src" output="ebean-agent/target/classes" path="ebean-agent/src/main/java"/>
+	<classpathentry kind="src" output="ebean-api/target/classes" path="ebean-api/src/main/java"/>
+	<classpathentry excluding="**" kind="src" output="ebean-api/target/classes" path="ebean-api/src/main/resources"/>
+	<classpathentry kind="src" output="ebean-api/target/test-classes" path="ebean-api/src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

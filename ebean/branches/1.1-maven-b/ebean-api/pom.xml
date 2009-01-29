@@ -42,10 +42,10 @@
 								<property name="compile_classpath" refid="maven.compile.classpath" />
 								<echo message="compile classpath: ${compile_classpath}" />
 								<taskdef name="ebeanEnhance"
-									classname="org.avaje.ebean.enhance.ant.AntEnhanceTask"
+									classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
 									classpath="${compile_classpath}" />
 								<ebeanEnhance classSource="${project.build.outputDirectory}"
-									packages="org.avaje.ebean.meta.**, org.avaje.ebean.server.lib*"
+									packages="com.avaje.ebean.meta.**"
 									transformArgs="debug=1" />
 							</tasks>
 						</configuration>
