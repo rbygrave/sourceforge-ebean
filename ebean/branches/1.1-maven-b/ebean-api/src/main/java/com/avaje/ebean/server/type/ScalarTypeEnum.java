@@ -121,7 +121,6 @@ public class ScalarTypeEnum  {
 			}
 		}
 	
-		@SuppressWarnings("unchecked")
 		public Object read(ResultSet rset, int index) throws SQLException {
 			
 			int ordinal = rset.getInt(index);
@@ -151,7 +150,6 @@ public class ScalarTypeEnum  {
 		/**
 		 * Convert the db value to the Boolean value.
 		 */
-		@SuppressWarnings("unchecked")
 		public Object toBeanType(Object dbValue) {
 			if (dbValue == null) {
 				return null;
