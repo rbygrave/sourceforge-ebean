@@ -45,7 +45,6 @@ import com.avaje.ebean.enhance.asm.Type;
  * @author AdviceAdpater by Eric Bruneton
  * @author Adapted from AdviceAdpater by Rob Bygrave
  */
-@SuppressWarnings("unchecked")
 public abstract class MethodAdviceAdapter extends GeneratorAdapter implements Opcodes {
 
 	protected int methodAccess;
