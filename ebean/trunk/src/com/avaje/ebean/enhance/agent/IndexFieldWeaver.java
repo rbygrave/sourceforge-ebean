@@ -377,11 +377,15 @@ public class IndexFieldWeaver implements Opcodes {
 		case 4:
 			mv.visitInsn(ICONST_4);
 			break;
-		case 5:
+		case 5: 
 			mv.visitInsn(ICONST_5);
 			break;
 		default:
-			mv.visitIntInsn(BIPUSH, value);
+			if (value <= Byte.MAX_VALUE){
+				mv.visitIntInsn(BIPUSH, value);
+			} else {
+				mv.visitIntInsn(SIPUSH, value);	
+			}
 		}
 	}
 }
