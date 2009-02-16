@@ -453,12 +453,22 @@ public class BeanDescriptor {
 		if (inheritInfo != null) {
 			inheritInfo.setDescriptor(this);
 		}
+		
+		// always initialise the Id properties first
+		BeanProperty[] idProps = propertiesId();
+		for (int i = 0; i < idProps.length; i++) {
+			idProps[i].initialise();
+		}
 
+		// now initialise all the non-id properties
 		Iterator<BeanProperty> it = propertiesAll();
 		while (it.hasNext()) {
 			BeanProperty prop = it.next();
-			prop.initialise();
+			if (!prop.isId()){
+				prop.initialise();
+			}
 		}
+		
 		if (unidirectional != null) {
 			unidirectional.initialise();
 		}
