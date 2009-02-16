@@ -1,0 +1,19 @@
+<assembly>
+    <id></id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputFileNameMapping></outputFileNameMapping>
+            <unpack>true</unpack>
+            <includes>
+                <include>org.avaje:*:*:</include>
+            </includes>
+            <excludes>
+                <exclude>org.avaje:*:*:sources</exclude>
+            </excludes>
+        </dependencySet>
+    </dependencySets>    
+</assembly>

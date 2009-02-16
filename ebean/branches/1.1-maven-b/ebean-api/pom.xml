@@ -6,7 +6,8 @@
 		$
 	-->
 	<!--
-		$Revision$, $Date$
+		$Revision$, $Date: 2009-01-29 11:12:53 +0100 (Thu, 29 Jan 2009)
+		$
 	-->
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.avaje</groupId>
@@ -54,6 +55,15 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
