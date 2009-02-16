@@ -38,7 +38,7 @@ public class CounterFactory {
 
 	final GeneratedCounterInteger integerCounter = new GeneratedCounterInteger();
 
-	final GeneratedCounterInteger longCounter = new GeneratedCounterInteger();
+	final GeneratedCounterLong longCounter = new GeneratedCounterLong();
 
 	/**
 	 * Create the GeneratedProperty based on the property type.
