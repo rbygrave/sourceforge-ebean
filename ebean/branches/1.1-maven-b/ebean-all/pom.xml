@@ -1,0 +1,163 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.avaje</groupId>
+	<artifactId>ebean-all</artifactId>
+	<version>1.1${version.suffix}</version>
+	<packaging>pom</packaging>
+	<name>Ebean-all the consolidated module for ebean</name>
+		
+	<parent>
+		<groupId>org.avaje</groupId>
+		<artifactId>ebean</artifactId>
+		<version>1.1${version.suffix}</version>
+	</parent>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-api</artifactId>
+			<version>1.1${version.suffix}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-api</artifactId>
+			<version>1.1${version.suffix}</version>
+            <classifier>sources</classifier>
+		</dependency>
+        
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-agent</artifactId>
+			<version>1.1${version.suffix}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-agent</artifactId>
+			<version>1.1${version.suffix}</version>
+            <classifier>sources</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-util</artifactId>
+			<version>1.1${version.suffix}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-util</artifactId>
+			<version>1.1${version.suffix}</version>
+            <classifier>sources</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-enhance</artifactId>
+			<version>1.1${version.suffix}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-enhance</artifactId>
+			<version>1.1${version.suffix}</version>
+            <classifier>sources</classifier>
+		</dependency>
+	</dependencies>
+
+	<properties>
+		<version.suffix>-SNAPSHOT</version.suffix>
+	</properties>
+
+	<!-- To create the distribution jars run mvn assembly:assembly in the ebean-all directory -->
+	<build>
+		<plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assemble/all-binary.xml</descriptor>
+                        <descriptor>src/assemble/all-sources.xml</descriptor>
+                    </descriptors>
+                    <archive>
+				     <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+				    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeClassifiers>sources</includeClassifiers>
+                            <excludeTransitive>true</excludeTransitive>
+                            <outputDirectory>${project.build.directory}/javadoc-src</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <!-- generate the javadoc -->
+                    <execution>
+                        <id>generate-all-javadoc</id>
+                        <phase>compile</phase>
+                        <configuration>
+                            <tasks>
+                                <javadoc packagenames="com.avaje.*"
+                                         maxmemory="256m"
+                                         sourcepath="${project.build.directory}/javadoc-src"
+                                         defaultexcludes="yes"
+                                         destdir="${project.build.directory}/apidocs/"
+                                         version="true"
+                                         use="true"
+                                         windowtitle="${project.name} API">
+                                    <doctitle>
+                                        <![CDATA[<h1>${project.name} API v${project.version}</h1>]]></doctitle>
+                                    <bottom>
+                                        <![CDATA[<i>Copyright &#169; ${project.inceptionYear} EBean. All Rights Reserved.</i>]]></bottom>
+                                    <classpath refid="maven.dependency.classpath"/>
+                                </javadoc>
+                                <jar destfile="${project.build.directory}/${project.build.finalName}-javadoc.jar"
+                                     basedir="${project.build.directory}/apidocs/"
+                                     includes="**/**" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/${project.build.finalName}-javadoc.jar</file>
+                                    <type>jar</type>
+                                    <classifier>javadoc</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+		</plugins>
+	</build>
+</project>
