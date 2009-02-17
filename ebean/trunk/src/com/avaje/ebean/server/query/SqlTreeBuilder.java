@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.query.OrmQueryProperties;
@@ -486,7 +484,9 @@ public class SqlTreeBuilder {
 		private SqlTreeNodeExtraJoin createJoinLeaf(String propertyName) {
 			JoinNode node = root.findChild(propertyName);
 			if (node == null){
-				throw new PersistenceException("Could not find "+propertyName+" for extra join?");
+				// this can occur for master detail queries
+				// with concatenated keys (so not an error now)
+				return null;
 			}
 			if (node.isEmbeddedBean()){
 				// no extra join required for embedded beans
