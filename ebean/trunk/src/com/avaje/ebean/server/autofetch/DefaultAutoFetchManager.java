@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,10 +12,11 @@ import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.control.ImplicitAutoFetchMode;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
@@ -28,6 +30,8 @@ import com.avaje.ebean.server.plugin.PluginProperties;
  * information.
  */
 public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
+
+	private static final String AVAJE_EBEAN = Ebean.class.getName().substring(0,15);
 
 	private static final long serialVersionUID = -6826119882781771722L;
 
@@ -520,28 +524,44 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 	static final int MAX_STACK_SIZE = 20;
 
-	static final int IGNORE_LEADING_ELEMENTS = 7;
+	static final int IGNORE_LEADING_ELEMENTS = 6;
 
-	static final StackTraceElement dummyElement = new StackTraceElement("ebean.dummy.stacktrace.Element","main","doesNotExist", 1);
-	
-	static final StackTraceElement[] DUMMY_TRACE = {dummyElement};
-	
+	/**
+	 * Create a CallStack object.
+	 * <p>
+	 * This trims off the avaje ebean part of the stack trace so that 
+	 * the first element in the CallStack should be application code.
+	 * </p>
+	 */
 	public CallStack createCallStack() {
 
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
-		int stackLength = stackTrace.length - IGNORE_LEADING_ELEMENTS;
+		// ignore the first 6 as they are always avaje stack elements
+		int startIndex = IGNORE_LEADING_ELEMENTS;
+		
+		// find the first non-avaje stackElement
+		for (; startIndex < stackTrace.length; startIndex++) {
+			if (!stackTrace[startIndex].getClassName().startsWith(AVAJE_EBEAN)) {
+				break;
+			}
+		}
+		
+		int stackLength = stackTrace.length - startIndex;
 		if (stackLength > 20) {
+			// maximum of 20 stackTrace elements
 			stackLength = 20;
 		}
+		
+		// create the 'interesting' part of the stackTrace
 		StackTraceElement[] finalTrace = new StackTraceElement[stackLength];
 		for (int i = 0; i < stackLength; i++) {
-			finalTrace[i] = stackTrace[i + IGNORE_LEADING_ELEMENTS];
+			finalTrace[i] = stackTrace[i + startIndex];
 		}
+
 		if (stackLength < 1){
 			// this should not really happen
-			// I can't reproduce this issue now
-			finalTrace = DUMMY_TRACE;
+			throw new RuntimeException("StackTraceElement size 0?  stack: "+Arrays.toString(stackTrace));
 		}
 
 		return new CallStack(finalTrace);

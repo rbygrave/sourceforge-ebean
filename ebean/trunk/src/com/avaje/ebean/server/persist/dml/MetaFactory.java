@@ -71,7 +71,7 @@ public class MetaFactory implements Modes {
 
 		baseFact.create(setList, desc, MODE_UPDATE, includeLobs);
 		embeddedFact.create(setList, desc, MODE_UPDATE, includeLobs);
-		assocOneFact.create(setList, desc);
+		assocOneFact.create(setList, desc, MODE_UPDATE);
 
 		Bindable id = idFact.createId(desc);
 
@@ -82,7 +82,7 @@ public class MetaFactory implements Modes {
 
 		baseFact.create(allList, desc, MODE_WHERE, false);
 		embeddedFact.create(allList, desc, MODE_WHERE, false);
-		assocOneFact.create(allList, desc);
+		assocOneFact.create(allList, desc, MODE_WHERE);
 		
 		
 		Bindable setBindable = new BindableList(setList);
@@ -104,7 +104,7 @@ public class MetaFactory implements Modes {
 		
 		baseFact.create(allList, desc, MODE_WHERE, false);
 		embeddedFact.create(allList, desc, MODE_WHERE, false);
-		assocOneFact.create(allList, desc);
+		assocOneFact.create(allList, desc, MODE_WHERE);
 
 		Bindable allBindable = new BindableList(allList);
 		
@@ -122,7 +122,7 @@ public class MetaFactory implements Modes {
 
 		baseFact.create(allList, desc, MODE_INSERT, includeLobs);
 		embeddedFact.create(allList, desc, MODE_INSERT, includeLobs);
-		assocOneFact.create(allList, desc);
+		assocOneFact.create(allList, desc, MODE_INSERT);
 
 		Bindable allBindable = new BindableList(allList);
 		

@@ -81,4 +81,19 @@ public abstract class AnnotationParser {
         }
         return a;
     }
+    
+    /**
+	 * Return the annotation for the property.
+	 * <p>
+	 * Looks first at the field and then at the getter method. then at class level.
+	 * </p>
+	 */
+	@SuppressWarnings("unchecked")
+	protected Annotation find(DeployBeanProperty prop, Class annClass) {
+		Annotation a = get(prop, annClass);
+		if (a == null) {
+			a = prop.getOwningType().getAnnotation(annClass);
+		}
+		return a;
+	}
 }

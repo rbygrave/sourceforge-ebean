@@ -36,18 +36,24 @@ public class TableJoinColumn {
      */
     private final String foreignDbColumn;
 
+    private final boolean insertable;
+    
+    private final boolean updateable;
+    
     /**
      * Create the pair.
      */
     public TableJoinColumn(DeployTableJoinColumn deploy) {
     	this.localDbColumn = deploy.getLocalDbColumn();
     	this.foreignDbColumn = deploy.getForeignDbColumn();
+    	this.insertable = deploy.isInsertable();
+    	this.updateable = deploy.isUpdateable();
     }
     
-    public TableJoinColumn(String localDbColumn, String foreignDbColumn) {
-    	this.localDbColumn = localDbColumn;
-    	this.foreignDbColumn = foreignDbColumn;
-    }
+//    public TableJoinColumn(String localDbColumn, String foreignDbColumn) {
+//    	this.localDbColumn = localDbColumn;
+//    	this.foreignDbColumn = foreignDbColumn;
+//    }
     
 //    /**
 //     * Create a TableJoinColumn with the local and foreign columns swapped.
@@ -75,4 +81,17 @@ public class TableJoinColumn {
         return localDbColumn;
     }
 
+	/**
+	 * Return true if this column should be insertable.
+	 */
+	public boolean isInsertable() {
+		return insertable;
+	}
+
+	/**
+	 * Return true if this column should be updateable.
+	 */
+	public boolean isUpdateable() {
+		return updateable;
+	}
 }

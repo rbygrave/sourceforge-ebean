@@ -44,7 +44,8 @@ public class CQueryBuilder implements Constants {
 	private final String rowNumberWindowAlias;
 
 	private final String tableAliasPlaceHolder;
-
+	private final String columnAliasPrefix;
+	
 	/**
 	 * Get one more than maxRows. This last one is not returned but if it exists
 	 * is used to set a flag so the client knows there is more data to get if
@@ -63,6 +64,7 @@ public class CQueryBuilder implements Constants {
 		resultSetLimit = pluginCore.getDbConfig().getResultSetLimit();
 		rowNumberWindowAlias = pluginCore.getDbConfig().getRowNumberWindowAlias();
 		tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
+		columnAliasPrefix = pluginCore.getDbConfig().getColumnAliasPrefix();
 		rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
 	}
 
@@ -187,7 +189,7 @@ public class CQueryBuilder implements Constants {
     		msg +=". Has it got a valid base table? (joinTree is null!)";
     		throw new PersistenceException(msg);
     	}
-        SqlTreeBuilder selectBuilder = new SqlTreeBuilder(tableAliasPlaceHolder, query, joinTree, predicates);
+        SqlTreeBuilder selectBuilder = new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, query, joinTree, predicates);
         return selectBuilder.build();
     }
 	

@@ -33,6 +33,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.PersistenceException;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -168,6 +169,14 @@ public class AnnotationFields extends AnnotationParser {
 	private void readGenValue(GeneratedValue gen, DeployBeanProperty prop) {
 
 		String genName = gen.generator();
+		
+		SequenceGenerator sequenceGenerator = (SequenceGenerator) find(prop, SequenceGenerator.class);
+		if (sequenceGenerator != null) {
+			if (sequenceGenerator.name().equals(genName)) {
+				genName = sequenceGenerator.sequenceName();
+			}
+		}
+		
 		GenerationType strategy = gen.strategy();
 
 		if (strategy == GenerationType.IDENTITY) {
@@ -175,6 +184,9 @@ public class AnnotationFields extends AnnotationParser {
 
 		} else if (strategy == GenerationType.SEQUENCE) {
 			descriptor.setIdentityGeneration(IdentityGeneration.DB_SEQUENCE);
+			if (genName != null && genName.length() > 0) {
+				descriptor.setIdGeneratorName(genName);
+			}
 
 		} else if (strategy == GenerationType.AUTO) {
 			if (prop.getPropertyType().equals(UUID.class)){

@@ -13,8 +13,6 @@ public class GenerateDmlRequest {
 	final Set<String> includeProps;
 	
 	int bindCount;
-		
-	//Object bean;
 	
 	String prefix;
 	String prefix2;
@@ -32,10 +30,6 @@ public class GenerateDmlRequest {
 	public boolean isIncluded(BeanProperty prop) {
 		return (includeProps == null || includeProps.contains(prop.getName()));
 	}
-	
-//	public void appendColumnIsNull(ImportedProperty prop) {
-//		appendRaw(prop.getLocalDbColumn(),IS_NULL);
-//	}
 
 	public void appendColumnIsNull(String column) {
 		appendRaw(column,IS_NULL);
@@ -45,21 +39,6 @@ public class GenerateDmlRequest {
 		appendRaw(column,suffix);
 		bindCount++;
 	}
-	
-//	public void appendColumn(ImportedProperty prop) {
-//		appendRaw(prop.getLocalDbColumn(),suffix);
-//		bindCount++;
-//	}
-	
-//	public void appendColumnIsNull(BeanProperty prop) {
-//		appendRaw(prop.getDbColumn(),IS_NULL);
-//	}
-//	
-//	public void appendColumn(BeanProperty prop) {
-//
-//		appendRaw(prop.getDbColumn(),suffix);
-//		bindCount++;
-//	}
 	
 	public void appendRaw(String column) {
 		appendRaw(column, suffix);
@@ -79,14 +58,6 @@ public class GenerateDmlRequest {
 	public String toString() {
 		return sb.toString();
 	}
-
-//	public Object getBean() {
-//		return bean;
-//	}
-//
-//	public void setBean(Object bean) {
-//		this.bean = bean;
-//	}
 
 	public int getBindCount() {
 		return bindCount;
@@ -116,12 +87,5 @@ public class GenerateDmlRequest {
 		this.prefix2 = ", ";
 		this.suffix = "=?";
 	}
-	
-//	public void setPrefix(String prefix, String prefix2, String suffix) {
-//		this.prefix = prefix;
-//		this.prefix2 = prefix2;
-//		this.suffix = suffix;
-//	}
-
 
 }

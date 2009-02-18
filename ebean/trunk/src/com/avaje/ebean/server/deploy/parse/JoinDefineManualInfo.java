@@ -152,7 +152,7 @@ public class JoinDefineManualInfo {
 		String localColumn = nullEmptyString(joinColumn.name());
 		String refColumn = nullEmptyString(joinColumn.referencedColumnName());
 		
-		add(new DeployTableJoinColumn(localColumn, refColumn));
+		add(new DeployTableJoinColumn(localColumn, refColumn, joinColumn.insertable(), joinColumn.updatable()));
 	}
 	
 	private String nullEmptyString(String s){

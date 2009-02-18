@@ -87,6 +87,12 @@ public class SequenceNaming {
 	 */
 	public String getName(DeployBeanDescriptor desc) {
 
+		if (desc.getIdGeneratorName() != null) {
+			// user provided generator name is correct for the db already
+			// no need to do further processing
+			return desc.getIdGeneratorName();
+		}
+		 
 		String baseTable = desc.getBaseTable();
 		String uidColumn = null;
 

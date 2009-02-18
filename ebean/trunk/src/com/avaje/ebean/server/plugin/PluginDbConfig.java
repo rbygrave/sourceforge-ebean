@@ -55,6 +55,8 @@ public class PluginDbConfig {
 	
 	final String tableAliasPlaceHolder;
 	
+	final String columnAliasPrefix;
+	
 	/**
 	 * The open quote used by quoted identifiers.
 	 */
@@ -129,6 +131,7 @@ public class PluginDbConfig {
 		}
 
 		tableAliasPlaceHolder =  properties.getProperty("tableAliasPlaceHolder", "${ta}");
+		columnAliasPrefix = properties.getProperty("columnAliasPrefix", "c");
 		rowNumberWindowAlias = properties.getProperty("rowNumberWindowAlias", "as limitresult");	
 		closeQuote = properties.getProperty("closequote", "\"");
 		openQuote = properties.getProperty("openquote", "\"");
@@ -175,6 +178,10 @@ public class PluginDbConfig {
 		return tableAliasPlaceHolder;
 	}
 	
+	public String getColumnAliasPrefix() {
+		return columnAliasPrefix;
+	}
+
 	public char getIdentityGeneration() {
 		return identityGeneration;
 	}

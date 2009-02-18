@@ -17,19 +17,24 @@ public class DefaultDbSqlContext implements DbSqlContext {
 
 	private final String tableAliasPlaceHolder;
 	
+	private final String columnAliasPrefix;
+	
 	private final StringBuilder sb = new StringBuilder();
 
 	private final Stack<String> tableAliasStack = new Stack<String>();
 
 	private final Stack<JoinNode> joinStack = new Stack<JoinNode>();
 
+	private int columnIndex;
+	 
 	/**
 	 * A Set used to make sure formula joins are only added once to a query.
 	 */
 	private HashSet<String> formulaJoins;
 	
-	public DefaultDbSqlContext(String tableAliasPlaceHolder) {
+	public DefaultDbSqlContext(String tableAliasPlaceHolder, String columnAliasPrefix) {
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
+		this.columnAliasPrefix = columnAliasPrefix;
 	}
 	
 	public JoinNode peekJoinNode() {
@@ -118,6 +123,11 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		sb.append(tableAlias);
 		sb.append(PERIOD);
 		sb.append(column);
+
+		sb.append(" ");
+		sb.append(columnAliasPrefix);
+		sb.append(columnIndex);
+		columnIndex++;
 	}
 
 	public String toString() {

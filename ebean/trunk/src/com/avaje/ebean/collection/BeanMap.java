@@ -120,7 +120,7 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		return map != null;
 	}
 
-	@SuppressWarnings("unchecked")
+	//@SuppressWarnings("unchecked")
 	private void init() {
 		if (map == null) {
 			InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);

@@ -211,6 +211,28 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 	}
 
 	/**
+	 * Return true if this association is updateable.
+	 */
+	public boolean isUpdateable() {
+		if (tableJoin.columns().length > 0) {
+			return tableJoin.columns()[0].isUpdateable();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Return true if this association is insertable.
+	 */
+	public boolean isInsertable() {
+		if (tableJoin.columns().length > 0) {
+			return tableJoin.columns()[0].isInsertable();
+		}
+
+		return true;
+	}
+		 
+	/**
 	 * return the join to use for the bean.
 	 */
 	public TableJoin getTableJoin() {
