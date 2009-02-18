@@ -174,13 +174,11 @@ public final class InsertMeta {
 	 * For DB Sequence add the sequence name. For Identity leave the column out
 	 * all together.
 	 */
-	protected int addNullUidValue(GenerateDmlRequest request) {
+	protected void addNullUidValue(GenerateDmlRequest request) {
 		// Using Identity or Sequence
 		if (sequenceNextVal != null) {
 			request.appendRaw(sequenceNextVal);
-			return 1;
 		}
-		return 0;
 	}
 
 	private String genSql(boolean nullId, Set<String> loadedProps) {
@@ -215,11 +213,12 @@ public final class InsertMeta {
 		// the number of scalar properties being bound
 		int bindCount = request.getBindCount();
 
-		int bindStart = 0;
 		if (nullId) {
-			bindStart = addNullUidValue(request);
+			addNullUidValue(request);
 		}
 
+		int bindStart = (!nullId || sequenceNextVal==null) ? 0 : 1;
+		
 		for (int i = bindStart; i < bindCount; i++) {
 			if (i > 0) {
 				request.append(", ");
