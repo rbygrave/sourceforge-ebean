@@ -124,13 +124,26 @@ public class BeanDescriptorCacheFactory {
 		// we can initialise them which sorts out circular
 		// dependencies for OneToMany and ManyToOne etc
 		
-		Iterator<BeanDescriptor> it = map.values().iterator();
-		while (it.hasNext()) {
-			BeanDescriptor d = it.next();
-			d.initialise();
+		// PASS 1:
+		// initialise the ID properties of all the beans
+		// first (as they are needed to initialise the 
+		// associated properties in the second pass).
+		Iterator<BeanDescriptor> initId = map.values().iterator();
+		while (initId.hasNext()) {
+			BeanDescriptor d = initId.next();
+			d.initialiseId();
 		}
 		
-		it = map.values().iterator();
+		// PASS 2:
+		// now initialise all the associated properties
+		Iterator<BeanDescriptor> otherBeans = map.values().iterator();
+		while (otherBeans.hasNext()) {
+			BeanDescriptor d = otherBeans.next();
+			d.initialiseOther();
+		}
+		
+		// create BeanManager for each non-embedded entity bean
+		Iterator<BeanDescriptor> it = map.values().iterator();
 		while (it.hasNext()) {
 			BeanDescriptor d = it.next();
 			if (!d.isEmbedded()){

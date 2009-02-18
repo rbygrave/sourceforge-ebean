@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.persist.dml.Modes;
 
 /**
  * A factory that builds Bindable for BeanPropertyAssocOne properties.
@@ -35,7 +36,7 @@ public class FactoryAssocOnes {
 	/**
 	 * Add foreign key columns from associated one beans.
 	 */
-	public List<Bindable> create(List<Bindable> list, BeanDescriptor desc) {
+	public List<Bindable> create(List<Bindable> list, BeanDescriptor desc, int mode) {
 
 		BeanPropertyAssocOne[] ones = desc.propertiesOneImported();
 
@@ -47,6 +48,18 @@ public class FactoryAssocOnes {
 				// excluded as its the 'non-owning' side of OneToOne
 
 			} else {
+				switch (mode) {
+				case Modes.MODE_INSERT:
+					if (!ones[i].isInsertable()) {
+						continue;
+					}
+					break;
+				case Modes.MODE_UPDATE:
+					if (!ones[i].isUpdateable()) {
+						continue;
+					}
+					break;
+				}
 				Bindable item = new BindableAssocOne(ones[i]);
 				list.add(item);
 			}

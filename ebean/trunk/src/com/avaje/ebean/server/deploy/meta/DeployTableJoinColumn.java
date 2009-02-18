@@ -34,23 +34,38 @@ public class DeployTableJoinColumn {
 	 */
 	String foreignDbColumn;
 
-	// /**
-	// * Create the pair.
-	// */
-	// public DeployTableJoinColumn() {
-	//
-	// }
-
+	boolean insertable;
+	
+	boolean updateable;
+	
+	/**
+	 * Construct when automatically determining the join.
+	 * <p>
+	 * Assume that we want the foreign key to be insertable and updateable.
+	 * </p>
+	 */
 	public DeployTableJoinColumn(String localDbColumn, String foreignDbColumn) {
+		this(localDbColumn, foreignDbColumn, true, true);
+	}
+	
+	/**
+	 * Construct with explicit insertable and updateable flags.
+	 */
+	public DeployTableJoinColumn(String localDbColumn, String foreignDbColumn, boolean insertable, boolean updateable) {
 		this.localDbColumn = localDbColumn;
 		this.foreignDbColumn = foreignDbColumn;
+		this.insertable = insertable;
+		this.updateable = updateable;
 	}
 
 	/**
 	 * Create a TableJoinColumn with the local and foreign columns swapped.
 	 */
 	public DeployTableJoinColumn createInverse() {
-		return new DeployTableJoinColumn(foreignDbColumn, localDbColumn);
+		// Note that the insertable and updateable are just copied 
+		// which may not always be the correct thing to do
+		// but will leave it like this for now
+		return new DeployTableJoinColumn(foreignDbColumn, localDbColumn, insertable, updateable);
 	}
 
 	public String toString() {
@@ -86,6 +101,20 @@ public class DeployTableJoinColumn {
 		} else {			
 			return foreignDbColumn;
 		}
+	}
+
+	/**
+	 * Return true if this column should be insertable.
+	 */
+	public boolean isInsertable() {
+		return insertable;
+	}
+
+	/**
+	 * Return true if this column should be updateable.
+	 */
+	public boolean isUpdateable() {
+		return updateable;
 	}
 
 	/**

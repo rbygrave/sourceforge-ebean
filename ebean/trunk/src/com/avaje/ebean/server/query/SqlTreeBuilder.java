@@ -61,6 +61,8 @@ public class SqlTreeBuilder {
 	final SqlTree clause = new SqlTree();
 
 	final String tableAliasPlaceHolder;
+	
+	final String columnAliasPrefix;
 
 	final StringBuilder summary = new StringBuilder();
 
@@ -77,8 +79,11 @@ public class SqlTreeBuilder {
 	 * support the where and/or order by clause. If so these extra joins are
 	 * added to the root node.
 	 */
-	public SqlTreeBuilder(String tableAliasPlaceHolder, OrmQuery<?> query, JoinTree joinTree, CQueryPredicates predicates) {
+	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, OrmQuery<?> query, 
+			JoinTree joinTree, CQueryPredicates predicates) {
+		
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
+		this.columnAliasPrefix = columnAliasPrefix;
 		this.query = query;
 		this.queryDetail = query.getDetail();
 		this.joinTree = joinTree;
@@ -123,7 +128,7 @@ public class SqlTreeBuilder {
 
 	private String buildSelectClause(SqlTreeNode rootNode) {
 
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder);
+		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix);
 
 		rootNode.appendSelect(ctx);
 
@@ -148,7 +153,7 @@ public class SqlTreeBuilder {
 
 	private String buildFromClause(SqlTreeNode rootNode) {
 
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder);
+		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix);
 
 		rootNode.appendFrom(ctx, false);
 

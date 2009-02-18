@@ -339,12 +339,12 @@ public class DeployBeanDescriptor {
 		this.unidirectional = unidirectional;
 	}
 
-	/**
-	 * Remove the transient property.
-	 */
-	public void remove(DeployBeanProperty beanProp) {
-		propMap.remove(beanProp.getName());
-	}
+//	/**
+//	 * Remove the transient property.
+//	 */
+//	public void remove(DeployBeanProperty beanProp) {
+//		propMap.remove(beanProp.getName());
+//	}
 
 	/**
 	 * Return the concurrency mode used for beans of this type.

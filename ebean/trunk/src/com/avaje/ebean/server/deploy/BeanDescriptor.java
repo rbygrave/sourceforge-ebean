@@ -434,12 +434,15 @@ public class BeanDescriptor {
 	public void initialiseWithJoinTree(JoinTree joinTree) {
 		initialiseNamedQueries(joinTree);
 	}
-		
+
 	/**
-	 * Initialise the exported and imported parts for assoc One and assoc Many
-	 * properties.
+	 * Initialise the Id properties first.
+	 * <p>
+	 * These properties need to be initialised prior to the association properties 
+	 * as they are used to get the imported and exported properties.
+	 * </p>
 	 */
-	public void initialise() {
+	public void initialiseId() {
 		if (baseTableNotFound){
 			String msg = "BeanDescriptor " + fullName+" skipping initialisation as base table ["+baseTable+"] not found";
 			logger.log(Level.FINER, msg);
@@ -454,20 +457,41 @@ public class BeanDescriptor {
 			inheritInfo.setDescriptor(this);
 		}
 		
-		// always initialise the Id properties first
-		BeanProperty[] idProps = propertiesId();
-		for (int i = 0; i < idProps.length; i++) {
-			idProps[i].initialise();
-		}
-
-		// now initialise all the non-id properties
-		Iterator<BeanProperty> it = propertiesAll();
-		while (it.hasNext()) {
-			BeanProperty prop = it.next();
-			if (!prop.isId()){
+		if (embedded){
+			// initialise all the properties
+			Iterator<BeanProperty> it = propertiesAll();
+			while (it.hasNext()) {
+				BeanProperty prop = it.next();
 				prop.initialise();
 			}
+		} else {
+			// initialise just the Id properties
+			BeanProperty[] idProps = propertiesId();
+			for (int i = 0; i < idProps.length; i++) {
+				idProps[i].initialise();
+			}
 		}
+	}
+	
+	/**
+	 * Initialise the exported and imported parts for associated properties.
+	 */
+	public void initialiseOther() {
+		if (baseTableNotFound){
+			return;
+		}
+
+		if (!embedded){
+			// initialise all the non-id properties
+			Iterator<BeanProperty> it = propertiesAll();
+			while (it.hasNext()) {
+				BeanProperty prop = it.next();
+				if (!prop.isId()){
+					prop.initialise();
+				}
+			}
+		}
+
 		
 		if (unidirectional != null) {
 			unidirectional.initialise();
