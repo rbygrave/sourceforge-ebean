@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.enhance.subclass;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.util.InternalEbean;
 
 /**
  * Helper methods for generated sub classes.
@@ -36,14 +34,6 @@ public class SubClassUtil implements GenSuffix {
     }
     
     /**
-     * Return the appropriate server depending on the className suffix.
-     */
-    public static InternalEbean getServerSPI(String className) {
-        String serverName = SubClassUtil.getServerName(className);
-        return (InternalEbean)Ebean.getServer(serverName);
-    }
-    
-    /**
      * Return the super class name given the generated className.
      */
     public static String getSuperClassName(String className){
@@ -52,21 +42,6 @@ public class SubClassUtil implements GenSuffix {
             return className.substring(0, dPos);
         }
         return className;
-    }
-    
-    
-    /**
-     * Return the name of the server given the className.
-     */
-    private static String getServerName(String className){
-        int dPos = className.lastIndexOf(SUFFIX);
-        if (dPos > -1){
-            int snPos = dPos + SUFFIX.length()+1;
-            if (snPos < className.length()){
-                return className.substring(snPos);
-            }
-        }
-        return null;
     }
     
 }
