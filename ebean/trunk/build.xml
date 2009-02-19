@@ -5,7 +5,7 @@
 	<property file="build.properties" />
 
 	<property name="name" value="ebean" />
-	<property name="version" value="1.0.2" />
+	<property name="version" value="1.0.3" />
 
 	<property name="lib.dir" value="lib" />
 	<property name="src.dir" value="src" />
@@ -43,9 +43,6 @@
 
 	<path id="lib.path.ref">
 		<fileset dir="${lib.dir}" includes="*.jar" />
-		<fileset dir="${maven.dir}">
-			<include name="**/maven-plugin-api*.jar"/>
-		</fileset>
 	</path>
 
 	<target name="compile" depends="prepare, clean">
