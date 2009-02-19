@@ -190,7 +190,8 @@ public class DeployInheritInfoBuilder {
 		if (a != null) {
 			return true;
 		}
-		return false;
+		// search up the inheritance heirarchy
+		return isInheritanceClass(cls.getSuperclass());
 	}
 
 }
