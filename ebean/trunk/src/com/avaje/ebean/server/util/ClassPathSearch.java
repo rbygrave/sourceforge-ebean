@@ -38,6 +38,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.lib.log.LogFactory;
 
 /**
@@ -66,8 +67,9 @@ public class ClassPathSearch {
 
 	HashSet<String> packageHits = new HashSet<String>();
 
-	public ClassPathSearch(ClassLoader classLoader, ClassPathSearchFilter filter,
-			ClassPathSearchMatcher matcher) {
+	ClassPathReader classPathReader = new DefaultClassPathReader();
+	
+	public ClassPathSearch(ClassLoader classLoader, ClassPathSearchFilter filter, ClassPathSearchMatcher matcher) {
 		this.classLoader = classLoader;
 		this.filter = filter;
 		this.matcher = matcher;
@@ -75,14 +77,32 @@ public class ClassPathSearch {
 	}
 
 	private void initClassPaths() {
+		
 		try {
-			classPaths = ((java.net.URLClassLoader) classLoader).getURLs();
-		} catch (ClassCastException e) {
-			classPaths = System.getProperty("java.class.path", "").split(File.pathSeparator);
-		}
-		if (logger.isLoggable(Level.FINER)) {
-			String msg = "Classpath " + Arrays.toString(classPaths);
-			logger.finer(msg);
+			
+			String cn = GlobalProperties.getProperty("ebean.classpathreader");
+			if (cn != null){
+				// use a user defined classPathReader
+				logger.info("Using ["+cn+"] to read the searchable class path");
+				Class<?> cls = Class.forName(cn);
+				classPathReader = (ClassPathReader)cls.newInstance();
+			}
+			
+			classPaths = classPathReader.readPath(classLoader);
+				
+			if (classPaths == null || classPaths.length == 0){
+				String msg = "ClassPath is EMPTY using ClassPathReader ["+classPathReader+"]";
+				logger.warning(msg);
+			}
+			
+			if (logger.isLoggable(Level.FINER)) {
+				String msg = "Classpath " + Arrays.toString(classPaths);
+				logger.fine(msg);
+			}
+			
+		} catch (Exception e) {
+			String msg = "Error trying to read the classpath entries";
+			throw new RuntimeException(msg, e);
 		}
 	}
 
@@ -123,6 +143,11 @@ public class ClassPathSearch {
 	 */
 	public List<Class<?>> findClasses() throws ClassNotFoundException {
 
+		if (classPaths == null || classPaths.length == 0){
+			// returning an empty list
+			return matchList;
+		}
+		
 		String charsetName = Charset.defaultCharset().name();
 
 		for (int h = 0; h < classPaths.length; h++) {
@@ -132,9 +157,13 @@ public class ClassPathSearch {
 			JarFile module = null;
 
 			// for each class path ...
-			File classPath = new File((URL.class).isInstance(classPaths[h]) ? ((URL) classPaths[h])
-					.getFile() : classPaths[h].toString());
-
+			File classPath;
+			if (URL.class.isInstance(classPaths[h])){
+				classPath = new File(((URL)classPaths[h]).getFile());
+			} else {
+				classPath = new File(classPaths[h].toString());
+			}
+			
 			try {
 				// URL Decode the path replacing %20 to space characters.
 				String path = URLDecoder.decode(classPath.getAbsolutePath(), charsetName);
@@ -184,6 +213,12 @@ public class ClassPathSearch {
 					throw new ClassNotFoundException(msg, e);
 				}
 			}
+		}
+		
+		if (matchList.isEmpty()){
+			String msg = "No Entities found in ClassPath using ClassPathReader ["
+				+classPathReader+"] Classpath Searched[" + Arrays.toString(classPaths)+"]";
+			logger.warning(msg);
 		}
 
 		return matchList;
