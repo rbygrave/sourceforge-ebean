@@ -51,6 +51,28 @@ public class AnnotationClass extends AnnotationParser {
 	public void parse() {
 
 		read(descriptor.getBeanType());
+		
+		if (descriptor.getBaseTable() == null){
+			// search the inheritance heirarchy ...
+			Table table = findInheritedTable(descriptor.getBeanType().getSuperclass());
+			if (table != null){
+				info.setTable(table.catalog(), table.schema(), table.name(), null);
+			}
+		}
+	}
+	
+	/**
+	 * Search the inheritance heirarchy for Table annotation.
+	 */
+	private Table findInheritedTable(Class<?> cls) {
+		if (cls.equals(Object.class)){
+			return null;
+		} 
+		Table table = cls.getAnnotation(Table.class);
+		if (table != null){
+			return table;
+		}
+		return findInheritedTable(cls.getSuperclass());
 	}
 
 	public void readSqlAnnotations() {
@@ -84,7 +106,6 @@ public class AnnotationClass extends AnnotationParser {
 				} else {
 					descriptor.setName(entity.name());
 				}
-
 			}
 			if (anns[i] instanceof Embeddable) {
 				descriptor.setEmbedded(true);
@@ -92,7 +113,6 @@ public class AnnotationClass extends AnnotationParser {
 			}
 			if (anns[i] instanceof Table) {
 				Table ann = (Table) anns[i];
-				
 				info.setTable(ann.catalog(), ann.schema(), ann.name(), null);
 			}
 			if (anns[i] instanceof NamedQueries) {
