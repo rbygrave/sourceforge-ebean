@@ -964,13 +964,25 @@ public class BeanDescriptor {
 	 * Get a BeanProperty by its name.
 	 */
 	public BeanProperty getBeanProperty(String propName) {
-		BeanProperty prop = (BeanProperty) propMap.get(propName);
-//		if (prop == null && inheritInfo != null) {
-//			return inheritInfo.getSubTypeProperty(propName);
-//		}
-		return prop;
+		return (BeanProperty) propMap.get(propName);
 	}
 
+	/**
+	 * Find a BeanProperty including searching the inheritance heirarchy.
+	 * <p>
+	 * This searches this BeanDescriptor and then searches further down the
+	 * inheritance tree (not up).
+	 * </p>
+	 */
+	public BeanProperty findBeanProperty(String propName) {
+		BeanProperty prop = (BeanProperty) propMap.get(propName);
+		if (prop == null && inheritInfo != null) {
+			// search in sub types...
+			return inheritInfo.findSubTypeProperty(propName);
+		}
+		return prop;
+	}
+	
 	/**
 	 * Return the name of the server this BeanDescriptor belongs to.
 	 */

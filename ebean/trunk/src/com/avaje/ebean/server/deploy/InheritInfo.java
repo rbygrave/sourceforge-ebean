@@ -94,22 +94,21 @@ public class InheritInfo {
 	/**
 	 * Get the bean property additionally looking in the sub types.
 	 */
-	public BeanProperty getSubTypeProperty(String propertyName) {
-	
-//		BeanProperty prop = descriptor.getBeanProperty(propertyName);
-//		if (prop != null){
-//			return prop;
-//		}
+	public BeanProperty findSubTypeProperty(String propertyName) {
 		
 		BeanProperty prop = null;
 		
 		for (int i = 0, x=children.size(); i < x; i++) {
 			InheritInfo childInfo = children.get(i);
-			prop = childInfo.getSubTypeProperty(propertyName);
+			
+			// recursively search this child bean descriptor
+			prop = childInfo.getBeanDescriptor().findBeanProperty(propertyName);
+			
 			if (prop != null){
 				return prop;
 			}
 		}
+		
 		return null;
 	}
 	

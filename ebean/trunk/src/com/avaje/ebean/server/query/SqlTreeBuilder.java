@@ -264,7 +264,9 @@ public class SqlTreeBuilder {
 		while (it.hasNext()) {
 			String propName = it.next();
 			if (propName.length() > 0){
-				BeanProperty p = desc.getBeanProperty(propName);
+				// find the property including searching the
+				// sub class hierarchy if required
+				BeanProperty p = desc.findBeanProperty(propName);
 				if (p == null) {
 					logger.log(Level.SEVERE, "property [" + propName + "] not found on " + desc
 							+ " for query - excluding it.");
