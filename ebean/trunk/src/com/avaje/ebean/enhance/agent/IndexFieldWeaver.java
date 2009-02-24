@@ -102,7 +102,7 @@ public class IndexFieldWeaver implements Opcodes {
 
 		} else {
 			// add the _ebean_getIdentity(), equals() and hashCode() methods
-			MethodEquals.addMethods(cv, classMeta, idIndex, idFieldMeta.getName());
+			MethodEquals.addMethods(cv, classMeta, idIndex, idFieldMeta);
 		}
 	}
 

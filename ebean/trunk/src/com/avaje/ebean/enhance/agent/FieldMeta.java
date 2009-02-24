@@ -243,6 +243,22 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 				|| annotations.contains("Lcom/avaje/ebean/annotation/EmbeddedColumns;");
 	}
 
+	public void appendGetField(MethodVisitor mv, ClassMeta classMeta) {
+		mv.visitFieldInsn(GETFIELD, classMeta.getClassName(), fieldName , fieldDesc);
+	}
+
+	public void appendValueOf(MethodVisitor mv, ClassMeta classMeta) {
+		if (primativeType) {
+			// use valueOf methods to return primitives as objects
+			Type objectWrapperType = PrimitiveHelper.getObjectWrapper(asmType);
+
+			String objDesc = objectWrapperType.getInternalName();
+			String primDesc = asmType.getDescriptor();
+
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC, objDesc, "valueOf", "(" + primDesc + ")L" + objDesc + ";");
+		}
+	}
+	
 	/**
 	 * As part of the switch statement to read the fields generate the get code.
 	 */
