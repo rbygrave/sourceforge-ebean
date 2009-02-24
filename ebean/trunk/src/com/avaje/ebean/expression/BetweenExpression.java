@@ -37,7 +37,7 @@ class BetweenExpression implements Expression {
 	 * Based on the property name.
 	 */
 	public int queryPlanHash() {
-		int hc = BetweenExpression.class.hashCode();
+		int hc = BetweenExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;
 	}

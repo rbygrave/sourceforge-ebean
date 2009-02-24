@@ -42,7 +42,7 @@ class IdExpression implements Expression {
 	public int queryPlanHash() {
 		// this number is unique for a given bean type
 		// which is all that is required
-		return IdExpression.class.hashCode();
+		return IdExpression.class.getName().hashCode();
 	}
 
 	public int queryBindHash() {

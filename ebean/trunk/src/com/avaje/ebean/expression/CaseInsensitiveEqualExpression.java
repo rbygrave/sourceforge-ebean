@@ -31,7 +31,7 @@ class CaseInsensitiveEqualExpression implements Expression {
 	 * Based on the propertyName.
 	 */
 	public int queryPlanHash() {
-		int hc = CaseInsensitiveEqualExpression.class.hashCode();
+		int hc = CaseInsensitiveEqualExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;
 	}

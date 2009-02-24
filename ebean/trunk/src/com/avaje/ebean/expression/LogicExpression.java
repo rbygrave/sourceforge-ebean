@@ -61,7 +61,7 @@ abstract class LogicExpression implements Expression {
 	 * Based on the joinType plus the two expressions.
 	 */
 	public int queryPlanHash() {
-		int hc = LogicExpression.class.hashCode() + joinType.hashCode();
+		int hc = LogicExpression.class.getName().hashCode() + joinType.hashCode();
 		hc = hc * 31 + expOne.queryPlanHash();
 		hc = hc * 31 + expTwo.queryPlanHash();
 		return hc;

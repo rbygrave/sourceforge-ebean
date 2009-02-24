@@ -45,7 +45,7 @@ class InExpression implements Expression {
 	 * Based on the number of values in the in clause.
 	 */
 	public int queryPlanHash() {
-		return InExpression.class.hashCode() + 31 * values.length;
+		return InExpression.class.getName().hashCode() + 31 * values.length;
 	}
 
 	public int queryBindHash() {

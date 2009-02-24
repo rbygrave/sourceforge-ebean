@@ -39,7 +39,7 @@ class NullExpression implements Expression {
 	 * Based on notNull flag and the propertyName.
 	 */
 	public int queryPlanHash() {
-		int hc = NullExpression.class.hashCode();
+		int hc = NullExpression.class.getName().hashCode();
 		hc = hc * 31 + (notNull ? 1 : 0);
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;

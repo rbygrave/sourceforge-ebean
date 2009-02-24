@@ -74,7 +74,7 @@ class AllEqualsExpression implements Expression {
 	 * </p>
 	 */
 	public int queryPlanHash() {
-		int hc = AllEqualsExpression.class.hashCode();
+		int hc = AllEqualsExpression.class.getName().hashCode();
 		Set<Entry<String, Object>> entries = propMap.entrySet();
 		Iterator<Entry<String, Object>> it = entries.iterator();
 

@@ -34,7 +34,7 @@ class RawExpression implements Expression {
 	 * Based on the sql.
 	 */
 	public int queryPlanHash() {
-		int hc = RawExpression.class.hashCode();
+		int hc = RawExpression.class.getName().hashCode();
 		hc = hc * 31 + sql.hashCode();
 		return hc;
 	}

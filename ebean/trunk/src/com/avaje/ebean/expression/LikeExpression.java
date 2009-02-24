@@ -44,7 +44,7 @@ class LikeExpression implements Expression {
 	 * Based on caseInsensitive and the property name.
 	 */
 	public int queryPlanHash() {
-		int hc = LikeExpression.class.hashCode();
+		int hc = LikeExpression.class.getName().hashCode();
 		hc = hc * 31 + (caseInsensitive ? 0 : 1);
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;

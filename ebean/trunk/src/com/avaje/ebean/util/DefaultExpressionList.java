@@ -125,7 +125,7 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 	 * Calculate a hash based on the expressions but excluding the actual bind values.
 	 */
 	public int queryPlanHash() {
-		int hash = DefaultExpressionList.class.hashCode();
+		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
 			Expression expression = list.get(i);
 			hash = hash*31 + expression.queryPlanHash();
@@ -137,7 +137,7 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 	 * Calculate a hash based on the expressions.
 	 */
 	public int queryBindHash() {
-		int hash = DefaultExpressionList.class.hashCode();
+		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
 			Expression expression = list.get(i);
 			hash = hash*31 + expression.queryBindHash();
