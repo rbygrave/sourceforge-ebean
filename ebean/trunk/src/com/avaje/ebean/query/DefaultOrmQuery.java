@@ -317,7 +317,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	}
 
 	public int hashCode() {
-		int hc = Query.class.hashCode();
+		int hc = Query.class.getName().hashCode();
 		hc = hc * 31 + getQueryHash();
 		return hc;
 	}

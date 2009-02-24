@@ -72,7 +72,7 @@ abstract class JunctionExpression implements Junction, Expression {
 	 * Based on Junction type and all the expression contained.
 	 */
 	public int queryPlanHash() {
-		int hc = JunctionExpression.class.hashCode();
+		int hc = JunctionExpression.class.getName().hashCode();
 		for (int i = 0; i < list.size(); i++) {
 			hc = hc * 31 + joinType.hashCode();
 			hc = hc * 31 + list.get(i).queryPlanHash();
@@ -82,7 +82,7 @@ abstract class JunctionExpression implements Junction, Expression {
 	}
 
 	public int queryBindHash() {
-		int hc = JunctionExpression.class.hashCode();
+		int hc = JunctionExpression.class.getName().hashCode();
 		for (int i = 0; i < list.size(); i++) {
 			hc = hc * 31 + list.get(i).queryBindHash();
 		}

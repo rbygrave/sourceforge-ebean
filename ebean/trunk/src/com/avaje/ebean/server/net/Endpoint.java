@@ -81,7 +81,7 @@ public class Endpoint {
     }
     
     public int hashCode() {
-        int hc = Endpoint.class.hashCode();
+        int hc = Endpoint.class.getName().hashCode();
         hc = 31*hc + fullName.hashCode();
         return hc;
     }

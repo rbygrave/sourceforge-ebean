@@ -66,9 +66,9 @@ class SimpleExpression implements Expression {
 	 * Based on the type and propertyName.
 	 */
 	public int queryPlanHash() {
-		int hc = SimpleExpression.class.hashCode();
+		int hc = SimpleExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
-		hc = hc * 31 + type.hashCode();
+		hc = hc * 31 + type.name().hashCode();
 		return hc;
 	}
 

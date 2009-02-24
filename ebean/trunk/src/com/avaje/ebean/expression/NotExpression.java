@@ -31,7 +31,7 @@ final class NotExpression implements Expression {
 	 * Based on the expression.
 	 */
 	public int queryPlanHash() {
-		int hc = NotExpression.class.hashCode();
+		int hc = NotExpression.class.getName().hashCode();
 		hc = hc * 31 + exp.queryPlanHash();
 		return hc;
 	}

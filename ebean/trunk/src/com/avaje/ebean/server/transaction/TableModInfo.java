@@ -76,7 +76,7 @@ public class TableModInfo implements Serializable {
     }
 
     public int hashCode() {
-        int hc = TableModInfo.class.hashCode();
+        int hc = TableModInfo.class.getName().hashCode();
         hc = hc*31 + tableName.hashCode();
         return hc;
     }
