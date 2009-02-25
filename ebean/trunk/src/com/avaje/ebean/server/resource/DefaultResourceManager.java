@@ -34,13 +34,16 @@ public class DefaultResourceManager implements ResourceManager {
 
 	final ResourceSource resourceSource;
 	
-	final File dictionaryFile;
+	final File dictionaryDir;
+	
+	final File autofetchDir;
 	
 	final File indexDirectory;
 	
-	public DefaultResourceManager(ResourceSource resourceSource, File dictionaryFile, File indexDirectory) {
+	public DefaultResourceManager(ResourceSource resourceSource, File dictionaryDir, File autofetchDir, File indexDirectory) {
 		this.resourceSource = resourceSource;
-		this.dictionaryFile = dictionaryFile;
+		this.dictionaryDir = dictionaryDir;
+		this.autofetchDir = autofetchDir;
 		this.indexDirectory = indexDirectory;
 	}
 	
@@ -49,7 +52,11 @@ public class DefaultResourceManager implements ResourceManager {
 	}
 
 	public File getDictionaryDirectory() {
-		return dictionaryFile;
+		return dictionaryDir;
+	}
+	
+	public File getAutofetchDirectory() {
+		return autofetchDir;
 	}
 
 	public File getIndexDirectory() {
