@@ -156,6 +156,8 @@ public class PropertyEvaluator {
 		if (startPos < val.length()) {
 			int sp = val.indexOf(START, startPos);
 			if (sp > -1) {
+				// append what is between the last token and the new one (if startPos == sp nothing gets added)
+				sb.append(val.substring(startPos, sp));
 				int ep = val.indexOf(END, sp + 1);
 				if (ep > -1) {
 					String cal = evalExpression(val, sp, ep);
