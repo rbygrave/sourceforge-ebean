@@ -172,7 +172,13 @@ public class ExeUpdateSql {
         
         String firstWord = sql.substring(0, pos[0]);
         String secWord   = sql.substring(pos[0]+1, pos[1]);
-        String thirdWord = sql.substring(pos[1]+1, pos[2]);
+        String thirdWord;
+        if (pos[2] == 0){
+        	// there is nothing after the table name
+            thirdWord = sql.substring(pos[1]+1);
+        } else {
+            thirdWord = sql.substring(pos[1]+1, pos[2]);
+        }
         
         determineType(firstWord, secWord, thirdWord, request);
     }
