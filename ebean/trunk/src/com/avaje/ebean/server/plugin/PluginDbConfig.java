@@ -306,20 +306,18 @@ public class PluginDbConfig {
 		}
 		fileName = ".ebean."+fileName+".autofetch";
 
-		// autoFetch file in same directory as dictionary
-		File dictDir = resourceManager.getDictionaryDirectory();
+		File dir = resourceManager.getAutofetchDirectory();
 
-		if (!dictDir.exists()) {
+		if (!dir.exists()) {
 			// automatically create the directory if it does not exist.
 			// this is probably a fairly reasonable thing to do
-			if (!dictDir.mkdirs()) {
-				String m = "Unable to create directory [" + dictDir + "] for autofetch file ["
-						+ fileName + "]";
+			if (!dir.mkdirs()) {
+				String m = "Unable to create directory [" + dir + "] for autofetch file ["+ fileName + "]";
 				throw new PersistenceException(m);
 			}
 		}
 
-		return new File(dictDir, fileName);
+		return new File(dir, fileName);
 	}
 	
 	/**

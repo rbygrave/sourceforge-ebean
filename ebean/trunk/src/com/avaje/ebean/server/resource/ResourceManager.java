@@ -37,6 +37,14 @@ public interface ResourceManager {
 	public File getDictionaryDirectory();
 
 	/**
+	 * Return the directory the autofetch file is serialized to.
+	 * <p>
+	 * This needs to be a directory with read/write permissions.
+	 * </p>
+	 */
+	public File getAutofetchDirectory();
+	
+	/**
 	 * Return the directory to put lucene indexes in.
 	 * <p>
 	 * This needs to be a directory with read/write permissions.

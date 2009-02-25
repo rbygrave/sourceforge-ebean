@@ -61,9 +61,10 @@ public class DefaultResourceManagerFactory implements ResourceManagerFactory {
 
 		ResourceSource resourceSource = createResourceSource();
 		File dictDir = getDictionaryDir(resourceSource);
+		File autofetchDir = getAutofetchDir(resourceSource);
 		File idxDir = getIndexDir(dictDir);
 
-		return new DefaultResourceManager(resourceSource, dictDir, idxDir);
+		return new DefaultResourceManager(resourceSource, dictDir, autofetchDir, idxDir);
 	}
 
 	/**
@@ -99,6 +100,27 @@ public class DefaultResourceManagerFactory implements ResourceManagerFactory {
 			String msg = "Can not determine a directory for the dictionary file.";
 			msg += " Please specify a ebean.dictionary.directory property.";
 			throw new PersistenceException(msg);
+		}
+	}
+
+	/**
+	 * Return the directory that autofetch serialized file goes into.
+	 */
+	protected File getAutofetchDir(ResourceSource resourceSource) {
+
+		String dir = properties.getProperty("autofetch.directory", null);
+		if (dir != null) {
+			return new File(dir);
+		}
+
+		String realPath = resourceSource.getRealPath();
+		if (realPath != null) {
+			// same location as the sql files
+			return new File(realPath);
+
+		} else {
+			// be compatible to previous behaviour
+			return getDictionaryDir(resourceSource);
 		}
 	}
 
