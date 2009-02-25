@@ -243,10 +243,49 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 				|| annotations.contains("Lcom/avaje/ebean/annotation/EmbeddedColumns;");
 	}
 
+	/**
+	 * Append GETFIELD bytecode for this field.
+	 */
 	public void appendGetField(MethodVisitor mv, ClassMeta classMeta) {
 		mv.visitFieldInsn(GETFIELD, classMeta.getClassName(), fieldName , fieldDesc);
 	}
+	
+	/**
+	 * Append compare instructions if its a long, float or double.
+	 */
+	public void appendCompare(MethodVisitor mv, ClassMeta classMeta) {
+		if (primativeType){
+			if (classMeta.isLog(4)) {
+				classMeta.log(" ... getIdentity compare primitive field["+fieldName+"] type[" + fieldDesc+"]");
+			}
+			if (fieldDesc.equals("J")){
+				// long compare to 0
+				mv.visitInsn(LCONST_0);
+				mv.visitInsn(LCMP);
+				
+			} else if (fieldDesc.equals("D")) {
+				// double compare to 0
+				mv.visitInsn(DCONST_0);
+				mv.visitInsn(DCMPL);
+				
+			} else if (fieldDesc.equals("F")) {
+				// float compare to 0
+				mv.visitInsn(FCONST_0);
+				mv.visitInsn(FCMPL);
+				
+			} else {
+				// no extra instructions required for 
+				// int, short, byte, char
+			}
+		}
+	}
 
+	/**
+	 * Append code to get the Object value of a primitive.
+	 * <p>
+	 * This becomes a Integer.valueOf(someInt); or similar.
+	 * </p>
+	 */
 	public void appendValueOf(MethodVisitor mv, ClassMeta classMeta) {
 		if (primativeType) {
 			// use valueOf methods to return primitives as objects

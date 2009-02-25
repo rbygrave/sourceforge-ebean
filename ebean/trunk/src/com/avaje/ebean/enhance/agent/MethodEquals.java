@@ -150,6 +150,8 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 		mv.visitLineNumber(1, l3);
 		mv.visitVarInsn(ALOAD, 0);
 		idFieldMeta.appendGetField(mv, classMeta);
+		idFieldMeta.appendCompare(mv, classMeta);
+		
 		Label l8 = new Label();
 		mv.visitJumpInsn(IFEQ, l8);
 		Label l9 = new Label();
