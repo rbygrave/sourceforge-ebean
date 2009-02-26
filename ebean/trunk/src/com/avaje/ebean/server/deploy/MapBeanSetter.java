@@ -39,7 +39,6 @@ public class MapBeanSetter implements BeanReflectSetter {
 	/**
 	 * Set the property value.
 	 */
-	@SuppressWarnings("unchecked")
 	public void set(Object mapBean, Object value) {
 		MapBean m = (MapBean)mapBean;
 		m.set(propertyName, value);
