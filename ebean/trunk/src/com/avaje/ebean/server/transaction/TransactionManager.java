@@ -76,46 +76,46 @@ public class TransactionManager implements Constants {
 	/**
 	 * Prefix for transaction id's (logging).
 	 */
-	String prefix;
+	private final String prefix;
 
 	/**
 	 * The dataSource of connections.
 	 */
-	DataSource dataSource;
+	private final DataSource dataSource;
 
-	boolean logAllCommits;
+	private final boolean logAllCommits;
 
 	/**
 	 * Flag to indicate the default Isolation is READ COMMITTED. This enables us
 	 * to close queryOnly transactions rather than commit or rollback them.
 	 */
-	boolean readCommittedIsolation;
+	private final boolean readCommittedIsolation;
 
 	/**
 	 * The default batchMode for transactions.
 	 */
-	boolean defaultBatchMode;
+	private final boolean defaultBatchMode;
 
 	/**
 	 * Background threading of post commit processing.
 	 */
-	ThreadPool threadPool;
+	private final ThreadPool threadPool;
 
 	/**
 	 * Helper object to perform BeanListener notification.
 	 */
-	ListenerNotify listenerNotify;
+	private final ListenerNotify listenerNotify;
 
-	PluginProperties properties;
+	private final PluginProperties properties;
 	
-	DeploymentManager deploy;
-	
-	int debugLevel;
-	
+	private final DeploymentManager deploy;
+		
 	private final boolean logCommitEvent;
 	
-	final ClusterManager clusterManager;
+	private final ClusterManager clusterManager;
 	
+	private final int debugLevel;
+
 	/**
 	 * Create the TransactionManager
 	 */
@@ -133,25 +133,17 @@ public class TransactionManager implements Constants {
 		this.listenerNotify = new ListenerNotify(this, pluginCore);
 		this.dataSource = pluginCore.getDbConfig().getDataSource();
 		
-		logCommitEvent = properties.getPropertyBoolean("log.commit", false);
-		debugLevel = properties.getPropertyInt("debug.transaction", 0);
-			
+		this.logCommitEvent = properties.getPropertyBoolean("log.commit", false);
+		this.debugLevel = properties.getPropertyInt("debug.transaction", 0);	
 		this.defaultBatchMode = properties.getPropertyBoolean("batch.mode", false);
+		
 		this.prefix = properties.getProperty("transaction.prefix", "");
 		String logAllCom = properties.getProperty("transaction.logallcommits", "false");
 		this.logAllCommits = (logAllCom != null && logAllCom.equalsIgnoreCase("true"));
 
-		determineIsolation();
+		this.readCommittedIsolation = isReadCommittedIsolation(dataSource);
 	}
 	
-	public BeanDescriptorOwner getDeploy() {
-		return deploy;
-	}
-	
-	public TableStateManager getTableStateManager() {
-		return tableState;
-	}
-
 	/**
 	 * Check to see if read committed is the default isolation level.
 	 * <p>
@@ -167,19 +159,17 @@ public class TransactionManager implements Constants {
 	 * and transaction isolation levels and logs warnings if appropriate.
 	 * </p>
 	 */
-	private void determineIsolation() {
+	private boolean isReadCommittedIsolation(DataSource ds) {
 		Connection c = null;
 		try {
-			c = dataSource.getConnection();
+			c = ds.getConnection();
 
 			int isolationLevel = c.getTransactionIsolation();
-			readCommittedIsolation = (isolationLevel == Connection.TRANSACTION_READ_COMMITTED);
+			return (isolationLevel == Connection.TRANSACTION_READ_COMMITTED);
 
 		} catch (SQLException ex) {
 			String m = "Errored trying to determine the default Isolation Level";
-			
-			logger.log(Level.SEVERE, m, ex);
-			
+			throw new PersistenceException(m, ex);			
 
 		} finally {
 			try {
@@ -190,6 +180,22 @@ public class TransactionManager implements Constants {
 				logger.log(Level.SEVERE, "closing connection", ex);
 			}
 		}
+	}
+	
+	public String getServerName() {
+		return properties.getServerName();
+	}
+	
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+	
+	public BeanDescriptorOwner getDeploy() {
+		return deploy;
+	}
+	
+	public TableStateManager getTableStateManager() {
+		return tableState;
 	}
 
 	/**
@@ -229,14 +235,39 @@ public class TransactionManager implements Constants {
 	}
 
 	/**
+	 * Wrap an externally supplied Connection.
+	 */
+	public ServerTransaction wrapExternalConnection(Connection c) {
+		long id;
+		synchronized (monitor) {
+			// Perhaps could use JDK5 atomic Integer instead
+			id = ++transactionCounter;
+		}
+
+		ExternalJdbcTransaction t = new ExternalJdbcTransaction(prefix + id, true, c, this);
+
+		// set the default batch mode. This can be on for
+		// jdbc drivers that support getGeneratedKeys
+		if (defaultBatchMode){
+			t.setBatchMode(true);
+		}
+
+		if (debugLevel >= 3){
+			String msg = "External Transaction ["+t.getId()+"] wrapped";
+			logger.info(msg);
+		}
+		
+		return t;
+	}
+	
+	/**
 	 * Create a new Transaction.
 	 */
 	public ServerTransaction createTransaction(boolean explicit, int isolationLevel) {
 		try {
-			long id = 0;
-			// Perhaps could use JDK5 atomic Integer instead
-			// of this full synchronisation
+			long id;
 			synchronized (monitor) {
+				// Perhaps could use JDK5 atomic Integer instead
 				id = ++transactionCounter;
 			}
 			Connection c = dataSource.getConnection();

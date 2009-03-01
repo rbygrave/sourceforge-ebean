@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.plugin;
 
+import java.lang.reflect.Constructor;
+
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.DefaultServerCache;
 import com.avaje.ebean.server.core.InternalEbeanServer;
@@ -33,6 +37,7 @@ import com.avaje.ebean.server.persist.DefaultPersister;
 import com.avaje.ebean.server.query.DefaultOrmQueryEngine;
 import com.avaje.ebean.server.query.DefaultRelationalQueryEngine;
 import com.avaje.ebean.server.transaction.DefaultTransactionScopeManager;
+import com.avaje.ebean.server.transaction.SpringAwareTransactionScopeManager;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 
@@ -69,9 +74,33 @@ public class DefaultPlugin implements Plugin {
 
 		this.transactionManager = new TransactionManager(pluginCore);
 
-		// FIXME: generalise this to support external scope managers such as
-		// Spring etc
-		this.transactionScopeManager = new DefaultTransactionScopeManager(properties.getServerName());
+		this.transactionScopeManager = createScopeManager(properties, transactionManager);
+	}
+	
+	/**
+	 * Create a TransactionScopeManager. This could be aware of external transaction managers
+	 * such as Spring etc.
+	 */
+	private TransactionScopeManager createScopeManager(PluginProperties props, TransactionManager mgr) {
+		String cn = props.getProperty("transactionScopeManager", null);
+		if (cn != null){
+			try {
+				Class<?> cls = Class.forName(cn);
+				Constructor<?> constructor = cls.getConstructor(TransactionManager.class);
+				return (TransactionScopeManager)constructor.newInstance(mgr);
+			} catch (Exception e){
+				String m = "Error trying to create TransactionScopeManager with "+cn;
+				throw new PersistenceException(m, e);
+			}
+		}
+		if ( props.getPropertyBoolean("spring.transactions", false) ) {
+			// built in spring aware transactions
+			return new SpringAwareTransactionScopeManager(mgr);
+		} else {
+			// standard one
+			return new DefaultTransactionScopeManager(mgr);
+		}
+		
 	}
 
 	public Persister createPersister(InternalEbeanServer server) {
