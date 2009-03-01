@@ -29,6 +29,7 @@ import java.util.Map;
 import com.avaje.ebean.bean.BeanController;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
@@ -41,6 +42,8 @@ import com.avaje.ebean.server.reflect.BeanReflect;
  * Describes Beans including their deployment information.
  */
 public class DeployBeanDescriptor {
+
+	private static final String META_BEAN_PREFIX = MetaAutoFetchStatistic.class.getName().substring(0,20);
 
 	boolean baseTableNotFound;
 	
@@ -170,6 +173,7 @@ public class DeployBeanDescriptor {
 
 	String name;
 	
+
 	/**
 	 * Construct the BeanDescriptor.
 	 */
@@ -181,6 +185,16 @@ public class DeployBeanDescriptor {
 		}
 	}
 	
+	/**
+	 * Return true if this is a Meta entity bean.
+	 * <p>
+	 * The Meta entity beans are not based on real tables but get meta information
+	 * from memory such as all the entity bean meta data.
+	 * </p>
+	 */
+	public boolean isMeta() {
+		return beanType.getName().startsWith(META_BEAN_PREFIX);
+	}
 	
 	/**
 	 * Return true if the base table for this entity bean was not found.

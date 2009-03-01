@@ -65,7 +65,8 @@ public class DeployBeanInfo {
 		if (descriptor.getBaseTable() == null){
 			return null;
 		} else {
-			return getTableInfo(descriptor.getBaseTable());
+			// search for the TableInfo
+			return getTableInfo(descriptor.getBaseTable());	
 		}
 	}
 	
@@ -108,7 +109,7 @@ public class DeployBeanInfo {
 	 */
 	public void setDefaultTableName() {
 
-		if (!descriptor.isEmbedded()) {
+		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
 			String baseTable = descriptor.getBaseTable();
 			if (baseTable == null) {
 				// default the tableName using NamingConvention.

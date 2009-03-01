@@ -94,6 +94,11 @@ public class BeanDescriptor {
 	 */
 	final boolean embedded;
 
+	/**
+	 * True if this is a Meta bean.
+	 */
+	final boolean meta;
+
 	final boolean autoFetchTunable;
 
 	/**
@@ -350,6 +355,7 @@ public class BeanDescriptor {
 		this.sequenceNextVal = deploy.getSequenceNextVal();
 		this.tableGenerated = deploy.isTableGenerated();
 		this.embedded = deploy.isEmbedded();
+		this.meta = deploy.isMeta();
 		this.defaultConstructor = deploy.hasDefaultConstructor();
 		this.lazyFetchIncludes = deploy.getLazyFetchIncludes();
 		this.concurrencyMode = deploy.getConcurrencyMode();
@@ -1020,6 +1026,17 @@ public class BeanDescriptor {
 		return embedded;
 	}
 
+	/**
+	 * Return true if this is an meta bean.
+	 * <p>
+	 * Those are Entity Beans in org.avaje.ebean.meta that hold meta
+	 * data such as query performance statistics etc.
+	 * </p>
+	 */
+	public boolean isMeta() {
+		return embedded;
+	}
+	
 	/**
 	 * Return the concurrency mode used for beans of this type.
 	 */
