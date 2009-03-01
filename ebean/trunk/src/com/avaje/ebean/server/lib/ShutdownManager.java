@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.server.core.ServerFactory;
-import com.avaje.ebean.server.lib.sql.DataSourceManager;
+import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
 import com.avaje.lib.log.LogFactory;
 
@@ -182,7 +182,7 @@ public final class ShutdownManager {
 
 				ThreadPoolManager.shutdown();
 
-				DataSourceManager.shutdown();
+				DataSourceGlobalManager.shutdown();
 
 			} catch (Exception ex) {
 				String msg = "Shutdown Exception: "+ ex.getMessage();

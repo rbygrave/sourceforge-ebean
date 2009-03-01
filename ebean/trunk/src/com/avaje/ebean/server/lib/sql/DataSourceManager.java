@@ -17,8 +17,10 @@
  */
 package com.avaje.ebean.server.lib.sql;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,104 +29,110 @@ import com.avaje.ebean.server.lib.BackgroundRunnable;
 import com.avaje.ebean.server.lib.BackgroundThread;
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
 
 
 /**
  * Manages access to named DataSources.
  */
-public class DataSourceManager {
+public class DataSourceManager implements DataSourceNotify {
 	
-	private static final Logger logger = LogFactory.get(DataSourceManager.class);
-	
-	private static class DataSourceManagerHolder {
-	    private static DataSourceManager me = new DataSourceManager();
-	}
+	private static final Logger logger = Logger.getLogger(DataSourceManager.class.getName());
 	
     /**
      * An alerter that notifies when the database has problems.
      */
-    private DataSourceAlertListener alertlistener;
- 
-    /** 
-     * The default datasource used (can be null). 
-     */
-    private String defaultDataSource;
-
-
-    /**
-     * Set to true when shutting down.
-     */
-    private boolean isShuttingDown = false;
+    private final DataSourceAlertListener alertlistener;
 
     /** 
      * Cache of the named DataSources. 
      */
-    private Hashtable<String,DataSourcePool> dsMap = new Hashtable<String, DataSourcePool>();
+    private final Hashtable<String,DataSourcePool> dsMap = new Hashtable<String, DataSourcePool>();
 
     /**
-     * Monitor for creating datasources.
+     * Monitor for creating dataSources.
      */
-    private Object monitor = new Object();
+    private final Object monitor = new Object();
 
     /**
      * The database checker registered with BackgroundThread.
      */
-    final BackgroundRunnable dbChecker;
+    private final BackgroundRunnable dbChecker;
     
     /**
      * The frequency to test db while it is up.
      */
-    final int dbUpFreqInSecs;
+    private final int dbUpFreqInSecs;
     
     /**
      * The frequency to test db while it is down.
      */
-    final int dbDownFreqInSecs = 10;
+    private final int dbDownFreqInSecs;
     
-    final ConfigProperties configProperties;
+    private final ConfigProperties defaultConfig;
     
-	/** 
-	 * Singleton private constructor.
-	 */
-	private DataSourceManager() {
-		configProperties = GlobalProperties.getConfigProperties();
-	    // perform heart beat every 30 seconds by default
-        dbUpFreqInSecs = configProperties.getIntProperty("datasource.heartbeatfreq",30);
-        dbChecker = new BackgroundRunnable(new Checker(),dbUpFreqInSecs);
+    /** 
+     * The default dataSource used (can be null). 
+     */
+    private final String defaultDataSource;
 
+    /**
+     * Set to true when shutting down.
+     */
+    private boolean shuttingDown;
+    
+    /**
+     * Construct based on the GlobalProperties.
+     */
+	public DataSourceManager() {
+		this(GlobalProperties.getConfigProperties());
+	}
+	
+	/** 
+	 * Construct with explicit ConfigProperties.
+	 */
+	public DataSourceManager(ConfigProperties defaultConfig) {
+		this.defaultConfig = defaultConfig;
+	    
+		this.alertlistener = createAlertListener(defaultConfig);
+		
+		// perform heart beat every 30 seconds by default
+        this.dbUpFreqInSecs = defaultConfig.getIntProperty("datasource.heartbeatfreq",30);
+        this.dbDownFreqInSecs = defaultConfig.getIntProperty("datasource.deadbeatfreq",10);
+        this.defaultDataSource = defaultConfig.getProperty("datasource.default");
+        
+        this.dbChecker = new BackgroundRunnable(new Checker(), dbUpFreqInSecs);
+        
 		try {
-            
-		    BackgroundThread.add(dbChecker);
-		    
-			initialise();
-			
-		} catch (DataSourceException e) {
+	        BackgroundThread.add(dbChecker);
+            		    
+		} catch (Exception e) {
 			logger.log(Level.SEVERE, null, e);
 		}
 	}
 
-	private void initialise() throws DataSourceException {
-		
-		this.alertlistener = new SimpleAlerter();
-
-		this.defaultDataSource = configProperties.getProperty("datasource.default");
+	private DataSourceAlertListener createAlertListener(ConfigProperties configProperties) throws DataSourceException {
 		
 		String alertCN = configProperties.getProperty("datasource.alert.class");
-		if (alertCN != null){
+		if (alertCN == null){
+			return new SimpleAlerter(configProperties);
+			
+		} else {
 		    try {
 		        Class<?> claz = Class.forName(alertCN);
-		        this.alertlistener = (DataSourceAlertListener)claz.newInstance();
+		        DataSourceAlertListener alert = (DataSourceAlertListener)claz.newInstance();
+		        alert.initialise(configProperties);
+		        return alert;
+		        
 		    } catch (Exception ex){
-				logger.log(Level.SEVERE, null, ex);
+		    	throw new DataSourceException(ex);
 		    }
 		}
 	}
 
     /**
-     * Send an alert to say the datasource is back up.
+     * Send an alert to say the dataSource is back up.
      */
-	protected void notifyDataSourceUp(String dataSourceName){
+	public void notifyDataSourceUp(String dataSourceName){
 
         dbChecker.setFreqInSecs(dbUpFreqInSecs);
 		
@@ -134,9 +142,9 @@ public class DataSourceManager {
 	}
 
     /**
-     * Send an alert to say the datasource is down.
+     * Send an alert to say the dataSource is down.
      */
-	protected void notifyDataSourceDown(String dataSourceName){
+	public void notifyDataSourceDown(String dataSourceName){
 		
         dbChecker.setFreqInSecs(dbDownFreqInSecs);
         
@@ -146,51 +154,40 @@ public class DataSourceManager {
 	}
 
     /**
-     * Send an alert to say the datasource is getting close to its max size.
+     * Send an alert to say the dataSource is getting close to its max size.
      */
-	protected void notifyWarning(String subject, String msg){
+	public void notifyWarning(String subject, String msg){
 		if (alertlistener != null){
 		    alertlistener.warning(subject, msg);
 		}
 	}
 
-	/**
-	 *  Return the singleton instance.
-	 */
-	private static DataSourceManager getInstance() {
-		return DataSourceManagerHolder.me;
-	}
-
     /**
-     * Return true when the datasource is shutting down.
+     * Return true when the dataSource is shutting down.
      */
-	public static boolean isShuttingDown() {
-	    return getInstance().isShuttingDown;
+	public boolean isShuttingDown() {
+		synchronized(monitor) {
+			return shuttingDown;
+		}
 	}
 	
     /**
-     * Shutdown the datasources.
+     * Shutdown the dataSources.
      */
-    public static void shutdown() {
-        getInstance().shutdownPools();
-    }
-    
-	/**
-	 *  Called on Server Shutdown (via the ShutdownHook).
-	 *  This will go through all the dataSources and shut them
-	 *  down, closing their connections explicitly.
-	 */
-	private void shutdownPools() {
-		this.isShuttingDown = true;
+    public void shutdown() {
+		
 		synchronized(monitor) {
-			Iterator<DataSourcePool> i = iterator();
+			
+			this.shuttingDown = true;
+			
+			Iterator<DataSourcePool> i = dsMap.values().iterator();
 			while (i.hasNext()) {
 				try {					
 					DataSourcePool ds = (DataSourcePool)i.next();
 					ds.shutdown();
 
 				} catch (DataSourceException e) {
-					// should never be thrown as the Datasources are all created...
+					// should never be thrown as the DataSources are all created...
 					logger.log(Level.SEVERE, null, e);
 				}
 			}
@@ -198,21 +195,29 @@ public class DataSourceManager {
 	}
 
     /**
-     * Return an iterator of DataSourcePool's.
+     * Return the DataSourcePool's.
      */
-	public static Iterator<DataSourcePool> iterator() {
-	    return getInstance().dsMap.values().iterator();
+	public List<DataSourcePool> getPools() {
+		synchronized(monitor) {
+			// create a copy of the DataSourcePool's
+			ArrayList<DataSourcePool> list = new ArrayList<DataSourcePool>();
+			list.addAll(dsMap.values());
+			return list;
+		}
 	}
     
-	public static DataSourcePool getDataSource(String name) {
-		return getDataSource(name, GlobalProperties.getConfigProperties());
+	/**
+	 * Get the dataSource using the default ConfigProperties.
+	 */
+	public DataSourcePool getDataSource(String name) {
+		return getDataSource(name, defaultConfig);
 	}
 	
     /**
-     * Return the named DataSourcePool.
+     * Get the dataSource using explicit ConfigProperties.
      */
-    public static DataSourcePool getDataSource(String name, ConfigProperties configProps){
-        return getInstance().get(name, configProps);
+    public DataSourcePool getDataSource(String name, ConfigProperties configProps){
+        return get(name, configProps);
     }
     
 	private DataSourcePool get(String name, ConfigProperties configProps){
@@ -224,7 +229,7 @@ public class DataSourceManager {
 	    }
 	    
 	    if (configProps == null){
-	    	configProps = GlobalProperties.getConfigProperties();
+	    	configProps = defaultConfig;
 	    }
 	    
 	    synchronized(monitor){
@@ -240,27 +245,26 @@ public class DataSourceManager {
 	}
 	
 	/**
-	 * Check that the database is up by performing a simple query.
-	 * This should be done periodically.  By default every 30 seconds.
+	 * Check that the database is up by performing a simple query. This should
+	 * be done periodically. By default every 30 seconds.
 	 */
 	private void checkDataSource() {
 
-        if (!isShuttingDown()) {
-
-            synchronized(monitor){
-	            Iterator<DataSourcePool> it = iterator();
-	            while (it.hasNext()) {
-	                DataSourcePool ds = (DataSourcePool) it.next();	
-	                ds.checkDataSource();
-	            }
-            }
-        }
-    }
+		synchronized (monitor) {
+			if (!isShuttingDown()) {
+				Iterator<DataSourcePool> it = dsMap.values().iterator();
+				while (it.hasNext()) {
+					DataSourcePool ds = (DataSourcePool) it.next();
+					ds.checkDataSource();
+				}
+			}
+		}
+	}
     
     /**
-     * Runs every dbUpFreqInSecs secs to make sure datasource is up.
+     * Runs every dbUpFreqInSecs to make sure dataSource is up.
      */
-    class Checker implements Runnable {
+    private final class Checker implements Runnable {
 
         public void run() {
             checkDataSource();

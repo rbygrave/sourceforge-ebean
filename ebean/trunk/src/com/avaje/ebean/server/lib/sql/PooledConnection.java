@@ -20,7 +20,6 @@ package com.avaje.ebean.server.lib.sql;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -30,8 +29,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Is a connection that belongs to a DataSourcePool.
@@ -53,7 +50,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class PooledConnection implements Connection {
 
-	private static final Logger logger = LogFactory.get(PooledConnection.class);
+	private static final Logger logger = Logger.getLogger(PooledConnection.class.getName());
 
 	private static String IDLE_CONNECTION_ACCESSED_ERROR = "Pooled Connection has been accessed whilst idle in the pool, via method: ";
 
@@ -74,15 +71,45 @@ public class PooledConnection implements Connection {
 	static final int STATUS_ENDED = 87;
 
 	/**
+	 * Name used to identify the PooledConnection for logging.
+	 */
+	final String name;
+
+	/**
+	 * The pool this connection belongs to.
+	 */
+	final DataSourcePool pool;
+
+	/**
+	 * The underlying connection.
+	 */
+	final Connection connection;
+
+	/**
+	 * The time this connection was created.
+	 */
+	final long creationTime;
+
+	/**
+	 * Cache of the PreparedStatements
+	 */
+	final PstmtCache pstmtCache;
+
+	final Object pstmtMonitor = new Object();
+	
+	/**
 	 * The status of the connection. IDLE, ACTIVE or ENDED.
 	 */
 	int status = STATUS_IDLE;
 
 	/**
-	 * Name used to identify the PooledConnection for logging.
+	 * Set this to true if the connection will be busy for a long time.
+	 * <p>
+	 * This means it should skip the suspected connection pool leak checking.
+	 * </p>
 	 */
-	String name;
-
+	boolean longRunning;
+	
 	/**
 	 * Flag to indicate that this connection had errors and should be checked to
 	 * make sure it is okay.
@@ -104,26 +131,6 @@ public class PooledConnection implements Connection {
 	 * The last statement executed by this connection.
 	 */
 	String lastStatement;
-
-	/**
-	 * The pool this connection belongs to.
-	 */
-	DataSourcePool pool;
-
-	/**
-	 * The underlying connection.
-	 */
-	Connection connection;
-
-	/**
-	 * The time this connection was created.
-	 */
-	long creationTime;
-
-	/**
-	 * Cache of the PreparedStatements
-	 */
-	LRUCache<String, ExtendedPreparedStatement> pstmtCache;
 
 	/**
 	 * The number of hits against the preparedStatement cache.
@@ -152,33 +159,16 @@ public class PooledConnection implements Connection {
 	 * closeDestroy() will close() the underlining connection properly.
 	 * </p>
 	 */
-	public PooledConnection(DataSourcePool pool, int uniqueID) throws SQLException {
+	public PooledConnection(DataSourcePool pool, int uniqueId, Connection connection) throws SQLException {
 
 		this.pool = pool;
-		this.name = pool.getName() + "." + uniqueID;
+		this.connection = connection;
+		this.name = pool.getName() + "." + uniqueId;
+		this.pstmtCache = new PstmtCache(name, pool.getPstmtCacheSize());
 
 		this.creationTime = System.currentTimeMillis();
 		this.lastUseTime = creationTime;
-
-		connection = DriverManager.getConnection(pool.databaseUrl, pool.connectionProps);
-
-		connection.setAutoCommit(pool.getAutoCommit());
-
-		int isoLevel = pool.getTransactionIsolation();
-		if (isoLevel > -1) {
-			connection.setTransactionIsolation(isoLevel);
-		}
-
-		int pstmtCacheSize = pool.getParams().getPstmtCacheSize();
-		// the cache of PreparedStatements...
-		String cacheName = "ds." + name + ".pstmt";
-		pstmtCache = new LRUCache<String, ExtendedPreparedStatement>(cacheName, pstmtCacheSize,
-				new PreparedStatementCleanup());
-
-		pstmtCache.setTraceLevel(0);
-
 	}
-
 
 	/**
 	 * Return the DataSourcePool that this connection belongs to.
@@ -203,6 +193,29 @@ public class PooledConnection implements Connection {
 
 	public String toString() {
 		return name;
+	}
+	
+	public String getDescription() {
+		return "name["+name+"] startTime["+getStartUseTime()+"] stmt["+getLastStatement()+"] createdBy["+getCreatedByMethod()+"]";
+	}
+		
+	public String getStatistics() {
+		return "name["+name+"] startTime["+getStartUseTime()+"] pstmtHits["+pstmtHitCounter+"] pstmtMiss["+pstmtMissCounter+"] "+pstmtCache.getDescription();
+	}
+	
+	/**
+	 * Return true if the connection should be treated as long running (skip connection pool leak check).
+	 */
+	public boolean isLongRunning() {
+		return longRunning;
+	}
+
+	/**
+	 * Set this to true if the connection is a long running connection and should skip the
+	 * 'suspected connection pool leak' checking.
+	 */
+	public void setLongRunning(boolean longRunning) {
+		this.longRunning = longRunning;
 	}
 
 	/**
@@ -264,7 +277,7 @@ public class PooledConnection implements Connection {
 	/**
 	 * A Least Recently used cache of PreparedStatements.
 	 */
-	public LRUCache<String,ExtendedPreparedStatement> getPrepStmtCache() {
+	public PstmtCache getPstmtCache() {
 		return pstmtCache;
 	}
 
@@ -304,28 +317,28 @@ public class PooledConnection implements Connection {
 	 */
 	protected void returnPreparedStatement(ExtendedPreparedStatement pstmt) {
 
-		// synchronized (pstmtMonitor) {
-		// ExtendedPreparedStatement alreadyInCache =
-		// (ExtendedPreparedStatement) pstmtCache
-		// .get(pstmt.getCacheKey());
-		//
-		// if (alreadyInCache != null) {
-		// try {
-		// // if a entry in the cache exists for the exact same SQL...
-		// // then remove it from the cache and close it fully.
-		// // Only having one PreparedStatement per unique SQL
-		// // statement
-		// alreadyInCache.closeDestroy();
-		//
-		// } catch (SQLException e) {
-		// Log.error(e);
-		// }
-		// }
-		// // add the returning prepared statement to the cache.
-		// // Note that the LRUCache will automatically close fully old unused
-		// // PStmts when the cache has hit its maximum size.
-		// pstmtCache.put(pstmt.getCacheKey(), pstmt);
-		// }
+		 synchronized (pstmtMonitor) {
+			ExtendedPreparedStatement alreadyInCache = pstmtCache.get(pstmt.getCacheKey());
+
+			if (alreadyInCache == null) {
+				// add the returning prepared statement to the cache.
+				// Note that the LRUCache will automatically close fully old unused
+				// PStmts when the cache has hit its maximum size.
+				pstmtCache.put(pstmt.getCacheKey(), pstmt);
+				
+			} else {
+				try {
+					// if a entry in the cache exists for the exact same SQL...
+					// then remove it from the cache and close it fully.
+					// Only having one PreparedStatement per unique SQL
+					// statement
+					pstmt.closeDestroy();
+
+				} catch (SQLException e) {
+					logger.log(Level.SEVERE, "Error closing Pstmt", e);
+				}
+			}
+		}
 	}
 
 	/**
@@ -346,38 +359,34 @@ public class PooledConnection implements Connection {
 	/**
 	 * This will try to use a cache of PreparedStatements.
 	 */
-	private PreparedStatement prepareStatement(String sql, boolean useFlag, int flag,
-			String cacheKey) throws SQLException {
+	private PreparedStatement prepareStatement(String sql, boolean useFlag, int flag, String cacheKey) throws SQLException {
+		
 		if (status == STATUS_IDLE) {
 			String m = IDLE_CONNECTION_ACCESSED_ERROR + "prepareStatement()";
 			throw new SQLException(m);
 		}
 		try {
-			// synchronized (pstmtMonitor) {
-			lastStatement = sql;
-
-			// try to get a matching cached PStmt from the cache.
-			// SingleThreaded use of a single Connection so not
-			// removing it from the cache.
-			ExtendedPreparedStatement pstmt = (ExtendedPreparedStatement) pstmtCache.get(cacheKey);
-
-			if (pstmt != null) {
-				pstmtHitCounter++;
-				return pstmt;
+			synchronized (pstmtMonitor) {
+				lastStatement = sql;
+	
+				// try to get a matching cached PStmt from the cache.
+				ExtendedPreparedStatement pstmt = pstmtCache.remove(cacheKey);
+	
+				if (pstmt != null) {
+					pstmtHitCounter++;
+					return pstmt;
+				}
+	
+				// create a new PreparedStatement
+				pstmtMissCounter++;
+				PreparedStatement actualPstmt;
+				if (useFlag) {
+					actualPstmt = connection.prepareStatement(sql, flag);
+				} else {
+					actualPstmt = connection.prepareStatement(sql);
+				}
+				return new ExtendedPreparedStatement(this, actualPstmt, sql, cacheKey);
 			}
-
-			// create a new PreparedStatement
-			pstmtMissCounter++;
-			PreparedStatement actualPstmt = null;
-			if (useFlag) {
-				actualPstmt = connection.prepareStatement(sql, flag);
-			} else {
-				actualPstmt = connection.prepareStatement(sql);
-			}
-			pstmt = new ExtendedPreparedStatement(this, actualPstmt, sql, cacheKey);
-			pstmtCache.put(cacheKey, pstmt);
-			return pstmt;
-			// }
 
 		} catch (SQLException ex) {
 			addError(ex);
@@ -411,6 +420,7 @@ public class PooledConnection implements Connection {
 		this.createdByMethod = null;
 		this.lastStatement = null;
 		this.hadErrors = false;
+		this.longRunning = false;
 	}
 
 	/**
@@ -871,24 +881,6 @@ public class PooledConnection implements Connection {
 	 */
 	public StackTraceElement[] getStackTrace() {
 		return stackTrace;
-	}
-
-	/**
-	 * Used to close pstmt's when they are kicked out of the cache.
-	 */
-	static class PreparedStatementCleanup implements LRUCacheCleanup {
-
-		private static final long serialVersionUID = 1L;
-
-		public void cleanupEldest(Object eldestValue) {
-
-			ExtendedPreparedStatement pstmt = (ExtendedPreparedStatement) eldestValue;
-			try {
-				pstmt.closeDestroy();
-			} catch (SQLException e) {
-				logger.log(Level.SEVERE, null, e);
-			}
-		}
 	}
 
 }

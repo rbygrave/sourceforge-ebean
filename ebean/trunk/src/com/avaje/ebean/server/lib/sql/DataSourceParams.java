@@ -37,7 +37,7 @@ public class DataSourceParams {
     /**
      * Create the parameters based on a Map.
      * 
-     * @param name the name of the datasource
+     * @param name the name of the dataSource
      * @param prefix the prefix used to determine the full parameter key
      * @param params the Map that contains the key value pairs
      */
@@ -66,6 +66,23 @@ public class DataSourceParams {
     /**
      * Return the driver class name.
      */
+    public boolean isAutoCommit() {
+        String s = getParam("autocommit", false);
+        return "true".equalsIgnoreCase(s);
+    }
+    
+
+    /**
+     * Return the driver class name.
+     */
+    public boolean isCaptureStackTrace() {
+        String s = getParam("capturestacktrace", false);
+        return "true".equalsIgnoreCase(s);
+    }
+    
+    /**
+     * Return the driver class name.
+     */
     public String getDriver() {
         return getParam("databasedriver", true);
     }
@@ -78,7 +95,21 @@ public class DataSourceParams {
     }
 
     /**
-     * Return the miniumum number of connections the pool should maintain.
+     * Return the time after which a connection is considered 'leaked' from the pool in minutes.
+     */
+    public int getLeakTimeMinutes() {
+        return getIntParam("leaktimeminutes", 30);
+    }
+    
+    /**
+     * Max time a connection is allowed to be inactive.
+     */
+    public int getMaxInactiveTimeSecs() {
+        return getIntParam("maxinactivetimesecs", 900);
+    }
+    
+    /**
+     * Return the minimum number of connections the pool should maintain.
      */
     public int getMinConnections() {
         return getIntParam("minconnections", 0);
@@ -130,15 +161,21 @@ public class DataSourceParams {
     public int getIsolationLevel() {
         String isoLevel = getParam("isolationlevel", false);
         if (isoLevel == null) {
-            isoLevel = TransactionIsolation
-                    .getLevelDescription(Connection.TRANSACTION_READ_COMMITTED);
+            isoLevel = TransactionIsolation.getLevelDescription(Connection.TRANSACTION_READ_COMMITTED);
         }
         return TransactionIsolation.getLevel(isoLevel);
     }
 
+	/**
+	 * Return the class name of a DataSourcePoolListener or null.
+	 */
+	public String getPoolListener() {
+		return getParam("poolListener", false);
+	}
+    
     /**
-     * Return a parameter value.
-     */
+	 * Return a parameter value.
+	 */
     public String getParam(String key) {
         return getParam(key, false);
     }
@@ -194,7 +231,6 @@ public class DataSourceParams {
 
     private String getParameterKey(String key) {
         return (prefix + "." + name + "." + key).toLowerCase();
-        //return prefix + "." + name + "." + key.toLowerCase();
     }
 
     private void parseThrowError(String key, String msg) {
