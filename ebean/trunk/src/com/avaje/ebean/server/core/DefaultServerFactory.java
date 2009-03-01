@@ -36,7 +36,7 @@ import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
-import com.avaje.ebean.server.lib.sql.DataSourceManager;
+import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebean.server.lib.sql.TransactionIsolation;
 import com.avaje.ebean.server.net.ClusterCommandSecurity;
 import com.avaje.ebean.server.net.ClusterContextManager;
@@ -206,7 +206,7 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 			return dsFactory.createDataSource(name, configProps);
 		}
 
-		return DataSourceManager.getDataSource(name, configProps);
+		return DataSourceGlobalManager.getDataSource(name, configProps);
 	}
 
 	/**

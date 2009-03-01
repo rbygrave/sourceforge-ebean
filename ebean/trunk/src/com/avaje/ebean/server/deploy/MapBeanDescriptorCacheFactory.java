@@ -77,7 +77,7 @@ public class MapBeanDescriptorCacheFactory {
 		Iterator<BeanDescriptor> it = deploymentManager.descriptors();
 		while (it.hasNext()) {
 			BeanDescriptor desc = it.next();
-			if (!desc.isEmbedded()){
+			if (!desc.isEmbedded() && desc.isMeta()){
 				String baseTable = desc.getBaseTable();
 				if (baseTable != null){
 					registerTable(baseTable);

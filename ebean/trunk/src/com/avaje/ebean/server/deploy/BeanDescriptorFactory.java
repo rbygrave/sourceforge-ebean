@@ -574,14 +574,19 @@ public class BeanDescriptorFactory {
 
 		readXml(desc);
 
-		boolean embedded = desc.isEmbedded();
-
 		if (desc.isSqlSelectBased()) {
 			desc.setBaseTable(null);
 			desc.setBaseTableAlias(null);
 		}
+		
+		if (desc.isMeta()){
+			desc.setBaseTable(null);
+			desc.setBaseTableAlias(null);			
+		}
 
-		if (!embedded && !desc.isSqlSelectBased()) {
+		boolean embedded = desc.isEmbedded();
+		
+		if (!embedded && !desc.isSqlSelectBased() && !desc.isMeta()) {
 			// Entity is based on a table so check
 			// that the base table exists
 			String baseTable = desc.getBaseTable();
