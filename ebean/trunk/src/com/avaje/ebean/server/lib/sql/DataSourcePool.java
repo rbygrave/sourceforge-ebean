@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -33,7 +34,6 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.server.lib.cron.CronManager;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * A robust DataSource.
@@ -51,75 +51,107 @@ import com.avaje.lib.log.LogFactory;
  */
 public class DataSourcePool implements DataSource {
 
-	private static final Logger logger = LogFactory.get(DataSourcePool.class);
+	private static final Logger logger = Logger.getLogger(DataSourcePool.class.getName());
 
 	/**
 	 * The deployment parameters.
 	 */
-	DataSourceParams params;
+	private final DataSourceParams params;
 
 	/**
-	 * The name given to this datasource.
+	 * The name given to this dataSource.
 	 */
-	String name;
+	private final String name;
 
 	/**
-	 * The manager.
+	 * Used to notify of changes to the DataSource status.
 	 */
-	DataSourceManager manager;
+	private final DataSourceNotify notify;
 
+	/**
+	 * Optional listener that can be notified when connections
+	 * are got from and put back into the pool.
+	 */
+	private final DataSourcePoolListener poolListener;
+	
+	/**
+	 * Properties used to create a Connection.
+	 */
+	private final Properties connectionProps;
+
+	/**
+	 * The jdbc connection url.
+	 */
+	private final String databaseUrl;
+
+	/**
+	 * The jdbc driver.
+	 */
+	private final String databaseDriver;
+
+	/**
+	 * Holds Database meta data from this connection. Aka Tables, Columns,
+	 * Primary keys etc.
+	 */
+	private final DictionaryInfo dictionaryInfo;
+	
+	/**
+	 * The sql used to test a connection.
+	 */
+	private final String heartbeatsql;
+	
+	/**
+	 * The transaction isolation level as per java.sql.Connection.
+	 */
+	private final int transactionIsolation;
+
+	/**
+	 * The default autoCommit setting for Connections in this pool.
+	 */
+	private final boolean autoCommit;
+	
+	/**
+	 * Flag set to true to capture stackTraces (can be expensive).
+	 */
+	private boolean captureStackTrace;
+	
 	/**
 	 * flag to indicate we have sent an alert message.
 	 */
-	boolean isDataSourceDownAlertSent = false;
+	private boolean dataSourceDownAlertSent;
 
 	/**
 	 * The time the pool was last trimmed.
 	 */
-	long lastTrimTime = 0;
-
-	/**
-	 * The sql used to test a connection.
-	 */
-	String heartbeatsql = null;
+	private long lastTrimTime;
 
 	/**
 	 * Last time the pool was reset. Used to close busy connections as they are
 	 * returned to the pool that where created prior to the lastResetTime.
 	 */
-	private long lastResetTime = 0;
+	private long lastResetTime;
 
 	/**
 	 * Assume that the DataSource is up. heartBeat checking will discover when
 	 * it goes down, and comes back up again.
 	 */
-	private boolean isDataSourceUp = true;
+	private boolean dataSourceUp = true;
 
 	/**
 	 * The current alert.
 	 */
-	private boolean isWarningMode = false;
+	private boolean inWarningMode;
 
 	/**
 	 * The number of connections to exceed before a warning Alert is fired.
 	 */
 	private int warningSize;
-
+	
 	/**
-	 * Properties used to create a Connection.
+	 * The size of the preparedStatement cache;
 	 */
-	protected Properties connectionProps;
-
-	/**
-	 * The jdbc connection url.
-	 */
-	protected String databaseUrl;
-
-	/**
-	 * The jdbc driver.
-	 */
-	protected String databaseDriver;
-
+	private int pstmtCacheSize;
+	
 	/**
 	 * The minimum number of connections this pool will maintain.
 	 */
@@ -138,12 +170,12 @@ public class DataSourcePool implements DataSource {
 	/**
 	 * Flag indicating that the pool is shutting down.
 	 */
-	private boolean doingShutdown = false;
+	private boolean doingShutdown;
 
 	/**
 	 * By default trim connections that are inactive for longer than this time.
 	 */
-	private long maxInactiveTime = 5 * 60 * 1000;
+	private int maxInactiveTimeSecs;
 
 	/**
 	 * The unique incrementing ID of a connection.
@@ -153,64 +185,92 @@ public class DataSourcePool implements DataSource {
 	/**
 	 * list of the available connections.
 	 */
-	private ArrayList<PooledConnection> freeList = new ArrayList<PooledConnection>();
+	private final ArrayList<PooledConnection> freeList = new ArrayList<PooledConnection>();
 
-	private ArrayList<PooledConnection> busyList = new ArrayList<PooledConnection>();
-
-	/**
-	 * Holds Database metadata from this connection. Aka Tables, Columns,
-	 * Primary keys etc.
-	 */
-	private DictionaryInfo dictionaryInfo;
-
-	/**
-	 * The transaction isolation level as per java.sql.Connection.
-	 */
-	private int transactionIsolation = -1;
-
-	/**
-	 * The default autoCommit setting for Connections in this pool.
-	 */
-	private boolean autoCommit = false;
+	private final ArrayList<PooledConnection> busyList = new ArrayList<PooledConnection>();
 
 	/**
 	 * Used to find and close() leaked connections. Leaked connections are
 	 * thought to be busy but have not been used for some time. Each time a
 	 * connection is used it sets it's lastUsedTime.
 	 */
-	private long leakTime = 60 * 1000 * 5;
+	private int leakTimeMinutes;
 
 	/**
 	 * Create the pool.
 	 */
-	public DataSourcePool(DataSourceManager manager, DataSourceParams params) {
-		this.manager = manager;
-		initParams(params);
+	public DataSourcePool(DataSourceNotify notify, DataSourceParams params) {
+		this.params = params;
+		this.notify = notify;
+		this.name = params.getName();
+		this.poolListener = createPoolListener(params);
+		this.dictionaryInfo = new DictionaryInfo(this);
+		
+		this.connectionProps = params.getConnectionProperties();
+		
+		this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
+		this.leakTimeMinutes = params.getLeakTimeMinutes();
+		this.captureStackTrace = params.isCaptureStackTrace();
+		this.autoCommit = params.isAutoCommit();
+		this.databaseDriver = params.getDriver();
+		this.databaseUrl = params.getUrl();
+		this.pstmtCacheSize = params.getPstmtCacheSize();
+		this.minConnections = params.getMinConnections();
+		this.maxConnections = params.getMaxConnections();
+		this.waitTimeout = params.getWaitTimeout();
+		this.transactionIsolation = params.getIsolationLevel();
+		this.heartbeatsql = params.getHeartBeatSql();
+		
 		try {
 			initialise();
 		} catch (SQLException ex) {
 			throw new DataSourceException(ex);
 		}
 	}
+	
+	/**
+	 * Create the DataSourcePoolListener if there is one.
+	 */
+	private DataSourcePoolListener createPoolListener(DataSourceParams params) {
+		String cn = params.getPoolListener();
+		if (cn == null){
+			return null;
+		} 
+		try {
+			Class<?> cls = Class.forName(cn);
+			return (DataSourcePoolListener)cls.newInstance();
+		} catch (Exception e){
+			throw new DataSourceException(e);
+		}
+	}
+	
+	private void initialise() throws SQLException {
 
+		// Ensure database driver is loaded
+		try {
+			Class.forName(this.databaseDriver);
+		} catch (ClassNotFoundException e) {
+			throw new SQLException("Database Driver class not found: " + e.getMessage());
+		}
+
+		String transIsolation = TransactionIsolation.getLevelDescription(transactionIsolation);
+		StringBuffer sb = new StringBuffer();
+		sb.append("DataSourcePool [").append(name);
+		sb.append("] autoCommit[").append(autoCommit);
+		sb.append("] transIsolation[").append(transIsolation);
+		sb.append("] min[").append(minConnections);
+		sb.append("] max[").append(maxConnections).append("]");
+
+		logger.info(sb.toString());
+
+		ensureMinimumConnections();
+	}
+	
 	/**
 	 * Return the parameters used by this pool.
 	 */
 	public DataSourceParams getParams() {
 		return params;
-	}
-
-	private void initParams(DataSourceParams params) {
-		this.params = params;
-		this.connectionProps = params.getConnectionProperties();
-		this.name = params.getName();
-		this.databaseDriver = params.getDriver();
-		this.databaseUrl = params.getUrl();
-		this.minConnections = params.getMinConnections();
-		this.maxConnections = params.getMaxConnections();
-		this.waitTimeout = params.getWaitTimeout();
-		this.transactionIsolation = params.getIsolationLevel();
-		this.heartbeatsql = params.getHeartBeatSql();
 	}
 
 	/**
@@ -234,89 +294,65 @@ public class DataSourcePool implements DataSource {
 		return dictionaryInfo;
 	}
 
-	private void initialise() throws SQLException {
-
-		// Ensure database driver is loaded
-		try {
-			Class.forName(this.databaseDriver);
-		} catch (ClassNotFoundException e) {
-			throw new SQLException("Database Driver class not found: " + e.getMessage());
-		}
-
-		String transIsolation = TransactionIsolation.getLevelDescription(transactionIsolation);
-		StringBuffer sb = new StringBuffer();
-		sb.append("DataSourcePool [").append(name);
-		sb.append("] autoCommit[").append(autoCommit);
-		sb.append("] transIsolation[").append(transIsolation);
-		sb.append("] min[").append(minConnections);
-		sb.append("] max[").append(maxConnections).append("]");
-
-		logger.info(sb.toString());
-
-		ensureMinimumConnections();
-
-		this.dictionaryInfo = new DictionaryInfo(this);
-	}
-
 	/**
-	 * Return the datasource name.
+	 * Return the dataSource name.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Returns false when the datasource is down.
+	 * Returns false when the dataSource is down.
 	 */
 	public boolean isDataSourceUp() {
-		return isDataSourceUp;
+		return dataSourceUp;
 	}
 
 	private void notifyDataSourceIsDown(SQLException ex) {
 
 		if (isExpectedToBeDownNow()) {
-			if (isDataSourceUp) {
+			if (dataSourceUp) {
 				String msg = "DataSourcePool [" + name + "] is down but in downtime!";
 				logger.log(Level.WARNING, msg, ex);
 			}
 
-		} else if (!isDataSourceDownAlertSent) {
+		} else if (!dataSourceDownAlertSent) {
 
 			String msg = "FATAL: DataSourcePool [" + name + "] is down!!!";
 			logger.log(Level.SEVERE, msg, ex);
-			if (manager != null) {
-				manager.notifyDataSourceDown(name);
+			if (notify != null) {
+				notify.notifyDataSourceDown(name);
 			}
-			isDataSourceDownAlertSent = true;
+			dataSourceDownAlertSent = true;
 
 		}
-		if (isDataSourceUp) {
+		if (dataSourceUp) {
 			reset();
 		}
-		isDataSourceUp = false;
+		dataSourceUp = false;
 	}
 
 	private void notifyDataSourceIsUp() {
-		if (isDataSourceDownAlertSent) {
+		if (dataSourceDownAlertSent) {
 			String msg = "RESOLVED FATAL: DataSourcePool [" + name + "] is back up!";
 			logger.log(Level.SEVERE, msg);
-			if (manager != null) {
-				manager.notifyDataSourceUp(name);
+			if (notify != null) {
+				notify.notifyDataSourceUp(name);
 			}
-			isDataSourceDownAlertSent = false;
+			dataSourceDownAlertSent = false;
 
-		} else if (!isDataSourceUp) {
+		} else if (!dataSourceUp) {
 			logger.log(Level.WARNING, "DataSourcePool [" + name + "] is back up!");
 		}
 
-		if (!isDataSourceUp) {
-			isDataSourceUp = true;
+		if (!dataSourceUp) {
+			dataSourceUp = true;
 			reset();
 		}
 	}
 
 	/**
-	 * Check the datasource is up. Trim connections.
+	 * Check the dataSource is up. Trim connections.
 	 */
 	protected void checkDataSource() {
 		try {
@@ -327,7 +363,7 @@ public class DataSourcePool implements DataSource {
 
 			notifyDataSourceIsUp();
 
-			if (System.currentTimeMillis() > (lastTrimTime + maxInactiveTime)) {
+			if (System.currentTimeMillis() > (lastTrimTime + (maxInactiveTimeSecs*1000))) {
 				trimInactiveConnections();
 				ensureMinimumConnections();
 				lastTrimTime = System.currentTimeMillis();
@@ -406,15 +442,15 @@ public class DataSourcePool implements DataSource {
 	/**
 	 * Set the time after which inactive connections are trimmed.
 	 */
-	public void setMaxInactiveTime(long maxInactiveTime) {
-		this.maxInactiveTime = maxInactiveTime;
+	public void setMaxInactiveTimeSecs(int maxInactiveTimeSecs) {
+		this.maxInactiveTimeSecs = maxInactiveTimeSecs;
 	}
 
 	/**
 	 * Return the time after which inactive connections are trimmed.
 	 */
-	public long getMaxInactiveTime() {
-		return maxInactiveTime;
+	public int getMaxInactiveTimeSecs() {
+		return maxInactiveTimeSecs;
 	}
 
 	private void testConnection(Connection conn) throws SQLException {
@@ -425,8 +461,7 @@ public class DataSourcePool implements DataSource {
 		Statement stmt = null;
 		ResultSet rset = null;
 		try {
-			// It should only error IF the DataSource is down ? (or a network
-			// issue?)
+			// It should only error IF the DataSource is down ? (or a network issue?)
 			stmt = conn.createStatement();
 			rset = stmt.executeQuery(heartbeatsql);
 			conn.commit();
@@ -457,7 +492,6 @@ public class DataSourcePool implements DataSource {
 		try {
 			if (heartbeatsql == null) {
 				logger.info("Can not test connection as heartbeatsql is not set");
-				// conn.closeConnectionFully(true);
 				return false;
 			}
 
@@ -486,6 +520,9 @@ public class DataSourcePool implements DataSource {
 	 */
 	protected void returnConnection(PooledConnection pooledConnection) {
 
+		if (poolListener != null){
+			poolListener.onBeforeReturnConnection(pooledConnection);
+		}
 		if (pooledConnection.getCreationTime() <= lastResetTime) {
 			pooledConnection.closeConnectionFully(false);
 
@@ -517,18 +554,39 @@ public class DataSourcePool implements DataSource {
 	public String getBusyConnectionInformation() {
 
 		synchronized (freeList) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
+			Iterator<PooledConnection> i = busyList.iterator();
+			while (i.hasNext()) {
+				PooledConnection pc = i.next();
+				sb.append(pc.getDescription()).append("\r\n");
+			}
+			return sb.toString();
+		}
+	}
+	
+	/**
+	 * Dumps the busy connection information to the logs.
+	 * <p>
+	 * This includes the stackTrace elements if they are being captured.
+	 * This is useful when needing to look a potential connection pool leaks.
+	 * </p>
+	 */
+	public void dumpBusyConnectionInformation() {
+
+		synchronized (freeList) {
+			
+			logger.info("Dumping busy connections: (Use datasource.xxx.capturestacktrace=true  ... to get stackTraces)");
+			
 			Iterator<PooledConnection> i = busyList.iterator();
 			while (i.hasNext()) {
 				PooledConnection pc = (PooledConnection) i.next();
-				String methodLine = pc.getCreatedByMethod();
-
-				sb.append("name[").append(pc.getName()).append("] startTime[").append(
-						pc.getStartUseTime()).append("] stmt[").append(pc.getLastStatement())
-						.append("] createdBy[").append(methodLine).append("]\r\n");
-
+				StackTraceElement[] stackTrace = pc.getStackTrace();
+				
+				logger.info(pc.getDescription());
+				if (stackTrace != null){
+					logger.info("Connect["+pc.getName()+"] stackTrace: "+Arrays.toString(stackTrace));
+				}
 			}
-			return sb.toString();
 		}
 	}
 
@@ -544,21 +602,20 @@ public class DataSourcePool implements DataSource {
 	 * closed and put back into the pool.
 	 * </p>
 	 */
-	public void closeBusyConnections(long unusedForMillis) {
+	public void closeBusyConnections(int leakTimeMinutes) {
 
 		synchronized (freeList) {
 
-			long olderThanTime = System.currentTimeMillis() - unusedForMillis;
+			long olderThanTime = System.currentTimeMillis() - (leakTimeMinutes*60000);
 
 			// firstly find all the PooledConnection that should be closed
 			ArrayList<PooledConnection> listToClose = new ArrayList<PooledConnection>();
 			Iterator<PooledConnection> i = busyList.iterator();
 			while (i.hasNext()) {
 				PooledConnection pc = (PooledConnection) i.next();
-				long lastUsedTime = pc.getLastUsedTime();
-				if (lastUsedTime > olderThanTime) {
-					// Busy PooledConnection has been used recently so not
-					// closing...
+				if (pc.isLongRunning() || pc.getLastUsedTime() > olderThanTime) {
+					// PooledConnection has been used recently or
+					// expected to be longRunning so not closing...
 
 				} else {
 					listToClose.add(pc);
@@ -595,16 +652,21 @@ public class DataSourcePool implements DataSource {
 	/**
 	 * Grow the pool by creating a new connection. The connection can either be
 	 * added to the available list, or returned.
+	 * <p>
+	 * This method is protected by synchronisation in calling methods.
+	 * </p>
 	 */
 	private PooledConnection createConnection() throws SQLException {
 
 		PooledConnection connection = null;
 		try {
 			uniqueConnectionID++;
-			connection = new PooledConnection(this, uniqueConnectionID);
+			Connection c = createUnpooledConnection();
+			
+			connection = new PooledConnection(this, uniqueConnectionID, c);
 			connection.resetForUse();
 
-			if (!isDataSourceUp) {
+			if (!dataSourceUp) {
 				notifyDataSourceIsUp();
 			}
 
@@ -616,9 +678,7 @@ public class DataSourcePool implements DataSource {
 		int busy = busyList.size();
 		int size = busy + freeList.size();
 
-		String msg = "DataSourcePool [" + name + "] grow pool; " + " busy[" + busy + "] size["
-				+ size + "] max[" + maxConnections + "]";
-
+		String msg = "DataSourcePool [" + name + "] grow pool; " + " busy[" + busy + "] size["+ size + "] max[" + maxConnections + "]";
 		logger.info(msg);
 
 		checkForWarningSize();
@@ -632,8 +692,7 @@ public class DataSourcePool implements DataSource {
 	 * <ul>
 	 * <li>Checks that the database is up.
 	 * <li>Resets the Alert level.
-	 * <li>Closes busy connections that have not been used for some time (aka
-	 * leaks).
+	 * <li>Closes busy connections that have not been used for some time (aka leaks).
 	 * <li>This closes all the currently available connections.
 	 * <li>Busy connections are closed when they are returned to the pool.
 	 * </ul>
@@ -645,19 +704,20 @@ public class DataSourcePool implements DataSource {
 			lastResetTime = System.currentTimeMillis();
 
 			closeFreeConnections(false);
-			closeBusyConnections(leakTime);
+			closeBusyConnections(leakTimeMinutes);
 
 			String busyMsg = "Busy Connections:\r\n" + getBusyConnectionInformation();
 			logger.info(busyMsg);
-		}
 
-		isWarningMode = false;
+			inWarningMode = false;
+		}
 	}
 
 	private void closeFreeConnections(boolean logErrors) {
 		synchronized (freeList) {
 			while (!freeList.isEmpty()) {
 				PooledConnection conn = (PooledConnection) freeList.remove(0);
+				logger.info("PSTMT Statistics: "+conn.getStatistics());
 				conn.closeConnectionFully(logErrors);
 			}
 		}
@@ -670,28 +730,6 @@ public class DataSourcePool implements DataSource {
 		return getPooledConnection();
 	}
 
-	// -----------------------------------------------------------------
-	// Pulled this method as getting the StackTrace is pretty expensive.
-	// ------------------------------------------------------------------
-	// public PooledConnection getPooledConnection() throws SQLException {
-	//
-	// PooledConnection conn = getPooledConnectionRaw();
-	//
-	// // StackTraceElement[] st = Thread.currentThread().getStackTrace();
-	// // conn.setStackTrace(st);
-	//        
-	// // create a stack trace for the method that created the connection
-	// // Do this so that we can find code that causes connection leaks
-	// // try {
-	// // throw new RuntimeException("Connect Leak trace");
-	// //
-	// // } catch (RuntimeException ex) {
-	// // StackTraceElement[] st = ex.getStackTrace();
-	// // conn.setStackTrace(st);
-	// // }
-	// return conn;
-	// }
-
 	/**
 	 * Get a connection from the pool.
 	 * <p>
@@ -700,6 +738,20 @@ public class DataSourcePool implements DataSource {
 	 * </p>
 	 */
 	public PooledConnection getPooledConnection() throws SQLException {
+
+		PooledConnection c = _getPooledConnection();
+		
+		if (captureStackTrace){
+			c.setStackTrace(Thread.currentThread().getStackTrace());			
+		}
+		
+		if (poolListener != null){
+			poolListener.onAfterBorrowConnection(c);
+		}
+		return c;
+	}
+	
+	private PooledConnection _getPooledConnection() throws SQLException {
 
 		if (doingShutdown) {
 			throw new SQLException("Trying to access the Connection Pool when it is shutting down");
@@ -762,8 +814,8 @@ public class DataSourcePool implements DataSource {
 		String subject = "Test DataSourcePool [" + name + "]";
 		String msg = "Just testing if alert message is sent successfully.";
 
-		if (manager != null) {
-			manager.notifyWarning(subject, msg);
+		if (notify != null) {
+			notify.notifyWarning(subject, msg);
 		}
 	}
 
@@ -783,18 +835,17 @@ public class DataSourcePool implements DataSource {
 
 		if (availableGrowth < warningSize) {
 
-			closeBusyConnections(leakTime);
+			closeBusyConnections(leakTimeMinutes);
 
-			if (!isWarningMode) {
+			if (!inWarningMode) {
 				// send an Error to the event log...
-				isWarningMode = true;
+				inWarningMode = true;
 
 				String subject = "DataSourcePool [" + name + "] warning";
-				String msg = "DataSourcePool [" + name + "] is [" + availableGrowth
-						+ "] connections from its maximum size.";
+				String msg = "DataSourcePool [" + name + "] is [" + availableGrowth+ "] connections from its maximum size.";
 				logger.warning(msg);
-				if (manager != null) {
-					manager.notifyWarning(subject, msg);
+				if (notify != null) {
+					notify.notifyWarning(subject, msg);
 				}
 			}
 		}
@@ -805,7 +856,7 @@ public class DataSourcePool implements DataSource {
 	 * waiting for the busy connections to be freed.
 	 * 
 	 * <p>
-	 * The DataSources's should be shutdown AFTER threadpools. Leaked
+	 * The DataSources's should be shutdown AFTER thread pools. Leaked
 	 * Connections are not waited on, as that would hang the server.
 	 * </p>
 	 */
@@ -818,9 +869,10 @@ public class DataSourcePool implements DataSource {
 			closeFreeConnections(true);
 
 			if (getSize() > 0) {
-				String msg = "A potential connection leak was detected.  Total connections: "
-						+ getSize();
+				String msg = "A potential connection leak was detected.  Total connections: "+ getSize();
 				logger.warning(msg);
+				
+				dumpBusyConnectionInformation();
 
 				closeBusyConnections(0);
 			}
@@ -840,7 +892,7 @@ public class DataSourcePool implements DataSource {
 				return;
 			}
 			int trimedCount = 0;
-			long usedSince = System.currentTimeMillis() - maxInactiveTime;
+			long usedSince = System.currentTimeMillis() - (maxInactiveTimeSecs*1000);
 
 			Iterator<PooledConnection> it = freeList.iterator();
 			while (it.hasNext()) {
@@ -855,8 +907,7 @@ public class DataSourcePool implements DataSource {
 				}
 			}
 			if (trimedCount > 0) {
-				String msg = "DataSourcePool [" + name + "] trimmed [" + trimedCount
-						+ "] inactive connections size[" + getSize() + "]";
+				String msg = "DataSourcePool [" + name + "] trimmed [" + trimedCount+ "] inactive connections size[" + getSize() + "]";
 				logger.info(msg);
 			}
 		}
@@ -903,6 +954,45 @@ public class DataSourcePool implements DataSource {
 	}
 
 	/**
+	 * Return the default autoCommit setting Connections in this pool will use.
+	 * 
+	 * @return true if the pool defaults autoCommit to true
+	 */
+	public boolean getAutoCommit() {
+		return autoCommit;
+	}
+
+	/**
+	 * Return the default transaction isolation level connections in this pool
+	 * should have.
+	 * 
+	 * @return the default transaction isolation level
+	 */
+	public int getTransactionIsolation() {
+		return transactionIsolation;
+	}
+	
+	/**
+	 * Return true if the connection pool is currently capturing the StackTrace
+	 * when connections are 'got' from the pool.
+	 * <p>
+	 * This is set to true to help diagnose connection pool leaks.
+	 * </p>
+	 */
+	public boolean isCaptureStackTrace() {
+		return captureStackTrace;
+	}
+
+	/**
+	 * Set this to true means that the StackElements are captured every time
+	 * a connection is retrieved from the pool. This can be used to identify
+	 * connection pool leaks.
+	 */
+	public void setCaptureStackTrace(boolean captureStackTrace) {
+		this.captureStackTrace = captureStackTrace;
+	}
+
+	/**
 	 * Not implemented and shouldn't be used.
 	 */
 	public Connection getConnection(String username, String password) throws SQLException {
@@ -938,54 +1028,39 @@ public class DataSourcePool implements DataSource {
 	}
 
 	/**
-	 * Set the default autoCommit setting used for all connections in this pool.
-	 * All Connections in this pool will be created with this autoCommit
-	 * setting, and will be reset back to this setting when they are returned to
-	 * the pool.
-	 */
-	public void setAutoCommit(boolean autoCommit) {
-		this.autoCommit = autoCommit;
-	}
-
-	/**
-	 * Return the default autoCommit setting Connections in this pool will use.
-	 * 
-	 * @return true if the pool defaults autoCommit to true
-	 */
-	public boolean getAutoCommit() {
-		return autoCommit;
-	}
-
-	/**
-	 * Set the default transaction isolation level that all Connections in this
-	 * pool should have. This gets set when Connections are created and when
-	 * they are returned to the pool.
-	 */
-	public void setTransactionIsolation(int level) {
-		this.transactionIsolation = level;
-	}
-
-	/**
-	 * Return the default transaction isolation level connections in this pool
-	 * should have.
-	 * 
-	 * @return the default transaction isolation level
-	 */
-	public int getTransactionIsolation() {
-		return transactionIsolation;
-	}
-
-	/**
 	 * For detecting and closing leaked connections. Connections that have been
-	 * busy for more than (leakTime/5 minutes) are considered leaks and will be
+	 * busy for more than leakTimeMinutes are considered leaks and will be
 	 * closed on a reset().
 	 * <p>
 	 * If you want to use a connection for that longer then you should consider
-	 * creating an unpooled connection.
+	 * creating an unpooled connection or setting longRunning to true on that 
+	 * connection.
 	 * </p>
 	 */
-	public void setLeakTime(long leakTimeMillis) {
-		this.leakTime = leakTimeMillis;
+	public void setLeakTimeMinutes(int leakTimeMinutes) {
+		this.leakTimeMinutes = leakTimeMinutes;
 	}
 
+	/**
+	 * Return the number of minutes after which a busy connection could be considered 
+	 * leaked from the connection pool.
+	 */
+	public int getLeakTimeMinutes() {
+		return leakTimeMinutes;
+	}
+
+	/**
+	 * Return the preparedStatement cache size.
+	 */
+	public int getPstmtCacheSize() {
+		return pstmtCacheSize;
+	}
+
+	/**
+	 * Set the preparedStatement cache size.
+	 */
+	public void setPstmtCacheSize(int pstmtCacheSize) {
+		this.pstmtCacheSize = pstmtCacheSize;
+	}
+	
 }

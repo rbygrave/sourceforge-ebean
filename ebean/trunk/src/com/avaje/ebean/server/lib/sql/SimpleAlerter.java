@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.lib.util.MailEvent;
 import com.avaje.ebean.server.lib.util.MailListener;
 import com.avaje.ebean.server.lib.util.MailMessage;
@@ -42,16 +41,22 @@ public class SimpleAlerter implements DataSourceAlertListener, MailListener {
 
 	private static final Logger logger = LogFactory.get(SimpleAlerter.class);
 	
-	
     //boolean sendInBackGround = true;
-
+	ConfigProperties configProperties;
+	
     /**
      * Create a SimpleAlerter.
      */
-    public SimpleAlerter() {
+    public SimpleAlerter(ConfigProperties configProperties) {
+    	this.configProperties = configProperties;
     }
     
-    /**
+    public void initialise(ConfigProperties configProperties) {
+    	this.configProperties = configProperties;
+	}
+
+
+	/**
      * If the email failed then log the error.
      */
     public void handleEvent(MailEvent event) {
@@ -96,12 +101,10 @@ public class SimpleAlerter implements DataSourceAlertListener, MailListener {
     
     private void sendMessage(String subject, String msg){
         
-    	ConfigProperties properties = GlobalProperties.getConfigProperties();
-    	
-        String fromUser 		= properties.getProperty("alert.fromuser");
-        String fromEmail 		= properties.getProperty("alert.fromemail");
-        String mailServerName 	= properties.getProperty("alert.mailserver");
-        String toEmail 			= properties.getProperty("alert.toemail");        
+        String fromUser 		= configProperties.getProperty("alert.fromuser");
+        String fromEmail 		= configProperties.getProperty("alert.fromemail");
+        String mailServerName 	= configProperties.getProperty("alert.mailserver");
+        String toEmail 			= configProperties.getProperty("alert.toemail");        
 
         if (mailServerName == null){
             //throw new RuntimeException("alert.mailserver not set...");
