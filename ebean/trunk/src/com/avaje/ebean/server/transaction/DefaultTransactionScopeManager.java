@@ -9,8 +9,8 @@ public class DefaultTransactionScopeManager implements TransactionScopeManager {
 
 	final String serverName;
 	
-	public DefaultTransactionScopeManager(String serverName){
-		this.serverName = serverName;
+	public DefaultTransactionScopeManager(TransactionManager transactionManager){
+		this.serverName = transactionManager.getServerName();
 	}
 
 	public void commit() {
