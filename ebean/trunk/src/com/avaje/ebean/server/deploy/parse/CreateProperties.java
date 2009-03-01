@@ -36,7 +36,6 @@ import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Create the properties for a bean.
@@ -47,12 +46,22 @@ import com.avaje.lib.log.LogFactory;
  */
 public class CreateProperties {
 
-	private static final Logger logger = LogFactory.get(CreateProperties.class);
+	private static final Logger logger = Logger.getLogger(CreateProperties.class.getName());
 
 	private final TypeManager typeManager;
 	
+	private final String[] ignoreFieldPrefixes;
+	
     public CreateProperties(PluginDbConfig dbConfig) {
     	typeManager = dbConfig.getTypeManager();
+    	
+    	// get field name prefixes of fields we want to ignore
+    	String ignoreValue = dbConfig.getProperties().getProperty("enhancement.ignorefields", null);
+    	if (ignoreValue == null){
+    		ignoreFieldPrefixes = null;
+    	} else {
+    		ignoreFieldPrefixes = ignoreValue.split(",");
+    	}
     }
     
     /**
@@ -81,6 +90,33 @@ public class CreateProperties {
     }
 
     /**
+     * Return true if we should ignore this field.
+     * <p>
+     * We want to ignore ebean internal fields and some others as well.
+     * </p>
+     */
+    private boolean ignoreFieldByName(String fieldName) {
+    	if (fieldName.startsWith("_ebean_")){
+    		// ignore Ebean internal fields
+    		return true;
+    	} 
+    	if (fieldName.startsWith("ajc$instance$")) {
+    		// ignore AspectJ internal fields
+    		return true;
+    	}
+    	if (ignoreFieldPrefixes != null){
+    		// ignore user defined field prefixes
+    		for (int i = 0; i < ignoreFieldPrefixes.length; i++) {
+    			if (fieldName.startsWith(ignoreFieldPrefixes[i])) {
+    				return true;
+    			}
+			}
+    	}
+    	// we are interested in this field
+    	return false;
+    }
+    
+    /**
      * reflect the bean properties from Class. Some of these properties may not
      * map to database columns.
      */
@@ -93,8 +129,8 @@ public class CreateProperties {
             for (int i = 0; i < fields.length; i++) {
             	
             	Field field = fields[i];
-            	if (field.getName().startsWith("_ebean_")){
-            		// not interested in ebean added fields
+            	if (ignoreFieldByName(field.getName())){
+            		// not interested this field
             		
             	} else if (Modifier.isStatic(field.getModifiers())) {
             		// not interested in static fields 
