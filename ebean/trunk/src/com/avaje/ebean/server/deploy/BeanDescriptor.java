@@ -85,6 +85,11 @@ public class BeanDescriptor {
 	final String sequenceNextVal;
 
 	/**
+	 * SQL used to return last inserted id.
+	 * Used for Identity columns where getGeneratedKeys is not supported.
+	 */
+	final String selectLastInsertedId;
+	/**
 	 * True if this is Table based for TableBeans.
 	 */
 	final boolean tableGenerated;
@@ -353,6 +358,7 @@ public class BeanDescriptor {
 		this.identityGeneration = deploy.getIdentityGeneration();
 		this.idGeneratorName = deploy.getIdGeneratorName();
 		this.sequenceNextVal = deploy.getSequenceNextVal();
+		this.selectLastInsertedId = deploy.getSelectLastInsertedId();
 		this.tableGenerated = deploy.isTableGenerated();
 		this.embedded = deploy.isEmbedded();
 		this.meta = deploy.isMeta();
@@ -1131,6 +1137,16 @@ public class BeanDescriptor {
 	 */
 	public String getSequenceNextVal() {
 		return sequenceNextVal;
+	}
+
+	/**
+	 * Return the SQL used to return the last inserted id.
+	 * <p>
+	 * This is only used with Identity columns and getGeneratedKeys is not supported.
+	 * </p>
+	 */
+	public String getSelectLastInsertedId() {
+		return selectLastInsertedId;
 	}
 
 	/**

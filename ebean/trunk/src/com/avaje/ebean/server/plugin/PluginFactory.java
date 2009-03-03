@@ -61,7 +61,7 @@ public class PluginFactory {
     /**
      * Create the appropriate DbPlugin.
      */
-    public Plugin create(String name, DataSource ds, ServerConfiguration serverConfig, ConfigProperties props) {
+    public Plugin create(DataSource ds, ServerConfiguration serverConfig, ConfigProperties props) {
         
     	BootupClasses bootupClasses = null;
     	
@@ -78,7 +78,7 @@ public class PluginFactory {
     		bootupClasses = new BootupClasses(classes);
     	}
     	
-    	PluginProperties properties = createProperties(name, ds, props, bootupClasses);
+    	PluginProperties properties = createProperties(serverConfig, ds, props, bootupClasses);
     	
     	PluginDbConfig dbConfig = createDbConfig(properties);
     	
@@ -90,8 +90,8 @@ public class PluginFactory {
     }
 
     
-    private PluginProperties createProperties(String name, DataSource ds, ConfigProperties props, BootupClasses bootupClasses) {
-    	return new PluginProperties(name, ds, props, bootupClasses);
+    private PluginProperties createProperties(ServerConfiguration serverConfig, DataSource ds, ConfigProperties props, BootupClasses bootupClasses) {
+    	return new PluginProperties(serverConfig, ds, props, bootupClasses);
     }
     
     private PluginDbConfig createDbConfig(PluginProperties props) {

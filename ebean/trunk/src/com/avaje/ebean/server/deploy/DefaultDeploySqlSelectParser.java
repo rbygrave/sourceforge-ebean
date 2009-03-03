@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.query.SimpleTextParser;
 import com.avaje.ebean.server.deploy.DeploySqlSelect.ColumnInfo;
 import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
 import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.naming.NamingConvention;
 
 /**
  * Parses sql-select queries to try and determine the location where WHERE and HAVING

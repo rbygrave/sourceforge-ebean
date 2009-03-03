@@ -22,12 +22,14 @@ package com.avaje.ebean.server.plugin;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.DefaultAutoFetchManager;
 import com.avaje.ebean.server.core.InternalEbeanServer;
@@ -35,7 +37,8 @@ import com.avaje.ebean.server.deploy.IdentityGeneration;
 import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.lib.resource.ResourceSource;
 import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
+import com.avaje.ebean.server.lib.util.FactoryHelper;
+import com.avaje.ebean.server.naming.DefaultNamingConvention;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.resource.ResourceControl;
 import com.avaje.ebean.server.resource.ResourceManager;
@@ -53,9 +56,9 @@ public class PluginDbConfig {
 
 	protected String rowNumberWindowAlias;
 	
-	final String tableAliasPlaceHolder;
+	protected final String tableAliasPlaceHolder;
 	
-	final String columnAliasPrefix;
+	protected final String columnAliasPrefix;
 	
 	/**
 	 * The open quote used by quoted identifiers.
@@ -242,22 +245,36 @@ public class PluginDbConfig {
 	}
 
 	/**
-	 * Create the nameConverter to use.
+	 * Create or get the NamingConvention to use.
 	 */
 	protected NamingConvention createNamingConvention() {
 
+		NamingConvention nc = properties.getServerConfiguration().getNamingConvention();
+		if (nc != null){
+			// the NamingConvention was set of the ServerConfiguration so use that
+			return nc;
+		}
+		
 		String c = properties.getProperty("namingconvention", null);
 		if (c != null) {
+			// create a specified constructor
 			try {
 				Class<?> cls = Class.forName(c);
-				NamingConvention nc = (NamingConvention) cls.newInstance();
-				return nc;
+				// see if it has a constructor that takes PluginProperties
+				Constructor<?> constructor = FactoryHelper.findConstructor(cls, PluginProperties.class);
+				if (constructor != null){
+					return (NamingConvention)constructor.newInstance(properties);
+				} else {
+					// use the default constructor
+					return (NamingConvention)cls.newInstance();
+				}
 
 			} catch (Exception ex) {
 				logger.log(Level.SEVERE, null, ex);
 			}
 		}
-		return new NamingConvention(properties);
+		// use the default NamingConvention
+		return new DefaultNamingConvention(properties);
 	}
 
 	/**
@@ -360,7 +377,6 @@ public class PluginDbConfig {
 
 	protected DictionaryInfo deserializeDictionary(File dictFile) {
 		try {
-			// File dictFile = new File(dictFileName);
 			if (!dictFile.exists()) {
 				return null;
 			}

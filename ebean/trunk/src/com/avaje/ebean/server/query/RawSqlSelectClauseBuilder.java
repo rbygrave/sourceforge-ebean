@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -31,7 +32,6 @@ import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.ResultSetLimit;

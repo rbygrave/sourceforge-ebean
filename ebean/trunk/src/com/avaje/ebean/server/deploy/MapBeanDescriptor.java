@@ -32,7 +32,7 @@ import com.avaje.ebean.server.type.TypeManager;
  */
 public class MapBeanDescriptor extends BeanDescriptor {
     
-    private final String derivedUidPropName;
+    private final String derivedIdPropName;
     
     private final float mapLoadFactor;// = 0.75f;
     
@@ -43,7 +43,7 @@ public class MapBeanDescriptor extends BeanDescriptor {
      */
     public MapBeanDescriptor(TypeManager typeManager, DeployMapBeanDescriptor deploy) {
         super(typeManager, deploy);
-        this.derivedUidPropName = deploy.getUidPropertyName();
+        this.derivedIdPropName = deploy.getIdPropertyName();
         this.mapLoadFactor = deploy.getMapLoadFactor();
         this.mapInitialCapacity = deploy.getMapInitialCapacity();
     }
@@ -65,7 +65,7 @@ public class MapBeanDescriptor extends BeanDescriptor {
             in.setServerName(serverName);
             mb.setTableName(baseTable);
             
-            mb.setIdPropertyName(derivedUidPropName);
+            mb.setIdPropertyName(derivedIdPropName);
             
             return mb;
 

@@ -22,6 +22,7 @@ package com.avaje.ebean.server.deploy.parse;
 import java.util.HashSet;
 import java.util.List;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
@@ -29,7 +30,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.lib.sql.Fkey;
 import com.avaje.ebean.server.lib.sql.FkeyColumn;
-import com.avaje.ebean.server.naming.NamingConvention;
 
 /**
  * Parameters used to define joins.
@@ -126,7 +126,8 @@ public class JoinDefineAutomaticInfo {
 	 */
 	private void addGuess(NamingConvention namingConvention) {
 
-		String fkGuess = namingConvention.getForeignKeyColumn(prop.getName());
+		Class<?> beanType = desc.getBeanType();
+		String fkGuess = namingConvention.getForeignKeyColumn(beanType, prop.getName());
 		addColumn(fkGuess);
 	}
 

@@ -28,8 +28,9 @@ public class MckoiPlugin extends PluginDbConfig {
 
     public MckoiPlugin(PluginProperties properties){
         super(properties);
-        properties.setPropertyDefault("namingconvention.sequence.nextvalprefix", "NEXTVAL('");
-        properties.setPropertyDefault("namingconvention.sequence.nextvalsuffix", "')");
+        
+        properties.setPropertyDefault("namingconvention.sequence.name", "{table}_seq");
+        properties.setPropertyDefault("namingconvention.sequence.nextval", "NEXTVAL('{sequence}')");
         properties.setPropertyDefault("namingconvention.sequence.from", "");
         
         this.resultSetLimit = ResultSetLimit.RowNumber;

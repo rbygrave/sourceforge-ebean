@@ -8,11 +8,11 @@ public interface PropertyNamingConvention {
 	/**
 	 * Convert the propertyName to a database column name.
 	 */
-	public String toColumn(String propertyName);
+	public String toColumnFromProperty(Class<?> beanClass, String propertyName);
 
 	/**
 	 * Convert the column name to a property name.
 	 */
-	public String toPropertyName(String dbColumn);
+	public String toPropertyFromColumn(Class<?> beanClass, String dbColumn);
 
 }

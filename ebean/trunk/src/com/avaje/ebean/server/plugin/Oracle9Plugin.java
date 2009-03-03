@@ -32,8 +32,9 @@ public class Oracle9Plugin extends PluginDbConfig {
     public Oracle9Plugin(PluginProperties properties) {
         super(properties);
         
-        properties.setPropertyDefault("namingconvention.sequence.nextvalsuffix", ".NEXTVAL");
-        properties.setPropertyDefault("namingconvention.sequence.from", "FROM DUAL");
+        properties.setPropertyDefault("namingconvention.sequence.name", "{table}_seq");
+        properties.setPropertyDefault("namingconvention.sequence.nextval", "{sequence}.nextval");
+        properties.setPropertyDefault("namingconvention.sequence.from", "from dual");
         
         this.supportsSequences = true;
         this.supportsGetGeneratedKeys = false;

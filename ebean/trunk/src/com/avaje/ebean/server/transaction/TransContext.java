@@ -22,6 +22,7 @@ package com.avaje.ebean.server.transaction;
 import java.util.HashMap;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.core.TransactionContextClass;
 
@@ -112,14 +113,11 @@ public final class TransContext implements TransactionContext {
             classMap.remove(id);
         }
     }
-
    
     public TransactionContextClass getClassContext(Class<?> beanType) {
 
     	// strip off $$EntityBean.. suffix...
-    	//AGENTSTYLE
-    	//String clsName = SubClassUtil.getSuperClassName(beanType.getName());
-    	String clsName = beanType.getName();
+    	String clsName = SubClassUtil.getSuperClassName(beanType.getName());
     	
     	ClassContext classMap = typeCache.get(clsName);
         if (classMap == null) {            
@@ -132,7 +130,7 @@ public final class TransContext implements TransactionContext {
     private static class ClassContext implements TransactionContextClass {
     	
     	HashMap<Object,EntityBean> map = new HashMap<Object, EntityBean>();
-    	
+        
     	public EntityBean get(Object id){
     		return map.get(id);
     	}

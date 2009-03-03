@@ -35,4 +35,18 @@ public class FactoryHelper {
 			throw new CreateObjectException(e);
 		}
 	}
+	
+	/**
+	 * Find the constructor return null if one can not be found that matches the arguments.
+	 */
+	public static <T> Constructor<T> findConstructor(Class<T> type, Class<?>... args){
+		try {
+			return type.getConstructor(args);
+		} catch (SecurityException e) {
+			return null;
+			
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
+	}
 }

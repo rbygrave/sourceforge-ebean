@@ -240,7 +240,7 @@ public class AnnotationFields extends AnnotationParser {
 	}
 
 	private void setDbColumn(DeployBeanProperty prop, String dbColumn) {
-		dbColumn = util.getDbColumn(prop.getName(), dbColumn);
+		dbColumn = util.getDbColumn(descriptor.getBeanType(), prop.getName(), dbColumn);
 
 		prop.setDbColumn(dbColumn);
 		prop.setDbTableAlias(descriptor.getBaseTableAlias());
