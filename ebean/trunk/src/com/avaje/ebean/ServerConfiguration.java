@@ -83,6 +83,8 @@ public class ServerConfiguration {
 	 */
 	ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
 
+	NamingConvention namingConvention; 
+	
 	/**
 	 * Create a ServerConfiguration with a given name.
 	 * <p>
@@ -133,6 +135,24 @@ public class ServerConfiguration {
 	 */
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
+	}
+
+	/**
+	 * Return the namingConvention.
+	 */
+	public NamingConvention getNamingConvention() {
+		return namingConvention;
+	}
+
+	/**
+	 * Set the namingConvention that should be used.
+	 * <p>
+	 * If this is not set then the default naming convention will be
+	 * used which is configurable via properties.
+	 * </p>
+	 */
+	public void setNamingConvention(NamingConvention namingConvention) {
+		this.namingConvention = namingConvention;
 	}
 
 	/**

@@ -152,7 +152,7 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 		// check the autoCommit and Transaction Isolation
 		checkDataSource(ds, name);
 
-		Plugin plugin = pluginFactory.create(name, ds, serverConfig, configProps);
+		Plugin plugin = pluginFactory.create(ds, serverConfig, configProps);
 		
 		DefaultServer server = new DefaultServer(plugin);
 		

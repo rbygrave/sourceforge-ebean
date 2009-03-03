@@ -7,19 +7,18 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.server.deploy.DeploySqlSelect.ColumnInfo;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.naming.NamingConvention;
 
 /**
  * Parses columnMapping (select clause) mapping columns to bean properties.
  */
 public final class DefaultDeploySqlSelectColumnsParser {
 
-	private static Logger logger = Logger.getLogger(DefaultDeploySqlSelectColumnsParser.class
-			.getName());
+	private static Logger logger = Logger.getLogger(DefaultDeploySqlSelectColumnsParser.class.getName());
 
 	/**
 	 * Description of how the match was made.
@@ -179,7 +178,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 		}
 
 		// convert columnName using the namingConvention
-		String propertyName = namingConvention.toPropertyName(searchColumn);
+		String propertyName = namingConvention.getPropertyFromColumn(deployDesc.getBeanType(), searchColumn);
 		matchingProp = deployDesc.getBeanProperty(propertyName);
 		if (matchingProp != null) {
 			matchDescription = " ... using naming convention";

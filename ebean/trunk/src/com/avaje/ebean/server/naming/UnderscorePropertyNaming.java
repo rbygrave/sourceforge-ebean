@@ -23,29 +23,23 @@ package com.avaje.ebean.server.naming;
 /**
  * Converts from database column names with underscores.
  */
-public class UnderscoreCamelCase implements PropertyNamingConvention {
+public class UnderscorePropertyNaming implements PropertyNamingConvention {
 
     /**
      * Force toUnderscore to return in upper case.
      */
-    boolean forceUpperCase;
+    final boolean forceUpperCase;
     
-    boolean digitsCompressed = true;
+    final boolean digitsCompressed = true;
     
     /**
      * Create the UnderscoreNameConverter.
      */
-    public UnderscoreCamelCase(){
+    public UnderscorePropertyNaming(boolean forceUpperCase){
+    	this.forceUpperCase = forceUpperCase;
     }
-    
-    /**
-     * Force the db column name to be upper case.
-     */
-    public void setForceUpperCase(boolean forceUpperCase) {
-        this.forceUpperCase = forceUpperCase;
-    }
-    
-    public String toColumn(String camelCase){
+        
+    public String toColumnFromProperty(Class<?> beanClass, String camelCase){
 
         int lastUpper = -1;
         StringBuffer sb = new StringBuffer();
@@ -76,7 +70,7 @@ public class UnderscoreCamelCase implements PropertyNamingConvention {
         return ret;
     }
     
-    public String toPropertyName(String underscore){
+    public String toPropertyFromColumn(Class<?> beanClass, String underscore){
         
         StringBuffer result = new StringBuffer();
         String[] vals = underscore.split("_");

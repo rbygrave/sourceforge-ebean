@@ -24,6 +24,7 @@ import java.util.Iterator;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.ServerConfiguration;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.util.Message;
@@ -33,6 +34,8 @@ import com.avaje.ebean.util.Message;
  */
 public class PluginProperties {
 
+	private final ServerConfiguration serverConfiguration;
+	
 	private final String name;
 
 	private final ConfigProperties configProperties;
@@ -41,13 +44,21 @@ public class PluginProperties {
 	
 	private final DataSource dataSource;
 	
-	public PluginProperties(String name, DataSource ds, ConfigProperties configProps, BootupClasses bootupClasses) {
-		this.name = name;
+	public PluginProperties(ServerConfiguration serverConfiguration, DataSource ds, ConfigProperties configProps, BootupClasses bootupClasses) {
+		this.serverConfiguration = serverConfiguration;
+		this.name = serverConfiguration.getName();
 		this.dataSource = ds;
 		this.configProperties = configProps;
 		this.bootupClasses = bootupClasses;
 	}
 	
+	/**
+	 * Return the ServerConfiguration.
+	 */
+	public ServerConfiguration getServerConfiguration() {
+		return serverConfiguration;
+	}
+
 	/**
 	 * Return the classes such as entities, scalar types etc.
 	 */

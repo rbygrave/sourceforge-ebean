@@ -87,10 +87,19 @@ public class DeployMapBeanDescriptor extends DeployBeanDescriptor {
     	return mapInitialCapacity;
     }
     
-    public String getUidPropertyName() {
+    public String getIdPropertyName() {
 		List<DeployBeanProperty> uids = propertiesId();
         if (uids.size() == 1){
         	return uids.get(0).getName();
+        } else {
+        	return null;
+        }
+    }
+    
+    public String getIdColumnName() {
+		List<DeployBeanProperty> uids = propertiesId();
+        if (uids.size() == 1){
+        	return uids.get(0).getDbColumn();
         } else {
         	return null;
         }

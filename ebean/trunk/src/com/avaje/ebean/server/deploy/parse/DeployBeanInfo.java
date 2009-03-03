@@ -155,7 +155,6 @@ public class DeployBeanInfo {
 			joinType = TableJoin.LEFT_OUTER;
 		}
 
-		//FIXME: check tableAlias is not a keyword
 		// get a unique alias possibly using the name of the property
 		String alias = getAlias(beanProp.getName(), null);
 

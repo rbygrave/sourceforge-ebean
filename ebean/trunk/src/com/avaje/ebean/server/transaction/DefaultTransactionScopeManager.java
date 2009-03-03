@@ -5,12 +5,11 @@ import com.avaje.ebean.server.core.ServerTransaction;
 /**
  * Manages the transaction scoping using a Ebean thread local.
  */
-public class DefaultTransactionScopeManager implements TransactionScopeManager {
+public class DefaultTransactionScopeManager extends TransactionScopeManager {
 
-	final String serverName;
 	
 	public DefaultTransactionScopeManager(TransactionManager transactionManager){
-		this.serverName = transactionManager.getServerName();
+		super(transactionManager);
 	}
 
 	public void commit() {

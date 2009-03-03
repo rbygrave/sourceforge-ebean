@@ -30,10 +30,9 @@ public class Postgres83Plugin extends PluginDbConfig {
     public Postgres83Plugin(PluginProperties properties) {
         super(properties);
         	
-        properties.setPropertyDefault("namingconvention.sequence.nextvalprefix", "nextval('");
-        properties.setPropertyDefault("namingconvention.sequence.nextvalsuffix", "')");
+        properties.setPropertyDefault("namingconvention.sequence.name", "{table}_seq");
+        properties.setPropertyDefault("namingconvention.sequence.nextval", "nextval('{sequence}')");
         properties.setPropertyDefault("namingconvention.sequence.from", "");
-        properties.setPropertyDefault("namingconvention.sequence.suffix", "_seq");
         
         this.supportsSequences = true;
         this.supportsGetGeneratedKeys = false;

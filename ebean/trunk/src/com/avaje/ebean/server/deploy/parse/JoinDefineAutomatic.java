@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
@@ -37,7 +38,6 @@ import com.avaje.ebean.server.lib.sql.DictionaryInfo;
 import com.avaje.ebean.server.lib.sql.Fkey;
 import com.avaje.ebean.server.lib.sql.IntersectionInfo;
 import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.util.DeploymentException;
 import com.avaje.ebean.util.Message;

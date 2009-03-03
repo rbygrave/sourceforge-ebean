@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.bean.BeanController;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanListener;
@@ -133,6 +134,8 @@ public class BeanDescriptorFactory {
 
 	private final SubClassManager subClassManager;
 
+	private final NamingConvention namingConvention;
+	
 	/**
 	 * Create for a given database dbConfig.
 	 */
@@ -140,6 +143,7 @@ public class BeanDescriptorFactory {
 
 		this.subClassManager = new SubClassManager(dbConfig.getProperties());
 		this.typeManager = dbConfig.getTypeManager();
+		this.namingConvention = dbConfig.getNamingConvention();
 		this.inheritInfoDeploy = new DeployInheritInfoBuilder(dbConfig.getProperties());
 		this.deploymentManager = deploymentManager;
 		this.deployUtil = deploymentManager.getDeployUtil();
@@ -640,11 +644,18 @@ public class BeanDescriptorFactory {
 				// approach on Oracle.
 				String dbSeqNextVal = desc.getSequenceNextVal();
 				if (dbSeqNextVal == null) {
-					// the name could be dependent on the unique prop name
-					dbSeqNextVal = dbConfig.getNamingConvention().getSequenceNextval(desc);
+					String seqName = desc.getIdGeneratorName();
+					if (seqName == null){
+						seqName = namingConvention.getSequenceName(desc.getBaseTable());
+					}
+					dbSeqNextVal = namingConvention.getSequenceNextVal(seqName);
 					desc.setSequenceNextVal(dbSeqNextVal);
 				}
 			}
+			
+			// used only with Identity columns and getGeneratedKeys is not supported
+			String selectLastInsertedId = namingConvention.getSelectLastInsertedId(desc.getBaseTable());
+			desc.setSelectLastInsertedId(selectLastInsertedId);
 
 			char idType = desc.getIdentityGeneration();
 			if (idType == IdentityGeneration.AUTO) {

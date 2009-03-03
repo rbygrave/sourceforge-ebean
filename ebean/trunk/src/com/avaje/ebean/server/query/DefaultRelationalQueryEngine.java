@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.MapBean;
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.control.LogControl;
@@ -40,7 +41,6 @@ import com.avaje.ebean.server.core.RelationalQueryEngine;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.jmx.MLogControlMBean;
-import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.plugin.PluginCore;
@@ -232,7 +232,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 		for (int i = 1; i < columnsPlusOne; i++) {
 			String columnName = rsmd.getColumnLabel(i);
 			// convert it just the same way as other MapBeans
-			columnName = namingConvention.mapPropertyFromColumn(columnName);
+			columnName = namingConvention.getMapBeanPropertyFromColumn(columnName);
 			propNames.add(columnName);
 		}
 

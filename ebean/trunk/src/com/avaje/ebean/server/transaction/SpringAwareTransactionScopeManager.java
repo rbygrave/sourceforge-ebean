@@ -14,18 +14,13 @@ import com.avaje.ebean.server.core.ServerTransaction;
  * Will look for Spring transactions and use them if they exist.
  * </p>
  */
-public class SpringAwareTransactionScopeManager implements TransactionScopeManager {
-
-	final String serverName;
-	
-	final TransactionManager transactionManager;
+public class SpringAwareTransactionScopeManager extends TransactionScopeManager {
 	
 	final DataSource dataSource;
 	
 	public SpringAwareTransactionScopeManager(TransactionManager transactionManager){
-		this.transactionManager = transactionManager;
+		super(transactionManager);
 		this.dataSource = transactionManager.getDataSource();
-		this.serverName = transactionManager.getServerName();
 	}
 
 	public void commit() {
@@ -70,5 +65,4 @@ public class SpringAwareTransactionScopeManager implements TransactionScopeManag
 		DefaultTransactionThreadLocal.set(serverName, trans);
 	}
 
-	
 }

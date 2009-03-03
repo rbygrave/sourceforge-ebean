@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.MapBean;
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.bean.BeanController;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanListener;
@@ -39,7 +40,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployMapBeanDescriptor;
 import com.avaje.ebean.server.lib.sql.ColumnInfo;
 import com.avaje.ebean.server.lib.sql.TableInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
@@ -170,11 +170,18 @@ public class MapBeanDescriptorFactory {
             determineConcurrencyMode(desc);
             
             if (supportsSequences){
-                // Note: the sequence only gets used *IF* the value of the uid property
-                // is null when inserted. default on Oracle. 
-                String seqNextVal = namingConvention.getSequenceNextval(desc);
-                desc.setSequenceNextVal(seqNextVal);
+                // Note: the sequence only gets used *IF* the value of the id property
+                // is null when inserted. default on Oracle9. 
+				//String seqName = desc.getIdGeneratorName();
+				String seqName = namingConvention.getSequenceName(desc.getBaseTable());
+				
+				// the name could be dependent on the unique prop name
+				String seqNextVal = namingConvention.getSequenceNextVal(seqName);
+				desc.setSequenceNextVal(seqNextVal);
             }
+            
+            String selectLastInsertedId = namingConvention.getSelectLastInsertedId(desc.getBaseTable());
+            desc.setSelectLastInsertedId(selectLastInsertedId);
             
             setBeanIntercept(desc);
             
@@ -237,7 +244,7 @@ public class MapBeanDescriptorFactory {
      */
     private String getPropertyName(String dbColumnName) {
         
-        return namingConvention.mapPropertyFromColumn(dbColumnName);
+        return namingConvention.getMapBeanPropertyFromColumn(dbColumnName);
     }
     
     /**

@@ -173,6 +173,14 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				// check the TransactionContext to see if the bean already exists
 				TransactionContextClass classContext = ctx.getClassContext(localBean.getClass());
 
+//				contextBean = classContext.getOrSet(id, localBean);
+//				if (contextBean != null){
+//					// bean already exists in transaction context
+//					localBean = null;
+//				} else {
+//					contextBean = localBean;
+//				}
+				
 				contextBean = classContext.get(id);
 				if (contextBean != null && !contextBean._ebean_getIntercept().isReference()) {
 					// bean already exists in transaction context

@@ -28,6 +28,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
@@ -39,7 +40,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnum;
@@ -205,7 +205,7 @@ public class DeployUtil {
 	 * Returns the table name for a given Class using the naming convention.
 	 */
 	public String getTableNameFromClass(Class<?> beanType) {
-		return namingConvention.tableNameFromClass(beanType);
+		return namingConvention.getTableNameFromClass(beanType);
 	}
 
 	/**
@@ -250,9 +250,9 @@ public class DeployUtil {
 	/**
 	 * Return the DB column name for a given property name.
 	 */
-	public String getDbColumn(String propName, String dbColumn) {
+	public String getDbColumn(Class<?> beanClass, String propName, String dbColumn) {
 		if (isNullString(dbColumn)) {
-			dbColumn = namingConvention.toColumn(propName);
+			dbColumn = namingConvention.getColumnFromProperty(beanClass, propName);
 		}
 		dbColumn = convertQuotedIdentifiers(dbColumn);
 		return dbColumn;

@@ -399,6 +399,9 @@ public class StringHelper {
 	 * @return the source string after the search and replace
 	 */
 	public static String replaceString(String source, String match, String replace) {
+		if (source == null){
+			return null;
+		}
 		return replaceString(source, match, replace, 30, 0, source.length());
 	}
 
@@ -410,6 +413,10 @@ public class StringHelper {
 	public static String replaceString(String source, String match, String replace,
 			int additionalSize, int startPos, int endPos) {
 
+		if (source == null){
+			return source;
+		}
+		
 		char match0 = match.charAt(0);
 		
 		int matchLength = match.length();
@@ -503,7 +510,6 @@ public class StringHelper {
 			}
 		}
 
-		// JDK5 dependancy...
 		StringBuilder sb = new StringBuilder(source.length() + additionalSize);
 
 		char sourceChar;

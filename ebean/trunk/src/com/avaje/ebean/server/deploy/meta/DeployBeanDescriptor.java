@@ -87,6 +87,11 @@ public class DeployBeanDescriptor {
 	 * The database sequence name (optional).
 	 */
 	String sequenceNextVal;
+	
+	/**
+	 * Used with Identity columns but no getGeneratedKeys support.
+	 */
+	String selectLastInsertedId;
 
 	/**
 	 * True if this is Table based for TableBeans.
@@ -353,13 +358,6 @@ public class DeployBeanDescriptor {
 		this.unidirectional = unidirectional;
 	}
 
-//	/**
-//	 * Remove the transient property.
-//	 */
-//	public void remove(DeployBeanProperty beanProp) {
-//		propMap.remove(beanProp.getName());
-//	}
-
 	/**
 	 * Return the concurrency mode used for beans of this type.
 	 */
@@ -568,6 +566,23 @@ public class DeployBeanDescriptor {
 	public void setSequenceNextVal(String sequenceNextVal) {
 		this.sequenceNextVal = sequenceNextVal;
 	}
+	
+	/**
+	 * Return the SQL used to return the last inserted Id.
+	 * <p>
+	 * Used with Identity columns where getGeneratedKeys is not supported.
+	 * </p>
+	 */
+	public String getSelectLastInsertedId() {
+		return selectLastInsertedId;
+	}
+
+	/**
+	 * Set the SQL used to return the last inserted Id.
+	 */
+	public void setSelectLastInsertedId(String selectLastInsertedId) {
+		this.selectLastInsertedId = selectLastInsertedId;
+	}
 
 	/**
 	 * Return the name of the IdGenerator that should be used with this type of
@@ -649,7 +664,7 @@ public class DeployBeanDescriptor {
 
 		return list;
 	}
-
+	
 	/**
 	 * Return an Iterator of BeanPropertyAssocOne that are not embedded. These
 	 * are effectively joined beans. For ManyToOne and OneToOne associations.

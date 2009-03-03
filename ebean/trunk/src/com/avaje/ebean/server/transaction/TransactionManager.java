@@ -40,7 +40,6 @@ import com.avaje.ebean.server.net.CmdServerTransactionEvent;
 import com.avaje.ebean.server.net.Headers;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Manages transactions.
@@ -51,7 +50,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class TransactionManager implements Constants {
 
-	private static final Logger logger = LogFactory.get(TransactionManager.class);
+	private static final Logger logger = Logger.getLogger(TransactionManager.class.getName());
 	
 	/**
 	 * Holds Table state.
@@ -62,11 +61,6 @@ public class TransactionManager implements Constants {
 	 * The logger.
 	 */
 	private final TransactionLogManager transLogger;
-
-	/**
-	 * Id's for transaction logging.
-	 */
-	private long transactionCounter = 1000;
 
 	/**
 	 * for synchronising.
@@ -116,6 +110,11 @@ public class TransactionManager implements Constants {
 	
 	private final int debugLevel;
 
+	/**
+	 * Id's for transaction logging.
+	 */
+	private long transactionCounter = 1000;
+	
 	/**
 	 * Create the TransactionManager
 	 */

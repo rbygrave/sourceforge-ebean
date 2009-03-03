@@ -52,7 +52,7 @@ public interface TransactionContext {
      * Return an object given its type and unique id.
      */
     public EntityBean get(Class<?> beanType, Object uid);
-        
+
     /**
      * Clear all the references.
      */

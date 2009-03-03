@@ -1,8 +1,8 @@
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.naming.NamingConvention;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
