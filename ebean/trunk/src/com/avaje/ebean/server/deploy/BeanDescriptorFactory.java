@@ -637,7 +637,7 @@ public class BeanDescriptorFactory {
 				}
 			}
 
-			if (supportsSequences) {
+			if (supportsSequences && (desc.getBaseTable() != null)) {
 				// Derive the SequenceNextVal and set it to the descriptor.
 				// Note: the sequence only gets used *IF* the value of the
 				// id property is null when inserted. This is the default
@@ -653,9 +653,11 @@ public class BeanDescriptorFactory {
 				}
 			}
 			
-			// used only with Identity columns and getGeneratedKeys is not supported
-			String selectLastInsertedId = namingConvention.getSelectLastInsertedId(desc.getBaseTable());
-			desc.setSelectLastInsertedId(selectLastInsertedId);
+			if (desc.getBaseTable() != null){
+				// used only with Identity columns and getGeneratedKeys is not supported
+				String selectLastInsertedId = namingConvention.getSelectLastInsertedId(desc.getBaseTable());
+				desc.setSelectLastInsertedId(selectLastInsertedId);
+			}
 
 			char idType = desc.getIdentityGeneration();
 			if (idType == IdentityGeneration.AUTO) {
