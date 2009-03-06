@@ -19,8 +19,7 @@ import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
  */
 public class DefaultAutoFetchManagerLogging {
 
-	private static final Logger logger = Logger.getLogger(DefaultAutoFetchManagerLogging.class
-			.getName());
+	private static final Logger logger = Logger.getLogger(DefaultAutoFetchManagerLogging.class.getName());
 
 	final DefaultTransactionLogger fileLogger;
 
@@ -64,7 +63,8 @@ public class DefaultAutoFetchManagerLogging {
 
 	public void logError(Level level, String msg, Throwable e) {
 		if (useFileLogger) {
-			fileLogger.log("\"Error\",\"" + msg+" "+e.getMessage()+"\",,,,");
+			String errMsg = e == null ? "" : e.getMessage();
+			fileLogger.log("\"Error\",\"" + msg+" "+errMsg+"\",,,,");
 		}
 		logger.log(level, msg, e);
 	}
