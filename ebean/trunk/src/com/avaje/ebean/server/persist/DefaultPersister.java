@@ -30,9 +30,9 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.MapBean;
+import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
-import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.collection.BeanCollection;
@@ -98,7 +98,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	private final DeploymentManager deploymentManager;
 
 	final IdGeneratorManager idGeneratorManager;
-
+	
 	public DefaultPersister(Plugin plugin, InternalEbeanServer server) {
 
 		PluginCore pluginCore = plugin.getPluginCore();
@@ -117,14 +117,6 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	public Object nextId(BeanDescriptor desc) {
 		return idGeneratorManager.nextId(desc);
 	}
-
-//	/**
-//	 * Execute or batch the bean insert update or delete.
-//	 */
-//	private void executeOrQueue(PersistRequest request) {
-//
-//		request.executeOrBatch();
-//	}
 
 	/**
 	 * Execute the CallableSql.
