@@ -101,19 +101,21 @@ public final class UpdateMeta {
 	public String getSql(PersistRequest request) {
 
 		EntityBeanIntercept ebi = request.getEntityBeanIntercept();
-		Set<String> loadedProps = ebi.getLoadedProps();
-		if (loadedProps != null){
-			// 'partial bean' update...
-			// determine the concurrency mode
-			int mode = ConcurrencyMode.ALL;
-			BeanProperty prop = desc.firstVersionProperty();
-			if (prop != null && loadedProps.contains(prop.getName())){
-				mode = ConcurrencyMode.VERSION;
+		if (ebi != null){
+			Set<String> loadedProps = ebi.getLoadedProps();
+			if (loadedProps != null){
+				// 'partial bean' update...
+				// determine the concurrency mode
+				int mode = ConcurrencyMode.ALL;
+				BeanProperty prop = desc.firstVersionProperty();
+				if (prop != null && loadedProps.contains(prop.getName())){
+					mode = ConcurrencyMode.VERSION;
+				}
+				// generate SQL dynamically depending on the
+				// loadedProps
+				request.setConcurrencyMode(mode);
+				return genSql(mode, loadedProps);
 			}
-			// generate SQL dynamically depending on the
-			// loadedProps
-			request.setConcurrencyMode(mode);
-			return genSql(mode, loadedProps);
 		}
 		
 		// 'full bean' update...
