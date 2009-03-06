@@ -23,6 +23,7 @@ import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
@@ -333,35 +334,42 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 					Class<?> beanClass = Class.forName(beanType);
 					BeanManager beanMgr = server.getBeanManager(beanClass);
-					JoinNode joinRoot = beanMgr.getBeanJoinTree().getRoot();
-
-					// Determine the fetch plan from the latest statistics.
-					// Use this to compare with current "tuned fetch plan".
-					OrmQueryDetail newFetchDetail = queryPointStatistics.buildTunedFetch(joinRoot);
-
-					// get the current tuned fetch info...
-					TunedQueryInfo currentFetch = tunedQueryInfoMap.get(queryPoint.getKey());
-
-					if (currentFetch == null) {
-						// its a new fetch plan, add it.
-						countNewPlan++;
-
-						currentFetch = queryPointStatistics.createTunedFetch(newFetchDetail);
-						logging.logNew(currentFetch);
-						tunedQueryInfoMap.put(queryPoint.getKey(), currentFetch);
-
-					} else if (!currentFetch.isSame(newFetchDetail)) {
-						// the fetch plan has changed, update it.
-						countModified++;
-						logging.logChanged(currentFetch, newFetchDetail);
-						currentFetch.setTunedDetail(newFetchDetail);
-
+					if (beanMgr == null){
+						// perhaps a entity as an inner class
+						logging.logToJavaLogger("No BeanMgr for "+beanClass);
+						
 					} else {
-						// the fetch plan has not changed...
-						countUnchanged++;
+						JoinTree beanJoinTree = beanMgr.getBeanJoinTree();
+						JoinNode joinRoot = beanJoinTree.getRoot();
+	
+						// Determine the fetch plan from the latest statistics.
+						// Use this to compare with current "tuned fetch plan".
+						OrmQueryDetail newFetchDetail = queryPointStatistics.buildTunedFetch(joinRoot);
+	
+						// get the current tuned fetch info...
+						TunedQueryInfo currentFetch = tunedQueryInfoMap.get(queryPoint.getKey());
+	
+						if (currentFetch == null) {
+							// its a new fetch plan, add it.
+							countNewPlan++;
+	
+							currentFetch = queryPointStatistics.createTunedFetch(newFetchDetail);
+							logging.logNew(currentFetch);
+							tunedQueryInfoMap.put(queryPoint.getKey(), currentFetch);
+	
+						} else if (!currentFetch.isSame(newFetchDetail)) {
+							// the fetch plan has changed, update it.
+							countModified++;
+							logging.logChanged(currentFetch, newFetchDetail);
+							currentFetch.setTunedDetail(newFetchDetail);
+	
+						} else {
+							// the fetch plan has not changed...
+							countUnchanged++;
+						}
+	
+						currentFetch.setProfileCount(queryPointStatistics.getCounter());
 					}
-
-					currentFetch.setProfileCount(queryPointStatistics.getCounter());
 
 				} catch (ClassNotFoundException e) {
 					String msg = "Error updating autoFetch tuned query for " + beanType;
