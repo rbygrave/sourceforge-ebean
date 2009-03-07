@@ -133,8 +133,9 @@ public class PluginDbConfig {
 			resultSetLimit = ResultSetLimit.JdbcRowNavigation;
 		}
 
+		columnAliasPrefix = getColumnAliasPrefix(properties);
+
 		tableAliasPlaceHolder =  properties.getProperty("tableAliasPlaceHolder", "${ta}");
-		columnAliasPrefix = properties.getProperty("columnAliasPrefix", "c");
 		rowNumberWindowAlias = properties.getProperty("rowNumberWindowAlias", "as limitresult");	
 		closeQuote = properties.getProperty("closequote", "\"");
 		openQuote = properties.getProperty("openquote", "\"");
@@ -147,6 +148,11 @@ public class PluginDbConfig {
 		identityGeneration = IdentityGeneration.parse(ia);
 	}
 
+	protected String getColumnAliasPrefix(PluginProperties properties) {
+		String alias = properties.getProperty("columnAliasPrefix", "as c");
+		alias = alias.trim();
+		return alias.length() == 0 ? null : alias;
+	}
 	
 	
 	public String getSql(String fileName) {
