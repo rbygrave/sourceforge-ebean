@@ -124,9 +124,11 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		sb.append(PERIOD);
 		sb.append(column);
 
-		sb.append(" ");
-		sb.append(columnAliasPrefix);
-		sb.append(columnIndex);
+		if (columnAliasPrefix != null){
+			sb.append(" ");
+			sb.append(columnAliasPrefix);
+			sb.append(columnIndex);
+		}
 		columnIndex++;
 	}
 
