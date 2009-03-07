@@ -361,6 +361,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	 * property.
 	 */
 	public Object remove(Object name) {
+		name = ((String)name).toLowerCase();
 		return map.remove(name);
 	}
 
@@ -368,6 +369,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	 * Return a property value by its name.
 	 */
 	public Object get(Object name) {
+		name = ((String)name).toLowerCase();
 		return map.get(name);
 	}
 
@@ -390,6 +392,8 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	}
 
 	private Object setInternal(String name, Object newValue) {
+		// MapBean properties are always lowercase
+		name = name.toLowerCase();
 		Object oldValue = get(name);
 		ebeanIntercept.preSetter(name, newValue, oldValue);
 
@@ -400,7 +404,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return a property as an Integer.
 	 */
-	public Integer getInteger(Object name) {
+	public Integer getInteger(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toInteger(val);
 	}
@@ -408,7 +412,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return a property value as a BigDecimal.
 	 */
-	public BigDecimal getBigDecimal(Object name) {
+	public BigDecimal getBigDecimal(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toBigDecimal(val);
 	}
@@ -416,7 +420,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return a property value as a Long.
 	 */
-	public Long getLong(Object name) {
+	public Long getLong(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toLong(val);
 	}
@@ -424,7 +428,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return the property value as a Double.
 	 */
-	public Double getDouble(Object name) {
+	public Double getDouble(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toDouble(val);
 	}
@@ -432,7 +436,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return the property value as a Float.
 	 */
-	public Float getFloat(Object name) {
+	public Float getFloat(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toFloat(val);
 	}
@@ -440,7 +444,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return a property as a String.
 	 */
-	public String getString(Object name) {
+	public String getString(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toString(val);
 	}
@@ -448,7 +452,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return the property as a java.util.Date.
 	 */
-	public java.util.Date getUtilDate(Object name) {
+	public java.util.Date getUtilDate(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toUtilDate(val);
 	}
@@ -456,7 +460,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return the property as a sql date.
 	 */
-	public Date getDate(Object name) {
+	public Date getDate(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toDate(val);
 	}
@@ -464,7 +468,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	/**
 	 * Return the property as a sql timestamp.
 	 */
-	public Timestamp getTimestamp(Object name) {
+	public Timestamp getTimestamp(String name) {
 		Object val = get(name);
 		return BasicTypeConverter.toTimestamp(val);
 	}
@@ -490,6 +494,7 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	 * Returns true if the map contains the property.
 	 */
 	public boolean containsKey(Object key) {
+		key = ((String)key).toLowerCase();
 		return map.containsKey(key);
 	}
 

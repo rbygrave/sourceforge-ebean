@@ -33,7 +33,7 @@ import com.avaje.ebean.server.lib.sql.DictionaryInfo;
 import com.avaje.ebean.server.lib.sql.TableInfo;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.util.Assert;
+import com.avaje.ebean.server.util.InternalAssert;
 
 /**
  * Used to define joins without using Foreign key information.
@@ -83,7 +83,7 @@ public class JoinDefineManual {
 
 		DeployTableJoin tableJoin = joinInfo.getTableJoin();
 		DeployTableJoinColumn[] columns = tableJoin.columns();
-		Assert.isTrue(columns.length > 0, "Expected some columns");
+		InternalAssert.isTrue(columns.length > 0, "Expected some columns");
 
 		if (columns.length == 1) {
 			DeployTableJoinColumn column = columns[0];
@@ -91,7 +91,7 @@ public class JoinDefineManual {
 			if (column.hasNullColumn()) {
 				String localTable = joinInfo.getDescriptor().getBaseTable();
 				TableInfo tableInfo = dictionaryInfo.getTableInfo(localTable);
-				Assert.notNull(tableInfo, "TableInfo for "+localTable+" not found?");
+				InternalAssert.notNull(tableInfo, "TableInfo for "+localTable+" not found?");
 
 				// the column set is always the foreign one so really
 				// should be referencedColumnName but just getting the
@@ -101,7 +101,7 @@ public class JoinDefineManual {
 
 				// determine the primary key for the missing column...
 				ColumnInfo[] pkCols = tableInfo.getKeyColumns();
-				Assert.isTrue(pkCols.length == 1, "Expected single column PK");
+				InternalAssert.isTrue(pkCols.length == 1, "Expected single column PK");
 
 				// pk is the localDbColumn for OneToMany type joins
 				column.setLocalDbColumn(pkCols[0].getName());
@@ -131,7 +131,7 @@ public class JoinDefineManual {
 		}
 
 		DeployTableJoinColumn[] columns = tableJoin.columns();
-		Assert.isTrue(columns.length > 0, "Expected some columns");
+		InternalAssert.isTrue(columns.length > 0, "Expected some columns");
 
 		if (columns.length == 1) {
 			DeployTableJoinColumn column = columns[0];
@@ -139,7 +139,7 @@ public class JoinDefineManual {
 			if (StringHelper.isNull(column.getForeignDbColumn())) {
 				// get primary key...
 				ColumnInfo[] pkCols = tableInfo.getKeyColumns();
-				Assert.isTrue(pkCols.length == 1, "Expected single column PK");
+				InternalAssert.isTrue(pkCols.length == 1, "Expected single column PK");
 
 				// defaults to the primary key
 				column.setForeignDbColumn(pkCols[0].getName());

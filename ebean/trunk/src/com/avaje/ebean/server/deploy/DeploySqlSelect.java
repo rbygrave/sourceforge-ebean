@@ -165,7 +165,7 @@ public class DeploySqlSelect {
 		}
 
 		selectProps.setIncludedProperties(includedProps);
-		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(joinRoot, selectProps, null, withId);
+		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(joinRoot, selectProps, null, withId, null);
 		sqlTree.setRootNode(sqlRoot);
 
 		return sqlTree;

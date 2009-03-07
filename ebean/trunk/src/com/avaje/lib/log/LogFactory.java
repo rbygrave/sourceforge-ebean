@@ -31,15 +31,15 @@ public class LogFactory {
 		return Logger.getLogger(cls.getName());
 	}
 
-	/**
-	 * Return a logger with an associated resource bundle.
-	 */
-	public static Logger getWithResource(Class<?> cls){
-		
-		final String pck = cls.getPackage().getName();
-		final String bundle = pck+ "." + "messages.properties";
-		
-		return Logger.getLogger(cls.getName(), bundle);
-	}
+//	/**
+//	 * Return a logger with an associated resource bundle.
+//	 */
+//	public static Logger getWithResource(Class<?> cls){
+//		
+//		final String pck = cls.getPackage().getName();
+//		final String bundle = pck+ "." + "messages.properties";
+//		
+//		return Logger.getLogger(cls.getName(), bundle);
+//	}
 	
 }

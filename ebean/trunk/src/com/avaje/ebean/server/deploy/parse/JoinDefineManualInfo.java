@@ -25,55 +25,44 @@ import javax.persistence.JoinTable;
 
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
-import com.avaje.ebean.server.lib.util.StringHelper;
 
+/**
+ * Used to help finish defining manually describes joins.
+ * <p>
+ * Specifically find the other side of the join if it is not specified and
+ * determine if the join should be an outer join based on if the column is
+ * nullable.
+ * </p>
+ */
 public class JoinDefineManualInfo {
 
-	DeployBeanDescriptor descriptor;
+	final DeployBeanDescriptor descriptor;
 
-	DeployBeanPropertyAssoc property;
+	final DeployBeanPropertyAssoc property;
 
-	DeployTableJoin tableJoin;
-	
+	final DeployTableJoin tableJoin;
+
 	/**
 	 * Used for a Secondary table.
 	 */
 	public JoinDefineManualInfo(DeployBeanDescriptor desc, DeployTableJoin join) {
-		this(desc, null, true);
+		this.descriptor = desc;
 		this.tableJoin = join;
+		this.property = null;
 
 	}
 
-	/**
-	 * Used for joins on ManyToOne and OneToOne.
-	 */
-	public JoinDefineManualInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssocOne prop) {
-		this(desc, prop, true);
-	}
-
-	/**
-	 * Used for joins on OneToMany and ManyToMany.
-	 */
-	public JoinDefineManualInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssocMany prop) {
-		this(desc, prop, false);
-	}
-
-	private JoinDefineManualInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssoc prop, boolean isImported) {
+	public JoinDefineManualInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssoc prop) {
 		this.descriptor = desc;
 		this.property = prop;
-		if (prop != null) {
-			this.tableJoin = prop.getTableJoin();
-		}
+		this.tableJoin = (prop == null) ? null : prop.getTableJoin();
 	}
 
 	public String getDebugName() {
 		String s = descriptor.getFullName();
-		if (property != null){
-			s += "."+property.getName();
+		if (property != null) {
+			s += "." + property.getName();
 		}
 		return s;
 	}
@@ -98,71 +87,34 @@ public class JoinDefineManualInfo {
 	public DeployTableJoin getTableJoin() {
 		return tableJoin;
 	}
-	
+
 	/**
 	 * Add deployment info from JoinTable annotation.
 	 */
-	public void add(JoinTable joinTable){
-		
-		String table = joinTable.name();
-		if (!StringHelper.isNull(table)){
-			this.tableJoin.setTable(joinTable.name());			
+	public void add(boolean order, JoinTable joinTable, JoinColumn[] cols) {
+
+		if (!"".equals(joinTable.name())) {
+			this.tableJoin.setTable(joinTable.name());
 		}
-		//joinTable.schema();
-		//joinTable.catalog();
-		
-		JoinColumn[] cols = joinTable.joinColumns();
-    	    
-	    for (int i = 0; i < cols.length; i++) {
-	    	add(cols[i]);
-		}
+
+		tableJoin.addJoinColumn(order, cols);
 	}
-	
+
 	/**
-	 * Add deployment info from JoinColumns annotation.
-	 */	
-	public void add(JoinColumns joinColumns){
-		JoinColumn[] cols = joinColumns.value();
-		for (int i = 0; i < cols.length; i++) {
-			add(cols[i]);
-		}
-	}
-	
-	/**
-	 * Add deployment info from JoinColumn annotation.
+	 * Add JoinColumns information.
 	 */
-	public void add(JoinColumn joinColumn){
-		
-		if (!"".equals(joinColumn.table())) {
-			tableJoin.setTable(joinColumn.table());
-		}
-		
-		// not using this for now...
-		//joinColumn.columnDefinition();
-		//joinColumn.insertable();
-		//joinColumn.unique();
-		//joinColumn.updatable();
-		
-		
-		//TODO: Review nullable which controls OUTER JOIN vs INNER JOIN
-		// a boolean is never optional, so never sure when Ebean
-		// should use DB meta data to check nullable
-		//joinColumn.nullable();
-		
-		String localColumn = nullEmptyString(joinColumn.name());
-		String refColumn = nullEmptyString(joinColumn.referencedColumnName());
-		
-		add(new DeployTableJoinColumn(localColumn, refColumn, joinColumn.insertable(), joinColumn.updatable()));
+	public void add(boolean order, JoinColumns joinColumns) {
+		tableJoin.addJoinColumn(order, joinColumns.value());
 	}
-	
-	private String nullEmptyString(String s){
-		if ("".equals(s)){
-			return null;
-		}
-		return s;
+
+	/**
+	 * Add JoinColumn information.
+	 * <p>
+	 * The order is generally true for OneToMany and false for ManyToOne.
+	 * </p>
+	 */
+	public void add(boolean order, JoinColumn joinColumn) {
+		tableJoin.addJoinColumn(order, joinColumn);
 	}
-	
-	private void add(DeployTableJoinColumn column){
-		tableJoin.addTableJoinColumn(column);
-	}
+
 }

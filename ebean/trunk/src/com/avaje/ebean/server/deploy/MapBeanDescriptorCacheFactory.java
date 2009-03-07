@@ -71,17 +71,42 @@ public class MapBeanDescriptorCacheFactory {
 		managerFactory = new MapBeanManagerFactory(dbConfig);
 	}
 
+	/**
+	 * Register all the tables this bean uses (include intersection tables etc).
+	 */
+	private void registerDescriptorTables(BeanDescriptor desc) {
+		String baseTable = desc.getBaseTable();
+		if (baseTable != null){
+			registerTable(baseTable);
+		}
+		BeanPropertyAssocMany[] props = desc.propertiesMany();
+		for (int i = 0; i < props.length; i++) {
+			if (props[i].isManyToMany()){
+				TableJoin intersectionTableJoin = props[i].getIntersectionTableJoin();
+				if (intersectionTableJoin == null){
+					logger.warning("intersectionTableJoin == null for "+props[i].getFullBeanName());
+				} else {
+					registerTable(intersectionTableJoin.getTable());
+				}
+				TableJoin destJoin = props[i].getTableJoin();
+				if (destJoin == null) {
+					logger.warning("destJoin == null for "+props[i].getFullBeanName());
+				
+				} else {
+					registerTable(destJoin.getTable());
+				}
+			}
+		}
+	}
+	
 	public void initialiseAll() {
 
 		// get all the base tables from the deployed entity beans...
 		Iterator<BeanDescriptor> it = deploymentManager.descriptors();
 		while (it.hasNext()) {
 			BeanDescriptor desc = it.next();
-			if (!desc.isEmbedded() && desc.isMeta()){
-				String baseTable = desc.getBaseTable();
-				if (baseTable != null){
-					registerTable(baseTable);
-				}
+			if (!desc.isEmbedded()){
+				registerDescriptorTables(desc);
 			}
 		}
 

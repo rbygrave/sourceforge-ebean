@@ -37,6 +37,7 @@ import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.lib.sql.TableInfo;
 
 /**
@@ -101,26 +102,81 @@ public class AnnotationAssocManys extends AnnotationParser {
 			JoinColumn joinColumn = (JoinColumn) get(prop, JoinColumn.class);
 			if (joinColumn != null) {
 				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-				defineJoin.add(joinColumn);
+				defineJoin.add(true, joinColumn);
 				util.define(defineJoin);
 			}
 	
 			JoinColumns joinColumns = (JoinColumns) get(prop, JoinColumns.class);
 			if (joinColumns != null) {
 				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-				defineJoin.add(joinColumns);
+				defineJoin.add(true, joinColumns);
 				util.define(defineJoin);
 			}
 	
 			JoinTable joinTable = (JoinTable) get(prop, JoinTable.class);
 			if (joinTable != null) {
-				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-				defineJoin.add(joinTable);
-				util.define(defineJoin);
+				if (prop.isManyToMany()){
+					// expected this 
+					readJoinTable(joinTable, prop);
+					
+				} else {
+					// OneToMany in theory 
+					JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
+					defineJoin.add(true, joinTable, joinTable.joinColumns());
+					util.define(defineJoin);					
+				}
 			}
 		}
 	}
 
+	/**
+	 * Define the joins for a ManyToMany relationship.
+	 * <p>
+	 * This includes joins to the intersection table and from the intersection table
+	 * to the other side of the ManyToMany.
+	 * </p>
+	 */
+	private void readJoinTable(JoinTable joinTable, DeployBeanPropertyAssocMany prop) {
+		
+		String intTableName = joinTable.name();
+		// set the intersection table
+		DeployTableJoin intJoin = new DeployTableJoin();
+		intJoin.setTable(intTableName);
+
+		// add the source to intersection join columns
+		intJoin.addJoinColumn(true, joinTable.joinColumns());
+		intJoin.setUndefinedColumnIfRequired(info.getUtil(), info.getBaseTableInfo().getName());
+
+		// set the intersection to dest table join columns
+		DeployTableJoin destJoin = prop.getTableJoin();
+		destJoin.addJoinColumn(false, joinTable.inverseJoinColumns());
+		destJoin.setUndefinedColumnIfRequired(info.getUtil(), destJoin.getTable());
+
+		// set table alias etc for the join to intersection
+		info.setManyIntersectionAlias(prop, intJoin);
+
+		// set the intersection alias to the destJoin
+		String intAlias = intJoin.getForeignTableAlias();
+		destJoin.setLocalTableAlias(intAlias);
+
+		// reverse join from dest back to intersection
+		DeployTableJoin inverseDest = destJoin.createInverse();
+		inverseDest.setTable(intTableName);
+		// try to make sure we don't get a tableAlias clash
+		inverseDest.setLocalTableAlias(prop.getBeanTable().getBaseTableAlias());
+
+		// zzzzzz is typically the ManyToManyAlias
+		inverseDest.setForeignTableAlias(info.getUtil().getManyToManyAlias());
+
+		prop.setIntersectionTableJoin(intJoin);
+		prop.setInverseJoin(inverseDest);
+	}
+	
+    
+    private String errorMsgMissingBeanTable(Class<?> type, String from) {
+    	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
+    }
+    
 	private void readToMany(ManyToMany propAnn, DeployBeanPropertyAssocMany manyProp) {
 
 		manyProp.setMappedBy(propAnn.mappedBy());
@@ -131,17 +187,17 @@ public class AnnotationAssocManys extends AnnotationParser {
 			targetType = determineTargetType(manyProp);
 		}
 
-		manyProp.setTargetType(targetType);
-		manyProp.setManyToMany(true);
-
 		// find the other many table (not intersection)
 		BeanTable assoc = util.getBeanTable(targetType);
+		if (assoc == null) {
+        	String msg = errorMsgMissingBeanTable(targetType, manyProp.getFullBeanName());
+        	throw new RuntimeException(msg);
+		}
+		
+		manyProp.setTargetType(targetType);
+		manyProp.setManyToMany(true);		
 		manyProp.setBeanTable(assoc);
 		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
-
-		// ManyToMany has 2 TableJoin objects
-		// the base one joins to the intersection table
-		// the manyToManyJoinTable .. joins intersection to other many
 	}
 
 	private void readToOne(OneToMany propAnn, DeployBeanPropertyAssocMany manyProp) {
@@ -154,16 +210,14 @@ public class AnnotationAssocManys extends AnnotationParser {
 			targetType = determineTargetType(manyProp);
 		}
 
-		manyProp.setTargetType(targetType);
-
 		BeanTable assoc = util.getBeanTable(targetType);
 		if (assoc == null) {
-			String msg = "Can not find table info for " + targetType + " when processing OneToMany for "
-					+ manyProp.getFullBeanName();
-			throw new RuntimeException(msg);
+        	String msg = errorMsgMissingBeanTable(targetType, manyProp.getFullBeanName());
+        	throw new RuntimeException(msg);
 		}
+		
+		manyProp.setTargetType(targetType);		
 		manyProp.setBeanTable(assoc);
-
 		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
 	}
 
@@ -191,7 +245,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 				return (Class<?>) typeArgs[1];
 			}
 		}
-		String msg = "property " + prop.getFullBeanName() + " has no targetType defined?";
+		String msg = "property " + prop.getFullBeanName() + " has no generics targetType defined?";
 		throw new PersistenceException(msg);
 	}
 }

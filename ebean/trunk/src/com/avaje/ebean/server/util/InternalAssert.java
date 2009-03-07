@@ -22,7 +22,7 @@ package com.avaje.ebean.server.util;
 /**
  * Helper for checking the state of the application is correct.
  */
-public class Assert {
+public class InternalAssert {
 
 	/**
 	 * Throws an IllegalStateException if o is null.

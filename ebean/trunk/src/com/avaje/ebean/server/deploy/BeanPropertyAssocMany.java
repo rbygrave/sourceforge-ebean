@@ -36,7 +36,6 @@ import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.util.DeploymentException;
 
 /**
@@ -110,18 +109,8 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 		this.fetchOrderBy = deploy.getFetchOrderBy();
 		this.mappedBy = deploy.getMappedBy();
 		
-		DeployTableJoin intJoin = deploy.getIntersectionTableJoin();
-		if (intJoin != null){
-			this.intersectionJoin = new TableJoin(intJoin, null);
-		} else {
-			this.intersectionJoin = null;
-		}
-		DeployTableJoin invJoin = deploy.getInverseJoin();
-		if (invJoin != null){
-			this.inverseJoin = new TableJoin(invJoin, null);
-		} else {
-			this.inverseJoin = null;
-		}
+		this.intersectionJoin = deploy.createIntersectionTableJoin();
+		this.inverseJoin = deploy.createInverseTableJoin();
 	}
 		
 	public void initialise() {
@@ -155,10 +144,12 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 	@Override
 	public void appendSelect(DbSqlContext ctx) {
 	}
+	
 	@Override
 	public Object readSet(DbReadContext ctx, Object bean, Class<?> type) throws SQLException {
 		return null;
 	}
+	
 	@Override
 	public boolean isValueLoaded(Object value) {
 		if (value instanceof BeanCollection<?>){
@@ -281,8 +272,10 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 		for (int i = 0; i < expProps.length; i++) {
 			Object val = expProps[i].getValue(parentBean);
 			String fkColumn = expProps[i].getForeignDbColumn();
-
-			query.where().eq(targetTablePrefix+fkColumn, val);
+			if (!manyToMany){
+				fkColumn = targetTablePrefix+fkColumn;
+			}
+			query.where().eq(fkColumn, val);
 		}
 		
 		if (extraWhere != null){

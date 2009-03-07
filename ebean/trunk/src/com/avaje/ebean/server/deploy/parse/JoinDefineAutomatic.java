@@ -204,6 +204,10 @@ public class JoinDefineAutomatic {
 	 */
 	private void defineManyToMany(DeployBeanPropertyAssocMany prop, DeployBeanDescriptor desc, DeployBeanInfo info) {
 
+		if (prop.getIntersectionTableJoin() != null){
+			// skip as already defined manually using a JoinTable annotation
+			return;
+		}
 		String localTable = desc.getBaseTable();
 		BeanTable manyBeanTable = prop.getBeanTable();
 		String manyTable = manyBeanTable.getBaseTable();

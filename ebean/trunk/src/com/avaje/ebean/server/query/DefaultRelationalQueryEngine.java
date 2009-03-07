@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.MapBean;
-import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.control.LogControl;
@@ -59,8 +58,6 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
 	private final int defaultMaxRows;
 
-	private final NamingConvention namingConvention;
-
 	private final Binder binder;
 
 	private final MLogControlMBean logControl;
@@ -70,9 +67,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 		PluginDbConfig dbConfig = pluginCore.getDbConfig();
 		this.binder = dbConfig.getBinder();
 		this.logControl = dbConfig.getLogControl();
-		this.namingConvention = dbConfig.getNamingConvention();
-		this.defaultMaxRows = dbConfig.getProperties().getPropertyInt("nativesql.defaultmaxrows",
-			100000);
+		this.defaultMaxRows = dbConfig.getProperties().getPropertyInt("nativesql.defaultmaxrows",100000);
 	}
 
 	public Object findMany(RelationalQueryRequest request) {
@@ -231,8 +226,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 		
 		for (int i = 1; i < columnsPlusOne; i++) {
 			String columnName = rsmd.getColumnLabel(i);
-			// convert it just the same way as other MapBeans
-			columnName = namingConvention.getMapBeanPropertyFromColumn(columnName);
+			// will convert columnName to lower case
 			propNames.add(columnName);
 		}
 

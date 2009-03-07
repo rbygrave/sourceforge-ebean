@@ -39,7 +39,9 @@ import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import com.avaje.ebean.server.lib.sql.ColumnInfo;
 import com.avaje.ebean.server.lib.sql.DictionaryInfo;
+import com.avaje.ebean.server.lib.sql.TableInfo;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnum;
@@ -102,6 +104,8 @@ public class DeployUtil {
 	
 	private final DictionaryInfo dictionaryInfo;
 	
+	private final String manyToManyAlias;
+	
 	public DeployUtil(DeploymentManager deploymentManager, PluginDbConfig dbConfig) {
 		this.deploymentManager = deploymentManager;
 		this.dbConfig = dbConfig;
@@ -123,9 +127,37 @@ public class DeployUtil {
 		// the EJB3 specification
 
 		String v = dbConfig.getProperties().getProperty("annotation.onetoone.optional", "ignore");
-		useOneToOneOptional = v.equalsIgnoreCase("true");
+		this.useOneToOneOptional = v.equalsIgnoreCase("true");
 
-		validatorFactoryManager = new ValidatorFactoryManager();
+		// this alias is used for ManyToMany lazy loading queries
+		String key = "manytomany.intersection.alias";
+		this.manyToManyAlias = dbConfig.getProperties().getProperty(key, "zzzzzz");
+		
+		this.validatorFactoryManager = new ValidatorFactoryManager();
+	}
+	
+	/**
+	 * Return the table alias used for ManyToMany joins.
+	 */
+	public String getManyToManyAlias() {
+		return manyToManyAlias;
+	}
+
+	/**
+	 * Return the primary key column (assuming there is one) from a table.
+	 * <p>
+	 * Used to help complete manually defined joins.
+	 * </p>
+	 */
+	public String getPrimaryKeyColumn(String table){
+		TableInfo tableInfo = dictionaryInfo.getTableInfo(table);
+		if(tableInfo != null){
+			ColumnInfo[] keyColumns = tableInfo.getKeyColumns();
+			if (keyColumns != null && keyColumns.length == 1){
+				return keyColumns[0].getName();
+			}
+		}
+		return null;
 	}
 	
 	/**
