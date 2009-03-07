@@ -200,7 +200,7 @@ public class SqlTreeBuilder {
 
 		if (node.isRoot()) {
 			buildExtraJoins(node, myList);
-			return new SqlTreeNodeRoot(node, props, myList);
+			return new SqlTreeNodeRoot(node, props, myList, query.getIncludeTableJoin());
 
 		} else if (node.isManyJoin()) {
 			return new SqlTreeNodeManyRoot(node, props, myList);

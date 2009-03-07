@@ -34,7 +34,7 @@ import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerFactory;
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.util.Assert;
+import com.avaje.ebean.server.util.InternalAssert;
 import com.avaje.lib.log.LogFactory;
 
 /**
@@ -110,7 +110,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.1.0-RC1-090303";
+	private static final String EBVERSION = "1.1.0-RC1-090307";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
@@ -178,7 +178,7 @@ public final class Ebean {
 			synchronized (monitor) {
 
 				String name = configuration.getName();
-				Assert.notNull(name, "A name must be supplied");
+				InternalAssert.notNull(name, "A name must be supplied");
 
 				EbeanServer existingServer = syncMap.get(name);
 				if (existingServer != null) {

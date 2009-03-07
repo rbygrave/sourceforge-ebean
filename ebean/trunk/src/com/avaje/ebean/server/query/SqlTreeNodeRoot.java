@@ -5,6 +5,7 @@ import java.util.List;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
@@ -12,18 +13,22 @@ import com.avaje.ebean.server.deploy.jointree.JoinNode;
  */
 public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 
+	final TableJoin includeJoin;
+	
 	/**
 	 * Specify for SqlSelect to include an Id property or not.
 	 */
-	public SqlTreeNodeRoot(JoinNode node, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId) {
+	public SqlTreeNodeRoot(JoinNode node, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, TableJoin includeJoin) {
 		super(node, props, myList, withId);
+		this.includeJoin = includeJoin;
 	}
 
 	/**
 	 * Normal constructor.
 	 */
-	public SqlTreeNodeRoot(JoinNode node, SqlTreeProperties props, List<SqlTreeNode> myList) {
+	public SqlTreeNodeRoot(JoinNode node, SqlTreeProperties props, List<SqlTreeNode> myList, TableJoin includeJoin) {
 		super(node, props, myList, true);
+		this.includeJoin = includeJoin;
 	}
 	
 	@Override
@@ -41,6 +46,9 @@ public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 		ctx.append(desc.getBaseTable());
         if (desc.getBaseTableAlias() != null) {
         	ctx.append(" ").append(desc.getBaseTableAlias());
+        }
+        if (includeJoin != null){
+        	includeJoin.addJoin(forceOuterJoin, node, ctx);
         }
 	}
 	

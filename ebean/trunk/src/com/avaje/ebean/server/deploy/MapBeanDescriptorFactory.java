@@ -240,11 +240,11 @@ public class MapBeanDescriptorFactory {
     }
     
     /**
-     * Get the property name using the naming convention.
+     * Return the lower case of the dbColumnName.
      */
     private String getPropertyName(String dbColumnName) {
         
-        return namingConvention.getMapBeanPropertyFromColumn(dbColumnName);
+    	return dbColumnName.toLowerCase();
     }
     
     /**

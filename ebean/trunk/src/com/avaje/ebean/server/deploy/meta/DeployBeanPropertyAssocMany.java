@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy.meta;
 
 import com.avaje.ebean.server.deploy.ManyType;
+import com.avaje.ebean.server.deploy.TableJoin;
 
 /**
  * Property mapped to a List Set or Map.
@@ -123,6 +124,28 @@ public class DeployBeanPropertyAssocMany extends DeployBeanPropertyAssoc {
 		}
 	}
 
+	/**
+	 * Create the immutable version of the intersection join.
+	 */
+	public TableJoin createIntersectionTableJoin() {
+		if (intersectionJoin != null){
+			return new TableJoin(intersectionJoin, null);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Create the immutable version of the inverse join.
+	 */
+	public TableJoin createInverseTableJoin() {
+		if (inverseJoin != null){
+			return new TableJoin(inverseJoin, null);
+		} else {
+			return null;
+		}
+	}
+	
 	/**
 	 * ManyToMany only, join from local table to intersection table.
 	 */

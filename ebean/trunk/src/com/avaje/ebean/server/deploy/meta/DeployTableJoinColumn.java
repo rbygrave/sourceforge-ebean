@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.deploy.meta;
 
+import javax.persistence.JoinColumn;
+
+import com.avaje.ebean.server.deploy.parse.DeployUtil;
+
 /**
  * A join pair of local and foreign properties.
  */
@@ -47,15 +51,70 @@ public class DeployTableJoinColumn {
 	public DeployTableJoinColumn(String localDbColumn, String foreignDbColumn) {
 		this(localDbColumn, foreignDbColumn, true, true);
 	}
-	
+	    
 	/**
 	 * Construct with explicit insertable and updateable flags.
 	 */
 	public DeployTableJoinColumn(String localDbColumn, String foreignDbColumn, boolean insertable, boolean updateable) {
-		this.localDbColumn = localDbColumn;
-		this.foreignDbColumn = foreignDbColumn;
+		this.localDbColumn = nullEmptyString(localDbColumn);
+		this.foreignDbColumn = nullEmptyString(foreignDbColumn);
 		this.insertable = insertable;
 		this.updateable = updateable;
+	}
+
+	/**
+	 * Construct with a JoinColumn where "order" is true for normal order and false for the "reverse" column order.
+	 */
+    public DeployTableJoinColumn(boolean order, JoinColumn jc) {
+    	this(getByOrder(order, jc), getByOrder(!order, jc), jc.insertable(), jc.updatable());
+    }
+    
+    /**
+     * Helper method to return the normal or reverse order of the columns.
+     */
+    private static String getByOrder(boolean order, JoinColumn jc){
+    	return order ?  jc.referencedColumnName() : jc.name();
+    }
+
+    /**
+     * Helper method to null out empty strings.
+     */
+	private String nullEmptyString(String s){
+		if ("".equals(s)){
+			return null;
+		}
+		return s;
+	}
+	
+	/**
+	 * One of the columns can be defaulted to the primary key column (Not specified in the Join annotation).
+	 * <p>
+	 * If one column is found to be undefined then set its value to the primary key.
+	 * </p>
+	 */
+    public void setUndefinedColumnIfRequired(DeployUtil util, String table){
+    	
+		if (isLocalDbColumnUndefined()){
+			String primaryKeyColumn = util.getPrimaryKeyColumn(table);
+			setLocalDbColumn(primaryKeyColumn);
+		} else if (isForeignDbColumnUndefined()) {
+			String primaryKeyColumn = util.getPrimaryKeyColumn(table);
+			setForeignDbColumn(primaryKeyColumn);
+		}
+    }
+    
+	/**
+	 * Return true if the localDbColumn has not been defined.
+	 */
+	private boolean isLocalDbColumnUndefined() {
+		return localDbColumn == null || localDbColumn.length() == 0;
+	}
+
+	/**
+	 * Return true if the foreignDbColumn has not been defined.
+	 */
+	private boolean isForeignDbColumnUndefined() {
+		return foreignDbColumn == null || foreignDbColumn.length() == 0;
 	}
 
 	/**

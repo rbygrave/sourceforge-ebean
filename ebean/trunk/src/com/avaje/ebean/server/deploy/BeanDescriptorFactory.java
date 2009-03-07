@@ -352,6 +352,11 @@ public class BeanDescriptorFactory {
 			}
 		}
 
+		if (matchSet.size() == 0) {
+			// this is a unidirectional relationship
+			// ... that is no matching property on the 'detail' bean
+			return false;
+		}
 		if (matchSet.size() == 1) {
 			// all right with the world
 			return true;
@@ -452,7 +457,7 @@ public class BeanDescriptorFactory {
 			DeployTableJoin unidirectionalJoin = unidirectional.getTableJoin();
 			DeployTableJoinColumn[] cols = oneToManyJoin.columns();
 			for (int i = 0; i < cols.length; i++) {
-				unidirectionalJoin.addTableJoinColumn(cols[i].createInverse());
+				unidirectionalJoin.addJoinColumn(cols[i].createInverse());
 			}
 
 		} else {
@@ -530,7 +535,7 @@ public class BeanDescriptorFactory {
 				// reverse the db columns
 				DeployTableJoinColumn[] cols = otherTableJoin.columns();
 				for (int i = 0; i < cols.length; i++) {
-					tableJoin.addTableJoinColumn(cols[i].createInverse());
+					tableJoin.addJoinColumn(cols[i].createInverse());
 				}
 			}
 		}
@@ -960,12 +965,15 @@ public class BeanDescriptorFactory {
 
 			if (testBean instanceof EntityBean) {
 				// the bean already implements EntityBean
+				checkInheritedClasses(true, beanClass);
+
 				desc.setFactoryType(beanClass);
 				if (!beanClass.getName().startsWith("com.avaje.ebean.meta")) {
 					enhancedClassCount++;
 				}
 
 			} else {
+				checkInheritedClasses(false, beanClass);
 				subclassClassCount++;
 
 				Class<?> subClass = subClassManager.resolve(beanClass.getName());
@@ -979,4 +987,30 @@ public class BeanDescriptorFactory {
 		}
 	}
 
+	/**
+	 * Check that the inherited classes are the same as the entity bean (aka all enhanced
+	 * or all dynamically subclassed).
+	 */
+	private void checkInheritedClasses(boolean ensureEnhanced, Class<?> beanClass) {
+		Class<?> superclass = beanClass.getSuperclass();
+		if (Object.class.equals(superclass)){
+			// we got to the top of the inheritance 
+			return;
+		}
+		boolean isClassEnhanced = EntityBean.class.isAssignableFrom(superclass);
+		
+		if (ensureEnhanced != isClassEnhanced){
+			String msg;
+			if (ensureEnhanced){
+				msg = "Class ["+superclass+"] is not enhanced and ["+beanClass+"] is - (you can not mix!!)";
+			} else {
+				msg = "Class ["+superclass+"] is enhanced and ["+beanClass+"] is not - (you can not mix!!)";				
+			}
+			throw new IllegalStateException(msg);
+		} 
+
+		// recursively continue up the inheritance hierarchy
+		checkInheritedClasses(ensureEnhanced, superclass);
+	}
+	
 }

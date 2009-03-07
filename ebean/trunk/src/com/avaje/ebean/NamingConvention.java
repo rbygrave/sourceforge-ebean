@@ -53,14 +53,6 @@ public interface NamingConvention {
 	public String getForeignKeyProperty(Class<?> beanClass, String dbForeignKeyColumn);
 
 	/**
-	 * Converts DB column names to the property names for MapBeans.
-	 * <p>
-	 * This defaults to lower casing the DB column name.
-	 * </p>
-	 */
-	public String getMapBeanPropertyFromColumn(String dbColumnName);
-
-	/**
 	 * Return the sequence name given the table name.
 	 * <p>
 	 * Typically you might append "_seq" to the table name as an example. 

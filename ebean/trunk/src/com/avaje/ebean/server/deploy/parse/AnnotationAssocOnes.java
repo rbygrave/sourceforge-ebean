@@ -125,24 +125,28 @@ public class AnnotationAssocOnes extends AnnotationParser {
 	        JoinColumn joinColumn = (JoinColumn) get(prop, JoinColumn.class);
 	        if (joinColumn != null) {
 	        	JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-	        	defineJoin.add(joinColumn);
+	        	defineJoin.add(false, joinColumn);
 	        	util.define(defineJoin);
 	        } 
 	
 	        JoinColumns joinColumns = (JoinColumns) get(prop, JoinColumns.class);
 	        if (joinColumns != null) {
 	        	JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-	        	defineJoin.add(joinColumns);
+	        	defineJoin.add(false, joinColumns);
 	        	util.define(defineJoin);
 	        }
 	        
 	        JoinTable joinTable = (JoinTable) get(prop, JoinTable.class);
 	        if (joinTable != null) {
 	        	JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-	        	defineJoin.add(joinTable);
+	        	defineJoin.add(false, joinTable, joinTable.joinColumns());
 	        	util.define(defineJoin);
 	        }
 		}
+    }
+    
+    private String errorMsgMissingBeanTable(Class<?> type, String from) {
+    	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
     }
     
     private void readManyToOne(ManyToOne propAnn, DeployBeanProperty prop) {
@@ -152,10 +156,13 @@ public class AnnotationAssocOnes extends AnnotationParser {
         setCascadeTypes(propAnn.cascade(), beanProp.getCascadeInfo());
 
         BeanTable assoc = util.getBeanTable(beanProp.getPropertyType());
+        if (assoc == null){
+        	String msg = errorMsgMissingBeanTable(beanProp.getPropertyType(), prop.getFullBeanName());
+        	throw new RuntimeException(msg);
+        }
+        
         beanProp.setBeanTable(assoc);
-
         info.setBeanJoinAlias(beanProp, propAnn.optional());
-
     }
 
     private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne prop) {
@@ -164,10 +171,13 @@ public class AnnotationAssocOnes extends AnnotationParser {
         setCascadeTypes(propAnn.cascade(), prop.getCascadeInfo());
 
         BeanTable assoc = util.getBeanTable(prop.getPropertyType());
-        prop.setBeanTable(assoc);
+        if (assoc == null){
+        	String msg = errorMsgMissingBeanTable(prop.getPropertyType(), prop.getFullBeanName());
+        	throw new RuntimeException(msg);
+        }
 
+        prop.setBeanTable(assoc);
         info.setBeanJoinAlias(prop, propAnn.optional());
-        
     }
     
     private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne prop) {
