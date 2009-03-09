@@ -177,15 +177,20 @@ public class JoinTreeFactory {
 			boolean hitMaxDepth = (subTree.getJoinDepth() >= maxDepth); 
 			
 			boolean masterDetail = false;
-			JoinNode grandParent = subTree.getParent().getParent();
-			if (grandParent != null){
-				Class<?> gpt = grandParent.getBeanDescriptor().getBeanType();
-				masterDetail = targetType.equals(gpt);
+
+			// Climb the ancestor path to see if we already handled this
+			// bean type or we reach the root (null)
+			JoinNode ancestor = subTree.getParent();
+			while (ancestor != null && !masterDetail){
+				final Class<?> ancestorType = ancestor.getBeanDescriptor().getBeanType();
+				masterDetail = targetType.equals(ancestorType);
+				ancestor = ancestor.getParent();
 			}			
 			
 			if (masterDetail) {
 				//normal way to stop the recursion...
-				
+				logger.info("Recursive path found from : " + subTree + " to " + ancestor);
+
 			} else if (hitMaxDepth){
 				request.setHitMaxDepth(true);
 				// don't recurse further...
