@@ -514,15 +514,26 @@ public class TableInfo implements Serializable {
 				Fkey fkey = addToFkey(fkCol, false, importedMap);
 
 				ColumnInfo columnInfo = getColumnInfo(fkCol.getFkColumnName());
-				columnInfo.setForeignKey(true);
 
-				if (columnInfo.isNullable()) {
-					fkey.setImportNullable(true);
-				}
+				if (columnInfo == null){
+					// Can happen when e.g. rename a column but don't drop the FK 
+					// This inconsistency can occur in MySQL 
+					logger.log(Level.SEVERE, 
+						"There is a Foreign key " + fkey.getFkName() + 
+						" that references a column " +
+						fkCol.getFkColumnName()  +
+						" that no longer exists on table " + fkey.getTableName());
+				}else{
+					columnInfo.setForeignKey(true);
 
-				// primary key columns already determined
-				if (columnInfo.isPrimaryKey()) {
-					fkey.setPrimaryKey(true);
+					if (columnInfo.isNullable()) {
+						fkey.setImportNullable(true);
+					}
+	
+					// primary key columns already determined
+					if (columnInfo.isPrimaryKey()) {
+						fkey.setPrimaryKey(true);
+					}
 				}
 			}
 
