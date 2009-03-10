@@ -188,7 +188,7 @@ public class RefreshHelp {
 	private void debug(BeanDescriptor desc, EntityBeanIntercept ebi, Object id, Set<String> excludes) {
 		
 				
-		String beanType = desc.getFullName();
+		Class<?> beanType = desc.getBeanType();
 		
 		StackTraceElement cause = debugLazyLoad.getStackTraceElement(beanType);
 		

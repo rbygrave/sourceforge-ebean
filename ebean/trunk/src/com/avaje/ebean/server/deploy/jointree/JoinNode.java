@@ -412,10 +412,21 @@ public abstract class JoinNode {
 		return outerJoin;
 	}
 
+
+	public String toString() {
+		JoinNode parent = getParent();
+		if (parent == null){
+			// this is the root level
+			return getBeanDescriptor().toString();
+		} else {
+			return getRoot().toString()+"."+propertyPrefix;
+		}
+	}
+	
 	/**
 	 * A string description.
 	 */
-	public String toString() {
+	public String getDescription() {
 		StringBuffer sb = new StringBuffer();
 		addToString(sb, this);
 		return sb.toString();

@@ -96,8 +96,8 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 	 * 			return _ebean_identity;
 	 * 		}
 	 * 		
-	 * 		if (id != 0) {
-	 * 			_ebean_identity = Integer.valueOf(id);
+	 * 		if (0 != getId()) {
+	 * 			_ebean_identity = Integer.valueOf(getId());
 	 * 		} else {
 	 * 			_ebean_identity = new Object();
 	 * 		}
@@ -149,7 +149,7 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 		mv.visitLabel(l3);
 		mv.visitLineNumber(1, l3);
 		mv.visitVarInsn(ALOAD, 0);
-		idFieldMeta.appendGetField(mv, classMeta);
+		idFieldMeta.appendGetPrimitiveIdValue(mv, classMeta);
 		idFieldMeta.appendCompare(mv, classMeta);
 		
 		Label l8 = new Label();
@@ -159,7 +159,7 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 		mv.visitLineNumber(1, l9);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitVarInsn(ALOAD, 0);
-		idFieldMeta.appendGetField(mv, classMeta);
+		idFieldMeta.appendGetPrimitiveIdValue(mv, classMeta);
 		idFieldMeta.appendValueOf(mv, classMeta);
 		mv.visitFieldInsn(PUTFIELD, className, IDENTITY_FIELD, "Ljava/lang/Object;");
 		Label l10 = new Label();

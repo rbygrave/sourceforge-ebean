@@ -40,12 +40,11 @@ public class DebugLazyLoad {
 	 * loading (it could be a third party layer such as a web template).
 	 * </p>
 	 */
-	public StackTraceElement getStackTraceElement(String beanType) {
+	public StackTraceElement getStackTraceElement(Class<?> beanType) {
 
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 		for (int i = 0; i < stackTrace.length; i++) {
-			String clsName = stackTrace[i].getClassName();
-			if (isStackLine(clsName, beanType)) {
+			if (isStackLine(stackTrace[i], beanType)) {
 				return stackTrace[i];
 			}
 		}
@@ -55,11 +54,14 @@ public class DebugLazyLoad {
 	/**
 	 * Return true if the code is expected to be application code.
 	 */
-	private boolean isStackLine(String stackClass, String beanType) {
-
-		if (stackClass.startsWith(beanType)) {
+	private boolean isStackLine(StackTraceElement element, Class<?> beanType) {
+		
+		String stackClass = element.getClassName();
+		
+		if (isBeanClass(beanType, stackClass)) {
 			return false;
 		}
+		
 		for (int i = 0; i < ignoreList.length; i++) {
 			if (stackClass.startsWith(ignoreList[i])) {
 				return false;
@@ -68,6 +70,22 @@ public class DebugLazyLoad {
 		return true;
 	}
 
+	/**
+	 * Recurse up the inheritance checking to see if the stackClass is 
+	 * this beanType (or a parent type).
+	 */
+	private boolean isBeanClass(Class<?> beanType, String stackClass) {
+		if (stackClass.startsWith(beanType.getName())) {
+			return true;
+		}
+		Class<?> superCls = beanType.getSuperclass();
+		if (superCls.equals(Object.class)){
+			return false;
+		} else {
+			return isBeanClass(superCls, stackClass);
+		}
+	}
+	
 	private boolean isLazyLoadDebug() {
 		return properties.getBooleanProperty("debug.lazyload", false);
 	}
