@@ -62,14 +62,6 @@ public class LocalFieldVisitor  implements FieldVisitor {
 	public FieldMeta getFieldMeta() {
 		return fieldMeta;
 	}
-
-	/**
-	 * Add ebean get and set methods.
-	 */
-	public void addGetSetMethods(ClassMeta classMeta){
-		fieldMeta.addGet(cv, classMeta);
-		fieldMeta.addSet(cv, classMeta);
-	}
 	
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {	
 		fieldMeta.addAnnotationDesc(desc);
@@ -92,6 +84,4 @@ public class LocalFieldVisitor  implements FieldVisitor {
 		}
 	}
 
-	
-	
 }

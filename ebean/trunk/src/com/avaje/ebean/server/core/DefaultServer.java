@@ -258,7 +258,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			BeanDescriptor desc = getBeanDescriptor(cls);
 			BeanPropertyAssocMany many = (BeanPropertyAssocMany) desc.getBeanProperty(propertyName);
 
-			StackTraceElement cause = debugLazyHelper.getStackTraceElement(cls.getName());
+			StackTraceElement cause = debugLazyHelper.getStackTraceElement(cls);
 
 			if (logControl.isDebugLazyLoad()) {
 				String msg = "debug.lazyLoad " + many.getManyType() + " [" + desc + "][" + propertyName + "]";

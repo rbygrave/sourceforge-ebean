@@ -374,7 +374,8 @@ public class ClassMeta {
 	 */
 	public FieldVisitor createLocalFieldVisitor(ClassVisitor cv, FieldVisitor fv, String name, String desc) {
 
-		FieldMeta fieldMeta = new FieldMeta(name, desc);
+		String fieldClass = subclassing ? superClassName : className;
+		FieldMeta fieldMeta = new FieldMeta(name, desc, fieldClass);
 		LocalFieldVisitor localField = new LocalFieldVisitor(cv, fv, fieldMeta);
 		if (name.startsWith("_ebean")) {
 			// can occur when reading inheritance information on

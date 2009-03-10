@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -45,14 +46,19 @@ public class JoinTreeFactory {
 	
 	private final boolean sysoutOnMaxDepth;
 	
+	private final boolean debugJoinTree;
+	
 	private final DeployPropertyFactory deployPropertyFactory;
 	
 	public JoinTreeFactory(PluginDbConfig dbConfig) {
 		PluginProperties properties = dbConfig.getProperties();
+		deployPropertyFactory = new DeployPropertyFactory(dbConfig);
 		maxDepth = properties.getPropertyInt("jointree.maxdepth", 10);
 		sysoutOnMaxDepth = properties.getPropertyBoolean("jointree.sysoutOnMaxDepth", true);
 		
-		deployPropertyFactory = new DeployPropertyFactory(dbConfig);
+		// set this to true or increase logging level to FINE to get
+		// the join tree output (for debugging purposes)
+		debugJoinTree = properties.getPropertyBoolean("debug.jointree", false);
 	}
 	
 	/**
@@ -73,6 +79,7 @@ public class JoinTreeFactory {
 		// initialise the children 
 		root.initChildren();
 		
+		boolean sentOutput = false;
 		if (request.isHitMaxDepth()){
 			
 			String msg = "The 'join tree' for "+descriptor+" has hit the maxdepth. This is unexpected. ";
@@ -80,15 +87,26 @@ public class JoinTreeFactory {
 			logger.log(Level.WARNING, msg);
 			
 			if (sysoutOnMaxDepth){
+				sentOutput = true;
 				System.out.println(" ## You are getting this sysout message because the 'Join Tree' for this bean");
 				System.out.println(" ## .. has hit a maximum depth of ["+maxDepth+"]. This is generally NOT EXPECTED??");
 				System.out.println(" ## .. you can specify in ebean.properties ebean.jointree.maxdepth=...");
 				System.out.println(" ## .. to increase the maxdepth or ask for help. The join tree output is...");
 				System.out.println(" ## JOIN TREE for : "+descriptor);
-				System.out.println(root);
+				System.out.println(root.getDescription());
 				System.out.println(" ## END OF JOIN TREE for : "+descriptor);
 			}
 		}
+		
+		if (!sentOutput && (debugJoinTree || logger.isLoggable(Level.FINE))){
+			if (descriptor.getBaseTable() == null || descriptor.getBeanType().equals(MapBean.class)){
+				// skipping embedded beans, report beans and MapBeans...
+			} else {
+				String msg = "JoinTree for "+descriptor+"\n"+root.getDescription();
+				logger.log(Level.INFO, msg);
+			}
+		}
+		
 		
 		Map<String, PropertyDeploy> deployMap = new HashMap<String, PropertyDeploy>();
 		Map<String,String> fkeyMap = new HashMap<String, String>();
@@ -176,20 +194,22 @@ public class JoinTreeFactory {
 
 			boolean hitMaxDepth = (subTree.getJoinDepth() >= maxDepth); 
 			
-			boolean masterDetail = false;
+			boolean circularRelationship = false;
 
 			// Climb the ancestor path to see if we already handled this
 			// bean type or we reach the root (null)
 			JoinNode ancestor = subTree.getParent();
-			while (ancestor != null && !masterDetail){
+			while (ancestor != null && !circularRelationship){
 				final Class<?> ancestorType = ancestor.getBeanDescriptor().getBeanType();
-				masterDetail = targetType.equals(ancestorType);
-				ancestor = ancestor.getParent();
+				circularRelationship = targetType.equals(ancestorType);
+				if (!circularRelationship){
+					ancestor = ancestor.getParent();
+				}
 			}			
 			
-			if (masterDetail) {
+			if (circularRelationship) {
 				//normal way to stop the recursion...
-				logger.info("Recursive path found from : " + subTree + " to " + ancestor);
+				logger.fine("Circular path detected at: " + subTree + " back to:" + ancestor);
 
 			} else if (hitMaxDepth){
 				request.setHitMaxDepth(true);
@@ -246,8 +266,7 @@ public class JoinTreeFactory {
 		String parentTableAlias = parent.getTableAlias();
 		TableJoin tableJoin = listProp.getTableJoin().createWithAlias(parentTableAlias, foreignAlias);
 		
-		JoinNodeList child = new JoinNodeList(parent, tableJoin, forDesc, propName,
-			deployProps, listProp);
+		JoinNodeList child = new JoinNodeList(parent, tableJoin, forDesc, propName,deployProps, listProp);
 
 		request.setMaxObjectDepth(child.getMaxObjectDepth());
 
@@ -268,14 +287,12 @@ public class JoinTreeFactory {
 		String destAlias = beanProp.getTableJoin().getForeignTableAlias();
 		String foreignAlias = getChildAlias(parent, destAlias);
 
-		DeployPropertyRequest deployProps = deployPropertyFactory.createDeployProperties(forDesc,
-				propName, foreignAlias);
+		DeployPropertyRequest deployProps = deployPropertyFactory.createDeployProperties(forDesc,propName, foreignAlias);
 
 		String parentTableAlias = parent.getTableAlias();
 		TableJoin tableJoin = beanProp.getTableJoin().createWithAlias(parentTableAlias, foreignAlias);
 
-		JoinNodeBean child = new JoinNodeBean(parent, tableJoin, forDesc, propName,
-			deployProps, beanProp);
+		JoinNodeBean child = new JoinNodeBean(parent, tableJoin, forDesc, propName, deployProps, beanProp);
 		
 		request.setMaxObjectDepth(child.getMaxObjectDepth());
 
