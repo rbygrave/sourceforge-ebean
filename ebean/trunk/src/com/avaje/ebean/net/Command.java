@@ -28,7 +28,9 @@ import com.avaje.ebean.Transaction;
  */
 public abstract class Command implements Serializable {
     
-    String transactionId;
+	private static final long serialVersionUID = 3061213493023459577L;
+
+	String transactionId;
     
     Object responsePayload;
     
