@@ -66,7 +66,7 @@ public final class EnhanceBeanReflect implements BeanReflect {
 		}
 		String fieldList = Arrays.toString(fields);
 		String msg = "field [" + fieldName + "] not found in [" + clazz.getName() + "]" + fieldList;
-		throw new PersistenceException(msg);
+		throw new IllegalArgumentException(msg);
 	}
 
 	public BeanReflectGetter getGetter(String name) {

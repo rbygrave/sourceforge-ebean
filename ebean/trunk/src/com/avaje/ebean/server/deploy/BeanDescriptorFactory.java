@@ -892,17 +892,26 @@ public class BeanDescriptorFactory {
 		BeanReflect beanReflect = reflectFactory.create(beanType, factType);
 		desc.setBeanReflect(beanReflect);
 
-		Iterator<DeployBeanProperty> it = desc.propertiesAll();
-		while (it.hasNext()) {
-			DeployBeanProperty prop = it.next();
-			String propName = prop.getName();
-
-			// use reflection or generated code for getting setting
-			BeanReflectGetter getter = beanReflect.getGetter(propName);
-			BeanReflectSetter setter = beanReflect.getSetter(propName);
-			prop.setGetter(getter);
-			prop.setSetter(setter);
+		try {
+			Iterator<DeployBeanProperty> it = desc.propertiesAll();
+			while (it.hasNext()) {
+				DeployBeanProperty prop = it.next();
+				String propName = prop.getName();
+	
+				// use reflection or generated code for getting setting
+				BeanReflectGetter getter = beanReflect.getGetter(propName);
+				BeanReflectSetter setter = beanReflect.getSetter(propName);
+				prop.setGetter(getter);
+				prop.setSetter(setter);
+			}
+		} catch (IllegalArgumentException e){
+			Class<?> superClass = desc.getBeanType().getSuperclass();
+			String msg = "Error with ["+desc.getFullName()
+				+"] I believe it is not enhanced but it's superClass ["+superClass+"] is?"
+				+" (You are not allowed to mix enhancement in a single inheritance hierarchy)";
+			throw new PersistenceException(msg, e);
 		}
+		
 	}
 
 	/**
