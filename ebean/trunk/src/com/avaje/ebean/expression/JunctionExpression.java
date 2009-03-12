@@ -7,6 +7,8 @@ import java.util.ArrayList;
  */
 abstract class JunctionExpression implements Junction, Expression {
 
+	private static final long serialVersionUID = -7422204102750462676L;
+
 	static class Conjunction extends JunctionExpression {
 
 		private static final long serialVersionUID = -645619859900030678L;

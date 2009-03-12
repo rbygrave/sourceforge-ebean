@@ -6,6 +6,8 @@ package com.avaje.ebean.expression;
  */
 abstract class LogicExpression implements Expression {
 
+	private static final long serialVersionUID = 616860781960645251L;
+	
 	static final String AND = " and ";
 	static final String OR = " or ";
 
