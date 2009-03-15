@@ -43,9 +43,11 @@ public class ImportedIdEmbedded implements ImportedId {
 	}
 
 	public void sqlAppend(DbSqlContext ctx) {
+		ctx.setUseColumnAlias(true);
 		for (int i = 0; i < imported.length; i++) {
 			ctx.appendColumn(imported[i].localDbColumn);			
 		}
+		ctx.setUseColumnAlias(false);
 	}
 	
 	public void dmlAppend(GenerateDmlRequest request) {

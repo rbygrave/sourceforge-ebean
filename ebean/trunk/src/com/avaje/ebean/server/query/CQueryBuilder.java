@@ -45,6 +45,7 @@ public class CQueryBuilder implements Constants {
 
 	private final String tableAliasPlaceHolder;
 	private final String columnAliasPrefix;
+	private final boolean alwaysUseColumnAlias;
 	
 	/**
 	 * Get one more than maxRows. This last one is not returned but if it exists
@@ -64,7 +65,8 @@ public class CQueryBuilder implements Constants {
 		resultSetLimit = pluginCore.getDbConfig().getResultSetLimit();
 		rowNumberWindowAlias = pluginCore.getDbConfig().getRowNumberWindowAlias();
 		tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
-		columnAliasPrefix = pluginCore.getDbConfig().getColumnAliasPrefix();
+		columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "as c");
+		alwaysUseColumnAlias = pluginCore.getDbConfig().getProperties().getPropertyBoolean("alwaysUseColumnAlias", false);
 		rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
 	}
 
@@ -189,7 +191,7 @@ public class CQueryBuilder implements Constants {
     		msg +=". Has it got a valid base table? (joinTree is null!)";
     		throw new PersistenceException(msg);
     	}
-        SqlTreeBuilder selectBuilder = new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, query, joinTree, predicates);
+        SqlTreeBuilder selectBuilder = new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias, query, joinTree, predicates);
         return selectBuilder.build();
     }
 	

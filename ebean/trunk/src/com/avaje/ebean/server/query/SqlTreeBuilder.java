@@ -63,6 +63,8 @@ public class SqlTreeBuilder {
 	final String tableAliasPlaceHolder;
 	
 	final String columnAliasPrefix;
+	
+	final boolean alwaysUseColumnAlias;
 
 	final StringBuilder summary = new StringBuilder();
 
@@ -79,11 +81,12 @@ public class SqlTreeBuilder {
 	 * support the where and/or order by clause. If so these extra joins are
 	 * added to the root node.
 	 */
-	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, OrmQuery<?> query, 
-			JoinTree joinTree, CQueryPredicates predicates) {
+	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias,
+			OrmQuery<?> query, JoinTree joinTree, CQueryPredicates predicates) {
 		
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
+		this.alwaysUseColumnAlias = alwaysUseColumnAlias;
 		this.query = query;
 		this.queryDetail = query.getDetail();
 		this.joinTree = joinTree;
@@ -128,7 +131,7 @@ public class SqlTreeBuilder {
 
 	private String buildSelectClause(SqlTreeNode rootNode) {
 
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix);
+		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias);
 
 		rootNode.appendSelect(ctx);
 
@@ -153,7 +156,7 @@ public class SqlTreeBuilder {
 
 	private String buildFromClause(SqlTreeNode rootNode) {
 
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix);
+		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder);
 
 		rootNode.appendFrom(ctx, false);
 

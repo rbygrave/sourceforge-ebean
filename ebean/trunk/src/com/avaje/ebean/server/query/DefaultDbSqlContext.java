@@ -27,14 +27,33 @@ public class DefaultDbSqlContext implements DbSqlContext {
 
 	private int columnIndex;
 	 
+	private boolean useColumnAlias;
+	
+	private final boolean alwaysUseColumnAlias;
+	
 	/**
 	 * A Set used to make sure formula joins are only added once to a query.
 	 */
 	private HashSet<String> formulaJoins;
+
+	/**
+	 * Construct for FROM clause (no column alias used).
+	 */
+	public DefaultDbSqlContext(String tableAliasPlaceHolder) {
+		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
+		this.columnAliasPrefix = null;
+		this.alwaysUseColumnAlias = false;
+		this.useColumnAlias = false;
+	}
 	
-	public DefaultDbSqlContext(String tableAliasPlaceHolder, String columnAliasPrefix) {
+	/**
+	 * Construct for SELECT clause (with column alias settings).
+	 */
+	public DefaultDbSqlContext(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias) {
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
+		this.alwaysUseColumnAlias = alwaysUseColumnAlias;
+		this.useColumnAlias = alwaysUseColumnAlias;
 	}
 	
 	public JoinNode peekJoinNode() {
@@ -70,10 +89,22 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		sb.append(s);
 		return this;
 	}
-
 	
+	/**
+	 * Called with withColumnAlias=true when we really need to use a column alias.
+	 * <p>
+	 * This is for embedded imported keys.
+	 * </p>
+	 */
+	public void setUseColumnAlias(boolean useColumnAlias) {
+		if (useColumnAlias){
+			this.useColumnAlias = true;
+		} else {
+			// set it back to the default
+			this.useColumnAlias = alwaysUseColumnAlias;
+		}
+	}
 
-	
 	public void appendFormulaJoin(String sqlFormulaJoin, boolean forceOuterJoin) {
 
 		// replace ${ta} place holder with the real table alias...
@@ -124,7 +155,7 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		sb.append(PERIOD);
 		sb.append(column);
 
-		if (columnAliasPrefix != null){
+		if (useColumnAlias){
 			sb.append(" ");
 			sb.append(columnAliasPrefix);
 			sb.append(columnIndex);

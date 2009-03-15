@@ -6,15 +6,6 @@ import com.avaje.ebean.server.deploy.jointree.JoinNode;
  * Used to provide context during sql construction.
  */
 public interface DbSqlContext {
-
-//	/**
-//	 * The place holder for the current table alias.
-//	 * <p>
-//	 * Used in SQL Formulas and replaced with the current table alias
-//	 * when generating the sql.
-//	 * </p>
-//	 */
-//	public static final String TABLE_ALIAS = "${ta}";
 	
 	/**
 	 * Push the current table alias onto the stack.
@@ -26,6 +17,14 @@ public interface DbSqlContext {
 	 */
 	public void popTableAlias();
 
+	/**
+	 * Set to true if a column alias is required.
+	 * <p>
+	 * This is for embedded imported keys.
+	 * </p>
+	 */
+	public void setUseColumnAlias(boolean withColumnAlias);
+	
 	/**
 	 * Append a char directly to the SQL buffer.
 	 */

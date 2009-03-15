@@ -22,6 +22,8 @@ package com.avaje.ebean.server.deploy;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -320,7 +322,10 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 				return new ImportedIdSimple(owner, localColumn, props[j]);
 			}
 		}
-		String msg = "matchColumn[" + matchColumn + "] localColumn[" + localColumn + "]";
-		throw new RuntimeException("Matching property not found? " + msg);
+		
+		String msg = "Error with the Join on ["+getFullBeanName()
+			+"]. Could not find the local match for ["+matchColumn+"] "//in table["+searchTable+"]?"
+			+" Perhaps an error in a @JoinColumn";
+		throw new PersistenceException(msg);
 	}
 }
