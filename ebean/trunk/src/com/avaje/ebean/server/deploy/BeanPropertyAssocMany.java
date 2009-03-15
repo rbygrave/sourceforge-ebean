@@ -36,7 +36,6 @@ import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
-import com.avaje.ebean.util.DeploymentException;
 
 /**
  * Property mapped to a List Set or Map.
@@ -356,8 +355,10 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 			}
 		}
 
-		String msg = "Matching property for ["+prop.getFullBeanName()+"] not found in table["+searchTable+"]?";
-		throw new DeploymentException(msg);
+		String msg = "Error with the Join on ["+getFullBeanName()
+			+"]. Could not find the matching foreign key for ["+matchColumn+"] in table["+searchTable+"]?"
+			+" Perhaps using a @JoinColumn with the name/referencedColumnName attributes swapped?";
+		throw new PersistenceException(msg);
 	}
 
 	/**

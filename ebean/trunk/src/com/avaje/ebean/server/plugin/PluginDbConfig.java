@@ -57,9 +57,7 @@ public class PluginDbConfig {
 	protected String rowNumberWindowAlias;
 	
 	protected final String tableAliasPlaceHolder;
-	
-	protected final String columnAliasPrefix;
-	
+		
 	/**
 	 * The open quote used by quoted identifiers.
 	 */
@@ -133,8 +131,6 @@ public class PluginDbConfig {
 			resultSetLimit = ResultSetLimit.JdbcRowNavigation;
 		}
 
-		columnAliasPrefix = getColumnAliasPrefix(properties);
-
 		tableAliasPlaceHolder =  properties.getProperty("tableAliasPlaceHolder", "${ta}");
 		rowNumberWindowAlias = properties.getProperty("rowNumberWindowAlias", "as limitresult");	
 		closeQuote = properties.getProperty("closequote", "\"");
@@ -147,13 +143,6 @@ public class PluginDbConfig {
 		String ia = properties.getProperty("identityGeneration", "auto");
 		identityGeneration = IdentityGeneration.parse(ia);
 	}
-
-	protected String getColumnAliasPrefix(PluginProperties properties) {
-		String alias = properties.getProperty("columnAliasPrefix", "as c");
-		alias = alias.trim();
-		return alias.length() == 0 ? null : alias;
-	}
-	
 	
 	public String getSql(String fileName) {
 		return resourceManager.getSql(fileName);
@@ -185,10 +174,6 @@ public class PluginDbConfig {
 	
 	public String getTableAliasPlaceHolder() {
 		return tableAliasPlaceHolder;
-	}
-	
-	public String getColumnAliasPrefix() {
-		return columnAliasPrefix;
 	}
 
 	public char getIdentityGeneration() {

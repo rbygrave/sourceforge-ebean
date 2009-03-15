@@ -29,7 +29,7 @@ public final class IdBinderEmbedded implements IdBinder {
 	
 	public void initialise() {
 		idDesc = embIdProperty.getTargetDescriptor();
-		props = idDesc.propertiesBaseScalar();
+		props = embIdProperty.getProperties();
 		idBindSql = buildBindSql();
 	}
 	
@@ -80,11 +80,8 @@ public final class IdBinderEmbedded implements IdBinder {
 			Object value) throws SQLException {
 		
 		for (int i = 0; i < props.length; i++) {
-
-			BeanProperty idField = (BeanProperty) props[i];
-			Object embFieldValue = idField.getValue(value);
-			idField.bind(pstmt, ++index, embFieldValue);
-			//binder.bindObject(++index, embFieldValue, idField, pstmt);
+			Object embFieldValue = props[i].getValue(value);
+			props[i].bind(pstmt, ++index, embFieldValue);
 		}
 		return index;
 	}
@@ -119,19 +116,20 @@ public final class IdBinderEmbedded implements IdBinder {
 		}
 	}
 	
-	
-	
 	public void appendSelect(DbSqlContext ctx) {
+		ctx.setUseColumnAlias(true);
     	for (int i = 0; i < props.length; i++) {
     		props[i].appendSelect(ctx);
 		}
+    	ctx.setUseColumnAlias(false);
 	}
 
 	private String buildBindSql() {
+		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < props.length; i++) {
 			if (i > 0) {
-				sb.append(" AND ");
+				sb.append(" and ");
 			}
 			sb.append(props[i].getDbFullName());
 			sb.append(" = ? ");

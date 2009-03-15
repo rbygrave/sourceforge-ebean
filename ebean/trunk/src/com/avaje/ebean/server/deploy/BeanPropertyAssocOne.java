@@ -65,19 +65,12 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 		oneToOneExported = deploy.isOneToOneExported();
 
 		if (embedded) {
+			// Overriding of the columns and use table alias of owning BeanDescriptor
+			BeanEmbeddedMeta overrideMeta = BeanEmbeddedMetaFactory.create(owner, deploy, descriptor);
+			embeddedProps = overrideMeta.getProperties();
 			if (id){
-				// concatinated id type bean
-				// NB: Carefully note that this is non-recursive!!
-				BeanDescriptor d = descriptor.getBeanDescriptor(targetType);
-				embeddedProps = d.propertiesBaseScalar();
 				embeddedVersion = false;
-				
 			} else {
-				// non-id embedded bean
-				// ... take care of overriding of the db columns that 
-				// the embedded properties map to 
-				BeanEmbeddedMeta overrideMeta = BeanEmbeddedMetaFactory.create(owner, deploy, descriptor);
-				embeddedProps = overrideMeta.getProperties();
 				embeddedVersion = overrideMeta.isEmbeddedVersion();
 			}
 		} else {
@@ -253,9 +246,11 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 
 		@Override
 		void appendSelect(DbSqlContext ctx) {
+			ctx.setUseColumnAlias(true);
 			for (int i = 0; i < embeddedProps.length; i++) {
 				embeddedProps[i].appendSelect(ctx);
 			}
+			ctx.setUseColumnAlias(false);
 		}
 	}
 
@@ -336,8 +331,9 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 				String tableAlias = node.getTableAlias();
 				ctx.appendColumn(tableAlias, targetInheritInfo.getDiscriminatorColumn());
 			}
-			
+			//ctx.setWithColumnAlias(true);
 			importedId.sqlAppend(ctx);
+			//ctx.setWithColumnAlias(false);
 		}
 	}
 

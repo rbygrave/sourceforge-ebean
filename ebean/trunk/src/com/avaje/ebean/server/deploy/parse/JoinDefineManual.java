@@ -153,10 +153,10 @@ public class JoinDefineManual {
 			String localColumn = columns[i].getLocalDbColumn();
 			ColumnInfo colInfo = localTableInfo.getColumnInfo(localColumn);
 			if (colInfo == null) {
-				String m = "Could not find column[" + localColumn + "] in table["
-						+ localTableInfo.getName() + "] when deploying [" + joinInfo.getDebugName() + "] ";
-				
-				throw new PersistenceException(m);
+				String msg = "Error with the Join on ["+joinInfo.getProperty().getFullBeanName()
+					+"]. Could not find the matching foreign key for ["+localColumn+"] in table["+desc.getBaseTable()+"]?"
+					+" Perhaps using a @JoinColumn with the name/referencedColumnName attributes swapped?";
+				throw new PersistenceException(msg);
 			}
 			if (colInfo.isNullable()) {
 				// if any of the columns are nullable then the

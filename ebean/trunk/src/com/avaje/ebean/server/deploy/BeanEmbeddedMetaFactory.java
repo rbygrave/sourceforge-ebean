@@ -23,20 +23,28 @@ import java.util.Map;
 
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 
+/**
+ * Creates BeanProperties for Embedded beans that have deployment information
+ * such as the actual DB column name and table alias.
+ */
 public class BeanEmbeddedMetaFactory {
 
-	public static BeanEmbeddedMeta create(BeanDescriptorOwner owner,
-			DeployBeanPropertyAssocOne prop, BeanDescriptor descriptor) {
+	/**
+	 * Create BeanProperties for embedded beans using the deployment specific DB column name and table alias. 
+	 */
+	public static BeanEmbeddedMeta create(BeanDescriptorOwner owner, DeployBeanPropertyAssocOne prop,
+			BeanDescriptor descriptor) {
 
+		// Use the tableAlias from the owning BeanDescriptor
 		String tableAlias = descriptor.getBaseTableAlias();
-		
-		Class<?> targetClass = prop.getTargetType();
+
 
 		// we can get a BeanDescriptor for an Embedded bean
 		// and know that it is NOT recursive, as Embedded beans are
 		// only allow to hold simple scalar types...
-		BeanDescriptor targetDesc = owner.getBeanDescriptor(targetClass);
+		BeanDescriptor targetDesc = owner.getBeanDescriptor(prop.getTargetType());
 
+		// deployment override information (column names)
 		Map<String, String> propColMap = prop.getDeployEmbedded().getPropertyColumnMap();
 
 		BeanProperty[] sourceProperties = targetDesc.propertiesBaseScalar();
@@ -47,8 +55,8 @@ public class BeanEmbeddedMetaFactory {
 
 			String propertyName = sourceProperties[i].getName();
 			String dbColumn = propColMap.get(propertyName);
-			if (dbColumn == null){
-				// db column not overridden so take original
+			if (dbColumn == null) {
+				// dbColumn not overridden so take original
 				dbColumn = sourceProperties[i].getDbColumn();
 			}
 
