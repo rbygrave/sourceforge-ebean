@@ -766,6 +766,11 @@ public interface Query<T> extends Serializable {
 	public Query<T> having(Expression addExpressionToHaving);
 
 	/**
+	 * Return the orderBy clause.
+	 */
+	public String getOrderBy();
+	
+	/**
 	 * Set the order by clause.
 	 */
 	public Query<T> setOrderBy(String orderBy);
@@ -781,12 +786,22 @@ public interface Query<T> extends Serializable {
 	public Query<T> setDistinct(boolean isDistinct);
 
 	/**
-	 * Set the first row to return.
+	 * Return the first row value.
+	 */
+	public int getFirstRow();
+	
+	/**
+	 * Set the first row to return for this query.
 	 * 
 	 * @param firstRow
 	 */
 	public Query<T> setFirstRow(int firstRow);
 
+	/**
+	 * Return the max rows for this query.
+	 */
+	public int getMaxRows();
+	
 	/**
 	 * Set the maximum number of rows to return in the query.
 	 * 
