@@ -75,8 +75,8 @@ abstract class JunctionExpression implements Junction, Expression {
 	 */
 	public int queryPlanHash() {
 		int hc = JunctionExpression.class.getName().hashCode();
+		hc = hc * 31 + joinType.hashCode();
 		for (int i = 0; i < list.size(); i++) {
-			hc = hc * 31 + joinType.hashCode();
 			hc = hc * 31 + list.get(i).queryPlanHash();
 		}
 		
