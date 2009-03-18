@@ -35,7 +35,7 @@ public class InterceptField implements Opcodes, EnhanceConstants {
 	 */
 	public static void addField(ClassVisitor cv) {
 
-		FieldVisitor f1 = cv.visitField(0, INTERCEPT_FIELD, L_INTERCEPT, null, null);
+		FieldVisitor f1 = cv.visitField(ACC_PROTECTED, INTERCEPT_FIELD, L_INTERCEPT, null, null);
 		f1.visitEnd();
 	}
 
