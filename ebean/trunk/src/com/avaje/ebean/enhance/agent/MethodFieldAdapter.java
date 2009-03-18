@@ -62,15 +62,23 @@ public class MethodFieldAdapter extends MethodAdapter implements Opcodes {
 
 		if (transientAnnotation) {
 			// The whole method is left as is
-			super.visitFieldInsn(opcode, className, name, desc);
+			super.visitFieldInsn(opcode, owner, name, desc);
 			return;
 		}
 
+		if (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC){
+			if (meta.isLog(3)) {
+				meta.log(" ... info: skip static field "+owner+" "+name+" in "+methodDescription);
+			}
+			super.visitFieldInsn(opcode, owner, name, desc);
+			return;
+		}
+		
 		if (!meta.isFieldPersistent(name)) {
 			if (meta.isLog(2)) {
-				meta.log(" ... info: non-persistent field " + name+" in "+methodDescription);
+				meta.log(" ... info: non-persistent field "+owner+" "+name+" in "+methodDescription);
 			}
-			super.visitFieldInsn(opcode, className, name, desc);
+			super.visitFieldInsn(opcode, owner, name, desc);
 			return;
 		}
 
