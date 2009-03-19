@@ -110,7 +110,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.1.0-RC1-090310";
+	private static final String EBVERSION = "1.1.0-RC1-090320";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();

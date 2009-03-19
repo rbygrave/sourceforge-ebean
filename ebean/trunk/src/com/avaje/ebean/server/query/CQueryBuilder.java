@@ -26,7 +26,6 @@ import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.ResultSetLimit;
@@ -58,16 +57,19 @@ public class CQueryBuilder implements Constants {
 	
 	private final RawSqlSelectClauseBuilder rawSqlBuilder;
 	
+	private final Binder binder;
+	
 	/**
 	 * Create the SqlGenSelect.
 	 */
 	public CQueryBuilder(PluginCore pluginCore) {
-		resultSetLimit = pluginCore.getDbConfig().getResultSetLimit();
-		rowNumberWindowAlias = pluginCore.getDbConfig().getRowNumberWindowAlias();
-		tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
-		columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "as c");
-		alwaysUseColumnAlias = pluginCore.getDbConfig().getProperties().getPropertyBoolean("alwaysUseColumnAlias", false);
-		rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
+		this.binder = pluginCore.getDbConfig().getBinder();
+		this.resultSetLimit = pluginCore.getDbConfig().getResultSetLimit();
+		this.rowNumberWindowAlias = pluginCore.getDbConfig().getRowNumberWindowAlias();
+		this.tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
+		this.columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "as c");
+		this.alwaysUseColumnAlias = pluginCore.getDbConfig().getProperties().getPropertyBoolean("alwaysUseColumnAlias", false);
+		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
 	}
 
 	/**
@@ -130,7 +132,7 @@ public class CQueryBuilder implements Constants {
 	 * Return the SQL Select statement as a String. Converts logical property
 	 * names to physical deployment column names.
 	 */
-	public CQuery buildQuery(QueryRequest request, Binder binder) {
+	public CQuery buildQuery(QueryRequest request) {
 
 		if (request.isSqlSelect()){
 			return rawSqlBuilder.build(request);
@@ -184,15 +186,7 @@ public class CQueryBuilder implements Constants {
      */
     private SqlTree createSqlTree(QueryRequest request, CQueryPredicates predicates) {
 
-        OrmQuery<?> query = request.getQuery();
-    	JoinTree joinTree = request.getBeanJoinTree();
-    	if (joinTree == null){
-    		String msg = "Error with query on "+request.getBeanDescriptor().getFullName();
-    		msg +=". Has it got a valid base table? (joinTree is null!)";
-    		throw new PersistenceException(msg);
-    	}
-        SqlTreeBuilder selectBuilder = new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias, query, joinTree, predicates);
-        return selectBuilder.build();
+        return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias, request, predicates).build();
     }
 	
 	private String buildSql(QueryRequest request, CQueryPredicates predicates, SqlTree select) {

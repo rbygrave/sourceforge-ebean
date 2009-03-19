@@ -30,14 +30,13 @@ import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.jmx.MLogControlMBean;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.util.Message;
 
 /**
  * Handles the Object Relational fetching.
  */
-public class DefaultOrmQueryEngineHelper {
+public class CQueryEngine {
 
 	/**
 	 * Use JDBC row navigation to limit results.
@@ -49,22 +48,23 @@ public class DefaultOrmQueryEngineHelper {
 	 */
 	private final ThreadPool threadPool;
 
-	private final CQueryBuilder queryGenerator;
+	private final CQueryBuilder queryBuilder;
 
 	private final MLogControlMBean logControl;
 
-	private final Binder binder;
-	
-	public DefaultOrmQueryEngineHelper(PluginCore pluginCore) {
-		this.binder = pluginCore.getDbConfig().getBinder();
+	public CQueryEngine(PluginCore pluginCore) {
 		this.logControl = pluginCore.getDbConfig().getLogControl();
 
-		this.queryGenerator = new CQueryBuilder(pluginCore);
+		this.queryBuilder = new CQueryBuilder(pluginCore);
 		this.threadPool = ThreadPoolManager.getThreadPool("BGFetch");
 
 		this.useResultSetLimit = pluginCore.getDbConfig().useJdbcResultSetLimit();
 	}
 
+	public CQuery buildQuery(QueryRequest request) {
+		return queryBuilder.buildQuery(request);
+	}
+	
 	
 	/**
 	 * Find a list/map/set of beans.
@@ -74,7 +74,7 @@ public class DefaultOrmQueryEngineHelper {
 		// flag indicating whether we need to close the resources...
 		boolean useBackgroundToContinueFetch = false;
 
-		CQuery cquery = queryGenerator.buildQuery(request, binder);
+		CQuery cquery = queryBuilder.buildQuery(request);
 		try {
 
 			if (logControl.isDebugGeneratedSql()){
@@ -127,7 +127,7 @@ public class DefaultOrmQueryEngineHelper {
 
 		EntityBean bean = null;
 
-		CQuery cquery = queryGenerator.buildQuery(request, binder);		
+		CQuery cquery = queryBuilder.buildQuery(request);		
 		
 		try {
 			if (logControl.isDebugGeneratedSql()) {

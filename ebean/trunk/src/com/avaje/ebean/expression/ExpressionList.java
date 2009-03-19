@@ -300,6 +300,11 @@ public interface ExpressionList<T> extends Serializable {
 	public ExpressionList<T> icontains(String propertyName, String value);
 
 	/**
+	 * In - using a subQuery.
+	 */
+	public ExpressionList<T> in(String propertyName, Query<?> subQuery);
+
+	/**
 	 * In - property has a value in the array of values.
 	 */
 	public ExpressionList<T> in(String propertyName, Object[] values);

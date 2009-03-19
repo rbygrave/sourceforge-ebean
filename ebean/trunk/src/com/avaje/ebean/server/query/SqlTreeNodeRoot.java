@@ -23,13 +23,6 @@ public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 		this.includeJoin = includeJoin;
 	}
 
-	/**
-	 * Normal constructor.
-	 */
-	public SqlTreeNodeRoot(JoinNode node, SqlTreeProperties props, List<SqlTreeNode> myList, TableJoin includeJoin) {
-		super(node, props, myList, true);
-		this.includeJoin = includeJoin;
-	}
 	
 	@Override
 	protected void postLoad(DbReadContext cquery, EntityBean loadedBean, Object id) {

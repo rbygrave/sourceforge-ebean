@@ -30,9 +30,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.query.OrmQueryProperties;
+import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
@@ -70,6 +73,8 @@ public class SqlTreeBuilder {
 
 	final CQueryPredicates predicates;
 
+	final boolean subQuery;
+	
 	/**
 	 * Property if resultSet contains master and detail rows.
 	 */
@@ -82,14 +87,21 @@ public class SqlTreeBuilder {
 	 * added to the root node.
 	 */
 	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias,
-			OrmQuery<?> query, JoinTree joinTree, CQueryPredicates predicates) {
+			QueryRequest request, CQueryPredicates predicates) {
 		
+		this.subQuery = request.isSubQuery();
+        this.query = request.getQuery();
+    	this.joinTree = request.getBeanJoinTree();
+    	if (joinTree == null){
+    		String msg = "Error with query on "+request.getBeanDescriptor().getFullName();
+    		msg +=". Has it got a valid base table? (joinTree is null!)";
+    		throw new PersistenceException(msg);
+    	}
+    	
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
 		this.alwaysUseColumnAlias = alwaysUseColumnAlias;
-		this.query = query;
 		this.queryDetail = query.getDetail();
-		this.joinTree = joinTree;
 		this.predicates = predicates;
 	}
 
@@ -203,7 +215,7 @@ public class SqlTreeBuilder {
 
 		if (node.isRoot()) {
 			buildExtraJoins(node, myList);
-			return new SqlTreeNodeRoot(node, props, myList, query.getIncludeTableJoin());
+			return new SqlTreeNodeRoot(node, props, myList, !subQuery, query.getIncludeTableJoin());
 
 		} else if (node.isManyJoin()) {
 			return new SqlTreeNodeManyRoot(node, props, myList);

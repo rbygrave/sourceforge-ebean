@@ -23,12 +23,16 @@ import java.util.Iterator;
 
 import javax.management.MBeanServer;
 
+import com.avaje.ebean.Query;
+import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
 import com.avaje.ebean.bean.ScopeTrans;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.plugin.Plugin;
+import com.avaje.ebean.server.query.CQuery;
+import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.util.InternalEbean;
@@ -119,5 +123,20 @@ public interface InternalEbeanServer extends InternalEbean {
 	 * BeanListeners of remote inserts updates and deletes.
 	 */
 	public void remoteListenerEvent(RemoteListenerEvent event);
+
+	/**
+	 * Create a query request object.
+	 */
+	public QueryRequest createQueryRequest(Query<?> q, Transaction t);
+	
+	/**
+	 * Compile a query.
+	 */
+	public CQuery compileQuery(Query<?> query, Transaction t);
+	
+	/**
+	 * Return the queryEngine for this server.
+	 */
+	public CQueryEngine getQueryEngine();
 
 }
