@@ -80,10 +80,17 @@ public final class QueryRequest extends BeanRequest {
 		this.trans = (ServerTransaction) t;
 		
 		if (beanDescriptor != null) {
-			finder = beanDescriptor.getBeanFinder();
+			this.finder = beanDescriptor.getBeanFinder();
 		} else {
-			finder = null;
+			this.finder = null;
 		}
+	}
+	
+	/**
+	 * Calculate the query plan hash AFTER any potential AutoFetch tuning.
+	 */
+	public void calculateQueryPlanHash() {
+		this.queryPlanHash = query.calculateQueryPlanHash(this);
 	}
 	
 	/**
@@ -242,7 +249,6 @@ public final class QueryRequest extends BeanRequest {
 	 * no query plan for this query exists.
 	 */
 	public CQueryPlan getQueryPlan() {
-		queryPlanHash = query.getQueryPlanHash();
 		return beanDescriptor.getQueryPlan(queryPlanHash);
 	}
 

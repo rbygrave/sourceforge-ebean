@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 final class NotExpression implements Expression {
 
@@ -30,9 +32,15 @@ final class NotExpression implements Expression {
 	/**
 	 * Based on the expression.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = NotExpression.class.getName().hashCode();
-		hc = hc * 31 + exp.queryPlanHash();
+		hc = hc * 31 + exp.queryAutoFetchHash();
+		return hc;
+	}
+
+	public int queryPlanHash(QueryRequest request) {
+		int hc = NotExpression.class.getName().hashCode();
+		hc = hc * 31 + exp.queryPlanHash(request);
 		return hc;
 	}
 	

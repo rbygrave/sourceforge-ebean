@@ -2,6 +2,8 @@ package com.avaje.ebean.expression;
 
 import java.io.Serializable;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 /**
  * An expression that becomes part of a Where clause or Having clause.
@@ -17,6 +19,15 @@ public interface Expression extends Serializable {
 	public String getPropertyName();
 	
 	/**
+	 * Calculate a hash value used to identify a query for AutoFetch tuning.
+	 * <p>
+	 * That is, if the hash changes then the query will be considered different
+	 * from an AutoFetch perspective and get different tuning.
+	 * </p>
+	 */
+	public int queryAutoFetchHash();
+	
+	/**
 	 * Calculate a hash value for the expression.
 	 * This includes the expression type and property but should exclude
 	 * the bind values.
@@ -25,7 +36,7 @@ public interface Expression extends Serializable {
 	 * case the query execution plan can be reused.
 	 * </p>
 	 */
-	public int queryPlanHash();
+	public int queryPlanHash(QueryRequest request);
 	
 	/**
 	 * Return the hash value for the values that will be bound.

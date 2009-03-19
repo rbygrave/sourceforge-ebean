@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 class AllEqualsExpression implements Expression {
 
 	private static final long serialVersionUID = -8691773558205937025L;
@@ -73,7 +75,8 @@ class AllEqualsExpression implements Expression {
 	 * The null check is required due to the "is null" sql being generated.
 	 * </p>
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
+	
 		int hc = AllEqualsExpression.class.getName().hashCode();
 		Set<Entry<String, Object>> entries = propMap.entrySet();
 		Iterator<Entry<String, Object>> it = entries.iterator();
@@ -89,11 +92,12 @@ class AllEqualsExpression implements Expression {
 
 		return hc;
 	}
-
-	/**
-	 * Same in this case to QueryPlanHash.
-	 */
+	
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
+	}
+	
 	public int queryBindHash() {
-		return queryPlanHash();
+		return queryAutoFetchHash();
 	}
 }

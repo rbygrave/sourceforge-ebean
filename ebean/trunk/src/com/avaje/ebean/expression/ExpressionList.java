@@ -198,6 +198,62 @@ public interface ExpressionList<T> extends Serializable {
 	public ExpressionList<T> isNotNull(String propertyName);
 
 	/**
+	 * A "Query By Example" type of expression.
+	 * <p>
+	 * Pass in an example entity and for each non-null scalar properties an
+	 * expression is added.
+	 * </p>
+	 * <p>
+	 * By Default this case sensitive, will ignore numeric zero values and
+	 * will use a Like for string values (you must put in your own wildcards).
+	 * </p>
+	 * <p>
+	 * To get control over the options you can create an ExampleExpression
+	 * and set those options such as case insensitive etc.
+	 * </p>
+	 * <pre class="code"> 
+	 *  // create an example bean and set the properties
+	 *  // with the query parameters you want
+	 * Customer example = new Customer();
+	 * example.setName("Rob%"); 
+	 * example.setNotes("%something%");
+	 * 
+	 * List&lt;Customer&gt; list = 
+	 * 		Ebean.find(Customer.class)
+	 * 		.where()
+	 * 		// pass the bean into the where() clause
+	 * 		.exampleLike(example)
+	 * 		// you can add other expressions to the same query
+	 * 		.gt("id", 2)
+	 * 		.findList();
+	 *  
+	 * </pre>
+	 * 
+	 * Similarly you can create an ExampleExpression
+	 * <pre>
+	 * Customer example = new Customer();
+	 * example.setName("Rob%"); 
+	 * example.setNotes("%something%");
+	 * 
+	 *  // create a ExampleExpression with more control 
+	 * ExampleExpression qbe = new ExampleExpression(example, true, LikeType.EQUAL_TO)
+	 * 		.includeZeros();
+	 *		
+	 * List&lt;Customer&gt; list = 
+	 * 		Ebean.find(Customer.class)
+	 * 		.where()
+	 * 		.add(qbe)
+	 * 		.findList();
+	 * </pre>
+	 */
+	public ExpressionList<T> exampleLike(Object example);
+
+	/**
+	 * Case insensitive version of {@link #exampleLike(Object)}
+	 */
+	public ExpressionList<T> iexampleLike(Object example);
+
+	/**
 	 * Like - property like value where the value contains the SQL wild card
 	 * characters % (percentage) and _ (underscore).
 	 */

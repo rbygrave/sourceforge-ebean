@@ -54,6 +54,25 @@ public class OrmQueryProperties implements Serializable {
 		}
 	}
 	
+	/**
+	 * Creates a copy of the OrmQueryProperties.
+	 */
+	public OrmQueryProperties copy() {
+		OrmQueryProperties copy = new OrmQueryProperties();
+		copy.entity = entity;
+		copy.queryPlanProperties = queryPlanProperties;
+		copy.cache = cache;
+		copy.readOnly = readOnly;
+		copy.allProperties = allProperties;
+		if (included != null){
+			copy.included = new HashSet<String>(included);			
+		}
+		if (includedBeanJoin != null){
+			copy.includedBeanJoin = new HashSet<String>(includedBeanJoin);	
+		}
+		return copy;
+	}
+	
 	public String toString() {
 		String s = "";
 		if (entity != null){

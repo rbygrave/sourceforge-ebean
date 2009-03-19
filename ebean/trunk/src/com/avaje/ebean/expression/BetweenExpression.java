@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 class BetweenExpression implements Expression {
 
@@ -33,13 +35,14 @@ class BetweenExpression implements Expression {
 		request.append(propertyName).append(BETWEEN).append(" ? and ? ");
 	}
 
-	/**
-	 * Based on the property name.
-	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = BetweenExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;
+	}
+	
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 	
 	public int queryBindHash() {

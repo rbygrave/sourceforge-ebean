@@ -17,6 +17,18 @@ public class OrmQueryAttributes implements Serializable {
 
 	String orderBy;
 	
+	/**
+	 * Return a copy of the OrmQueryAttributes.
+	 */
+	public OrmQueryAttributes copy() {
+		OrmQueryAttributes copy = new OrmQueryAttributes();
+		copy.maxRows = maxRows;
+		copy.firstRow = firstRow;
+		copy.where = where;
+		copy.orderBy = orderBy;
+		return copy;
+	}
+	
 	public int queryPlanHash() {
 		int hc = (firstRow == 0 ? 0 : firstRow);
 		hc = hc * 31 + (maxRows == 0 ? 0 : maxRows);

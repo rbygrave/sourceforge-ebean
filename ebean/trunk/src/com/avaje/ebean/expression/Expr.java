@@ -117,11 +117,32 @@ public class Expr {
 	}
 
 	/**
+	 * Case insensitive {@link #exampleLike(Object)}
+	 */
+	public static ExampleExpression iexampleLike(Object example) {
+		return new ExampleExpression(example, true, LikeType.RAW);
+	}
+	
+	/**
+	 * Create the query by Example expression which is case sensitive and using LikeType.RAW (you need to add you own wildcards % and _).
+	 */
+	public static ExampleExpression exampleLike(Object example) {
+		return new ExampleExpression(example, false, LikeType.RAW);
+	}
+
+	/**
+	 * Create the query by Example expression specifying more options.
+	 */
+	public static ExampleExpression exampleLike(Object example, boolean caseInsensitive, LikeType likeType) {
+		return new ExampleExpression(example, caseInsensitive, likeType);
+	}
+	
+	/**
 	 * Like - property like value where the value contains the SQL wild card
 	 * characters % (percentage) and _ (underscore).
 	 */
 	public static Expression like(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeExpression.Type.raw);
+		return new LikeExpression(propertyName, value, false, LikeType.RAW);
 	}
 
 	/**
@@ -130,14 +151,14 @@ public class Expr {
 	 * uses a lower() function to make the expression case insensitive.
 	 */
 	public static Expression ilike(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, true, LikeExpression.Type.raw);
+		return new LikeExpression(propertyName, value, true, LikeType.RAW);
 	}
 
 	/**
 	 * Starts With - property like value%.
 	 */
 	public static Expression startsWith(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeExpression.Type.startsWith);
+		return new LikeExpression(propertyName, value, false, LikeType.STARTS_WITH);
 	}
 
 	/**
@@ -145,14 +166,14 @@ public class Expr {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public static Expression istartsWith(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, true, LikeExpression.Type.startsWith);
+		return new LikeExpression(propertyName, value, true, LikeType.STARTS_WITH);
 	}
 
 	/**
 	 * Ends With - property like %value.
 	 */
 	public static Expression endsWith(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeExpression.Type.endsWith);
+		return new LikeExpression(propertyName, value, false, LikeType.ENDS_WITH);
 	}
 
 	/**
@@ -160,14 +181,14 @@ public class Expr {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public static Expression iendsWith(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeExpression.Type.endsWith);
+		return new LikeExpression(propertyName, value, false, LikeType.ENDS_WITH);
 	}
 
 	/**
 	 * Contains - property like %value%.
 	 */
 	public static Expression contains(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeExpression.Type.contains);
+		return new LikeExpression(propertyName, value, false, LikeType.CONTAINS);
 	}
 
 	/**
@@ -175,7 +196,7 @@ public class Expr {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public static Expression icontains(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeExpression.Type.contains);
+		return new LikeExpression(propertyName, value, false, LikeType.CONTAINS);
 	}
 
 	/**
