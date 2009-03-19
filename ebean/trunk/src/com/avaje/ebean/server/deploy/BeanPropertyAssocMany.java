@@ -280,6 +280,10 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 		if (extraWhere != null){
 			query.where().raw(extraWhere);
 		}
+		
+		if (fetchOrderBy != null){
+			query.orderBy(fetchOrderBy);
+		}
 	}
 		
 	private ExportedProperty[] getExported() {
