@@ -73,6 +73,8 @@ import com.avaje.ebean.server.jmx.MServerControl;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.util.ThrowablePrinter;
 import com.avaje.ebean.server.plugin.Plugin;
+import com.avaje.ebean.server.query.CQuery;
+import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
 import com.avaje.ebean.server.transaction.TransContext;
 import com.avaje.ebean.server.transaction.TransactionEvent;
@@ -154,6 +156,8 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	final DebugLazyLoad debugLazyHelper;
 
+	final CQueryEngine cqueryEngine;
+	
 	/**
 	 * Create the DefaultServer.
 	 */
@@ -161,6 +165,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		this.plugin = plugin;
 		this.serverName = plugin.getServerName();
+		this.cqueryEngine = new CQueryEngine(plugin.getPluginCore());
 		this.logControl = plugin.getLogControl();
 		this.refreshHelp = new RefreshHelp(logControl, plugin);
 		this.debugLazyHelper = new DebugLazyLoad(plugin);
@@ -224,6 +229,19 @@ public final class DefaultServer implements InternalEbeanServer {
 	 */
 	public String getName() {
 		return serverName;
+	}
+
+	/**
+	 * Compile a query.
+	 */
+	public CQuery compileQuery(Query<?> query, Transaction t) {
+		QueryRequest qr = createQueryRequest(query, t);
+	
+		return cqueryEngine.buildQuery(qr);
+	}
+	
+	public CQueryEngine getQueryEngine() {
+		return cqueryEngine;
 	}
 
 	public ServerCache getServerCache() {
@@ -903,7 +921,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		return findId(query, t);
 	}
 
-	protected QueryRequest createQueryRequest(Query<?> q, Transaction t) {
+	public QueryRequest createQueryRequest(Query<?> q, Transaction t) {
 
 		OrmQuery<?> query = (OrmQuery<?>) q;
 		BeanManager mgr = deploymentManager.getBeanManager(query.getBeanType());

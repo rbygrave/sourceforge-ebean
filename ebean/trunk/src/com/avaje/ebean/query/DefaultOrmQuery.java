@@ -300,7 +300,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	public ObjectGraphOrigin createObjectGraphOrigin(CallStack callStack) {
 
 		// calculate base query hash prior to it being tuned
-		objectGraphOrigin = new ObjectGraphOrigin(calculateAutoFetchHash(), callStack, beanType.getName());
+		objectGraphOrigin = new ObjectGraphOrigin(queryAutoFetchHash(), callStack, beanType.getName());
 		return objectGraphOrigin;
 	}
 
@@ -354,7 +354,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * Calculate a hash used by AutoFetch to identify when a query has changed 
 	 * (and hence potentially needs a new tuned query plan to be developed).
 	 */
-	private int calculateAutoFetchHash() {
+	public int queryAutoFetchHash() {
 		
 		return calculateHash(null);
 	}
@@ -369,7 +369,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * This is calculated AFTER AutoFetch query tuning has occurred.
 	 * </p>
 	 */
-	public int calculateQueryPlanHash(QueryRequest request) {
+	public int queryPlanHash(QueryRequest request) {
 
 		queryPlanHash = calculateHash(request);
 		return queryPlanHash;
@@ -381,7 +381,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * Used with queryPlanHash() to get a unique hash for a query.
 	 * </p>
 	 */
-	private int queryBindHash() {
+	public int queryBindHash() {
 		int hc = (id == null ? 0 : id.hashCode());
 		hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryBindHash());
 		hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryBindHash());
@@ -398,7 +398,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * (including bind values) before.
 	 * </p>
 	 */
-	public int getQueryHash() {
+	public int queryHash() {
 		// calculateQueryPlanHash is called just after potential AutoFetch tuning
 		// so queryPlanHash is calculated well before this method is called
 		int hc = queryPlanHash;

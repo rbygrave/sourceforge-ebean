@@ -297,10 +297,18 @@ public class CQuery implements DbReadContext {
 			return null;
 		} else {
 			ManyType manyType = request.getManyType();
+			if (manyType == null){
+				// subQuery compiled for InQueryExpression
+				return null;
+			}
 			return BeanCollectionHelpFactory.create(manyType, request.getBeanDescriptor());
 		}
 	}
 	
+	public CQueryPredicates getPredicates() {
+		return predicates;
+	}
+
 	public QueryRequest getQueryRequest() {
 		return request;
 	}

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.query.OrmQuery;
 
 /**
  * Expression factory for creating standard expressions.
@@ -15,7 +16,7 @@ import com.avaje.ebean.Query;
  * <pre class="code">
  *  // Example: fetch orders where status equals new and orderDate > lastWeek.
  * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
- * query.addWhere()
+ * query.where()
  *     .add(Expr.eq(&quot;status&quot;, Order.NEW))
  *     .add(Expr.gt(&quot;orderDate&quot;, lastWeek));
  * List&lt;Order&gt; list = query.findList();
@@ -206,6 +207,13 @@ public class Expr {
 		return new InExpression(propertyName, values);
 	}
 
+	/**
+	 * In - using a subQuery.
+	 */
+	public static Expression in(String propertyName, Query<?> subQuery){
+		return new InQueryExpression(propertyName, (OrmQuery<?>)subQuery);
+	}
+	
 	/**
 	 * In - property has a value in the collection of values.
 	 */

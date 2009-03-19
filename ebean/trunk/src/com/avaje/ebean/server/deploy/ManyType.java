@@ -37,6 +37,8 @@ public final class ManyType implements Serializable {
     
     public static final char SET_CODE = 's';
     
+    public static final char ONE_CODE = 'o';
+    
     /**
      * A generic Map type with no specific type.
      */
@@ -51,7 +53,13 @@ public final class ManyType implements Serializable {
      * A generic Set type with no specific type.
      */
     public static final ManyType SET = new ManyType(SET_CODE,"Set");
-    
+
+    /**
+     * Not a many but FIND ONE (by ID or unique).
+	 * Introduced to help identify subQuery (manyType == null).
+     */
+    public static final ManyType FIND_ONE = new ManyType(ONE_CODE,"One");
+
     /**
      * Return a ManyType for the given class. Determines the generic type
      * of List Map or Set and whether it has a specific implementation type or not.

@@ -126,9 +126,13 @@ public interface OrmQuery<T> extends Query<T> {
 	public String getName();
 
 	/**
-	 * Identifies queries that are exactly the same including bind variables.
+	 * Calculate a hash used by AutoFetch to identify when a query has changed 
+	 * (and hence potentially needs a new tuned query plan to be developed).
+	 * <p>
+	 * Excludes bind values and occurs prior to AutoFetch potentially tuning/modifying the query.
+	 * </p>
 	 */
-	public int getQueryHash();
+	public int queryAutoFetchHash();
 
 	/**
 	 * Identifies queries that are the same bar the bind variables.
@@ -136,9 +140,25 @@ public interface OrmQuery<T> extends Query<T> {
 	 * This is used AFTER AutoFetch has potentially tuned the query. This is used to identify
 	 * and reused query plans (the final SQL string and associated SqlTree object).
 	 * </p>
+	 * <p>
+	 * Excludes the actual bind values (as they don't effect the query plan).
+	 * </p>
 	 */
-	public int calculateQueryPlanHash(QueryRequest request);
-
+	public int queryPlanHash(QueryRequest request);
+	
+	/**
+	 * Calculate a hash based on the bind values used in the query.
+	 * <p>
+	 * Combined with queryPlanHash() to return getQueryHash (a unique hash for a query).
+	 * </p>
+	 */
+	public int queryBindHash();
+		
+	/**
+	 * Identifies queries that are exactly the same including bind variables.
+	 */
+	public int queryHash();
+	
 	/**
 	 * Return true if this is a query based on a SqlSelect rather than
 	 * generated.

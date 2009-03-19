@@ -393,6 +393,13 @@ public class CQueryPredicates {
 
 		return orderBy;
 	}
+		
+	/**
+	 * Return the bind values for the where expression.
+	 */
+	public ArrayList<Object> getWhereExprBindValues() {
+		return whereExprBindValues;
+	}
 
 	/**
 	 * Return the db column version of the combined where clause.

@@ -252,6 +252,11 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 		return this;
 	}
 
+	public ExpressionList<T> in(String propertyName, Query<?> subQuery){
+		add(Expr.in(propertyName, subQuery));
+		return this;	
+	}
+	
 	public ExpressionList<T> in(String propertyName, Collection<?> values) {
 		add(Expr.in(propertyName, values));
 		return this;

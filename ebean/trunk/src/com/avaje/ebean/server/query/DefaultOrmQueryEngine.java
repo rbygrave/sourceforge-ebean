@@ -42,7 +42,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     /**
      * Find using predicates
      */
-    private final DefaultOrmQueryEngineHelper findObjRel;
+    private final CQueryEngine queryEngine;
     
 	private final ServerCache serverCache;
 
@@ -53,7 +53,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
      */
     public DefaultOrmQueryEngine(Plugin plugin, InternalEbeanServer server) {
    
-        findObjRel = new DefaultOrmQueryEngineHelper(plugin.getPluginCore());
+        queryEngine = server.getQueryEngine();
         serverCache = server.getServerCache();
         deploymentManager = plugin.getPluginCore().getDeploymentManager();
     }
@@ -90,7 +90,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             // this bean type has its own specific finder
             result = finder.findMany(request);
         } else {
-        	result = findObjRel.findMany(request);
+        	result = queryEngine.findMany(request);
         }
 
         if (query.isUseCache()){
@@ -137,7 +137,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         if (finder != null) {
             result =  finder.find(request);
         } else {
-        	result = findObjRel.find(request);
+        	result = queryEngine.find(request);
         }
         
         if (query.isUseCache()){

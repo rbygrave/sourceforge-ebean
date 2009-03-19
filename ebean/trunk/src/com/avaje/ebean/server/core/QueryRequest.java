@@ -90,7 +90,7 @@ public final class QueryRequest extends BeanRequest {
 	 * Calculate the query plan hash AFTER any potential AutoFetch tuning.
 	 */
 	public void calculateQueryPlanHash() {
-		this.queryPlanHash = query.calculateQueryPlanHash(this);
+		this.queryPlanHash = query.queryPlanHash(this);
 	}
 	
 	/**
@@ -181,13 +181,21 @@ public final class QueryRequest extends BeanRequest {
 	 * Return true if this is a find by id (rather than List Set or Map).
 	 */
 	public boolean isFindById() {
-		return manyType == null;
+		return manyType == ManyType.FIND_ONE;
 	}
 
+	/**
+	 * Return true if this is a subquery (as part of InQueryExpression).
+	 */
+	public boolean isSubQuery() {
+		return manyType == null;
+	}
+	
 	/**
 	 * Execute the query as findById.
 	 */
 	public Object findId() {
+		manyType = ManyType.FIND_ONE;
 		return queryEngine.findId(this);
 	}
 
@@ -288,11 +296,11 @@ public final class QueryRequest extends BeanRequest {
 
 			if (manyType == null) {
 				// the query plan and bind values must be the same
-				cacheKey = Integer.valueOf(query.getQueryHash());
+				cacheKey = Integer.valueOf(query.queryHash());
 
 			} else {
 				// additionally the return type (List/Set/Map) must be the same
-				cacheKey = Integer.valueOf(31 * query.getQueryHash() + manyType.hashCode());
+				cacheKey = Integer.valueOf(31 * query.queryHash() + manyType.hashCode());
 			}
 
 			return beanCache.get(cacheKey);
