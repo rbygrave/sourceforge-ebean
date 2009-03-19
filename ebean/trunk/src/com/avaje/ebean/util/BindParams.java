@@ -22,7 +22,10 @@ package com.avaje.ebean.util;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Parameters used for binding to a statement.
@@ -46,6 +49,22 @@ public class BindParams implements Serializable {
 	 */
 	String preparedSql;
 
+	/**
+	 * Return a deep copy of the BindParams.
+	 */
+	public BindParams copy() {
+		BindParams copy = new BindParams();
+		for (Param p : positionedParameters) {
+			copy.positionedParameters.add(p.copy());
+		}
+		Iterator<Entry<String, Param>> it = namedParameters.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, Param> entry = (Map.Entry<String, Param>) it.next();
+			copy.namedParameters.put(entry.getKey(), entry.getValue().copy());
+		}
+		return copy;
+	}
+	
 	public int queryBindHash() {
 		int hc = namedParameters.hashCode();
 		for (int i = 0; i < positionedParameters.size(); i++) {
@@ -280,9 +299,9 @@ public class BindParams implements Serializable {
 	 */
 	public static final class Param {
 
-		boolean isInParam = false;
+		boolean isInParam;
 
-		boolean isOutParam = false;
+		boolean isOutParam;
 
 		int type;
 
@@ -298,6 +317,19 @@ public class BindParams implements Serializable {
 		public Param() {
 		}
 
+		/**
+		 * Create a deep copy of the Param.
+		 */
+		public Param copy() {
+			Param copy = new Param();
+			copy.isInParam = isInParam;
+			copy.isOutParam = isOutParam;
+			copy.type = type;
+			copy.inValue = inValue;
+			copy.outValue = outValue;
+			return copy;
+		}
+		
 		public int hashCode() {
 			int hc = getClass().hashCode();
 			hc = hc * 31 + (isInParam ? 0 : 1);

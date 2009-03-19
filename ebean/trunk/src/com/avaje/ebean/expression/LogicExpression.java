@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 /**
  * A logical And or Or for joining two expressions.
@@ -62,10 +64,17 @@ abstract class LogicExpression implements Expression {
 	/**
 	 * Based on the joinType plus the two expressions.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = LogicExpression.class.getName().hashCode() + joinType.hashCode();
-		hc = hc * 31 + expOne.queryPlanHash();
-		hc = hc * 31 + expTwo.queryPlanHash();
+		hc = hc * 31 + expOne.queryAutoFetchHash();
+		hc = hc * 31 + expTwo.queryAutoFetchHash();
+		return hc;
+	}
+	
+	public int queryPlanHash(QueryRequest request) {
+		int hc = LogicExpression.class.getName().hashCode() + joinType.hashCode();
+		hc = hc * 31 + expOne.queryPlanHash(request);
+		hc = hc * 31 + expTwo.queryPlanHash(request);
 		return hc;
 	}
 

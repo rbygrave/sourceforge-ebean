@@ -1,23 +1,24 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 class LikeExpression implements Expression {
 
 	private static final long serialVersionUID = -5398151809111172380L;
-
-	enum Type {
-		raw, startsWith, endsWith, contains
-	};
 
 	final String propertyName;
 
 	final Object value;
 
 	final boolean caseInsensitive;
+	
+	final LikeType type;
 
-	LikeExpression(String propertyName, String value, boolean caseInsensitive, Type type) {
+	LikeExpression(String propertyName, String value, boolean caseInsensitive, LikeType type) {
 		this.propertyName = propertyName;
 		this.caseInsensitive = caseInsensitive;
+		this.type = type;
 		this.value = getValue(value, caseInsensitive, type);
 	}
 
@@ -37,38 +38,46 @@ class LikeExpression implements Expression {
 		} else {
 			request.append(propertyName);
 		}
-		request.append(" like ? ");
+		if (type.equals(LikeType.EQUAL_TO)){
+			request.append(" = ? ");			
+		} else {
+			request.append(" like ? ");			
+		}
 	}
 
 	/**
 	 * Based on caseInsensitive and the property name.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = LikeExpression.class.getName().hashCode();
 		hc = hc * 31 + (caseInsensitive ? 0 : 1);
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;
 	}
 	
-	
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
+	}
 	
 	public int queryBindHash() {
 		return value.hashCode();
 	}
 
-	private static String getValue(String value, boolean caseInsensitive, Type type){
+	private static String getValue(String value, boolean caseInsensitive, LikeType type){
 		if (caseInsensitive){
 			value = value.toLowerCase();
 		}
 		switch (type) {
-		case raw:
+		case RAW:
 			return value;
-		case startsWith:
+		case STARTS_WITH:
 			return value+"%";
-		case endsWith:
+		case ENDS_WITH:
 			return "%"+value;
-		case contains:
+		case CONTAINS:
 			return "%"+value+"%";
+		case EQUAL_TO:
+			return value;
 
 		default:
 			throw new RuntimeException("LikeType "+type+" missed?");

@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 /**
  * Slightly redundant as Query.setId() ultimately also does the same job.
@@ -38,11 +40,15 @@ class NullExpression implements Expression {
 	/**
 	 * Based on notNull flag and the propertyName.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = NullExpression.class.getName().hashCode();
 		hc = hc * 31 + (notNull ? 1 : 0);
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;
+	}
+
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 	
 	public int queryBindHash() {

@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 /**
  * Slightly redundant as Query.setId() ultimately also does the same job.
@@ -39,10 +41,14 @@ class IdExpression implements Expression {
 	/**
 	 * No properties so this is just a unique static number.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		// this number is unique for a given bean type
 		// which is all that is required
 		return IdExpression.class.getName().hashCode();
+	}
+
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 
 	public int queryBindHash() {

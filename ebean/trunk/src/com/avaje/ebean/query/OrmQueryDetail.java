@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Represents the internal structure of an Object Relational query.
@@ -26,6 +28,20 @@ public class OrmQueryDetail implements Serializable {
 
 	HashSet<String> includes = new HashSet<String>(8);
 
+	/**
+	 * Return a deep copy of the OrmQueryDetail.
+	 */
+	public OrmQueryDetail copy() {
+		OrmQueryDetail copy = new OrmQueryDetail();
+		copy.baseProps = baseProps.copy();
+		Iterator<Entry<String, OrmQueryProperties>> it = fetchJoins.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, OrmQueryProperties> entry = it.next();
+			copy.fetchJoins.put(entry.getKey(), entry.getValue().copy());
+		}
+		copy.includes = new HashSet<String>(includes);
+		return copy;
+	}
 	/**
 	 * Calculate the hash for the query plan.
 	 */

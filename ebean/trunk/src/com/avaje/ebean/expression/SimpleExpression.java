@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 class SimpleExpression implements Expression {
 
@@ -62,14 +64,19 @@ class SimpleExpression implements Expression {
 		request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
 	}
 	
+	
 	/**
 	 * Based on the type and propertyName.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = SimpleExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
 		hc = hc * 31 + type.name().hashCode();
 		return hc;
+	}
+	
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 
 	public int queryBindHash() {

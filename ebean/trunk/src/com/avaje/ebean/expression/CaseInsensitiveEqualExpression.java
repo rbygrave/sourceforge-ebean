@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 class CaseInsensitiveEqualExpression implements Expression {
 
@@ -27,13 +29,14 @@ class CaseInsensitiveEqualExpression implements Expression {
 		request.append("lower(").append(propertyName).append(") =? ");
 	}
 
-	/**
-	 * Based on the propertyName.
-	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = CaseInsensitiveEqualExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
 		return hc;
+	}
+
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 	
 	public int queryBindHash() {

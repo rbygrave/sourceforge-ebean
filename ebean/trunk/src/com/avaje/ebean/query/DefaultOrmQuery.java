@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
@@ -18,6 +17,7 @@ import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
@@ -32,8 +32,10 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 
 	private static final long serialVersionUID = 6838006264714672460L;
 
+	final Class<T> beanType;
+	
 	transient final EbeanServer server;
-
+	
 	/**
 	 * Used to add beans to the PersistanceContext prior to query.
 	 */
@@ -48,20 +50,18 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	transient TableJoin includeTableJoin;
 
 	transient AutoFetchManager autoFetchManager;
-	
-	final Class<T> beanType;
 
+	/**
+	 * The name of the query.
+	 */
+	String name;
+	
 	/**
 	 * Holds query in structured form.
 	 */
 	OrmQueryDetail detail;
 
 	OrmQueryAttributes attributes;
-
-	/**
-	 * The name of the query.
-	 */
-	final String name;
 
 	String generatedSql;
 
@@ -137,7 +137,10 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 
 	ObjectGraphOrigin objectGraphOrigin;
 
-	int autoFetchQueryPlanHash;
+	/**
+	 * Hash of final query after AutoFetch tuning.
+	 */
+	int queryPlanHash;
 	
 	TransactionContext transactionContext;
 
@@ -172,6 +175,53 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		}
 	}
 
+	public DefaultOrmQuery<T> copy() {
+		// Not including these in the copy:
+		// ArrayList<EntityBean> contextAdditions;
+		// QueryListener<T> queryListener;
+		// TransactionContext transactionContext;
+
+		DefaultOrmQuery<T> copy = new DefaultOrmQuery<T>(beanType, server);
+		copy.name = name;
+		copy.includeTableJoin = includeTableJoin;
+		copy.autoFetchManager = autoFetchManager;
+		//copy.generatedSql = generatedSql;
+		copy.query = query;
+		copy.additionalWhere = additionalWhere;
+		copy.additionalHaving = additionalHaving;
+		copy.distinct = distinct;
+		copy.backgroundFetchAfter = backgroundFetchAfter;
+		copy.initialCapacity = initialCapacity;
+		copy.timeout = timeout;
+		copy.mapKey = mapKey;
+		copy.id = id;
+		copy.useCache = useCache;
+		copy.sqlSelect = sqlSelect;
+		if (detail != null){
+			copy.detail = detail.copy();
+		}
+		if (attributes != null){
+			copy.attributes = attributes.copy();
+		}
+		if (bindParams != null){
+			copy.bindParams = bindParams.copy();
+		}
+		if (whereExpressions != null){
+			copy.whereExpressions = whereExpressions.copy(copy);
+		}
+		if (havingExpressions != null){
+			copy.havingExpressions = havingExpressions.copy(copy);
+		}
+		copy.usageProfiling = usageProfiling;
+		copy.autoFetch = autoFetch;
+		copy.parentNode = parentNode;
+		copy.objectGraphOrigin = objectGraphOrigin;
+		//copy.autoFetchTuned = autoFetchTuned;
+		//copy.autoFetchQueryPlanHash = autoFetchQueryPlanHash;
+		
+		return copy;
+	}
+	
 	/**
 	 * Return the TransactionContext.
 	 * <p>
@@ -249,7 +299,8 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	
 	public ObjectGraphOrigin createObjectGraphOrigin(CallStack callStack) {
 
-		objectGraphOrigin = new ObjectGraphOrigin(getQueryPlanHash(), callStack, beanType.getName());
+		// calculate base query hash prior to it being tuned
+		objectGraphOrigin = new ObjectGraphOrigin(calculateAutoFetchHash(), callStack, beanType.getName());
 		return objectGraphOrigin;
 	}
 
@@ -261,15 +312,11 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		}
 	}
 
-
+	
 	/**
-	 * Calculate a hash that should be unique for the generated sql across a
-	 * given bean type.
-	 * <p>
-	 * This can used to enable the caching and reuse of a 'query plan'.
-	 * </p>
+	 * Calculate the query hash for either AutoFetch query tuning or Query Plan caching.
 	 */
-	public int getQueryPlanHash() {
+	private int calculateHash(QueryRequest request) {
 
 		// exclude bind values and things unrelated to
 		// the sql being generated
@@ -288,10 +335,44 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		hc = hc * 31 + (additionalHaving == null ? 0 : additionalHaving.hashCode());
 		hc = hc * 31 + (mapKey == null ? 0 : mapKey.hashCode());
 		hc = hc * 31 + (id == null ? 0 : 1);
-		hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryPlanHash());
-		hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryPlanHash());
 
+		if (request == null){
+			// for AutoFetch...
+			hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryAutoFetchHash());
+			hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryAutoFetchHash());
+			
+		} else {
+			// for query plan...
+			hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryPlanHash(request));
+			hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryPlanHash(request));
+		}
+		
 		return hc;
+	}
+	
+	/**
+	 * Calculate a hash used by AutoFetch to identify when a query has changed 
+	 * (and hence potentially needs a new tuned query plan to be developed).
+	 */
+	private int calculateAutoFetchHash() {
+		
+		return calculateHash(null);
+	}
+	
+	/**
+	 * Calculate a hash that should be unique for the generated SQL across a
+	 * given bean type.
+	 * <p>
+	 * This can used to enable the caching and reuse of a 'query plan'.
+	 * </p>
+	 * <p>
+	 * This is calculated AFTER AutoFetch query tuning has occurred.
+	 * </p>
+	 */
+	public int calculateQueryPlanHash(QueryRequest request) {
+
+		queryPlanHash = calculateHash(request);
+		return queryPlanHash;
 	}
 
 	/**
@@ -310,29 +391,19 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		return hc;
 	}
 
+	/**
+	 * Return a hash that includes the query plan and bind values.
+	 * <p>
+	 * This hash can be used to identify if we have executed the exact same query 
+	 * (including bind values) before.
+	 * </p>
+	 */
 	public int getQueryHash() {
-		int hc = getQueryPlanHash();
+		// calculateQueryPlanHash is called just after potential AutoFetch tuning
+		// so queryPlanHash is calculated well before this method is called
+		int hc = queryPlanHash;
 		hc = hc * 31 + queryBindHash();
 		return hc;
-	}
-
-	public int hashCode() {
-		int hc = Query.class.getName().hashCode();
-		hc = hc * 31 + getQueryHash();
-		return hc;
-	}
-
-	public boolean equals(Object o) {
-		if (o == null) {
-			return false;
-		}
-		if (o == this) {
-			return true;
-		}
-		if (o instanceof DefaultOrmQuery) {
-			return hashCode() == o.hashCode();
-		}
-		return false;
 	}
 
 	/**

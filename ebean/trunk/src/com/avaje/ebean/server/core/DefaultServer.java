@@ -912,7 +912,11 @@ public final class DefaultServer implements InternalEbeanServer {
 			// its a tunable query
 			autoFetchManager.tuneQuery(query);
 		}
-		return new QueryRequest(this, queryEngine, query, mgr, t);
+		
+		QueryRequest request = new QueryRequest(this, queryEngine, query, mgr, t);
+		// the query hash after an AutoFetch tuning
+		request.calculateQueryPlanHash();
+		return request;
 	}
 
 	@SuppressWarnings("unchecked")

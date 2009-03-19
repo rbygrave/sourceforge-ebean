@@ -10,6 +10,7 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.util.BindParams;
@@ -131,8 +132,12 @@ public interface OrmQuery<T> extends Query<T> {
 
 	/**
 	 * Identifies queries that are the same bar the bind variables.
+	 * <p>
+	 * This is used AFTER AutoFetch has potentially tuned the query. This is used to identify
+	 * and reused query plans (the final SQL string and associated SqlTree object).
+	 * </p>
 	 */
-	public int getQueryPlanHash();
+	public int calculateQueryPlanHash(QueryRequest request);
 
 	/**
 	 * Return true if this is a query based on a SqlSelect rather than

@@ -2,6 +2,8 @@ package com.avaje.ebean.expression;
 
 import java.util.Collection;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 class InExpression implements Expression {
 
 	private static final long serialVersionUID = 3150665801693551260L;
@@ -44,8 +46,12 @@ class InExpression implements Expression {
 	/**
 	 * Based on the number of values in the in clause.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		return InExpression.class.getName().hashCode() + 31 * values.length;
+	}
+
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 
 	public int queryBindHash() {

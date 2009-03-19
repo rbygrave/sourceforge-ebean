@@ -14,6 +14,7 @@ import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.ExpressionRequest;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.expression.Junction;
+import com.avaje.ebean.server.core.QueryRequest;
 
 /**
  * Default implementation of ExpressionList.
@@ -28,6 +29,18 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 	
 	public DefaultExpressionList(Query<T> query) {
 		this.query = query;
+	}
+	
+	/**
+	 * Return a copy of the expression list.
+	 * <p>
+	 * Each of the expressions are expected to be immutable and safe to reference.
+	 * </p>
+	 */
+	public DefaultExpressionList<T> copy(Query<T> query) {
+		DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query);
+		copy.list.addAll(list);
+		return copy;
 	}
 	
 	public Query<T> query() {
@@ -124,11 +137,23 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 	/**
 	 * Calculate a hash based on the expressions but excluding the actual bind values.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
 			Expression expression = list.get(i);
-			hash = hash*31 + expression.queryPlanHash();
+			hash = hash*31 + expression.queryAutoFetchHash();
+		}
+		return hash;
+	}
+	
+	/**
+	 * Calculate a hash based on the expressions but excluding the actual bind values.
+	 */
+	public int queryPlanHash(QueryRequest request) {
+		int hash = DefaultExpressionList.class.getName().hashCode();
+		for (int i = 0, size=list.size(); i < size; i++) {
+			Expression expression = list.get(i);
+			hash = hash*31 + expression.queryPlanHash(request);
 		}
 		return hash;
 	}
@@ -254,6 +279,16 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 
 	public ExpressionList<T> le(String propertyName, Object value) {
 		add(Expr.le(propertyName, value));
+		return this;
+	}
+
+	public ExpressionList<T> exampleLike(Object example) {
+		add(Expr.exampleLike(example));
+		return this;
+	}
+
+	public ExpressionList<T> iexampleLike(Object example) {
+		add(Expr.iexampleLike(example));
 		return this;
 	}
 

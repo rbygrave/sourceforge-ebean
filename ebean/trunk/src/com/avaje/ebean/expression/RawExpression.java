@@ -1,5 +1,7 @@
 package com.avaje.ebean.expression;
 
+import com.avaje.ebean.server.core.QueryRequest;
+
 
 class RawExpression implements Expression {
 
@@ -33,10 +35,14 @@ class RawExpression implements Expression {
 	/**
 	 * Based on the sql.
 	 */
-	public int queryPlanHash() {
+	public int queryAutoFetchHash() {
 		int hc = RawExpression.class.getName().hashCode();
 		hc = hc * 31 + sql.hashCode();
 		return hc;
+	}
+
+	public int queryPlanHash(QueryRequest request) {
+		return queryAutoFetchHash();
 	}
 	
 	public int queryBindHash() {

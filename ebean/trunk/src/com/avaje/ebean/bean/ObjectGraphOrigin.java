@@ -33,9 +33,9 @@ import java.io.Serializable;
  */
 public final class ObjectGraphOrigin implements Serializable {
 
-	private static final long serialVersionUID = 410937765287968708L;
+	private static final long serialVersionUID = 410937765287968709L;
 
-	final int queryPlanHash;
+	final int autoFetchQueryHash;
 
 	final CallStack callStack;
 
@@ -43,11 +43,11 @@ public final class ObjectGraphOrigin implements Serializable {
 
 	final String beanType;
 
-	public ObjectGraphOrigin(int queryPlanHash, CallStack callStack, String beanType) {
-		this.queryPlanHash = queryPlanHash;
+	public ObjectGraphOrigin(int autoFetchQueryHash, CallStack callStack, String beanType) {
+		this.autoFetchQueryHash = autoFetchQueryHash;
 		this.callStack = callStack;
 		this.beanType = beanType;
-		key = queryPlanHash + ":" + callStack.getHash();
+		this.key = autoFetchQueryHash + ":" + callStack.getHash();
 	}
 
 	/**
