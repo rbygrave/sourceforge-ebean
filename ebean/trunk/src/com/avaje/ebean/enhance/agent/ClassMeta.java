@@ -36,6 +36,8 @@ public class ClassMeta {
 
 	ClassMeta superMeta;
 
+	boolean scalaObject;
+	
 	boolean alreadyEnhanced;
 
 	boolean hasEqualsOrHashcode;
@@ -375,7 +377,7 @@ public class ClassMeta {
 	public FieldVisitor createLocalFieldVisitor(ClassVisitor cv, FieldVisitor fv, String name, String desc) {
 
 		String fieldClass = subclassing ? superClassName : className;
-		FieldMeta fieldMeta = new FieldMeta(name, desc, fieldClass);
+		FieldMeta fieldMeta = new FieldMeta(this, name, desc, fieldClass);
 		LocalFieldVisitor localField = new LocalFieldVisitor(cv, fv, fieldMeta);
 		if (name.startsWith("_ebean")) {
 			// can occur when reading inheritance information on
@@ -418,4 +420,13 @@ public class ClassMeta {
 			superMeta.appendDescription(sb);
 		}
 	}
+
+	public boolean isScalaObject() {
+		return scalaObject;
+	}
+
+	public void setScalaObject(boolean scalaObject) {
+		this.scalaObject = scalaObject;
+	}
+	
 }

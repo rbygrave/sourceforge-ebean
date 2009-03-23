@@ -63,6 +63,9 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 			if (c[i].equals(C_ENTITYBEAN)) {
 				throw new AlreadyEnhancedException(name);
 			}
+			if (c[i].equals(C_SCALAOBJECT)) {
+				classMeta.setScalaObject(true);
+			}
 		}
 
 		// Add the EntityBean interface

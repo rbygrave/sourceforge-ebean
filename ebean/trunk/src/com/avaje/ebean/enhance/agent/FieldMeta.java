@@ -18,6 +18,7 @@ import com.avaje.ebean.enhance.asm.Type;
  */
 public class FieldMeta implements Opcodes, EnhanceConstants {
 
+	final ClassMeta classMeta;
 	final String fieldClass;
 	final String fieldName;
 	final String fieldDesc;
@@ -47,7 +48,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	 * </p>
 	 */
 	public FieldMeta(Field field, String fieldClass) {
-		this(field.getName(), Type.getDescriptor(field.getType()), fieldClass);
+		this(null, field.getName(), Type.getDescriptor(field.getType()), fieldClass);
 		Annotation[] anno = field.getAnnotations();
 		for (Annotation a : anno) {
 			addAnnotation(a);
@@ -60,7 +61,8 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	 * Used for reading local fields (not inherited) via visiting the class bytes.
 	 * </p>
 	 */
-	public FieldMeta(String name, String desc, String fieldClass) {
+	public FieldMeta(ClassMeta classMeta, String name, String desc, String fieldClass) {
+		this.classMeta = classMeta;
 		this.fieldName = name;
 		this.fieldDesc = desc;
 		this.fieldClass = fieldClass;
@@ -71,7 +73,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		primativeType = sort > Type.VOID && sort <= Type.DOUBLE;
 		arrayType = sort == Type.ARRAY;
 		objectType = sort == Type.OBJECT;
-
+		
 		getMethodName = "_ebean_get_" + name;
 		getMethodDesc = "()" + desc;
 		
@@ -81,15 +83,45 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		getNoInterceptMethodName = "_ebean_getni_" + name;
 		setNoInterceptMethodName = "_ebean_setni_" + name;
 
-		String initCap = Character.toUpperCase(fieldName.charAt(0))+fieldName.substring(1);
-		publicSetterName = "set"+initCap;
-		
-		if (fieldDesc.equals("Z")){
-			publicGetterName = "is"+initCap;
+		if (classMeta != null && classMeta.isScalaObject()) {
+			// use scala property name
+			publicSetterName = name+"_$eq";
+			publicGetterName = name;
+			
 		} else {
-			publicGetterName = "get"+initCap;
+			String publicFieldName = getFieldName(name);
+			// use java bean property name convention
+			String initCap = Character.toUpperCase(publicFieldName.charAt(0))+publicFieldName.substring(1);
+			publicSetterName = "set"+initCap;
+			
+			if (fieldDesc.equals("Z")){
+				publicGetterName = "is"+initCap;
+			} else {
+				publicGetterName = "get"+initCap;
+			}			
+		}
+
+		if (classMeta.isLog(6)) {
+			classMeta.log(" ... public getter [" + publicGetterName+"]");
+			classMeta.log(" ... public setter [" + publicSetterName+"]");
 		}
 	}
+
+	/**
+	 * Handle the case where a boolean variable starts with 'is'.
+	 */
+    private String getFieldName(String name){
+    	if (name.startsWith("is") && name.length() > 2){
+    		char c = name.charAt(2);
+    		if (Character.isUpperCase(c)){
+    			if (classMeta.isLog(6)) {
+    				classMeta.log("trimming off 'is' from field name "+ name+"]");
+    			}    			
+    			return name.substring(2);
+    		}
+    	}
+    	return name;
+    }
 
 	public String toString(){
 		return fieldName;

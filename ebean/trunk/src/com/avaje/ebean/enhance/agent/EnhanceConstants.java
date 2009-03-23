@@ -39,7 +39,9 @@ public interface EnhanceConstants {
     public static final String C_ENHANCEDTRANSACTIONAL = "com/avaje/ebean/bean/EnhancedTransactional";
     
     public static final String C_ENTITYBEAN = "com/avaje/ebean/bean/EntityBean";
-
+    
+    public static final String C_SCALAOBJECT = "scala/ScalaObject";
+    
     public static final String C_INTERCEPT = "com/avaje/ebean/bean/EntityBeanIntercept";
 
     public static final String L_INTERCEPT = "Lcom/avaje/ebean/bean/EntityBeanIntercept;";

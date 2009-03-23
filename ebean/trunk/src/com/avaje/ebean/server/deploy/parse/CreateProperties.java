@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
@@ -137,8 +138,11 @@ public class CreateProperties {
             		
             	} else {
             	
-            		Method getter = findGetter(field, declaredMethods);
-            		Method setter = findSetter(field, declaredMethods);
+                	String fieldName = getFieldName(field, beanType);
+                	String initFieldName = initCap(fieldName);
+
+            		Method getter = findGetter(field, initFieldName, declaredMethods);
+            		Method setter = findSetter(field, initFieldName, declaredMethods);
             		
 	                DeployBeanProperty prop = createProp(level, desc, field, beanType, getter, setter);                    
 	                DeployBeanProperty replaced = desc.addBeanProperty(prop);
@@ -182,12 +186,25 @@ public class CreateProperties {
     	}
     }
     
+    private String getFieldName(Field field, Class<?> beanType){
+    	String name = field.getName();
+    	if (name.startsWith("is") && name.length() > 2){
+    		char c = name.charAt(2);
+    		if (Character.isUpperCase(c)){
+    			String msg = "trimming off 'is' from field name "+name+" in class "+beanType.getName();
+    			logger.log(Level.INFO, msg);
+    			
+    			return name.substring(2);
+    		}
+    	}
+    	return name;
+    }
+    
     /**
      * Find a public non-static getter method that matches this field (according to bean-spec rules).
      */
-    private Method findGetter(Field field, Method[] declaredMethods){
-    	
-    	String initFieldName = initCap(field.getName());
+    private Method findGetter(Field field, String initFieldName, Method[] declaredMethods){
+ 
     	String methGetName = "get"+initFieldName;
     	String methIsName = "is"+initFieldName;
   
@@ -212,9 +229,8 @@ public class CreateProperties {
     /**
      * Find a public non-static setter method that matches this field (according to bean-spec rules).
      */
-    private Method findSetter(Field field, Method[] declaredMethods){
+    private Method findSetter(Field field, String initFieldName, Method[] declaredMethods){
     	
-    	String initFieldName = initCap(field.getName());
     	String methSetName = "set"+initFieldName;
     	
     	for (int i = 0; i < declaredMethods.length; i++) {
