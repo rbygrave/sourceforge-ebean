@@ -129,12 +129,16 @@ public class CreateProperties {
         	
             for (int i = 0; i < fields.length; i++) {
             	
-            	Field field = fields[i];
-            	if (ignoreFieldByName(field.getName())){
-            		// not interested this field
-            		
-            	} else if (Modifier.isStatic(field.getModifiers())) {
+            	Field field = fields[i];	
+            	if (Modifier.isStatic(field.getModifiers())) {
             		// not interested in static fields 
+            	
+            	} else if (Modifier.isTransient(field.getModifiers())) {
+            		// not interested in transient fields
+            		logger.finer("Skipping transient field "+field.getName()+" in "+beanType.getName());
+
+            	} else if (ignoreFieldByName(field.getName())) {
+            		// not interested this field (ebean or aspectJ field)
             		
             	} else {
             	
@@ -186,12 +190,20 @@ public class CreateProperties {
     	}
     }
     
+    /**
+     * Return the bean spec field name (trim of "is" from boolean types)
+     */
     private String getFieldName(Field field, Class<?> beanType){
+    	
     	String name = field.getName();
-    	if (name.startsWith("is") && name.length() > 2){
+    	
+    	if ((Boolean.class.equals(field.getType()) || boolean.class.equals(field.getType())) 
+    			&& name.startsWith("is") && name.length() > 2){
+    		
+    		// it is a boolean type field starting with "is"
     		char c = name.charAt(2);
     		if (Character.isUpperCase(c)){
-    			String msg = "trimming off 'is' from field name "+name+" in class "+beanType.getName();
+    			String msg = "trimming off 'is' from boolean field name "+name+" in class "+beanType.getName();
     			logger.log(Level.INFO, msg);
     			
     			return name.substring(2);

@@ -31,7 +31,7 @@ package com.avaje.ebean.server.plugin;
  * </ul>
  * </p>
  */
-public class MySqlPlugin extends PluginDbConfig {
+public class MySqlPlugin extends DbSpecific {
 
     public MySqlPlugin(PluginProperties properties){
         super(properties);

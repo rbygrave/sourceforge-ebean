@@ -30,10 +30,12 @@ package com.avaje.ebean.server.plugin;
  * </ul>
  * </p>
  */
-public class Oracle10Plugin extends PluginDbConfig {
+public class Oracle10Plugin extends DbSpecific {
 
     public Oracle10Plugin(PluginProperties properties) {
         super(properties);
+        
+        properties.setPropertyDefault("treatEmptyStringsAsNull", "true");
         
         properties.setPropertyDefault("namingconvention.sequence.name", "{table}_seq");
         properties.setPropertyDefault("namingconvention.sequence.nextval", "{sequence}.nextval");

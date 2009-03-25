@@ -58,7 +58,7 @@ public class CQueryEngine {
 		this.queryBuilder = new CQueryBuilder(pluginCore);
 		this.threadPool = ThreadPoolManager.getThreadPool("BGFetch");
 
-		this.useResultSetLimit = pluginCore.getDbConfig().useJdbcResultSetLimit();
+		this.useResultSetLimit = pluginCore.getDbConfig().getDbSpecific().useJdbcResultSetLimit();
 	}
 
 	public CQuery buildQuery(QueryRequest request) {

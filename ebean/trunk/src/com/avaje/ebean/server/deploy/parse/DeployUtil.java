@@ -42,6 +42,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.lib.sql.ColumnInfo;
 import com.avaje.ebean.server.lib.sql.DictionaryInfo;
 import com.avaje.ebean.server.lib.sql.TableInfo;
+import com.avaje.ebean.server.plugin.DbSpecific;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnum;
@@ -86,11 +87,7 @@ public class DeployUtil {
 	 */
 	private final GeneratedPropertySettings generateSettings;
 
-
-
 	private final boolean useOneToOneOptional;
-
-	private final PluginDbConfig dbConfig;
 
 	private final DeploymentManager deploymentManager;
 
@@ -106,9 +103,11 @@ public class DeployUtil {
 	
 	private final String manyToManyAlias;
 	
+	private final DbSpecific dbSpecific;
+	
 	public DeployUtil(DeploymentManager deploymentManager, PluginDbConfig dbConfig) {
 		this.deploymentManager = deploymentManager;
-		this.dbConfig = dbConfig;
+		this.dbSpecific = dbConfig.getDbSpecific();
 		this.dictionaryInfo = dbConfig.getDictionaryInfo();
 		this.typeManager = dbConfig.getTypeManager();
 		this.namingConvention = dbConfig.getNamingConvention();
@@ -383,9 +382,9 @@ public class DeployUtil {
 		if (dbName.charAt(0) == BACK_TICK) {
 			if (dbName.charAt(dbName.length() - 1) == BACK_TICK) {
 
-				String quotedName = dbConfig.getOpenQuote();
+				String quotedName = dbSpecific.getOpenQuote();
 				quotedName += dbName.substring(1, dbName.length() - 1);
-				quotedName += dbConfig.getCloseQuote();
+				quotedName += dbSpecific.getCloseQuote();
 
 				return quotedName;
 

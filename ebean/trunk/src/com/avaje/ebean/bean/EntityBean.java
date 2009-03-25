@@ -31,6 +31,15 @@ package com.avaje.ebean.bean;
 public interface EntityBean {
 
 	/**
+	 * Return the enhancement marker value.
+	 * <p>
+	 * This is the class name of the enhanced class and used to check that
+	 * all entity classes are enhanced (specifically not just a super class). 
+	 * </p>
+	 */
+	public String _ebean_getMarker();
+	
+	/**
 	 * Return the intercept for this object.
 	 */
 	public EntityBeanIntercept _ebean_getIntercept();

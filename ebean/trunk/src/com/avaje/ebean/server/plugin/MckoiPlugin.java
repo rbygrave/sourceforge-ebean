@@ -24,7 +24,7 @@ package com.avaje.ebean.server.plugin;
 /**
  * Mckoi specific plugin.
  */
-public class MckoiPlugin extends PluginDbConfig {
+public class MckoiPlugin extends DbSpecific {
 
     public MckoiPlugin(PluginProperties properties){
         super(properties);

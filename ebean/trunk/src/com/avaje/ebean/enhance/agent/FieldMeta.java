@@ -18,6 +18,8 @@ import com.avaje.ebean.enhance.asm.Type;
  */
 public class FieldMeta implements Opcodes, EnhanceConstants {
 
+	private static final Type BOOLEAN_OBJECT_TYPE = Type.getType(Boolean.class);
+	
 	final ClassMeta classMeta;
 	final String fieldClass;
 	final String fieldName;
@@ -89,7 +91,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 			publicGetterName = name;
 			
 		} else {
-			String publicFieldName = getFieldName(name);
+			String publicFieldName = getFieldName(name, asmType);
 			// use java bean property name convention
 			String initCap = Character.toUpperCase(publicFieldName.charAt(0))+publicFieldName.substring(1);
 			publicSetterName = "set"+initCap;
@@ -110,12 +112,15 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	/**
 	 * Handle the case where a boolean variable starts with 'is'.
 	 */
-    private String getFieldName(String name){
-    	if (name.startsWith("is") && name.length() > 2){
+    private String getFieldName(String name, Type asmType){
+    	if ((BOOLEAN_OBJECT_TYPE.equals(asmType) || Type.BOOLEAN_TYPE.equals(asmType)) 
+    			&& name.startsWith("is") && name.length() > 2){
+    		
+    		// boolean starting with "is" ... maybe trim off the "is"
     		char c = name.charAt(2);
     		if (Character.isUpperCase(c)){
     			if (classMeta.isLog(6)) {
-    				classMeta.log("trimming off 'is' from field name "+ name+"]");
+    				classMeta.log("trimming off \"is\" from boolean field name "+ name+"]");
     			}    			
     			return name.substring(2);
     		}

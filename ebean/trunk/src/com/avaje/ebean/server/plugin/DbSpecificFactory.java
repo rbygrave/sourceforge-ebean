@@ -30,18 +30,17 @@ import javax.sql.DataSource;
 
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.util.FactoryHelper;
-import com.avaje.lib.log.LogFactory;
 
-public class PluginDbConfigFactory {
+public class DbSpecificFactory {
 
-	private static final Logger logger = LogFactory.get(PluginDbConfigFactory.class);
+	private static final Logger logger = Logger.getLogger(DbSpecificFactory.class.getName());
 
 	private static final Class<?>[] CONS_TYPES = { PluginProperties.class };
 
 	/**
-	 * Create the appropriate DbConfig.
+	 * Create the appropriate DbSpecific.
 	 */
-	public PluginDbConfig create(PluginProperties properties) {
+	public DbSpecific create(PluginProperties properties) {
 
 		String serverName = properties.getServerName();
 		
@@ -57,7 +56,7 @@ public class PluginDbConfigFactory {
 			if (classname != null) {
 
 				Object[] args = { properties };
-				return (PluginDbConfig) FactoryHelper.create(classname, CONS_TYPES, args);
+				return (DbSpecific) FactoryHelper.create(classname, CONS_TYPES, args);
 
 			} else if (dbName != null){
 				// choose based on dbName
@@ -76,7 +75,7 @@ public class PluginDbConfigFactory {
 	/**
 	 * Try to guess the correct plugin.
 	 */
-	private PluginDbConfig byDatabaseName(PluginProperties properties, String dbName) throws SQLException {
+	private DbSpecific byDatabaseName(PluginProperties properties, String dbName) throws SQLException {
 
 		dbName = dbName.toLowerCase();
 		if (dbName.equals("postgres83")){
@@ -102,14 +101,14 @@ public class PluginDbConfigFactory {
 		}
 		
 		// use the standard one
-		return new PluginDbConfig(properties);
+		return new DbSpecific(properties);
 	}
 
 
 	/**
 	 * Try to guess the correct plugin.
 	 */
-	private PluginDbConfig byDataSource(PluginProperties properties) {
+	private DbSpecific byDataSource(PluginProperties properties) {
 		
 		DataSource dataSource = properties.getDataSource();
 		Connection conn = null;
@@ -136,7 +135,7 @@ public class PluginDbConfigFactory {
 	/**
 	 * Try to guess the correct plugin.
 	 */
-	private PluginDbConfig byDatabaseMeta(PluginProperties properties,
+	private DbSpecific byDatabaseMeta(PluginProperties properties,
 			DatabaseMetaData metaData) throws SQLException {
 
 		String dbProductName = metaData.getDatabaseProductName();
@@ -171,6 +170,6 @@ public class PluginDbConfigFactory {
 			return new Postgres83Plugin(properties);
 		}
 		// use the standard one
-		return new PluginDbConfig(properties);
+		return new DbSpecific(properties);
 	}
 }

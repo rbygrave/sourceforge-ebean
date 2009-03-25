@@ -39,7 +39,7 @@ public class PluginFactory {
 
 	private static final Class<?>[] CONS_TYPES = {PluginCore.class};
 	
-	private final PluginDbConfigFactory dbConfigFactory = new PluginDbConfigFactory();
+	private final DbSpecificFactory dbSpecificFactory = new DbSpecificFactory();
 	
 	/**
 	 * Finds Entities, ScalarTypes etc in the class path.
@@ -95,7 +95,9 @@ public class PluginFactory {
     }
     
     private PluginDbConfig createDbConfig(PluginProperties props) {
-    	return dbConfigFactory.create(props);
+    	
+    	DbSpecific dbSpecific = dbSpecificFactory.create(props);
+    	return new PluginDbConfig(props, dbSpecific);
     }
     
     private Plugin createPlugin(PluginCore pluginCore) {

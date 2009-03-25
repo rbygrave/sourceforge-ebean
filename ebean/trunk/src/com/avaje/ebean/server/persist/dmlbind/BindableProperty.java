@@ -53,17 +53,12 @@ public class BindableProperty implements Bindable {
 		if (checkIncludes && !request.isIncluded(prop)){
 			return;
 		}
-		dmlWhereProperty(request, bean, prop);
-	}
-	
-	public void dmlWhereProperty(GenerateDmlRequest request, Object bean, BeanProperty prop){
-		Object value = bean == null ? null : prop.getValue(bean);
-        if (value != null){
-        	request.appendColumn(prop.getDbColumn());
-
-        } else {
+		
+		if (bean == null || prop.isDbNull(bean)){
         	request.appendColumnIsNull(prop.getDbColumn());
 
+        } else {
+        	request.appendColumn(prop.getDbColumn());
         }
 	}
 	

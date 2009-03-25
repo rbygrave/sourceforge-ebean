@@ -84,7 +84,7 @@ public final class InsertMeta {
 			// insert sql for db identity or sequence insert
 			this.concatinatedKey = false;
 			this.sqlNullId = genSql(true, null);
-			this.supportsGetGeneratedKeys = dbConfig.isSupportsGetGeneratedKeys();
+			this.supportsGetGeneratedKeys = dbConfig.getDbSpecific().isSupportsGetGeneratedKeys();
 			this.selectLastInsertedId = desc.getSelectLastInsertedId();
 		}
 	}

@@ -33,7 +33,6 @@ import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.DefaultAutoFetchManager;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.deploy.IdentityGeneration;
 import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.lib.resource.ResourceSource;
 import com.avaje.ebean.server.lib.sql.DictionaryInfo;
@@ -54,42 +53,9 @@ public class PluginDbConfig {
 
 	protected static final Logger logger = LogFactory.get(PluginDbConfig.class);
 
-	protected String rowNumberWindowAlias;
-	
-	protected final String tableAliasPlaceHolder;
+	final DbSpecific dbSpecific;
 		
-	/**
-	 * The open quote used by quoted identifiers.
-	 */
-	protected String openQuote;
-
-	/**
-	 * The close quote used by quoted identifiers.
-	 */
-	protected String closeQuote;
-
-	/**
-	 * The technique used for limiting the result set. If null this will use use
-	 * the rset.absolute() method to skip fetched rows.
-	 */
-	protected ResultSetLimit resultSetLimit;
-
-	/**
-	 * Whether this jdbc driver supports returning generated keys for inserts.
-	 */
-	protected boolean supportsGetGeneratedKeys;
-
-	/**
-	 * Should default to true for databases that don't support IDENTITY
-	 * auto increment or sequences. IdGenerator MUST be used.
-	 */
-	protected char identityGeneration;
-
-	/**
-	 * Should default to true for all databases that don't support IDENTITY or
-	 * auto increment. e.g. Oracle.
-	 */
-	protected boolean supportsSequences;
+	final String tableAliasPlaceHolder;
 
 	final TypeManager typeManager;
 
@@ -109,11 +75,12 @@ public class PluginDbConfig {
 
 	final ResourceManager resourceManager;
 
-	public PluginDbConfig(PluginProperties properties) {
+	public PluginDbConfig(PluginProperties properties, DbSpecific dbSpecific) {
 
 		this.properties = properties;
 		this.dataSource = properties.getDataSource();
-
+		this.dbSpecific = dbSpecific;
+		
 		this.resourceManager = ResourceControl.createResourceManager(properties);
 
 		this.typeManager = new DefaultTypeManager(properties);
@@ -122,26 +89,9 @@ public class PluginDbConfig {
 		this.namingConvention = createNamingConvention();
 
 		this.binder = new Binder(properties, typeManager);
-		resultSetReader = new ResultSetReader();
+		this.resultSetReader = new ResultSetReader();
 
-		String rl = properties.getProperty("resultSetLimit", null);
-		if (rl != null) {
-			resultSetLimit = ResultSetLimit.parse(rl);
-		} else {
-			resultSetLimit = ResultSetLimit.JdbcRowNavigation;
-		}
-
-		tableAliasPlaceHolder =  properties.getProperty("tableAliasPlaceHolder", "${ta}");
-		rowNumberWindowAlias = properties.getProperty("rowNumberWindowAlias", "as limitresult");	
-		closeQuote = properties.getProperty("closequote", "\"");
-		openQuote = properties.getProperty("openquote", "\"");
-		
-		supportsGetGeneratedKeys = properties.getPropertyBoolean("supportsGetGeneratedKeys", false);
-		supportsSequences = properties.getPropertyBoolean("supportsSequences", false);
-		
-
-		String ia = properties.getProperty("identityGeneration", "auto");
-		identityGeneration = IdentityGeneration.parse(ia);
+		this.tableAliasPlaceHolder =  properties.getProperty("tableAliasPlaceHolder", "${ta}");
 	}
 	
 	public String getSql(String fileName) {
@@ -164,42 +114,14 @@ public class PluginDbConfig {
 		return dataSource;
 	}
 
-	public String getCloseQuote() {
-		return closeQuote;
-	}
-
-	public String getRowNumberWindowAlias() {
-		return rowNumberWindowAlias;
-	}
-	
 	public String getTableAliasPlaceHolder() {
 		return tableAliasPlaceHolder;
 	}
 
-	public char getIdentityGeneration() {
-		return identityGeneration;
-	}
-
-	public String getOpenQuote() {
-		return openQuote;
-	}
-
-	public boolean useJdbcResultSetLimit() {
-		return ResultSetLimit.JdbcRowNavigation.equals(resultSetLimit);
+	public DbSpecific getDbSpecific() {
+		return dbSpecific;
 	}
 	
-	public ResultSetLimit getResultSetLimit() {
-		return resultSetLimit;
-	}
-
-	public boolean isSupportsGetGeneratedKeys() {
-		return supportsGetGeneratedKeys;
-	}
-
-	public boolean isSupportsSequences() {
-		return supportsSequences;
-	}
-
 	public NamingConvention getNamingConvention() {
 		return namingConvention;
 	}
@@ -214,25 +136,6 @@ public class PluginDbConfig {
 
 	public ResultSetReader getResultSetReader() {
 		return resultSetReader;
-	}
-
-	/**
-	 * Determines the IdentityGeneration used based on the support for
-	 * getGeneratedKeys and sequences. Refer to IdentityGeneration.
-	 */
-	public char getDefaultIdentityGeneration() {
-		if (identityGeneration != IdentityGeneration.AUTO) {
-			return identityGeneration;
-		}
-
-		if (!supportsGetGeneratedKeys) {
-			return IdentityGeneration.ID_GENERATOR;
-		}
-		if (supportsSequences) {
-			return IdentityGeneration.DB_SEQUENCE;
-		} else {
-			return IdentityGeneration.DB_IDENTITY;
-		}
 	}
 
 	/**

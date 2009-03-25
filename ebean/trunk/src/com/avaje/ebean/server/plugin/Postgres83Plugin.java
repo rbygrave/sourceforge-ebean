@@ -25,7 +25,7 @@ package com.avaje.ebean.server.plugin;
  * No support for getGeneratedKeys.
  * </p>
  */
-public class Postgres83Plugin extends PluginDbConfig {
+public class Postgres83Plugin extends DbSpecific {
 
     public Postgres83Plugin(PluginProperties properties) {
         super(properties);

@@ -66,8 +66,6 @@ public final class DefaultTypeManager implements TypeManager {
 
 	final ScalarType charArrayType = new ScalarTypeCharArray();
 
-	final ScalarType stringType = new ScalarTypeString();
-
 	final ScalarType longVarcharType = new ScalarTypeLongVarchar();
 
 	final ScalarType clobType = new ScalarTypeClob();
@@ -111,7 +109,18 @@ public final class DefaultTypeManager implements TypeManager {
 		this.nativeMap = new ConcurrentHashMap<Integer, ScalarType>();
 		this.extraTypeFactory = new DefaultTypeFactory(properties);
 
-		initialiseStandard();
+		boolean emptyAsNull = properties.getPropertyBoolean("treatEmptyStringsAsNull", false);
+		
+		ScalarType stringType;
+		if (!emptyAsNull){
+			stringType = new ScalarTypeString();
+		} else {
+			// use type that translates empty strings into DB nulls
+			stringType = new ScalarTypeStringOracle();
+		}
+		
+		initialiseStandard(stringType);
+		
 		initialiseJodaTypes();
 		initialiseFromBootupSearch();
 		initialiseEnumsWithMapping();
@@ -396,7 +405,7 @@ public final class DefaultTypeManager implements TypeManager {
 	 * types plus some other common types such as java.util.Date and
 	 * java.util.Calendar.
 	 */
-	protected void initialiseStandard() {
+	protected void initialiseStandard(ScalarType stringType) {
 
 		ScalarType utilDateType = extraTypeFactory.createUtilDate();
 		typeMap.put(java.util.Date.class, utilDateType);

@@ -37,30 +37,29 @@ import com.avaje.ebean.server.persist.DefaultPersister;
 import com.avaje.ebean.server.query.DefaultOrmQueryEngine;
 import com.avaje.ebean.server.query.DefaultRelationalQueryEngine;
 import com.avaje.ebean.server.transaction.DefaultTransactionScopeManager;
+import com.avaje.ebean.server.transaction.SpringAwareTransactionScopeManager;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 
 /**
- * The core implementation which can be extended to support database specific
- * jdbc and or sql.
- * <p>
- * There is one ServerPlugin per EbeanServer.
- * </p>
+ * The core implementation which can be extended.
  */
 public class DefaultPlugin implements Plugin {
 
 	/**
 	 * The transaction manager.
 	 */
-	final TransactionManager transactionManager;
+	private final TransactionManager transactionManager;
 
-	final TransactionScopeManager transactionScopeManager;
+	private final TransactionScopeManager transactionScopeManager;
 
-	final PluginProperties properties;
+	private final PluginProperties properties;
 
-	final PluginCore pluginCore;
+	private final PluginCore pluginCore;
 
-	final PluginDbConfig dbConfig;
+	private final PluginDbConfig dbConfig;
+
+	private int debugLevel;
 
 	/**
 	 * Create the DbPlugin.
@@ -72,7 +71,6 @@ public class DefaultPlugin implements Plugin {
 		this.properties = dbConfig.getProperties();
 
 		this.transactionManager = new TransactionManager(pluginCore);
-
 		this.transactionScopeManager = createScopeManager(properties, transactionManager);
 	}
 	
@@ -80,7 +78,7 @@ public class DefaultPlugin implements Plugin {
 	 * Create a TransactionScopeManager. This could be aware of external transaction managers
 	 * such as Spring etc.
 	 */
-	private TransactionScopeManager createScopeManager(PluginProperties props, TransactionManager mgr) {
+	protected TransactionScopeManager createScopeManager(PluginProperties props, TransactionManager mgr) {
 		String cn = props.getProperty("transactionScopeManager", null);
 		if (cn != null){
 			try {
@@ -94,8 +92,8 @@ public class DefaultPlugin implements Plugin {
 		}
 		if ( props.getPropertyBoolean("spring.transactions", false) ) {
 			// built in spring aware transactions
-			//return new SpringAwareTransactionScopeManager(mgr);
-			throw new RuntimeException("SpringAwareTransactionScopeManager removed temporarily");
+			return new SpringAwareTransactionScopeManager(mgr);
+			
 		} else {
 			// standard one
 			return new DefaultTransactionScopeManager(mgr);
@@ -176,8 +174,6 @@ public class DefaultPlugin implements Plugin {
 	public String getSql(String fileName) {
 		return dbConfig.getSql(fileName);
 	}
-
-	private int debugLevel;
 
 	/**
 	 * Return the debug level.

@@ -722,6 +722,10 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	private PersistRequestBean createPersistRequest(Object bean, Transaction t, Object parentBean) {
 
 		BeanManager mgr = getPersistDescriptor(bean);
+		if (mgr == null){
+			String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it an entity?";
+			throw new PersistenceException(msg);
+		}
 
 		return new PersistRequestBean(server, bean, parentBean, mgr, (ServerTransaction) t,persistExecute);
 	}

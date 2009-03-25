@@ -24,14 +24,12 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
-import com.avaje.ebean.server.deploy.DeploymentManager;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.ResultSetLimit;
@@ -50,23 +48,17 @@ public class RawSqlSelectClauseBuilder {
 
 	private static final int MAX_OFFSET = 1;
 	
-	final Binder binder;
+	private final Binder binder;
 
-	final NamingConvention namingConvention;
+	private final ResultSetLimit resultSetLimit;
 	
-	final ResultSetLimit resultSetLimit;
-	
-	final boolean useLimitOffset;
-	
-	DeploymentManager deploymentManager;
-	
+	private final boolean useLimitOffset;
+		
 	public RawSqlSelectClauseBuilder(PluginCore pluginCore) {
 
-		deploymentManager = pluginCore.getDeploymentManager();
-		binder = pluginCore.getDbConfig().getBinder();
-		namingConvention = pluginCore.getDbConfig().getNamingConvention();
-		resultSetLimit = getLimitMode(pluginCore.getDbConfig().getResultSetLimit());
-		useLimitOffset = resultSetLimit.equals(ResultSetLimit.LimitOffset);
+		this.binder = pluginCore.getDbConfig().getBinder();
+		this.resultSetLimit = getLimitMode(pluginCore.getDbConfig().getDbSpecific().getResultSetLimit());
+		this.useLimitOffset = resultSetLimit.equals(ResultSetLimit.LimitOffset);
 	}
 
 

@@ -72,7 +72,7 @@ public class BeanDescriptor {
 	/**
 	 * Type of Identity generation strategy used.
 	 */
-	final char identityGeneration;
+	final IdentityGeneration identityGeneration;
 
 	/**
 	 * The name of an IdGenerator (optional).
@@ -1128,7 +1128,7 @@ public class BeanDescriptor {
 	/**
 	 * Return the identity generation type.
 	 */
-	public char getIdentityGeneration() {
+	public IdentityGeneration getIdentityGeneration() {
 		return identityGeneration;
 	}
 
