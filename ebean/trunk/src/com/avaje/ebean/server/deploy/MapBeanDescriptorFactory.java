@@ -81,42 +81,42 @@ public class MapBeanDescriptorFactory {
     /**
      * the database plugin.
      */
-    final PluginDbConfig dbConfig;
+    private final PluginDbConfig dbConfig;
 
     /**
      * The base setter method.
      */
-    Method setPropertyMethod;
+    private Method setPropertyMethod;
 
     /**
      * The base getter method.
      */
-    Method getPropertyMethod;
+    private Method getPropertyMethod;
 
     /**
      * Determines if columns are Generate value type columns ssuch as update
      * timestamp, insert timestamp and counter.
      */
-    final GeneratedPropertySettings generateSettings;
+    private final GeneratedPropertySettings generateSettings;
 
     /**
      * Used to convert db column names to property names.
      */
-    final NamingConvention namingConvention;
+    private final NamingConvention namingConvention;
 
     /**
      * True if idGeneration is used on all MapBeans.
      */
-    final char defaultIdentityGeneration;
+    private final IdentityGeneration defaultIdentityGeneration;
     
     /**
      * True if db sequences are used on all MapBeans.
      */
-    final boolean supportsSequences;
+    private final boolean supportsSequences;
     
-    final DeploymentManager deploymentManager;
+    private final DeploymentManager deploymentManager;
     
-    final TypeManager typeManager;
+    private final TypeManager typeManager;
     
     /**
      * Create a TableDescriptorFactory.
@@ -126,8 +126,8 @@ public class MapBeanDescriptorFactory {
         this.dbConfig = dbConfig;
         this.typeManager = dbConfig.getTypeManager();
 
-        defaultIdentityGeneration = dbConfig.getDefaultIdentityGeneration();
-        supportsSequences = dbConfig.isSupportsSequences();
+        defaultIdentityGeneration = dbConfig.getDbSpecific().getDefaultIdentityGeneration();
+        supportsSequences = dbConfig.getDbSpecific().isSupportsSequences();
         namingConvention = dbConfig.getNamingConvention();
 
         generateSettings = new GeneratedPropertySettings(dbConfig.getProperties());

@@ -49,7 +49,7 @@ public class MapBeanPersister implements BeanPersister {
 	public MapBeanPersister(PluginDbConfig dbConfig) {
 	
 		binder = dbConfig.getBinder();
-		genKeysSupport = dbConfig.isSupportsGetGeneratedKeys();
+		genKeysSupport = dbConfig.getDbSpecific().isSupportsGetGeneratedKeys();
 	}
 
 	/**

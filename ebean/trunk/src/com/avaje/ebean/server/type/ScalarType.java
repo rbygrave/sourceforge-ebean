@@ -114,4 +114,20 @@ public interface ScalarType {
 	 */
 	public Object toBeanType(Object value);
 
+	/**
+	 * Return true if the value is considered null by the Database.
+	 * <p>
+	 * Here to support Oracle empty strings treated as null.
+	 * </p>
+	 */
+	public boolean isDbNull(Object value);
+
+	/**
+	 * Return the value converted to Null if required.
+	 * <p>
+	 * Here to support Oracle empty strings treated as null.
+	 * </p>
+	 */
+	public Object getDbNullValue(Object value);
+
 }

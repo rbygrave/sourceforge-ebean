@@ -94,7 +94,7 @@ public class BeanDescriptorFactory {
 	 * Determines the IdentityGeneration used based on the support for
 	 * getGeneratedKeys and sequences.
 	 */
-	private final char defaultIdentityGeneration;
+	private final IdentityGeneration defaultIdentityGeneration;
 
 	/**
 	 * Set to true if a Db supports Sequences.
@@ -135,7 +135,11 @@ public class BeanDescriptorFactory {
 	private final SubClassManager subClassManager;
 
 	private final NamingConvention namingConvention;
-	
+
+	int enhancedClassCount;
+	int subclassClassCount;
+	HashSet<String> subclassedEntities = new HashSet<String>();
+
 	/**
 	 * Create for a given database dbConfig.
 	 */
@@ -151,10 +155,10 @@ public class BeanDescriptorFactory {
 		this.dictionaryInfo = dbConfig.getDictionaryInfo();
 
 		// Databases that don't support Identity or sequences
-		this.defaultIdentityGeneration = dbConfig.getDefaultIdentityGeneration();
+		this.defaultIdentityGeneration = dbConfig.getDbSpecific().getDefaultIdentityGeneration();
 
 		// Databases using Sequence rather than Identity/AutoIncrement?
-		this.supportsSequences = dbConfig.isSupportsSequences();
+		this.supportsSequences = dbConfig.getDbSpecific().isSupportsSequences();
 
 		properties = dbConfig.getProperties();
 
@@ -664,8 +668,8 @@ public class BeanDescriptorFactory {
 				desc.setSelectLastInsertedId(selectLastInsertedId);
 			}
 
-			char idType = desc.getIdentityGeneration();
-			if (idType == IdentityGeneration.AUTO) {
+			IdentityGeneration idType = desc.getIdentityGeneration();
+			if (IdentityGeneration.AUTO.equals(idType)) {
 				desc.setIdentityGeneration(defaultIdentityGeneration);
 			}
 		}
@@ -949,10 +953,6 @@ public class BeanDescriptorFactory {
 		return hasVersionProperty;
 	}
 
-	int enhancedClassCount;
-	int subclassClassCount;
-	HashSet<String> subclassedEntities = new HashSet<String>();
-
 	/**
 	 * Test the bean type to see if it implements EntityBean natively without
 	 * any Byte code enhancement.
@@ -970,9 +970,22 @@ public class BeanDescriptorFactory {
 
 		try {
 			Object testBean = beanClass.newInstance();
-			testBean.toString();
-
+			
 			if (testBean instanceof EntityBean) {
+				String className = beanClass.getName();
+				try {
+					// check that it really is enhanced (rather than mixed enhancement)
+					String marker = ((EntityBean)testBean)._ebean_getMarker();
+					if (!marker.equals(className)){
+						String msg = "Error with ["+desc.getFullName()
+							+"] It has not been enhanced but it's superClass ["+beanClass.getSuperclass()+"] is?"
+							+" (You are not allowed to mix enhancement in a single inheritance hierarchy)";
+						throw new PersistenceException(msg);
+					}
+				} catch (AbstractMethodError e){
+					throw new PersistenceException("Old Ebean v1.0 enhancement detected in Ebean v1.1 - please do a clean enhancement.", e);
+				}
+				
 				// the bean already implements EntityBean
 				checkInheritedClasses(true, beanClass);
 
@@ -991,6 +1004,9 @@ public class BeanDescriptorFactory {
 				subclassedEntities.add(desc.getName());
 			}
 
+		} catch (PersistenceException ex){
+			throw ex;
+			
 		} catch (Exception ex) {
 			throw new PersistenceException(ex);
 		}

@@ -22,76 +22,72 @@ package com.avaje.ebean.server.type;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
-
+import com.avaje.ebean.util.BasicTypeConverter;
 
 /**
- * Additional control over mapping to DB values.
+ * ScalarType for String where empty strings are treated as nulls.
  */
-public class ScalarTypeEnumWithMapping implements ScalarType {
+public final class ScalarTypeStringOracle extends ScalarTypeBase {
 
-	/**
-	 * Data type of the database columns converted to.
-	 */
-	private final int dbType;
-
-	@SuppressWarnings("unchecked")
-	private final Class enumType;
-	
-	@SuppressWarnings("unchecked")
-	private final EnumToDbValueMap beanDbMap;
+	public ScalarTypeStringOracle() {
+		super(String.class, true, Types.VARCHAR);
+	}
 	
 	/**
-	 * Create with an explicit mapping of bean to database values.
+	 * Return the value as a string also converting empty strings to null.
 	 */
-	public ScalarTypeEnumWithMapping(EnumToDbValueMap<?> beanDbMap, Class<?> enumType) {
-		this.beanDbMap = beanDbMap;
-		this.enumType = enumType;
-		this.dbType = beanDbMap.getDbType();
+	private String convertEmptyString(Object value){
+		if (value == null){
+			return null;
+		}
+		String s = (String)value;
+		if (s.length()==0){
+			// empty string treated as null
+			return null;
+		}
+		return s;
 	}
 	
-	public int getJdbcType() {
-		return dbType;
-	}
-	
-	public boolean isJdbcNative() {
-		return false;
-	}
-	
-	public Class<?> getType() {
-		return enumType;
-	}
-
 	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
-		beanDbMap.bind(pstmt, index, value);		
+		if (value == null){
+			pstmt.setNull(index, Types.VARCHAR);
+		} else {
+			String s = convertEmptyString(value);
+			if (s == null){
+				pstmt.setNull(index, Types.VARCHAR);				
+			} else {
+				pstmt.setString(index, (String)value);				
+			}
+		}
 	}
 
 	public Object read(ResultSet rset, int index) throws SQLException {
-		return beanDbMap.read(rset, index);	}
-	
-	@SuppressWarnings("unchecked")
-	public Object toBeanType(Object dbValue) {
 		
-		return beanDbMap.getBeanValue(dbValue);
+		return rset.getString(index);
+	}
+	
+	public Object toJdbcType(Object value) {
+		return convertEmptyString(BasicTypeConverter.toString(value));
 	}
 
-	public Object toJdbcType(Object beanValue) {
-		
-		return beanDbMap.getDbValue(beanValue);
+	public Object toBeanType(Object value) {
+		return BasicTypeConverter.toString(value);
 	}
 
 	/**
-	 * Return true if the value is null.
+	 * Return true if the value is null or an empty string.
 	 */
 	public boolean isDbNull(Object value) {
-		return value == null;
+		return convertEmptyString(value) == null;
 	}
 	
 	/**
-	 * Returns the value that was passed in.
+	 * Returns the value converting empty string into null.
 	 */
 	public Object getDbNullValue(Object value) {
-		return value;
+		return convertEmptyString(value);
 	}
 
 }

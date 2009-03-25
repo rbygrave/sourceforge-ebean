@@ -554,6 +554,27 @@ public class BeanProperty {
 	}
 	
 	/**
+	 * Return the value converting to null if required.
+	 * <p>
+	 * Here to support Oracle empty string to null conversion.
+	 * </p>
+	 */
+	public Object getDbNullValue(Object value){
+		return scalarType.getDbNullValue(value);
+	}
+
+	/**
+	 * Return true if the value should be considered null.
+	 * <p>
+	 * Here to support Oracle empty string to null conversion.
+	 * </p>
+	 */
+	public boolean isDbNull(Object bean) {
+		Object value = getValue(bean);
+		return scalarType.isDbNull(value);
+	}
+	
+	/**
 	 * Return the value of the property method.
 	 */
 	public Object getValue(Object bean) {

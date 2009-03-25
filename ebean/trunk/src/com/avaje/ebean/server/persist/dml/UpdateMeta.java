@@ -59,8 +59,8 @@ public final class UpdateMeta {
 		this.version = version;
 		this.all = all;
 		
-		sqlNone = genSql(ConcurrencyMode.NONE, null);
-		sqlVersion = genSql(ConcurrencyMode.VERSION, null);
+		sqlNone = genSql(ConcurrencyMode.NONE, null, null);
+		sqlVersion = genSql(ConcurrencyMode.VERSION, null, null);
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public final class UpdateMeta {
 				// generate SQL dynamically depending on the
 				// loadedProps
 				request.setConcurrencyMode(mode);
-				return genSql(mode, loadedProps);
+				return genSql(mode, loadedProps, request.getOldValues());
 			}
 		}
 		
@@ -139,7 +139,7 @@ public final class UpdateMeta {
 		}
 	}
 	
-	private String genSql(int conMode, Set<String> loadedProps) {
+	private String genSql(int conMode, Set<String> loadedProps, Object oldBean) {
 
 				
 		// update  set col0=?, col1=?, col2=? where bcol=? and bc1=? and bc2=?
@@ -166,7 +166,7 @@ public final class UpdateMeta {
 		} else if (conMode == ConcurrencyMode.ALL) {
 			
 			//request.setWhereMode();
-			all.dmlAppend(request, true);
+			all.dmlWhere(request, true, oldBean);
 		}
 		
 		return request.toString();

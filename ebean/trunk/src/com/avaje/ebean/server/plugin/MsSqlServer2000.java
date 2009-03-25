@@ -32,7 +32,7 @@ import com.avaje.ebean.server.deploy.IdentityGeneration;
  * </ul>
  * </p>
  */
-public class MsSqlServer2000 extends PluginDbConfig {
+public class MsSqlServer2000 extends DbSpecific {
 
     public MsSqlServer2000(PluginProperties properties){
         super(properties);

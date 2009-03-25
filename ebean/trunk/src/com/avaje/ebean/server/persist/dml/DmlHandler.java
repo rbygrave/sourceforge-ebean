@@ -179,9 +179,12 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Bind the value to the preparedStatement.
 	 */
 	public Object bind(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
-		
-		//String propName = prop.getName();
-		
+				
+		if (!bindNull){
+			// support Oracle conversion of empty string to null 
+			value = prop.getDbNullValue(value);
+		}
+
 		if (!bindNull && value == null) { 
 			// where will have IS NULL clause so don't actually bind
 			if (loggingBind) {
@@ -290,7 +293,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Hold the values from GeneratedValue that need to be set to the bean
 	 * property after the where clause has been built.
 	 */
-	private static class UpdateGenValue {
+	private static final class UpdateGenValue {
 
 		private final BeanProperty property;
 

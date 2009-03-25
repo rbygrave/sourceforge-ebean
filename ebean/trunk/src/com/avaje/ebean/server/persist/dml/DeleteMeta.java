@@ -56,8 +56,8 @@ public final class DeleteMeta {
 		this.version = version;
 		this.all = all;
 
-		sqlNone = genSql(ConcurrencyMode.NONE, null);
-		sqlVersion = genSql(ConcurrencyMode.VERSION, null);
+		sqlNone = genSql(ConcurrencyMode.NONE, null, null);
+		sqlVersion = genSql(ConcurrencyMode.VERSION, null, null);
 	}
 
 	/**
@@ -94,19 +94,21 @@ public final class DeleteMeta {
 	public String getSql(PersistRequest request) throws SQLException {
 
 		EntityBeanIntercept ebi = request.getEntityBeanIntercept();
-		Set<String> loadedProps = ebi.getLoadedProps();
-		if (loadedProps != null){
-			// 'partial bean' deletion...
-			// determine the concurrency mode
-			int mode = ConcurrencyMode.ALL;
-			BeanProperty prop = desc.firstVersionProperty();
-			if (prop != null && loadedProps.contains(prop.getName())){
-				mode = ConcurrencyMode.VERSION;
+		if (ebi != null) {
+			Set<String> loadedProps = ebi.getLoadedProps();
+			if (loadedProps != null){
+				// 'partial bean' deletion...
+				// determine the concurrency mode
+				int mode = ConcurrencyMode.ALL;
+				BeanProperty prop = desc.firstVersionProperty();
+				if (prop != null && loadedProps.contains(prop.getName())){
+					mode = ConcurrencyMode.VERSION;
+				}
+				// generate SQL dynamically depending on the
+				// loadedProps
+				request.setConcurrencyMode(mode);
+				return genSql(mode, loadedProps, request.getOldValues());
 			}
-			// generate SQL dynamically depending on the
-			// loadedProps
-			request.setConcurrencyMode(mode);
-			return genSql(mode, loadedProps);
 		}
 		
 		// 'full bean' deletion
@@ -127,7 +129,7 @@ public final class DeleteMeta {
 		}
 	}
 
-	private String genSql(int conMode, Set<String> loadedProps) {
+	private String genSql(int conMode, Set<String> loadedProps, Object oldBean) {
 
 		// delete ... where bcol=? and bc1=? and bc2 is null and ...
 
@@ -147,7 +149,7 @@ public final class DeleteMeta {
 
 		} else if (conMode == ConcurrencyMode.ALL) {
 			//request.setWhereMode();
-			all.dmlAppend(request, true);
+			all.dmlWhere(request, true, oldBean);
 		}
 
 		return request.toString();

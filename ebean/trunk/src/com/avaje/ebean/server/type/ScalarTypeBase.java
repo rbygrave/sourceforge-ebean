@@ -45,5 +45,20 @@ public abstract class ScalarTypeBase implements ScalarType {
 	public Class<?> getType() {
 		return type;
 	}
+
+	/**
+	 * Return true if the value is null.
+	 */
+	public boolean isDbNull(Object value) {
+		return value == null;
+	}
+
+	/**
+	 * Returns the value that was passed in.
+	 */
+	public Object getDbNullValue(Object value) {
+		return value;
+	}
+	
 	
 }

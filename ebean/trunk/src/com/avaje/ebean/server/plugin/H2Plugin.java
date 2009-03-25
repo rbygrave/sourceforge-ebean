@@ -31,7 +31,7 @@ package com.avaje.ebean.server.plugin;
  * </ul>
  * </p>
  */
-public class H2Plugin extends PluginDbConfig {
+public class H2Plugin extends DbSpecific {
 
     public H2Plugin(PluginProperties properties){
         super(properties);

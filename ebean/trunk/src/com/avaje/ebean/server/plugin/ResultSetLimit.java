@@ -31,19 +31,35 @@ package com.avaje.ebean.server.plugin;
  * </p>
  */
 public enum ResultSetLimit {
+
 	/**
 	 * Using the ROW_NUMBER() database function.
 	 */
-	RowNumber,
+	RowNumber(false),
+	
 	/**
 	 * Using a LIMIT OFFSET clause.
 	 */
-	LimitOffset,
+	LimitOffset(false),
 	
 	/**
 	 * Using JDBC row navigation.
 	 */
-	JdbcRowNavigation;
+	JdbcRowNavigation(true);
+	
+	private final boolean useJdbcResultSetLimit;
+	
+	private ResultSetLimit(boolean useJdbcResultSetLimit){
+		this.useJdbcResultSetLimit = useJdbcResultSetLimit;
+	}
+	
+	/**
+	 * Return true if you can use JDBC resultSet limits.
+	 */
+	public boolean useJdbcResultSetLimit() {
+		return useJdbcResultSetLimit;
+	}
+
 
     /**
      * If the String contains "rownumber" return RowNumber.

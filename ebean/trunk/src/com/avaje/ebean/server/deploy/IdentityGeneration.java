@@ -22,33 +22,33 @@ package com.avaje.ebean.server.deploy;
 /**
  * The types of Identity generation that can be defined.
  */
-public final class IdentityGeneration {
+public enum IdentityGeneration {
 
 	/**
 	 * Try to determine the approach automatically depending on db features.
 	 */
-	public static final char AUTO = 'a';
+	AUTO,
 
 	/**
 	 * Use a Database Identity (autoincrement) to generate the identity.
 	 */
-	public static final char DB_IDENTITY = 'i';
+	DB_IDENTITY,
 	
 	/**
 	 * Use a Database sequence to generate the identity.
 	 */
-	public static final char DB_SEQUENCE = 's';
+	DB_SEQUENCE,
 	
 	/**
 	 * Use a IdGenerator generate the identity.
 	 */
-	public static final char ID_GENERATOR = 'g';
+	ID_GENERATOR;
 
 
 	/**
 	 * Parse the string returning the type of Identity generation.
 	 */
-	public static char parse(String value) {
+	public static IdentityGeneration parse(String value) {
 		
 		value = value.toLowerCase();
 		if (value.indexOf("identity") != -1){

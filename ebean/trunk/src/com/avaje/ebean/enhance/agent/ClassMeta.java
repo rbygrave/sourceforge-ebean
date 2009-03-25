@@ -36,8 +36,16 @@ public class ClassMeta {
 
 	ClassMeta superMeta;
 
+	/**
+	 * Set to true if the class implements the ScalaObject interface.
+	 */
 	boolean scalaObject;
-	
+
+	/**
+	 * Set to true if the class already implements the EntityBean interface.
+	 */
+	boolean alreadyImplementsEntityBean;
+
 	boolean alreadyEnhanced;
 
 	boolean hasEqualsOrHashcode;
@@ -427,6 +435,14 @@ public class ClassMeta {
 
 	public void setScalaObject(boolean scalaObject) {
 		this.scalaObject = scalaObject;
+	}
+
+	public boolean isAlreadyImplementsEntityBean() {
+		return alreadyImplementsEntityBean;
+	}
+
+	public void setAlreadyImplementsEntityBean(boolean alreadyImplementsEntityBean) {
+		this.alreadyImplementsEntityBean = alreadyImplementsEntityBean;
 	}
 	
 }

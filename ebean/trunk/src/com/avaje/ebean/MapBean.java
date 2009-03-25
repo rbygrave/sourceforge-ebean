@@ -150,6 +150,13 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	}
 
 	/**
+	 * Return the class name of this instance.
+	 */
+	public String _ebean_getMarker() {
+		return this.getClass().getName();
+	}
+
+	/**
 	 * Not used for MapBean.
 	 */
 	public Object _ebean_getField(int index, Object bean) {

@@ -108,4 +108,18 @@ public class EgEnumScalarType implements ScalarType {
 		return beanToDbMap.getDbValue((EgEnum) beanValue);
 	}
 
+	/**
+	 * Return true if the value is null.
+	 */
+	public boolean isDbNull(Object value) {
+		return value == null;
+	}
+	
+	/**
+	 * Returns the value that was passed in.
+	 */
+	public Object getDbNullValue(Object value) {
+		return value;
+	}
+
 }

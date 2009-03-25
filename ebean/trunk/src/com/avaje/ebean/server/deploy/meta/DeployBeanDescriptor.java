@@ -76,7 +76,7 @@ public class DeployBeanDescriptor {
 	/**
 	 * Type of Identity generation strategy used.
 	 */
-	char identityGeneration = IdentityGeneration.AUTO;
+	IdentityGeneration identityGeneration = IdentityGeneration.AUTO;
 
 	/**
 	 * The name of an IdGenerator (optional).
@@ -542,15 +542,15 @@ public class DeployBeanDescriptor {
 	/**
 	 * Return the identity generation type.
 	 */
-	public char getIdentityGeneration() {
+	public IdentityGeneration getIdentityGeneration() {
 		return identityGeneration;
 	}
 
 	/**
 	 * Set the identity generation type.
 	 */
-	public void setIdentityGeneration(char identityGenerationType) {
-		this.identityGeneration = identityGenerationType;
+	public void setIdentityGeneration(IdentityGeneration identityGeneration) {
+		this.identityGeneration = identityGeneration;
 	}
 
 	/**

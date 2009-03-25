@@ -372,8 +372,11 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 					}
 
 				} catch (ClassNotFoundException e) {
-					String msg = "Error updating autoFetch tuned query for " + beanType;
-					logging.logError(Level.SEVERE, msg, e);
+					// expected after renaming/moving an entity bean
+					String msg = e.toString()+" updating autoFetch tuned query for " + beanType
+						+". It isLikely this bean has been renamed or moved";
+					logging.logError(Level.INFO, msg, null);
+					statisticsMap.remove(queryPointStatistics);
 				}
 			}
 

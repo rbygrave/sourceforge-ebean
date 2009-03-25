@@ -31,7 +31,7 @@ package com.avaje.ebean.server.plugin;
  * </ul>
  * </p>
  */
-public class MsSqlServer2005 extends PluginDbConfig {
+public class MsSqlServer2005 extends DbSpecific {
 
     public MsSqlServer2005(PluginProperties properties){
         super(properties);

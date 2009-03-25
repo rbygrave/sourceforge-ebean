@@ -27,6 +27,7 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.persist.Binder;
+import com.avaje.ebean.server.plugin.DbSpecific;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.ResultSetLimit;
 import com.avaje.ebean.util.Message;
@@ -64,12 +65,14 @@ public class CQueryBuilder implements Constants {
 	 */
 	public CQueryBuilder(PluginCore pluginCore) {
 		this.binder = pluginCore.getDbConfig().getBinder();
-		this.resultSetLimit = pluginCore.getDbConfig().getResultSetLimit();
-		this.rowNumberWindowAlias = pluginCore.getDbConfig().getRowNumberWindowAlias();
 		this.tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
 		this.columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "as c");
 		this.alwaysUseColumnAlias = pluginCore.getDbConfig().getProperties().getPropertyBoolean("alwaysUseColumnAlias", false);
 		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
+
+		DbSpecific dbSpecific = pluginCore.getDbConfig().getDbSpecific();
+		this.resultSetLimit = dbSpecific.getResultSetLimit();
+		this.rowNumberWindowAlias = dbSpecific.getRowNumberWindowAlias();
 	}
 
 	/**
