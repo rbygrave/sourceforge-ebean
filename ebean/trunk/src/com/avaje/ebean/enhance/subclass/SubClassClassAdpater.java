@@ -8,6 +8,7 @@ import com.avaje.ebean.enhance.agent.EnhanceConstants;
 import com.avaje.ebean.enhance.agent.EnhanceContext;
 import com.avaje.ebean.enhance.agent.IndexFieldWeaver;
 import com.avaje.ebean.enhance.agent.InterceptField;
+import com.avaje.ebean.enhance.agent.MarkerField;
 import com.avaje.ebean.enhance.agent.MethodEquals;
 import com.avaje.ebean.enhance.agent.NoEnhancementRequiredException;
 import com.avaje.ebean.enhance.agent.VisitMethodParams;
@@ -30,8 +31,6 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 	
 	final String subClassSuffix;
 	
-	boolean firstField = true;
-
 	boolean firstMethod = true;
 	
 	public SubClassClassAdpater(String subClassSuffix, ClassVisitor cv, ClassLoader classLoader, EnhanceContext context) {
@@ -65,7 +64,10 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 				throw new AlreadyEnhancedException(name);
 			}
 			if (c[i].equals(C_SCALAOBJECT)) {
-				classMeta.setScalaObject(true);
+				classMeta.setScalaInterface(true);
+			}
+			if (c[i].equals(C_GROOVYOBJECT)) {
+				classMeta.setGroovyInterface(true);
 			}
 		}
 
@@ -107,20 +109,18 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 	public FieldVisitor visitField(int access, String name, String desc, String signature,
 			Object value) {
 
-		if (firstField) {
-			if (!classMeta.isEntityEnhancementRequired()) {
-				// bit of a rough way to skip the rest of the visiting etc
-				// but we now have visited the interfaces and annotations
-				throw new NoEnhancementRequiredException();
-			} else {
-				firstField = false;
-			}
-		}
-
 		if ((access & Opcodes.ACC_STATIC) != 0) {
 			// no interception of static fields
+			if (isLog(2)){
+				log("Skip intercepting static field "+name);					
+			}
+			return null;
+		}
+		
+		if ((access & Opcodes.ACC_TRANSIENT) != 0) {
+			// no interception of transient fields
 			if (classMeta.isLog(2)){
-				classMeta.log("Skip intercepting static field "+name);					
+				classMeta.log("Skip intercepting transient field "+name);					
 			}
 			return null;
 		}
@@ -140,34 +140,42 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature,
 			String[] exceptions) {
 
-		boolean entityEnhance = classMeta.isEntityEnhancementRequired();
-		
-		if (entityEnhance && firstMethod){
+		if (firstMethod){
+			if (!classMeta.isEntityEnhancementRequired()) {
+				// skip the rest of the visiting etc
+				throw new NoEnhancementRequiredException();
+			}
+									
+			// always add the marker field on every enhanced class
+			String marker = MarkerField.addField(cv, classMeta.getClassName());
+			if (isLog(4)){
+				log("... add marker field \""+marker+"\"");					
+				log("... add intercept and identity fields");					
+			}
+			
 			// always add these fields for subclass generation
 			InterceptField.addField(cv);
 			MethodEquals.addIdentityField(cv);
 			firstMethod = false;
 		}
 
-		if (entityEnhance){
 
-	        VisitMethodParams params = new VisitMethodParams(cv, access, name, desc, signature, exceptions);
+        VisitMethodParams params = new VisitMethodParams(cv, access, name, desc, signature, exceptions);
 
-			if (isDefaultConstructor(access, name, desc, signature, exceptions)){
-				SubClassConstructor.add(params, classMeta);
-				return null;
-			}
-			
-			if (isSpecialMethod(access, name, desc)) {
-				return null;
-			}
-			
-			// register the method so that we can check
-			// if it exists when GetterSetterMethods.add()
-			// is called. May not exist on read only type
-			// entity beans such as the internal meta beans.
-			classMeta.addExistingSuperMethod(name, desc);
+		if (isDefaultConstructor(access, name, desc, signature, exceptions)){
+			SubClassConstructor.add(params, classMeta);
+			return null;
 		}
+		
+		if (isSpecialMethod(access, name, desc)) {
+			return null;
+		}
+		
+		// register the method so that we can check
+		// if it exists when GetterSetterMethods.add()
+		// is called. May not exist on read only type
+		// entity beans such as the internal meta beans.
+		classMeta.addExistingSuperMethod(name, desc);
 		
 		return null;
 	}
@@ -181,7 +189,9 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 		if (!classMeta.isEntityEnhancementRequired()){
 			throw new NoEnhancementRequiredException();
 		}
-		
+
+		MarkerField.addGetMarker(cv, classMeta.getClassName());
+
 		// Add the _ebean_getIntercept() _ebean_setIntercept() methods
 		InterceptField.addGetterSetter(cv, classMeta.getClassName());
 

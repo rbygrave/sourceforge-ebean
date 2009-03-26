@@ -37,14 +37,19 @@ public class ClassMeta {
 	ClassMeta superMeta;
 
 	/**
+	 * Set to true if the class implements th GroovyObject interface.
+	 */
+	boolean hasGroovyInterface;
+
+	/**
 	 * Set to true if the class implements the ScalaObject interface.
 	 */
-	boolean scalaObject;
+	boolean hasScalaInterface;
 
 	/**
 	 * Set to true if the class already implements the EntityBean interface.
 	 */
-	boolean alreadyImplementsEntityBean;
+	boolean hasEntityBeanInterface;
 
 	boolean alreadyEnhanced;
 
@@ -142,6 +147,17 @@ public class ClassMeta {
 			msg = "cls: " + className + "  msg: " + msg;
 		}
 		logout.println("transform> " + msg);
+	}
+	
+	public void logEnhanced() {
+		String m = "enhanced ";
+		if (hasScalaInterface()){
+			m += " (scala)";
+		}
+		if (hasGroovyInterface()){
+			m += " (groovy)";
+		}
+		log(m);
 	}
 
 	/**
@@ -429,20 +445,28 @@ public class ClassMeta {
 		}
 	}
 
-	public boolean isScalaObject() {
-		return scalaObject;
+	public boolean hasScalaInterface() {
+		return hasScalaInterface;
 	}
 
-	public void setScalaObject(boolean scalaObject) {
-		this.scalaObject = scalaObject;
+	public void setScalaInterface(boolean hasScalaInterface) {
+		this.hasScalaInterface = hasScalaInterface;
 	}
 
-	public boolean isAlreadyImplementsEntityBean() {
-		return alreadyImplementsEntityBean;
+	public boolean hasEntityBeanInterface() {
+		return hasEntityBeanInterface;
 	}
 
-	public void setAlreadyImplementsEntityBean(boolean alreadyImplementsEntityBean) {
-		this.alreadyImplementsEntityBean = alreadyImplementsEntityBean;
+	public void setEntityBeanInterface(boolean hasEntityBeanInterface) {
+		this.hasEntityBeanInterface = hasEntityBeanInterface;
+	}
+
+	public boolean hasGroovyInterface() {
+		return hasGroovyInterface;
+	}
+
+	public void setGroovyInterface(boolean hasGroovyInterface) {
+		this.hasGroovyInterface = hasGroovyInterface;
 	}
 	
 }

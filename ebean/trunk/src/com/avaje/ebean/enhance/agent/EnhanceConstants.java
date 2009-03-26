@@ -42,6 +42,8 @@ public interface EnhanceConstants {
     
     public static final String C_SCALAOBJECT = "scala/ScalaObject";
     
+    public static final String C_GROOVYOBJECT = "groovy/lang/GroovyObject";
+    
     public static final String C_INTERCEPT = "com/avaje/ebean/bean/EntityBeanIntercept";
 
     public static final String L_INTERCEPT = "Lcom/avaje/ebean/bean/EntityBeanIntercept;";

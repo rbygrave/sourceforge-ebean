@@ -85,7 +85,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		getNoInterceptMethodName = "_ebean_getni_" + name;
 		setNoInterceptMethodName = "_ebean_setni_" + name;
 
-		if (classMeta != null && classMeta.isScalaObject()) {
+		if (classMeta != null && classMeta.hasScalaInterface()) {
 			// use scala property name
 			publicSetterName = name+"_$eq";
 			publicGetterName = name;
