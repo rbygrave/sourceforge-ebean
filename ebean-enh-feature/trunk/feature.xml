@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.avaje.ebean.enhancer"
+      label="Ebean Enhancer"
+      version="1.1.2.qualifier"
+      provider-name="avaje.org"
+      plugin="com.avaje.ebean.enhancer.plugin">
+
+   <description>
+      Enables the Ebean enhancement to occur when you save in Eclipse
+IDE.
+
+You would typically use this plugin rather than configuring a
+javaagent or using an ANT task (although you can use all three
+together if you wish).
+
+* Fast CODE - SAVE/COMPILE - RUN/TEST cycles during
+development without having to configure a javaagent
+
+* You enable/disable enhancement on a per-project basis 
+(project - right mouse - Toggle Ebean Enhancement)
+
+* you can adjust the debugging levels using preferences
+(window - preferences - Ebean)
+   </description>
+
+   <copyright>
+      Copyright (C) 2008  Robin Bygrave
+   </copyright>
+
+   <license>
+      This file is part of Ebean.
+Ebean is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+Ebean is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty 
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General 
+Public License along with Ebean; if not, write to the Free 
+Software Foundation, Inc., 
+51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+   </license>
+
+   <url>
+      <update label="avaje.org" url="http://www.avaje.org/eclipse/update/"/>
+   </url>
+
+   <plugin
+         id="com.avaje.ebean.enhancer.plugin"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
