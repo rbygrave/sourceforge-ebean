@@ -28,7 +28,6 @@ import com.avaje.ebean.server.net.ConnectionProcessor;
 import com.avaje.ebean.server.net.Endpoint;
 import com.avaje.ebean.server.net.Headers;
 import com.avaje.ebean.server.net.SocketListener;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Manages the cluster service.
@@ -48,7 +47,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class ClusterManager {
 
-	private static final Logger logger = LogFactory.get(ClusterManager.class);
+	private static final Logger logger = Logger.getLogger(ClusterManager.class.getName());
 	
     SocketListener listener;
     

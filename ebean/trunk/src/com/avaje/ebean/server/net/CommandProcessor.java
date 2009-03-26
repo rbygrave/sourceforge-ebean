@@ -29,14 +29,13 @@ import com.avaje.ebean.net.Command;
 import com.avaje.ebean.net.CommandContext;
 import com.avaje.ebean.net.CommandList;
 import com.avaje.ebean.net.Constants;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Server side processor for client commands.
  */
 public class CommandProcessor implements ConnectionProcessor, Constants {
 
-	private static final Logger logger = LogFactory.get(CommandProcessor.class);
+	private static final Logger logger = Logger.getLogger(CommandProcessor.class.getName());
 	
     CommandContextManager contextManager;
     

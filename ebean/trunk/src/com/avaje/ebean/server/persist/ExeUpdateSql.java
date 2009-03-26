@@ -34,14 +34,13 @@ import com.avaje.ebean.server.core.PersistRequestUpdateSql.SqlType;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Executes the UpdateSql requests.
  */
 public class ExeUpdateSql {
 
-	private static final Logger logger = LogFactory.get(ExeUpdateSql.class);
+	private static final Logger logger = Logger.getLogger(ExeUpdateSql.class.getName());
 	
     private final Binder binder;
     

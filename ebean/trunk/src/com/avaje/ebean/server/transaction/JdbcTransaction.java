@@ -30,14 +30,13 @@ import javax.persistence.RollbackException;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.persist.BatchControl;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * JDBC Connection based transaction.
  */
 public class JdbcTransaction implements ServerTransaction {
 
-	protected static final Logger logger = LogFactory.get(JdbcTransaction.class);
+	private static final Logger logger = Logger.getLogger(JdbcTransaction.class.getName());
 	
 	private static final String illegalStateMessage = "Transaction is Inactive";
 

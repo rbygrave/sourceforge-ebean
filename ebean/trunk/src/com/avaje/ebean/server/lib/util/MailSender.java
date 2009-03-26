@@ -28,14 +28,12 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * Sends simple MailMessages via smtp. 
  */
 public class MailSender implements Runnable {
     
-	private static final Logger logger = LogFactory.get(MailSender.class);
+	private static final Logger logger = Logger.getLogger(MailSender.class.getName());
 	
     int traceLevel = 0;
     

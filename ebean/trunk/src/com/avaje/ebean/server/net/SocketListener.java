@@ -30,7 +30,6 @@ import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Serverside multithreaded socket listener. Accepts connections and dispatches
@@ -47,7 +46,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class SocketListener implements Runnable {
 
-	private static final Logger logger = LogFactory.get(SocketListener.class);
+	private static final Logger logger = Logger.getLogger(SocketListener.class.getName());
 	
     /**
      * The port the SocketListener uses.

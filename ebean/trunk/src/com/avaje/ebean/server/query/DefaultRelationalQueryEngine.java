@@ -47,14 +47,13 @@ import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Perform native sql fetches.
  */
 public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
-	private static final Logger logger = LogFactory.get(DefaultRelationalQueryEngine.class);
+	private static final Logger logger = Logger.getLogger(DefaultRelationalQueryEngine.class.getName());
 
 	private final int defaultMaxRows;
 

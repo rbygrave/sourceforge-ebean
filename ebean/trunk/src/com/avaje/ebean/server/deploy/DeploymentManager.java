@@ -37,7 +37,6 @@ import com.avaje.ebean.server.lib.util.DnodeReader;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.plugin.PluginProperties;
 import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Controls the creation and caching of BeanManager's, BeanDescriptors,
@@ -48,7 +47,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class DeploymentManager implements BeanDescriptorOwner {
 
-	private static final Logger logger = LogFactory.get(DeploymentManager.class);
+	private static final Logger logger = Logger.getLogger(DeploymentManager.class.getName());
 
 	private final PluginDbConfig dbConfig;
 

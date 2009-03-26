@@ -23,8 +23,6 @@ import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * Helper used by SystemProperties to evaluate expressions such as
  * ${CATALINA_HOME}.
@@ -37,7 +35,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class PropertyEvaluator {
 
-	private static final Logger logger = LogFactory.get(PropertyEvaluator.class);
+	private static final Logger logger = Logger.getLogger(PropertyEvaluator.class.getName());
 
 	/**
 	 * Prefix for looking up JNDI Environment variable.

@@ -46,14 +46,13 @@ import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.deploy.jointree.JoinNode.Type;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Factory for SqlSelectClause.
  */
 public class SqlTreeBuilder {
 
-	private static final Logger logger = LogFactory.get(SqlTreeBuilder.class);
+	private static final Logger logger = Logger.getLogger(SqlTreeBuilder.class.getName());
 
 	final OrmQuery<?> query;
 

@@ -53,14 +53,13 @@ import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.reflect.BeanReflect;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Describes Beans including their deployment information.
  */
 public class BeanDescriptor {
 
-	private static final Logger logger = LogFactory.get(BeanDescriptor.class);
+	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
 	ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
 

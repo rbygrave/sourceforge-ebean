@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * Used to hold BatchedPstmt objects for batch based execution.
  * <p>
@@ -40,7 +38,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class BatchedPstmtHolder {
 
-	private static final Logger logger = LogFactory.get(BatchedPstmtHolder.class);
+	private static final Logger logger = Logger.getLogger(BatchedPstmtHolder.class.getName());
 	
 	/**
 	 * A Map of the statements using a String key. This is used so that the same

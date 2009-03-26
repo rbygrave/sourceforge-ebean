@@ -23,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Continue the fetch using a Background thread. The client knows when this has
@@ -31,7 +30,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class BackgroundFetch implements Runnable {
 
-	private static final Logger logger = LogFactory.get(BackgroundFetch.class);
+	private static final Logger logger = Logger.getLogger(BackgroundFetch.class.getName());
 	
 	private final CQuery cquery;
     

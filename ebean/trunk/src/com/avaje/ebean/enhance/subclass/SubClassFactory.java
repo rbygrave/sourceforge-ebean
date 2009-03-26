@@ -28,7 +28,6 @@ import com.avaje.ebean.enhance.agent.EnhanceConstants;
 import com.avaje.ebean.enhance.agent.EnhanceContext;
 import com.avaje.ebean.enhance.asm.ClassReader;
 import com.avaje.ebean.enhance.asm.ClassWriter;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Creates Classes that implement EntityBean for a given normal bean Class.
@@ -40,7 +39,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class SubClassFactory extends ClassLoader implements EnhanceConstants, GenSuffix {
    
-	private static final Logger logger = LogFactory.get(SubClassFactory.class);
+	private static final Logger logger = Logger.getLogger(SubClassFactory.class.getName());
 	
 	static final int CLASS_WRITER_FLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
 

@@ -39,7 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Can search the class path for classes using a ClassPathSearchMatcher. A
@@ -51,7 +50,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class ClassPathSearch {
 
-	private static final Logger logger = LogFactory.get(ClassPathSearch.class);
+	private static final Logger logger = Logger.getLogger(ClassPathSearch.class.getName());
 
 	ClassLoader classLoader;
 

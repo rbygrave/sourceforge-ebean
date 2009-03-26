@@ -33,7 +33,6 @@ import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.ResultSetLimit;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Factory for SqlSelectClause based on raw sql.
@@ -44,7 +43,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class RawSqlSelectClauseBuilder {
 
-	private static final Logger logger = LogFactory.get(RawSqlSelectClauseBuilder.class);
+	private static final Logger logger = Logger.getLogger(RawSqlSelectClauseBuilder.class.getName());
 
 	private static final int MAX_OFFSET = 1;
 	

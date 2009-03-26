@@ -27,7 +27,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
@@ -41,7 +40,6 @@ import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Description of a property of a bean. Includes its deployment information such
@@ -49,7 +47,6 @@ import com.avaje.lib.log.LogFactory;
  */
 public class BeanProperty {
 
-	static final Logger logger = LogFactory.get(BeanProperty.class);
 
 	/**
 	 * Advanced bean deployment. To exclude this property from update where

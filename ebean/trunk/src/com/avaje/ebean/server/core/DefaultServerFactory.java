@@ -44,7 +44,6 @@ import com.avaje.ebean.server.net.CommandProcessor;
 import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.plugin.PluginFactory;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Default Server side implementation of ServerFactory.
@@ -55,7 +54,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class DefaultServerFactory implements ServerFactory, Constants {
 
-	private static final Logger logger = LogFactory.get(DefaultServerFactory.class);
+	private static final Logger logger = Logger.getLogger(DefaultServerFactory.class.getName());
 
 	final PluginFactory pluginFactory;
 

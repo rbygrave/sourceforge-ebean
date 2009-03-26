@@ -32,7 +32,6 @@ import com.avaje.ebean.server.lib.resource.ResourceSource;
 import com.avaje.ebean.server.lib.resource.UrlResourceSource;
 import com.avaje.ebean.server.lib.util.NotFoundException;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Creates a ResourceManager for a server depending on the avaje.properties.
@@ -43,7 +42,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class DefaultResourceManagerFactory implements ResourceManagerFactory {
 
-	private static final Logger logger = LogFactory.get(DefaultResourceManagerFactory.class);
+	private static final Logger logger = Logger.getLogger(DefaultResourceManagerFactory.class.getName());
 
 	final PluginProperties properties;
 

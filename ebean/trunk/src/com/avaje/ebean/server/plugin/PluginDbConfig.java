@@ -44,14 +44,13 @@ import com.avaje.ebean.server.resource.ResourceManager;
 import com.avaje.ebean.server.type.DefaultTypeManager;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Plugin level that defines database specific settings.
  */
 public class PluginDbConfig {
 
-	protected static final Logger logger = LogFactory.get(PluginDbConfig.class);
+	private static final Logger logger = Logger.getLogger(PluginDbConfig.class.getName());
 
 	final DbSpecific dbSpecific;
 		

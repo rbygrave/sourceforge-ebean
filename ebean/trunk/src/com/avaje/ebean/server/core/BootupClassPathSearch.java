@@ -27,14 +27,13 @@ import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.util.ClassPathSearch;
 import com.avaje.ebean.server.util.ClassPathSearchFilter;
 import com.avaje.ebean.server.util.ClassPathSearchMatcher;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Searches for interesting classes such as Entities, Embedded and ScalarTypes.
  */
 public class BootupClassPathSearch implements ClassPathSearchMatcher {
 
-	private static final Logger logger = LogFactory.get(BootupClassPathSearch.class);
+	private static final Logger logger = Logger.getLogger(BootupClassPathSearch.class.getName());
 
 	final String monitor = new String();
 

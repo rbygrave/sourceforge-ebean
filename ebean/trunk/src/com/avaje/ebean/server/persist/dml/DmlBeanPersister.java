@@ -28,7 +28,6 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.persist.BeanPersister;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Bean persister that uses the Handler and Meta objects.
@@ -41,7 +40,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class DmlBeanPersister implements BeanPersister {
 
-	private static final Logger logger = LogFactory.get(DmlBeanPersister.class);
+	private static final Logger logger = Logger.getLogger(DmlBeanPersister.class.getName());
 
 	private final UpdateMeta updateMeta;
 

@@ -21,6 +21,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
@@ -38,6 +39,8 @@ import com.avaje.ebean.server.lib.util.StringHelper;
  */
 public abstract class BeanPropertyAssoc extends BeanProperty {
 
+	private static final Logger logger = Logger.getLogger(BeanPropertyAssoc.class.getName());
+	
 	/**
 	 * The descriptor of the target. This MUST be lazy loaded so as to avoid a
 	 * dependency loop between BeanDescriptors.

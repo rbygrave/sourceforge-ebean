@@ -30,11 +30,11 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
@@ -50,7 +50,6 @@ import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.transaction.TransContext;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * An object that represents a SqlSelect statement.
@@ -66,7 +65,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class CQuery implements DbReadContext {
 
-	private static final Logger logger = LogFactory.get(CQuery.class);
+	private static final Logger logger = Logger.getLogger(CQuery.class.getName());
 
 	private static final int GLOBAL_ROW_LIMIT = 1000000;
 

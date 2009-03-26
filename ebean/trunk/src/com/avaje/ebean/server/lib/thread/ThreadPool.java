@@ -23,8 +23,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * This is a pool of threads which can be assigned work.
  * <p>
@@ -35,7 +33,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class ThreadPool {
 
-	private static final Logger logger = LogFactory.get(ThreadPool.class);
+	private static final Logger logger = Logger.getLogger(ThreadPool.class.getName());
 	
     /**
      * The max idle time used to trim idle threads from the pool.

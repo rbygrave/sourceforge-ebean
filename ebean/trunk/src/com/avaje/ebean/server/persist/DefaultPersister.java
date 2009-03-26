@@ -57,7 +57,6 @@ import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.plugin.PluginCore;
 import com.avaje.ebean.server.plugin.PluginProperties;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Persister implementation using DML.
@@ -77,7 +76,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class DefaultPersister implements Persister, ConcurrencyMode {
 
-	private static final Logger logger = LogFactory.get(DefaultPersister.class);
+	private static final Logger logger = Logger.getLogger(DefaultPersister.class.getName());
 
 	/**
 	 * For Version columns based on int.

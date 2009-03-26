@@ -38,14 +38,13 @@ import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Binds bean values to a PreparedStatement.
  */
 public class Binder {
 
-	private static final Logger logger = LogFactory.get(Binder.class);
+	private static final Logger logger = Logger.getLogger(Binder.class.getName());
 
 	//private final Calendar calendar;
 

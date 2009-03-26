@@ -10,14 +10,13 @@ import javax.servlet.ServletContext;
 
 import com.avaje.ebean.server.lib.util.GeneralException;
 import com.avaje.ebean.server.lib.util.NotFoundException;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Finds and translates the properties used to configure Ebean.
  */
 public class GlobalProperties {
 	
-	private static final Logger logger = LogFactory.get(GlobalProperties.class);
+	private static final Logger logger = Logger.getLogger(GlobalProperties.class.getName());
 
 	private static final String propsFile0 = "ebean.properties";
 	private static final String propsFile1 = "avaje.properties";

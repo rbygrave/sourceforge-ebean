@@ -33,14 +33,13 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Executes the UpdateSql requests.
  */
 public class ExeOrmUpdate {
 
-	private static final Logger logger = LogFactory.get(ExeOrmUpdate.class);
+	private static final Logger logger = Logger.getLogger(ExeOrmUpdate.class.getName());
 	
     private final Binder binder;
     

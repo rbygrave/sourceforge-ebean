@@ -49,14 +49,13 @@ import com.avaje.ebean.server.type.ScalarTypeEnum;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
 import com.avaje.ebean.server.validate.ValidatorFactoryManager;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Utility object to help processing deployment information.
  */
 public class DeployUtil {
 
-	private static final Logger logger = LogFactory.get(DeployUtil.class);
+	private static final Logger logger = Logger.getLogger(DeployUtil.class.getName());
 
 	/**
 	 * Use a BackTick ` at the beginning and end of table or column names that

@@ -30,14 +30,13 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Settings used to identify GeneratedValue properties.
  */
 public class GeneratedPropertySettings {
 
-	private static final Logger logger = LogFactory.get(GeneratedPropertySettings.class);
+	private static final Logger logger = Logger.getLogger(GeneratedPropertySettings.class.getName());
 	
 	String updateTimestampTypes;
 

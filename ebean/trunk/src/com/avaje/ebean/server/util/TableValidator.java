@@ -26,7 +26,6 @@ import com.avaje.ebean.server.lib.cache.Element;
 import com.avaje.ebean.server.lib.cache.Validator;
 import com.avaje.ebean.server.transaction.TableState;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Validates a cached element against a list of tables.
@@ -37,7 +36,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class TableValidator implements Validator {
 
-	private static final Logger logger = LogFactory.get(TableValidator.class);
+	private static final Logger logger = Logger.getLogger(TableValidator.class.getName());
 	
     /**
      * false if only dependent on updates and deletes. Set to true if

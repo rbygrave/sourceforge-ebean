@@ -27,14 +27,13 @@ import com.avaje.ebean.server.net.Endpoint;
 import com.avaje.ebean.server.net.Headers;
 import com.avaje.ebean.server.net.IoConnection;
 import com.avaje.ebean.server.net.SocketClient;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Broadcast messages across the cluster using sockets. 
  */
 public class SocketBroadcaster extends Broadcast {
 
-	private static final Logger logger = LogFactory.get(SocketBroadcaster.class);
+	private static final Logger logger = Logger.getLogger(SocketBroadcaster.class.getName());
 	
     boolean sendSecure = false;
     
