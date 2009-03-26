@@ -21,15 +21,13 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * Helper object used to find directories typically from the current working
  * directory.
  */
 public class DirectoryFinder {
 
-	private static final Logger logger = LogFactory.get(DirectoryFinder.class);
+	private static final Logger logger = Logger.getLogger(DirectoryFinder.class.getName());
 	
 	/**
 	 * Find a directory by search through subdirectories.

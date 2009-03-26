@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Processes ebean requests from http clients.
@@ -39,7 +38,7 @@ public class ClientRequestServlet extends HttpServlet {
 
     private static final long serialVersionUID = -6030990877455396341L;
     
-    private static final Logger logger = LogFactory.get(ClientRequestServlet.class);
+    private static final Logger logger = Logger.getLogger(ClientRequestServlet.class.getName());
     
     CommandProcessor processor;
 

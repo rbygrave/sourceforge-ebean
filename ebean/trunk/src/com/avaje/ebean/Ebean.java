@@ -35,7 +35,6 @@ import com.avaje.ebean.server.core.ServerFactory;
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.util.InternalAssert;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Provides API access for the 'default' Database and access to other Databases.
@@ -105,12 +104,12 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class Ebean {
 
-	private static final Logger logger = LogFactory.get(Ebean.class);
+	private static final Logger logger = Logger.getLogger(Ebean.class.getName());
 
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.1.0-RC2-090325";
+	private static final String EBVERSION = "1.1.0-090326";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();

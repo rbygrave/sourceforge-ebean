@@ -30,7 +30,6 @@ import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Manages and Schedules Runnables.
@@ -42,7 +41,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class CronManager {
 
-	private static final Logger logger = LogFactory.get(CronManager.class);
+	private static final Logger logger = Logger.getLogger(CronManager.class.getName());
 	
     private static class CronManagerHolder {
     	private static CronManager me = new CronManager();

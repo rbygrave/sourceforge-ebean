@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import com.avaje.ebean.server.core.ServerFactory;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Manages the shutdown of the Runtime.
@@ -35,7 +34,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class ShutdownManager {
 
-	private static final Logger logger = LogFactory.get(BackgroundThread.class);
+	private static final Logger logger = Logger.getLogger(BackgroundThread.class.getName());
 
 	static final Vector<Runnable> runnables = new Vector<Runnable>();
 

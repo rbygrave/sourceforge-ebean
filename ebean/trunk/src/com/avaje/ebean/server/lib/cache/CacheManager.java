@@ -24,14 +24,6 @@ import java.util.logging.Logger;
 import com.avaje.ebean.server.lib.BackgroundThread;
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.lib.cache.CacheManager;
-import com.avaje.ebean.server.lib.cache.DoubleMap;
-import com.avaje.ebean.server.lib.cache.DoubleMapCreateValue;
-import com.avaje.ebean.server.lib.cache.Element;
-import com.avaje.ebean.server.lib.cache.MapCache;
-import com.avaje.ebean.server.lib.cache.Validator;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Provides access and manages the caches.
@@ -48,7 +40,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class CacheManager {
 
-	private static final Logger logger = LogFactory.get(CacheManager.class);
+	private static final Logger logger = Logger.getLogger(CacheManager.class.getName());
 	
 	private static class Single {
 		private static CacheManager me = new CacheManager();

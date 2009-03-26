@@ -30,7 +30,6 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * A sequence of Integer ids generated using a table to store the next id.
@@ -42,7 +41,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class TableSequence {
 
-	private static final Logger logger = LogFactory.get(TableSequence.class);
+	private static final Logger logger = Logger.getLogger(TableSequence.class.getName());
 	
     /**
      * The number of times to try and get the next block. Occasional concurrency

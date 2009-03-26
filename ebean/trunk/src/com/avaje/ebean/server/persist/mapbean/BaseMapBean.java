@@ -37,14 +37,13 @@ import com.avaje.ebean.server.persist.BatchedPstmt;
 import com.avaje.ebean.server.persist.BatchedPstmtHolder;
 import com.avaje.ebean.server.persist.BindValues;
 import com.avaje.ebean.server.persist.Binder;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Base class for Insert Update and Delete of MapBeans.
  */
 public abstract class BaseMapBean {
 
-	private static final Logger logger = LogFactory.get(BaseMapBean.class);
+	private static final Logger logger = Logger.getLogger(BaseMapBean.class.getName());
 	
 	/**
 	 * Set to true if this is an insert that is going to use getGeneratedKeys.

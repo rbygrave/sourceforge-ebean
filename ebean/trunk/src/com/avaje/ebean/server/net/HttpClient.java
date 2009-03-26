@@ -29,14 +29,13 @@ import javax.net.ssl.SSLSession;
 
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Http implementation of NetClient.
  */
 public class HttpClient implements IoConnectionFactory {
 
-	private static final Logger logger = LogFactory.get(HttpClient.class);
+	private static final Logger logger = Logger.getLogger(HttpClient.class.getName());
 	
     private static final String HTTP = "http";
     

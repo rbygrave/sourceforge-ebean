@@ -36,7 +36,6 @@ import com.avaje.ebean.server.persist.BatchPostExecute;
 import com.avaje.ebean.server.persist.BatchedPstmt;
 import com.avaje.ebean.server.persist.BatchedPstmtHolder;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
-import com.avaje.lib.log.LogFactory;
 
 
 /**
@@ -44,7 +43,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public abstract class DmlHandler implements PersistHandler, BindableRequest {
 
-	static final Logger logger = LogFactory.get(DmlHandler.class);
+	static final Logger logger = Logger.getLogger(DmlHandler.class.getName());
 	
 	/**
 	 * Position in the PreparedStatement.

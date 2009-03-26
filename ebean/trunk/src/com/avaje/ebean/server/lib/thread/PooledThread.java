@@ -20,15 +20,13 @@ package com.avaje.ebean.server.lib.thread;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * A thread that belongs to a ThreadPool. It will return to the Threadpool when
  * it has finished its assigned task.
  */
 public class PooledThread implements Runnable {
 
-	private static final Logger logger = LogFactory.get(PooledThread.class);
+	private static final Logger logger = Logger.getLogger(PooledThread.class.getName());
 	
     /**
      * Create the PooledThread.

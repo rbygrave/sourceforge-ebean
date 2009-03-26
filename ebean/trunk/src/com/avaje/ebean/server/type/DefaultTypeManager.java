@@ -44,7 +44,6 @@ import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.lib.util.FactoryHelper;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Default implementation of TypeManager.
@@ -54,7 +53,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class DefaultTypeManager implements TypeManager {
 
-	static final Logger logger = LogFactory.get(DefaultTypeManager.class);
+	private static final Logger logger = Logger.getLogger(DefaultTypeManager.class.getName());
 
 	final ConcurrentHashMap<Class<?>, ScalarType> typeMap;
 

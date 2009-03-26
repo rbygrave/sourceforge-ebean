@@ -29,11 +29,10 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.core.IdGenerator;
+import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Uses Database sequences to generate unique ids.
@@ -60,7 +59,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class DbSequence implements IdGenerator {
 
-	private static final Logger logger = LogFactory.get(DbSequence.class);
+	private static final Logger logger = Logger.getLogger(DbSequence.class.getName());
 	
 	/**
 	 * The dataSource that has the db sequences.

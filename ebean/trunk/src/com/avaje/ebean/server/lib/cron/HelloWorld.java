@@ -22,14 +22,12 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * HelloWorld job used to for testing the CronManager.
  */
 public class HelloWorld implements Runnable {
 
-	private static final Logger logger = LogFactory.get(HelloWorld.class);
+	private static final Logger logger = Logger.getLogger(HelloWorld.class.getName());
 
 	public String toString() {
 		return "Hello World";

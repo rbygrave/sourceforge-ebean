@@ -29,7 +29,6 @@ import com.avaje.ebean.server.lib.sql.DictionaryInfo;
 import com.avaje.ebean.server.lib.sql.TableInfo;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Creates and caches MapBeanDescriptor.
@@ -40,7 +39,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class MapBeanDescriptorCacheFactory {
 
-	private static final Logger logger = LogFactory.get(MapBeanDescriptorCacheFactory.class);
+	private static final Logger logger = Logger.getLogger(MapBeanDescriptorCacheFactory.class.getName());
 
 	/**
 	 * Creates MapBeanDescriptor's.

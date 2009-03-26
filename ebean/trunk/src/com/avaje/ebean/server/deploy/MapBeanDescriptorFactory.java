@@ -44,7 +44,6 @@ import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Create a BeanDescriptor dynamically based on Table meta data.
@@ -56,7 +55,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class MapBeanDescriptorFactory {
 
-	private static final Logger logger = LogFactory.get(MapBeanDescriptorFactory.class);
+	private static final Logger logger = Logger.getLogger(MapBeanDescriptorFactory.class.getName());
 	
     /**
      * The set method on the MapBean.

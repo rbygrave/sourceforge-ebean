@@ -68,14 +68,13 @@ import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.LengthValidatorFactory;
 import com.avaje.ebean.server.validate.NotNullValidatorFactory;
 import com.avaje.ebean.util.Message;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Creates BeanDescriptors.
  */
 public class BeanDescriptorFactory {
 
-	private static final Logger logger = LogFactory.get(BeanDescriptorFactory.class);
+	private static final Logger logger = Logger.getLogger(BeanDescriptorFactory.class.getName());
 
 	private final ReadAnnotations readAnnotations = new ReadAnnotations();
 

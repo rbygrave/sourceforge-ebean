@@ -24,15 +24,13 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * Performs table searches for jdbc meta data. The results of query() are used
  * to build TableInfo objects.
  */
 public class TableSearch {
 
-	private static final Logger logger = LogFactory.get(TableSearch.class);
+	private static final Logger logger = Logger.getLogger(TableSearch.class.getName());
 	
     private final String[] types;
 

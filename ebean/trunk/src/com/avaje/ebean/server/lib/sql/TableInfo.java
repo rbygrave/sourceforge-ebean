@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * Meta data about a database table.
  */
@@ -41,7 +39,7 @@ public class TableInfo implements Serializable {
 
 	static final long serialVersionUID = -5727921165784116926L;
 
-	private static final Logger logger = LogFactory.get(TableInfo.class);
+	private static final Logger logger = Logger.getLogger(TableInfo.class.getName());
 
 	private static final Fkey[] EMPTY_FKEY = new Fkey[0];
 

@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.GlobalProperties;
-import com.avaje.lib.log.LogFactory;
 
 
 /**
@@ -50,9 +49,9 @@ import com.avaje.lib.log.LogFactory;
  */
 public class Downtime implements Runnable {
 
-	private static final Logger logger = LogFactory.get(Downtime.class);
+	private static final Logger logger = Logger.getLogger(Downtime.class.getName());
 	
-    CronManager manager;
+    private CronManager manager;
     
     /**
      * Create the Downtime.

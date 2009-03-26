@@ -33,14 +33,13 @@ import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Handles the execution of CallableSql requests.
  */
 public class ExeCallableSql {
 
-	private static final Logger logger = LogFactory.get(ExeCallableSql.class);
+	private static final Logger logger = Logger.getLogger(ExeCallableSql.class.getName());
 	
     private final Binder binder;
     

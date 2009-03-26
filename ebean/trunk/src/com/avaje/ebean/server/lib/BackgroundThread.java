@@ -22,8 +22,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * A general background thread that runs registered tasks periodically.
  * <p>
@@ -45,7 +43,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public final class BackgroundThread {
 
-	private static final Logger logger = LogFactory.get(BackgroundThread.class);
+	private static final Logger logger = Logger.getLogger(BackgroundThread.class.getName());
 
 	private static class Single {
 		private static BackgroundThread me = new BackgroundThread();

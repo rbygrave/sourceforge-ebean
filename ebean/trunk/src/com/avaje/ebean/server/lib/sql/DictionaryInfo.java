@@ -38,7 +38,6 @@ import javax.sql.DataSource;
 
 import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Reads and caches meta data from <code>java.sql.DatabaseMetaData</code>.
@@ -66,7 +65,7 @@ public class DictionaryInfo implements Serializable {
 
 	private int dictionaryCase = CaseUnknown;
 
-	transient private Logger logger = LogFactory.get(DictionaryInfo.class);
+	transient private Logger logger = Logger.getLogger(DictionaryInfo.class.getName());
 
 	/**
 	 * The DataSource.
@@ -119,7 +118,7 @@ public class DictionaryInfo implements Serializable {
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
 
 		in.defaultReadObject();
-		logger = LogFactory.get(DictionaryInfo.class);
+		logger = Logger.getLogger(DictionaryInfo.class.getName());
 	}
 
 	/**

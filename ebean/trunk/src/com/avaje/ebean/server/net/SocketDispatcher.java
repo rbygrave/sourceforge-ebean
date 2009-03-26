@@ -25,8 +25,6 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.lib.log.LogFactory;
-
 /**
  * This parses and dispatches a request to the appropriate handler.
  * <p>
@@ -37,7 +35,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class SocketDispatcher implements Runnable {
 
-	private static final Logger logger = LogFactory.get(SocketDispatcher.class);
+	private static final Logger logger = Logger.getLogger(SocketDispatcher.class.getName());
 	
     private Socket clientSocket;
     

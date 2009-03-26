@@ -23,18 +23,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.cache.Cache;
-import com.avaje.ebean.server.lib.cache.Element;
-import com.avaje.ebean.server.lib.cache.MapCache;
-import com.avaje.ebean.server.lib.cache.Validator;
-import com.avaje.lib.log.LogFactory;
-
 /**
  * The implementation of Cache based on Doug Lea's ConcurrentHashMap.
  */
 public class MapCache implements Cache {
 
-	private static final Logger logger = LogFactory.get(MapCache.class);
+	private static final Logger logger = Logger.getLogger(MapCache.class.getName());
 	
     /**
      * Cache level validator.

@@ -25,7 +25,6 @@ import com.avaje.ebean.server.lib.util.MailEvent;
 import com.avaje.ebean.server.lib.util.MailListener;
 import com.avaje.ebean.server.lib.util.MailMessage;
 import com.avaje.ebean.server.lib.util.MailSender;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * A simple smtp email alert that sends a email message
@@ -39,7 +38,7 @@ import com.avaje.lib.log.LogFactory;
  */
 public class SimpleAlerter implements DataSourceAlertListener, MailListener {
 
-	private static final Logger logger = LogFactory.get(SimpleAlerter.class);
+	private static final Logger logger = Logger.getLogger(SimpleAlerter.class.getName());
 	
     //boolean sendInBackGround = true;
 	ConfigProperties configProperties;

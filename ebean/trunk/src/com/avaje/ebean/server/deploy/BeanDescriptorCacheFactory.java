@@ -34,14 +34,13 @@ import com.avaje.ebean.server.deploy.parse.AnnotationBeanTable;
 import com.avaje.ebean.server.deploy.parse.DeployUtil;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.plugin.PluginProperties;
-import com.avaje.lib.log.LogFactory;
 
 /**
  * Both caches and creates BeanDescriptors.
  */
 public class BeanDescriptorCacheFactory {
 
-	private static final Logger logger = LogFactory.get(BeanDescriptorCacheFactory.class);
+	private static final Logger logger = Logger.getLogger(BeanDescriptorCacheFactory.class.getName());
 
 	private final PluginDbConfig dbConfig;
 
