@@ -37,6 +37,13 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		this.classMeta = context.createClassMeta();
 	}
 
+	/**
+	 * Log that the class has been enhanced.
+	 */
+	public void logEnhanced() {
+		classMeta.logEnhanced();
+	}
+	
 	public boolean isLog(int level){
 		return classMeta.isLog(level);
 	}
@@ -58,14 +65,17 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		for (int i = 0; i < interfaces.length; i++) {
 			c[i] = interfaces[i];
 			if (c[i].equals(C_ENTITYBEAN)) {
-				classMeta.setAlreadyImplementsEntityBean(true);
+				classMeta.setEntityBeanInterface(true);
 			}
 			if (c[i].equals(C_SCALAOBJECT)) {
-				classMeta.setScalaObject(true);
+				classMeta.setScalaInterface(true);
+			}
+			if (c[i].equals(C_GROOVYOBJECT)) {
+				classMeta.setGroovyInterface(true);
 			}
 		}
 
-		if (classMeta.isAlreadyImplementsEntityBean()){
+		if (classMeta.hasEntityBeanInterface()){
 			// Just use the original interfaces
 			c = interfaces;
 		} else {
@@ -136,6 +146,14 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 			return super.visitField(access, name, desc, signature, value);
 		}
 		
+		if ((access & Opcodes.ACC_TRANSIENT) != 0) {
+			if (isLog(2)){
+				log("Skip intercepting transient field "+name);					
+			}			
+			// no interception of transient fields
+			return super.visitField(access, name, desc, signature, value);
+		}
+		
 		// this will hide the field on the super object...
 		// but being in a different ClassLoader means we don't
 		// get access to those 'real' private fields
@@ -156,7 +174,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 				throw new NoEnhancementRequiredException();
 			}
 			
-			if (classMeta.isAlreadyImplementsEntityBean()){
+			if (classMeta.hasEntityBeanInterface()){
 				log("Enhancing when EntityBean interface already exists!");
 			}
 			
@@ -204,7 +222,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 			throw new NoEnhancementRequiredException();
 		}
 
-		MarkerField.addGetterSetter(cv, classMeta.getClassName());
+		MarkerField.addGetMarker(cv, classMeta.getClassName());
 		
 		if (!classMeta.isSuperClassEntity()){
 			// Add the _ebean_getIntercept() _ebean_setIntercept() methods

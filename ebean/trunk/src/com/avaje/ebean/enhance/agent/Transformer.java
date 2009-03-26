@@ -138,7 +138,7 @@ public class Transformer implements ClassFileTransformer {
 			cr.accept(ca, 0);
 			
 			if (ca.isLog(1)) {
-				ca.log("enhanced");
+				ca.logEnhanced();
 			}
 			
 			if (enhanceContext.isReadOnly()){

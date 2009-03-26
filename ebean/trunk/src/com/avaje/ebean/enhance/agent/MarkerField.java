@@ -42,7 +42,7 @@ public class MarkerField implements Opcodes, EnhanceConstants {
 	 * }
 	 * </pre>
 	 */
-	public static void addGetterSetter(ClassVisitor cv, String className) {
+	public static void addGetMarker(ClassVisitor cv, String className) {
 		
 		
 		MethodVisitor mv;
