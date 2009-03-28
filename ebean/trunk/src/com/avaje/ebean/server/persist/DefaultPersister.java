@@ -79,11 +79,6 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	private static final Logger logger = Logger.getLogger(DefaultPersister.class.getName());
 
 	/**
-	 * For Version columns based on int.
-	 */
-	private static Integer ZERO_INT = Integer.valueOf(0);
-
-	/**
 	 * Actually does the persisting work.
 	 */
 	private final PersistExecute persistExecute;
@@ -138,8 +133,16 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 */
 	public int executeOrmUpdate(Update<?> update, Transaction t) {
 
-		PersistRequestOrmUpdate request = new PersistRequestOrmUpdate(server,
-				(OrmUpdate<?>) update, (ServerTransaction) t, persistExecute);
+		OrmUpdate<?> ormUpdate = (OrmUpdate<?>) update;
+		
+		BeanManager mgr = deploymentManager.getBeanManager(ormUpdate.getBeanType());
+		
+		if (mgr == null){
+			String msg = "No BeanManager found for type ["+ormUpdate.getBeanType()+"]. Is it an entity?";
+			throw new PersistenceException(msg);
+		}
+
+		PersistRequestOrmUpdate request = new PersistRequestOrmUpdate(server, mgr, ormUpdate, (ServerTransaction) t, persistExecute);
 		try {
 			return request.executeOrQueue();
 
@@ -236,12 +239,13 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		BeanProperty versProp = desc.firstVersionProperty();
 		if (versProp == null) {
-			// no direct version property
+			// no version property - assume insert 
 			insert(request);
 
 		} else {
+			// use version property to determine insert or update
 			Object value = versProp.getValue(bean);
-			if (value == null || ZERO_INT.equals(value)) {
+			if (DmlUtil.isNullOrZero(value)) {
 				insert(request);
 			} else {
 				update(request);

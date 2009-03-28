@@ -700,18 +700,23 @@ public class BeanDescriptorFactory {
 		for (int i = 0; i < list.size(); i++) {
 			DeployBeanProperty prop = list.get(i);
 			if (!prop.isTransient()) {
-				if (prop.isDbWrite()) {
-					String dbColumn = prop.getDbColumn();
-					ColumnInfo info = tableInfo.getColumnInfo(dbColumn);
-					if (info == null) {
-						String msg = "Db Column " + dbColumn + " not found ";
-						msg += "for property " + prop.getFullBeanName();
-						logger.warning(msg);
-
-					} else {
-						prop.readColumnInfo(info);
-						autoAddValidators(prop);
+				String dbColumn = prop.getDbColumn();
+				ColumnInfo info = tableInfo.getColumnInfo(dbColumn);
+				if (info != null) {
+					prop.readColumnInfo(info);
+					if (prop.isNullablePrimitive()){
+						String msg = "Primitive property "+prop.getFullBeanName()
+						+" is mapped to a nullable Db Column " + dbColumn + "";
+						logger.warning(msg);						
 					}
+					
+				} else {
+					String msg = "Db Column " + dbColumn + " not found ";
+					msg += "for property " + prop.getFullBeanName();
+					logger.warning(msg);
+				} 
+				if (prop.isDbWrite()) {
+					autoAddValidators(prop);
 				}
 			}
 		}

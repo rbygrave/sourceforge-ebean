@@ -104,7 +104,11 @@ public final class DefaultOrmUpdate<T> implements OrmUpdate<T>, Serializable {
 		this.timeout = secs;
 		return this;
 	}
-	
+
+	public Class<?> getBeanType() {
+		return beanType;
+	}
+
 	/**
 	 * Return the timeout in seconds.
 	 */
