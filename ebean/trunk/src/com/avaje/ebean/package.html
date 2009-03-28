@@ -4,7 +4,7 @@
 	<TITLE>eBean</TITLE>
 </HEAD>
 <Body BGCOLOR="#ffffff">
-Public API (see <a href="Ebean.html">Ebean</a>).
+Public API v1.1.0 (see <a href="Ebean.html">Ebean</a>).
 
 
 <h3>Ebean</h3>
@@ -12,14 +12,13 @@ Public API (see <a href="Ebean.html">Ebean</a>).
 Provides the main API for fetching and persisting beans with eBean.
 </p>
 
-<pre>
 <code>
+<pre>
 	// EXAMPLE 1: Simple fetch
 	//========================
 
 	// fetch order 10
-	Order order = (Order)Ebean.find(Order.class, 10);
-
+	Order order = Ebean.find(Order.class, 10);
 
 
 
@@ -27,14 +26,12 @@ Provides the main API for fetching and persisting beans with eBean.
 	//=============================================
 	
 	// fetch Customer 7 including their billing and shipping addresses
-	FindByUid find = new FindByUid();
-	find.setBeanType(Customer.class);
-	find.setUid(7);
-	find.setInclude("billingAddress;shippingAddress");
-
-
-	Customer customer = (Customer)Ebean.find(find);
-	
+	Customer customer = 
+		Ebean.find(Customer.class)
+			.setId(7)
+			.join("billingAddress")
+			.join("shippingAddress")
+			.findUnique();	
 	
 	Address billAddr = customer.getBillingAddress();
 	Address shipAddr = customer.getShippingAddress();
@@ -79,7 +76,7 @@ Provides the main API for fetching and persisting beans with eBean.
                                         
                                   
 	// fetch contact 3 from the HR database
-	Contact contact = (Contact)hrServer.find(Contact.class, 3);
+	Contact contact = hrServer.find(Contact.class, 3);
                                         
 	contact.setStatus(&quot;INACTIVE&quot;);
 	...
@@ -87,8 +84,8 @@ Provides the main API for fetching and persisting beans with eBean.
 	// save the contact back to the HR database
 	hrServer.save(contact); 
 	
-</code>
 </pre>
+</code>
 
 </Body>
 </HTML>
