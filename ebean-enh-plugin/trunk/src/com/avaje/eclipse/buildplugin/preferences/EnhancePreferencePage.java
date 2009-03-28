@@ -53,23 +53,23 @@ public class EnhancePreferencePage extends FieldEditorPreferencePage implements 
 		
 		addField(new ComboFieldEditor(
 				PreferenceConstants.P_ENHANCE_DEBUG_LEVEL,
-			"Enhancement Debug:       ",
-			new String[][] { { "0 - No Debug", "0" }, {"1 - Minimum Debug", "1"}, {"2", "2"},{"3", "3"},{"4", "4"},
-						{"5", "5"},{"6", "6"},{"7", "7"},{"8", "8"},{"9", "9"},{"10 - Maximum Debug", "10"}}
+			"Enhancement Logging:       ",
+			new String[][] { { "0 - No Logging", "0" }, {"1 - Minimum Logging", "1"}, {"2", "2"},{"3", "3"},{"4", "4"},
+						{"5", "5"},{"6", "6"},{"7", "7"},{"8", "8"},{"9", "9"},{"10 - Maximum Logging", "10"}}
 		, getFieldEditorParent()));
 
-		addField(new LabelPairFieldEditor("Purpose:","Debugging the enhancement process", getFieldEditorParent()));
+		addField(new LabelPairFieldEditor("Purpose:","Logging the enhancement process", getFieldEditorParent()));
 		addField(new LabelPairFieldEditor("Location:","${workspace}/.metadata/.plugins/\ncom.avaje.ebean.enhancer.plugin.log/enhance.log", getFieldEditorParent()));
 		
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		
 		addField(new ComboFieldEditor(
 				PreferenceConstants.P_PLUGIN_DEBUG_LEVEL,
-			"Plugin Debug:",
-			new String[][] { { "No Debug", "0" }, {"Minimum Debug", "1"}, {"Debug", "2"} }
+			"Plugin Logging:",
+			new String[][] { { "No Logging", "0" }, {"Minimum Logging", "1"}, {"Full Logging", "2"} }
 		, getFieldEditorParent()));
 		
-		addField(new LabelPairFieldEditor("Purpose:","Debugging this plugin", getFieldEditorParent()));
+		addField(new LabelPairFieldEditor("Purpose:","Logging this plugin", getFieldEditorParent()));
 		addField(new LabelPairFieldEditor("Location:","${workspace}/.metadata/.log", getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
