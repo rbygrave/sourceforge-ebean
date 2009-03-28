@@ -100,7 +100,7 @@ import com.avaje.ebean.server.util.InternalAssert;
  * hrDb.save(contact);                                   
  * </pre>
  * 
- * @version 1.0.0
+ * @version 1.1.0
  */
 public final class Ebean {
 
@@ -109,7 +109,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.1.0-090326";
+	private static final String EBVERSION = "1.1.0-090328";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
