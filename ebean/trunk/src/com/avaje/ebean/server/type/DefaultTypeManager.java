@@ -21,6 +21,8 @@ package com.avaje.ebean.server.type;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -96,6 +98,8 @@ public final class DefaultTypeManager implements TypeManager {
 	final ScalarType timestampType = new ScalarTypeTimestamp();
 
 	final ScalarType uuidType = new ScalarTypeUUID();
+	final ScalarType urlType = new ScalarTypeURL();
+	final ScalarType uriType = new ScalarTypeURI();
 
 	final PluginProperties properties;
 
@@ -421,6 +425,8 @@ public final class DefaultTypeManager implements TypeManager {
 		nativeMap.put(Types.BOOLEAN, booleanType);
 		
 		typeMap.put(UUID.class, uuidType);
+		typeMap.put(URL.class, urlType);
+		typeMap.put(URI.class, uriType);
 
 		// String types
 		typeMap.put(char[].class, charArrayType);

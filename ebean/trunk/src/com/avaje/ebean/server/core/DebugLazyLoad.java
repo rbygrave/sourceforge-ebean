@@ -103,6 +103,7 @@ public class DebugLazyLoad {
 		ignore.add("com.avaje.ebean");
 		ignore.add("java");
 		ignore.add("sun.reflect");
+		ignore.add("org.codehaus.groovy.runtime.");
 
 		String extraIgnore = properties.getProperty("debug.lazyload.ignore", null);
 		if (extraIgnore != null) {

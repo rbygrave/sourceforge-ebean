@@ -22,6 +22,7 @@ package com.avaje.ebean.bean;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.Set;
 
 import javax.persistence.PersistenceException;
@@ -321,9 +322,12 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 				return false;
 			}
 
-		} else {
-			return obj1.equals(obj2);
+		} 
+		if (obj1 instanceof URL){
+			// use the string format to determine if dirty
+			return obj1.toString().equals(obj2.toString());
 		}
+		return obj1.equals(obj2);
 	}
 
 	/**

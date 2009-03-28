@@ -28,6 +28,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.jmx.MLogControlMBean;
+import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.plugin.Plugin;
 
 /**
@@ -198,7 +199,12 @@ public class RefreshHelp {
 			msg += " partialProps"+excludes;
 		} 
 		if (cause != null){
-			msg += " at: "+cause;
+			String causeLine = cause.toString();
+			if (causeLine.indexOf(".groovy:") > -1){
+				// eclipse console does not like finding groovy source at the moment
+				causeLine = StringHelper.replaceString(causeLine, ".groovy:", ".groovy :");
+			}
+			msg += " at: "+causeLine;
 		}
 		System.err.println(msg);		
 	}
