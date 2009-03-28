@@ -36,6 +36,11 @@ public interface OrmUpdate<T> extends Update<T> {
 	}
 	
 	/**
+	 * Return the type of bean being updated.
+	 */
+	public Class<?> getBeanType();
+
+	/**
 	 * Return the type of this - insert, update or delete.
 	 */
 	public OrmUpdateType getOrmUpdateType();

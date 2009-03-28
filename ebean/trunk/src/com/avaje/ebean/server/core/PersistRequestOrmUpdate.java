@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.query.OrmUpdate;
 import com.avaje.ebean.query.OrmUpdate.OrmUpdateType;
+import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.persist.PersistExecute;
 
 /**
@@ -40,8 +41,10 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 	/**
 	 * Create.
 	 */
-	public PersistRequestOrmUpdate(InternalEbeanServer server, OrmUpdate<?> ormUpdate, ServerTransaction t, PersistExecute persistExecute) {
-		super(server, t, persistExecute);
+	public PersistRequestOrmUpdate(InternalEbeanServer server, BeanManager mgr, OrmUpdate<?> ormUpdate, 
+			ServerTransaction t, PersistExecute persistExecute) {
+		
+		super(server, mgr, t, persistExecute);
 		this.ormUpdate = ormUpdate;
 	}
 	

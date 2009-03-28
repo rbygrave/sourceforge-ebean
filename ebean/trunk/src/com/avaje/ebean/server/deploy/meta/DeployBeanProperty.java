@@ -203,6 +203,19 @@ public class DeployBeanProperty {
 		return desc.getFullName() + "." + name;
 	}
 
+	/**
+	 * Return true if this is a primitive type with a nullable DB column.
+	 * <p>
+	 * This should log a WARNING as primitive types can't be null.
+	 * </p>
+	 */
+	public boolean isNullablePrimitive() {
+		if (nullable && propertyType.isPrimitive()){
+			return true;
+		}
+		return false;
+	}
+	
 	public void readColumnInfo(ColumnInfo info) {
 		if (nullable) {
 			nullable = info.isNullable();

@@ -125,6 +125,9 @@ public final class InsertMeta {
 		return supportsGetGeneratedKeys;
 	}
 
+	/**
+	 * Return true if the Id can be derived from other property values.
+	 */
 	public boolean deriveConcatenatedId(PersistRequest persist) {
 		return id.deriveConcatenatedId(persist);
 	}

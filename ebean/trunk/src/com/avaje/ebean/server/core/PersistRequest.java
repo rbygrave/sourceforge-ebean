@@ -132,8 +132,8 @@ public abstract class PersistRequest extends BeanRequest implements ConcurrencyM
 	/**
 	 * Used by CallableSqlRequest and UpdateSqlRequest.
 	 */
-	public PersistRequest(InternalEbeanServer server, ServerTransaction t, PersistExecute persistExecute) {
-		super(server, null, t);
+	public PersistRequest(InternalEbeanServer server, BeanManager mgr, ServerTransaction t, PersistExecute persistExecute) {
+		super(server, mgr, t);
 		this.persistExecute = persistExecute;
 		isDirty = true;
 		bean = null;

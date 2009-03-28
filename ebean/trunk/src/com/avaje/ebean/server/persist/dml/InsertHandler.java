@@ -30,6 +30,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.persist.DmlUtil;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -43,8 +44,6 @@ public class InsertHandler extends DmlHandler {
 	 */
 	private static final int[] GENERATED_ID_COLUMNS = { 1 };
 
-	private final Integer ZERO_INT = new Integer(0);
-	private final Long ZERO_LONG = new Long(0);
 	/**
 	 * The associated InsertMeta data.
 	 */
@@ -85,7 +84,7 @@ public class InsertHandler extends DmlHandler {
 
 		Object idValue = desc.getId(bean);
 
-		boolean withId = (idValue != null && !(ZERO_INT.equals(idValue) || ZERO_LONG.equals(idValue)));
+		boolean withId = !DmlUtil.isNullOrZero(idValue);
 
 		// check to see if we are going to use generated keys
 		if (!withId) {
