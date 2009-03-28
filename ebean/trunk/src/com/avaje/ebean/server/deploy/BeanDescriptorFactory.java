@@ -995,6 +995,8 @@ public class BeanDescriptorFactory {
 
 			} else {
 				checkInheritedClasses(false, beanClass);
+				desc.checkReadAndWriteMethods();
+				
 				subclassClassCount++;
 
 				Class<?> subClass = subClassManager.resolve(beanClass.getName());

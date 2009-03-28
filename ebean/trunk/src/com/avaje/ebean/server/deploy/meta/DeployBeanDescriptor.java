@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.BeanController;
 import com.avaje.ebean.bean.BeanFinder;
@@ -43,6 +45,8 @@ import com.avaje.ebean.server.reflect.BeanReflect;
  */
 public class DeployBeanDescriptor {
 
+	private static final Logger logger = Logger.getLogger(DeployBeanDescriptor.class.getName());
+	
 	private static final String META_BEAN_PREFIX = MetaAutoFetchStatistic.class.getName().substring(0,20);
 
 	boolean baseTableNotFound;
@@ -188,6 +192,38 @@ public class DeployBeanDescriptor {
 		if (owner != null) {
 			this.serverName = owner.getServerName();
 		}
+	}
+	
+	/**
+	 * Check all the properties to see if they all have read and write
+	 * methods (required if using "subclassing" but not for "enhancement"). 
+	 */
+	public boolean checkReadAndWriteMethods() {
+		
+		if (isMeta()){
+			return true;
+		}
+		boolean missingMethods = false;
+		
+		Iterator<DeployBeanProperty> it = propMap.values().iterator();
+		while (it.hasNext()) {
+			DeployBeanProperty prop = it.next();
+			if (!prop.isTransient()){
+				String m = "";
+				if (prop.getReadMethod() == null){
+					m += " missing readMethod ";
+				}
+				if (prop.getWriteMethod() == null){
+					m += " missing writeMethod ";
+				}
+				if (!"".equals(m)){
+					String msg = "Bean property "+getFullName()+"."+prop.getName()+" has "+m;
+					logger.log(Level.SEVERE, msg);
+					missingMethods = true;
+				}			
+			}
+		}
+		return !missingMethods;
 	}
 	
 	/**
