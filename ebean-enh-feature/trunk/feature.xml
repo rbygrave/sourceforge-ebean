@@ -2,7 +2,7 @@
 <feature
       id="com.avaje.ebean.enhancer"
       label="Ebean Enhancer"
-      version="1.1.2.qualifier"
+      version="1.1.5.qualifier"
       provider-name="avaje.org"
       plugin="com.avaje.ebean.enhancer.plugin">
 
