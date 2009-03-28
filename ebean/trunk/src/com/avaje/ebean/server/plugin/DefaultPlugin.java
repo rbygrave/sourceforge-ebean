@@ -37,7 +37,6 @@ import com.avaje.ebean.server.persist.DefaultPersister;
 import com.avaje.ebean.server.query.DefaultOrmQueryEngine;
 import com.avaje.ebean.server.query.DefaultRelationalQueryEngine;
 import com.avaje.ebean.server.transaction.DefaultTransactionScopeManager;
-import com.avaje.ebean.server.transaction.SpringAwareTransactionScopeManager;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 
@@ -92,7 +91,7 @@ public class DefaultPlugin implements Plugin {
 		}
 		if ( props.getPropertyBoolean("spring.transactions", false) ) {
 			// built in spring aware transactions
-			return new SpringAwareTransactionScopeManager(mgr);
+			throw new RuntimeException("Removed SpringAwareTransactionScopeManager for the moment");
 			
 		} else {
 			// standard one
