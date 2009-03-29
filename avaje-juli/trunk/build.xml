@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+
+<project name="avaje-juli" default="dist" basedir=".">
+
+	<property name="name" value="avaje-juli" />
+	<property name="version" value="1.0.0" />
+
+	<property name="lib.dir" value="lib" />
+	<property name="src.dir" value="src" />
+	<property name="doc.dir" value="doc" />
+	<property name="bin.dir" value="build/bin" />
+	<property name="dist.dir" value="dist" />
+	<property name="base.dir" value="." />
+	<property name="maven.dir" value="${user.home}/.m2/repository" />
+	
+	<property name="packages" value="com.avaje.*" />
+
+
+	<!-- =================================================================== -->
+	<!-- Prepares the build directory                                        -->
+	<!-- =================================================================== -->
+	<target name="prepare">
+		<mkdir dir="${bin.dir}" />
+		<mkdir dir="${doc.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<tstamp />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Compiles the source code                                            -->
+	<!-- =================================================================== -->
+
+	<path id="lib.path.ref">
+		<fileset dir="${lib.dir}" includes="*.jar" />
+	</path>
+
+	<target name="compile" depends="prepare, clean">
+		<mkdir dir="${bin.dir}" />
+
+		<javac source="1.5" target="1.5" debug="true" optimize="on" srcdir="${src.dir}" destdir="${bin.dir}" deprecation="off">
+			<classpath refid="lib.path.ref" />
+		</javac>
+
+		<copy todir="${bin.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.props" />
+				<include name="**/*.properties" />
+				<include name="**/*.dtd" />
+				<include name="icons/**" />
+			</fileset>
+		</copy>
+
+	</target>
+
+	<target name="zipSource" depends="prepare,jar">
+		<zip zipfile="${dist.dir}/${name}-${version}-src.zip" basedir="${src.dir}" />
+	</target>
+
+	<target name="zipDoc" depends="prepare,jar">
+		<zip zipfile="${dist.dir}/${name}-${version}-javadoc.zip" basedir="${doc.dir}" />
+	</target>
+
+	<target name="dist" depends="prepare,jar,zipSource,zipDoc">
+	</target>
+
+			
+	<!-- =================================================================== -->
+	<!-- Creates the jar archive                                             -->
+	<!-- =================================================================== -->
+
+	<target name="jar" depends="prepare,compile">
+		<mkdir dir="${dist.dir}" />
+		<jar jarfile="${dist.dir}/${name}-${version}.jar" basedir="${bin.dir}" includes="**">
+		</jar>	
+	</target>
+
+	<target name="main" depends="jar">
+		<tstamp />
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Cleans up generated stuff                                           -->
+	<!-- =================================================================== -->
+	<target name="clean">
+		<delete dir="${bin.dir}" />
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${bin.dir}" />
+		<mkdir dir="${doc.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+</project>
+
