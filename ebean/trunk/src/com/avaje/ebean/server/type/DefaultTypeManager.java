@@ -422,7 +422,10 @@ public final class DefaultTypeManager implements TypeManager {
 		ScalarType booleanType = extraTypeFactory.createBoolean();
 		typeMap.put(Boolean.class, booleanType);
 		typeMap.put(boolean.class, booleanType);
-		nativeMap.put(Types.BOOLEAN, booleanType);
+		// TODO ~Rob is this correct - sometimes it's a boolean or bit or varchar etc
+		// then use the type from the booleanType and not always Types.BOOLEAN ???
+		//nativeMap.put(Types.BOOLEAN, booleanType);
+		nativeMap.put(booleanType.getJdbcType(), booleanType);
 		
 		typeMap.put(UUID.class, uuidType);
 		typeMap.put(URL.class, urlType);
