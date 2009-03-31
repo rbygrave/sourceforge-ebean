@@ -176,7 +176,7 @@ public class TransactionManager implements Constants {
 	 */
 	private OnQueryOnly getOnQueryOnly(PluginProperties props, DataSource ds) {
 		
-		String value = props.getProperty("transaction.queryonlyend", "ROLLBACK");
+		String value = props.getProperty("transaction.onqueryonly", "ROLLBACK");
 		value = value.toUpperCase().trim();
 		
 		if (value.equals("COMMIT")){
