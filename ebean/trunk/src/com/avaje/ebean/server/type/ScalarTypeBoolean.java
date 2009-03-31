@@ -69,6 +69,49 @@ public class ScalarTypeBoolean {
 			return b;
 		}
 	}
+	
+	/**
+	 * The Class BitBoolean converts a JDBC type BIT to a java boolean
+	 * 
+	 * <p>
+	 * Sometimes booleans may be mapped to the JDBC type BIT. To use
+	 * the BitBoolean specify type.boolean.dbtype="bit" in the ebean configuration  
+	 * </p>
+	 */
+	public static class BitBoolean extends ScalarTypeBase {
+
+		/**
+		 * Native Boolean database type.
+		 */
+		public BitBoolean() {
+			super(Boolean.class, true, Types.BIT);
+		}
+
+		public Object toBeanType(Object value) {
+			return BasicTypeConverter.toBoolean(value);
+		}
+		
+		public Object toJdbcType(Object value) {
+			return BasicTypeConverter.convert(value, jdbcType);
+		}
+		
+		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+			if (value == null) {
+				pstmt.setNull(index, Types.BIT);
+			} else {
+				pstmt.setBoolean(index, (Boolean) value);
+			}
+
+		}
+
+		public Object read(ResultSet rset, int index) throws SQLException {
+			boolean b = rset.getBoolean(index);
+			if (rset.wasNull()) {
+				return null;
+			}
+			return b;
+		}
+	}
 
 	/**
 	 * Converted to/from an Integer in the Database.

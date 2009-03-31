@@ -51,6 +51,11 @@ public class DefaultTypeFactory {
 
 		String type = properties.getProperty("type.boolean.dbtype", "varchar");
 
+		// Some dbs use BIT e.g. MySQL
+		if ("bit".equalsIgnoreCase(type)){
+			return new ScalarTypeBoolean.BitBoolean();
+		}
+
 		if (sFalse == null || sTrue == null) {
 			// the JDBC driver/Database supports Booleans
 			return new ScalarTypeBoolean.Native();
@@ -64,6 +69,7 @@ public class DefaultTypeFactory {
 			// convert to/from string values...
 			return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
 		}
+		
 
 		// convert to/from integer values...
 		Integer intTrue = BasicTypeConverter.toInteger(sTrue);
