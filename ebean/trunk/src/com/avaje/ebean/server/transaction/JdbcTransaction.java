@@ -30,6 +30,7 @@ import javax.persistence.RollbackException;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.persist.BatchControl;
+import com.avaje.ebean.server.transaction.TransactionManager.OnQueryOnly;
 
 /**
  * JDBC Connection based transaction.
@@ -100,9 +101,9 @@ public class JdbcTransaction implements ServerTransaction {
 	boolean localReadOnly;
 
 	/**
-	 * Set to true if in read committed isolation.
+	 * Behaviour for ending query only transactions.
 	 */
-	boolean readCommittedIsolation;
+	OnQueryOnly onQueryOnly;
 	
 	/**
 	 * Flag to explicitly turn off transaction logging for this transaction.
@@ -138,7 +139,7 @@ public class JdbcTransaction implements ServerTransaction {
 			this.explicit = explicit;
 			this.manager = manager;
 			this.connection = connection;
-			this.readCommittedIsolation = manager.isReadCommittedIsolation();
+			this.onQueryOnly = manager.getOnQueryOnly();
 			this.transactionContext = new TransContext();
 
 		} catch (Exception e) {
@@ -395,36 +396,42 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Notify the transaction manager.
 	 */
 	protected void notifyCommit() {
-		try {
+		if (queryOnly){
+			manager.notifyOfQueryOnly(true, this, null);
+		} else {
 			manager.notifyOfCommit(this);
-		} catch (Exception ex) {
-			String m = "Potentially missed Cache invalidation due to error:";
-			logger.log(Level.SEVERE, m, ex);
 		}
 	}
 
 	/**
-	 * Notify the transaction manager.
+	 * Rollback, Commit or Close for query only transaction.
+	 * <p>
+	 * For a transaction that was used for queries only we can choose
+	 * to either rollback or just close the connection for performance.
+	 * </p>
 	 */
-	protected void notifyRollback(Throwable e) {
+	private void commitQueryOnly() {
 		try {
-			manager.notifyOfRollback(this, e);
-		} catch (Exception ex) {
-			String m = "Potentially Transaction Log incomplete due to error:";
-			logger.log(Level.SEVERE, m, ex);
+			switch (onQueryOnly) {
+			case ROLLBACK:
+				connection.rollback();
+				break;
+			case COMMIT:
+				connection.commit();
+				break;
+			case CLOSE_ON_READCOMMITTED:
+				// Connection is closed via deactivate() which follows
+				// This optimisation is only available at READ COMMITTED Isolation
+				break;
+			default:
+				connection.rollback();
+			}
+		} catch (SQLException e) {
+			String m = "Error when ending a query only transaction via " + onQueryOnly;
+			logger.log(Level.SEVERE, m, e);
 		}
 	}
 
-	private void commitQueryOnly() {
-		deactivate();
-		manager.notifyOfQueryOnly(true, this, null);
-	}
-
-	private void rollbackQueryOnly(Throwable e) {
-		deactivate();
-		manager.notifyOfQueryOnly(false, this, e);
-	}
-	
 	/**
 	 * Commit the transaction.
 	 */
@@ -433,16 +440,16 @@ public class JdbcTransaction implements ServerTransaction {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		try {
-			if (queryOnly && readCommittedIsolation) {
+			if (queryOnly) {
+				// can rollback or just close for performance
 				commitQueryOnly();
-				return;
+			} else {
+				// commit
+				if (batchControl != null && !batchControl.isEmpty()){
+					batchControl.flush();
+				}
+				connection.commit();
 			}
-			if (batchControl != null && !batchControl.isEmpty()){
-				batchControl.flush();
-			}
-			
-			connection.commit();
-
 			// these will not throw an exception
 			deactivate();
 			notifyCommit();
@@ -452,6 +459,17 @@ public class JdbcTransaction implements ServerTransaction {
 		}
 	}
 
+	/**
+	 * Notify the transaction manager.
+	 */
+	protected void notifyRollback(Throwable cause) {
+		if (queryOnly){
+			manager.notifyOfQueryOnly(false, this, cause);
+		} else {
+			manager.notifyOfRollback(this, cause);
+		}
+	}
+	
 	/**
 	 * Rollback the transaction.
 	 */
@@ -463,22 +481,18 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Rollback the transaction.
 	 * If there is a throwable it is logged as the cause in the transaction log.
 	 */
-	public void rollback(Throwable e) throws PersistenceException {
+	public void rollback(Throwable cause) throws PersistenceException {
 		if (activeStatus != STATUS_ACTIVE) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		try {
-			if (queryOnly && readCommittedIsolation) {
-				rollbackQueryOnly(e);
-				return;
-			}
 			connection.rollback();
 
 			// these will not throw an exception
 			deactivate();
-			notifyRollback(e);
+			notifyRollback(cause);
 			
-		} catch (Exception ex) {// SQLException
+		} catch (Exception ex) {
 			throw new PersistenceException(ex);
 		}
 	}
