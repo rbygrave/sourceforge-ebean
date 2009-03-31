@@ -71,6 +71,9 @@ public final class BasicTypeConverter implements Serializable {
 			case Types.INTEGER: {
 				return toInteger(value);
 			}
+			case Types.BIT: {
+				return toBoolean(value);
+			}
 			case Types.TINYINT: {
 				return toByte(value);
 			}

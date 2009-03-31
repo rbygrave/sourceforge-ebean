@@ -92,16 +92,17 @@ public class ScalarTypeBoolean {
 		}
 		
 		public Object toJdbcType(Object value) {
-			return BasicTypeConverter.convert(value, jdbcType);
+			// use JDBC driver to convert boolean to bit
+			return BasicTypeConverter.toBoolean(value);
 		}
 		
 		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
 			if (value == null) {
 				pstmt.setNull(index, Types.BIT);
 			} else {
+				// use JDBC driver to convert boolean to bit
 				pstmt.setBoolean(index, (Boolean) value);
 			}
-
 		}
 
 		public Object read(ResultSet rset, int index) throws SQLException {
