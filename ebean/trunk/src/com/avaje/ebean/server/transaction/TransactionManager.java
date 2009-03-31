@@ -53,6 +53,27 @@ public class TransactionManager implements Constants {
 	private static final Logger logger = Logger.getLogger(TransactionManager.class.getName());
 	
 	/**
+	 * The behaviour desired when ending a query only transaction.
+	 */
+	public enum OnQueryOnly {
+		
+		/**
+		 * Rollback the transaction.
+		 */
+		ROLLBACK,
+		
+		/**
+		 * Just close the transaction.
+		 */
+		CLOSE_ON_READCOMMITTED,
+		
+		/**
+		 * Commit the transaction
+		 */
+		COMMIT
+	}
+	
+	/**
 	 * Holds Table state.
 	 */
 	private final TableStateManager tableState = new TableStateManager();
@@ -83,7 +104,7 @@ public class TransactionManager implements Constants {
 	 * Flag to indicate the default Isolation is READ COMMITTED. This enables us
 	 * to close queryOnly transactions rather than commit or rollback them.
 	 */
-	private final boolean readCommittedIsolation;
+	private final OnQueryOnly onQueryOnly;
 
 	/**
 	 * The default batchMode for transactions.
@@ -137,28 +158,47 @@ public class TransactionManager implements Constants {
 		this.defaultBatchMode = properties.getPropertyBoolean("batch.mode", false);
 		
 		this.prefix = properties.getProperty("transaction.prefix", "");
-		String logAllCom = properties.getProperty("transaction.logallcommits", "false");
-		this.logAllCommits = (logAllCom != null && logAllCom.equalsIgnoreCase("true"));
-
-		this.readCommittedIsolation = isReadCommittedIsolation(dataSource);
+		this.logAllCommits = properties.getPropertyBoolean("transaction.logallcommits", false);
+		this.onQueryOnly = getOnQueryOnly(properties, dataSource);
 	}
 	
 	/**
-	 * Check to see if read committed is the default isolation level.
+	 * Return the behaviour to use when a query only transaction is committed.
 	 * <p>
-	 * If it is, then Connections used only for queries do not require commit or
-	 * rollback but instead can just be put back into the pool via close().
+	 * There is a potential optimisation available when read committed is the default 
+	 * isolation level. If it is, then Connections used only for queries do not require 
+	 * commit or rollback but instead can just be put back into the pool via close().
 	 * </p>
 	 * <p>
 	 * If the Isolation level is higher (say SERIALIZABLE) then Connections used
 	 * just for queries do need to be committed or rollback after the query.
 	 * </p>
-	 * <p>
-	 * Note that The DefaultServer now checks the DataSource for its autoCommit
-	 * and transaction isolation levels and logs warnings if appropriate.
-	 * </p>
 	 */
-	private boolean isReadCommittedIsolation(DataSource ds) {
+	private OnQueryOnly getOnQueryOnly(PluginProperties props, DataSource ds) {
+		
+		String value = props.getProperty("transaction.queryonlyend", "ROLLBACK");
+		value = value.toUpperCase().trim();
+		
+		if (value.equals("COMMIT")){
+			return OnQueryOnly.COMMIT;
+		}
+		if (value.startsWith("CLOSE")){
+			if (!isReadCommitedIsolation(ds)){
+				String m = "transaction.queryonlyclose is true but the transaction Isolation Level is not READ_COMMITTED";
+				throw new PersistenceException(m);
+			} else {
+				return OnQueryOnly.CLOSE_ON_READCOMMITTED;				
+			}
+		}
+		// default to rollback
+		return OnQueryOnly.ROLLBACK;
+	}		
+	
+	/**
+	 * Return true if the isolation level is read committed.
+	 */
+	private boolean isReadCommitedIsolation(DataSource ds) {
+		
 		Connection c = null;
 		try {
 			c = ds.getConnection();
@@ -198,18 +238,10 @@ public class TransactionManager implements Constants {
 	}
 
 	/**
-	 * Flag to indicate the default Isolation is READ COMMITTED.
-	 * <p>
-	 * This is used to get a performance improvement on query only transactions.
-	 * Perhaps unnecessary depending on the JDBC driver.
-	 * </p>
-	 * <p>
-	 * At read committed isolation level connections only used for queries can
-	 * be closed without requiring a commit or rollback.
-	 * </p>
+	 * Defines the type of behaviour to use when closing a transaction that was used to query data only.
 	 */
-	public boolean isReadCommittedIsolation() {
-		return readCommittedIsolation;
+	public OnQueryOnly getOnQueryOnly() {
+		return onQueryOnly;
 	}
 
 	/**
@@ -335,45 +367,56 @@ public class TransactionManager implements Constants {
 		return tableState.getTableState(tableName);
 	}
 
+
 	/**
 	 * Process a local rolled back transaction.
 	 */
-	public void notifyOfRollback(ServerTransaction transaction, Throwable e) {
+	public void notifyOfRollback(ServerTransaction transaction, Throwable cause) {
 		
-		String msg = "Rollback";
-		if (e != null){
-			msg += " error: "+formatThrowable(e);
-		}
-		
-		transLogger.transactionEnded(transaction, msg);
-		if (debugLevel >= 1){
-			logger.info("Transaction ["+transaction.getId()+"] "+msg);
+		try {
+			String msg = "Rollback";
+			if (cause != null){
+				msg += " error: "+formatThrowable(cause);
+			}
+			
+			transLogger.transactionEnded(transaction, msg);
+			if (debugLevel >= 1){
+				logger.info("Transaction ["+transaction.getId()+"] "+msg);
+			}
+		} catch (Exception ex) {
+			String m = "Potentially Transaction Log incomplete due to error:";
+			logger.log(Level.SEVERE, m, ex);
 		}
 	}
 
 	/**
 	 * Query only transaction in read committed isolation.
 	 */
-	public void notifyOfQueryOnly(boolean onCommit, ServerTransaction transaction, Throwable e) {
+	public void notifyOfQueryOnly(boolean onCommit, ServerTransaction transaction, Throwable cause) {
 		
-		// close the logger if one was created for this transaction
-		String msg;
-		if (onCommit){
-			msg = "Commit queryOnly";
-		
-		} else {
-			msg = "Rollback queryOnly";
-			if (e != null){
-				msg += " error: "+formatThrowable(e);
-			}		
-		}
-		transLogger.transactionEnded(transaction, msg);	
-		
-		if (debugLevel >= 3){
-			logger.info("Transaction ["+transaction.getId()+"] "+msg);
+		try {
+			// close the logger if one was created for this transaction
+			String msg;
+			if (onCommit){
+				msg = "Commit queryOnly";
+			
+			} else {
+				msg = "Rollback queryOnly";
+				if (cause != null){
+					msg += " error: "+formatThrowable(cause);
+				}		
+			}
+			transLogger.transactionEnded(transaction, msg);	
+			
+			if (debugLevel >= 3){
+				logger.info("Transaction ["+transaction.getId()+"] "+msg);
+			}
+		} catch (Exception ex) {
+			String m = "Potentially Transaction Log incomplete due to error:";
+			logger.log(Level.SEVERE, m, ex);
 		}
 	}
-
+		
 	private String formatThrowable(Throwable e){
 		if (e == null){
 			return "";
@@ -403,31 +446,36 @@ public class TransactionManager implements Constants {
 	 */
 	public void notifyOfCommit(ServerTransaction transaction) {
 
-		// close the logger if required
-		if (logAllCommits || transaction.isExplicit()) {
-			transLogger.transactionEnded(transaction, "Commit");
-
-		} else {
-			transLogger.transactionEnded(transaction, null);
-		}
-
-		TransactionEvent event = transaction.getEvent();
-		if (!event.hasModifications()) {
-			// ignore as it has no modifications
-			if (debugLevel >= 3){
-				logger.info("Transaction ["+transaction.getId()+"] commit with no changes");
+		try {
+			// close the logger if required
+			if (logAllCommits || transaction.isExplicit()) {
+				transLogger.transactionEnded(transaction, "Commit");
+	
+			} else {
+				transLogger.transactionEnded(transaction, null);
 			}
-			return;
-		}
-
-		// maintain table state information for cache invalidation
-		tableState.process(event);
-
-		// cluster and Lucene indexing
-		postProcess(event);
-		
-		if (logCommitEvent || debugLevel >= 1){
-			logger.info("Transaction ["+transaction.getId()+"] commit: "+event.toString());
+	
+			TransactionEvent event = transaction.getEvent();
+			if (!event.hasModifications()) {
+				// ignore as it has no modifications
+				if (debugLevel >= 3){
+					logger.info("Transaction ["+transaction.getId()+"] commit with no changes");
+				}
+				return;
+			}
+	
+			// maintain table state information for cache invalidation
+			tableState.process(event);
+	
+			// cluster and Lucene indexing
+			postProcess(event);
+			
+			if (logCommitEvent || debugLevel >= 1){
+				logger.info("Transaction ["+transaction.getId()+"] commit: "+event.toString());
+			}
+		} catch (Exception ex) {
+			String m = "Potentially Transaction Log incomplete due to error:";
+			logger.log(Level.SEVERE, m, ex);
 		}
 	}
 
