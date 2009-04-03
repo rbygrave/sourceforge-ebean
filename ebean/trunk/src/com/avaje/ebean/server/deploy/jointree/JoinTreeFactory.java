@@ -264,6 +264,10 @@ public class JoinTreeFactory {
 				propName, foreignAlias);
 
 		String parentTableAlias = parent.getTableAlias();
+		if (listProp.isManyToMany()){
+			// join to intersection table (not parent)
+			parentTableAlias = listProp.getTableJoin().getLocalTableAlias();
+		}
 		TableJoin tableJoin = listProp.getTableJoin().createWithAlias(parentTableAlias, foreignAlias);
 		
 		JoinNodeList child = new JoinNodeList(parent, tableJoin, forDesc, propName,deployProps, listProp);
