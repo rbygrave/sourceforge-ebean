@@ -139,4 +139,10 @@ public interface BeanCollection<E> extends Cloneable, Serializable {
 	 * used to delete rows from the intersection table of a ManyToMany.
 	 */
 	public Set<E> getModifyRemovals();
+	
+	/**
+	 * Reset the set of additions and deletions.
+	 * This is called after the additions and removals have been processed.
+	 */
+	public void modifyReset();
 }

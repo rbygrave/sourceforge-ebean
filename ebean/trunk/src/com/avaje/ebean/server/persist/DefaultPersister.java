@@ -22,7 +22,6 @@ package com.avaje.ebean.server.persist;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -208,7 +207,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 				if (request.isPersistCascade()) {
 					// save any associated List held beans
 					intercept.setLoaded();
-					saveAssocMany(request, false);
+					saveAssocMany(false, request, false);
 					intercept.setReference();
 				}
 
@@ -275,7 +274,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		if (request.isPersistCascade()) {
 			// save any associated List held beans
-			saveAssocMany(request, true);
+			saveAssocMany(true, request, true);
 		}
 	}
 
@@ -308,7 +307,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		if (request.isPersistCascade()) {
 			// save all the beans in assocMany's after
-			saveAssocMany(request, true);
+			saveAssocMany(false, request, true);
 		}
 	}
 
@@ -358,7 +357,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * bean to the child beans.
 	 * </p>
 	 */
-	private void saveAssocMany(PersistRequest request, boolean includeExportedOnes) {
+	private void saveAssocMany(boolean insertedParent, PersistRequest request, boolean includeExportedOnes) {
 
 		Object parentBean = request.getBean();
 		BeanDescriptor desc = request.getBeanDescriptor();
@@ -392,7 +391,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 				// save the beans that are in the manyToMany
 				saveAssocManyDetails(request, manys[i], false);
 				// create inserts and deletes into the intersection table
-				saveAssocManyIntersection(request, manys[i]);
+				saveAssocManyIntersection(insertedParent, request, manys[i]);
 
 			} else {
 				saveAssocManyDetails(request, manys[i], true);
@@ -473,35 +472,60 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * This is done via MapBeans.
 	 * </p>
 	 */
-	private void saveAssocManyIntersection(PersistRequest request, BeanPropertyAssocMany prop) {
+	private void saveAssocManyIntersection(boolean insertedParent, PersistRequest request, BeanPropertyAssocMany prop) {
 
 		Object parentBean = request.getBean();
 		Object value = prop.getValue(parentBean);
 		if (value == null) {
 			return;
 		}
-		if (value instanceof BeanCollection == false) {
-			// we can't determine the additions and removals
-			String m = "Save cascade on ManyToMany [" + prop.getName() + "].";
-			m += " The collection [" + value.getClass().toString() + "]was not a BeanCollection.";
-			m += " The additions and removals can not be determined and";
-			m += " *NO* inserts or deletes to the intersection table occured.";
-			request.getTransaction().log(m);
-			logger.warning(m);
-			return;
-		}
-
-		BeanCollection<?> manyValue = (BeanCollection<?>) value;
-		Set<?> additions = manyValue.getModifyAdditions();
-		Set<?> deletions = manyValue.getModifyRemovals();
-		if (additions == null && deletions == null) {
-			return;
+		
+		Collection<?> additions = null;
+		Collection<?> deletions = null;
+		
+		if (insertedParent){
+			// if the parent was inserted then everything in the 
+			// list/set/map is treated as an intersection addition  
+			if (value instanceof Map){
+				additions = ((Map<?,?>)value).values();
+			} else if (value instanceof Collection) {
+				additions = (Collection<?>)value;
+			} else {
+				String msg = "Unhandled ManyToMany type "+value.getClass().getName()+" for "+prop.getFullBeanName();
+				throw new PersistenceException(msg);
+			}
+		} else {
+			// parent bean was updated so expecting a BeanCollection 
+			// that listens for additions/deletions 
+			if (value instanceof BeanCollection == false) {
+				// empty collection or map is OK
+				if (value instanceof Collection && ((Collection<?>)value).isEmpty()){
+					return;
+				}
+				if (value instanceof Map && ((Map<?,?>)value).isEmpty()){
+					return;
+				}
+				
+				// we can't determine the additions and removals
+				String m = "Save cascade on ManyToMany [" + prop.getName() + "].";
+				m += " The collection [" + value.getClass().toString() + "]was not a BeanCollection.";
+				m += " The additions and removals can not be determined and";
+				m += " *NO* inserts or deletes to the intersection table occured.";
+				request.getTransaction().log(m);
+				logger.warning(m);
+				return;
+			}
+			BeanCollection<?> manyValue = (BeanCollection<?>) value;
+			additions = manyValue.getModifyAdditions();
+			deletions = manyValue.getModifyRemovals();
+			// reset so the changes are only processed once
+			manyValue.modifyReset();
 		}
 
 		ServerTransaction t = request.getTransaction();
 		t.depth(+1);
 
-		if (additions != null) {
+		if (additions != null && !additions.isEmpty()) {
 			Iterator<?> it = additions.iterator();
 			while (it.hasNext()) {
 				// the object from the 'other' side of the ManyToMany
@@ -518,7 +542,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 				}
 			}
 		}
-		if (deletions != null) {
+		if (deletions != null && !deletions.isEmpty()) {
 			Iterator<?> it = deletions.iterator();
 			while (it.hasNext()) {
 				// the object from the 'other' side of the ManyToMany
