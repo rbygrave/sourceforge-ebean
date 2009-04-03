@@ -359,6 +359,12 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		getModifyHolder().modifyRemoval(bean);
 	}
 
+	public void modifyReset() {
+		if (modifyHolder != null){
+			modifyHolder.reset();
+		}
+	}
+	
 	public Set<E> getModifyAdditions() {
 		if (modifyHolder == null) {
 			return null;

@@ -20,6 +20,8 @@
 package com.avaje.ebean.server.plugin;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
@@ -37,6 +39,8 @@ import com.avaje.ebean.server.lib.util.FactoryHelper;
  */
 public class PluginFactory {
 
+	private static final Logger logger = Logger.getLogger(PluginFactory.class.getName());
+	
 	private static final Class<?>[] CONS_TYPES = {PluginCore.class};
 	
 	private final DbSpecificFactory dbSpecificFactory = new DbSpecificFactory();
@@ -58,26 +62,54 @@ public class PluginFactory {
 		}
 	}
 	
+	/**
+	 * Return the classes that this server is interested in.
+	 * <p>
+	 * The classes include Entities, BeanListeners, BeanControllers, new ScalarTypes etc.
+	 * </p>
+	 */
+	private BootupClasses getBootupClasses(ServerConfiguration serverConfig, ConfigProperties props) {
+		
+		ArrayList<Class<?>> classes = ProtectedMethod.getClasses(serverConfig);
+    	if (classes != null && classes.size() > 0){
+    		// only use the registered classes
+    		return new BootupClasses(classes);
+    	}
+    	
+    	String classNames = props.getProperty("ebean.classes");
+    	classNames = props.getProperty("ebean."+serverConfig.getName()+".classes", classNames);
+    	if (classNames != null){
+    		// a list of specific entities etc in the properties file
+    		classes = new ArrayList<Class<?>>();
+    		String[] split = classNames.split("[,;]");
+    		for (int i = 0; i < split.length; i++) {
+    			String cn = split[i].trim();
+    			if (cn.length() > 0){
+					try {
+						classes.add(Class.forName(cn));
+					} catch (ClassNotFoundException e) {
+						String msg = "Error registering class ["+cn+"] from ["+classNames+"]";
+						logger.log(Level.SEVERE, msg, e);
+					}
+    			}
+			}
+    		return new BootupClasses(classes);
+    	}
+    	
+    	//TODO: Load list of entities etc from persistence.xml
+    	
+		// use the ones found by classPath search
+    	bootupClassSearch.search();
+		return bootupClassSearch.getBootupClasses();
+	}
+	
     /**
      * Create the appropriate DbPlugin.
      */
     public Plugin create(DataSource ds, ServerConfiguration serverConfig, ConfigProperties props) {
         
-    	BootupClasses bootupClasses = null;
-    	
-    	// get the list from the ServerConfiguration
-    	ArrayList<Class<?>> classes = ProtectedMethod.getClasses(serverConfig);
-    	if (classes == null || classes.size() == 0){
-    		// empty list so use the ones found by classPath search
-    		// make sure search has been run
-    		bootupClassSearch.search();
-    		// use the ones found by classPath search
-    		bootupClasses = bootupClassSearch.getBootupClasses();
-    	} else {
-    		// only use the registered classes
-    		bootupClasses = new BootupClasses(classes);
-    	}
-    	
+    	BootupClasses bootupClasses = getBootupClasses(serverConfig, props);
+    	    	
     	PluginProperties properties = createProperties(serverConfig, ds, props, bootupClasses);
     	
     	PluginDbConfig dbConfig = createDbConfig(properties);

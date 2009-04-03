@@ -639,8 +639,10 @@ public class DictionaryInfo implements Serializable {
 			if (rset.next()) {
 				tableInfo = registerTableInfo(tableSearch);
 				if (rset.next()) {
+					String otherTableCat = rset.getString(2);
+					String otherTableName = rset.getString(3);
 					throw new SQLException("Search for 1 table via catalog.schema.tableName " + tableSearch
-							+ " but found multiple matching tables?");
+							+ " but found multiple matching tables? otherTableName["+otherTableCat+"."+otherTableName+"]");
 				}
 			}
 

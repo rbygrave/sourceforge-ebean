@@ -21,7 +21,7 @@ package com.avaje.ebean.collection;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -40,13 +40,18 @@ class ModifyHolder<E> implements Serializable {
 	/**
 	 * Deletions list for manyToMany persistence.
 	 */
-	Set<E> modifyDeletions = new HashSet<E>();
+	Set<E> modifyDeletions = new LinkedHashSet<E>();
 
 	/**
 	 * Additions list for manyToMany persistence.
 	 */
-	Set<E> modifyAdditions = new HashSet<E>();
+	Set<E> modifyAdditions = new LinkedHashSet<E>();
 
+	void reset() {
+		modifyDeletions = new LinkedHashSet<E>();
+		modifyAdditions = new LinkedHashSet<E>();		
+	}
+	
 	/**
 	 * Used by BeanList.addAll() methods.
 	 */

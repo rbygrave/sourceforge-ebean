@@ -379,6 +379,12 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
 	public void modifyRemoval(Object bean) {
 		getModifyHolder().modifyRemoval(bean);
 	}
+	
+	public void modifyReset() {
+		if (modifyHolder != null){
+			modifyHolder.reset();
+		}
+	}
 
 	public Set<E> getModifyAdditions() {
 		if (modifyHolder == null){
