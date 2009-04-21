@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -396,6 +397,7 @@ public final class DefaultTypeManager implements TypeManager {
 				typeMap.put(LocalDate.class, new ScalarTypeJodaLocalDate());				
 				typeMap.put(LocalTime.class, new ScalarTypeJodaLocalTime());				
 				typeMap.put(DateTime.class, new ScalarTypeJodaDateTime());				
+				typeMap.put(DateMidnight.class, new ScalarTypeJodaDateMidnight());				
 			}
 		} catch (ClassNotFoundException e) {
 			String msg = "Joda not in classpath so not registering types";
