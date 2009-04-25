@@ -315,7 +315,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	public void checkRowCount(int rowCount) throws SQLException {
 		if (rowCount != 1) {
 	        String m = Message.msg("persist.conc2", "" + rowCount);
-	        throw new OptimisticLockException(m);
+	        throw new OptimisticLockException(m, null, bean);
 	    }
 	}
 
