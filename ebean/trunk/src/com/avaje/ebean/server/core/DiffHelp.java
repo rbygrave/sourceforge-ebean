@@ -30,6 +30,7 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.util.ValueUtil;
 
 /**
  * Helper to perform a diff given two beans of the same type.
@@ -48,7 +49,7 @@ public class DiffHelp {
 	public Map<String, ValuePair> diffMapBean(MapBean a, MapBean b) {
 
 		if (b == null) {
-				b = (MapBean)a._ebean_getIntercept().getOldValues();
+			b = (MapBean)a._ebean_getIntercept().getOldValues();
 		}
 
 		Map<String, ValuePair> map = new LinkedHashMap<String, ValuePair>();
@@ -63,7 +64,7 @@ public class DiffHelp {
 			String columnName = entry.getKey();
 			Object aval = entry.getValue();
 			Object bval = b.get(columnName);
-			if (isDiffSimple(aval, bval)) {
+			if (!ValueUtil.areEqual(aval, bval)) {
 				map.put(columnName, new ValuePair(aval, bval));
 			}
 		}
@@ -104,9 +105,10 @@ public class DiffHelp {
 		// check the simple properties
 		BeanProperty[] base = desc.propertiesBaseScalar();
 		for (int i = 0; i < base.length; i++) {
+			
 			Object aval = base[i].getValue(a);
 			Object bval = base[i].getValue(b);
-			if (isDiffSimple(aval, bval)) {
+			if (!ValueUtil.areEqual(aval, bval)) {
 				map.put(base[i].getName(), new ValuePair(aval, bval));
 			}
 		}
@@ -151,7 +153,7 @@ public class DiffHelp {
 					for (int j = 0; j < props.length; j++) {
 						Object aEmbPropVal = props[j].getValue(aval);
 						Object bEmbPropVal = props[j].getValue(bval);
-						if (isDiffSimple(aEmbPropVal, bEmbPropVal)) {
+						if (!ValueUtil.areEqual(aEmbPropVal, bEmbPropVal)) {
 
 							// if one prop is different put the
 							// embedded bean in the map
@@ -187,29 +189,13 @@ public class DiffHelp {
 					Object aOneId = oneDesc.getId(aval);
 					Object bOneId = oneDesc.getId(bval);
 
-					if (isDiffSimple(aOneId, bOneId)) {
+					if (!ValueUtil.areEqual(aOneId, bOneId)) {
 						// the ids are different
 						map.put(ones[i].getName(), new ValuePair(aval, bval));
 					}
 				}
 			}
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private boolean isDiffSimple(Object aval, Object bval) {
-
-		if (aval == null) {
-			if (bval == null) {
-				return false;
-			} else {
-				return true;
-			}
-		} else if (bval == null) {
-			return true;
-		}
-		Comparable comp = (Comparable) aval;
-		return (comp.compareTo(bval) != 0);
 	}
 
 	private boolean isBothNull(Object aval, Object bval) {
