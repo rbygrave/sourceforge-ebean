@@ -25,7 +25,8 @@ import java.util.Iterator;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
+import com.avaje.ebean.server.core.PersistRequest.Type;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
@@ -112,9 +113,9 @@ public class TransactionEvent implements Serializable {
 	 * @param type
 	 *            Insert, Update or Delete as per PersistType
 	 */
-	public void add(PersistRequest request, PersistRequest.Type type) {
+	public void add(PersistRequestBean<?> request) {
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		if (desc.getBeanListener() != null) {
 			// a BeanListener is interested
 			if (eventBeans == null) {
@@ -123,6 +124,7 @@ public class TransactionEvent implements Serializable {
 			eventBeans.add(request);
 		}
 		String table = desc.getBaseTable();
+		Type type = request.getType();
 		switch (type) {
 		case INSERT:
 			addInsert(table);

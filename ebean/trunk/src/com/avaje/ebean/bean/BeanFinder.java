@@ -39,7 +39,7 @@ public interface BeanFinder {
     /**
      * Find a bean using its id.
      */
-    public Object find(QueryRequest request);
+    public Object find(QueryRequest<?> request);
 
     /**
      * Return a List, Set or Map for the given find request.
@@ -48,7 +48,7 @@ public interface BeanFinder {
      * get the return type right.
      * </p>
      */
-    public Object findMany(QueryRequest request);
+    public Object findMany(QueryRequest<?> request);
     
     
 

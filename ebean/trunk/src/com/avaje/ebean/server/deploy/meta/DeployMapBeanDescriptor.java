@@ -27,7 +27,7 @@ import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
 /**
  * BeanDecriptor for MapBeans.
  */
-public class DeployMapBeanDescriptor extends DeployBeanDescriptor {
+public class DeployMapBeanDescriptor extends DeployBeanDescriptor<MapBean> {
     
     private float mapLoadFactor = 0.75f;
     

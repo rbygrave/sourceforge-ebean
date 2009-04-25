@@ -58,7 +58,7 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 	public void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
 		
         if (node.isManyJoin()) {
-            BeanPropertyAssocMany manyProp = node.getManyProp();
+            BeanPropertyAssocMany<?> manyProp = node.getManyProp();
             if (manyProp.isManyToMany()) {
             	// add ManyToMany join
                 TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();

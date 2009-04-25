@@ -19,7 +19,7 @@ public class DefaultDeploySqlSelectParser {
 
 	private static final String ORDER_BY = "order by";
 
-	final DeployBeanDescriptor deployDesc;
+	final DeployBeanDescriptor<?> deployDesc;
 
 	final NamingConvention namingConvention;
 
@@ -54,7 +54,7 @@ public class DefaultDeploySqlSelectParser {
 	private int havingExprPos = -1;
 
 	public DefaultDeploySqlSelectParser(NamingConvention namingConvention,
-			DeployBeanDescriptor deployDesc, Meta sqlSelectMeta) {
+			DeployBeanDescriptor<?> deployDesc, Meta sqlSelectMeta) {
 
 		this.namingConvention = namingConvention;
 		this.deployDesc = deployDesc;

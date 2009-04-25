@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import com.avaje.ebean.bean.BeanController;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.TransactionContextClass;
@@ -45,7 +44,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 
 	private static final SqlTreeNode[] NO_CHILDREN = new SqlTreeNode[0];
 
-	final BeanDescriptor desc;
+	final BeanDescriptor<?> desc;
 		
 	final IdBinder idBinder;
 
@@ -84,7 +83,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	
 	final String tableAlias;
 
-	final BeanPropertyAssocOne nodeBeanProp;
+	final BeanPropertyAssocOne<?> nodeBeanProp;
 
 	final TableJoin[] tableJoins;
 
@@ -141,7 +140,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		EntityBean contextBean = null;
 		
 		Class<?> localType;
-		BeanDescriptor localDesc;
+		BeanDescriptor<?> localDesc;
 		IdBinder localIdBinder;
 		EntityBean localBean;
 		if (inheritInfo != null){
@@ -243,10 +242,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			
 			createListProxies(localDesc, ctx, localBean, ctx.getManyProperty());
 
-			BeanController controller = localDesc.getBeanController();
-			if (controller != null){
-				controller.postLoad(localBean, includedProps);
-			}
+			localDesc.postLoad(localBean, includedProps);
 
 			EntityBeanIntercept ebi = localBean._ebean_getIntercept();
 			ebi.setLoaded();
@@ -279,11 +275,11 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 * Create lazy loading proxies for the Many's except for the one that is
 	 * included in the actual query.
 	 */
-	private void createListProxies(BeanDescriptor localDesc, DbReadContext ctx, EntityBean localBean, 
-			BeanPropertyAssocMany fetchedMany) {
+	private void createListProxies(BeanDescriptor<?> localDesc, DbReadContext ctx, EntityBean localBean, 
+			BeanPropertyAssocMany<?> fetchedMany) {
 
 		// load the List/Set/Map proxy objects (deferred fetching of lists)
-		BeanPropertyAssocMany[] manys = localDesc.propertiesMany();
+		BeanPropertyAssocMany<?>[] manys = localDesc.propertiesMany();
 		for (int i = 0; i < manys.length; i++) {
 
 			if (fetchedMany != null && fetchedMany.equals(manys[i])) {
@@ -426,7 +422,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	public void appendFromBaseTable(DbSqlContext ctx, boolean forceOuterJoin) {
 		
         if (node.isManyJoin()) {
-            BeanPropertyAssocMany manyProp = node.getManyProp();
+            BeanPropertyAssocMany<?> manyProp = node.getManyProp();
             if (manyProp.isManyToMany()) {
             	// add ManyToMany join
                 TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();

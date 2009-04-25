@@ -3,7 +3,7 @@ package com.avaje.ebean.expression;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
@@ -180,7 +180,7 @@ public class ExampleExpression implements Expression {
 	/**
 	 * Return a hash for query plan identification.
 	 */
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 
 		// this is always called once, and always called before
 		// addSql() and addBindValues() methods
@@ -210,11 +210,11 @@ public class ExampleExpression implements Expression {
 	/**
 	 * Build the List of expressions.
 	 */
-	private ArrayList<Expression> buildExpressions(QueryRequest request) {
+	private ArrayList<Expression> buildExpressions(BeanQueryRequest<?> request) {
 
 		ArrayList<Expression> list = new ArrayList<Expression>();
 
-		BeanDescriptor beanDescriptor = request.getBeanDescriptor();
+		BeanDescriptor<?> beanDescriptor = request.getBeanDescriptor();
 
 		Iterator<BeanProperty> propIter = beanDescriptor.propertiesAll();
 

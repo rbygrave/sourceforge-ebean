@@ -36,9 +36,9 @@ public class FactoryAssocOnes {
 	/**
 	 * Add foreign key columns from associated one beans.
 	 */
-	public List<Bindable> create(List<Bindable> list, BeanDescriptor desc, int mode) {
+	public List<Bindable> create(List<Bindable> list, BeanDescriptor<?> desc, int mode) {
 
-		BeanPropertyAssocOne[] ones = desc.propertiesOneImported();
+		BeanPropertyAssocOne<?>[] ones = desc.propertiesOneImported();
 
 		for (int i = 0; i < ones.length; i++) {
 			if (ones[i].isImportedPrimaryKey()){

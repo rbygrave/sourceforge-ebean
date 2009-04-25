@@ -8,18 +8,18 @@ import java.util.Set;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.expression.Expr;
 import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.ExpressionRequest;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.expression.Junction;
-import com.avaje.ebean.server.core.QueryRequest;
 
 /**
  * Default implementation of ExpressionList.
  */
-public final class DefaultExpressionList<T> implements InternalExpressionList<T> {
+public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 
 	private static final long serialVersionUID = -6992345500247035947L;
 
@@ -149,7 +149,7 @@ public final class DefaultExpressionList<T> implements InternalExpressionList<T>
 	/**
 	 * Calculate a hash based on the expressions but excluding the actual bind values.
 	 */
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
 			Expression expression = list.get(i);

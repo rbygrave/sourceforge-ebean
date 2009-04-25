@@ -51,7 +51,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
 	/**
 	 * Create with the deploy Info.
 	 */
-    public AnnotationAssocOnes(DeployBeanInfo info) {
+    public AnnotationAssocOnes(DeployBeanInfo<?> info) {
         super(info);
     }
     
@@ -64,13 +64,13 @@ public class AnnotationAssocOnes extends AnnotationParser {
     	while (it.hasNext()) {
     		DeployBeanProperty prop = (DeployBeanProperty) it.next();
 			if (prop instanceof DeployBeanPropertyAssocOne){
-				readAssocOne((DeployBeanPropertyAssocOne)prop); 
+				readAssocOne((DeployBeanPropertyAssocOne<?>)prop); 
 			}
 		}
     }
 
 
-    private void readAssocOne(DeployBeanPropertyAssocOne prop) {
+    private void readAssocOne(DeployBeanPropertyAssocOne<?> prop) {
         
         ManyToOne manyToOne = (ManyToOne) get(prop, ManyToOne.class);
         if (manyToOne != null) {
@@ -151,7 +151,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
     
     private void readManyToOne(ManyToOne propAnn, DeployBeanProperty prop) {
         
-    	DeployBeanPropertyAssocOne beanProp = (DeployBeanPropertyAssocOne) prop;
+    	DeployBeanPropertyAssocOne<?> beanProp = (DeployBeanPropertyAssocOne<?>) prop;
 
         setCascadeTypes(propAnn.cascade(), beanProp.getCascadeInfo());
 
@@ -165,7 +165,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
         info.setBeanJoinAlias(beanProp, propAnn.optional());
     }
 
-    private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne prop) {
+    private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne<?> prop) {
         
     	prop.setOneToOne(true);
         setCascadeTypes(propAnn.cascade(), prop.getCascadeInfo());
@@ -180,7 +180,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
         info.setBeanJoinAlias(prop, propAnn.optional());
     }
     
-    private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne prop) {
+    private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
     	prop.setEmbedded(true);
 

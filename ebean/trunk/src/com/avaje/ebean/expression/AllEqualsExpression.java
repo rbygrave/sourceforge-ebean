@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 class AllEqualsExpression implements Expression {
 
@@ -93,7 +93,7 @@ class AllEqualsExpression implements Expression {
 		return hc;
 	}
 	
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		return queryAutoFetchHash();
 	}
 	

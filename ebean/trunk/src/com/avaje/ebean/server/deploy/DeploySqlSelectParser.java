@@ -24,13 +24,13 @@ public class DeploySqlSelectParser {
 		this.namingConvention = dbConfig.getNamingConvention();
 	}
 
-	public static Meta createMeta(DeployBeanDescriptor desc, SqlSelect sqlSelect) {
+	public static Meta createMeta(DeployBeanDescriptor<?> desc, SqlSelect sqlSelect) {
 		Meta meta = Meta.create(sqlSelect);
 		handleExtend(desc, meta);
 		return meta;
 	}
 
-	public static Meta createMeta(DeployBeanDescriptor desc, String name, String extend, String query, boolean debug,
+	public static Meta createMeta(DeployBeanDescriptor<?> desc, String name, String extend, String query, boolean debug,
 			String where, String having, String columnMapping) {
 
 		Meta meta = Meta.create(name, extend, query, debug, where, having, columnMapping);
@@ -40,14 +40,12 @@ public class DeploySqlSelectParser {
 		
 	}
 	
-	public DeploySqlSelect parse(DeployBeanDescriptor deployDesc, Meta sqlSelectMeta) {
+	public DeploySqlSelect parse(DeployBeanDescriptor<?> deployDesc, Meta sqlSelectMeta) {
 
-		DefaultDeploySqlSelectParser p = new DefaultDeploySqlSelectParser(namingConvention,
-				deployDesc, sqlSelectMeta);
-		return p.parse();
+		return new DefaultDeploySqlSelectParser(namingConvention, deployDesc, sqlSelectMeta).parse();
 	}
 
-	private static void handleExtend(DeployBeanDescriptor deployDesc, Meta sqlSelectMeta) {
+	private static void handleExtend(DeployBeanDescriptor<?> deployDesc, Meta sqlSelectMeta) {
 		
 		String extend = sqlSelectMeta.extend;
 		if (extend != null){

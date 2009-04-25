@@ -1,6 +1,6 @@
 package com.avaje.ebean.expression;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 
 /**
@@ -71,7 +71,7 @@ abstract class LogicExpression implements Expression {
 		return hc;
 	}
 	
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		int hc = LogicExpression.class.getName().hashCode() + joinType.hashCode();
 		hc = hc * 31 + expOne.queryPlanHash(request);
 		hc = hc * 31 + expTwo.queryPlanHash(request);

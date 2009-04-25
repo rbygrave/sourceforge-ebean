@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 
 /**
@@ -55,7 +56,7 @@ public class BatchedBeanControl {
 	/**
 	 * Add the request to the batch.
 	 */
-	public void add(PersistRequest request) {
+	public void add(PersistRequestBean<?> request) {
 		String typeDescription = request.getFullName();
 		BatchedBeanHolder beanHolder = getBeanHolder(typeDescription);
 

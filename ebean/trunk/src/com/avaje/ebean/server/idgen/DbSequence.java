@@ -100,7 +100,7 @@ public class DbSequence implements IdGenerator {
 	 * Returns the next sequence value deriving the sequence name from the
 	 * BeanDescriptor deployment information.
 	 */
-	public Object nextId(BeanDescriptor desc) {
+	public Object nextId(BeanDescriptor<?> desc) {
 		String sql = getNextValSql(desc);
 		return getResult(sql);
 	}
@@ -109,7 +109,7 @@ public class DbSequence implements IdGenerator {
 	 * Derive the db sequence name by adding a prefix and suffix to the base
 	 * table name.
 	 */
-	protected String getNextValSql(BeanDescriptor desc) {
+	protected String getNextValSql(BeanDescriptor<?> desc) {
 
 		return selectClause + desc.getSequenceNextVal() + fromClause;
 	}

@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
@@ -39,7 +39,7 @@ public class BindableIdMap implements BindableId {
 
 	private final MatchedImportedProperty[] matches;
 
-	public BindableIdMap(BeanProperty[] uids, BeanDescriptor desc) {
+	public BindableIdMap(BeanProperty[] uids, BeanDescriptor<?> desc) {
 		this.uids = uids;
 		matches = MatchedImportedProperty.build(uids, desc);
 	}
@@ -48,10 +48,18 @@ public class BindableIdMap implements BindableId {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return Arrays.toString(uids);
 	}
 
+	/**
+	 * Does nothing for BindableId. 
+	 */
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		// do nothing (id not changing)
+	}
+	
 	/**
 	 * Id values are never null in where clause.
 	 */
@@ -82,7 +90,7 @@ public class BindableIdMap implements BindableId {
 		bindRequest.setIdValue(mapId);
 	}
 
-	public boolean deriveConcatenatedId(PersistRequest persist) {
+	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
 
 		if (matches == null) {
 			String m = "Matches for the concatinated key columns where not found?"

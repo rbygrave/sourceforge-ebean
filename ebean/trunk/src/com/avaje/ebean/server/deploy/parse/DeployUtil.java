@@ -165,7 +165,7 @@ public class DeployUtil {
 		return dictionaryInfo;
 	}
 	
-	public void createProperties(DeployBeanDescriptor desc) {
+	public void createProperties(DeployBeanDescriptor<?> desc) {
 		createProperties.createProperties(desc);
 	}
 	
@@ -184,7 +184,7 @@ public class DeployUtil {
 	/**
 	 * Parse and return the DeploySqlSelect.
 	 */
-	public DeploySqlSelect parseSqlSelect(DeployBeanDescriptor deployDesc, SqlSelect sqlSelect) {
+	public DeploySqlSelect parseSqlSelect(DeployBeanDescriptor<?> deployDesc, SqlSelect sqlSelect) {
 		
 		
 		Meta meta = DeploySqlSelectParser.createMeta(deployDesc, sqlSelect);
@@ -249,8 +249,8 @@ public class DeployUtil {
 	/**
 	 * Define any undefined joins using database meta data.
 	 */
-	public void defineJoins(DeployBeanInfo info) {
-		DeployBeanDescriptor desc = info.getDescriptor();
+	public void defineJoins(DeployBeanInfo<?> info) {
+		DeployBeanDescriptor<?> desc = info.getDescriptor();
 		if (desc.getBaseTable() != null) {
 			// dynamically define any missing join information using
 			// foreign key information from the Database
@@ -260,7 +260,7 @@ public class DeployUtil {
 		}
 	}
 
-	public void defineJoinDynamically(DeployBeanDescriptor desc, DeployBeanPropertyAssocOne propBean)
+	public void defineJoinDynamically(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssocOne<?> propBean)
 			throws MissingTableException {
 		
 		dynamicJoins.defineJoinDynamically(desc, propBean);

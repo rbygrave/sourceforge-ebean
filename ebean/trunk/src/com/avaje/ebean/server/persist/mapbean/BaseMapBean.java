@@ -29,7 +29,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.MapBean;
 import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.persist.BatchPostExecute;
@@ -50,7 +50,7 @@ public abstract class BaseMapBean {
 	 */
 	boolean usingGeneratedKeys;
 
-	final PersistRequest request;
+	final PersistRequestBean<?> request;
 
 	final ServerTransaction transaction;
 	
@@ -58,7 +58,7 @@ public abstract class BaseMapBean {
 
 	final MapBean mapBean;
 
-	final BeanDescriptor desc;
+	final BeanDescriptor<?> desc;
 	
 	/**
 	 * The log of binding information.
@@ -85,7 +85,7 @@ public abstract class BaseMapBean {
 	 */
 	private final int logLevel;
 	
-	public BaseMapBean(Binder binder, PersistRequest request) {
+	public BaseMapBean(Binder binder, PersistRequestBean<?> request) {
 		this.binder = binder;
 		this.bindValues = new BindValues();
 		this.request = request;

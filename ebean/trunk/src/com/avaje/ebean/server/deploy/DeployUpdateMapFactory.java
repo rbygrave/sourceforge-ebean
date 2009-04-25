@@ -21,7 +21,7 @@ public class DeployUpdateMapFactory {
 	 * This includes the dbWrite scalar properties and imported foreign key properties.
 	 * </p>
 	 */
-	public static Map<String,String> build(BeanDescriptor descriptor) {
+	public static Map<String,String> build(BeanDescriptor<?> descriptor) {
 		
 		Map<String,String> deployMap = new HashMap<String,String>();
 		
@@ -40,8 +40,8 @@ public class DeployUpdateMapFactory {
 			}
 		}
 		
-		BeanPropertyAssocOne[] oneImported = descriptor.propertiesOneImported();
-		for (BeanPropertyAssocOne assocOne : oneImported) {
+		BeanPropertyAssocOne<?>[] oneImported = descriptor.propertiesOneImported();
+		for (BeanPropertyAssocOne<?> assocOne : oneImported) {
 			
 			ImportedId importedId = assocOne.getImportedId();
 			if (importedId == null){

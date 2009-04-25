@@ -33,15 +33,15 @@ public class JoinNodeBean extends JoinNode {
 	/**
 	 * The BeanPropertyAssocOne for this node.
 	 */
-	final BeanPropertyAssocOne beanProperty;
+	final BeanPropertyAssocOne<?> beanProperty;
 	
 	final String extraWhere;
 	
 	/**
 	 * Create for a given assoc many property.
 	 */
-	public JoinNodeBean(JoinNode parent, TableJoin tableJoin, BeanDescriptor desc,
-			String propertyPrefix,DeployPropertyRequest deployPropertyRequest, BeanPropertyAssocOne beanProp) {
+	public JoinNodeBean(JoinNode parent, TableJoin tableJoin, BeanDescriptor<?> desc,
+			String propertyPrefix,DeployPropertyRequest deployPropertyRequest, BeanPropertyAssocOne<?> beanProp) {
 
 		super(Type.BEAN, beanProp.getName(), parent, tableJoin, desc, propertyPrefix, deployPropertyRequest);
 
@@ -70,12 +70,12 @@ public class JoinNodeBean extends JoinNode {
 	 * Return the AssocOne BeanProperty.
 	 */
 	@Override
-	public BeanPropertyAssocOne getBeanProp() {
+	public BeanPropertyAssocOne<?> getBeanProp() {
 		return beanProperty;
 	}
 	
 	@Override
-	public BeanPropertyAssocMany getManyProp() {
+	public BeanPropertyAssocMany<?> getManyProp() {
 		throw new RuntimeException("Error?");
 	}
 

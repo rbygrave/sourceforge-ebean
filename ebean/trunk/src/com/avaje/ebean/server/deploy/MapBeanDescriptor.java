@@ -30,7 +30,7 @@ import com.avaje.ebean.server.type.TypeManager;
 /**
  * BeanDecriptor for MapBeans.
  */
-public class MapBeanDescriptor extends BeanDescriptor {
+public class MapBeanDescriptor extends BeanDescriptor<MapBean> {
     
     private final String derivedIdPropName;
     

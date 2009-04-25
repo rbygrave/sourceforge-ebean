@@ -28,7 +28,7 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
  */
 public class JoinTreeRequest {
 
-	BeanDescriptor descriptor;
+	BeanDescriptor<?> descriptor;
 
 	HashSet<Class<?>> treeTypes = new HashSet<Class<?>>();
 
@@ -41,7 +41,7 @@ public class JoinTreeRequest {
 	/**
 	 * Create a Request to create a JoinTree.
 	 */
-	public JoinTreeRequest(BeanDescriptor descriptor) {
+	public JoinTreeRequest(BeanDescriptor<?> descriptor) {
 		this.descriptor = descriptor;
 		this.rootType = descriptor.getBeanType();
 	}
@@ -49,7 +49,7 @@ public class JoinTreeRequest {
 	/**
 	 * Return the BeanDescriptor for the root node.
 	 */
-	public BeanDescriptor getBeanDescriptor() {
+	public BeanDescriptor<?> getBeanDescriptor() {
 		return descriptor;
 	}
 

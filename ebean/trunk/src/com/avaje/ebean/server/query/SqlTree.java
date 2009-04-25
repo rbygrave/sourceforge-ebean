@@ -33,7 +33,7 @@ public class SqlTree {
     /**
      * Property if resultSet contains master and detail rows.
      */
-    BeanPropertyAssocMany manyProperty;
+    BeanPropertyAssocMany<?> manyProperty;
 
     Set<String> includes;
 
@@ -75,7 +75,7 @@ public class SqlTree {
     /**
      * Set the manyProperty used for this query.
      */
-	public void setManyProperty(BeanPropertyAssocMany manyProperty) {
+	public void setManyProperty(BeanPropertyAssocMany<?> manyProperty) {
 		this.manyProperty = manyProperty;
 	}
 
@@ -142,7 +142,7 @@ public class SqlTree {
      * Return the property that is associated with the many. There can only be
      * one per SqlSelect. This can be null.
      */
-    public BeanPropertyAssocMany getManyProperty() {
+    public BeanPropertyAssocMany<?> getManyProperty() {
         return manyProperty;
     }
 

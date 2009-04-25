@@ -36,7 +36,7 @@ public class CQueryPredicates {
 
 	final Binder binder;
 
-	final QueryRequest request;
+	final QueryRequest<?> request;
 
 	final OrmQuery<?> query;
 
@@ -118,7 +118,7 @@ public class CQueryPredicates {
 
 	DeployPropertyParser deployParser;
 
-	public CQueryPredicates(Binder binder, QueryRequest request, DeployPropertyParser deployParser) {
+	public CQueryPredicates(Binder binder, QueryRequest<?> request, DeployPropertyParser deployParser) {
 		this.binder = binder;
 		this.request = request;
 		this.query = request.getQuery();
@@ -328,7 +328,7 @@ public class CQueryPredicates {
 	 * There is a many property so we need to make sure the ordering is
 	 * appropriate.
 	 */
-	private String deriveOrderByWithMany(BeanPropertyAssocMany manyProp) {
+	private String deriveOrderByWithMany(BeanPropertyAssocMany<?> manyProp) {
 
 		if (manyProp == null) {
 			return query.getOrderBy();
@@ -336,7 +336,7 @@ public class CQueryPredicates {
 
 		String orderBy = query.getOrderBy();
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		String orderById = desc.getDefaultOrderBy();
 		
 		if (orderBy == null) {

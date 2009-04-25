@@ -18,11 +18,11 @@ public final class IdBinderEmbedded implements IdBinder {
 	
 	String idBindSql;
 	
-	BeanDescriptor idDesc;
+	BeanDescriptor<?> idDesc;
 	
-	final BeanPropertyAssocOne embIdProperty;
+	final BeanPropertyAssocOne<?> embIdProperty;
 	
-	public IdBinderEmbedded(BeanPropertyAssocOne embIdProperty) {
+	public IdBinderEmbedded(BeanPropertyAssocOne<?> embIdProperty) {
 
 		this.embIdProperty = embIdProperty;
 	}

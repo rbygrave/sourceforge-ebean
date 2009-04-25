@@ -20,13 +20,10 @@
 package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
-import java.util.Set;
 
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
 
 /**
@@ -47,17 +44,14 @@ public final class DeleteMeta {
 
 	private final String tableName;
 
-	private final BeanDescriptor desc;
-
-	public DeleteMeta(BeanDescriptor desc, Bindable id, Bindable version, Bindable all) {
-		this.desc = desc;
+	public DeleteMeta(BeanDescriptor<?> desc, Bindable id, Bindable version, Bindable all) {
 		this.tableName = desc.getBaseTable();
 		this.id = id;
 		this.version = version;
 		this.all = all;
 
-		sqlNone = genSql(ConcurrencyMode.NONE, null, null);
-		sqlVersion = genSql(ConcurrencyMode.VERSION, null, null);
+		sqlNone = genSql(ConcurrencyMode.NONE);
+		sqlVersion = genSql(ConcurrencyMode.VERSION);
 	}
 
 	/**
@@ -70,7 +64,7 @@ public final class DeleteMeta {
 	/**
 	 * Bind the request based on the concurrency mode.
 	 */
-	public void bind(PersistRequest persist, DmlHandler bind)
+	public void bind(PersistRequestBean<?> persist, DmlHandler bind)
 			throws SQLException {
 
 		Object bean = persist.getBean();
@@ -91,28 +85,10 @@ public final class DeleteMeta {
 	/**
 	 * get or generate the sql based on the concurrency mode.
 	 */
-	public String getSql(PersistRequest request) throws SQLException {
+	public String getSql(PersistRequestBean<?> request) throws SQLException {
 
-		EntityBeanIntercept ebi = request.getEntityBeanIntercept();
-		if (ebi != null) {
-			Set<String> loadedProps = ebi.getLoadedProps();
-			if (loadedProps != null){
-				// 'partial bean' deletion...
-				// determine the concurrency mode
-				int mode = ConcurrencyMode.ALL;
-				BeanProperty prop = desc.firstVersionProperty();
-				if (prop != null && loadedProps.contains(prop.getName())){
-					mode = ConcurrencyMode.VERSION;
-				}
-				// generate SQL dynamically depending on the
-				// loadedProps
-				request.setConcurrencyMode(mode);
-				return genSql(mode, loadedProps, request.getOldValues());
-			}
-		}
+		int mode = request.determineConcurrencyMode();
 		
-		// 'full bean' deletion
-		int mode = request.getConcurrencyMode();
 		switch (mode) {
 		case ConcurrencyMode.NONE:
 			return sqlNone;
@@ -122,18 +98,18 @@ public final class DeleteMeta {
 			
 		case ConcurrencyMode.ALL:
 			Object oldValues = request.getOldValues();
-			return genDynamicWhere(oldValues, null);
+			return genDynamicWhere(oldValues);
 
 		default:
 			throw new RuntimeException("Invalid mode " + mode);
 		}
 	}
 
-	private String genSql(int conMode, Set<String> loadedProps, Object oldBean) {
+	private String genSql(int conMode) {
 
 		// delete ... where bcol=? and bc1=? and bc2 is null and ...
 
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps);
+		GenerateDmlRequest request = new GenerateDmlRequest();
 				
 		request.append("delete from ").append(tableName);
 		request.append(" where ");
@@ -148,8 +124,7 @@ public final class DeleteMeta {
 			version.dmlAppend(request, false);
 
 		} else if (conMode == ConcurrencyMode.ALL) {
-			//request.setWhereMode();
-			all.dmlWhere(request, true, oldBean);
+			throw new RuntimeException("Never called for ConcurrencyMode.ALL");
 		}
 
 		return request.toString();
@@ -159,14 +134,13 @@ public final class DeleteMeta {
 	 * Generate the sql dynamically for where using IS NULL for binding null
 	 * values.
 	 */
-	private String genDynamicWhere(Object oldBean, Set<String> loadedProps) throws SQLException {
+	private String genDynamicWhere(Object oldBean) throws SQLException {
 
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps);
+		GenerateDmlRequest request = new GenerateDmlRequest(null, oldBean);
 
-		
 		request.append(sqlNone);
 
 		request.setWhereMode();

@@ -32,7 +32,7 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 public interface Persister {
 
 
-	public Object nextId(BeanDescriptor desc);
+	public Object nextId(BeanDescriptor<?> desc);
 	
     /**
      * Insert or update the bean depending on its state.

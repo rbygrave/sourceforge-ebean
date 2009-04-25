@@ -186,10 +186,11 @@ public class DeployBeanProperty {
 	int dbColumnDigits;
 	int dbColumnPrecision;
 
-	final DeployBeanDescriptor desc;
+	final DeployBeanDescriptor<?> desc;
 
-	public DeployBeanProperty(DeployBeanDescriptor desc) {
+	public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType) {
 		this.desc = desc;
+		this.propertyType = propertyType;
 	}
 
 	/**
@@ -602,12 +603,12 @@ public class DeployBeanProperty {
 		return propertyType;
 	}
 
-	/**
-	 * Set the property type.
-	 */
-	public void setPropertyType(Class<?> propertyType) {
-		this.propertyType = propertyType;
-	}
+//	/**
+//	 * Set the property type.
+//	 */
+//	public void setPropertyType(Class<?> propertyType) {
+//		this.propertyType = propertyType;
+//	}
 
 	/**
 	 * Return true if this is included in the unique id.

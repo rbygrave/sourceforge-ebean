@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.persist.mapbean;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.persist.BeanPersister;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
@@ -55,7 +55,7 @@ public class MapBeanPersister implements BeanPersister {
 	/**
 	 * execute delete using the MapBean in the request.
 	 */
-	public void delete(PersistRequest request) {
+	public void delete(PersistRequestBean<?> request) {
 		DeleteMapBean delete = new DeleteMapBean(binder, request);
 		delete.execute();
 	}
@@ -63,7 +63,7 @@ public class MapBeanPersister implements BeanPersister {
 	/**
 	 * execute update using the MapBean in the request.
 	 */
-	public void update(PersistRequest request) {
+	public void update(PersistRequestBean<?> request) {
 		UpdateMapBean update = new UpdateMapBean(binder, request);
 		update.execute();
 	}
@@ -71,7 +71,7 @@ public class MapBeanPersister implements BeanPersister {
 	/**
 	 * execute insert using the MapBean in the request.
 	 */
-	public void insert(PersistRequest request) {
+	public void insert(PersistRequestBean<?> request) {
 
 		InsertMapBean insert = new InsertMapBean(binder, request, genKeysSupport);
 		insert.execute();

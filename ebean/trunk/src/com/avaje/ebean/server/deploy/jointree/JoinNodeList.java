@@ -30,15 +30,15 @@ import com.avaje.ebean.server.deploy.jointree.DeployPropertyFactory.DeployProper
  */
 public class JoinNodeList extends JoinNode {
 
-	final BeanPropertyAssocMany manyProperty;
+	final BeanPropertyAssocMany<?> manyProperty;
 	
 	final String extraWhere;
 	
 	/**
 	 * Create for a given assoc many property.
 	 */
-	public JoinNodeList(JoinNode parent, TableJoin tableJoin, BeanDescriptor desc,
-			String propertyPrefix, DeployPropertyRequest deployPropertyRequest, BeanPropertyAssocMany listProp) {
+	public JoinNodeList(JoinNode parent, TableJoin tableJoin, BeanDescriptor<?> desc,
+			String propertyPrefix, DeployPropertyRequest deployPropertyRequest, BeanPropertyAssocMany<?> listProp) {
 
 		super(Type.LIST, listProp.getName(), parent, tableJoin, desc, propertyPrefix, deployPropertyRequest);
 		this.manyProperty = listProp;
@@ -63,12 +63,12 @@ public class JoinNodeList extends JoinNode {
 	 * Return the AssocMany BeanProperty.
 	 */
 	@Override
-	public BeanPropertyAssocMany getManyProp() {
+	public BeanPropertyAssocMany<?> getManyProp() {
 		return manyProperty;
 	}
 	
 	@Override
-	public BeanPropertyAssocOne getBeanProp() {
+	public BeanPropertyAssocOne<?> getBeanProp() {
 		return null;
 	}
 	

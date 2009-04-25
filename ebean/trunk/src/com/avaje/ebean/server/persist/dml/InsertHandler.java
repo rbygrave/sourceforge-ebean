@@ -27,7 +27,7 @@ import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.persist.DmlUtil;
@@ -68,7 +68,7 @@ public class InsertHandler extends DmlHandler {
 	/**
 	 * Create to handle the insert execution.
 	 */
-	public InsertHandler(PersistRequest persist, InsertMeta meta) {
+	public InsertHandler(PersistRequestBean<?> persist, InsertMeta meta) {
 		super(persist);
 		this.meta = meta;
 		this.concatinatedKey = meta.isConcatinatedKey();
@@ -79,7 +79,7 @@ public class InsertHandler extends DmlHandler {
 	 */
 	public void bind() throws SQLException {
 
-		BeanDescriptor desc = persistRequest.getBeanDescriptor();
+		BeanDescriptor<?> desc = persistRequest.getBeanDescriptor();
 		Object bean = persistRequest.getBean();
 
 		Object idValue = desc.getId(bean);

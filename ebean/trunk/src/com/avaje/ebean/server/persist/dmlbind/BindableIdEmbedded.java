@@ -24,7 +24,7 @@ import java.util.Arrays;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -35,13 +35,13 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableIdEmbedded implements BindableId {
 
-	private final BeanPropertyAssocOne embId;
+	private final BeanPropertyAssocOne<?> embId;
 
 	private final BeanProperty[] props;
 
 	private final MatchedImportedProperty[] matches;
 
-	public BindableIdEmbedded(BeanPropertyAssocOne embId, BeanDescriptor desc) {
+	public BindableIdEmbedded(BeanPropertyAssocOne<?> embId, BeanDescriptor<?> desc) {
 		this.embId = embId;
 		this.props = embId.getTargetDescriptor().propertiesBaseScalar();
 		matches = MatchedImportedProperty.build(props, desc);		
@@ -51,8 +51,16 @@ public class BindableIdEmbedded implements BindableId {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return embId + " props:" + Arrays.toString(props);
+	}
+
+	/**
+	 * Does nothing for BindableId. 
+	 */
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		// do nothing (id not changing)
 	}
 
 	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
@@ -91,7 +99,7 @@ public class BindableIdEmbedded implements BindableId {
 		}
 	}
 	
-	public boolean deriveConcatenatedId(PersistRequest persist) {
+	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
 
 		if (matches == null) {
 			String m = "Matches for the concatinated key columns where not found?"

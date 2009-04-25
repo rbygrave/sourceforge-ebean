@@ -56,7 +56,7 @@ public class TableIdGen implements IdGenerator {
     /**
      * Get the next Id for a given bean type.
      */
-    public Object nextId(BeanDescriptor beanType) {
+    public Object nextId(BeanDescriptor<?> beanType) {
         
         String tableName = beanType.getBaseTable();       
         return nextId(tableName);

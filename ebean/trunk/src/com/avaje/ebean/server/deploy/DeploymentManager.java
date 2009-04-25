@@ -118,7 +118,7 @@ public class DeploymentManager implements BeanDescriptorOwner {
 	/**
 	 * Return an Iterator of the BeanDescriptors.
 	 */
-	public Iterator<BeanDescriptor> descriptors() {
+	public Iterator<BeanDescriptor<?>> descriptors() {
 		return beanDescCache.descriptors();
 	}
 
@@ -311,7 +311,7 @@ public class DeploymentManager implements BeanDescriptorOwner {
 	/**
 	 * Return the BeanManager for a given table.
 	 */
-	public BeanManager getMapBeanManager(String tableName) {
+	public BeanManager<?> getMapBeanManager(String tableName) {
 		if (tableName == null) {
 			throw new NullPointerException("tableName is null?");
 		}
@@ -321,15 +321,15 @@ public class DeploymentManager implements BeanDescriptorOwner {
 	/**
 	 * Get the BeanDescriptor for a bean.
 	 */
-	public BeanDescriptor getBeanDescriptor(Class<?> beanClz) {
+	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType) {
 
-		return beanDescCache.get(beanClz);
+		return beanDescCache.get(entityType);
 	}
 
 	/**
 	 * Get the BeanDescriptor for a given bean class name.
 	 */
-	public BeanDescriptor getBeanDescriptor(String beanClzName) {
+	public BeanDescriptor<?> getBeanDescriptor(String beanClzName) {
 
 		return beanDescCache.get(beanClzName);
 	}
@@ -337,15 +337,16 @@ public class DeploymentManager implements BeanDescriptorOwner {
 	/**
 	 * Get the BeanManager for a bean.
 	 */
-	public BeanManager getBeanManager(Class<?> beanClz) {
+	public <T> BeanManager<T> getBeanManager(Class<T> entityType) {
 
-		return getBeanManager(beanClz.getName());
+		return beanDescCache.getBeanManager(entityType);
+		//return (BeanManager<T>)getBeanManager(beanClz.getName());
 	}
 
 	/**
 	 * Get the BeanDescriptor given a bean class name.
 	 */
-	public BeanManager getBeanManager(String beanClassName) {
+	public BeanManager<?> getBeanManager(String beanClassName) {
 
 		return beanDescCache.getBeanManager(beanClassName);
 	}

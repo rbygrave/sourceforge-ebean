@@ -20,9 +20,11 @@
 package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
+import java.util.Set;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.server.deploy.BeanProperty;
 
 /**
  * Update bean handler.
@@ -32,7 +34,9 @@ public class UpdateHandler extends DmlHandler {
 
 	private final UpdateMeta meta;
 
-	public UpdateHandler(PersistRequest persist, UpdateMeta meta) {
+	private Set<String> updatedProperties;
+	
+	public UpdateHandler(PersistRequestBean<?> persist, UpdateMeta meta) {
 		super(persist);
 		this.meta = meta;
 	}
@@ -45,6 +49,8 @@ public class UpdateHandler extends DmlHandler {
 		String sql = meta.getSql(persistRequest);
 
 		logSql(sql);
+
+		updatedProperties = persistRequest.getUpdatedProperties();
 		
 		ServerTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
@@ -78,5 +84,9 @@ public class UpdateHandler extends DmlHandler {
 		return rowCount;
 	}
 
+	@Override
+	public boolean isIncluded(BeanProperty prop) {
+		return (updatedProperties == null || updatedProperties.contains(prop.getName()));
+	}
 
 }

@@ -21,25 +21,26 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.List;
 
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistController;
 
 /**
- * Factory for controlling the construction of BeanListener.
+ * Factory for controlling the construction of BeanPersistControllers.
  */
-public interface BeanListenerManager {
+public interface PersistControllerManager {
 
 	/**
-	 * Return the number of beans with a registered listener.
+	 * Return the number of beans with a registered controller.
 	 */
 	public int getRegisterCount();
+
 	
-	/**
-     * Create the appropriate BeanController.
+    /**
+     * Create the appropriate BeanPersistController.
      */
-    public int createBeanListeners(List<Class<?>> listenerClassList);
+    public int createControllers(List<Class<?>> controllerList);
     
     /**
-     * Return the BeanListener for a given entity type.
+     * Return the BeanPersistController for a given entity type.
      */
-    public BeanListener getBeanListener(Class<?> entityType);
+    public <T> BeanPersistController<T> getController(Class<T> entityType);
 }

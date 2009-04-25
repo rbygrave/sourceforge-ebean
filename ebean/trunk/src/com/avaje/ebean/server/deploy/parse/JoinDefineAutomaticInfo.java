@@ -43,9 +43,9 @@ public class JoinDefineAutomaticInfo {
 
 	HashSet<String> matchColumns = new HashSet<String>();
 
-	DeployBeanDescriptor desc;
+	DeployBeanDescriptor<?> desc;
 
-	DeployBeanPropertyAssoc prop;
+	DeployBeanPropertyAssoc<?> prop;
 
 	DeployTableJoin tableJoin;
 
@@ -58,7 +58,7 @@ public class JoinDefineAutomaticInfo {
 	/**
 	 * Used for Secondary table joins.
 	 */
-	public JoinDefineAutomaticInfo(DeployBeanDescriptor desc, DeployTableJoin join) {
+	public JoinDefineAutomaticInfo(DeployBeanDescriptor<?> desc, DeployTableJoin join) {
 		this(desc, null, true);
 		this.tableJoin = join;
 	}
@@ -66,7 +66,7 @@ public class JoinDefineAutomaticInfo {
 	/**
 	 * Used for joins on ManyToOne and OneToOne.
 	 */
-	public JoinDefineAutomaticInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssocOne prop) {
+	public JoinDefineAutomaticInfo(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssocOne<?> prop) {
 		this(desc, prop, true);
 		this.oneToOne = prop.isOneToOne();
 	}
@@ -74,11 +74,11 @@ public class JoinDefineAutomaticInfo {
 	/**
 	 * Used for joins on oneToMany and ManyToMany.
 	 */
-	public JoinDefineAutomaticInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssocMany prop) {
+	public JoinDefineAutomaticInfo(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssocMany<?> prop) {
 		this(desc, prop, false);
 	}
 
-	private JoinDefineAutomaticInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssoc prop, boolean isImported) {
+	private JoinDefineAutomaticInfo(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssoc<?> prop, boolean isImported) {
 		this.desc = desc;
 		this.prop = prop;
 		this.isImported = isImported;
@@ -200,7 +200,7 @@ public class JoinDefineAutomaticInfo {
 	/**
 	 * Return the BeanDescriptor.
 	 */
-	public DeployBeanDescriptor getDesc() {
+	public DeployBeanDescriptor<?> getDesc() {
 		return desc;
 	}
 
@@ -214,7 +214,7 @@ public class JoinDefineAutomaticInfo {
 	/**
 	 * Return the property we are setting the join for.
 	 */
-	public DeployBeanPropertyAssoc getProp() {
+	public DeployBeanPropertyAssoc<?> getProp() {
 		return prop;
 	}
 

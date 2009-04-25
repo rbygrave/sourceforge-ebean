@@ -83,7 +83,7 @@ public class DiffHelp {
 	 * properties.
 	 * </p>
 	 */
-	public Map<String, ValuePair> diff(Object a, Object b, BeanDescriptor desc) {
+	public Map<String, ValuePair> diff(Object a, Object b, BeanDescriptor<?> desc) {
 
 		boolean oldValues = false;
 		if (b == null) {
@@ -124,10 +124,10 @@ public class DiffHelp {
 	 * determined to be different as is added to the map.
 	 * </p>
 	 */
-	private void diffEmbedded(Object a, Object b, BeanDescriptor desc, Map<String, ValuePair> map,
+	private void diffEmbedded(Object a, Object b, BeanDescriptor<?> desc, Map<String, ValuePair> map,
 			boolean oldValues) {
 
-		BeanPropertyAssocOne[] emb = desc.propertiesEmbedded();
+		BeanPropertyAssocOne<?>[] emb = desc.propertiesEmbedded();
 
 		for (int i = 0; i < emb.length; i++) {
 			Object aval = emb[i].getValue(a);
@@ -167,9 +167,9 @@ public class DiffHelp {
 	 * If the properties are different by null OR if the id value is different,
 	 * then add the Assoc One bean to the map.
 	 */
-	private void diffAssocOne(Object a, Object b, BeanDescriptor desc, Map<String, ValuePair> map) {
+	private void diffAssocOne(Object a, Object b, BeanDescriptor<?> desc, Map<String, ValuePair> map) {
 
-		BeanPropertyAssocOne[] ones = desc.propertiesOne();
+		BeanPropertyAssocOne<?>[] ones = desc.propertiesOne();
 
 		for (int i = 0; i < ones.length; i++) {
 			Object aval = ones[i].getValue(a);
@@ -183,7 +183,7 @@ public class DiffHelp {
 				} else {
 					// check to see if the Id properties
 					// are different
-					BeanDescriptor oneDesc = ones[i].getTargetDescriptor();
+					BeanDescriptor<?> oneDesc = ones[i].getTargetDescriptor();
 					Object aOneId = oneDesc.getId(aval);
 					Object bOneId = oneDesc.getId(bval);
 

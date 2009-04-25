@@ -19,8 +19,8 @@
  */
 package com.avaje.ebean.server.persist;
 
-import com.avaje.ebean.bean.BeanController;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.bean.BeanPersistController;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
@@ -83,14 +83,14 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * execute the bean insert request.
      */
-    public void executeInsertBean(PersistRequest request) {
+    public <T> void executeInsertBean(PersistRequestBean<T> request) {
     	
     	request.setLogLevel(logControl.getInsertLevel());
     	
-    	BeanManager mgr = request.getBeanManager();
+    	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
-    	BeanController controller = request.getBeanController();
+    	BeanPersistController<T> controller = request.getBeanController();
 		if (controller == null || controller.preInsert(request)) {
 
 			persister.insert(request);
@@ -102,14 +102,14 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * execute the bean update request.
      */
-    public void executeUpdateBean(PersistRequest request) {
+    public <T> void executeUpdateBean(PersistRequestBean<T> request) {
     	
     	request.setLogLevel(logControl.getUpdateLevel());
 
-    	BeanManager mgr = request.getBeanManager();
+    	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
-    	BeanController controller = request.getBeanController();
+    	BeanPersistController<T> controller = request.getBeanController();
 		if (controller == null || controller.preUpdate(request)) {
 			
 			persister.update(request);
@@ -122,14 +122,14 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * execute the bean delete request.
      */
-    public void executeDeleteBean(PersistRequest request) {
+    public <T> void executeDeleteBean(PersistRequestBean<T> request) {
 
     	request.setLogLevel(logControl.getDeleteLevel());
 
-    	BeanManager mgr = request.getBeanManager();
+    	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
-    	BeanController controller = request.getBeanController();
+    	BeanPersistController<T> controller = request.getBeanController();
 		if (controller == null || controller.preDelete(request)) {
 			
 			persister.delete(request);

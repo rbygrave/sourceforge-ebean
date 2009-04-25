@@ -19,11 +19,11 @@
  */
 package com.avaje.ebean.server.transaction;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.DeploymentManager;
@@ -40,8 +40,6 @@ import com.avaje.ebean.server.plugin.PluginCore;
 public class ListenerNotify {
 
 	private final TransactionManager manager;
-
-	//private final PluginCore pluginCore;
 	
 	private final DeploymentManager deploymentManager;
 	
@@ -50,7 +48,6 @@ public class ListenerNotify {
 	 */
 	public ListenerNotify(TransactionManager manager, PluginCore pluginCore) {
 		this.manager = manager;
-		//this.pluginCore = pluginCore;
 		this.deploymentManager = pluginCore.getDeploymentManager();
 	}
 
@@ -63,18 +60,21 @@ public class ListenerNotify {
 	 */
 	public void localNotify(TransactionEventBeans eventBeans) {
 
-		// create a RemoteListenerEvent to send around the cluster
-		RemoteListenerEvent remoteEvent = createRemoteListenerEvent(eventBeans);
-		if (remoteEvent.size() > 0) {
-			// make sure there is something to send
-			manager.notifyCluster(remoteEvent);
+		RemoteListenerEvent remoteEvent = new RemoteListenerEvent();
+
+		// notify BeanPersistListener
+		ArrayList<PersistRequestBean<?>> requests = eventBeans.getRequests();
+		for (int i = 0; i < requests.size(); i++) {
+			PersistRequestBean<?> request = requests.get(i);
+			if (localNotify(request)) {
+				// notify the cluster of this event
+				remoteEvent.add(request.createRemoteListenerPayload());
+			}
 		}
 
-		// notify local BeanListeners
-		ArrayList<PersistRequest> requests = eventBeans.getRequests();
-		for (int i = 0; i < requests.size(); i++) {
-			PersistRequest request = (PersistRequest) requests.get(i);
-			localNotify(request);
+		if (remoteEvent.size() > 0) {
+			// send the interesting events to the cluster
+			manager.notifyCluster(remoteEvent);
 		}
 	}
 
@@ -93,24 +93,23 @@ public class ListenerNotify {
 
 		PersistRequest.Type type = payload.getType();
 		String typeDesc = payload.getTypeDescription();
-		BeanManager mgr = deploymentManager.getBeanManager(typeDesc);
-		
-		BeanDescriptor desc = mgr.getBeanDescriptor();
-		BeanListener beanListener = desc.getBeanListener();
+		BeanManager<?> mgr = deploymentManager.getBeanManager(typeDesc);
+		BeanDescriptor<?> desc = mgr.getBeanDescriptor();
+		BeanPersistListener<?> beanListener = desc.getBeanListener();
 
-		Serializable data = payload.getData();
+		Object id = payload.getId();
 
 		switch (type) {
 		case INSERT:
-			beanListener.inserted(false, data);
+			beanListener.remoteInsert(id);
 			break;
 
 		case UPDATE:
-			beanListener.inserted(false, data);
+			beanListener.remoteUpdate(id);
 			break;
 
 		case DELETE:
-			beanListener.inserted(false, data);
+			beanListener.remoteDelete(id);
 			break;
 
 		default:
@@ -118,62 +117,25 @@ public class ListenerNotify {
 		}
 	}
 
-	/**
-	 * Create a RemoteListenerEvent that holds the payload for each inserted
-	 * updated and deleted bean.
-	 */
-	private RemoteListenerEvent createRemoteListenerEvent(TransactionEventBeans eventBeans) {
-		
-		RemoteListenerEvent remoteEvent = new RemoteListenerEvent();
-		
-		ArrayList<PersistRequest> requests = eventBeans.getRequests();
-		for (int i = 0; i < requests.size(); i++) {
-			PersistRequest request = (PersistRequest) requests.get(i);
-			createRemotePayload(remoteEvent, request);
-		}
+	private <T> boolean localNotify(PersistRequestBean<T> request) {
 
-		return remoteEvent;
-	}
-
-	/**
-	 * Create the payload for the PersistRequest.
-	 */
-	private void createRemotePayload(RemoteListenerEvent remoteEvent, PersistRequest request) {
-
-		PersistRequest.Type type = request.getType();
-		BeanDescriptor desc = request.getBeanDescriptor();
-		BeanListener listener = desc.getBeanListener();
-
-		String typeDesc = desc.getFullName();
-		Serializable data = listener.getClusterData(request.getBean());
-		if (data != null) {
-			RemoteListenerPayload payload = new RemoteListenerPayload(typeDesc, type, data);
-			remoteEvent.add(payload);
-		}
-	}
-
-	private void localNotify(PersistRequest request) {
-
-		BeanDescriptor desc = request.getBeanDescriptor();
-		BeanListener listener = desc.getBeanListener();
+		BeanDescriptor<T> desc = request.getBeanDescriptor();
+		BeanPersistListener<T> listener = desc.getBeanListener();
 
 		PersistRequest.Type type = request.getType();
 
 		switch (type) {
 		case INSERT:
-			listener.inserted(true, request.getBean());
-			break;
+			return listener.inserted(request.getBean());
 
 		case UPDATE:
-			listener.updated(true, request.getBean());
-			break;
+			return listener.updated(request.getBean(), request.getUpdatedProperties());
 
 		case DELETE:
-			listener.deleted(true, request.getBean());
-			break;
+			return listener.deleted(request.getBean());
 
 		default:
-			break;
+			return false;
 		}
 	}
 }

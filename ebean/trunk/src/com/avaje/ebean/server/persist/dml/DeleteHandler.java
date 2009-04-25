@@ -21,7 +21,7 @@ package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 
 /**
@@ -32,7 +32,7 @@ public class DeleteHandler extends DmlHandler {
 
 	private final DeleteMeta meta;
 
-	public DeleteHandler(PersistRequest persist, DeleteMeta meta) {
+	public DeleteHandler(PersistRequestBean<?> persist, DeleteMeta meta) {
 		super(persist);
 		this.meta = meta;
 	}

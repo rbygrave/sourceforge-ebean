@@ -21,6 +21,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
@@ -30,11 +31,11 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableAssocOne implements Bindable {
 
-	private final BeanPropertyAssocOne assocOne;
+	private final BeanPropertyAssocOne<?> assocOne;
 
 	private final ImportedId importedId;
 	
-	public BindableAssocOne(BeanPropertyAssocOne assocOne) {
+	public BindableAssocOne(BeanPropertyAssocOne<?> assocOne) {
 		this.assocOne = assocOne;
 		this.importedId = assocOne.getImportedId();
 	}
@@ -43,6 +44,11 @@ public class BindableAssocOne implements Bindable {
 		return "BindableAssocOne "+assocOne;
 	}
 	
+	
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		request.hasChanged(assocOne);
+	}
+
 	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
 		if (checkIncludes && !request.isIncluded(assocOne)){
 			return;

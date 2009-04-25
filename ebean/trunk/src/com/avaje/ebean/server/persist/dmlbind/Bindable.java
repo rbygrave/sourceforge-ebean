@@ -21,6 +21,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
 /**
@@ -38,6 +39,12 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public interface Bindable {
 
+	/**
+	 * Determine the changed properties. This is for the purpose of updating only
+	 * properties that have actually changed their values.
+	 */
+	public void determineChangedProperties(PersistRequestBean<?> request);
+	
 	/**
 	 * append sql to the buffer with prefix and suffix options.
 	 */

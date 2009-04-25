@@ -11,7 +11,7 @@ public class LoadedPropertiesCache {
 
 	static ConcurrentHashMap<Integer, Set<String>> cache = new ConcurrentHashMap<Integer, Set<String>>(250, 0.75f, 16);
 	
-	public static Set<String> get(int partialHash, Set<String> partialProps, BeanDescriptor desc){
+	public static Set<String> get(int partialHash, Set<String> partialProps, BeanDescriptor<?> desc){
 		
 		int manyHash = desc.getNamesOfManyPropsHash();
 		int totalHash = 37*partialHash + manyHash;

@@ -21,6 +21,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
@@ -37,6 +38,10 @@ public class BindableProperty implements Bindable {
 	
 	public String toString() {
 		return prop.toString();
+	}
+	
+	public void determineChangedProperties(PersistRequestBean<?> request){
+		request.hasChanged(prop);
 	}
 	
 	public void dmlAppend(GenerateDmlRequest request,boolean checkIncludes){

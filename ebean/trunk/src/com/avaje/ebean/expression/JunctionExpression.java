@@ -2,7 +2,7 @@ package com.avaje.ebean.expression;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 /**
  * Junction implementation.
@@ -85,7 +85,7 @@ abstract class JunctionExpression implements Junction, Expression {
 		return hc;
 	}
 	
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		int hc = JunctionExpression.class.getName().hashCode();
 		hc = hc * 31 + joinType.hashCode();
 		for (int i = 0; i < list.size(); i++) {

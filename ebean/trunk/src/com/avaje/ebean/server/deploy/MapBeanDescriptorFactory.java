@@ -31,9 +31,9 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.MapBean;
 import com.avaje.ebean.NamingConvention;
-import com.avaje.ebean.bean.BeanController;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -194,20 +194,21 @@ public class MapBeanDescriptorFactory {
     /**
      * Set any BeanController, BeanFinder and BeanListener for MapBeans.
      */
-    private void setBeanIntercept(DeployMapBeanDescriptor desc) {
+    @SuppressWarnings("unchecked")
+	private void setBeanIntercept(DeployMapBeanDescriptor desc) {
     	
     	String tableName = desc.getBaseTable();
     	String key = "mapbean."+tableName+".beancontroller";
     	String cn = dbConfig.getProperties().getProperty(key, null);
     	if (cn != null){
-    		BeanController bc = (BeanController)createInstance(cn);
+    		BeanPersistController<MapBean> bc = (BeanPersistController<MapBean>)createInstance(cn);
     		desc.setBeanController(bc);
     	}
     	
     	key = "mapbean."+tableName+".beanlistener";
     	cn = dbConfig.getProperties().getProperty(key, null);
     	if (cn != null){
-    		BeanListener bl = (BeanListener)createInstance(cn);
+    		BeanPersistListener<MapBean> bl = (BeanPersistListener<MapBean>)createInstance(cn);
     		desc.setBeanListener(bl);
     	}
     	
@@ -292,14 +293,7 @@ public class MapBeanDescriptorFactory {
     	for (int i = 0; i < columns.length; i++) {
 		
             ColumnInfo colInfo = columns[i];
-
-            DeployBeanProperty prop = new DeployBeanProperty(desc);
-            prop.setDbColumn(colInfo.getName());
-            
-            // always native jdbc types for Map beans.
-            // No scalar type setting
-            prop.setDbType(colInfo.getDataType());
-            
+            Class<?> propertyType = null;
             // get the Class type the jdbc type maps to
             ScalarType scalarType = typeManager.getScalarType(colInfo.getDataType());
             if (scalarType == null){
@@ -308,8 +302,18 @@ public class MapBeanDescriptorFactory {
             	+" to a Java type for ["+ti.getName()+"."+colInfo.getName()+"]";
             	logger.warning(msg);
             } else {
-            	prop.setPropertyType(scalarType.getType());
+            	propertyType = scalarType.getType();
             }
+                        
+            DeployBeanProperty prop = new DeployBeanProperty(desc, propertyType);
+            prop.setDbColumn(colInfo.getName());
+
+            
+            // always native jdbc types for Map beans.
+            // No scalar type setting
+            prop.setDbType(colInfo.getDataType());
+            
+
 
             // convert the column name
             String propName = getPropertyName(colInfo.getName());

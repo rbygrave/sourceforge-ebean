@@ -43,7 +43,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 
 	private final List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
 
-	private final DeployBeanDescriptor deployDesc;
+	private final DeployBeanDescriptor<?> deployDesc;
 
 	private final NamingConvention namingConvention;
 
@@ -204,7 +204,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 			}
 		}
 
-		List<DeployBeanPropertyAssocOne> propertiesAssocOne = deployDesc.propertiesAssocOne();
+		List<DeployBeanPropertyAssocOne<?>> propertiesAssocOne = deployDesc.propertiesAssocOne();
 		for (int i = 0; i < propertiesAssocOne.size(); i++) {
 			DeployBeanProperty prop = propertiesAssocOne.get(i);
 			if (isMatch(prop, searchColumn)) {

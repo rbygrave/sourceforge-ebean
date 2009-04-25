@@ -21,62 +21,59 @@ package com.avaje.ebean.bean;
 
 import java.util.Set;
 
-import com.avaje.ebean.server.core.PersistRequest;
-
 /**
- * A no operation implementation of BeanController. Objects extending this need to
+ * A no operation implementation of BeanPersistController. Objects extending this need to
  * only override the methods they want to.
+ * <p>
+ * A BeanPersistAdapter is either found automatically via class path search
+ * or can be added programmatically via ServerConfiguration.addEntity().
+ * </p>
  */
-public abstract class BeanControllerAdapter implements BeanController {
-
-	/**
-	 * The types of entity bean this is the controller for.
-	 */
-    public abstract Class<?>[] registerFor();
+public abstract class BeanPersistAdapter<T> implements BeanPersistController<T> {
 
 	/**
      * Returns true indicating normal processing should continue.
      */
-    public boolean preDelete(PersistRequest request) {
+    public boolean preDelete(BeanPersistRequest<T> request) {
         return true;
     }
 
     /**
      * Returns true indicating normal processing should continue.
      */
-    public boolean preInsert(PersistRequest request) {
+    public boolean preInsert(BeanPersistRequest<T> request) {
         return true;
     }
 
     /**
      * Returns true indicating normal processing should continue.
      */
-    public boolean preUpdate(PersistRequest request) {
+    public boolean preUpdate(BeanPersistRequest<T> request) {
         return true;
     }
 
     /**
      * Does nothing by default.
      */
-    public void postDelete(PersistRequest request) {
+    public void postDelete(BeanPersistRequest<T> request) {
     }
 
     /**
      * Does nothing by default.
      */
-    public void postInsert(PersistRequest request) {
+    public void postInsert(BeanPersistRequest<T> request) {
     }
 
     /**
      * Does nothing by default.
      */
-    public void postUpdate(PersistRequest request) {
+    public void postUpdate(BeanPersistRequest<T> request) {
     }
 
     /**
      * Does nothing by default.
      */
-    public void postLoad(Object bean, Set<String> includedProperties){
+    public void postLoad(T bean, Set<String> includedProperties){
 	}
 
     

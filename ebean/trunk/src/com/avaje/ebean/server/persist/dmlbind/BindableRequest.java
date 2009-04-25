@@ -21,7 +21,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
 /**
@@ -70,5 +70,5 @@ public interface BindableRequest {
 	/**
 	 * Return the original PersistRequest.
 	 */
-	public PersistRequest getPersistRequest();
+	public PersistRequestBean<?> getPersistRequest();
 }

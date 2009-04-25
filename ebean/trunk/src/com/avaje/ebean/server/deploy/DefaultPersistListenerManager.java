@@ -24,28 +24,23 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistListener;
+import com.avaje.ebean.util.ParamTypeUtil;
 
 /**
  * Default implementation for BeanFinderFactory.
  */
-public class DefaultBeanListenerManager implements BeanListenerManager {
+public class DefaultPersistListenerManager implements PersistListenerManager {
 
-	HashMap<Class<?>, BeanListener> registerFor = new HashMap<Class<?>, BeanListener>();
+	HashMap<Class<?>, BeanPersistListener<?>> registerFor = new HashMap<Class<?>, BeanPersistListener<?>>();
 
-	public int createBeanListeners(List<Class<?>> finderClassList) {
+	public int createListeners(List<Class<?>> finderClassList) {
 
 		for (Class<?> cls : finderClassList) {
+			Class<?> entityType = getEntityClass(cls);
 			try {
-				BeanListener beanListener = (BeanListener) cls.newInstance();
-				
-				Class<?>[] entityTypes = beanListener.registerFor();
-				if (entityTypes != null){
-					for (Class<?> entityType : entityTypes) {
-						registerFor.put(entityType, beanListener);
-					}
-				}
-
+				BeanPersistListener<?> beanListener = (BeanPersistListener<?>) cls.newInstance();
+				registerFor.put(entityType, beanListener);
 			} catch (Exception ex) {
 				throw new PersistenceException(ex);
 			}
@@ -61,7 +56,25 @@ public class DefaultBeanListenerManager implements BeanListenerManager {
 	/**
 	 * Return the BeanListener for a given entity type.
 	 */
-	public BeanListener getBeanListener(Class<?> entityType) {
-		return registerFor.get(entityType);
+	@SuppressWarnings("unchecked")
+	public <T> BeanPersistListener<T> getListener(Class<T> entityType) {
+		return (BeanPersistListener<T>)registerFor.get(entityType);
 	}
+	
+    
+	/**
+	 * Find the entity class given the controller class.
+	 * <p>
+	 * This uses reflection to find the generics parameter type. 
+	 * </p>
+	 */	
+    private Class<?> getEntityClass(Class<?> controller){
+    	
+		Class<?> cls = ParamTypeUtil.findParamType(controller, BeanPersistListener.class);
+		if (cls == null){
+			String msg = "Could not determine the entity class (generics parameter type) from "+controller+" using reflection.";
+			throw new PersistenceException(msg);
+		}
+		return cls;
+    }
 }

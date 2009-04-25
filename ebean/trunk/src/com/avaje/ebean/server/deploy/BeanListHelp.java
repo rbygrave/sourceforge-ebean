@@ -14,33 +14,43 @@ import com.avaje.ebean.collection.BeanList;
 /**
  * Helper object for dealing with Lists.
  */
-public final class BeanListHelp implements BeanCollectionHelp {
+public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 	
-	public void add(BeanCollection<?> collection, Object bean, String mapKey) {
+	final BeanPropertyAssocMany<T> many;
+	final BeanDescriptor<T> targetDescriptor;
+	
+	public BeanListHelp(BeanPropertyAssocMany<T> many){
+		this.many = many;
+		this.targetDescriptor = many.getTargetDescriptor();
+	}
+	
+	public BeanListHelp(){
+		this.many = null;
+		this.targetDescriptor = null;
+	}
+	
+	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
 	}
 
-	@SuppressWarnings("unchecked")
-	public BeanCollection<?> createEmpty() {
-		
-		return new BeanList();
+	public BeanCollection<T> createEmpty() {
+		return new BeanList<T>();
 	}
 
-	@SuppressWarnings("unchecked")
-	public BeanCollection<?> createReference(Object parentBean, String serverName,
+	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 		
-		return new BeanList(serverName, parentBean, propertyName, profilePoint);
+		return new BeanList<T>(serverName, parentBean, propertyName, profilePoint);
 	}
 	
-	public ArrayList<InvalidValue> validate(BeanDescriptor target, Object manyValue) {
+	public ArrayList<InvalidValue> validate(Object manyValue) {
 		
 		ArrayList<InvalidValue> errs = null;
 		
 		List<?> l = (List<?>)manyValue;
 		for (int i = 0; i < l.size(); i++) {
 			Object detailBean = l.get(i);
-			InvalidValue invalid = target.validate(true, detailBean);
+			InvalidValue invalid = targetDescriptor.validate(true, detailBean);
 			if (invalid != null){
 				if (errs == null){
 					errs = new ArrayList<InvalidValue>();
@@ -51,7 +61,7 @@ public final class BeanListHelp implements BeanCollectionHelp {
 		return errs;
 	}
 	
-	public void refresh(EbeanServer server, Query<?> query, Transaction t, BeanPropertyAssocMany many, Object parentBean) {
+	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
 		
 		BeanList<?> newBeanList = (BeanList<?>)server.findList(query, t);
 		

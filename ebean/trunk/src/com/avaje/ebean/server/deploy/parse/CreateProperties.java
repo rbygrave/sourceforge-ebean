@@ -22,6 +22,8 @@ package com.avaje.ebean.server.deploy.parse;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +70,7 @@ public class CreateProperties {
     /**
      * Create the appropriate properties for a bean.
      */
-    public void createProperties(DeployBeanDescriptor desc) {
+    public void createProperties(DeployBeanDescriptor<?> desc) {
     	
         createProperties(desc, desc.getBeanType(), 0);
         
@@ -121,7 +123,7 @@ public class CreateProperties {
      * reflect the bean properties from Class. Some of these properties may not
      * map to database columns.
      */
-    private void createProperties(DeployBeanDescriptor desc, Class<?> beanType, int level) {
+    private void createProperties(DeployBeanDescriptor<?> desc, Class<?> beanType, int level) {
 
         try {
         	Method[] declaredMethods = beanType.getDeclaredMethods();
@@ -263,25 +265,30 @@ public class CreateProperties {
     	return null;
     }
     
-    private DeployBeanProperty createProp(int level, DeployBeanDescriptor desc, Field field, Class<?> beanType, Method getter, Method setter) {
+    @SuppressWarnings("unchecked")
+	private DeployBeanProperty createProp(int level, DeployBeanDescriptor<?> desc, Field field, Class<?> beanType, Method getter, Method setter) {
     	
-    	Class<?> propertyType = field.getType();
         DeployBeanProperty prop = null;
 
+        Class<?> propertyType = field.getType();
         ManyType manyType = ManyType.getManyType(propertyType);
 
         if (manyType != null) {
             // List, Set or Map based object
-            prop = new DeployBeanPropertyAssocMany(desc, manyType);
+        	Class<?> targetType = determineTargetType(field);
+        	if (targetType == null){
+        		logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
+        	}
+            prop = new DeployBeanPropertyAssocMany(desc, targetType, manyType);
 
         } else if (propertyType.isEnum() || propertyType.isPrimitive()){
-            prop = new DeployBeanProperty(desc);
+            prop = new DeployBeanProperty(desc, propertyType);
             
         } else if (isScalarType(propertyType)) {
-        	prop = new DeployBeanProperty(desc);
+        	prop = new DeployBeanProperty(desc, propertyType);
         
         } else {
-        	prop = new DeployBeanPropertyAssocOne(desc);
+        	prop = new DeployBeanPropertyAssocOne(desc, propertyType);
         }
         
         //field.setAccessible(true);
@@ -289,7 +296,6 @@ public class CreateProperties {
         prop.setOwningType(beanType);
 
         prop.setName(field.getName());
-        prop.setPropertyType(propertyType);
         
         // the getter or setter could be null if we are using
         // javaagent type enhancement. If we are using subclass
@@ -308,4 +314,27 @@ public class CreateProperties {
     	return scalarType != null;
     }
     
+	/**
+	 * Determine the type of the List,Set or Map. Not been set explicitly so
+	 * determine this from ParameterizedType.
+	 */
+	private Class<?> determineTargetType(Field field) {
+		
+		Type genType = field.getGenericType();
+		if (genType instanceof ParameterizedType) {
+			ParameterizedType ptype = (ParameterizedType) genType;
+
+			Type[] typeArgs = ptype.getActualTypeArguments();
+			if (typeArgs.length == 1) {
+				// probably a Set or List
+				return (Class<?>) typeArgs[0];
+			}
+			if (typeArgs.length == 2) {
+				// this is probably a Map
+				return (Class<?>) typeArgs[1];
+			}
+		}
+		// if targetType is null, then must be set in annotations
+		return null;
+	}
 }

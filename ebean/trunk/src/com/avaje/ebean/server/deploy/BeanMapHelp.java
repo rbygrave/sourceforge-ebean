@@ -15,18 +15,43 @@ import com.avaje.ebean.collection.BeanMap;
 /**
  * Helper specifically for dealing with Maps.
  */
-public class BeanMapHelp implements BeanCollectionHelp {
+public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 
-	final BeanDescriptor targetDescriptor;
-
-	public BeanMapHelp(BeanDescriptor targetDescriptor) {
-		this.targetDescriptor = targetDescriptor;
+	final BeanPropertyAssocMany<T> many;
+	final BeanDescriptor<T> targetDescriptor;
+	final String mapKey;
+	final BeanProperty beanProperty;
+	
+	/**
+	 * When created for a given query that will return a map.
+	 */
+	public BeanMapHelp(BeanDescriptor<T> targetDescriptor, String mapKey) {
+		this(null, targetDescriptor, mapKey);
 	}
 
+	public BeanMapHelp(BeanPropertyAssocMany<T> many){
+		this(many, many.getTargetDescriptor(), many.getMapKey());
+	}
+	
+	/**
+	 * When help is attached to a specific many property.
+	 */
+	private BeanMapHelp(BeanPropertyAssocMany<T> many, BeanDescriptor<T> targetDescriptor, String mapKey){
+		this.many = many;
+		this.targetDescriptor = targetDescriptor;
+		this.mapKey = mapKey;
+		this.beanProperty = targetDescriptor.getBeanProperty(mapKey);
+	}
+	
+	
 	@SuppressWarnings("unchecked")
-	public void add(BeanCollection<?> collection, Object bean, String mapKey) {
+	public BeanCollection<T> createEmpty() {
+		return new BeanMap();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void add(BeanCollection<?> collection, Object bean) {
 
-		BeanProperty beanProperty = targetDescriptor.getBeanProperty(mapKey);
 		Object keyValue = beanProperty.getValue(bean);
 
 		Map<Object, Object> map = (Map<Object, Object>) collection;
@@ -34,17 +59,13 @@ public class BeanMapHelp implements BeanCollectionHelp {
 	}
 
 	@SuppressWarnings("unchecked")
-	public BeanCollection<?> createEmpty() {
-		return new BeanMap();
-	}
-
-	public BeanCollection<?> createReference(Object parentBean, String serverName,
+	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 
-		return new BeanMap<Object, Object>(serverName, parentBean, propertyName, profilePoint);
+		return new BeanMap(serverName, parentBean, propertyName, profilePoint);
 	}
 
-	public ArrayList<InvalidValue> validate(BeanDescriptor target, Object manyValue) {
+	public ArrayList<InvalidValue> validate(Object manyValue) {
 
 		ArrayList<InvalidValue> errs = null;
 
@@ -52,7 +73,7 @@ public class BeanMapHelp implements BeanCollectionHelp {
 		Iterator<?> it = m.values().iterator();
 		while (it.hasNext()) {
 			Object detailBean = (Object) it.next();
-			InvalidValue invalid = target.validate(true, detailBean);
+			InvalidValue invalid = targetDescriptor.validate(true, detailBean);
 			if (invalid != null) {
 				if (errs == null) {
 					errs = new ArrayList<InvalidValue>();
@@ -64,8 +85,7 @@ public class BeanMapHelp implements BeanCollectionHelp {
 		return errs;
 	}
 
-	public void refresh(EbeanServer server, Query<?> query, Transaction t,
-			BeanPropertyAssocMany many, Object parentBean) {
+	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
 
 		BeanMap<?, ?> newBeanMap = (BeanMap<?, ?>) server.findMap(query, t);
 

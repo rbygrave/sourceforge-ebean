@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 
 import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.Binder;
 
@@ -41,7 +41,7 @@ public class DeleteMapBean extends BaseMapBean {
 	
 	//boolean noVersionColumn;
 
-	public DeleteMapBean(Binder binder, PersistRequest request) {
+	public DeleteMapBean(Binder binder, PersistRequestBean<?> request) {
 		super(binder, request);
 		this.oldBean = (MapBean)request.getOldValues();
 		if (oldBean == null){

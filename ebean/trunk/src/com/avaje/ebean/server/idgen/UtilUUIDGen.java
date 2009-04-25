@@ -21,7 +21,7 @@ public class UtilUUIDGen implements IdGenerator {
 	/**
 	 * Return UUID from UUID.randomUUID();
 	 */
-	public Object nextId(BeanDescriptor desc) {
+	public Object nextId(BeanDescriptor<?> desc) {
 		return UUID.randomUUID();
 	}
 

@@ -59,7 +59,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     }
     
     
-    public Object findMany(QueryRequest request) {
+    public Object findMany(QueryRequest<?> request) {
 
     	Object result = request.getFromCache(serverCache);
     	if (result != null){
@@ -79,7 +79,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             TransactionContext pc = t.getTransactionContext();
             for (int i = 0; i < adds.size(); i++) {
             	EntityBean bean = adds.get(i);
-            	BeanDescriptor desc = deploymentManager.getBeanDescriptor(bean.getClass());
+            	BeanDescriptor<?> desc = deploymentManager.getBeanDescriptor(bean.getClass());
             	Object id = desc.getId(bean);
             	pc.add(bean, id, false);
 			}
@@ -104,7 +104,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     /**
      * Find a single bean using its unique id.
      */
-    public Object findId(QueryRequest request) {
+    public Object findId(QueryRequest<?> request) {
         
     	Object result = request.getFromCache(serverCache);
     	if (result != null){
@@ -127,7 +127,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             TransactionContext pc = t.getTransactionContext();
             for (int i = 0; i < adds.size(); i++) {
             	EntityBean bean = adds.get(i);
-            	BeanDescriptor desc = deploymentManager.getBeanDescriptor(bean.getClass());
+            	BeanDescriptor<?> desc = deploymentManager.getBeanDescriptor(bean.getClass());
             	Object id = desc.getId(bean);
             	pc.add(bean, id, false);
 			}

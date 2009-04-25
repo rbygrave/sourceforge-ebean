@@ -21,8 +21,6 @@ package com.avaje.ebean.bean;
 
 import java.util.Set;
 
-import com.avaje.ebean.server.core.PersistRequest;
-
 /**
  * Used to enhance or override the default bean persistence mechanism.
  * <p>
@@ -43,25 +41,24 @@ import com.avaje.ebean.server.core.PersistRequest;
  * </code></pre>
  * 
  * <p>
- * It is worth noting that BeanListener is different in three main ways from
- * BeanController postXXX methods.
+ * It is worth noting that BeanPersistListener is different in three main ways from
+ * BeanPersistController postXXX methods.
  * <ul>
- * <li>BeanListener only sees successfully committed events. BeanController pre
+ * <li>BeanPersistListener only sees successfully committed events. BeanController pre
  * and post methods occur before the commit or a rollback and will see events
  * that are later rolled back</li>
- * <li>BeanListener runs in a background thread and will not effect the
+ * <li>BeanPersistListener runs in a background thread and will not effect the
  * response time of the actual persist where as BeanController code will</li>
- * <li>BeanListener can be notified of events from other servers in a cluster.</li>
+ * <li>BeanPersistListener can be notified of events from other servers in a cluster.</li>
  * </ul>
  * </p>
+ * <p>
+ * A BeanPersistController is either found automatically via class path search
+ * or can be added programmatically via ServerConfiguration.addEntity().
+ * </p>
  */
-public interface BeanController {
+public interface BeanPersistController<T> {
 
-	/**
-	 * The types of entity bean this is the controller for.
-	 */
-	public Class<?>[] registerFor();
-	
 	/**
 	 * Prior to the insert perform some action. Return true if you want the
 	 * default functionality to continue.
@@ -70,7 +67,7 @@ public interface BeanController {
 	 * do not want the default insert to be performed.
 	 * </p>
 	 */
-	public boolean preInsert(PersistRequest request);
+	public boolean preInsert(BeanPersistRequest<T> request);
 
 	/**
 	 * Prior to the update perform some action. Return true if you want the
@@ -80,7 +77,7 @@ public interface BeanController {
 	 * do not want the default update to be performed.
 	 * </p>
 	 */
-	public boolean preUpdate(PersistRequest request);
+	public boolean preUpdate(BeanPersistRequest<T> request);
 
 	/**
 	 * Prior to the delete perform some action. Return true if you want the
@@ -90,27 +87,27 @@ public interface BeanController {
 	 * do not want the default delete to be performed.
 	 * </p>
 	 */
-	public boolean preDelete(PersistRequest request);
+	public boolean preDelete(BeanPersistRequest<T> request);
 
 	/**
 	 * Called after the insert was performed.
 	 */
-	public void postInsert(PersistRequest request);
+	public void postInsert(BeanPersistRequest<T> request);
 
 	/**
 	 * Called after the update was performed.
 	 */
-	public void postUpdate(PersistRequest request);
+	public void postUpdate(BeanPersistRequest<T> request);
 
 	/**
 	 * Called after the delete was performed.
 	 */
-	public void postDelete(PersistRequest request);
+	public void postDelete(BeanPersistRequest<T> request);
 
 	/**
 	 * Called after every each bean is fetched and loaded from the database. You
 	 * can override this to derive some information to set to the bean.
 	 */
-	public void postLoad(Object bean, Set<String> includedProperties);
+	public void postLoad(T bean, Set<String> includedProperties);
 
 }

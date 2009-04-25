@@ -40,7 +40,7 @@ public class IdBinderFactory {
 			
 		} else if (uids.length == 1){
 			if (uids[0].isEmbedded()){
-				return new IdBinderEmbedded((BeanPropertyAssocOne)uids[0]);
+				return new IdBinderEmbedded((BeanPropertyAssocOne<?>)uids[0]);
 			} else {
 				return new IdBinderSimple(uids[0]);
 			}

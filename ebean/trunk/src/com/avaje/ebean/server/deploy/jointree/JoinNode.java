@@ -83,7 +83,7 @@ public abstract class JoinNode {
 	/**
 	 * The descriptor for this node.
 	 */
-	final BeanDescriptor desc;
+	final BeanDescriptor<?> desc;
 
 	/**
 	 * The property prefix built up by depth.
@@ -112,7 +112,7 @@ public abstract class JoinNode {
 	/**
 	 * Create the tree.
 	 */
-	protected JoinNode(BeanDescriptor descriptor, DeployPropertyRequest deployPropertyRequest) {
+	protected JoinNode(BeanDescriptor<?> descriptor, DeployPropertyRequest deployPropertyRequest) {
 		this.type = Type.ROOT;
 		this.joinDepth = 0;
 		this.objectDepth = 0;
@@ -135,7 +135,7 @@ public abstract class JoinNode {
 	/**
 	 * Used internally for Embedded Beans place holder.
 	 */
-	protected JoinNode(String name, JoinNode parent,  BeanDescriptor desc, String propertyPrefix) {
+	protected JoinNode(String name, JoinNode parent,  BeanDescriptor<?> desc, String propertyPrefix) {
 
 		this.type = Type.EMBEDDED;
 		this.name = name;
@@ -159,7 +159,7 @@ public abstract class JoinNode {
 	/**
 	 * Used internally when building the tree.
 	 */
-	protected JoinNode(Type type, String name, JoinNode parent, TableJoin tableJoin, BeanDescriptor desc,
+	protected JoinNode(Type type, String name, JoinNode parent, TableJoin tableJoin, BeanDescriptor<?> desc,
 			String propertyPrefix, DeployPropertyRequest deployPropertyRequest) {
 
 		this.type = type;
@@ -357,7 +357,7 @@ public abstract class JoinNode {
 	/**
 	 * Return the associated BeanDescriptor for this node.
 	 */
-	public BeanDescriptor getBeanDescriptor() {
+	public BeanDescriptor<?> getBeanDescriptor() {
 		return desc;
 	}
 
@@ -391,12 +391,12 @@ public abstract class JoinNode {
 	/**
 	 * Return the AssocOne BeanProperty.
 	 */
-	public abstract BeanPropertyAssocOne getBeanProp();
+	public abstract BeanPropertyAssocOne<?> getBeanProp();
 
 	/**
 	 * Return the AssocMany BeanProperty.
 	 */
-	public abstract BeanPropertyAssocMany getManyProp();
+	public abstract BeanPropertyAssocMany<?> getManyProp();
 	
 	/**
 	 * Return the inheritance info if this node has it.

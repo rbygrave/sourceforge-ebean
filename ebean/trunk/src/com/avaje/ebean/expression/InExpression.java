@@ -2,7 +2,7 @@ package com.avaje.ebean.expression;
 
 import java.util.Collection;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 class InExpression implements Expression {
 
@@ -50,7 +50,7 @@ class InExpression implements Expression {
 		return InExpression.class.getName().hashCode() + 31 * values.length;
 	}
 
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		return queryAutoFetchHash();
 	}
 

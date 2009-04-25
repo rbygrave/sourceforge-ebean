@@ -71,7 +71,6 @@ import com.avaje.ebean.server.jmx.MAutoFetchControl;
 import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.jmx.MServerControl;
 import com.avaje.ebean.server.lib.ShutdownManager;
-import com.avaje.ebean.server.lib.util.ThrowablePrinter;
 import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
@@ -136,11 +135,6 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * The cache implementation.
 	 */
 	final ServerCache serverCache;
-
-	/**
-	 * Used to 'flatten' throwable into a String for logging.
-	 */
-	final ThrowablePrinter throwablePrinter = new ThrowablePrinter();
 
 	final DeploymentManager deploymentManager;
 
@@ -234,8 +228,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	/**
 	 * Compile a query.
 	 */
-	public CQuery compileQuery(Query<?> query, Transaction t) {
-		QueryRequest qr = createQueryRequest(query, t);
+	public <T> CQuery<T> compileQuery(Query<T> query, Transaction t) {
+		QueryRequest<T> qr = createQueryRequest(query, t);
 	
 		return cqueryEngine.buildQuery(qr);
 	}
@@ -273,8 +267,8 @@ public final class DefaultServer implements InternalEbeanServer {
 		if (profileNode != null || logControl.isDebugLazyLoad()) {
 
 			Class<?> cls = parentBean.getClass();
-			BeanDescriptor desc = getBeanDescriptor(cls);
-			BeanPropertyAssocMany many = (BeanPropertyAssocMany) desc.getBeanProperty(propertyName);
+			BeanDescriptor<?> desc = getBeanDescriptor(cls);
+			BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) desc.getBeanProperty(propertyName);
 
 			StackTraceElement cause = debugLazyHelper.getStackTraceElement(cls);
 
@@ -297,8 +291,8 @@ public final class DefaultServer implements InternalEbeanServer {
 		if (parentBean instanceof EntityBean) {
 			EntityBean parent = (EntityBean) parentBean;
 			Class<?> cls = parent.getClass();
-			BeanDescriptor desc = getBeanDescriptor(cls);
-			BeanPropertyAssocMany many = (BeanPropertyAssocMany) desc.getBeanProperty(propertyName);
+			BeanDescriptor<?> desc = getBeanDescriptor(cls);
+			BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) desc.getBeanProperty(propertyName);
 
 			Class<?> manyTypeCls = many.getTargetType();
 			OrmQuery<?> query = (OrmQuery<?>) createQuery(manyTypeCls);
@@ -313,7 +307,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			// build appropriate predicates for the query...
 			many.setPredicates(query, parent);
 
-			many.refresh(this, query, t, many, parent);
+			many.refresh(this, query, t, parent);
 
 		} else {
 			throw new PersistenceException("Can only refresh a previously queried bean");
@@ -336,7 +330,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			EntityBean eb = (EntityBean) bean;
 			Class<?> beanType = bean.getClass();
 
-			BeanDescriptor desc = getBeanDescriptor(beanType);
+			BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 			// get the real POJO type (no $$EntityBean stuff)
 			beanType = desc.getBeanType();
 
@@ -386,7 +380,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		if (bean == null) {
 			return null;
 		}
-		BeanDescriptor beanDescriptor = getBeanDescriptor(bean.getClass());
+		BeanDescriptor<?> beanDescriptor = getBeanDescriptor(bean.getClass());
 		return beanDescriptor.validate(true, bean);
 	}
 
@@ -394,7 +388,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		if (bean == null) {
 			return null;
 		}
-		BeanDescriptor beanDescriptor = getBeanDescriptor(bean.getClass());
+		BeanDescriptor<?> beanDescriptor = getBeanDescriptor(bean.getClass());
 		BeanProperty prop = beanDescriptor.getBeanProperty(propertyName);
 		if (prop == null) {
 			String msg = "property " + propertyName + " was not found?";
@@ -431,17 +425,10 @@ public final class DefaultServer implements InternalEbeanServer {
 			}
 		} else {
 			Class<?> cls = a.getClass();
-			BeanDescriptor desc = getBeanDescriptor(cls);
+			BeanDescriptor<?> desc = getBeanDescriptor(cls);
 			return diffHelp.diff(a, b, desc);
 		}
 	}
-
-//	/**
-//	 * Return the sql from a external file.
-//	 */
-//	public String getSql(String fileName) {
-//		return plugin.getSql(fileName);
-//	}
 
 	/**
 	 * Process committed beans from another framework or server in another
@@ -495,7 +482,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * </p>
 	 */
 	public EntityBean createEntityBean(Class<?> type) {
-		BeanDescriptor desc = getBeanDescriptor(type);
+		BeanDescriptor<?> desc = getBeanDescriptor(type);
 		return desc.createEntityBean();
 	}
 
@@ -806,7 +793,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * Return the next unique identity for a given table name.
 	 */
 	public Object nextId(String tableName) {
-		BeanDescriptor desc = getMapBeanDescriptor(tableName);
+		BeanDescriptor<?> desc = getMapBeanDescriptor(tableName);
 		return persister.nextId(desc);
 	}
 
@@ -818,13 +805,13 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * </p>
 	 */
 	public Object nextId(Class<?> beanType) {
-		BeanDescriptor desc = getBeanDescriptor(beanType);
+		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		return persister.nextId(desc);
 	}
 
 	public <T> Query<T> createQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
 
-		BeanDescriptor desc = getBeanDescriptor(beanType);
+		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
 			throw new PersistenceException("Is " + beanType.getName() + " an Entity Bean? BeanDescriptor not found?");
 		}
@@ -842,7 +829,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public <T> Query<T> createQuery(Class<T> beanType) {
-		BeanDescriptor desc = getBeanDescriptor(beanType);
+		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
 			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
 		}
@@ -857,7 +844,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public <T> Update<T> createUpdate(Class<T> beanType, String namedUpdate) {
-		BeanDescriptor desc = getBeanDescriptor(beanType);
+		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
 			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
 		}
@@ -871,7 +858,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public <T> Update<T> createUpdate(Class<T> beanType) {
-		BeanDescriptor desc = getBeanDescriptor(beanType);
+		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
 			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
 		}
@@ -921,17 +908,17 @@ public final class DefaultServer implements InternalEbeanServer {
 		return findId(query, t);
 	}
 
-	public QueryRequest createQueryRequest(Query<?> q, Transaction t) {
+	public <T> QueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
-		OrmQuery<?> query = (OrmQuery<?>) q;
-		BeanManager mgr = deploymentManager.getBeanManager(query.getBeanType());
+		OrmQuery<T> query = (OrmQuery<T>) q;
+		BeanManager<T> mgr = deploymentManager.getBeanManager(query.getBeanType());
 
 		if (mgr.isAutoFetchTunable() && !query.isSqlSelect()) {
 			// its a tunable query
 			autoFetchManager.tuneQuery(query);
 		}
-		
-		QueryRequest request = new QueryRequest(this, queryEngine, query, mgr, t);
+		ServerTransaction serverTrans = (ServerTransaction)t;
+		QueryRequest<T> request = new QueryRequest<T>(this, queryEngine, query, mgr, serverTrans);
 		// the query hash after an AutoFetch tuning
 		request.calculateQueryPlanHash();
 		return request;
@@ -949,8 +936,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			return bean;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.rollbackTransIfRequired(stackTrace);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -990,8 +976,8 @@ public final class DefaultServer implements InternalEbeanServer {
 			return set;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.rollbackTransIfRequired(stackTrace);
+			//String stackTrace = throwablePrinter.print(ex);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -1007,8 +993,8 @@ public final class DefaultServer implements InternalEbeanServer {
 			return map;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.rollbackTransIfRequired(stackTrace);
+			//String stackTrace = throwablePrinter.print(ex);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -1025,8 +1011,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			return list;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.rollbackTransIfRequired(stackTrace);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -1061,8 +1046,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			return list;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.logStackTrace(stackTrace);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -1079,8 +1063,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			return set;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.logStackTrace(stackTrace);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -1096,8 +1079,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			return map;
 
 		} catch (RuntimeException ex) {
-			String stackTrace = throwablePrinter.print(ex);
-			request.logStackTrace(stackTrace);
+			request.rollbackTransIfRequired();
 			throw ex;
 		}
 	}
@@ -1137,7 +1119,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			ServerTransaction trans = wrap.transaction;
 			int saveCount = 0;
 			while (it.hasNext()) {
-				Object bean = (Object) it.next();
+				Object bean = it.next();
 				persister.save(bean, trans);
 				saveCount++;
 			}
@@ -1187,7 +1169,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			ServerTransaction trans = wrap.transaction;
 			int deleteCount = 0;
 			while (it.hasNext()) {
-				Object bean = (Object) it.next();
+				Object bean = it.next();
 				persister.delete(bean, trans);
 				deleteCount++;
 			}
@@ -1244,28 +1226,28 @@ public final class DefaultServer implements InternalEbeanServer {
 		return execute(update, null);
 	}
 
-	public BeanManager getBeanManager(Class<?> beanClass) {
+	public <T> BeanManager<T> getBeanManager(Class<T> beanClass) {
 		return deploymentManager.getBeanManager(beanClass);
 	}
 
 	/**
 	 * Return all the BeanDescriptors.
 	 */
-	public Iterator<BeanDescriptor> descriptors() {
+	public Iterator<BeanDescriptor<?>> descriptors() {
 		return deploymentManager.descriptors();
 	}
 
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
-	public BeanDescriptor getBeanDescriptor(Class<?> beanClass) {
+	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> beanClass) {
 		return deploymentManager.getBeanDescriptor(beanClass);
 	}
 
 	/**
 	 * Return the BeanDescriptor for a database table.
 	 */
-	public BeanDescriptor getMapBeanDescriptor(String tableName) {
+	public BeanDescriptor<?> getMapBeanDescriptor(String tableName) {
 		return deploymentManager.getMapBeanDescriptor(tableName);
 	}
 

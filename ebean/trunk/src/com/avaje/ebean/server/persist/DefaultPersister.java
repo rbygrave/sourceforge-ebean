@@ -107,7 +107,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 		validation = props.getPropertyBoolean("validation", true);
 	}
 
-	public Object nextId(BeanDescriptor desc) {
+	public Object nextId(BeanDescriptor<?> desc) {
 		return idGeneratorManager.nextId(desc);
 	}
 
@@ -134,7 +134,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		OrmUpdate<?> ormUpdate = (OrmUpdate<?>) update;
 		
-		BeanManager mgr = deploymentManager.getBeanManager(ormUpdate.getBeanType());
+		BeanManager<?> mgr = deploymentManager.getBeanManager(ormUpdate.getBeanType());
 		
 		if (mgr == null){
 			String msg = "No BeanManager found for type ["+ormUpdate.getBeanType()+"]. Is it an entity?";
@@ -183,7 +183,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 		if (bean == null) {
 			throw new NullPointerException(Message.msg("bean.isnull"));
 		}
-		PersistRequest req = createPersistRequest(bean, t, parentBean);
+		PersistRequestBean<?> req = createPersistRequest(bean, t, parentBean);
 		try {
 			req.initTransIfRequired();
 			save(req);
@@ -198,7 +198,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Insert or update the bean depending on PersistControl and the bean state.
 	 */
-	private void save(PersistRequest request) {
+	private void save(PersistRequestBean<?> request) {
 
 		EntityBeanIntercept intercept = request.getEntityBeanIntercept();
 		if (intercept != null) {
@@ -228,12 +228,12 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Determine if this is an Insert or update for the 'vanilla' bean.
 	 */
-	private void saveVanilla(PersistRequest request) {
+	private void saveVanilla(PersistRequestBean<?> request) {
 
 		// use the version property to determine insert or update
 		// if it is available on this bean
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		Object bean = request.getBean();
 
 		BeanProperty versProp = desc.firstVersionProperty();
@@ -255,7 +255,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Insert the bean.
 	 */
-	private void insert(PersistRequest request) {
+	private void insert(PersistRequestBean<?> request) {
 
 		request.setType(PersistRequest.Type.INSERT);
 
@@ -281,7 +281,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Update the bean. Return NOT_SAVED if the bean values have not changed.
 	 */
-	private void update(PersistRequest request) {
+	private void update(PersistRequestBean<?> request) {
 
 		// we have determined that it is an update
 		request.setType(PersistRequest.Type.UPDATE);
@@ -316,7 +316,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 */
 	public void delete(Object bean, Transaction t) {
 
-		PersistRequest req = createPersistRequest(bean, t, null);
+		PersistRequestBean<?> req = createPersistRequest(bean, t, null);
 
 		req.setType(PersistRequest.Type.DELETE);
 		try {
@@ -336,7 +336,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * Note that preDelete fires before the deletion of children.
 	 * </p>
 	 */
-	private void delete(PersistRequest request) {
+	private void delete(PersistRequestBean<?> request) {
 
 		if (request.isPersistCascade()) {
 			// delete children first
@@ -357,18 +357,18 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * bean to the child beans.
 	 * </p>
 	 */
-	private void saveAssocMany(boolean insertedParent, PersistRequest request, boolean includeExportedOnes) {
+	private void saveAssocMany(boolean insertedParent, PersistRequestBean<?> request, boolean includeExportedOnes) {
 
 		Object parentBean = request.getBean();
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 
 		// exported ones with cascade save
-		BeanPropertyAssocOne[] expOnes = desc.propertiesOneExportedSave();
+		BeanPropertyAssocOne<?>[] expOnes = desc.propertiesOneExportedSave();
 		for (int i = 0; i < expOnes.length; i++) {
-			BeanPropertyAssocOne prop = expOnes[i];
+			BeanPropertyAssocOne<?> prop = expOnes[i];
 
 			// check for partial beans
-			if (request.isIncludeProperty(prop)) {
+			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(request.getBean());
 				if (detailBean != null) {
 					if (prop.isSaveRecurseSkippable(detailBean)) {
@@ -385,7 +385,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 		}
 
 		// many's with cascade save
-		BeanPropertyAssocMany[] manys = desc.propertiesManySave();
+		BeanPropertyAssocMany<?>[] manys = desc.propertiesManySave();
 		for (int i = 0; i < manys.length; i++) {
 			if (manys[i].isManyToMany()) {
 				// save the beans that are in the manyToMany
@@ -402,7 +402,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Save the details from a OneToMany collection.
 	 */
-	private void saveAssocManyDetails(PersistRequest request, BeanPropertyAssocMany prop,
+	private void saveAssocManyDetails(PersistRequestBean<?> request, BeanPropertyAssocMany<?> prop,
 			boolean oneToMany) {
 
 		Object parentBean = request.getBean();
@@ -472,7 +472,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * This is done via MapBeans.
 	 * </p>
 	 */
-	private void saveAssocManyIntersection(boolean insertedParent, PersistRequest request, BeanPropertyAssocMany prop) {
+	private void saveAssocManyIntersection(boolean insertedParent, PersistRequestBean<?> request, BeanPropertyAssocMany<?> prop) {
 
 		Object parentBean = request.getBean();
 		Object value = prop.getValue(parentBean);
@@ -564,19 +564,19 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * This is called prior to deleting the parent bean.
 	 * </p>
 	 */
-	private void deleteAssocMany(PersistRequest request) {
+	private void deleteAssocMany(PersistRequestBean<?> request) {
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 
 		Object parentBean = request.getBean();
 
 		// exported assoc ones with delete cascade
-		BeanPropertyAssocOne[] expOnes = desc.propertiesOneExportedDelete();
+		BeanPropertyAssocOne<?>[] expOnes = desc.propertiesOneExportedDelete();
 		for (int i = 0; i < expOnes.length; i++) {
-			BeanPropertyAssocOne prop = expOnes[i];
+			BeanPropertyAssocOne<?> prop = expOnes[i];
 
 			// check for partial object
-			if (request.isIncludeProperty(prop)) {
+			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(parentBean);
 				if (detailBean != null) {
 					ServerTransaction t = request.getTransaction();
@@ -588,7 +588,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 		}
 
 		// Many's with delete cascade
-		BeanPropertyAssocMany[] manys = desc.propertiesManyDelete();
+		BeanPropertyAssocMany<?>[] manys = desc.propertiesManyDelete();
 		for (int i = 0; i < manys.length; i++) {
 
 			// no need to check partial object with assoc many's
@@ -628,18 +628,18 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Save any associated one beans.
 	 */
-	private void saveAssocOne(PersistRequest request) {
+	private void saveAssocOne(PersistRequestBean<?> request) {
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 
 		// imported ones with save cascade
-		BeanPropertyAssocOne[] ones = desc.propertiesOneImportedSave();
+		BeanPropertyAssocOne<?>[] ones = desc.propertiesOneImportedSave();
 
 		for (int i = 0; i < ones.length; i++) {
-			BeanPropertyAssocOne prop = ones[i];
+			BeanPropertyAssocOne<?> prop = ones[i];
 
 			// check for partial objects
-			if (request.isIncludeProperty(prop)) {
+			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(request.getBean());
 				if (detailBean != null) {
 					if (prop.isSaveRecurseSkippable(detailBean)) {
@@ -658,17 +658,17 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Delete any associated one beans.
 	 */
-	private void deleteAssocOne(PersistRequest request) {
+	private void deleteAssocOne(PersistRequestBean<?> request) {
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 
 		// imported assoc ones with cascade delete
-		BeanPropertyAssocOne[] ones = desc.propertiesOneImportedDelete();
+		BeanPropertyAssocOne<?>[] ones = desc.propertiesOneImportedDelete();
 		for (int i = 0; i < ones.length; i++) {
-			BeanPropertyAssocOne prop = ones[i];
+			BeanPropertyAssocOne<?> prop = ones[i];
 
 			// check for partial object
-			if (request.isIncludeProperty(prop)) {
+			if (request.isLoadedProperty(prop)) {
 
 				Object detailBean = prop.getValue(request.getBean());
 
@@ -683,9 +683,9 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	/**
 	 * Set Id Generated value for insert.
 	 */
-	private void setIdGenValue(PersistRequest request) {
+	private void setIdGenValue(PersistRequestBean<?> request) {
 
-		BeanDescriptor desc = request.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		if (!desc.isUseIdGenerator()) {
 			return;
 		}
@@ -746,15 +746,15 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * Create the BeanPersistRequest that wraps all the objects used to perform
 	 * an insert, update or delete.
 	 */
-	private PersistRequestBean createPersistRequest(Object bean, Transaction t, Object parentBean) {
+	private <T> PersistRequestBean<T> createPersistRequest(T bean, Transaction t, Object parentBean) {
 
-		BeanManager mgr = getPersistDescriptor(bean);
+		BeanManager<T> mgr = getPersistDescriptor(bean);
 		if (mgr == null){
 			String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it an entity?";
 			throw new PersistenceException(msg);
 		}
 
-		return new PersistRequestBean(server, bean, parentBean, mgr, (ServerTransaction) t,persistExecute);
+		return new PersistRequestBean<T>(server, bean, parentBean, mgr, (ServerTransaction) t,persistExecute);
 	}
 
 	/**
@@ -764,12 +764,13 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 * If so it will return the table based BeanDescriptor.
 	 * </p>
 	 */
-	private BeanManager getPersistDescriptor(Object bean) {
+	@SuppressWarnings("unchecked")
+	private <T> BeanManager<T> getPersistDescriptor(T bean) {
 		if (bean instanceof MapBean) {
 			MapBean mapBean = (MapBean) bean;
 			String tableName = mapBean.getTableName();
 			if (tableName != null) {
-				BeanManager mgr = deploymentManager.getMapBeanManager(tableName);
+				BeanManager<T> mgr = (BeanManager<T>) deploymentManager.getMapBeanManager(tableName);
 				if (mgr == null) {
 					String m = "Could not find MapBean descriptor for table [" + tableName + "]";
 					throw new PersistenceException(m);
@@ -784,6 +785,6 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 				}
 			}
 		}
-		return deploymentManager.getBeanManager(bean.getClass());
+		return (BeanManager<T>) deploymentManager.getBeanManager(bean.getClass());
 	}
 }

@@ -23,9 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.bean.QueryType;
 import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.ManyType;
@@ -36,17 +38,21 @@ import com.avaje.ebean.server.query.CQueryPlan;
 /**
  * Wraps the objects involved in executing a Query.
  */
-public final class QueryRequest extends BeanRequest {
+public final class QueryRequest<T> extends BeanRequest implements BeanQueryRequest<T> {
+	
+	/**
+	 * The associated BeanDescriptor.
+	 */
+	private final BeanManager<T> beanManager;
 
+	private final BeanDescriptor<T> beanDescriptor;
+	
 	private final OrmQueryEngine queryEngine;
 
-	private final OrmQuery<?> query;
-
-	private final InternalEbeanServer server;
+	private final OrmQuery<T> query;
 
 	private final BeanFinder finder;
 
-	private ServerTransaction trans;
 	
 	private TransactionContext transactionContext;
 
@@ -70,20 +76,38 @@ public final class QueryRequest extends BeanRequest {
 	/**
 	 * Create the InternalQueryRequest.
 	 */
-	public QueryRequest(InternalEbeanServer server, OrmQueryEngine queryEngine, OrmQuery<?> query,
-			BeanManager mgr, Transaction t) {
+	public QueryRequest(InternalEbeanServer server, OrmQueryEngine queryEngine, OrmQuery<T> query,
+			BeanManager<T> mgr, ServerTransaction t) {
 
-		super(server, mgr, null);
-		this.server = server;
+		super(server, t);
+		this.beanManager = mgr;
+		this.beanDescriptor = mgr.getBeanDescriptor();
+		this.finder = beanDescriptor.getBeanFinder();
+//		if (mgr != null) {
+//			this.beanDescriptor = mgr.getBeanDescriptor();
+//		} else {
+//			this.beanDescriptor = null;
+//		}
+
 		this.queryEngine = queryEngine;
 		this.query = query;
-		this.trans = (ServerTransaction) t;
 		
-		if (beanDescriptor != null) {
-			this.finder = beanDescriptor.getBeanFinder();
-		} else {
-			this.finder = null;
-		}
+//		if (beanDescriptor != null) {
+//			this.finder = beanDescriptor.getBeanFinder();
+//		} else {
+//			this.finder = null;
+//		}
+	}
+	
+	public BeanManager<T> getBeanManager() {
+		return beanManager;
+	}
+
+	/**
+	 * Return the BeanDescriptor for the associated bean.
+	 */
+	public BeanDescriptor<T> getBeanDescriptor() {
+		return beanDescriptor;
 	}
 	
 	/**
@@ -104,19 +128,15 @@ public final class QueryRequest extends BeanRequest {
 	public TransactionContext getTransactionContext() {
 		return transactionContext;
 	}
-	
-	public ServerTransaction getTransaction() {
-		return trans;
-	}
 
-	/**
-	 * Rollback the local transaction if required.
-	 */
-	public void rollbackTransIfRequired(String stackTrace) {
-		if (createdTransaction) {
-			trans.rollback();
-		}
-	}
+//	/**
+//	 * Rollback the local transaction if required.
+//	 */
+//	public void rollbackTransIfRequired(String stackTrace) {
+//		if (createdTransaction) {
+//			transaction.rollback();
+//		}
+//	}
 
 	/**
 	 * This will create a local (readOnly) transaction if no current transaction
@@ -128,12 +148,12 @@ public final class QueryRequest extends BeanRequest {
 	 * </p>
 	 */
 	public void initTransIfRequired() {
-		if (trans == null) {
+		if (transaction == null) {
 			// get current transaction
-			trans = ebeanServer.getCurrentServerTransaction();
-			if (trans == null || !trans.isActive() || query.useOwnTransaction()) {
+			transaction = ebeanServer.getCurrentServerTransaction();
+			if (transaction == null || !transaction.isActive() || query.useOwnTransaction()) {
 				// create an implicit transaction to execute this query
-				trans = server.createQueryTransaction();
+				transaction = ebeanServer.createQueryTransaction();
 
 				// leaving off setReadOnly(true) for performance reasons
 				// TODO: review performance of transaction.setReadOnly(true);
@@ -141,7 +161,7 @@ public final class QueryRequest extends BeanRequest {
 				createdTransaction = true;
 			}
 		}
-		this.transactionContext = determineTransactionContext(query, trans);
+		this.transactionContext = determineTransactionContext(query, transaction);
 	}
 
 	/**
@@ -166,7 +186,7 @@ public final class QueryRequest extends BeanRequest {
 	public void endTransIfRequired() {
 		if (createdTransaction && !backgroundFetching) {
 			// we can rollback as readOnly transaction
-			trans.rollback();
+			transaction.rollback();
 		}
 	}
 
@@ -222,6 +242,16 @@ public final class QueryRequest extends BeanRequest {
 		manyType = ManyType.MAP;
 		return (Map<?, ?>) queryEngine.findMany(this);
 	}
+	
+	
+
+	public QueryType getQueryType() {
+		if (manyType != null){
+			return manyType.getQueryType();
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * Return the 'Join Tree' for this request.
@@ -240,7 +270,7 @@ public final class QueryRequest extends BeanRequest {
 	/**
 	 * Return the find that is to be performed.
 	 */
-	public OrmQuery<?> getQuery() {
+	public OrmQuery<T> getQuery() {
 		return query;
 	}
 
@@ -248,7 +278,7 @@ public final class QueryRequest extends BeanRequest {
 	 * Return the many property that is fetched in the query or null if there is
 	 * not one.
 	 */
-	public BeanPropertyAssocMany getManyProperty() {
+	public BeanPropertyAssocMany<?> getManyProperty() {
 		return beanDescriptor.getManyProperty(query);
 	}
 

@@ -39,7 +39,7 @@ public class DmlBeanPersisterFactory implements BeanPersisterFactory {
 	/**
 	 * Create a DmlBeanPersister for the given bean type.
 	 */
-	public BeanPersister create(BeanDescriptor desc) {
+	public BeanPersister create(BeanDescriptor<?> desc) {
 		
 		UpdateMeta updMeta = metaFactory.createUpdate(desc);
 		DeleteMeta delMeta = metaFactory.createDelete(desc);

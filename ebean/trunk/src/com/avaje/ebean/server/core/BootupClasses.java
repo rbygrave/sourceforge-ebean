@@ -27,9 +27,9 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.avaje.ebean.bean.BeanController;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.server.type.ScalarType;
 
 /**
@@ -157,7 +157,7 @@ public class BootupClasses {
 
 		boolean interesting = false;
 
-		if (BeanController.class.isAssignableFrom(cls)){
+		if (BeanPersistController.class.isAssignableFrom(cls)){
 			beanControllerList.add(cls);
 			interesting = true;
 		}
@@ -172,7 +172,7 @@ public class BootupClasses {
 			interesting = true;
 		}
 
-		if (BeanListener.class.isAssignableFrom(cls)) {
+		if (BeanPersistListener.class.isAssignableFrom(cls)) {
 			beanListenerList.add(cls);
 			interesting = true;
 		}

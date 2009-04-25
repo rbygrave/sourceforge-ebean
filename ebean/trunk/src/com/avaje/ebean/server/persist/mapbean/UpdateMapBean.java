@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.persist.Binder;
@@ -36,7 +36,7 @@ public class UpdateMapBean extends DeleteMapBean {
 
 	private ArrayList<UpdateGenValue> updateGenValues;
 	
-	public UpdateMapBean(Binder binder, PersistRequest request) {
+	public UpdateMapBean(Binder binder, PersistRequestBean<?> request) {
 		super(binder, request);
 	}
 	

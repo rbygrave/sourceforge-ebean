@@ -37,7 +37,7 @@ public class TransientProperties {
     /**
      * Mark any additional properties as transient.
      */
-    public void process(DeployBeanDescriptor desc) {
+    public void process(DeployBeanDescriptor<?> desc) {
         
         List<DeployBeanProperty> props = desc.propertiesBase();
         for (int i = 0; i < props.size(); i++) {
@@ -48,9 +48,9 @@ public class TransientProperties {
             }
 		}
 
-        List<DeployBeanPropertyAssocOne> ones = desc.propertiesAssocOne();
+        List<DeployBeanPropertyAssocOne<?>> ones = desc.propertiesAssocOne();
         for (int i = 0; i < ones.size(); i++) {
-        	DeployBeanPropertyAssocOne prop = ones.get(i);
+        	DeployBeanPropertyAssocOne<?> prop = ones.get(i);
             if (prop.getBeanTable() == null) {
                 if (!prop.isEmbedded()) {
                 	prop.setTransient(true);
@@ -58,9 +58,9 @@ public class TransientProperties {
             }
         }
 
-        List<DeployBeanPropertyAssocMany> manys = desc.propertiesAssocMany();
+        List<DeployBeanPropertyAssocMany<?>> manys = desc.propertiesAssocMany();
         for (int i = 0; i < manys.size(); i++) {
-        	DeployBeanPropertyAssocMany prop = manys.get(i);
+        	DeployBeanPropertyAssocMany<?> prop = manys.get(i);
         	if (prop.getBeanTable() == null) {
             	prop.setTransient(true);
             }

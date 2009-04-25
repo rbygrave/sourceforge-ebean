@@ -36,7 +36,7 @@ public class DeployBeanPropertyLists {
 
 	private BeanProperty derivedFirstVersionProp;
 
-	private final BeanDescriptor desc;
+	private final BeanDescriptor<?> desc;
 	
 	private final LinkedHashMap<String, BeanProperty> propertyMap;	
 	
@@ -63,12 +63,13 @@ public class DeployBeanPropertyLists {
 	
 	private final TableJoin[] tableJoins;
 	
-	private final BeanPropertyAssocOne unidirectional;
+	private final BeanPropertyAssocOne<?> unidirectional;
 	
-	public DeployBeanPropertyLists(BeanDescriptorOwner owner, BeanDescriptor desc, DeployBeanDescriptor deploy){
+	@SuppressWarnings("unchecked")
+	public DeployBeanPropertyLists(BeanDescriptorOwner owner, BeanDescriptor<?> desc, DeployBeanDescriptor<?> deploy){
 		this.desc = desc;
 		
-		DeployBeanPropertyAssocOne deployUnidirectional = deploy.getUnidirectional();
+		DeployBeanPropertyAssocOne<?> deployUnidirectional = deploy.getUnidirectional();
 		if (deployUnidirectional == null){
 			unidirectional = null;
 		} else {
@@ -102,7 +103,7 @@ public class DeployBeanPropertyLists {
 	/**
 	 * Return the unidirectional.
 	 */
-	public BeanPropertyAssocOne getUnidirectional() {
+	public BeanPropertyAssocOne<?> getUnidirectional() {
 		return unidirectional;
 	}
 	
@@ -131,7 +132,7 @@ public class DeployBeanPropertyLists {
 				embedded.add(prop);
 			} else {
 				ones.add(prop);
-				BeanPropertyAssocOne assocOne = (BeanPropertyAssocOne) prop;
+				BeanPropertyAssocOne<?> assocOne = (BeanPropertyAssocOne<?>) prop;
 				if (assocOne.isOneToOneExported()) {
 					onesExported.add(prop);
 				} else {
@@ -210,46 +211,46 @@ public class DeployBeanPropertyLists {
 	}
 
 	
-	public BeanPropertyAssocOne[] getEmbedded() {
+	public BeanPropertyAssocOne<?>[] getEmbedded() {
 		return (BeanPropertyAssocOne[]) embedded.toArray(new BeanPropertyAssocOne[embedded.size()]);
 	}
 
-	public BeanPropertyAssocOne[] getOneExported() {
+	public BeanPropertyAssocOne<?>[] getOneExported() {
 		return (BeanPropertyAssocOne[]) onesExported.toArray(new BeanPropertyAssocOne[onesExported.size()]);
 	}
 
-	public BeanPropertyAssocOne[] getOneImported() {
+	public BeanPropertyAssocOne<?>[] getOneImported() {
 		return (BeanPropertyAssocOne[]) onesImported.toArray(new BeanPropertyAssocOne[onesImported.size()]);
 	}
 
-	public BeanPropertyAssocOne[] getOnes() {
+	public BeanPropertyAssocOne<?>[] getOnes() {
 		return (BeanPropertyAssocOne[]) ones.toArray(new BeanPropertyAssocOne[ones.size()]);
 	}
 	
 
-	public BeanPropertyAssocOne[] getOneExportedSave() {
+	public BeanPropertyAssocOne<?>[] getOneExportedSave() {
 		return getOne(false, Mode.Save);
 	}
-	public BeanPropertyAssocOne[] getOneExportedDelete() {
+	public BeanPropertyAssocOne<?>[] getOneExportedDelete() {
 		return getOne(false, Mode.Delete);
 	}
-	public BeanPropertyAssocOne[] getOneImportedSave() {
+	public BeanPropertyAssocOne<?>[] getOneImportedSave() {
 		return getOne(true, Mode.Save);
 	}
-	public BeanPropertyAssocOne[] getOneImportedDelete() {
+	public BeanPropertyAssocOne<?>[] getOneImportedDelete() {
 		return getOne(true, Mode.Delete);
 	}
 	
 
-	public BeanPropertyAssocMany[] getMany() {
+	public BeanPropertyAssocMany<?>[] getMany() {
 		return (BeanPropertyAssocMany[]) manys.toArray(new BeanPropertyAssocMany[manys.size()]);
 	}
 
-	public BeanPropertyAssocMany[] getManySave() {
+	public BeanPropertyAssocMany<?>[] getManySave() {
 		return getMany(Mode.Save);
 	}
 
-	public BeanPropertyAssocMany[] getManyDelete() {
+	public BeanPropertyAssocMany<?>[] getManyDelete() {
 		return getMany(Mode.Delete);
 	}
 	
@@ -260,10 +261,10 @@ public class DeployBeanPropertyLists {
 		Save, Delete, Validate;
 	}
 	
-	private BeanPropertyAssocOne[] getOne(boolean imported, Mode mode) {
-		ArrayList<BeanPropertyAssocOne> list = new ArrayList<BeanPropertyAssocOne>();
+	private BeanPropertyAssocOne<?>[] getOne(boolean imported, Mode mode) {
+		ArrayList<BeanPropertyAssocOne<?>> list = new ArrayList<BeanPropertyAssocOne<?>>();
 		for (int i = 0; i < ones.size(); i++) {
-			BeanPropertyAssocOne prop = (BeanPropertyAssocOne)ones.get(i);
+			BeanPropertyAssocOne<?> prop = (BeanPropertyAssocOne<?>)ones.get(i);
 			if (imported != prop.isOneToOneExported()){
 				switch (mode) {
 				case Save:
@@ -291,10 +292,10 @@ public class DeployBeanPropertyLists {
 	}
 
 	
-	private BeanPropertyAssocMany[] getMany(Mode mode) {
-		ArrayList<BeanPropertyAssocMany> list = new ArrayList<BeanPropertyAssocMany>();
+	private BeanPropertyAssocMany<?>[] getMany(Mode mode) {
+		ArrayList<BeanPropertyAssocMany<?>> list = new ArrayList<BeanPropertyAssocMany<?>>();
 		for (int i = 0; i < manys.size(); i++) {
-			BeanPropertyAssocMany prop = (BeanPropertyAssocMany)manys.get(i);
+			BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)manys.get(i);
 			
 			switch (mode) {
 			case Save:
@@ -321,6 +322,7 @@ public class DeployBeanPropertyLists {
 		return (BeanPropertyAssocMany[]) list.toArray(new BeanPropertyAssocMany[list.size()]);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private BeanProperty createBeanProperty(BeanDescriptorOwner owner, DeployBeanProperty deployProp){
 		
 		if (deployProp instanceof DeployBeanPropertyAssocOne){

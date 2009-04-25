@@ -106,7 +106,7 @@ public class ExeOrmUpdate {
      */
     private String translate(PersistRequestOrmUpdate request, String sql) {
     	
-    	BeanDescriptor descriptor = request.getBeanDescriptor();
+    	BeanDescriptor<?> descriptor = request.getBeanDescriptor();
     	return descriptor.convertOrmUpdateToSql(sql);
     }
 	

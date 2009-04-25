@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  * the logical bean types into tables and bean properties into columns.
  * </p>
  */
-@Target( { ElementType.FIELD, ElementType.METHOD, ElementType.TYPE })
+@Target( { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NamedUpdate {
 

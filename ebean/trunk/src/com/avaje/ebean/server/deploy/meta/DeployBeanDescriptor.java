@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.BeanController;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
@@ -43,7 +43,7 @@ import com.avaje.ebean.server.reflect.BeanReflect;
 /**
  * Describes Beans including their deployment information.
  */
-public class DeployBeanDescriptor {
+public class DeployBeanDescriptor<T> {
 
 	private static final Logger logger = Logger.getLogger(DeployBeanDescriptor.class.getName());
 	
@@ -59,7 +59,7 @@ public class DeployBeanDescriptor {
 	/**
 	 * The type of bean this describes.
 	 */
-	final Class<?> beanType;
+	final Class<T> beanType;
 
 	/**
 	 * This is not sent to a remote client.
@@ -70,7 +70,7 @@ public class DeployBeanDescriptor {
 
 	final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
 	
-	DeployBeanPropertyAssocOne unidirectional;
+	DeployBeanPropertyAssocOne<?> unidirectional;
 	
 	/**
 	 * The EbeanServer name. Same as the plugin name.
@@ -121,6 +121,8 @@ public class DeployBeanDescriptor {
 	 */
 	int concurrencyMode = ConcurrencyMode.ALL;
 
+	boolean updateChangesOnly;
+	
 	/**
 	 * The tables this bean is dependent on.
 	 */
@@ -158,7 +160,7 @@ public class DeployBeanDescriptor {
 	 * Intercept pre post on insert,update,delete and postLoad(). Server side
 	 * only.
 	 */
-	BeanController controller;
+	BeanPersistController<T> controller;
 
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -168,7 +170,7 @@ public class DeployBeanDescriptor {
 	/**
 	 * Listens for post commit insert update and delete events.
 	 */
-	BeanListener beanListener;
+	BeanPersistListener<T> beanListener;
 
 	/**
 	 * The table joins for this bean. Server side only.
@@ -186,7 +188,7 @@ public class DeployBeanDescriptor {
 	/**
 	 * Construct the BeanDescriptor.
 	 */
-	public DeployBeanDescriptor(BeanDescriptorOwner owner, Class<?> beanType) {
+	public DeployBeanDescriptor(BeanDescriptorOwner owner, Class<T> beanType) {
 		this.owner = owner;
 		this.beanType = beanType;
 		if (owner != null) {
@@ -290,7 +292,7 @@ public class DeployBeanDescriptor {
 	/**
 	 * Return the class type this BeanDescriptor describes.
 	 */
-	public Class<?> getBeanType() {
+	public Class<T> getBeanType() {
 		return beanType;
 	}
 
@@ -386,11 +388,11 @@ public class DeployBeanDescriptor {
 
 	
 	
-	public DeployBeanPropertyAssocOne getUnidirectional() {
+	public DeployBeanPropertyAssocOne<?> getUnidirectional() {
 		return unidirectional;
 	}
 
-	public void setUnidirectional(DeployBeanPropertyAssocOne unidirectional) {
+	public void setUnidirectional(DeployBeanPropertyAssocOne<?> unidirectional) {
 		this.unidirectional = unidirectional;
 	}
 
@@ -406,6 +408,15 @@ public class DeployBeanDescriptor {
 	 */
 	public void setConcurrencyMode(int concurrencyMode) {
 		this.concurrencyMode = concurrencyMode;
+	}
+
+	
+	public boolean isUpdateChangesOnly() {
+		return updateChangesOnly;
+	}
+
+	public void setUpdateChangesOnly(boolean updateChangesOnly) {
+		this.updateChangesOnly = updateChangesOnly;
 	}
 
 	/**
@@ -427,14 +438,14 @@ public class DeployBeanDescriptor {
 	/**
 	 * Return the beanListener.
 	 */
-	public BeanListener getBeanListener() {
+	public BeanPersistListener<T> getBeanListener() {
 		return beanListener;
 	}
 
 	/**
 	 * Set the beanListener.
 	 */
-	public void setBeanListener(BeanListener beanListener) {
+	public void setBeanListener(BeanPersistListener<T> beanListener) {
 		this.beanListener = beanListener;
 	}
 
@@ -456,14 +467,14 @@ public class DeployBeanDescriptor {
 	/**
 	 * Return the Controller.
 	 */
-	public BeanController getBeanController() {
+	public BeanPersistController<T> getBeanController() {
 		return controller;
 	}
 
 	/**
 	 * Set the Controller.
 	 */
-	public void setBeanController(BeanController controller) {
+	public void setBeanController(BeanPersistController<T> controller) {
 		this.controller = controller;
 	}
 
@@ -705,16 +716,16 @@ public class DeployBeanDescriptor {
 	 * Return an Iterator of BeanPropertyAssocOne that are not embedded. These
 	 * are effectively joined beans. For ManyToOne and OneToOne associations.
 	 */
-	public List<DeployBeanPropertyAssocOne> propertiesAssocOne() {
+	public List<DeployBeanPropertyAssocOne<?>> propertiesAssocOne() {
 
-		ArrayList<DeployBeanPropertyAssocOne> list = new ArrayList<DeployBeanPropertyAssocOne>();
+		ArrayList<DeployBeanPropertyAssocOne<?>> list = new ArrayList<DeployBeanPropertyAssocOne<?>>();
 
 		Iterator<DeployBeanProperty> it = propMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
 			if (prop instanceof DeployBeanPropertyAssocOne) {
 				if (!prop.isEmbedded()) {
-					list.add((DeployBeanPropertyAssocOne) prop);
+					list.add((DeployBeanPropertyAssocOne<?>) prop);
 				}
 			}
 		}
@@ -726,15 +737,15 @@ public class DeployBeanDescriptor {
 	/**
 	 * Return BeanPropertyAssocMany for this descriptor.
 	 */
-	public List<DeployBeanPropertyAssocMany> propertiesAssocMany() {
+	public List<DeployBeanPropertyAssocMany<?>> propertiesAssocMany() {
 
-		ArrayList<DeployBeanPropertyAssocMany> list = new ArrayList<DeployBeanPropertyAssocMany>();
+		ArrayList<DeployBeanPropertyAssocMany<?>> list = new ArrayList<DeployBeanPropertyAssocMany<?>>();
 
 		Iterator<DeployBeanProperty> it = propMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
 			if (prop instanceof DeployBeanPropertyAssocMany) {
-				list.add((DeployBeanPropertyAssocMany) prop);
+				list.add((DeployBeanPropertyAssocMany<?>) prop);
 			}
 		}
 
