@@ -1001,16 +1001,34 @@ public class BeanDescriptor<T> {
 	public BeanProperty getBeanProperty(String propName) {
 		return (BeanProperty) propMap.get(propName);
 	}
-
+	
 	/**
-	 * Find a BeanProperty including searching the inheritance heirarchy.
+	 * Find a BeanProperty including searching the inheritance hierarchy.
 	 * <p>
 	 * This searches this BeanDescriptor and then searches further down the
 	 * inheritance tree (not up).
 	 * </p>
 	 */
 	public BeanProperty findBeanProperty(String propName) {
-		BeanProperty prop = (BeanProperty) propMap.get(propName);
+		int basePos = propName.indexOf('.');
+		if (basePos > -1) {
+			// embedded property
+			String baseName = propName.substring(0, basePos);
+			String propertyName = propName.substring(basePos + 1);
+
+			BeanProperty prop = _findBeanProperty(baseName);
+			if (prop != null && prop instanceof BeanPropertyAssoc) {
+				return ((BeanPropertyAssoc<?>) prop).getTargetDescriptor().findBeanProperty(propertyName);
+			}
+
+			return null;
+		}
+
+		return _findBeanProperty(propName);
+	}
+	
+	private BeanProperty _findBeanProperty(String propName) {
+		BeanProperty prop = propMap.get(propName);
 		if (prop == null && inheritInfo != null) {
 			// search in sub types...
 			return inheritInfo.findSubTypeProperty(propName);
