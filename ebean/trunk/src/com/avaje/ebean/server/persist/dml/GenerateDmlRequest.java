@@ -12,14 +12,27 @@ public class GenerateDmlRequest {
 
 	final Set<String> includeProps;
 	
+	final Object oldValues;
+	
 	int bindCount;
 	
 	String prefix;
 	String prefix2;
 	String suffix;
 	
-	public GenerateDmlRequest(Set<String> includeProps) {
+	/**
+	 * Create from a PersistRequestBean.
+	 */
+	public GenerateDmlRequest(Set<String> includeProps, Object oldValues) {
 		this.includeProps = includeProps;
+		this.oldValues = oldValues;
+	}
+
+	/**
+	 * Create for generating standard all properties DML/SQL.
+	 */
+	public GenerateDmlRequest() {
+		this(null,null);
 	}
 	
 	public GenerateDmlRequest append(String s){
@@ -86,6 +99,10 @@ public class GenerateDmlRequest {
 		this.prefix = "";
 		this.prefix2 = ", ";
 		this.suffix = "=?";
+	}
+
+	public Object getOldValues() {
+		return oldValues;
 	}
 
 }

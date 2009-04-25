@@ -161,7 +161,7 @@ public final class BatchControl {
 	 * request immediately or queue it for batch processing later. The queue is
 	 * flushed according to the depth (object graph depth).
 	 */
-	public int executeOrQueue(PersistRequestBean request, boolean batch) {
+	public int executeOrQueue(PersistRequestBean<?> request, boolean batch) {
 
 		if (!batch || (batchFlushOnMixed && !pstmtHolder.isEmpty())) {
 			// flush when mixing beans and updateSql

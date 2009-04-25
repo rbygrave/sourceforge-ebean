@@ -55,7 +55,7 @@ public class RefreshHelp {
 	/**
 	 * Refresh the bean from property values in dbBean.
 	 */
-	public void refresh(Object o, Object dbBean, BeanDescriptor desc, EntityBeanIntercept ebi, Object id, boolean isLazyLoad) {
+	public void refresh(Object o, Object dbBean, BeanDescriptor<?> desc, EntityBeanIntercept ebi, Object id, boolean isLazyLoad) {
 
 		Object originalOldValues = null;
 		boolean setOriginalOldValues = false;
@@ -98,7 +98,7 @@ public class RefreshHelp {
 			}
 		}
 
-		BeanPropertyAssocOne[] ones = desc.propertiesOne();
+		BeanPropertyAssocOne<?>[] ones = desc.propertiesOne();
 		for (int i = 0; i < ones.length; i++) {
 			BeanProperty prop = ones[i];
 			if (excludes != null && excludes.contains(prop.getName())){
@@ -117,7 +117,7 @@ public class RefreshHelp {
 
 		refreshEmbedded(o, dbBean, desc, excludes);
 
-		BeanPropertyAssocMany[] manys = desc.propertiesMany();
+		BeanPropertyAssocMany<?>[] manys = desc.propertiesMany();
 		for (int i = 0; i < manys.length; i++) {
 			BeanProperty prop = manys[i];
 			if (excludes != null && excludes.contains(prop.getName())){
@@ -145,11 +145,11 @@ public class RefreshHelp {
 	/**
 	 * Refresh the Embedded beans.
 	 */
-	private void refreshEmbedded(Object o, Object dbBean, BeanDescriptor desc, Set<String> excludes) {
+	private void refreshEmbedded(Object o, Object dbBean, BeanDescriptor<?> desc, Set<String> excludes) {
 
-		BeanPropertyAssocOne[] embeds = desc.propertiesEmbedded();
+		BeanPropertyAssocOne<?>[] embeds = desc.propertiesEmbedded();
 		for (int i = 0; i < embeds.length; i++) {
-			BeanPropertyAssocOne prop = embeds[i];
+			BeanPropertyAssocOne<?> prop = embeds[i];
 			if (excludes != null && excludes.contains(prop.getName())){
 				// ignore this property
 			} else {
@@ -186,7 +186,7 @@ public class RefreshHelp {
 	/**
 	 * Output some debug to describe the lazy loading event.
 	 */
-	private void debug(BeanDescriptor desc, EntityBeanIntercept ebi, Object id, Set<String> excludes) {
+	private void debug(BeanDescriptor<?> desc, EntityBeanIntercept ebi, Object id, Set<String> excludes) {
 		
 				
 		Class<?> beanType = desc.getBeanType();

@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.persist;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
@@ -43,17 +43,17 @@ public interface PersistExecute {
 	/**
 	 * Execute a Bean (or MapBean) insert.
 	 */
-	public void executeInsertBean(PersistRequest request);
+	public <T> void executeInsertBean(PersistRequestBean<T> request);
 
 	/**
 	 * Execute a Bean (or MapBean) update.
 	 */
-	public void executeUpdateBean(PersistRequest request);
+	public <T> void executeUpdateBean(PersistRequestBean<T> request);
 
 	/**
 	 * Execute a Bean (or MapBean) delete.
 	 */
-	public void executeDeleteBean(PersistRequest request);
+	public <T> void executeDeleteBean(PersistRequestBean<T> request);
 
 	/**
 	 * Execute a Update.

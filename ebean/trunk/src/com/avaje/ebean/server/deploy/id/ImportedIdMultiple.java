@@ -8,18 +8,19 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
+import com.avaje.ebean.util.ValueUtil;
 
 /**
  * Imported concatenated id that is not embedded.
  */
 public class ImportedIdMultiple implements ImportedId {
 	
-	final BeanPropertyAssoc owner;
+	final BeanPropertyAssoc<?> owner;
 
 
 	final ImportedIdSimple[] imported;
 	
-	public ImportedIdMultiple(BeanPropertyAssoc owner, ImportedIdSimple[] imported) {
+	public ImportedIdMultiple(BeanPropertyAssoc<?> owner, ImportedIdSimple[] imported) {
 		this.owner = owner;
 		this.imported = imported;
 	}
@@ -68,6 +69,19 @@ public class ImportedIdMultiple implements ImportedId {
 			}
 		}
 	}
+	
+	public boolean hasChanged(Object bean, Object oldValues) {
+		
+		for (int i = 0; i < imported.length; i++) {
+			Object id = imported[i].foreignProperty.getValue(bean);
+			Object oldId = imported[i].foreignProperty.getValue(oldValues);
+			if (!ValueUtil.areEqual(id, oldId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	
 	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 		

@@ -38,7 +38,7 @@ public interface BeanDescriptorOwner {
 	/**
 	 * Return the BeanManager for a given class.
 	 */
-	public BeanManager getBeanManager(Class<?> cls);
+	public <T> BeanManager<T> getBeanManager(Class<T> entityType);
 
 	/**
 	 * Return the BeanDescriptor for a given class.
@@ -48,7 +48,7 @@ public interface BeanDescriptorOwner {
 	 * information (JoinTree) etc.
 	 * </p>
 	 */
-	public BeanDescriptor getBeanDescriptor(Class<?> cls);
+	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
 
 	/**
 	 * Return the TypeConverter for the server.

@@ -59,7 +59,7 @@ public class JoinDefineManual {
 	 */
 	public void define(JoinDefineManualInfo joinInfo) {
 
-		DeployBeanPropertyAssoc prop = joinInfo.getProperty();
+		DeployBeanPropertyAssoc<?> prop = joinInfo.getProperty();
 		if (prop == null) {
 			defineSecondaryTable(joinInfo);
 
@@ -147,7 +147,7 @@ public class JoinDefineManual {
 		}
 
 		// determine outer join based on nullable DB columns
-		DeployBeanDescriptor desc = joinInfo.getDescriptor();
+		DeployBeanDescriptor<?> desc = joinInfo.getDescriptor();
 		TableInfo localTableInfo = dictionaryInfo.getTableInfo(desc.getBaseTable());
 		for (int i = 0; i < columns.length; i++) {
 			String localColumn = columns[i].getLocalDbColumn();

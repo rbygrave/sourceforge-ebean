@@ -12,29 +12,28 @@ import com.avaje.ebean.collection.BeanCollection;
 /**
  * Helper functions for performing tasks on Lists Sets or Maps.
  */
-public interface BeanCollectionHelp {
+public interface BeanCollectionHelp<T> {
 
-	public BeanCollection<?> createEmpty();
-
-	/**
-	 * Create a lazy loading proxy for a List Set or Map.
-	 */
-	public BeanCollection<?> createReference(Object parentBean, String serverName,
-			String propertyName, ObjectGraphNode profilePoint);
+	public BeanCollection<T> createEmpty();
 
 	/**
 	 * Add a bean to the List Set or Map.
 	 */
-	public void add(BeanCollection<?> collection, Object bean, String mapKey);
+	public void add(BeanCollection<?> collection, Object bean);
+
+	/**
+	 * Create a lazy loading proxy for a List Set or Map.
+	 */
+	public BeanCollection<T> createReference(Object parentBean, String serverName,
+			String propertyName, ObjectGraphNode profilePoint);
 
 	/**
 	 * Validate the List Set or Map.
 	 */
-	public ArrayList<InvalidValue> validate(BeanDescriptor target, Object manyValue);
+	public ArrayList<InvalidValue> validate(Object manyValue);
 
 	/**
 	 * Refresh the List Set or Map.
 	 */
-	public void refresh(EbeanServer server, Query<?> query, Transaction t,
-			BeanPropertyAssocMany many, Object parentBean);
+	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean);
 }

@@ -41,16 +41,16 @@ public class BeanManagerFactory {
 		peristerFactory = createBeanPersisterFactory(dbConfig);
 	}
 	
-	public BeanManager create(BeanDescriptor desc) {
+	public <T> BeanManager<T> create(BeanDescriptor<T> desc) {
 
 		if (desc.isBaseTableNotFound()){
-			return new BeanManager(desc, null, null);
+			return new BeanManager<T>(desc, null, null);
 		}
 		
 		BeanPersister persister = peristerFactory.create(desc);
 		JoinTree joinTree = joinTreeFactory.create(desc);
 		
-		return new BeanManager(desc, joinTree, persister);
+		return new BeanManager<T>(desc, joinTree, persister);
 	}
 
     private BeanPersisterFactory createBeanPersisterFactory(PluginDbConfig dbConfig) {

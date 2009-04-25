@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.bean.QueryType;
+
 /**
  * Represents the type information for a Set/List or Map.
  */
@@ -42,23 +44,23 @@ public final class ManyType implements Serializable {
     /**
      * A generic Map type with no specific type.
      */
-    public static final ManyType MAP = new ManyType(MAP_CODE,"Map");
+    public static final ManyType MAP = new ManyType(MAP_CODE, "Map", QueryType.MAP);
     
     /**
      * A generic List type with no specific type.
      */
-    public static final ManyType LIST = new ManyType(LIST_CODE,"List");
+    public static final ManyType LIST = new ManyType(LIST_CODE, "List", QueryType.LIST);
     
     /**
      * A generic Set type with no specific type.
      */
-    public static final ManyType SET = new ManyType(SET_CODE,"Set");
+    public static final ManyType SET = new ManyType(SET_CODE, "Set", QueryType.SET);
 
     /**
      * Not a many but FIND ONE (by ID or unique).
 	 * Introduced to help identify subQuery (manyType == null).
      */
-    public static final ManyType FIND_ONE = new ManyType(ONE_CODE,"One");
+    public static final ManyType FIND_ONE = new ManyType(ONE_CODE, "One", QueryType.BEAN);
 
     /**
      * Return a ManyType for the given class. Determines the generic type
@@ -100,13 +102,20 @@ public final class ManyType implements Serializable {
     final char typeCode;
     
     final String typeName;
+    
+    final QueryType queryType;
 
-    private ManyType(char typeCode, String typeName) {
+    private ManyType(char typeCode, String typeName, QueryType queryType) {
         this.typeCode = typeCode;
         this.typeName = typeName;
+        this.queryType = queryType;
     }
     
-    public int hashCode() {
+    public QueryType getQueryType() {
+		return queryType;
+	}
+
+	public int hashCode() {
     	return typeCode;
     }
     

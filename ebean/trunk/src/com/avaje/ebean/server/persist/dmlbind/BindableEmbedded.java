@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
@@ -34,9 +35,9 @@ public class BindableEmbedded implements Bindable {
 
 	final Bindable[] items;
 
-	private final BeanPropertyAssocOne embProp;
+	private final BeanPropertyAssocOne<?> embProp;
 
-	public BindableEmbedded(BeanPropertyAssocOne embProp, List<Bindable> list) {
+	public BindableEmbedded(BeanPropertyAssocOne<?> embProp, List<Bindable> list) {
 		this.embProp = embProp;
 		this.items = list.toArray(new Bindable[list.size()]);
 	}
@@ -71,6 +72,11 @@ public class BindableEmbedded implements Bindable {
 		}
 	}
 	
+	
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		request.hasChanged(embProp);
+	}
+
 	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException{
 		if (checkIncludes && !bindRequest.isIncluded(embProp)){
 			return;

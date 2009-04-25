@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -38,13 +38,13 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableUnidirectional implements Bindable {
 
-	private final BeanPropertyAssocOne unidirectional;
+	private final BeanPropertyAssocOne<?> unidirectional;
 
 	private final ImportedId importedId;
 
-	private final BeanDescriptor desc;
+	private final BeanDescriptor<?> desc;
 	
-	public BindableUnidirectional(BeanDescriptor desc, BeanPropertyAssocOne unidirectional) {
+	public BindableUnidirectional(BeanDescriptor<?> desc, BeanPropertyAssocOne<?> unidirectional) {
 		this.desc = desc;
 		this.unidirectional = unidirectional;
 		this.importedId = unidirectional.getImportedId();
@@ -53,6 +53,10 @@ public class BindableUnidirectional implements Bindable {
 
 	public String toString() {
 		return "BindableShadowFKey " + unidirectional;
+	}
+
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		throw new PersistenceException("Never called (for insert only)");
 	}
 
 	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
@@ -67,7 +71,7 @@ public class BindableUnidirectional implements Bindable {
 	public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean,
 			boolean bindNull) throws SQLException {
 
-		PersistRequest persistRequest = request.getPersistRequest();
+		PersistRequestBean<?> persistRequest = request.getPersistRequest();
 		Object parentBean = persistRequest.getParentBean();
 
 		if (parentBean == null) {

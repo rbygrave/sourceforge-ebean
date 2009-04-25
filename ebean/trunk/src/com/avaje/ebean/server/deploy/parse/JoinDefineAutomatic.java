@@ -78,7 +78,7 @@ public class JoinDefineAutomatic {
 	/**
 	 * Defines table joins that have not been explicitly set.
 	 */
-	public void process(DeployBeanInfo info) {
+	public void process(DeployBeanInfo<?> info) {
 		defineJoins(info);
 	}
 
@@ -93,9 +93,9 @@ public class JoinDefineAutomatic {
 	/**
 	 * Define any joins dynamically that have not been set.
 	 */
-	private void defineJoins(DeployBeanInfo info) {
+	private void defineJoins(DeployBeanInfo<?> info) {
 
-		DeployBeanDescriptor desc = info.getDescriptor();
+		DeployBeanDescriptor<?> desc = info.getDescriptor();
 
 		String baseTable = desc.getBaseTable();
 		if (baseTable == null || baseTable.trim().length() == 0) {
@@ -122,9 +122,9 @@ public class JoinDefineAutomatic {
 		}
 
 		// associated one properties (not embedded)
-		List<DeployBeanPropertyAssocOne> assocOnes = desc.propertiesAssocOne();
+		List<DeployBeanPropertyAssocOne<?>> assocOnes = desc.propertiesAssocOne();
 		for (int i = 0; i < assocOnes.size(); i++) {
-			DeployBeanPropertyAssocOne propBean = assocOnes.get(i);
+			DeployBeanPropertyAssocOne<?> propBean = assocOnes.get(i);
 			if (!propBean.isEmbedded() && !propBean.isTransient()){
 				try {
 					defineJoinDynamically(desc, propBean);
@@ -135,9 +135,9 @@ public class JoinDefineAutomatic {
 			} 		
 		}
 
-		List<DeployBeanPropertyAssocMany> assocManys = desc.propertiesAssocMany();
+		List<DeployBeanPropertyAssocMany<?>> assocManys = desc.propertiesAssocMany();
 		for (int i = 0; i < assocManys.size(); i++) {
-			DeployBeanPropertyAssocMany propList = assocManys.get(i);
+			DeployBeanPropertyAssocMany<?> propList = assocManys.get(i);
 			if (!propList.isTransient()){
 				
 				DeployTableJoin tableJoin = propList.getTableJoin();
@@ -178,7 +178,7 @@ public class JoinDefineAutomatic {
 		prop.setTransient(true);
 	}
 	
-	public void defineJoinDynamically(DeployBeanDescriptor desc, DeployBeanPropertyAssocOne propBean)
+	public void defineJoinDynamically(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssocOne<?> propBean)
 		throws MissingTableException {
 		
 		DeployTableJoin tableJoin = propBean.getTableJoin();
@@ -202,7 +202,7 @@ public class JoinDefineAutomatic {
 	 * Intersection to OtherTable, and the inverse one of OtherTable to
 	 * Intersection.
 	 */
-	private void defineManyToMany(DeployBeanPropertyAssocMany prop, DeployBeanDescriptor desc, DeployBeanInfo info) {
+	private void defineManyToMany(DeployBeanPropertyAssocMany<?> prop, DeployBeanDescriptor<?> desc, DeployBeanInfo<?> info) {
 
 		if (prop.getIntersectionTableJoin() != null){
 			// skip as already defined manually using a JoinTable annotation
@@ -337,7 +337,7 @@ public class JoinDefineAutomatic {
 
 			// identify this side as the 'non-owning' side.
 			// it does not have the foreign key
-			DeployBeanPropertyAssocOne prop = (DeployBeanPropertyAssocOne)params.getProp();
+			DeployBeanPropertyAssocOne<?> prop = (DeployBeanPropertyAssocOne<?>)params.getProp();
 			prop.setOneToOneExported(true);			
 			return;
 		}

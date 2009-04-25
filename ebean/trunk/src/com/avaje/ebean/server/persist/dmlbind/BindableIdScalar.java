@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
@@ -41,14 +41,22 @@ public class BindableIdScalar implements BindableId {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		return uidProp.toString();
 	}
 	
 	/**
+	 * Does nothing for BindableId. 
+	 */
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		// do nothing (id not changing)
+	}
+	
+	/**
 	 * Should not be called as this is really only for concatenated keys.
 	 */
-	public boolean deriveConcatenatedId(PersistRequest persist) {
+	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
 		throw new PersistenceException("Should not be called? only for concatinated keys");
 	}
 	

@@ -2,9 +2,9 @@ package com.avaje.ebean.expression;
 
 import java.util.List;
 
+import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.query.CQuery;
 
 /**
@@ -20,7 +20,7 @@ class InQueryExpression implements Expression {
 
 	private final OrmQuery<?> subQuery;
 
-	private transient CQuery compiledSubQuery;
+	private transient CQuery<?> compiledSubQuery;
 
 	public InQueryExpression(String propertyName, OrmQuery<?> subQuery) {
 		this.propertyName = propertyName;
@@ -38,7 +38,7 @@ class InQueryExpression implements Expression {
 		return hc;
 	}
 
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 
 		// queryPlanHash executes prior to addSql() or addBindValues()
 		// ... so compiledQuery will exist
@@ -53,7 +53,7 @@ class InQueryExpression implements Expression {
 	/**
 	 * Compile/build the sub query.
 	 */
-	private CQuery compileSubQuery(QueryRequest queryRequest) {
+	private CQuery<?> compileSubQuery(BeanQueryRequest<?> queryRequest) {
 
 		InternalEbeanServer ebeanServer = (InternalEbeanServer) queryRequest.getEbeanServer();
 		return ebeanServer.compileQuery(subQuery, queryRequest.getTransaction());

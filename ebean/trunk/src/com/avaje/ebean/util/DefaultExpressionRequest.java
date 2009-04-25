@@ -7,17 +7,17 @@ import com.avaje.ebean.server.core.QueryRequest;
 
 public class DefaultExpressionRequest implements ExpressionRequest {
 
-	final QueryRequest queryRequest;
+	final QueryRequest<?> queryRequest;
 	
 	StringBuilder sb = new StringBuilder();
 	
 	ArrayList<Object> bindValues = new ArrayList<Object>();
 	
-	public DefaultExpressionRequest(QueryRequest queryRequest) {
+	public DefaultExpressionRequest(QueryRequest<?> queryRequest) {
 		this.queryRequest = queryRequest;
 	}
 	
-	public QueryRequest getQueryRequest() {
+	public QueryRequest<?> getQueryRequest() {
 		return queryRequest;
 	}
 

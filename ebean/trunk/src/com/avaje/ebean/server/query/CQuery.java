@@ -63,7 +63,7 @@ import com.avaje.ebean.server.transaction.TransContext;
  * the key object used in reading the flat resultSet back into Objects.
  * </p>
  */
-public class CQuery implements DbReadContext {
+public class CQuery<T> implements DbReadContext {
 
 	private static final Logger logger = Logger.getLogger(CQuery.class.getName());
 
@@ -122,23 +122,22 @@ public class CQuery implements DbReadContext {
 	/**
 	 * The 'master' collection being populated.
 	 */
-	final BeanCollection<?> collection;
+	final BeanCollection<T> collection;
 	/**
 	 * The help for the 'master' collection.
 	 */
-	final BeanCollectionHelp help;
+	final BeanCollectionHelp<T> help;
 
 	/**
 	 * The overall find request wrapper object.
 	 */
-	final QueryRequest request;
+	final QueryRequest<T> request;
 
-	final BeanDescriptor desc;
+	final BeanDescriptor<T> desc;
 
-	final OrmQuery<?> query;
+	final OrmQuery<T> query;
 
-	@SuppressWarnings("unchecked")
-	final QueryListener queryListener;
+	final QueryListener<T> queryListener;
 
 	JoinNode currentJoinNode;
 	
@@ -188,7 +187,7 @@ public class CQuery implements DbReadContext {
 	/**
 	 * For master detail query.
 	 */
-	final BeanPropertyAssocMany manyProperty;
+	final BeanPropertyAssocMany<?> manyProperty;
 
 	final int backgroundFetchAfter;
 
@@ -239,7 +238,7 @@ public class CQuery implements DbReadContext {
 	/**
 	 * Create the Sql select based on the request.
 	 */
-	public CQuery(QueryRequest request, CQueryPredicates predicates, CQueryPlan queryPlan) {
+	public CQuery(QueryRequest<T> request, CQueryPredicates predicates, CQueryPlan queryPlan) {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
@@ -284,14 +283,13 @@ public class CQuery implements DbReadContext {
 		}
 
 		maxRowsLimit = query.getMaxRows() > 0 ? query.getMaxRows() : GLOBAL_ROW_LIMIT;
-		backgroundFetchAfter = query.getBackgroundFetchAfter() > 0 ? query
-				.getBackgroundFetchAfter() : Integer.MAX_VALUE;
+		backgroundFetchAfter = query.getBackgroundFetchAfter() > 0 ? query.getBackgroundFetchAfter() : Integer.MAX_VALUE;
 
-		help = initHelp(request);
+		help = createHelp(request);
 		collection = help != null ? help.createEmpty() : null;
 	}
 
-	private BeanCollectionHelp initHelp(QueryRequest request) {
+	private BeanCollectionHelp<T> createHelp(QueryRequest<T> request) {
 		if (request.isFindById()) {
 			return null;
 		} else {
@@ -300,7 +298,7 @@ public class CQuery implements DbReadContext {
 				// subQuery compiled for InQueryExpression
 				return null;
 			}
-			return BeanCollectionHelpFactory.create(manyType, request.getBeanDescriptor());
+			return BeanCollectionHelpFactory.create(request);
 		}
 	}
 	
@@ -308,7 +306,7 @@ public class CQuery implements DbReadContext {
 		return predicates;
 	}
 
-	public QueryRequest getQueryRequest() {
+	public QueryRequest<?> getQueryRequest() {
 		return request;
 	}
 
@@ -392,7 +390,8 @@ public class CQuery implements DbReadContext {
 	/**
 	 * Return the last read bean.
 	 */
-	public EntityBean getLoadedBean() {
+	@SuppressWarnings("unchecked")
+	public T getLoadedBean() {
 		if (manyIncluded && manyProperty.isManyToMany()) {
 			if (prevDetailCollection != null) {
 				prevDetailCollection.setModifyListening(true);
@@ -402,9 +401,9 @@ public class CQuery implements DbReadContext {
 		}
 
 		if (prevLoadedBean != null) {
-			return prevLoadedBean;
+			return (T)prevLoadedBean;
 		} else {
-			return loadedBean;
+			return (T)loadedBean;
 		}
 	}
 
@@ -524,7 +523,7 @@ public class CQuery implements DbReadContext {
 
 	private void addToCurrentDetailCollection() {
 		if (loadedManyBean != null) {
-			manyProperty.add(currentDetailCollection, loadedManyBean, mapKey);
+			manyProperty.add(currentDetailCollection, loadedManyBean);
 		}
 	}
 
@@ -533,7 +532,7 @@ public class CQuery implements DbReadContext {
 		collection.setFinishedFetch(true);
 	}
 
-	public BeanCollection<?> readCollection(boolean useResultSetLimit) throws SQLException {
+	public BeanCollection<T> readCollection(boolean useResultSetLimit) throws SQLException {
 		
 		if (useResultSetLimit) {
 			if (!navigateFirst()) {
@@ -556,7 +555,6 @@ public class CQuery implements DbReadContext {
 		return collection;
 	}
 
-	@SuppressWarnings("unchecked")
 	private void readTheRows(boolean inForeground) throws SQLException {
 		while (readBeanInternal()) {
 			loadedBeanCount++;
@@ -575,7 +573,7 @@ public class CQuery implements DbReadContext {
 
 			} else {
 				// add to the list/set/map
-				help.add(collection, getLoadedBean(), mapKey);
+				help.add(collection, getLoadedBean());
 			}
 
 			if (hasHitMaxRows) {
@@ -635,7 +633,7 @@ public class CQuery implements DbReadContext {
 	 * Return the property that is associated with the many. There can only be
 	 * one per SqlSelect. This can be null.
 	 */
-	public BeanPropertyAssocMany getManyProperty() {
+	public BeanPropertyAssocMany<?> getManyProperty() {
 		return manyProperty;
 	}
 

@@ -36,7 +36,7 @@ import com.avaje.ebean.server.lib.sql.TableInfo;
  * from annotations, xml and database meta data (foreign keys etc).
  * </p>
  */
-public class DeployBeanInfo {
+public class DeployBeanInfo<T> {
 	
 	TableAliasList aliasList = new TableAliasList();
 
@@ -48,12 +48,12 @@ public class DeployBeanInfo {
 
 	DeployUtil util;
 
-	DeployBeanDescriptor descriptor;
+	DeployBeanDescriptor<T> descriptor;
 
 	/**
 	 * Create with a DeployUtil and BeanDescriptor.
 	 */
-	public DeployBeanInfo(DeployUtil util, DeployBeanDescriptor descriptor) {
+	public DeployBeanInfo(DeployUtil util, DeployBeanDescriptor<T> descriptor) {
 		this.util = util;
 		this.descriptor = descriptor;
 	}
@@ -85,7 +85,7 @@ public class DeployBeanInfo {
 	/**
 	 * Return the BeanDescriptor currently being processed.
 	 */
-	public DeployBeanDescriptor getDescriptor() {
+	public DeployBeanDescriptor<T> getDescriptor() {
 		return descriptor;
 	}
 
@@ -148,7 +148,7 @@ public class DeployBeanInfo {
 	/**
 	 * Set a the join alias for a assoc one property.
 	 */
-	public void setBeanJoinAlias(DeployBeanPropertyAssocOne beanProp, boolean annOptional) {
+	public void setBeanJoinAlias(DeployBeanPropertyAssocOne<?> beanProp, boolean annOptional) {
 
 		String joinType = TableJoin.JOIN;
 		if (annOptional && util.isUseOneToOneOptional()) {
@@ -167,7 +167,7 @@ public class DeployBeanInfo {
 	/**
 	 * Set a the join alias for a assoc many property.
 	 */
-	public void setManyJoinAlias(DeployBeanPropertyAssocMany listProp, DeployTableJoin tableJoin) {
+	public void setManyJoinAlias(DeployBeanPropertyAssocMany<?> listProp, DeployTableJoin tableJoin) {
 
 		// get a unique alias possibly using the name of the property
 		String alias = getAlias(listProp.getName(), null);
@@ -182,7 +182,7 @@ public class DeployBeanInfo {
 	 * ManyToMany only, create an alias for the source to intersection table
 	 * join.
 	 */
-	public void setManyIntersectionAlias(DeployBeanPropertyAssocMany listProp,
+	public void setManyIntersectionAlias(DeployBeanPropertyAssocMany<?> listProp,
 			DeployTableJoin tableJoin) {
 
 		// get a unique alias possibly using the name of the property

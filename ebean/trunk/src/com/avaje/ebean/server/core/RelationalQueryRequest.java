@@ -56,16 +56,16 @@ public final class RelationalQueryRequest {
 		this.query = (RelationalQuery) q;
 		this.trans = (ServerTransaction) t;
 	}
-	
+
 	/**
-	 * Log the stackTrace to the transaction log and rollback the transaction.
+	 * Rollback the transaction if it was created for this request.
 	 */
-	public void logStackTrace(String stackTrace) {
+	public void rollbackTransIfRequired() {
 		if (createdTransaction) {
 			trans.rollback();
 		}
 	}
-
+	
 	/**
 	 * Create a transaction if none currently exists.
 	 */

@@ -1,6 +1,6 @@
 package com.avaje.ebean.expression;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 
 /**
@@ -47,7 +47,7 @@ class IdExpression implements Expression {
 		return IdExpression.class.getName().hashCode();
 	}
 
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		return queryAutoFetchHash();
 	}
 

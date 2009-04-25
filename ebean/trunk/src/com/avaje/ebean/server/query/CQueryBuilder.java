@@ -97,7 +97,7 @@ public class CQueryBuilder implements Constants {
 		return null;
 	}
 
-	protected String getOrderBy(String orderBy, BeanPropertyAssocMany many, BeanDescriptor desc,
+	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
 			boolean hasListener) {
 
 		String manyOrderBy = null;
@@ -135,7 +135,7 @@ public class CQueryBuilder implements Constants {
 	 * Return the SQL Select statement as a String. Converts logical property
 	 * names to physical deployment column names.
 	 */
-	public CQuery buildQuery(QueryRequest request) {
+	public <T> CQuery<T> buildQuery(QueryRequest<T> request) {
 
 		if (request.isSqlSelect()){
 			return rawSqlBuilder.build(request);
@@ -150,7 +150,7 @@ public class CQueryBuilder implements Constants {
 			// Reuse the query plan so skip generating SqlTree and SQL.
 			// We do prepare and bind the new parameters
 			predicates.prepare(false);
-			return new CQuery(request, predicates, queryPlan);
+			return new CQuery<T>(request, predicates, queryPlan);
 		}
 
 		// Prepare the where, having and order by clauses. 
@@ -172,7 +172,7 @@ public class CQueryBuilder implements Constants {
 		// gather query performance statistics based on it.
 		request.putQueryPlan(queryPlan);
 		
-		return new CQuery(request, predicates, queryPlan);
+		return new CQuery<T>(request, predicates, queryPlan);
 	}
 	
     /**
@@ -187,15 +187,15 @@ public class CQueryBuilder implements Constants {
      * the select clause.
      * </p>
      */
-    private SqlTree createSqlTree(QueryRequest request, CQueryPredicates predicates) {
+    private SqlTree createSqlTree(QueryRequest<?> request, CQueryPredicates predicates) {
 
         return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias, request, predicates).build();
     }
 	
-	private String buildSql(QueryRequest request, CQueryPredicates predicates, SqlTree select) {
+	private String buildSql(QueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
 		OrmQuery<?> query = request.getQuery();
-		BeanPropertyAssocMany manyProp = select.getManyProperty();
+		BeanPropertyAssocMany<?> manyProp = select.getManyProperty();
 		
 		String dbOrderBy = predicates.getDbOrderBy();
 
@@ -243,7 +243,7 @@ public class CQueryBuilder implements Constants {
 				sb.append(NEW_LINE).append("where ");
 			}
 			
-			BeanDescriptor desc = request.getBeanDescriptor();
+			BeanDescriptor<?> desc = request.getBeanDescriptor();
 			String idSql = desc.getBindIdSql();
 			sb.append(idSql).append(" ");
 			hasWhere = true;

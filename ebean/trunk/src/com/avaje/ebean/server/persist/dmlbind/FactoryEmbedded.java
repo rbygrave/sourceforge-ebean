@@ -40,9 +40,9 @@ public class FactoryEmbedded {
 	/**
 	 * Add bindable for the embedded properties to the list.
 	 */
-	public void create(List<Bindable> list, BeanDescriptor desc, int mode, boolean withLobs) {
+	public void create(List<Bindable> list, BeanDescriptor<?> desc, int mode, boolean withLobs) {
 		
-		BeanPropertyAssocOne[] embedded = desc.propertiesEmbedded();
+		BeanPropertyAssocOne<?>[] embedded = desc.propertiesEmbedded();
 				
 		for (int j = 0; j < embedded.length; j++) {
 		

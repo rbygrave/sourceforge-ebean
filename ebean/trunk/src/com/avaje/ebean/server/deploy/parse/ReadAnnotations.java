@@ -28,7 +28,7 @@ public class ReadAnnotations {
     /**
      * Read and process all the annotations.
      */
-    public void process(DeployBeanInfo info){
+    public void process(DeployBeanInfo<?> info){
         
     	try {
     		

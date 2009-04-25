@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.util.BindParams;
@@ -144,7 +144,7 @@ public interface OrmQuery<T> extends Query<T> {
 	 * Excludes the actual bind values (as they don't effect the query plan).
 	 * </p>
 	 */
-	public int queryPlanHash(QueryRequest request);
+	public int queryPlanHash(BeanQueryRequest<?> request);
 	
 	/**
 	 * Calculate a hash based on the bind values used in the query.

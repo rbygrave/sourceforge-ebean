@@ -91,7 +91,7 @@ public class IdGeneratorManager {
         defaultGen.configure("default",server);
     }
     
-    public Object nextId(BeanDescriptor desc) {
+    public Object nextId(BeanDescriptor<?> desc) {
         
         String name = desc.getIdGeneratorName();
         return getGenerator(name).nextId(desc);

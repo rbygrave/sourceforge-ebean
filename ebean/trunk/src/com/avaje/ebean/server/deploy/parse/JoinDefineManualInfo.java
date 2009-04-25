@@ -37,23 +37,23 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
  */
 public class JoinDefineManualInfo {
 
-	final DeployBeanDescriptor descriptor;
+	final DeployBeanDescriptor<?> descriptor;
 
-	final DeployBeanPropertyAssoc property;
+	final DeployBeanPropertyAssoc<?> property;
 
 	final DeployTableJoin tableJoin;
 
 	/**
 	 * Used for a Secondary table.
 	 */
-	public JoinDefineManualInfo(DeployBeanDescriptor desc, DeployTableJoin join) {
+	public JoinDefineManualInfo(DeployBeanDescriptor<?> desc, DeployTableJoin join) {
 		this.descriptor = desc;
 		this.tableJoin = join;
 		this.property = null;
 
 	}
 
-	public JoinDefineManualInfo(DeployBeanDescriptor desc, DeployBeanPropertyAssoc prop) {
+	public JoinDefineManualInfo(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssoc<?> prop) {
 		this.descriptor = desc;
 		this.property = prop;
 		this.tableJoin = (prop == null) ? null : prop.getTableJoin();
@@ -70,14 +70,14 @@ public class JoinDefineManualInfo {
 	/**
 	 * Return the associated bean property.
 	 */
-	public DeployBeanPropertyAssoc getProperty() {
+	public DeployBeanPropertyAssoc<?> getProperty() {
 		return property;
 	}
 
 	/**
 	 * Return the associated bean descriptor.
 	 */
-	public DeployBeanDescriptor getDescriptor() {
+	public DeployBeanDescriptor<?> getDescriptor() {
 		return descriptor;
 	}
 

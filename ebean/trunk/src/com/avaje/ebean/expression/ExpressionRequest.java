@@ -2,7 +2,7 @@ package com.avaje.ebean.expression;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 /**
  * Request object used for gathering expression sql and bind values.
@@ -12,7 +12,7 @@ public interface ExpressionRequest {
 	/**
 	 * Return the associated QueryRequest.
 	 */
-	public QueryRequest getQueryRequest();
+	public BeanQueryRequest<?> getQueryRequest();
 	
 	/**
 	 * Append to the expression sql.

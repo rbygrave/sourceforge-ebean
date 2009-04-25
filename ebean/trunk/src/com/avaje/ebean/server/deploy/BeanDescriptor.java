@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.bean.BeanController;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanListener;
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.query.OrmQuery;
@@ -57,7 +57,7 @@ import com.avaje.ebean.server.validate.Validator;
 /**
  * Describes Beans including their deployment information.
  */
-public class BeanDescriptor {
+public class BeanDescriptor<T> {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
@@ -160,7 +160,7 @@ public class BeanDescriptor {
 	/**
 	 * The type of bean this describes.
 	 */
-	final Class<?> beanType;
+	final Class<T> beanType;
 
 	/**
 	 * This is not sent to a remote client.
@@ -176,7 +176,7 @@ public class BeanDescriptor {
 	 * Intercept pre post on insert,update,delete and postLoad(). Server side
 	 * only.
 	 */
-	final BeanController beanController;
+	final BeanPersistController<T> beanController;
 
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -186,7 +186,7 @@ public class BeanDescriptor {
 	/**
 	 * Listens for post commit insert update and delete events.
 	 */
-	final BeanListener beanListener;
+	final BeanPersistListener<T> beanListener;
 
 	/**
 	 * The table joins for this bean.
@@ -214,7 +214,7 @@ public class BeanDescriptor {
 	 */
 	final BeanProperty[] propertiesLocal;
 
-	final BeanPropertyAssocOne unidirectional;
+	final BeanPropertyAssocOne<?> unidirectional;
 
 	/**
 	 * A hashcode of all the many property names.
@@ -231,27 +231,27 @@ public class BeanDescriptor {
 	/**
 	 * list of properties that are Lists/Sets/Maps (Derived).
 	 */
-	final BeanPropertyAssocMany[] propertiesMany;
-	final BeanPropertyAssocMany[] propertiesManySave;
-	final BeanPropertyAssocMany[] propertiesManyDelete;
+	final BeanPropertyAssocMany<?>[] propertiesMany;
+	final BeanPropertyAssocMany<?>[] propertiesManySave;
+	final BeanPropertyAssocMany<?>[] propertiesManyDelete;
 
 	/**
 	 * list of properties that are associated beans and not embedded (Derived).
 	 */
-	final BeanPropertyAssocOne[] propertiesOne;
+	final BeanPropertyAssocOne<?>[] propertiesOne;
 
-	final BeanPropertyAssocOne[] propertiesOneImported;
-	final BeanPropertyAssocOne[] propertiesOneImportedSave;
-	final BeanPropertyAssocOne[] propertiesOneImportedDelete;
+	final BeanPropertyAssocOne<?>[] propertiesOneImported;
+	final BeanPropertyAssocOne<?>[] propertiesOneImportedSave;
+	final BeanPropertyAssocOne<?>[] propertiesOneImportedDelete;
 
-	final BeanPropertyAssocOne[] propertiesOneExported;
-	final BeanPropertyAssocOne[] propertiesOneExportedSave;
-	final BeanPropertyAssocOne[] propertiesOneExportedDelete;
+	final BeanPropertyAssocOne<?>[] propertiesOneExported;
+	final BeanPropertyAssocOne<?>[] propertiesOneExportedSave;
+	final BeanPropertyAssocOne<?>[] propertiesOneExportedDelete;
 
 	/**
 	 * list of properties that are embedded beans.
 	 */
-	final BeanPropertyAssocOne[] propertiesEmbedded;
+	final BeanPropertyAssocOne<?>[] propertiesEmbedded;
 
 	/**
 	 * List of the scalar properties excluding id and secondary table properties.
@@ -333,9 +333,14 @@ public class BeanDescriptor {
 	final boolean baseTableNotFound;
 	
 	/**
+	 * If true then only changed properties get updated.
+	 */
+	final boolean updateChangesOnly;
+	
+	/**
 	 * Construct the BeanDescriptor.
 	 */
-	public BeanDescriptor(TypeManager typeManager, DeployBeanDescriptor deploy) {
+	public BeanDescriptor(TypeManager typeManager, DeployBeanDescriptor<T> deploy) {
 
 		this.baseTableNotFound = deploy.isBaseTableNotFound();
 		this.name = deploy.getName();
@@ -364,6 +369,7 @@ public class BeanDescriptor {
 		this.defaultConstructor = deploy.hasDefaultConstructor();
 		this.lazyFetchIncludes = deploy.getLazyFetchIncludes();
 		this.concurrencyMode = deploy.getConcurrencyMode();
+		this.updateChangesOnly = deploy.isUpdateChangesOnly();
 
 		this.dependantTables = deploy.getDependantTables();
 
@@ -561,6 +567,16 @@ public class BeanDescriptor {
 	}
 		
 	/**
+	 * Execute the postLoad if a BeanPersistController exists for this bean.
+	 */
+	@SuppressWarnings("unchecked")
+	public void postLoad(Object bean, Set<String> includedProperties){
+		if (beanController != null){
+			beanController.postLoad((T)bean, includedProperties);
+		}
+	}
+	
+	/**
 	 * Return the query plans for this BeanDescriptor.
 	 */
 	public Iterator<CQueryPlan> queryPlans() {
@@ -580,6 +596,14 @@ public class BeanDescriptor {
 	 */
 	public TypeManager getTypeManager() {
 		return typeManager;
+	}
+
+	/**
+	 * Return true if updates should only include changed properties.
+	 * Otherwise all loaded properties are included in the update.
+	 */
+	public boolean isUpdateChangesOnly() {
+		return updateChangesOnly;
 	}
 
 	/**
@@ -683,7 +707,7 @@ public class BeanDescriptor {
 	/**
 	 * Return the many property included in the query or null if one is not.
 	 */
-	public BeanPropertyAssocMany getManyProperty(OrmQuery<?> query) {
+	public BeanPropertyAssocMany<?> getManyProperty(OrmQuery<?> query) {
 				
 		OrmQueryDetail detail = query.getDetail();
 		for (int i = 0; i < propertiesMany.length; i++) {
@@ -835,7 +859,7 @@ public class BeanDescriptor {
 	/**
 	 * Return the BeanDescriptor of another bean type.
 	 */
-	public BeanDescriptor getBeanDescriptor(Class<?> otherType) {
+	public <U> BeanDescriptor<U> getBeanDescriptor(Class<U> otherType) {
 		return owner.getBeanDescriptor(otherType);
 	}
 
@@ -847,7 +871,7 @@ public class BeanDescriptor {
 	 * visible.
 	 * </p>
 	 */
-	public BeanPropertyAssocOne getUnidirectional() {
+	public BeanPropertyAssocOne<?> getUnidirectional() {
 		return unidirectional;
 	}
 
@@ -879,7 +903,7 @@ public class BeanDescriptor {
 	/**
 	 * Return the class type this BeanDescriptor describes.
 	 */
-	public Class<?> getBeanType() {
+	public Class<T> getBeanType() {
 		return beanType;
 	}
 
@@ -1060,7 +1084,7 @@ public class BeanDescriptor {
 	/**
 	 * Return the beanListener.
 	 */
-	public BeanListener getBeanListener() {
+	public BeanPersistListener<T> getBeanListener() {
 		return beanListener;
 	}
 
@@ -1074,7 +1098,7 @@ public class BeanDescriptor {
 	/**
 	 * Return the Controller.
 	 */
-	public BeanController getBeanController() {
+	public BeanPersistController<T> getBeanController() {
 		return beanController;
 	}
 
@@ -1211,7 +1235,7 @@ public class BeanDescriptor {
 	 * Return the beans that are embedded. These share the base table with the
 	 * owner bean.
 	 */
-	public BeanPropertyAssocOne[] propertiesEmbedded() {
+	public BeanPropertyAssocOne<?>[] propertiesEmbedded() {
 		return propertiesEmbedded;
 	}
 
@@ -1219,7 +1243,7 @@ public class BeanDescriptor {
 	 * All the BeanPropertyAssocOne that are not embedded. These are effectively
 	 * joined beans. For ManyToOne and OneToOne associations.
 	 */
-	public BeanPropertyAssocOne[] propertiesOne() {
+	public BeanPropertyAssocOne<?>[] propertiesOne() {
 		return propertiesOne;
 	}
 
@@ -1229,21 +1253,21 @@ public class BeanDescriptor {
 	 * Excludes OneToOnes on the exported side.
 	 * </p>
 	 */
-	public BeanPropertyAssocOne[] propertiesOneImported() {
+	public BeanPropertyAssocOne<?>[] propertiesOneImported() {
 		return propertiesOneImported;
 	}
 
 	/**
 	 * Imported Assoc Ones with cascade save true.
 	 */
-	public BeanPropertyAssocOne[] propertiesOneImportedSave() {
+	public BeanPropertyAssocOne<?>[] propertiesOneImportedSave() {
 		return propertiesOneImportedSave;
 	}
 
 	/**
 	 * Imported Assoc Ones with cascade delete true.
 	 */
-	public BeanPropertyAssocOne[] propertiesOneImportedDelete() {
+	public BeanPropertyAssocOne<?>[] propertiesOneImportedDelete() {
 		return propertiesOneImportedSave;
 	}
 
@@ -1253,21 +1277,21 @@ public class BeanDescriptor {
 	 * These associations do not own the relationship.
 	 * </p>
 	 */
-	public BeanPropertyAssocOne[] propertiesOneExported() {
+	public BeanPropertyAssocOne<?>[] propertiesOneExported() {
 		return propertiesOneExported;
 	}
 
 	/**
 	 * Exported assoc ones with cascade save.
 	 */
-	public BeanPropertyAssocOne[] propertiesOneExportedSave() {
+	public BeanPropertyAssocOne<?>[] propertiesOneExportedSave() {
 		return propertiesOneExportedSave;
 	}
 
 	/**
 	 * Exported assoc ones with delete cascade.
 	 */
-	public BeanPropertyAssocOne[] propertiesOneExportedDelete() {
+	public BeanPropertyAssocOne<?>[] propertiesOneExportedDelete() {
 		return propertiesOneExportedDelete;
 	}
 	
@@ -1300,21 +1324,21 @@ public class BeanDescriptor {
 	/**
 	 * All Assoc Many's for this descriptor.
 	 */
-	public BeanPropertyAssocMany[] propertiesMany() {
+	public BeanPropertyAssocMany<?>[] propertiesMany() {
 		return propertiesMany;
 	}
 
 	/**
 	 * Assoc Many's with save cascade.
 	 */
-	public BeanPropertyAssocMany[] propertiesManySave() {
+	public BeanPropertyAssocMany<?>[] propertiesManySave() {
 		return propertiesManySave;
 	}
 
 	/**
 	 * Assoc Many's with delete cascade.
 	 */
-	public BeanPropertyAssocMany[] propertiesManyDelete() {
+	public BeanPropertyAssocMany<?>[] propertiesManyDelete() {
 		return propertiesManyDelete;
 	}
 

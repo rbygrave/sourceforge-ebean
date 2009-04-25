@@ -35,7 +35,7 @@ public class FactoryId {
 	/**
      * Add uniqueId properties.
      */
-    public BindableId createId(BeanDescriptor desc) {
+    public BindableId createId(BeanDescriptor<?> desc) {
     	
     	BeanProperty[] uids = desc.propertiesId();
     	if (uids.length == 1) {
@@ -43,7 +43,7 @@ public class FactoryId {
     			return new BindableIdScalar(uids[0]);
     			
     		} else {
-    			BeanPropertyAssocOne embId = (BeanPropertyAssocOne) uids[0];
+    			BeanPropertyAssocOne<?> embId = (BeanPropertyAssocOne<?>) uids[0];
     			return new BindableIdEmbedded(embId, desc);
     		}
     	} else {

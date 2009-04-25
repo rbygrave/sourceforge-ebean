@@ -64,10 +64,10 @@ public class RawSqlSelectClauseBuilder {
 	/**
 	 * Build based on the includes and using the BeanJoinTree.
 	 */
-	public CQuery build(QueryRequest request) throws PersistenceException {
+	public <T> CQuery<T> build(QueryRequest<T> request) throws PersistenceException {
 
-		OrmQuery<?> query = request.getQuery();
-		BeanDescriptor desc = request.getBeanDescriptor();
+		OrmQuery<T> query = request.getQuery();
+		BeanDescriptor<T> desc = request.getBeanDescriptor();
 		
 		DeployNamedQuery namedQuery = desc.getNamedQuery(query.getName());
 		DeploySqlSelect sqlSelect = namedQuery.getSqlSelect();
@@ -95,7 +95,7 @@ public class RawSqlSelectClauseBuilder {
 			SqlTree sqlTree = sqlSelect.getSqlTree();
 			
 			CQueryPlan queryPlan = new CQueryPlan(0, sql, sqlTree, true, false, "");
-			CQuery compiledQuery = new CQuery(request, predicates, queryPlan);
+			CQuery<T> compiledQuery = new CQuery<T>(request, predicates, queryPlan);
 
 			return compiledQuery;
 

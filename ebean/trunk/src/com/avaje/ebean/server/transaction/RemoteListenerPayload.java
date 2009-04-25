@@ -38,7 +38,7 @@ import com.avaje.ebean.server.core.PersistRequest;
  */
 public class RemoteListenerPayload implements Serializable {
 
-	static final long serialVersionUID = 8389469180931531409L;
+	static final long serialVersionUID = 8389469180931531408L;
 
 	/**
 	 * PersistRequest.INSERT UDPATE or DELETE.
@@ -53,15 +53,15 @@ public class RemoteListenerPayload implements Serializable {
 	/**
 	 * The payload. Perhaps just the Id property.
 	 */
-	private final Serializable data;
+	private final Serializable id;
 
 	/**
 	 * Create the payload.
 	 */
-	public RemoteListenerPayload(String typeDescription, PersistRequest.Type type, Serializable data) {
+	public RemoteListenerPayload(String typeDescription, PersistRequest.Type type, Serializable id) {
 		this.typeDescription = typeDescription;
 		this.type = type;
-		this.data = data;
+		this.id = id;
 	}
 
 	/**
@@ -82,7 +82,7 @@ public class RemoteListenerPayload implements Serializable {
 	 * The data which is typically just the Id property rather than the entire
 	 * bean.
 	 */
-	public Serializable getData() {
-		return data;
+	public Serializable getId() {
+		return id;
 	}
 }

@@ -15,26 +15,42 @@ import com.avaje.ebean.collection.BeanSet;
 /**
  * Helper specifically for dealing with Sets.
  */
-public final class BeanSetHelp implements BeanCollectionHelp {
+public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	
-	public void add(BeanCollection<?> collection, Object bean, String mapKey) {
+	final BeanPropertyAssocMany<T> many;
+	final BeanDescriptor<T> targetDescriptor;
+	
+	/**
+	 * When attached to a specific many property.
+	 */
+	public BeanSetHelp(BeanPropertyAssocMany<T> many){
+		this.many = many;
+		this.targetDescriptor = many.getTargetDescriptor();
+	}
+	
+	/**
+	 * For a query that returns a set.
+	 */
+	public BeanSetHelp(){
+		this.many = null;
+		this.targetDescriptor = null;
+	}
+	
+	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
 	}
 
-	@SuppressWarnings("unchecked")
-	public BeanCollection<?> createEmpty() {
-		
-		return new BeanSet();
+	public BeanCollection<T> createEmpty() {
+		return new BeanSet<T>();
 	}
 
-	@SuppressWarnings("unchecked")
-	public BeanCollection<?> createReference(Object parentBean, String serverName,
+	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 		
-		return new BeanSet(serverName, parentBean, propertyName, profilePoint);
+		return new BeanSet<T>(serverName, parentBean, propertyName, profilePoint);
 	}
 	
-	public ArrayList<InvalidValue> validate(BeanDescriptor target, Object manyValue) {
+	public ArrayList<InvalidValue> validate(Object manyValue) {
 		
 		ArrayList<InvalidValue> errs = null;
 		
@@ -42,7 +58,7 @@ public final class BeanSetHelp implements BeanCollectionHelp {
 		Iterator<?> i = set.iterator();
 		while (i.hasNext()) {
 			Object detailBean = i.next();
-			InvalidValue invalid = target.validate(true, detailBean);
+			InvalidValue invalid = targetDescriptor.validate(true, detailBean);
 			if (invalid != null){
 				if (errs == null){
 					errs = new ArrayList<InvalidValue>();
@@ -53,7 +69,7 @@ public final class BeanSetHelp implements BeanCollectionHelp {
 		return errs;
 	}
 	
-	public void refresh(EbeanServer server, Query<?> query, Transaction t, BeanPropertyAssocMany many, Object parentBean) {
+	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
 		
 		BeanSet<?> newBeanSet = (BeanSet<?>)server.findSet(query, t);
 		

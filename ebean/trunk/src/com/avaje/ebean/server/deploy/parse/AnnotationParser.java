@@ -34,13 +34,13 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
  */
 public abstract class AnnotationParser {
 
-    final DeployBeanInfo info;
+    final DeployBeanInfo<?> info;
     
-    final DeployBeanDescriptor descriptor;
+    final DeployBeanDescriptor<?> descriptor;
     
     final DeployUtil util;
     
-    public AnnotationParser(DeployBeanInfo info){
+    public AnnotationParser(DeployBeanInfo<?> info){
         this.info = info;
         descriptor = info.getDescriptor();
         util = info.getUtil();
@@ -66,9 +66,8 @@ public abstract class AnnotationParser {
      * Looks first at the field and then at the getter method.
      * </p>
      */
-    @SuppressWarnings("unchecked")
-	protected Annotation get(DeployBeanProperty prop, Class annClass) {
-        Annotation a = null;
+	protected <T extends Annotation> T get(DeployBeanProperty prop, Class<T> annClass) {
+        T a = null;
         Field field = prop.getField();
         if (field != null){
         	a = field.getAnnotation(annClass);
@@ -88,9 +87,8 @@ public abstract class AnnotationParser {
 	 * Looks first at the field and then at the getter method. then at class level.
 	 * </p>
 	 */
-	@SuppressWarnings("unchecked")
-	protected Annotation find(DeployBeanProperty prop, Class annClass) {
-		Annotation a = get(prop, annClass);
+	protected <T extends Annotation> T find(DeployBeanProperty prop, Class<T> annClass) {
+		T a = get(prop, annClass);
 		if (a == null) {
 			a = prop.getOwningType().getAnnotation(annClass);
 		}

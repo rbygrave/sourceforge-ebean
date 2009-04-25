@@ -43,7 +43,7 @@ public class FactoryBaseProperties implements Modes {
 	/**
 	 * Add Bindable for the base properties to the list.
 	 */
-	public void create(List<Bindable> list, BeanDescriptor desc, int mode, boolean withLobs) {
+	public void create(List<Bindable> list, BeanDescriptor<?> desc, int mode, boolean withLobs) {
 
 
 		BeanProperty[] props = desc.propertiesBaseScalar();

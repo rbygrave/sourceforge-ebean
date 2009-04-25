@@ -25,7 +25,7 @@ import com.avaje.ebean.server.deploy.TableJoin;
 /**
  * Property mapped to a List Set or Map.
  */
-public class DeployBeanPropertyAssocMany extends DeployBeanPropertyAssoc {
+public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 
 	/**
 	 * Flag to indicate manyToMany relationship.
@@ -64,11 +64,23 @@ public class DeployBeanPropertyAssocMany extends DeployBeanPropertyAssoc {
 	/**
 	 * Create this property.
 	 */
-	public DeployBeanPropertyAssocMany(DeployBeanDescriptor desc, ManyType manyType) {
-		super(desc);
+	public DeployBeanPropertyAssocMany(DeployBeanDescriptor<?> desc, Class<T> targetType, ManyType manyType) {
+		super(desc, targetType);
 		this.manyType = manyType;
 	}
 
+	/**
+	 * When generics is not used for manyType you can specify via annotations.
+	 * <p>
+	 * Really only expect this for Scala due to a Scala compiler bug at the moment.
+	 * Otherwise I'd probably not bother support this.
+	 * </p>
+	 */
+	@SuppressWarnings("unchecked")
+	public void setTargetType(Class<?> cls){
+		this.targetType = (Class<T>)cls;
+	}
+	
 	/**
 	 * Return the many type.
 	 */

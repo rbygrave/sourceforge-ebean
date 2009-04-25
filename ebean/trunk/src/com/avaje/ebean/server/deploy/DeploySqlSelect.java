@@ -79,7 +79,7 @@ public class DeploySqlSelect {
 	/**
 	 * Find foreign keys for assoc one types and build SqlTree.
 	 */
-	public void initialise(BeanDescriptor owner, JoinTree joinTree) {
+	public void initialise(BeanDescriptor<?> owner, JoinTree joinTree) {
 		
 		try {
 			List<PropertyDeploy> fkAdditions = new ArrayList<PropertyDeploy>();
@@ -90,7 +90,7 @@ public class DeploySqlSelect {
 				if (propertyDeploy.isForeignKey()){
 					
 					String logicalFk = propertyDeploy.getLogical();
-					BeanPropertyAssocOne property = (BeanPropertyAssocOne)owner.getBeanProperty(logicalFk);
+					BeanPropertyAssocOne<?> property = (BeanPropertyAssocOne<?>)owner.getBeanProperty(logicalFk);
 					IdBinder idBinder = property.getTargetDescriptor().getIdBinder();
 					if (!idBinder.isComplexId()){
 						BeanProperty[] ids = idBinder.getProperties();
@@ -126,7 +126,7 @@ public class DeploySqlSelect {
 	 * could be a real object graph tree for more complex scenarios.
 	 * </p>
 	 */
-	private SqlTree buildSqlTree(BeanDescriptor desc, JoinTree joinTree) {
+	private SqlTree buildSqlTree(BeanDescriptor<?> desc, JoinTree joinTree) {
 
 		
 		JoinNode joinRoot = joinTree.getRoot();
@@ -174,7 +174,7 @@ public class DeploySqlSelect {
 	/**
 	 * Build the full SQL Select statement for the request.
 	 */
-	public String buildSql(CQueryPredicates predicates, QueryRequest request) {
+	public String buildSql(CQueryPredicates predicates, QueryRequest<?> request) {
 
 
 		StringBuilder sb = new StringBuilder();
@@ -187,7 +187,7 @@ public class DeploySqlSelect {
 			// assumption that id has its proper dbColumn assigned
 			// which may change if using multiple raw sql statements
 			// against the same bean.
-			BeanDescriptor descriptor = request.getBeanDescriptor();
+			BeanDescriptor<?> descriptor = request.getBeanDescriptor();
 			//FIXME: I think this is broken... needs to be logical 
 			// and then parsed for SqlSelect...
 			dynamicWhere = descriptor.getBindIdSql();

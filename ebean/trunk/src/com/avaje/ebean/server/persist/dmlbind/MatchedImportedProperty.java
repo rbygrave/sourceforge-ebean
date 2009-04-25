@@ -36,13 +36,13 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
  */
 class MatchedImportedProperty {
 
-	private final BeanPropertyAssocOne assocOne;
+	private final BeanPropertyAssocOne<?> assocOne;
 
 	private final BeanProperty foreignProp;
 
 	private final BeanProperty localProp;
 
-	protected MatchedImportedProperty(BeanPropertyAssocOne assocOne, BeanProperty foreignProp,
+	protected MatchedImportedProperty(BeanPropertyAssocOne<?> assocOne, BeanProperty foreignProp,
 			BeanProperty localProp) {
 		this.assocOne = assocOne;
 		this.foreignProp = foreignProp;
@@ -63,7 +63,7 @@ class MatchedImportedProperty {
 	/**
 	 * Create the array of matchedImportedProperty based on the properties and descriptor.
 	 */
-	 protected static MatchedImportedProperty[] build(BeanProperty[] props, BeanDescriptor desc) {
+	 protected static MatchedImportedProperty[] build(BeanProperty[] props, BeanDescriptor<?> desc) {
 
 		MatchedImportedProperty[] matches = new MatchedImportedProperty[props.length];
 
@@ -78,12 +78,12 @@ class MatchedImportedProperty {
 		return matches;
 	}
 	
-	private static MatchedImportedProperty findMatch(BeanProperty prop, BeanDescriptor desc) {
+	private static MatchedImportedProperty findMatch(BeanProperty prop, BeanDescriptor<?> desc) {
 
 		// find matching against the local database column
 		String dbColumn = prop.getDbColumn();
 
-		BeanPropertyAssocOne[] assocOnes = desc.propertiesOne();
+		BeanPropertyAssocOne<?>[] assocOnes = desc.propertiesOne();
 		for (int i = 0; i < assocOnes.length; i++) {
 			if (assocOnes[i].isImportedPrimaryKey()) {
 				

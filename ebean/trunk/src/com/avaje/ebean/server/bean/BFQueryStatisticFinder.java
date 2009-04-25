@@ -24,14 +24,14 @@ public class BFQueryStatisticFinder implements BeanFinder {
 		return new Class<?>[]{MetaQueryStatistic.class};
 	}
 	
-	public Object find(QueryRequest request) {
+	public Object find(QueryRequest<?> request) {
 		throw new RuntimeException("Not Supported yet");
 	}
 
 	/**
 	 * Only returns Lists at this stage.
 	 */
-	public Object findMany(QueryRequest request) {
+	public Object findMany(QueryRequest<?> request) {
 
 		ManyType manyType = request.getManyType();
 		if (!manyType.isList()){
@@ -48,14 +48,14 @@ public class BFQueryStatisticFinder implements BeanFinder {
 
 	private void build(List<MetaQueryStatistic> list, InternalEbeanServer server) {
 
-		Iterator<BeanDescriptor> it = server.descriptors();
+		Iterator<BeanDescriptor<?>> it = server.descriptors();
 		while (it.hasNext()) {
-			BeanDescriptor desc = (BeanDescriptor) it.next();
+			BeanDescriptor<?> desc = (BeanDescriptor<?>) it.next();
 			build(list, desc);
 		}
 	}
 	
-	private void build(List<MetaQueryStatistic> list, BeanDescriptor desc) {
+	private void build(List<MetaQueryStatistic> list, BeanDescriptor<?> desc) {
 
 		Iterator<CQueryPlan> it = desc.queryPlans();
 		while (it.hasNext()) {

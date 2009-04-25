@@ -10,19 +10,20 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
+import com.avaje.ebean.util.ValueUtil;
 
 /**
  * Single scalar imported id.
  */
 public class ImportedIdSimple implements ImportedId {
 	
-	final BeanPropertyAssoc owner;
+	final BeanPropertyAssoc<?> owner;
 	
 	final String localDbColumn;
 
 	final BeanProperty foreignProperty;
 	
-	public ImportedIdSimple(BeanPropertyAssoc owner, String localDbColumn, BeanProperty foreignProperty) {
+	public ImportedIdSimple(BeanPropertyAssoc<?> owner, String localDbColumn, BeanProperty foreignProperty) {
 		this.owner = owner;
 		this.localDbColumn = localDbColumn;
 		this.foreignProperty = foreignProperty;
@@ -73,6 +74,12 @@ public class ImportedIdSimple implements ImportedId {
 		}
 	}
 	
+	public boolean hasChanged(Object bean, Object oldValues) {
+		Object id = foreignProperty.getValue(bean);
+		Object oldId = foreignProperty.getValue(oldValues);
+		
+		return !ValueUtil.areEqual(id, oldId);
+	}
 
 	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 

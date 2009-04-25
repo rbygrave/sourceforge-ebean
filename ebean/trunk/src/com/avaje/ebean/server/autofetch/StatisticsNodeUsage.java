@@ -55,7 +55,7 @@ public class StatisticsNodeUsage implements Serializable {
 				logger.warning("Can't find join for path["+path+"] for "+joinRoot.getBeanDescriptor().getName());
 				
 			} else {
-				BeanDescriptor descriptor = joinNode.getBeanDescriptor();
+				BeanDescriptor<?> descriptor = joinNode.getBeanDescriptor();
 				BeanProperty[] versionProps = descriptor.propertiesVersion();
 				if (versionProps.length > 0){
 					aggregateUsed.add(versionProps[0].getName());

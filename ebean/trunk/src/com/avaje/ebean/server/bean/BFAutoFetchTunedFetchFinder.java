@@ -25,7 +25,7 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder {
 	}
 
 
-	public Object find(QueryRequest request) {
+	public Object find(QueryRequest<?> request) {
 		OrmQuery<?> query = request.getQuery();
 		try {
 			String queryPointKey = (String)query.getId();
@@ -48,7 +48,7 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder {
 	/**
 	 * Only returns Lists at this stage.
 	 */
-	public Object findMany(QueryRequest request) {
+	public Object findMany(QueryRequest<?> request) {
 
 		ManyType manyType = request.getManyType();
 		if (!manyType.isList()){

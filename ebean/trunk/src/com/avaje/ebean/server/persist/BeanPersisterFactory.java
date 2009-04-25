@@ -29,6 +29,6 @@ public interface BeanPersisterFactory {
 	/**
 	 * Create the BeanPersister implemenation for a given type.
 	 */
-	public BeanPersister create(BeanDescriptor desc);
+	public BeanPersister create(BeanDescriptor<?> desc);
 
 }

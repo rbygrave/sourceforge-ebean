@@ -19,9 +19,6 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Iterator;
 
 import javax.persistence.JoinColumn;
@@ -31,7 +28,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
-import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.server.deploy.BeanTable;
@@ -48,7 +44,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 	/**
 	 * Create with the DeployInfo.
 	 */
-	public AnnotationAssocManys(DeployBeanInfo info) {
+	public AnnotationAssocManys(DeployBeanInfo<?> info) {
 		super(info);
 	}
 
@@ -60,12 +56,12 @@ public class AnnotationAssocManys extends AnnotationParser {
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
 			if (prop instanceof DeployBeanPropertyAssocMany) {
-				read((DeployBeanPropertyAssocMany) prop);
+				read((DeployBeanPropertyAssocMany<?>) prop);
 			}
 		}
 	}
 
-	private void read(DeployBeanPropertyAssocMany prop) {
+	private void read(DeployBeanPropertyAssocMany<?> prop) {
 
 		OneToMany oneToMany = (OneToMany) get(prop, OneToMany.class);
 		if (oneToMany != null) {
@@ -136,7 +132,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 	 * to the other side of the ManyToMany.
 	 * </p>
 	 */
-	private void readJoinTable(JoinTable joinTable, DeployBeanPropertyAssocMany prop) {
+	private void readJoinTable(JoinTable joinTable, DeployBeanPropertyAssocMany<?> prop) {
 		
 		String intTableName = joinTable.name();
 		// set the intersection table
@@ -177,14 +173,17 @@ public class AnnotationAssocManys extends AnnotationParser {
     	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
     }
     
-	private void readToMany(ManyToMany propAnn, DeployBeanPropertyAssocMany manyProp) {
+	private void readToMany(ManyToMany propAnn, DeployBeanPropertyAssocMany<?> manyProp) {
 
 		manyProp.setMappedBy(propAnn.mappedBy());
 		setCascadeTypes(propAnn.cascade(), manyProp.getCascadeInfo());
 
 		Class<?> targetType = propAnn.targetEntity();
 		if (targetType.equals(void.class)) {
-			targetType = determineTargetType(manyProp);
+			// via reflection of generics type
+			targetType = manyProp.getTargetType();
+		} else {
+			manyProp.setTargetType(targetType);
 		}
 
 		// find the other many table (not intersection)
@@ -194,20 +193,22 @@ public class AnnotationAssocManys extends AnnotationParser {
         	throw new RuntimeException(msg);
 		}
 		
-		manyProp.setTargetType(targetType);
 		manyProp.setManyToMany(true);		
 		manyProp.setBeanTable(assoc);
 		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
 	}
 
-	private void readToOne(OneToMany propAnn, DeployBeanPropertyAssocMany manyProp) {
+	private void readToOne(OneToMany propAnn, DeployBeanPropertyAssocMany<?> manyProp) {
 
 		manyProp.setMappedBy(propAnn.mappedBy());
 		setCascadeTypes(propAnn.cascade(), manyProp.getCascadeInfo());
 
 		Class<?> targetType = propAnn.targetEntity();
 		if (targetType.equals(void.class)) {
-			targetType = determineTargetType(manyProp);
+			// via reflection of generics type
+			targetType = manyProp.getTargetType();			
+		} else {
+			manyProp.setTargetType(targetType);
 		}
 
 		BeanTable assoc = util.getBeanTable(targetType);
@@ -216,36 +217,8 @@ public class AnnotationAssocManys extends AnnotationParser {
         	throw new RuntimeException(msg);
 		}
 		
-		manyProp.setTargetType(targetType);		
 		manyProp.setBeanTable(assoc);
 		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
 	}
 
-	/**
-	 * Determine the type of the List,Set or Map. Not been set explicitly so
-	 * determine this from ParameterizedType.
-	 */
-	private Class<?> determineTargetType(DeployBeanProperty prop) {
-		Field field = prop.getField();
-		if (field == null) {
-			String msg = "property " + prop.getFullBeanName() + " has no field to find targetType?";
-			throw new PersistenceException(msg);
-		}
-		Type genType = field.getGenericType();
-		if (genType instanceof ParameterizedType) {
-			ParameterizedType ptype = (ParameterizedType) genType;
-
-			Type[] typeArgs = ptype.getActualTypeArguments();
-			if (typeArgs.length == 1) {
-				// probably a Set or List
-				return (Class<?>) typeArgs[0];
-			}
-			if (typeArgs.length == 2) {
-				// this is probably a Map
-				return (Class<?>) typeArgs[1];
-			}
-		}
-		String msg = "property " + prop.getFullBeanName() + " has no generics targetType defined?";
-		throw new PersistenceException(msg);
-	}
 }

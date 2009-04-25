@@ -33,7 +33,7 @@ public class DeployNamedQuery {
 		this.sqlSelect = sqlSelect;
 	}
 
-	public void initialise(BeanDescriptor owner, JoinTree joinTree) {
+	public void initialise(BeanDescriptor<?> owner, JoinTree joinTree) {
 		if (isSqlSelect()){
 			sqlSelect.initialise(owner, joinTree);
 		}

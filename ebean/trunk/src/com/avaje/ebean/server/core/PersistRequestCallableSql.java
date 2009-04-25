@@ -50,7 +50,7 @@ public final class PersistRequestCallableSql extends PersistRequest {
 	public PersistRequestCallableSql(InternalEbeanServer server,
 			CallableSql cs, ServerTransaction t, PersistExecute persistExecute) {
 		
-		super(server, null, t, persistExecute);
+		super(server, t, persistExecute);
 		this.type = PersistRequest.Type.CALLABLESQL;
 		this.callableSql = cs;
 	}

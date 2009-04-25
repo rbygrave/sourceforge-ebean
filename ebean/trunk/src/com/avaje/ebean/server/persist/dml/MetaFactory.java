@@ -65,7 +65,7 @@ public class MetaFactory implements Modes {
 	/**
 	 * Create the UpdateMeta for the given bean type.
 	 */
-	public UpdateMeta createUpdate(BeanDescriptor desc) {
+	public UpdateMeta createUpdate(BeanDescriptor<?> desc) {
 
 		List<Bindable> setList = new ArrayList<Bindable>();
 
@@ -94,7 +94,7 @@ public class MetaFactory implements Modes {
 	/**
 	 * Create the DeleteMeta for the given bean type.
 	 */
-	public DeleteMeta createDelete(BeanDescriptor desc) {
+	public DeleteMeta createDelete(BeanDescriptor<?> desc) {
 
 		Bindable id = idFact.createId(desc);
 
@@ -114,7 +114,7 @@ public class MetaFactory implements Modes {
 	/**
 	 * Create the InsertMeta for the given bean type.
 	 */
-	public InsertMeta createInsert(BeanDescriptor desc) {
+	public InsertMeta createInsert(BeanDescriptor<?> desc) {
 
 		BindableId id = idFact.createId(desc);
 
@@ -126,7 +126,7 @@ public class MetaFactory implements Modes {
 
 		Bindable allBindable = new BindableList(allList);
 		
-		BeanPropertyAssocOne unidirectional = desc.getUnidirectional();
+		BeanPropertyAssocOne<?> unidirectional = desc.getUnidirectional();
 		
 		Bindable shadowFkey;
 		if (unidirectional == null){

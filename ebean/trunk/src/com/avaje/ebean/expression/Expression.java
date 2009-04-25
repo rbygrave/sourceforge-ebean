@@ -2,7 +2,7 @@ package com.avaje.ebean.expression;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 
 /**
@@ -36,7 +36,7 @@ public interface Expression extends Serializable {
 	 * case the query execution plan can be reused.
 	 * </p>
 	 */
-	public int queryPlanHash(QueryRequest request);
+	public int queryPlanHash(BeanQueryRequest<?> request);
 	
 	/**
 	 * Return the hash value for the values that will be bound.

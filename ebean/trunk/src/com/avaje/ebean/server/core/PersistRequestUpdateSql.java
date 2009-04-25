@@ -50,7 +50,7 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 	 */
 	public PersistRequestUpdateSql(InternalEbeanServer server, SqlUpdate updateSql,
 			ServerTransaction t, PersistExecute persistExecute) {
-		super(server, null, t, persistExecute);
+		super(server, t, persistExecute);
 		this.type = Type.UPDATESQL;
 		this.updateSql = updateSql;
 	}

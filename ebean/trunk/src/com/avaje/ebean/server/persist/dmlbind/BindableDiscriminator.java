@@ -21,6 +21,9 @@ package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
+import javax.persistence.PersistenceException;
+
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
@@ -43,6 +46,10 @@ public class BindableDiscriminator implements Bindable {
 		return columnName+" = "+discValue;
 	}
 	
+	public void determineChangedProperties(PersistRequestBean<?> request) {
+		throw new PersistenceException("Never called (only for inserts)");
+	}
+
 	/**
 	 * Never used in where clause.
 	 */

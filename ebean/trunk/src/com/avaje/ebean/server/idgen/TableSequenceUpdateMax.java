@@ -61,7 +61,7 @@ public class TableSequenceUpdateMax {
         String tableName = sequenceBean.getName();
 
         InternalEbeanServer primaryServer = (InternalEbeanServer)Ebean.getServer(null);
-        BeanDescriptor desc = primaryServer.getMapBeanDescriptor(tableName);
+        BeanDescriptor<?> desc = primaryServer.getMapBeanDescriptor(tableName);
         
         BeanProperty[] uids = desc.propertiesId();
         if (uids.length != 1) {

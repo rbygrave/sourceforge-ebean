@@ -23,7 +23,7 @@ package com.avaje.ebean.server.deploy.meta;
 /**
  * Property mapped to a joined bean.
  */
-public class DeployBeanPropertyAssocOne extends DeployBeanPropertyAssoc {
+public class DeployBeanPropertyAssocOne<T> extends DeployBeanPropertyAssoc<T> {
 
 	boolean oneToOne;
 	
@@ -36,8 +36,8 @@ public class DeployBeanPropertyAssocOne extends DeployBeanPropertyAssoc {
 	/**
 	 * Create the property.
 	 */
-	public DeployBeanPropertyAssocOne(DeployBeanDescriptor desc) {
-		super(desc);
+	public DeployBeanPropertyAssocOne(DeployBeanDescriptor<?> desc, Class<T> targetType) {
+		super(desc, targetType);
 	}
 
 	/**
@@ -96,21 +96,5 @@ public class DeployBeanPropertyAssocOne extends DeployBeanPropertyAssoc {
 	public void setImportedPrimaryKey(boolean importedPrimaryKey) {
 		this.importedPrimaryKey = importedPrimaryKey;
 	}
-
-	/**
-	 * Same as getPropertyType(). Return the type of the bean this property
-	 * represents.
-	 */
-	public Class<?> getTargetType() {
-		return getPropertyType();
-	}
-
-	/**
-	 * Should never be called. targetType is getPropertyType().
-	 */
-	public void setTargetType(Class<?> targetType) {
-		throw new RuntimeException("This should not be called?");
-	}
-
 
 }

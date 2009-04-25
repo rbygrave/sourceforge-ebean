@@ -22,20 +22,11 @@ package com.avaje.ebean.server.core;
 import java.sql.Connection;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
 
 /**
  * Base class for find and persist requests.
  */
 public abstract class BeanRequest {
-
-	/**
-	 * The associated BeanDescriptor.
-	 */
-	final BeanManager beanManager;
-
-	final BeanDescriptor beanDescriptor;
 
 	/**
 	 * The server processing the request.
@@ -53,15 +44,9 @@ public abstract class BeanRequest {
 
 	boolean readOnly;
 
-	public BeanRequest(InternalEbeanServer ebeanServer, BeanManager mgr, ServerTransaction t) {
+	public BeanRequest(InternalEbeanServer ebeanServer, ServerTransaction t) {
 		this.ebeanServer = ebeanServer;
 		this.serverName = ebeanServer.getName();
-		this.beanManager = mgr;
-		if (mgr != null) {
-			this.beanDescriptor = mgr.getBeanDescriptor();
-		} else {
-			this.beanDescriptor = null;
-		}
 		this.transaction = t;
 	}
 
@@ -126,17 +111,6 @@ public abstract class BeanRequest {
 	 */
 	public EbeanServer getEbeanServer() {
 		return ebeanServer;
-	}
-
-	public BeanManager getBeanManager() {
-		return beanManager;
-	}
-
-	/**
-	 * Return the BeanDescriptor for the associated bean.
-	 */
-	public BeanDescriptor getBeanDescriptor() {
-		return beanDescriptor;
 	}
 
 	/**

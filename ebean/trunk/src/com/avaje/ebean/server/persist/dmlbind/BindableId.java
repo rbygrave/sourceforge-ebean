@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.persist.dmlbind;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 
 /**
  * Adds support for id creation for concatenated ids on intersection tables.
@@ -46,6 +46,6 @@ public interface BindableId extends Bindable {
 	 * primary key and the values can be got from those.
 	 * </p>
 	 */
-	public boolean deriveConcatenatedId(PersistRequest persist);
+	public boolean deriveConcatenatedId(PersistRequestBean<?> persist);
 
 }

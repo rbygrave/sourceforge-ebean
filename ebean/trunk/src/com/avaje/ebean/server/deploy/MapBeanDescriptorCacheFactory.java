@@ -54,7 +54,7 @@ public class MapBeanDescriptorCacheFactory {
 	 */
 	private final HashMap<String, MapBeanDescriptor> map = new HashMap<String, MapBeanDescriptor>();
 
-	private final HashMap<String, BeanManager> managerMap = new HashMap<String, BeanManager>();
+	private final HashMap<String, BeanManager<?>> managerMap = new HashMap<String, BeanManager<?>>();
 
 	private final PluginDbConfig dbConfig;
 
@@ -73,12 +73,12 @@ public class MapBeanDescriptorCacheFactory {
 	/**
 	 * Register all the tables this bean uses (include intersection tables etc).
 	 */
-	private void registerDescriptorTables(BeanDescriptor desc) {
+	private void registerDescriptorTables(BeanDescriptor<?> desc) {
 		String baseTable = desc.getBaseTable();
 		if (baseTable != null){
 			registerTable(baseTable);
 		}
-		BeanPropertyAssocMany[] props = desc.propertiesMany();
+		BeanPropertyAssocMany<?>[] props = desc.propertiesMany();
 		for (int i = 0; i < props.length; i++) {
 			if (props[i].isManyToMany()){
 				TableJoin intersectionTableJoin = props[i].getIntersectionTableJoin();
@@ -101,9 +101,9 @@ public class MapBeanDescriptorCacheFactory {
 	public void initialiseAll() {
 
 		// get all the base tables from the deployed entity beans...
-		Iterator<BeanDescriptor> it = deploymentManager.descriptors();
+		Iterator<BeanDescriptor<?>> it = deploymentManager.descriptors();
 		while (it.hasNext()) {
-			BeanDescriptor desc = it.next();
+			BeanDescriptor<?> desc = it.next();
 			if (!desc.isEmbedded()){
 				registerDescriptorTables(desc);
 			}
@@ -159,7 +159,7 @@ public class MapBeanDescriptorCacheFactory {
 	/**
 	 * Return the BeanManager for this table.
 	 */
-	public BeanManager getManager(String tableName) {
+	public BeanManager<?> getManager(String tableName) {
 		String key = tableName.toLowerCase();
 		return managerMap.get(key);
 	}
@@ -177,7 +177,7 @@ public class MapBeanDescriptorCacheFactory {
 				
 			} else {
 				map.put(key, desc);
-				BeanManager manager = managerFactory.create(desc);
+				BeanManager<?> manager = managerFactory.create(desc);
 				managerMap.put(key, manager);
 			}
 		}

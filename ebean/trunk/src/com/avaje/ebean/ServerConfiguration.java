@@ -267,12 +267,12 @@ public class ServerConfiguration {
 	/**
 	 * Programmatically add classes that this server should use.
 	 * <p>
-	 * The class can be an Entity, Embedded type, ScalarType, BeanListener,
-	 * BeanFinder or BeanController.
+	 * The class can be an Entity, Embedded type, ScalarType, BeanPersistListener,
+	 * BeanFinder or BeanPersistController.
 	 * </p>
 	 * <p>
 	 * If no classes are added using this method then the classes are found
-	 * automatically via searching the classpath.
+	 * automatically via searching the class path.
 	 * </p>
 	 * 
 	 * @param cls

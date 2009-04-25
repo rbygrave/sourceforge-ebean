@@ -37,15 +37,15 @@ import com.avaje.ebean.server.lib.util.StringHelper;
 /**
  * Abstract base for properties mapped to an associated bean, list, set or map.
  */
-public abstract class BeanPropertyAssoc extends BeanProperty {
+public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 	private static final Logger logger = Logger.getLogger(BeanPropertyAssoc.class.getName());
 	
 	/**
-	 * The descriptor of the target. This MUST be lazy loaded so as to avoid a
-	 * dependency loop between BeanDescriptors.
+	 * The descriptor of the target. This MUST be initialised after construction 
+	 * so as to avoid a dependency loop between BeanDescriptors.
 	 */
-	BeanDescriptor targetDescriptor;
+	BeanDescriptor<T> targetDescriptor;
 	
 	IdBinder targetIdBinder;
 	
@@ -64,7 +64,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 	/**
 	 * The type of the joined bean.
 	 */
-	final Class<?> targetType;
+	final Class<T> targetType;
 
 	/**
 	 * The join table information.
@@ -87,8 +87,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 	/**
 	 * Construct the property.
 	 */
-	public BeanPropertyAssoc(BeanDescriptorOwner owner, BeanDescriptor descriptor,
-			DeployBeanPropertyAssoc deploy) {
+	public BeanPropertyAssoc(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor, DeployBeanPropertyAssoc<T> deploy) {
 		super(owner, descriptor, deploy);
 		this.extraWhere = deploy.getExtraWhere();
 		this.isOuterJoin = deploy.isOuterJoin();
@@ -134,7 +133,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 	/**
 	 * Return the BeanDescriptor of the target.
 	 */
-	public BeanDescriptor getTargetDescriptor() {
+	public BeanDescriptor<T> getTargetDescriptor() {
 		return targetDescriptor;
 	}
 
@@ -175,7 +174,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 	 */
 	public boolean hasId(Object bean) {
 
-		BeanDescriptor targetDesc = getTargetDescriptor();
+		BeanDescriptor<?> targetDesc = getTargetDescriptor();
 
 		BeanProperty[] uids = targetDesc.propertiesId();
 		for (int i = 0; i < uids.length; i++) {
@@ -266,7 +265,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 	 * Build the list of imported property. Matches BeanProperty from the target
 	 * descriptor back to local database columns in the TableJoin.
 	 */
-	protected ImportedId createImportedId(BeanPropertyAssoc owner, BeanDescriptor target, TableJoin join) {
+	protected ImportedId createImportedId(BeanPropertyAssoc<?> owner, BeanDescriptor<?> target, TableJoin join) {
 
 		BeanProperty[] props = target.propertiesId();
 		
@@ -290,7 +289,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 				}
 			} else {
 				// embedded id
-				BeanPropertyAssocOne embProp = (BeanPropertyAssocOne)props[0];
+				BeanPropertyAssocOne<?> embProp = (BeanPropertyAssocOne<?>)props[0];
 				BeanProperty[] embBaseProps = embProp.getTargetDescriptor().propertiesBaseScalar();
 				ImportedIdSimple[] scalars = createImportedList(owner, cols, embBaseProps);
 				
@@ -304,7 +303,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 		}	
 	}
 	
-	private ImportedIdSimple[] createImportedList(BeanPropertyAssoc owner, TableJoinColumn[] cols, BeanProperty[] props) {
+	private ImportedIdSimple[] createImportedList(BeanPropertyAssoc<?> owner, TableJoinColumn[] cols, BeanProperty[] props) {
 		
 		ArrayList<ImportedIdSimple> list = new ArrayList<ImportedIdSimple>();
 
@@ -315,7 +314,7 @@ public abstract class BeanPropertyAssoc extends BeanProperty {
 		return (ImportedIdSimple[]) list.toArray(new ImportedIdSimple[list.size()]);
 	}
 	
-	private ImportedIdSimple createImportedScalar(BeanPropertyAssoc owner, TableJoinColumn col, BeanProperty[] props) {
+	private ImportedIdSimple createImportedScalar(BeanPropertyAssoc<?> owner, TableJoinColumn col, BeanProperty[] props) {
 
 		String matchColumn = col.getForeignDbColumn();
 		String localColumn = col.getLocalDbColumn();

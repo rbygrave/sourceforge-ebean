@@ -333,7 +333,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 				try {
 
 					Class<?> beanClass = Class.forName(beanType);
-					BeanManager beanMgr = server.getBeanManager(beanClass);
+					BeanManager<?> beanMgr = server.getBeanManager(beanClass);
 					if (beanMgr == null){
 						// perhaps a entity as an inner class
 						logging.logToJavaLogger("No BeanMgr for "+beanClass);

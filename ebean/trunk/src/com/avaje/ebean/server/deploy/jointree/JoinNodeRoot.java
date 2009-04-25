@@ -32,7 +32,7 @@ public class JoinNodeRoot extends JoinNode {
 	/**
 	 * Create the root node.
 	 */
-	public JoinNodeRoot(BeanDescriptor descriptor, DeployPropertyRequest deployPropertyRequest) {
+	public JoinNodeRoot(BeanDescriptor<?> descriptor, DeployPropertyRequest deployPropertyRequest) {
 
 		super(descriptor, deployPropertyRequest);
 	}
@@ -44,7 +44,7 @@ public class JoinNodeRoot extends JoinNode {
 	}
 
 	@Override
-	public BeanPropertyAssocOne getBeanProp() {
+	public BeanPropertyAssocOne<?> getBeanProp() {
 		return null;
 	}
 
@@ -53,7 +53,7 @@ public class JoinNodeRoot extends JoinNode {
 	}
 
 	@Override
-	public BeanPropertyAssocMany getManyProp() {
+	public BeanPropertyAssocMany<?> getManyProp() {
 		throw new RuntimeException("Error - should not be called");
 	}
 	

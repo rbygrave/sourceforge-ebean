@@ -9,6 +9,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
@@ -17,7 +18,6 @@ import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
@@ -316,7 +316,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	/**
 	 * Calculate the query hash for either AutoFetch query tuning or Query Plan caching.
 	 */
-	private int calculateHash(QueryRequest request) {
+	private int calculateHash(BeanQueryRequest<?> request) {
 
 		// exclude bind values and things unrelated to
 		// the sql being generated
@@ -369,7 +369,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * This is calculated AFTER AutoFetch query tuning has occurred.
 	 * </p>
 	 */
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 
 		queryPlanHash = calculateHash(request);
 		return queryPlanHash;

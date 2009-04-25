@@ -79,7 +79,7 @@ public class BeanCollectionWrapper {
 	/**
 	 * The associated BeanDescriptor.
 	 */
-	BeanDescriptor desc;
+	BeanDescriptor<?> desc;
 
 	/**
 	 * The find this collection is for.
@@ -110,7 +110,7 @@ public class BeanCollectionWrapper {
 	/**
 	 * Create based on a Find.
 	 */
-	public BeanCollectionWrapper(QueryRequest request) {
+	public BeanCollectionWrapper(QueryRequest<?> request) {
 
 		this.manyType = request.getManyType();
 		this.find = request.getQuery();
@@ -133,7 +133,7 @@ public class BeanCollectionWrapper {
 	 * ManyToMany associated objects.
 	 * </p>
 	 */
-	public BeanCollectionWrapper(BeanPropertyAssocMany manyProp) {
+	public BeanCollectionWrapper(BeanPropertyAssocMany<?> manyProp) {
 		this.manyType = manyProp.getManyType();
 		this.mapKey = manyProp.getMapKey();
 		this.desc = manyProp.getTargetDescriptor();
@@ -165,7 +165,7 @@ public class BeanCollectionWrapper {
 	 * collection. This is used to determine the key value for adding beans to a
 	 * Map.
 	 */
-	public void setBeanDescriptor(BeanDescriptor desc) {
+	public void setBeanDescriptor(BeanDescriptor<?> desc) {
 		this.desc = desc;
 	}
 

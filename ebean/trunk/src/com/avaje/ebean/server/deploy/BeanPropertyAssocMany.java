@@ -40,7 +40,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 /**
  * Property mapped to a List Set or Map.
  */
-public class BeanPropertyAssocMany extends BeanPropertyAssoc {
+public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	/**
 	 * Join for manyToMany intersection table.
@@ -91,14 +91,14 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 	
 	String targetTablePrefix;
 	
-	BeanCollectionHelp help;
+	BeanCollectionHelp<T> help;
 
 	ImportedId importedId;
 
 	/**
 	 * Create this property.
 	 */
-	public BeanPropertyAssocMany(BeanDescriptorOwner owner, BeanDescriptor descriptor, DeployBeanPropertyAssocMany deploy) {
+	public BeanPropertyAssocMany(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor, DeployBeanPropertyAssocMany<T> deploy) {
 		super(owner, descriptor, deploy);
 		this.unidirectional = deploy.isUnidirectional();
 		this.manyToMany = deploy.isManyToMany();
@@ -140,6 +140,13 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 		}
 	}
 	
+	/**
+	 * Ignore changes for Many properties.
+	 */
+	public boolean hasChanged(Object bean, Object oldValues) {
+		return false;
+	}
+	
 	@Override
 	public void appendSelect(DbSqlContext ctx) {
 	}
@@ -157,14 +164,14 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 		return true;
 	}
 	
-	public void add(BeanCollection<?> collection, Object bean, String mapKey) {
-		help.add(collection, bean, mapKey);
+	public void add(BeanCollection<?> collection, Object bean) {
+		help.add(collection, bean);
 	}
 	
 	@Override
 	public InvalidValue validateCascade(Object manyValue) {
 		
-		ArrayList<InvalidValue> errs = help.validate(targetDescriptor, manyValue);
+		ArrayList<InvalidValue> errs = help.validate(manyValue);
 		
 		if (errs == null){
 			return null;
@@ -176,8 +183,8 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 	/**
 	 * Refresh the appropriate list set or map.
 	 */
-	public void refresh(EbeanServer server, Query<?> query, Transaction t, BeanPropertyAssocMany many, Object parentBean) {
-		help.refresh(server, query, t, many, parentBean);
+	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
+		help.refresh(server, query, t, parentBean);
 	}
 	
 	/**
@@ -305,8 +312,8 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 
 		if (uids.length == 1 && uids[0].isEmbedded()) {
 
-			BeanPropertyAssocOne one = (BeanPropertyAssocOne) uids[0];
-			BeanDescriptor targetDesc = one.getTargetDescriptor();
+			BeanPropertyAssocOne<?> one = (BeanPropertyAssocOne<?>) uids[0];
+			BeanDescriptor<?> targetDesc = one.getTargetDescriptor();
 			BeanProperty[] emIds = targetDesc.propertiesBaseScalar();
 			for (int i = 0; i < emIds.length; i++) {
 				ExportedProperty expProp = findMatch(true, emIds[i]);
@@ -380,12 +387,12 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 		
 		// search for the property, to see if it exists
 		Class<?> beanType = descriptor.getBeanType();
-		BeanDescriptor targetDesc = getTargetDescriptor();
+		BeanDescriptor<?> targetDesc = getTargetDescriptor();
 
-		BeanPropertyAssocOne[] ones = targetDesc.propertiesOne();
+		BeanPropertyAssocOne<?>[] ones = targetDesc.propertiesOne();
 		for (int i = 0; i < ones.length; i++) {
 
-			BeanPropertyAssocOne prop = (BeanPropertyAssocOne) ones[i];
+			BeanPropertyAssocOne<?> prop = (BeanPropertyAssocOne<?>) ones[i];
 			if (mappedBy != null){
 				// match using mappedBy as property name
 				if (mappedBy.equalsIgnoreCase(prop.getName())) {
@@ -411,7 +418,7 @@ public class BeanPropertyAssocMany extends BeanPropertyAssoc {
 
 		// search for the property
 		
-		BeanDescriptor targetDesc = getTargetDescriptor();
+		BeanDescriptor<?> targetDesc = getTargetDescriptor();
 
 		Iterator<BeanProperty> it = targetDesc.propertiesAll();
 		while (it.hasNext()){

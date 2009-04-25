@@ -50,9 +50,9 @@ public class BeanDescriptorCacheFactory {
 
 	private final BeanManagerFactory managerFactory;
 
-	private final HashMap<String, BeanDescriptor> map = new HashMap<String, BeanDescriptor>();
+	private final HashMap<String, BeanDescriptor<?>> map = new HashMap<String, BeanDescriptor<?>>();
 
-	private final HashMap<String, BeanManager> managerMap = new HashMap<String, BeanManager>();
+	private final HashMap<String, BeanManager<?>> managerMap = new HashMap<String, BeanManager<?>>();
 
 	private final HashMap<Class<?>, BeanTable> tableMap = new HashMap<Class<?>, BeanTable>();
 
@@ -66,37 +66,39 @@ public class BeanDescriptorCacheFactory {
 	/**
 	 * Return an Iterator of all the BeanDescriptors.
 	 */
-	public Iterator<BeanDescriptor> descriptors() {
+	public Iterator<BeanDescriptor<?>> descriptors() {
 		return map.values().iterator();
 	}
 	
 	/**
 	 * Get the BeanDescriptor for a bean.
 	 */
-	public BeanDescriptor get(Class<?> beanClz) {
+	@SuppressWarnings("unchecked")
+	public <T> BeanDescriptor<T> get(Class<T> entityType) {
 
-		return get(beanClz.getName());
+		return (BeanDescriptor<T>)get(entityType.getName());
 	}
 
 	/**
 	 * Get the BeanDescriptor given a bean class name.
 	 */
-	public BeanDescriptor get(String beanClassName) {
+	public BeanDescriptor<?> get(String beanClassName) {
 
 		beanClassName = SubClassUtil.getSuperClassName(beanClassName);
 		return map.get(beanClassName);
 	}
 
-	public BeanManager getBeanManager(Class<?> beanClz) {
+	@SuppressWarnings("unchecked")
+	public <T> BeanManager<T> getBeanManager(Class<T> entityType) {
 
-		return getBeanManager(beanClz.getName());
+		return (BeanManager<T>)getBeanManager(entityType.getName());
 	}
 	
 	public BeanTable getBeanTable(Class<?> cls){
 		return tableMap.get(cls);
 	}
 	
-	public BeanManager getBeanManager(String beanClassName) {
+	public BeanManager<?> getBeanManager(String beanClassName) {
 
 		beanClassName = SubClassUtil.getSuperClassName(beanClassName);
 		return managerMap.get(beanClassName);
@@ -127,26 +129,26 @@ public class BeanDescriptorCacheFactory {
 		// initialise the ID properties of all the beans
 		// first (as they are needed to initialise the 
 		// associated properties in the second pass).
-		Iterator<BeanDescriptor> initId = map.values().iterator();
+		Iterator<BeanDescriptor<?>> initId = map.values().iterator();
 		while (initId.hasNext()) {
-			BeanDescriptor d = initId.next();
+			BeanDescriptor<?> d = initId.next();
 			d.initialiseId();
 		}
 		
 		// PASS 2:
 		// now initialise all the associated properties
-		Iterator<BeanDescriptor> otherBeans = map.values().iterator();
+		Iterator<BeanDescriptor<?>> otherBeans = map.values().iterator();
 		while (otherBeans.hasNext()) {
-			BeanDescriptor d = otherBeans.next();
+			BeanDescriptor<?> d = otherBeans.next();
 			d.initialiseOther();
 		}
 		
 		// create BeanManager for each non-embedded entity bean
-		Iterator<BeanDescriptor> it = map.values().iterator();
+		Iterator<BeanDescriptor<?>> it = map.values().iterator();
 		while (it.hasNext()) {
-			BeanDescriptor d = it.next();
+			BeanDescriptor<?> d = it.next();
 			if (!d.isEmbedded()){
-				BeanManager m = managerFactory.create(d);
+				BeanManager<?> m = managerFactory.create(d);
 				managerMap.put(d.getFullName(), m);
 			}
 		}
@@ -174,7 +176,7 @@ public class BeanDescriptorCacheFactory {
 	private void createEmbedded(Class<?> cls) {
 		try {
 			
-			BeanDescriptor d = factory.createEmbedded(cls);
+			BeanDescriptor<?> d = factory.createEmbedded(cls);
 			map.put(cls.getName(), d);
 
 		} catch (PersistenceException ex) {
@@ -225,10 +227,10 @@ public class BeanDescriptorCacheFactory {
 		List<Class<?>> entityClasses = bootupClasses.getEntities();
 		
 		// load deployment info for all the entity bean types
-		List<BeanDescriptor> descriptors = factory.createDescriptor(entityClasses);
+		List<BeanDescriptor<?>> descriptors = factory.createDescriptor(entityClasses);
 		
 		// put them into our map
-		for (BeanDescriptor desc : descriptors) {
+		for (BeanDescriptor<?> desc : descriptors) {
 			map.put(desc.getBeanType().getName(), desc);
 		}
 		

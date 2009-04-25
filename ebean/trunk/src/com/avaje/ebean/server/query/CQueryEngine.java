@@ -23,7 +23,6 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.server.core.QueryRequest;
@@ -61,7 +60,7 @@ public class CQueryEngine {
 		this.useResultSetLimit = pluginCore.getDbConfig().getDbSpecific().useJdbcResultSetLimit();
 	}
 
-	public CQuery buildQuery(QueryRequest request) {
+	public <T> CQuery<T> buildQuery(QueryRequest<T> request) {
 		return queryBuilder.buildQuery(request);
 	}
 	
@@ -69,12 +68,12 @@ public class CQueryEngine {
 	/**
 	 * Find a list/map/set of beans.
 	 */
-	public BeanCollection<?> findMany(QueryRequest request) {
+	public <T> BeanCollection<T> findMany(QueryRequest<T> request) {
 
 		// flag indicating whether we need to close the resources...
 		boolean useBackgroundToContinueFetch = false;
 
-		CQuery cquery = queryBuilder.buildQuery(request);
+		CQuery<T> cquery = queryBuilder.buildQuery(request);
 		try {
 
 			if (logControl.isDebugGeneratedSql()){
@@ -86,7 +85,7 @@ public class CQueryEngine {
 
 			cquery.prepareBindExecuteQuery();
 
-			BeanCollection<?> beanCollection = cquery.readCollection(useResultSetLimit);
+			BeanCollection<T> beanCollection = cquery.readCollection(useResultSetLimit);
 
 			if (cquery.useBackgroundToContinueFetch()) {
 				// stop the request from putting connection back into pool
@@ -123,11 +122,11 @@ public class CQueryEngine {
 	/**
 	 * Find and return a single bean using its unique id.
 	 */
-	public Object find(QueryRequest request) {
+	public <T> T find(QueryRequest<T> request) {
 
-		EntityBean bean = null;
+		T bean = null;
 
-		CQuery cquery = queryBuilder.buildQuery(request);		
+		CQuery<T> cquery = queryBuilder.buildQuery(request);		
 		
 		try {
 			if (logControl.isDebugGeneratedSql()) {
@@ -162,7 +161,7 @@ public class CQueryEngine {
 	/**
 	 * Log the generated SQL to the console.
 	 */
-	private void logSqlToConsole(CQuery build) {
+	private void logSqlToConsole(CQuery<?> build) {
 
 		String sql = build.getGeneratedSql();
 		String summary = build.getSummary();
@@ -179,7 +178,7 @@ public class CQueryEngine {
 	/**
 	 * Log the generated SQL to the transaction log.
 	 */
-	private void logSql(CQuery query) {
+	private void logSql(CQuery<?> query) {
 
 		String sql = query.getGeneratedSql();
 		sql = sql.replace(Constants.NEW_LINE, ' ');
@@ -189,7 +188,7 @@ public class CQueryEngine {
 	/**
 	 * Log the FindById summary to the transaction log.
 	 */
-	private void logFindSummary(CQuery q) {
+	private void logFindSummary(CQuery<?> q) {
 			
 		StringBuilder msg = new StringBuilder(200);
 		msg.append("FindById");
@@ -207,7 +206,7 @@ public class CQueryEngine {
 	/**
 	 * Log the FindMany to the transaction log.
 	 */
-	private void logFindManySummary(CQuery q) {
+	private void logFindManySummary(CQuery<?> q) {
 
 		StringBuilder msg = new StringBuilder(200);
 		msg.append("FindMany");

@@ -64,7 +64,7 @@ public class JoinTreeFactory {
 	/**
 	 * Create the JoinTree for the given descriptor.
 	 */
-	public JoinTree create(BeanDescriptor descriptor) {
+	public JoinTree create(BeanDescriptor<?> descriptor) {
 
 		JoinTreeRequest request = new JoinTreeRequest(descriptor);
 
@@ -177,17 +177,17 @@ public class JoinTreeFactory {
 	 */
 	private void buildTree(JoinTreeRequest request, JoinNode parent) {
 
-		BeanDescriptor treeDesc = parent.getBeanDescriptor();
+		BeanDescriptor<?> treeDesc = parent.getBeanDescriptor();
 		
-		BeanPropertyAssocOne[] embedded = treeDesc.propertiesEmbedded();
+		BeanPropertyAssocOne<?>[] embedded = treeDesc.propertiesEmbedded();
 		for (int i = 0; i < embedded.length; i++) {
 			addEmbeddedChild(request, parent, embedded[i]);
 		}
 
-		BeanPropertyAssocOne[] ones = treeDesc.propertiesOne();
+		BeanPropertyAssocOne<?>[] ones = treeDesc.propertiesOne();
 		for (int i = 0; i < ones.length; i++) {
 
-			BeanPropertyAssocOne beanProp = ones[i];
+			BeanPropertyAssocOne<?> beanProp = ones[i];
 
 			JoinNode subTree = addChild(request, parent, beanProp);
 			Class<?> targetType = beanProp.getTargetType();
@@ -232,8 +232,8 @@ public class JoinTreeFactory {
 	 */
 	private void buildListTree(JoinTreeRequest request, JoinNode parent) {
 
-		BeanDescriptor desc = parent.getBeanDescriptor();
-		BeanPropertyAssocMany[] manys = desc.propertiesMany();
+		BeanDescriptor<?> desc = parent.getBeanDescriptor();
+		BeanPropertyAssocMany<?>[] manys = desc.propertiesMany();
 		for (int i = 0; i < manys.length; i++) {
 
 			// start treeTypes again for each many
@@ -250,10 +250,10 @@ public class JoinTreeFactory {
 	 * added at level 1, not at any lower levels.
 	 */
 	private JoinNode addChild(JoinTreeRequest request, JoinNode parent,
-			BeanPropertyAssocMany listProp) {
+			BeanPropertyAssocMany<?> listProp) {
 
-		BeanDescriptor parentDesc = parent.getBeanDescriptor();
-		BeanDescriptor forDesc = parentDesc.getBeanDescriptor(listProp.getTargetType());
+		BeanDescriptor<?> parentDesc = parent.getBeanDescriptor();
+		BeanDescriptor<?> forDesc = parentDesc.getBeanDescriptor(listProp.getTargetType());
 
 		String propName = getPropName(listProp, parent);
 
@@ -282,9 +282,9 @@ public class JoinTreeFactory {
 	 * Add a child node. Depth first.
 	 */
 	private JoinNode addChild(JoinTreeRequest request, JoinNode parent,
-			BeanPropertyAssocOne beanProp) {
+			BeanPropertyAssocOne<?> beanProp) {
 
-		BeanDescriptor forDesc = beanProp.getTargetDescriptor();
+		BeanDescriptor<?> forDesc = beanProp.getTargetDescriptor();
 
 		String propName = getPropName(beanProp, parent);
 
@@ -307,9 +307,9 @@ public class JoinTreeFactory {
 	 * Add a child node. Depth first.
 	 */
 	private JoinNode addEmbeddedChild(JoinTreeRequest request, JoinNode parent,
-			BeanPropertyAssocOne beanProp) {
+			BeanPropertyAssocOne<?> beanProp) {
 
-		BeanDescriptor forDesc = beanProp.getTargetDescriptor();
+		BeanDescriptor<?> forDesc = beanProp.getTargetDescriptor();
 
 		String propName = getPropName(beanProp, parent);
 
@@ -357,7 +357,7 @@ public class JoinTreeFactory {
 	 * name
 	 * </p>
 	 */
-	private String getPropName(BeanPropertyAssoc prop, JoinNode parent) {
+	private String getPropName(BeanPropertyAssoc<?> prop, JoinNode parent) {
 		String propName = prop.getName();
 		if (parent.propertyPrefix != null && parent.propertyPrefix.length() > 0) {
 			propName = parent.propertyPrefix + "." + propName;

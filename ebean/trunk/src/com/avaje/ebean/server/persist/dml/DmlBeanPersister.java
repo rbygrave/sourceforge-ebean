@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.persist.BeanPersister;
 
@@ -58,7 +59,7 @@ public final class DmlBeanPersister implements BeanPersister {
 	/**
 	 * execute the bean delete request.
 	 */
-	public void delete(PersistRequest request) {
+	public void delete(PersistRequestBean<?> request) {
 
 		DeleteHandler delete = new DeleteHandler(request, deleteMeta);
 		execute(request, delete);
@@ -67,7 +68,7 @@ public final class DmlBeanPersister implements BeanPersister {
 	/**
 	 * execute the bean insert request.
 	 */
-	public void insert(PersistRequest request) {
+	public void insert(PersistRequestBean<?> request) {
 
 		InsertHandler insert = new InsertHandler(request, insertMeta);
 		execute(request, insert);
@@ -76,7 +77,7 @@ public final class DmlBeanPersister implements BeanPersister {
 	/**
 	 * execute the bean update request.
 	 */
-	public void update(PersistRequest request) {
+	public void update(PersistRequestBean<?> request) {
 
 		UpdateHandler update = new UpdateHandler(request, updateMeta);
 		execute(request, update);

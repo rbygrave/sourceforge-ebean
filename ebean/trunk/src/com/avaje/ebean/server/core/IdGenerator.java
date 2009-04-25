@@ -46,7 +46,7 @@ public interface IdGenerator {
      * sequence to use.
      * </p>
      */
-    public Object nextId(BeanDescriptor desc);
+    public Object nextId(BeanDescriptor<?> desc);
 
 
 }

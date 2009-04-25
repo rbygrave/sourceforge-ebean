@@ -95,7 +95,7 @@ public class DefaultServerCache implements ServerCache {
     /**
      * Put a bean into the cache.
      */
-    public void putBean(BeanDescriptor desc, Object uid, Object bean) {
+    public void putBean(BeanDescriptor<?> desc, Object uid, Object bean) {
         Cache cache = getBeanCache(desc);
         cache.put(uid, bean);    
     }
@@ -103,7 +103,7 @@ public class DefaultServerCache implements ServerCache {
     /**
      * Add all the entries from the map into the cache.
      */
-    public void putBeanAll(BeanDescriptor desc, Map<?,?> beanMap) {
+    public void putBeanAll(BeanDescriptor<?> desc, Map<?,?> beanMap) {
         Cache cache = getBeanCache(desc);
         cache.putAll(beanMap);    
     }
@@ -112,7 +112,7 @@ public class DefaultServerCache implements ServerCache {
     /**
      * Get a bean out of the cache.
      */
-    public Object getBean(BeanDescriptor desc, Object uid) {
+    public Object getBean(BeanDescriptor<?> desc, Object uid) {
 
         Cache cache = getBeanCache(desc);
         return cache.get(uid);
@@ -122,7 +122,7 @@ public class DefaultServerCache implements ServerCache {
     /**
      * Create the cache for a given type of bean.
      */
-    public Cache getBeanCache(BeanDescriptor desc) {
+    public Cache getBeanCache(BeanDescriptor<?> desc) {
 
         
         String key = keyPrefix;

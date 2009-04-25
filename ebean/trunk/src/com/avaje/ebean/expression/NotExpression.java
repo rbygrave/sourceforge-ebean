@@ -1,6 +1,6 @@
 package com.avaje.ebean.expression;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.bean.BeanQueryRequest;
 
 
 final class NotExpression implements Expression {
@@ -38,7 +38,7 @@ final class NotExpression implements Expression {
 		return hc;
 	}
 
-	public int queryPlanHash(QueryRequest request) {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 		int hc = NotExpression.class.getName().hashCode();
 		hc = hc * 31 + exp.queryPlanHash(request);
 		return hc;

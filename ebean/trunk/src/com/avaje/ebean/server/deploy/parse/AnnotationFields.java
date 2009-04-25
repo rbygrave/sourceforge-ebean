@@ -54,7 +54,7 @@ import com.avaje.ebean.validation.ValidatorMeta;
  */
 public class AnnotationFields extends AnnotationParser {
 
-	public AnnotationFields(DeployBeanInfo info) {
+	public AnnotationFields(DeployBeanInfo<?> info) {
 		super(info);
 	}
 
@@ -80,12 +80,12 @@ public class AnnotationFields extends AnnotationParser {
 
 		// all Enums will have a ScalarType assigned...
 		boolean isEnum = prop.getPropertyType().isEnum();
-		Enumerated enumerated = (Enumerated) get(prop, Enumerated.class);
+		Enumerated enumerated = get(prop, Enumerated.class);
 		if (isEnum || enumerated != null) {
 			util.setEnumScalarType(enumerated, prop);
 		}
 
-		Transient t = (Transient) get(prop, Transient.class);
+		Transient t = get(prop, Transient.class);
 		if (t != null) {
 			// it is not a persistent property.
 			prop.setDbRead(false);
@@ -100,7 +100,7 @@ public class AnnotationFields extends AnnotationParser {
 		prop.setDbWrite(true);
 		prop.setDbTableAlias(descriptor.getBaseTableAlias());
 
-		Column column = (Column) get(prop, Column.class);
+		Column column = get(prop, Column.class);
 		if (column != null) {
 			readColumn(column, prop);
 
@@ -109,7 +109,7 @@ public class AnnotationFields extends AnnotationParser {
 			setDbColumn(prop, null);
 		}
 
-		GeneratedValue gen = (GeneratedValue) get(prop, GeneratedValue.class);
+		GeneratedValue gen = get(prop, GeneratedValue.class);
 		if (gen != null) {
 			readGenValue(gen, prop);
 		}
@@ -121,8 +121,8 @@ public class AnnotationFields extends AnnotationParser {
 
 		// determine the JDBC type using Lob/Temporal
 		// otherwise based on the property Class
-		Lob lob = (Lob) get(prop, Lob.class);
-		Temporal temporal = (Temporal) get(prop, Temporal.class);
+		Lob lob = get(prop, Lob.class);
+		Temporal temporal = get(prop, Temporal.class);
 		if (temporal != null) {
 			readTemporal(temporal, prop);
 
@@ -130,12 +130,12 @@ public class AnnotationFields extends AnnotationParser {
 			util.setLobType(prop);
 		}
 
-		Formula formula = (Formula) get(prop, Formula.class);
+		Formula formula = get(prop, Formula.class);
 		if (formula != null) {
 			prop.setSqlFormula(formula.select(), formula.join());
 		}
 
-		Version version = (Version) get(prop, Version.class);
+		Version version = get(prop, Version.class);
 		if (version != null) {
 			// explicitly specify a version column
 			prop.setVersionColumn(true);
@@ -170,7 +170,7 @@ public class AnnotationFields extends AnnotationParser {
 
 		String genName = gen.generator();
 		
-		SequenceGenerator sequenceGenerator = (SequenceGenerator) find(prop, SequenceGenerator.class);
+		SequenceGenerator sequenceGenerator = find(prop, SequenceGenerator.class);
 		if (sequenceGenerator != null) {
 			if (sequenceGenerator.name().equals(genName)) {
 				genName = sequenceGenerator.sequenceName();

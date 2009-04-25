@@ -32,14 +32,14 @@ public class BackgroundFetch implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(BackgroundFetch.class.getName());
 	
-	private final CQuery cquery;
+	private final CQuery<?> cquery;
     
     private final ServerTransaction transaction;
     
     /**
      * Create the BackgroundFetch.
      */
-    public BackgroundFetch(CQuery cquery) {
+    public BackgroundFetch(CQuery<?> cquery) {
         this.cquery = cquery;  
         this.transaction = cquery.getTransaction();
     }

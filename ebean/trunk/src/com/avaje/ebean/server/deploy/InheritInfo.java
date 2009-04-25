@@ -54,7 +54,7 @@ public class InheritInfo {
 
 	final InheritInfo root;
 
-	BeanDescriptor descriptor;
+	BeanDescriptor<?> descriptor;
 
 	public InheritInfo(InheritInfo r, InheritInfo parent, DeployInheritInfo deploy) {
 		
@@ -82,12 +82,12 @@ public class InheritInfo {
 	/**
 	 * Set the descriptor for this node.
 	 */
-	public void setDescriptor(BeanDescriptor descriptor) {
+	public void setDescriptor(BeanDescriptor<?> descriptor) {
 		
 		this.descriptor = descriptor;
 	}
 	
-	public BeanDescriptor getBeanDescriptor() {
+	public BeanDescriptor<?> getBeanDescriptor() {
 		return descriptor;
 	}
 	

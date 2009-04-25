@@ -20,15 +20,12 @@
 package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
 
 /**
@@ -49,18 +46,15 @@ public final class UpdateMeta {
 	
 	private final String tableName;
 	
-	private final BeanDescriptor desc;
-	
-	public UpdateMeta(BeanDescriptor desc, Bindable set, Bindable id, Bindable version, Bindable all) {
-		this.desc = desc;
+	public UpdateMeta(BeanDescriptor<?> desc, Bindable set, Bindable id, Bindable version, Bindable all) {
 		this.tableName = desc.getBaseTable();
 		this.set = set;
 		this.id = id;
 		this.version = version;
 		this.all = all;
 		
-		sqlNone = genSql(ConcurrencyMode.NONE, null, null);
-		sqlVersion = genSql(ConcurrencyMode.VERSION, null, null);
+		sqlNone = genSql(ConcurrencyMode.NONE, null);
+		sqlVersion = genSql(ConcurrencyMode.VERSION, null);
 	}
 	
 	/**
@@ -73,9 +67,8 @@ public final class UpdateMeta {
 	/**
 	 * Bind the request based on the concurrency mode.
 	 */
-	public void bind(PersistRequest persist, DmlHandler bind) throws SQLException {
+	public void bind(PersistRequestBean<?> persist, DmlHandler bind) throws SQLException {
 
-		
 		Object bean = persist.getBean();
 		
 		bind.bindLogAppend(" set[");
@@ -98,28 +91,14 @@ public final class UpdateMeta {
 	/**
 	 * get or generate the sql based on the concurrency mode.
 	 */
-	public String getSql(PersistRequest request) {
+	public String getSql(PersistRequestBean<?> request) {
 
-		EntityBeanIntercept ebi = request.getEntityBeanIntercept();
-		if (ebi != null){
-			Set<String> loadedProps = ebi.getLoadedProps();
-			if (loadedProps != null){
-				// 'partial bean' update...
-				// determine the concurrency mode
-				int mode = ConcurrencyMode.ALL;
-				BeanProperty prop = desc.firstVersionProperty();
-				if (prop != null && loadedProps.contains(prop.getName())){
-					mode = ConcurrencyMode.VERSION;
-				}
-				// generate SQL dynamically depending on the
-				// loadedProps
-				request.setConcurrencyMode(mode);
-				return genSql(mode, loadedProps, request.getOldValues());
-			}
+		int mode = request.determineConcurrencyMode();
+		if (request.isDynamicUpdateSql()){
+			return genSql(mode, request);
 		}
 		
 		// 'full bean' update...
-		int mode = request.getConcurrencyMode();
 		switch (mode) {
 		case ConcurrencyMode.NONE:
 			return sqlNone;
@@ -132,19 +111,27 @@ public final class UpdateMeta {
 			if (oldValues == null) {
 				throw new PersistenceException("OldValues are null?");
 			}
-			return genDynamicWhere(oldValues, null);
+			return genDynamicWhere(oldValues);
 
 		default:
 			throw new RuntimeException("Invalid mode "+mode);
 		}
 	}
 	
-	private String genSql(int conMode, Set<String> loadedProps, Object oldBean) {
+	private String genSql(int conMode, PersistRequestBean<?> persistRequest) {
 
-				
 		// update  set col0=?, col1=?, col2=? where bcol=? and bc1=? and bc2=?
 
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps);
+		GenerateDmlRequest request;
+		if (persistRequest == null){
+			// For generation of None and Version DML/SQL
+			request = new GenerateDmlRequest();
+		} else {
+			if (persistRequest.isUpdateChangesOnly()){
+				set.determineChangedProperties(persistRequest);
+			}
+			request = persistRequest.createGenerateDmlRequest();
+		}
 				
 		request.append("update ").append(tableName).append(" set ");
 		
@@ -166,7 +153,7 @@ public final class UpdateMeta {
 		} else if (conMode == ConcurrencyMode.ALL) {
 			
 			//request.setWhereMode();
-			all.dmlWhere(request, true, oldBean);
+			all.dmlWhere(request, true, request.getOldValues());
 		}
 		
 		return request.toString();
@@ -176,12 +163,12 @@ public final class UpdateMeta {
 	/**
 	 * Generate the sql dynamically for where using IS NULL for binding null values.
 	 */
-	private String genDynamicWhere(Object oldBean, Set<String> loadedProps) {
+	private String genDynamicWhere(Object oldBean) {
 
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps);
+		GenerateDmlRequest request = new GenerateDmlRequest(null, oldBean);
 		
 		//request.setBean(oldBean);
 		request.append(sqlNone);

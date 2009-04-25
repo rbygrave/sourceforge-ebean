@@ -11,19 +11,20 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
+import com.avaje.ebean.util.ValueUtil;
 
 /**
  * Imported Embedded id.
  */
 public class ImportedIdEmbedded implements ImportedId {
 	
-	final BeanPropertyAssoc owner;
+	final BeanPropertyAssoc<?> owner;
 
-	final BeanPropertyAssocOne foreignAssocOne;
+	final BeanPropertyAssocOne<?> foreignAssocOne;
 
 	final ImportedIdSimple[] imported;
 	
-	public ImportedIdEmbedded(BeanPropertyAssoc owner, BeanPropertyAssocOne foreignAssocOne, ImportedIdSimple[] imported) {
+	public ImportedIdEmbedded(BeanPropertyAssoc<?> owner, BeanPropertyAssocOne<?> foreignAssocOne, ImportedIdSimple[] imported) {
 		this.owner = owner;
 		this.foreignAssocOne = foreignAssocOne;
 		this.imported = imported;
@@ -79,6 +80,13 @@ public class ImportedIdEmbedded implements ImportedId {
 				}
 			}
 		}
+	}
+	
+	public boolean hasChanged(Object bean, Object oldValues) {
+		Object id = foreignAssocOne.getValue(bean);
+		Object oldId = foreignAssocOne.getValue(oldValues);
+		
+		return !ValueUtil.areEqual(id, oldId);
 	}
 	
 	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {

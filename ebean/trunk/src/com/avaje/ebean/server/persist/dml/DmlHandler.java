@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.BatchPostExecute;
@@ -60,7 +60,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	/**
 	 * The originating request.
 	 */
-	protected final PersistRequest persistRequest;
+	protected final PersistRequestBean<?> persistRequest;
 
 	final int logLevel;
 
@@ -72,7 +72,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 
 	final ServerTransaction transaction;
 
-	protected DmlHandler(PersistRequest persistRequest) {
+	protected DmlHandler(PersistRequestBean<?> persistRequest) {
 		this.persistRequest = persistRequest;
 		
 		EntityBeanIntercept ebi = persistRequest.getEntityBeanIntercept();
@@ -93,7 +93,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		}
 	}
 
-	public PersistRequest getPersistRequest() {
+	public PersistRequestBean<?> getPersistRequest() {
 		return persistRequest;
 	}
 	
@@ -244,7 +244,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	public void setUpdateGenValues() {
 		if (updateGenValues != null) {
 			for (int i = 0; i < updateGenValues.size(); i++) {
-				UpdateGenValue updGenVal = (UpdateGenValue) updateGenValues.get(i);
+				UpdateGenValue updGenVal = updateGenValues.get(i);
 				updGenVal.setValue();
 			}
 		}

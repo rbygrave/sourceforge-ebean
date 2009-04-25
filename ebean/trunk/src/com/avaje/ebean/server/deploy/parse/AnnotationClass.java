@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 
 import javax.persistence.Embeddable;
@@ -32,6 +31,7 @@ import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.annotation.UpdateMode;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
@@ -41,7 +41,7 @@ import com.avaje.ebean.server.deploy.DeploySqlSelect;
  */
 public class AnnotationClass extends AnnotationParser {
 
-	public AnnotationClass(DeployBeanInfo info) {
+	public AnnotationClass(DeployBeanInfo<?> info) {
 		super(info);
 	}
 
@@ -53,7 +53,7 @@ public class AnnotationClass extends AnnotationParser {
 		read(descriptor.getBeanType());
 		
 		if (descriptor.getBaseTable() == null){
-			// search the inheritance heirarchy ...
+			// search the inheritance hierarchy ...
 			Table table = findInheritedTable(descriptor.getBeanType().getSuperclass());
 			if (table != null){
 				info.setTable(table.catalog(), table.schema(), table.name(), null);
@@ -62,7 +62,7 @@ public class AnnotationClass extends AnnotationParser {
 	}
 	
 	/**
-	 * Search the inheritance heirarchy for Table annotation.
+	 * Search the inheritance hierarchy for Table annotation.
 	 */
 	private Table findInheritedTable(Class<?> cls) {
 		if (cls.equals(Object.class)){
@@ -77,56 +77,62 @@ public class AnnotationClass extends AnnotationParser {
 
 	public void readSqlAnnotations() {
 		Class<?> cls = descriptor.getBeanType();
-		Annotation[] anns = cls.getAnnotations();
-		for (int i = 0; i < anns.length; i++) {
-
-			if (anns[i] instanceof Sql) {
-				Sql ann = (Sql) anns[i];
-				setSql(ann);
-			}
-			if (anns[i] instanceof SqlSelect) {
-				SqlSelect ann = (SqlSelect) anns[i];
-				setSqlSelect(ann);
-			}
+		Sql sql = cls.getAnnotation(Sql.class);
+		if (sql != null){
+			setSql(sql);
+		}
+		
+		SqlSelect sqlSelect = cls.getAnnotation(SqlSelect.class);
+		if (sqlSelect != null){
+			setSqlSelect(sqlSelect);
 		}
 	}
 
 	private void read(Class<?> cls) {
 
-		Annotation[] anns = cls.getAnnotations();
-		for (int i = 0; i < anns.length; i++) {
-			if (anns[i] instanceof Entity) {
-				Entity entity = (Entity) anns[i];
+		Entity entity = cls.getAnnotation(Entity.class);
+		if (entity != null){
+			checkDefaultConstructor();
+			if (entity.name().equals("")) {
+				descriptor.setName(getShortName(cls));
 
-				checkDefaultConstructor();
+			} else {
+				descriptor.setName(entity.name());
+			}			
+		}
+		
+		Embeddable embeddable = cls.getAnnotation(Embeddable.class);
+		if (embeddable != null){
+			descriptor.setEmbedded(true);
+			descriptor.setName("Embeddable:"+getShortName(cls));
+		}
+		
+		Table table = cls.getAnnotation(Table.class);
+		if (table != null){
+			info.setTable(table.catalog(), table.schema(), table.name(), null);
+		}
+		UpdateMode updateMode = cls.getAnnotation(UpdateMode.class);
+		if (updateMode != null){
+			descriptor.setUpdateChangesOnly(updateMode.updateChangesOnly());
+		}
 
-				if (entity.name().equals("")) {
-					descriptor.setName(getShortName(cls));
-
-				} else {
-					descriptor.setName(entity.name());
-				}
-			}
-			if (anns[i] instanceof Embeddable) {
-				descriptor.setEmbedded(true);
-				descriptor.setName("Embeddable:"+getShortName(cls));
-			}
-			if (anns[i] instanceof Table) {
-				Table ann = (Table) anns[i];
-				info.setTable(ann.catalog(), ann.schema(), ann.name(), null);
-			}
-			if (anns[i] instanceof NamedQueries) {
-				readNamedQueries((NamedQueries) anns[i]);
-			}
-			if (anns[i] instanceof NamedQuery) {
-				readNamedQuery((NamedQuery) anns[i]);
-			}
-			if (anns[i] instanceof NamedUpdates) {
-				readNamedUpdates((NamedUpdates) anns[i]);
-			}
-			if (anns[i] instanceof NamedUpdate) {
-				readNamedUpdate((NamedUpdate) anns[i]);
-			}
+		NamedQueries namedQueries = cls.getAnnotation(NamedQueries.class);
+		if (namedQueries != null){
+			readNamedQueries(namedQueries);
+		}
+		NamedQuery namedQuery = cls.getAnnotation(NamedQuery.class);
+		if (namedQuery != null){
+			readNamedQuery(namedQuery);
+		}
+		
+		NamedUpdates namedUpdates = cls.getAnnotation(NamedUpdates.class);
+		if (namedUpdates != null){
+			readNamedUpdates(namedUpdates);
+		}
+		
+		NamedUpdate namedUpdate = cls.getAnnotation(NamedUpdate.class);
+		if (namedUpdate != null){
+			readNamedUpdate(namedUpdate);
 		}
 	}
 
@@ -150,8 +156,7 @@ public class AnnotationClass extends AnnotationParser {
 
 		DeploySqlSelect parsedSql = util.parseSqlSelect(descriptor, sqlSelect);
 
-		DeployNamedQuery namedQuery = new DeployNamedQuery(sqlSelect.name(), sqlSelect.query(),
-				null, parsedSql);
+		DeployNamedQuery namedQuery = new DeployNamedQuery(sqlSelect.name(), sqlSelect.query(),null, parsedSql);
 		descriptor.add(namedQuery);
 	}
 

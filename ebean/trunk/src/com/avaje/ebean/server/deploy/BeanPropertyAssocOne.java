@@ -32,7 +32,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 /**
  * Property mapped to a joined bean.
  */
-public class BeanPropertyAssocOne extends BeanPropertyAssoc {
+public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 	final boolean oneToOne;
 
@@ -55,8 +55,8 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 	/**
 	 * Create the property.
 	 */
-	public BeanPropertyAssocOne(BeanDescriptorOwner owner, BeanDescriptor descriptor,
-			DeployBeanPropertyAssocOne deploy) {
+	public BeanPropertyAssocOne(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor,
+			DeployBeanPropertyAssocOne<T> deploy) {
 
 		super(owner, descriptor, deploy);
 
@@ -101,10 +101,29 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 	@Override
 	public InvalidValue validateCascade(Object value) {
 
-		BeanDescriptor target = getTargetDescriptor();
+		BeanDescriptor<?> target = getTargetDescriptor();
 		return target.validate(true, value);
 	}
 
+	public boolean hasChanged(Object bean, Object oldValues) {
+		Object value = getValue(bean);
+		Object oldVal = getValue(oldValues);
+		if (embedded){
+			// check each property
+			for (int i = 0; i < embeddedProps.length; i++) {
+				if (embeddedProps[i].hasChanged(value, oldVal)) {
+					return true;
+				}
+			}
+			return false;
+		} else if (oneToOneExported) {
+			// FKey on other side
+			return false;
+		} else {
+			return importedId.hasChanged(value, oldVal);
+		}
+	}
+	
 	/**
 	 * Return meta data for the deployment of the embedded bean specific to this
 	 * property.
@@ -265,7 +284,7 @@ public class BeanPropertyAssocOne extends BeanPropertyAssoc {
 		@Override
 		Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
 
-			BeanDescriptor rowDescriptor = null;
+			BeanDescriptor<?> rowDescriptor = null;
 			Class<?> rowType = targetType;
 			if (targetInheritInfo != null){
 				// read discriminator to determine the type

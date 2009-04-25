@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 /**
  * Holds an array of named Update statements for a particular entity bean type.
  */
-@Target( { ElementType.FIELD, ElementType.METHOD, ElementType.TYPE })
+@Target( { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NamedUpdates {
 

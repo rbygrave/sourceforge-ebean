@@ -25,12 +25,12 @@ import com.avaje.ebean.server.deploy.BeanCascadeInfo;
 /**
  * Abstract base for properties mapped to an associated bean, list, set or map.
  */
-public abstract class DeployBeanPropertyAssoc extends DeployBeanProperty {
+public abstract class DeployBeanPropertyAssoc<T> extends DeployBeanProperty {
 
 	/**
 	 * The type of the joined bean.
 	 */
-	Class<?> targetType;
+	Class<T> targetType;
 
 	/**
 	 * Persist settings.
@@ -60,8 +60,9 @@ public abstract class DeployBeanPropertyAssoc extends DeployBeanProperty {
 	/**
 	 * Construct the property.
 	 */
-	public DeployBeanPropertyAssoc(DeployBeanDescriptor desc) {
-		super(desc);
+	public DeployBeanPropertyAssoc(DeployBeanDescriptor<?> desc, Class<T> targetType) {
+		super(desc, targetType);
+		this.targetType = targetType;
 	}
 
 	/**
@@ -79,16 +80,16 @@ public abstract class DeployBeanPropertyAssoc extends DeployBeanProperty {
 	 * set or map.
 	 * </p>
 	 */
-	public Class<?> getTargetType() {
+	public Class<T> getTargetType() {
 		return targetType;
 	}
 
-	/**
-	 * Set the class of the target.
-	 */
-	public void setTargetType(Class<?> targetType) {
-		this.targetType = targetType;
-	}
+//	/**
+//	 * Set the class of the target.
+//	 */
+//	public void setTargetType(Class<?> targetType) {
+//		this.targetType = targetType;
+//	}
 
 	/**
 	 * Return if this association should use an Outer join.

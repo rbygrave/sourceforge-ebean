@@ -49,22 +49,22 @@ public interface ServerCache {
     /**
      * Add all the entries from the map into the cache.
      */
-    public void putBeanAll(BeanDescriptor desc, Map<?,?> beanMap);
+    public void putBeanAll(BeanDescriptor<?> desc, Map<?,?> beanMap);
     
     /**
      * Put a bean into the cache.
      */
-    public void putBean(BeanDescriptor desc, Object uid, Object bean);
+    public void putBean(BeanDescriptor<?> desc, Object uid, Object bean);
 
     /**
      * Get a bean out of the cache. If the bean is not in the cache return null.
      */
-    public Object getBean(BeanDescriptor desc, Object uid);
+    public Object getBean(BeanDescriptor<?> desc, Object uid);
     
     /**
      * Get a cache for the type of bean.
      */
-    public Cache getBeanCache(BeanDescriptor desc);
+    public Cache getBeanCache(BeanDescriptor<?> desc);
 
 
 }

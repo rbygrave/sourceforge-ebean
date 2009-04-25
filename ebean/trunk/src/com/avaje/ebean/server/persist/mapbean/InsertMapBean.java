@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.persist.Binder;
@@ -45,7 +45,7 @@ public class InsertMapBean extends BaseMapBean {
 	
 	private final boolean supportsGeneratedKeys;
 		
-	public InsertMapBean(Binder binder, PersistRequest request, boolean genKeys) {
+	public InsertMapBean(Binder binder, PersistRequestBean<?> request, boolean genKeys) {
 		super(binder, request);
 		this.sequenceNextVal = desc.getSequenceNextVal();
 		this.supportsGeneratedKeys = genKeys;

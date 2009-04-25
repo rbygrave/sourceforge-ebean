@@ -27,11 +27,11 @@ public interface OrmQueryEngine {
 	/**
 	 * Execute the 'find by id' query returning a single bean.
 	 */
-    public Object findId(QueryRequest request);
+    public Object findId(QueryRequest<?> request);
 
     /**
      * Execute the findList, findSet, findMap query returning an appropriate BeanCollection.
      */
-    public Object findMany(QueryRequest request);
+    public Object findMany(QueryRequest<?> request);
 
 }

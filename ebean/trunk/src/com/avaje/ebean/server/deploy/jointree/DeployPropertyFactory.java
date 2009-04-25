@@ -41,21 +41,21 @@ public class DeployPropertyFactory {
 	/**
 	 * Create DeployProperties for an assoc one or many bean.
 	 */
-	public DeployPropertyRequest createDeployProperties(BeanDescriptor desc) {
+	public DeployPropertyRequest createDeployProperties(BeanDescriptor<?> desc) {
 		return createDeployProperties(desc, null, desc.getBaseTableAlias(), true);
 	}
 
 	/**
 	 * Create DeployProperties with a given propertyPrefix.
 	 */
-	public DeployPropertyRequest createDeployProperties(BeanDescriptor desc, String propertyPrefix, String tablePrefix) {
+	public DeployPropertyRequest createDeployProperties(BeanDescriptor<?> desc, String propertyPrefix, String tablePrefix) {
 		return createDeployProperties(desc, propertyPrefix, tablePrefix, false);
 	}
 	
 	/**
 	 * Create the list of properties for this node.
 	 */
-	private DeployPropertyRequest createDeployProperties(BeanDescriptor desc, String propertyPrefix, String tablePrefix, boolean root) {
+	private DeployPropertyRequest createDeployProperties(BeanDescriptor<?> desc, String propertyPrefix, String tablePrefix, boolean root) {
 
 		DeployPropertyRequest request = new DeployPropertyRequest(desc, propertyPrefix, tablePrefix);
 		
@@ -69,9 +69,9 @@ public class DeployPropertyFactory {
 
 	private void addForeignKeys(DeployPropertyRequest request) {
 
-		BeanPropertyAssocOne[] imported = request.desc.propertiesOneImported();
+		BeanPropertyAssocOne<?>[] imported = request.desc.propertiesOneImported();
 		for (int i = 0; i < imported.length; i++) {
-			BeanPropertyAssocOne assocOneImported = imported[i];
+			BeanPropertyAssocOne<?> assocOneImported = imported[i];
 			ImportedId importedId = assocOneImported.getImportedId();
 			if (importedId == null){
 				System.out.println("erorr here rob.");
@@ -95,14 +95,14 @@ public class DeployPropertyFactory {
 		if (uids.length == 1){
     		if (uids[0].isEmbedded()){
     			// embedded concatenated Id
-				BeanPropertyAssocOne embId = (BeanPropertyAssocOne)uids[0];
+				BeanPropertyAssocOne<?> embId = (BeanPropertyAssocOne<?>)uids[0];
 				
 				String prefix = embId.getName();
 				if (request.propertyPrefix != null){
 					prefix = request.propertyPrefix +"."+prefix;
 				}
 				
-				BeanDescriptor emIdDesc = embId.getTargetDescriptor();
+				BeanDescriptor<?> emIdDesc = embId.getTargetDescriptor();
 				
 	        	BeanProperty[] emProps = emIdDesc.propertiesBaseScalar();
 	        	for (int i = 0; i < emProps.length; i++) {        		
@@ -139,10 +139,10 @@ public class DeployPropertyFactory {
 	private void addEmbedded(DeployPropertyRequest request) {
 		
 	
-		BeanPropertyAssocOne[] embedded = request.desc.propertiesEmbedded();
+		BeanPropertyAssocOne<?>[] embedded = request.desc.propertiesEmbedded();
         for (int j = 0; j < embedded.length; j++) {
 
-        	BeanPropertyAssocOne embedProp = embedded[j];
+        	BeanPropertyAssocOne<?> embedProp = embedded[j];
 
 			String prefix = embedProp.getName();
 			if (request.propertyPrefix != null){
@@ -209,9 +209,9 @@ public class DeployPropertyFactory {
 		private final ArrayList<PropertyDeploy> list;
 		private final String propertyPrefix;
 		private final String tablePrefix;
-		private final BeanDescriptor desc;
+		private final BeanDescriptor<?> desc;
 		
-		DeployPropertyRequest(BeanDescriptor desc, String propertyPrefix, String tablePrefix){
+		DeployPropertyRequest(BeanDescriptor<?> desc, String propertyPrefix, String tablePrefix){
 			this.desc = desc;
 			this.propertyPrefix = propertyPrefix;
 			this.tablePrefix = tablePrefix;

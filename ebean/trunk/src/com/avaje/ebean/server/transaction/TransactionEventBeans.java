@@ -21,30 +21,30 @@ package com.avaje.ebean.server.transaction;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 
 /**
- * Lists of inserted updated and deleted beans that have a BeanListener.
+ * Lists of inserted updated and deleted beans that have a BeanPersistListener.
  * <p>
- * These beans will be sent to the appropriate BeanListeners after a succcessful
+ * These beans will be sent to the appropriate BeanListeners after a successful
  * commit of the transaction.
  * </p>
  */
 public class TransactionEventBeans {
 
-	ArrayList<PersistRequest> requests = new ArrayList<PersistRequest>();
+	ArrayList<PersistRequestBean<?>> requests = new ArrayList<PersistRequestBean<?>>();
 
 	/**
 	 * Return the list of PersistRequests that BeanListeners are interested in.
 	 */
-	public ArrayList<PersistRequest> getRequests() {
+	public ArrayList<PersistRequestBean<?>> getRequests() {
 		return requests;
 	}
 
 	/**
 	 * Add a bean for BeanListener notification.
 	 */
-	public void add(PersistRequest request) {
+	public void add(PersistRequestBean<?> request) {
 
 		requests.add(request);
 	}

@@ -36,11 +36,11 @@ import com.avaje.ebean.server.persist.BeanPersister;
  * The JoinTree is constructed after the BeanDescriptor.
  * </p>
  */
-public class BeanManager {
+public class BeanManager<T> {
 
 	private final BeanPersister persister;
 
-	private final BeanDescriptor descriptor;
+	private final BeanDescriptor<T> descriptor;
 
 	private final JoinTree joinTree;
 
@@ -48,7 +48,7 @@ public class BeanManager {
 
 	private final boolean autoFetchTunable;
 	
-	public BeanManager(BeanDescriptor descriptor, JoinTree joinTree, BeanPersister persister) {
+	public BeanManager(BeanDescriptor<T> descriptor, JoinTree joinTree, BeanPersister persister) {
 		this.descriptor = descriptor;
 		this.joinTree = joinTree;
 		this.propMap = joinTree == null? null : joinTree.getDeployMap();
@@ -90,7 +90,7 @@ public class BeanManager {
 	/**
 	 * Return the BeanDescriptor.
 	 */
-	public BeanDescriptor getBeanDescriptor() {
+	public BeanDescriptor<T> getBeanDescriptor() {
 		return descriptor;
 	}
 

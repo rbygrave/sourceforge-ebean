@@ -22,6 +22,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
 /**
@@ -33,6 +34,12 @@ public class BindableList implements Bindable {
 
 	public BindableList(List<Bindable> list) {
 		items = list.toArray(new Bindable[list.size()]);
+	}
+	
+	public void determineChangedProperties(PersistRequestBean<?> request){
+		for (int i = 0; i < items.length; i++) {
+			items[i].determineChangedProperties(request);
+		}
 	}
 	
 	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes){

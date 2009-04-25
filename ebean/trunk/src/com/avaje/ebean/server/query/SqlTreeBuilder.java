@@ -77,7 +77,7 @@ public class SqlTreeBuilder {
 	/**
 	 * Property if resultSet contains master and detail rows.
 	 */
-	BeanPropertyAssocMany manyProperty;
+	BeanPropertyAssocMany<?> manyProperty;
 
 
 	/**
@@ -86,7 +86,7 @@ public class SqlTreeBuilder {
 	 * added to the root node.
 	 */
 	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias,
-			QueryRequest request, CQueryPredicates predicates) {
+			QueryRequest<?> request, CQueryPredicates predicates) {
 		
 		this.subQuery = request.isSubQuery();
         this.query = request.getQuery();
@@ -110,7 +110,7 @@ public class SqlTreeBuilder {
 	public SqlTree build() {
 
 		JoinNode root = joinTree.getRoot();
-		BeanDescriptor desc = root.getBeanDescriptor();
+		BeanDescriptor<?> desc = root.getBeanDescriptor();
 		summary.append("[");
 		if (desc.isTableGenerated()) {
 			summary.append(desc.getBaseTable());
@@ -208,7 +208,7 @@ public class SqlTreeBuilder {
 
 		OrmQueryProperties queryProps = queryDetail.getChunk(node.getPropertyPrefix(), false);
 
-		BeanDescriptor desc = node.getBeanDescriptor();
+		BeanDescriptor<?> desc = node.getBeanDescriptor();
 
 		SqlTreeProperties props = getBaseSelect(node, desc, queryProps);
 
@@ -260,7 +260,7 @@ public class SqlTreeBuilder {
 
 	}
 
-	private SqlTreeProperties getBaseSelectPartial(JoinNode node, BeanDescriptor desc,
+	private SqlTreeProperties getBaseSelectPartial(JoinNode node, BeanDescriptor<?> desc,
 			OrmQueryProperties queryProps) {
 
 		SqlTreeProperties selectProps = new SqlTreeProperties();
@@ -308,7 +308,7 @@ public class SqlTreeBuilder {
 		return selectProps;
 	}
 
-	private SqlTreeProperties getBaseSelect(JoinNode node, BeanDescriptor desc,
+	private SqlTreeProperties getBaseSelect(JoinNode node, BeanDescriptor<?> desc,
 			OrmQueryProperties queryProps) {
 
 		boolean partial = queryProps != null && !queryProps.allProperties();
@@ -322,7 +322,7 @@ public class SqlTreeBuilder {
 		selectProps.add(desc.propertiesBaseScalar());
 		selectProps.add(desc.propertiesEmbedded());
 
-		BeanPropertyAssocOne[] propertiesOne = desc.propertiesOne();
+		BeanPropertyAssocOne<?>[] propertiesOne = desc.propertiesOne();
 		for (int i = 0; i < propertiesOne.length; i++) {
 			if (queryProps != null && queryProps.isIncludedBeanJoin(propertiesOne[i].getName())) {
 				// if it is a joined bean... then don't add the property

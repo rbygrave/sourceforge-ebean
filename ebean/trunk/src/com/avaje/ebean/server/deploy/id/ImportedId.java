@@ -49,6 +49,11 @@ public interface ImportedId {
 	public void dmlWhere(GenerateDmlRequest request, Object bean);
 
 	/**
+	 * Return true if the id value has changed.
+	 */
+	public boolean hasChanged(Object bean, Object oldValues);
+	
+	/**
 	 * Bind the value from the bean.
 	 */
 	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException;

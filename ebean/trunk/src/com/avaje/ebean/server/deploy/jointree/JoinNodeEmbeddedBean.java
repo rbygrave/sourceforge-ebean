@@ -36,13 +36,13 @@ public class JoinNodeEmbeddedBean extends JoinNode {
 	/**
 	 * The BeanPropertyAssocOne for this node.
 	 */
-	final BeanPropertyAssocOne beanProperty;
+	final BeanPropertyAssocOne<?> beanProperty;
 	
 	/**
 	 * Create for a given assoc many property.
 	 */
-	public JoinNodeEmbeddedBean(JoinNode parent, BeanDescriptor desc,
-			String propertyPrefix, BeanPropertyAssocOne beanProp) {
+	public JoinNodeEmbeddedBean(JoinNode parent, BeanDescriptor<?> desc,
+			String propertyPrefix, BeanPropertyAssocOne<?> beanProp) {
 
 		super(beanProp.getName(), parent, desc, propertyPrefix);
 		this.beanProperty = beanProp;
@@ -65,12 +65,12 @@ public class JoinNodeEmbeddedBean extends JoinNode {
 	 * Return the AssocOne BeanProperty.
 	 */
 	@Override
-	public BeanPropertyAssocOne getBeanProp() {
+	public BeanPropertyAssocOne<?> getBeanProp() {
 		return beanProperty;
 	}
 	
 	@Override
-	public BeanPropertyAssocMany getManyProp() {
+	public BeanPropertyAssocMany<?> getManyProp() {
 		throw new RuntimeException("Error?");
 	}
 

@@ -22,7 +22,7 @@ package com.avaje.ebean.server.persist.dml;
 import java.sql.SQLException;
 import java.util.Set;
 
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
@@ -61,7 +61,7 @@ public final class InsertMeta {
 
 	private final Bindable shadowFKey;
 	
-	public InsertMeta(PluginDbConfig dbConfig, BeanDescriptor desc, Bindable shadowFKey, BindableId id, Bindable all) {
+	public InsertMeta(PluginDbConfig dbConfig, BeanDescriptor<?> desc, Bindable shadowFKey, BindableId id, Bindable all) {
 
 		this.sequenceNextVal = desc.getSequenceNextVal();
 		this.tableName = desc.getBaseTable();
@@ -89,7 +89,7 @@ public final class InsertMeta {
 		}
 	}
 
-	private static Bindable getDiscriminator(BeanDescriptor desc){
+	private static Bindable getDiscriminator(BeanDescriptor<?> desc){
 		InheritInfo inheritInfo = desc.getInheritInfo();
 		if (inheritInfo != null){
 			return new BindableDiscriminator(inheritInfo);
@@ -128,7 +128,7 @@ public final class InsertMeta {
 	/**
 	 * Return true if the Id can be derived from other property values.
 	 */
-	public boolean deriveConcatenatedId(PersistRequest persist) {
+	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
 		return id.deriveConcatenatedId(persist);
 	}
 
@@ -185,7 +185,7 @@ public final class InsertMeta {
 
 	private String genSql(boolean nullId, Set<String> loadedProps) {
 
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps);
+		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps, null);
 		request.setInsertSetMode();
 		
 		request.append("insert into ").append(tableName);

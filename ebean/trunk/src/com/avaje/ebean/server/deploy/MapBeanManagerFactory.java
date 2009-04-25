@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
 import com.avaje.ebean.server.persist.mapbean.MapBeanPersister;
@@ -35,7 +36,7 @@ public class MapBeanManagerFactory {
 		 joinTreeFactory = new JoinTreeFactory(dbConfig);
 	}
 	
-	public BeanManager create(MapBeanDescriptor desc) {
+	public BeanManager<MapBean> create(MapBeanDescriptor desc) {
 
 		//BeanPersister persister = createPersister(desc);
 		//BeanFinder finder = createFinder(desc);
@@ -43,7 +44,7 @@ public class MapBeanManagerFactory {
 		//BeanListener listener = createListener(desc);
 		
 		JoinTree joinTree = joinTreeFactory.create(desc);
-		return new BeanManager(desc, joinTree, persister);
+		return new BeanManager<MapBean>(desc, joinTree, persister);
 	}
 
 }

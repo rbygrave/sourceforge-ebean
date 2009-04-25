@@ -67,22 +67,22 @@ public interface InternalEbeanServer extends InternalEbean {
 	/**
 	 * Return all the descriptors.
 	 */
-	public Iterator<BeanDescriptor> descriptors();
+	public Iterator<BeanDescriptor<?>> descriptors();
 	
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
-	public BeanDescriptor getBeanDescriptor(Class<?> type);
+	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> type);
 
 	/**
 	 * Return the BeanManager for a given type of bean.
 	 */
-	public BeanManager getBeanManager(Class<?> type);
+	public <T> BeanManager<T> getBeanManager(Class<T> type);
 
 	/**
 	 * Return the BeanDescriptor for a database table.
 	 */
-	public BeanDescriptor getMapBeanDescriptor(String tableName);
+	public BeanDescriptor<?> getMapBeanDescriptor(String tableName);
 
 	/**
 	 * Process committed changes from another framework.
@@ -127,12 +127,12 @@ public interface InternalEbeanServer extends InternalEbean {
 	/**
 	 * Create a query request object.
 	 */
-	public QueryRequest createQueryRequest(Query<?> q, Transaction t);
+	public <T> QueryRequest<T> createQueryRequest(Query<T> q, Transaction t);
 	
 	/**
 	 * Compile a query.
 	 */
-	public CQuery compileQuery(Query<?> query, Transaction t);
+	public <T> CQuery<T> compileQuery(Query<T> query, Transaction t);
 	
 	/**
 	 * Return the queryEngine for this server.

@@ -38,7 +38,7 @@ public class FactoryVersion {
 	/**
 	 * Create a Bindable for the version property(s) for a bean type.
 	 */
-	public Bindable create(BeanDescriptor desc) {
+	public Bindable create(BeanDescriptor<?> desc) {
 
 		List<Bindable> verList = new ArrayList<Bindable>();
 		
@@ -48,7 +48,7 @@ public class FactoryVersion {
 		}
 
 		// version columns on embedded beans?
-		BeanPropertyAssocOne[] embedded = desc.propertiesEmbedded();
+		BeanPropertyAssocOne<?>[] embedded = desc.propertiesEmbedded();
 		for (int j = 0; j < embedded.length; j++) {
 
 			if (embedded[j].isEmbeddedVersion()) {

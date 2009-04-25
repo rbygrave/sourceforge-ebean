@@ -55,7 +55,7 @@ public class DeployInheritInfoBuilder {
 		initialise();
 	}
 
-	public void process(DeployBeanDescriptor desc) {
+	public void process(DeployBeanDescriptor<?> desc) {
 		InheritInfo inheritInfo = finalMap.get(desc.getBeanType());
 		desc.setInheritInfo(inheritInfo);
 	}

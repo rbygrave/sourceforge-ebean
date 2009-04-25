@@ -40,6 +40,7 @@ import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
+import com.avaje.ebean.util.ValueUtil;
 
 /**
  * Description of a property of a bean. Includes its deployment information such
@@ -202,7 +203,7 @@ public class BeanProperty {
 
 	final TypeManager typeManager;
 
-	final BeanDescriptor descriptor;
+	final BeanDescriptor<?> descriptor;
 
 	/**
 	 * Used for non-jdbc native types (java.util.Date Enums etc). Converts from
@@ -216,7 +217,7 @@ public class BeanProperty {
 
 	boolean cascadeValidate;
 
-	public BeanProperty(BeanDescriptorOwner owner, BeanDescriptor descriptor,
+	public BeanProperty(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor,
 			DeployBeanProperty deploy) {
 		this.descriptor = descriptor;
 		if (owner != null) {
@@ -334,6 +335,13 @@ public class BeanProperty {
 	 */
 	public boolean isFormula() {
 		return formula;
+	}
+	
+	public boolean hasChanged(Object bean, Object oldValues) {
+		Object value = getValue(bean);
+		Object oldVal = getValue(oldValues);
+		
+		return !ValueUtil.areEqual(value, oldVal);
 	}
 	
 	/**

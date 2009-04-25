@@ -60,7 +60,7 @@ public interface DbReadContext {
 	 * Return the property that is associated with the many. There can only be
 	 * one. This can be null.
 	 */
-	public BeanPropertyAssocMany getManyProperty();
+	public BeanPropertyAssocMany<?> getManyProperty();
 
 	/**
 	 * Set back the bean that has just been loaded with its id.
