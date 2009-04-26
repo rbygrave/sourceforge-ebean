@@ -181,7 +181,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * If set overrides the find implementation. Server side only.
 	 */
-	final BeanFinder beanFinder;
+	final BeanFinder<T> beanFinder;
 
 	/**
 	 * Listens for post commit insert update and delete events.
@@ -1109,7 +1109,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * Return the beanFinder. Usually null unless overriding the finder.
 	 */
-	public BeanFinder getBeanFinder() {
+	public BeanFinder<T> getBeanFinder() {
 		return beanFinder;
 	}
 

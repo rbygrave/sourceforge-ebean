@@ -35,7 +35,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.query.OrmQueryProperties;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
@@ -86,7 +86,7 @@ public class SqlTreeBuilder {
 	 * added to the root node.
 	 */
 	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias,
-			QueryRequest<?> request, CQueryPredicates predicates) {
+			OrmQueryRequest<?> request, CQueryPredicates predicates) {
 		
 		this.subQuery = request.isSubQuery();
         this.query = request.getQuery();

@@ -22,7 +22,7 @@ package com.avaje.ebean.server.query;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -135,7 +135,7 @@ public class CQueryBuilder implements Constants {
 	 * Return the SQL Select statement as a String. Converts logical property
 	 * names to physical deployment column names.
 	 */
-	public <T> CQuery<T> buildQuery(QueryRequest<T> request) {
+	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {
 
 		if (request.isSqlSelect()){
 			return rawSqlBuilder.build(request);
@@ -187,12 +187,12 @@ public class CQueryBuilder implements Constants {
      * the select clause.
      * </p>
      */
-    private SqlTree createSqlTree(QueryRequest<?> request, CQueryPredicates predicates) {
+    private SqlTree createSqlTree(OrmQueryRequest<?> request, CQueryPredicates predicates) {
 
         return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias, request, predicates).build();
     }
 	
-	private String buildSql(QueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
+	private String buildSql(OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
 		OrmQuery<?> query = request.getQuery();
 		BeanPropertyAssocMany<?> manyProp = select.getManyProperty();

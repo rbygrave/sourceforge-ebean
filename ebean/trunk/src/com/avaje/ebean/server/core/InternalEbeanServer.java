@@ -127,7 +127,7 @@ public interface InternalEbeanServer extends InternalEbean {
 	/**
 	 * Create a query request object.
 	 */
-	public <T> QueryRequest<T> createQueryRequest(Query<T> q, Transaction t);
+	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t);
 	
 	/**
 	 * Compile a query.

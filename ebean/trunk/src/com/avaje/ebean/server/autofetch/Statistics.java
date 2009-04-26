@@ -1,16 +1,18 @@
 package com.avaje.ebean.server.autofetch;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.meta.AutoFetchNodeUsageStats;
-import com.avaje.ebean.meta.AutoFetchQueryStats;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
+import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
+import com.avaje.ebean.meta.MetaAutoFetchStatistic.QueryStats;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
@@ -50,19 +52,19 @@ public class Statistics implements Serializable {
 		synchronized (monitor) {
 			
 			StatisticsQuery[] sourceQueryStats = queryStatsMap.values().toArray(new StatisticsQuery[queryStatsMap.size()]);
-			AutoFetchQueryStats[] destQueryStats = new AutoFetchQueryStats[sourceQueryStats.length];
+			List<QueryStats> destQueryStats = new ArrayList<QueryStats>(sourceQueryStats.length);
 			
 			// copy the query statistics
 			for (int i = 0; i < sourceQueryStats.length; i++) {
-				destQueryStats[i] = sourceQueryStats[i].createPublicMeta();
+				destQueryStats.add(sourceQueryStats[i].createPublicMeta());
 			}
 			
 			StatisticsNodeUsage[] sourceNodeUsage = nodeUsageMap.values().toArray(new StatisticsNodeUsage[nodeUsageMap.size()]);
-			AutoFetchNodeUsageStats[] destNodeUsage = new AutoFetchNodeUsageStats[sourceNodeUsage.length];
+			List<NodeUsageStats> destNodeUsage = new ArrayList<NodeUsageStats>(sourceNodeUsage.length);
 
 			// copy the node usage statistics
 			for (int i = 0; i < sourceNodeUsage.length; i++) {
-				destNodeUsage[i] = sourceNodeUsage[i].createPublicMeta();
+				destNodeUsage.add(sourceNodeUsage[i].createPublicMeta());
 			}
 			
 			return new MetaAutoFetchStatistic(origin, counter, destQueryStats, destNodeUsage);

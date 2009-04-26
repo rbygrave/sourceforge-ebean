@@ -1,19 +1,19 @@
 package com.avaje.ebean.server.bean;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.bean.QueryType;
+import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.collection.BeanList;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.Statistics;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.ManyType;
 
 /**
  * Bean Finder for MetaAutoFetchStatistic.
@@ -22,14 +22,11 @@ import com.avaje.ebean.server.deploy.ManyType;
  * data to give back to the caller in the form of MetaAutoFetchStatistic beans.
  * </p>
  */
-public class BFAutoFetchStatisticFinder implements BeanFinder {
+public class BFAutoFetchStatisticFinder implements BeanFinder<MetaAutoFetchStatistic> {
 
-	public Class<?>[] registerFor() {
-		return new Class<?>[]{MetaAutoFetchStatistic.class};
-	}
 
-	public Object find(QueryRequest<?> request) {
-		OrmQuery<?> query = request.getQuery();
+	public MetaAutoFetchStatistic find(BeanQueryRequest<MetaAutoFetchStatistic> request) {
+		OrmQuery<MetaAutoFetchStatistic> query = (OrmQuery<MetaAutoFetchStatistic>)request.getQuery();
 		try {
 			String queryPointKey = (String) query.getId();
 
@@ -51,17 +48,17 @@ public class BFAutoFetchStatisticFinder implements BeanFinder {
 	/**
 	 * Only returns Lists at this stage.
 	 */
-	public Object findMany(QueryRequest<?> request) {
+	public BeanCollection<MetaAutoFetchStatistic> findMany(BeanQueryRequest<MetaAutoFetchStatistic> request) {
 
-		ManyType manyType = request.getManyType();
-		if (!manyType.isList()) {
+		QueryType queryType = request.getQueryType();
+		if (!queryType.equals(QueryType.LIST)) {
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 
 		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
 		AutoFetchManager manager = server.getAutoFetchManager();
 
-		List<MetaAutoFetchStatistic> list = new ArrayList<MetaAutoFetchStatistic>();
+		BeanList<MetaAutoFetchStatistic> list = new BeanList<MetaAutoFetchStatistic>();
 
 		Iterator<Statistics> it = manager.iterateStatistics();
 		while (it.hasNext()) {

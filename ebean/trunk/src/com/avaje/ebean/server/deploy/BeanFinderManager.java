@@ -41,5 +41,5 @@ public interface BeanFinderManager {
     /**
      * Return the BeanController for a given entity type.
      */
-    public BeanFinder getBeanFinder(Class<?> entityType);
+    public <T> BeanFinder<T> getBeanFinder(Class<T> entityType);
 }

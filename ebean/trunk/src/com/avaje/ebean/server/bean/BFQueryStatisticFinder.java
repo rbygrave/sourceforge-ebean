@@ -1,44 +1,41 @@
 package com.avaje.ebean.server.bean;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.bean.QueryType;
+import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.collection.BeanList;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.QueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.query.CQueryPlan;
 
 /**
  * BeanFinder for MetaQueryStatistic.
  */
-public class BFQueryStatisticFinder implements BeanFinder {
+public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 
-
-	public Class<?>[] registerFor() {
-		return new Class<?>[]{MetaQueryStatistic.class};
-	}
 	
-	public Object find(QueryRequest<?> request) {
+	public MetaQueryStatistic find(BeanQueryRequest<MetaQueryStatistic> request) {
 		throw new RuntimeException("Not Supported yet");
 	}
 
 	/**
 	 * Only returns Lists at this stage.
 	 */
-	public Object findMany(QueryRequest<?> request) {
+	public BeanCollection<MetaQueryStatistic> findMany(BeanQueryRequest<MetaQueryStatistic> request) {
 
-		ManyType manyType = request.getManyType();
-		if (!manyType.isList()){
+		QueryType queryType = request.getQueryType();
+		if (!queryType.equals(QueryType.LIST)){
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 		
-		List<MetaQueryStatistic> list = new ArrayList<MetaQueryStatistic>();
+		BeanList<MetaQueryStatistic> list = new BeanList<MetaQueryStatistic>();
 		
 		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
 		build(list, server);

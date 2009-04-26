@@ -229,7 +229,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * Compile a query.
 	 */
 	public <T> CQuery<T> compileQuery(Query<T> query, Transaction t) {
-		QueryRequest<T> qr = createQueryRequest(query, t);
+		OrmQueryRequest<T> qr = createQueryRequest(query, t);
 	
 		return cqueryEngine.buildQuery(qr);
 	}
@@ -908,7 +908,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		return findId(query, t);
 	}
 
-	public <T> QueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
+	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
 		OrmQuery<T> query = (OrmQuery<T>) q;
 		BeanManager<T> mgr = deploymentManager.getBeanManager(query.getBeanType());
@@ -918,7 +918,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			autoFetchManager.tuneQuery(query);
 		}
 		ServerTransaction serverTrans = (ServerTransaction)t;
-		QueryRequest<T> request = new QueryRequest<T>(this, queryEngine, query, mgr, serverTrans);
+		OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, mgr, serverTrans);
 		// the query hash after an AutoFetch tuning
 		request.calculateQueryPlanHash();
 		return request;
@@ -926,7 +926,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	@SuppressWarnings("unchecked")
 	public <T> T findId(Query<T> query, Transaction t) {
-		QueryRequest request = createQueryRequest(query, t);
+		OrmQueryRequest request = createQueryRequest(query, t);
 		try {
 			request.initTransIfRequired();
 
@@ -967,7 +967,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	@SuppressWarnings("unchecked")
 	public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
-		QueryRequest request = createQueryRequest(query, t);
+		OrmQueryRequest request = createQueryRequest(query, t);
 		try {
 			request.initTransIfRequired();
 			Set<T> set = (Set<T>) request.findSet();
@@ -984,7 +984,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	@SuppressWarnings("unchecked")
 	public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
-		QueryRequest request = createQueryRequest(query, t);
+		OrmQueryRequest request = createQueryRequest(query, t);
 		try {
 			request.initTransIfRequired();
 			Map<?, T> map = (Map<?, T>) request.findMap();
@@ -1002,7 +1002,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	@SuppressWarnings("unchecked")
 	public <T> List<T> findList(Query<T> query, Transaction t) {
 
-		QueryRequest request = createQueryRequest(query, t);
+		OrmQueryRequest request = createQueryRequest(query, t);
 		try {
 			request.initTransIfRequired();
 			List<T> list = (List<T>) request.findList();

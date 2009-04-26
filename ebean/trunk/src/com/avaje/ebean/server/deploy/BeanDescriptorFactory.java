@@ -557,7 +557,7 @@ public class BeanDescriptorFactory {
 			logger.fine("BeanController on[" + descriptor.getFullName() + "] " + controller.getClass().getName());
 
 		}
-		BeanFinder beanFinder = beanFinderManager.getBeanFinder(beanType);
+		BeanFinder<T> beanFinder = beanFinderManager.getBeanFinder(beanType);
 		if (beanFinder != null) {
 			descriptor.setBeanFinder(beanFinder);
 			logger.fine("BeanFinder on[" + descriptor.getFullName() + "] " + beanFinder.getClass().getName());

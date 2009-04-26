@@ -95,7 +95,6 @@ public class MetaAutoFetchTunedQueryInfo {
 	}
 
 	public String toString() {
-		return "origin[" + origin + "] query[" + tunedDetail + "] profileCount["
-				+ profileCount + "]";
+		return "origin[" + origin + "] query[" + tunedDetail + "] profileCount["+ profileCount + "]";
 	}
 }

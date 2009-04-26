@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
@@ -64,7 +64,7 @@ public class RawSqlSelectClauseBuilder {
 	/**
 	 * Build based on the includes and using the BeanJoinTree.
 	 */
-	public <T> CQuery<T> build(QueryRequest<T> request) throws PersistenceException {
+	public <T> CQuery<T> build(OrmQueryRequest<T> request) throws PersistenceException {
 
 		OrmQuery<T> query = request.getQuery();
 		BeanDescriptor<T> desc = request.getBeanDescriptor();

@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
@@ -36,7 +36,7 @@ public class CQueryPredicates {
 
 	final Binder binder;
 
-	final QueryRequest<?> request;
+	final OrmQueryRequest<?> request;
 
 	final OrmQuery<?> query;
 
@@ -118,7 +118,7 @@ public class CQueryPredicates {
 
 	DeployPropertyParser deployParser;
 
-	public CQueryPredicates(Binder binder, QueryRequest<?> request, DeployPropertyParser deployParser) {
+	public CQueryPredicates(Binder binder, OrmQueryRequest<?> request, DeployPropertyParser deployParser) {
 		this.binder = binder;
 		this.request = request;
 		this.query = request.getQuery();
