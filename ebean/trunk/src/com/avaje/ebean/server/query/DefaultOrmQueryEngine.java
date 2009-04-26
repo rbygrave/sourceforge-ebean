@@ -23,10 +23,11 @@ import java.util.ArrayList;
 
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.core.OrmQueryEngine;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ServerCache;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.TransactionContext;
@@ -59,9 +60,10 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     }
     
     
-    public Object findMany(QueryRequest<?> request) {
+    @SuppressWarnings("unchecked")
+	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 
-    	Object result = request.getFromCache(serverCache);
+    	BeanCollection<T> result = (BeanCollection<T>)request.getFromCache(serverCache);
     	if (result != null){
     		return result;
     	}
@@ -73,7 +75,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         // The query may read data affected by those requests.
         t.batchFlush();
         
-        OrmQuery<?> query = request.getQuery();
+        OrmQuery<T> query = request.getQuery();
         ArrayList<EntityBean> adds = query.getContextAdditions();
         if (adds != null){
             TransactionContext pc = t.getTransactionContext();
@@ -85,7 +87,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 			}
         }
 
-        BeanFinder finder = request.getBeanFinder();
+        BeanFinder<T> finder = request.getBeanFinder();
         if (finder != null) {
             // this bean type has its own specific finder
             result = finder.findMany(request);
@@ -104,9 +106,10 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     /**
      * Find a single bean using its unique id.
      */
-    public Object findId(QueryRequest<?> request) {
+	@SuppressWarnings("unchecked")
+	public <T> T findId(OrmQueryRequest<T> request) {
         
-    	Object result = request.getFromCache(serverCache);
+    	T result = (T)request.getFromCache(serverCache);
     	if (result != null){
     		return result;
     	}
@@ -120,7 +123,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	t.batchFlush();
         }
 
-        OrmQuery<?> query = request.getQuery();
+        OrmQuery<T> query = request.getQuery();
 
         ArrayList<EntityBean> adds = query.getContextAdditions();
         if (adds != null){
@@ -133,7 +136,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 			}
         }
         
-        BeanFinder finder = request.getBeanFinder();
+        BeanFinder<T> finder = request.getBeanFinder();
         if (finder != null) {
             result =  finder.find(request);
         } else {

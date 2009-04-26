@@ -25,7 +25,7 @@ import java.util.Map;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.RelationalQuery;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -110,7 +110,7 @@ public class BeanCollectionWrapper {
 	/**
 	 * Create based on a Find.
 	 */
-	public BeanCollectionWrapper(QueryRequest<?> request) {
+	public BeanCollectionWrapper(OrmQueryRequest<?> request) {
 
 		this.manyType = request.getManyType();
 		this.find = request.getQuery();

@@ -38,7 +38,7 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.core.TransactionContextClass;
@@ -131,7 +131,7 @@ public class CQuery<T> implements DbReadContext {
 	/**
 	 * The overall find request wrapper object.
 	 */
-	final QueryRequest<T> request;
+	final OrmQueryRequest<T> request;
 
 	final BeanDescriptor<T> desc;
 
@@ -238,7 +238,7 @@ public class CQuery<T> implements DbReadContext {
 	/**
 	 * Create the Sql select based on the request.
 	 */
-	public CQuery(QueryRequest<T> request, CQueryPredicates predicates, CQueryPlan queryPlan) {
+	public CQuery(OrmQueryRequest<T> request, CQueryPredicates predicates, CQueryPlan queryPlan) {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
@@ -289,7 +289,7 @@ public class CQuery<T> implements DbReadContext {
 		collection = help != null ? help.createEmpty() : null;
 	}
 
-	private BeanCollectionHelp<T> createHelp(QueryRequest<T> request) {
+	private BeanCollectionHelp<T> createHelp(OrmQueryRequest<T> request) {
 		if (request.isFindById()) {
 			return null;
 		} else {
@@ -306,7 +306,7 @@ public class CQuery<T> implements DbReadContext {
 		return predicates;
 	}
 
-	public QueryRequest<?> getQueryRequest() {
+	public OrmQueryRequest<?> getQueryRequest() {
 		return request;
 	}
 

@@ -25,7 +25,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.control.LogControl;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.jmx.MLogControlMBean;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
@@ -60,7 +60,7 @@ public class CQueryEngine {
 		this.useResultSetLimit = pluginCore.getDbConfig().getDbSpecific().useJdbcResultSetLimit();
 	}
 
-	public <T> CQuery<T> buildQuery(QueryRequest<T> request) {
+	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {
 		return queryBuilder.buildQuery(request);
 	}
 	
@@ -68,7 +68,7 @@ public class CQueryEngine {
 	/**
 	 * Find a list/map/set of beans.
 	 */
-	public <T> BeanCollection<T> findMany(QueryRequest<T> request) {
+	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 
 		// flag indicating whether we need to close the resources...
 		boolean useBackgroundToContinueFetch = false;
@@ -122,7 +122,7 @@ public class CQueryEngine {
 	/**
 	 * Find and return a single bean using its unique id.
 	 */
-	public <T> T find(QueryRequest<T> request) {
+	public <T> T find(OrmQueryRequest<T> request) {
 
 		T bean = null;
 

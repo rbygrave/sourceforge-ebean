@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.meta.AutoFetchNodeUsageStats;
+import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -38,10 +38,10 @@ public class StatisticsNodeUsage implements Serializable {
 		this.path = path;
 	}
 	
-	public AutoFetchNodeUsageStats createPublicMeta() {
+	public NodeUsageStats createPublicMeta() {
 		synchronized(monitor){
 			String[] usedProps = aggregateUsed.toArray(new String[aggregateUsed.size()]);
-			return new AutoFetchNodeUsageStats(path, loadCount, usedCount, usedProps);
+			return new NodeUsageStats(path, loadCount, usedCount, usedProps);
 		}
 	}
 	

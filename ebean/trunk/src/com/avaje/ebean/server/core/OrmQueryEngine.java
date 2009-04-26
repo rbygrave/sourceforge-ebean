@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.core;
 
+import com.avaje.ebean.collection.BeanCollection;
+
 /**
  * The Object Relational query execution API.
  */
@@ -27,11 +29,11 @@ public interface OrmQueryEngine {
 	/**
 	 * Execute the 'find by id' query returning a single bean.
 	 */
-    public Object findId(QueryRequest<?> request);
+    public <T> T findId(OrmQueryRequest<T> request);
 
     /**
      * Execute the findList, findSet, findMap query returning an appropriate BeanCollection.
      */
-    public Object findMany(QueryRequest<?> request);
+    public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request);
 
 }

@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
@@ -174,7 +174,7 @@ public class DeploySqlSelect {
 	/**
 	 * Build the full SQL Select statement for the request.
 	 */
-	public String buildSql(CQueryPredicates predicates, QueryRequest<?> request) {
+	public String buildSql(CQueryPredicates predicates, OrmQueryRequest<?> request) {
 
 
 		StringBuilder sb = new StringBuilder();

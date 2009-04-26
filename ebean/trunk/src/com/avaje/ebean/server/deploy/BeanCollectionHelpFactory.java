@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 
 
 /**
@@ -26,7 +26,7 @@ public class BeanCollectionHelpFactory {
 		}
 	}
 		
-	public static <T> BeanCollectionHelp<T> create(QueryRequest<T> request) {
+	public static <T> BeanCollectionHelp<T> create(OrmQueryRequest<T> request) {
 
 		ManyType manyType = request.getManyType();
 		

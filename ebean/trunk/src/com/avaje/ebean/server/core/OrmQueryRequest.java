@@ -38,7 +38,7 @@ import com.avaje.ebean.server.query.CQueryPlan;
 /**
  * Wraps the objects involved in executing a Query.
  */
-public final class QueryRequest<T> extends BeanRequest implements BeanQueryRequest<T> {
+public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRequest<T> {
 	
 	/**
 	 * The associated BeanDescriptor.
@@ -51,9 +51,8 @@ public final class QueryRequest<T> extends BeanRequest implements BeanQueryReque
 
 	private final OrmQuery<T> query;
 
-	private final BeanFinder finder;
+	private final BeanFinder<T> finder;
 
-	
 	private TransactionContext transactionContext;
 
 	private boolean createdTransaction;
@@ -76,27 +75,16 @@ public final class QueryRequest<T> extends BeanRequest implements BeanQueryReque
 	/**
 	 * Create the InternalQueryRequest.
 	 */
-	public QueryRequest(InternalEbeanServer server, OrmQueryEngine queryEngine, OrmQuery<T> query,
+	public OrmQueryRequest(InternalEbeanServer server, OrmQueryEngine queryEngine, OrmQuery<T> query,
 			BeanManager<T> mgr, ServerTransaction t) {
 
 		super(server, t);
+		
 		this.beanManager = mgr;
 		this.beanDescriptor = mgr.getBeanDescriptor();
 		this.finder = beanDescriptor.getBeanFinder();
-//		if (mgr != null) {
-//			this.beanDescriptor = mgr.getBeanDescriptor();
-//		} else {
-//			this.beanDescriptor = null;
-//		}
-
 		this.queryEngine = queryEngine;
 		this.query = query;
-		
-//		if (beanDescriptor != null) {
-//			this.finder = beanDescriptor.getBeanFinder();
-//		} else {
-//			this.finder = null;
-//		}
 	}
 	
 	public BeanManager<T> getBeanManager() {
@@ -263,7 +251,7 @@ public final class QueryRequest<T> extends BeanRequest implements BeanQueryReque
 	/**
 	 * Return a bean specific finder if one has been set.
 	 */
-	public BeanFinder getBeanFinder() {
+	public BeanFinder<T> getBeanFinder() {
 		return finder;
 	}
 

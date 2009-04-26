@@ -165,7 +165,7 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * If set overrides the find implementation. Server side only.
 	 */
-	BeanFinder beanFinder;
+	BeanFinder<T> beanFinder;
 
 	/**
 	 * Listens for post commit insert update and delete events.
@@ -452,7 +452,7 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Return the beanFinder. Usually null unless overriding the finder.
 	 */
-	public BeanFinder getBeanFinder() {
+	public BeanFinder<T> getBeanFinder() {
 		return beanFinder;
 	}
 
@@ -460,7 +460,7 @@ public class DeployBeanDescriptor<T> {
 	 * Set the BeanFinder to use for beans of this type. This is set to override
 	 * the finding from the default.
 	 */
-	public void setBeanFinder(BeanFinder beanFinder) {
+	public void setBeanFinder(BeanFinder<T> beanFinder) {
 		this.beanFinder = beanFinder;
 	}
 

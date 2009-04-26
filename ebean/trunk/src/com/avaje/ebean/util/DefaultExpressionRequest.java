@@ -3,21 +3,21 @@ package com.avaje.ebean.util;
 import java.util.ArrayList;
 
 import com.avaje.ebean.expression.ExpressionRequest;
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 
 public class DefaultExpressionRequest implements ExpressionRequest {
 
-	final QueryRequest<?> queryRequest;
+	final OrmQueryRequest<?> queryRequest;
 	
 	StringBuilder sb = new StringBuilder();
 	
 	ArrayList<Object> bindValues = new ArrayList<Object>();
 	
-	public DefaultExpressionRequest(QueryRequest<?> queryRequest) {
+	public DefaultExpressionRequest(OrmQueryRequest<?> queryRequest) {
 		this.queryRequest = queryRequest;
 	}
 	
-	public QueryRequest<?> getQueryRequest() {
+	public OrmQueryRequest<?> getQueryRequest() {
 		return queryRequest;
 	}
 

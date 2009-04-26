@@ -19,7 +19,8 @@
  */
 package com.avaje.ebean.bean;
 
-import com.avaje.ebean.server.core.QueryRequest;
+import com.avaje.ebean.collection.BeanCollection;
+
 
 /**
  * Used to override the finding implementation for a bean.
@@ -28,18 +29,18 @@ import com.avaje.ebean.server.core.QueryRequest;
  * bean finding. For example, read a log file building each entry as a bean and
  * returning that.
  * </p>
+ * <p>
+ * There are a number of internal BeanFinders in Ebean to return meta
+ * data from Ebean at runtime such as query execution statistics etc.
+ * See the beans in com.avaje.ebean.meta and finders in com.avaje.ebean.server.meta.
+ * </p>
  */
-public interface BeanFinder {
+public interface BeanFinder<T> {
     
-	/**
-	 * The types of entity bean this is the finder for.
-	 */
-	public Class<?>[] registerFor();
-	
     /**
-     * Find a bean using its id.
+     * Find a bean using its id or unique predicate.
      */
-    public Object find(QueryRequest<?> request);
+    public T find(BeanQueryRequest<T> request);
 
     /**
      * Return a List, Set or Map for the given find request.
@@ -48,7 +49,7 @@ public interface BeanFinder {
      * get the return type right.
      * </p>
      */
-    public Object findMany(QueryRequest<?> request);
+    public BeanCollection<T> findMany(BeanQueryRequest<T> request);
     
     
 

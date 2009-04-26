@@ -25,27 +25,23 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.util.ParamTypeUtil;
 
 /**
  * Default implementation for BeanFinderFactory.
  */
 public class DefaultBeanFinderManager implements BeanFinderManager {
 
-	HashMap<Class<?>, BeanFinder> registerFor = new HashMap<Class<?>, BeanFinder>();
+	HashMap<Class<?>, BeanFinder<?>> registerFor = new HashMap<Class<?>, BeanFinder<?>>();
 
 	public int createBeanFinders(List<Class<?>> finderClassList) {
 
 		for (Class<?> cls : finderClassList) {
+			Class<?> entityType = getEntityClass(cls);
 			try {
-				BeanFinder beanFinder = (BeanFinder) cls.newInstance();
+				BeanFinder<?> beanFinder = (BeanFinder<?>) cls.newInstance();				
+				registerFor.put(entityType, beanFinder);
 				
-				Class<?>[] entityTypes = beanFinder.registerFor();
-				if (entityTypes != null){
-					for (Class<?> entityType : entityTypes) {
-						registerFor.put(entityType, beanFinder);
-					}
-				}
-
 			} catch (Exception ex) {
 				throw new PersistenceException(ex);
 			}
@@ -61,7 +57,25 @@ public class DefaultBeanFinderManager implements BeanFinderManager {
 	/**
 	 * Return the BeanFinder for a given entity type.
 	 */
-	public BeanFinder getBeanFinder(Class<?> entityType) {
-		return registerFor.get(entityType);
+	@SuppressWarnings("unchecked")
+	public <T> BeanFinder<T> getBeanFinder(Class<T> entityType) {
+		return (BeanFinder<T>)registerFor.get(entityType);
 	}
+	
+	/**
+	 * Find the entity class given the controller class.
+	 * <p>
+	 * This uses reflection to find the generics parameter type. 
+	 * </p>
+	 */	
+    private Class<?> getEntityClass(Class<?> controller){
+    	
+		Class<?> cls = ParamTypeUtil.findParamType(controller, BeanFinder.class);
+		
+		if (cls == null){
+			String msg = "Could not determine the entity class (generics parameter type) from "+controller+" using reflection.";
+			throw new PersistenceException(msg);
+		}
+		return cls;
+    }
 }

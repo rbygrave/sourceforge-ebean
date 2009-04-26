@@ -1,32 +1,29 @@
 package com.avaje.ebean.server.bean;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.bean.QueryType;
+import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.collection.BeanList;
 import com.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.TunedQueryInfo;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.core.QueryRequest;
-import com.avaje.ebean.server.deploy.ManyType;
 
 /**
  * BeanFinder for MetaAutoFetchTunedFetch.
  */
-public class BFAutoFetchTunedFetchFinder implements BeanFinder {
-
-	public Class<?>[] registerFor() {
-		return new Class<?>[]{MetaAutoFetchTunedQueryInfo.class};
-	}
+public class BFAutoFetchTunedFetchFinder implements BeanFinder<MetaAutoFetchTunedQueryInfo> {
 
 
-	public Object find(QueryRequest<?> request) {
-		OrmQuery<?> query = request.getQuery();
+	public MetaAutoFetchTunedQueryInfo find(BeanQueryRequest<MetaAutoFetchTunedQueryInfo> request) {
+		
+		OrmQuery<?> query = (OrmQuery<?>)request.getQuery();
 		try {
 			String queryPointKey = (String)query.getId();
 			
@@ -48,17 +45,17 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder {
 	/**
 	 * Only returns Lists at this stage.
 	 */
-	public Object findMany(QueryRequest<?> request) {
+	public BeanCollection<MetaAutoFetchTunedQueryInfo> findMany(BeanQueryRequest<MetaAutoFetchTunedQueryInfo> request) {
 
-		ManyType manyType = request.getManyType();
-		if (!manyType.isList()){
+		QueryType queryType = request.getQueryType();
+		if (!queryType.equals(QueryType.LIST)){
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 		
 		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
 		AutoFetchManager manager = server.getAutoFetchManager();
 		
-		List<MetaAutoFetchTunedQueryInfo> list = new ArrayList<MetaAutoFetchTunedQueryInfo>();
+		BeanList<MetaAutoFetchTunedQueryInfo> list = new BeanList<MetaAutoFetchTunedQueryInfo>();
 		
 		Iterator<TunedQueryInfo> it = manager.iterateTunedQueryInfo();
 		while (it.hasNext()) {
