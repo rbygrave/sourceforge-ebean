@@ -35,6 +35,36 @@ public class ValueUtil {
 			// use the string format to determine if dirty
 			return obj1.toString().equals(obj2.toString());
 		}
+		if (obj1 instanceof byte[] && obj2 instanceof byte[]){
+			return areEqualBytes((byte[])obj1, (byte[])obj2);
+		}
+		if (obj1 instanceof char[] && obj2 instanceof char[]){
+			return areEqualChars((char[])obj1, (char[])obj2);
+		}
 		return obj1.equals(obj2);
+	}
+	
+	private static boolean areEqualBytes(byte[] b1, byte[] b2) {
+		if (b1.length != b2.length){
+			return false;
+		}
+		for (int i = 0; i < b1.length; i++) {
+			if (b1[i] != b2[i]){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private static boolean areEqualChars(char[] b1, char[] b2) {
+		if (b1.length != b2.length){
+			return false;
+		}
+		for (int i = 0; i < b1.length; i++) {
+			if (b1[i] != b2[i]){
+				return false;
+			}
+		}
+		return true;
 	}
 }
