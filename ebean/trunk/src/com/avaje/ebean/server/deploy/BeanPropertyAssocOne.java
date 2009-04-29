@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.TransactionContextClass;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -104,19 +105,30 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		BeanDescriptor<?> target = getTargetDescriptor();
 		return target.validate(true, value);
 	}
-
+	
+	private boolean hasChangedEmbedded(Object bean, Object oldValues) {
+		
+		Object embValue = getValue(oldValues);
+		if (embValue instanceof EntityBean){
+			// the embedded bean .. has its own old values
+			EntityBeanIntercept ebi = ((EntityBean)embValue)._ebean_getIntercept();
+			return ebi.isDirty();
+		}
+		if (embValue == null){
+			return getValue(bean) != null;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
 	public boolean hasChanged(Object bean, Object oldValues) {
+		if (embedded){
+			return hasChangedEmbedded(bean, oldValues);
+		}
 		Object value = getValue(bean);
 		Object oldVal = getValue(oldValues);
-		if (embedded){
-			// check each property
-			for (int i = 0; i < embeddedProps.length; i++) {
-				if (embeddedProps[i].hasChanged(value, oldVal)) {
-					return true;
-				}
-			}
-			return false;
-		} else if (oneToOneExported) {
+		if (oneToOneExported) {
 			// FKey on other side
 			return false;
 		} else {

@@ -147,7 +147,7 @@ public class OrmQueryProperties implements Serializable {
 	public Set<String> getAllIncludedProperties() {
 		
 		if (includedBeanJoin == null){
-			return included;
+			return new LinkedHashSet<String>(included);
 		} 
 		if (included == null){
 			return null;

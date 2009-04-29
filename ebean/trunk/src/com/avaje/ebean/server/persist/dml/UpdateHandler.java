@@ -86,7 +86,7 @@ public class UpdateHandler extends DmlHandler {
 
 	@Override
 	public boolean isIncluded(BeanProperty prop) {
-		return (updatedProperties == null || updatedProperties.contains(prop.getName()));
+		return prop.isVersion() || updatedProperties == null || updatedProperties.contains(prop.getName());
 	}
 
 }
