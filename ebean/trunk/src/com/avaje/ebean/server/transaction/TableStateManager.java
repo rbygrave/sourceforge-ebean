@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * where last modified. 
  * <p>
  * Holds a map or tables by name and when they where last modified
- * by a commited insert update or delete statement.
+ * by a committed insert update or delete statement.
  * </p>
  */
 public class TableStateManager {
@@ -55,7 +55,7 @@ public class TableStateManager {
 	public void process(TransactionEvent event){
 	    Iterator<TableModInfo> it = event.tableModInfoIterator();
 	    while (it.hasNext()) {
-            TableModInfo modInfo = (TableModInfo) it.next();
+            TableModInfo modInfo = it.next();
     		getTableState(modInfo.getTableName()).update(modInfo);
         }
 	}
@@ -68,12 +68,12 @@ public class TableStateManager {
 	    // make tableName case insensitive using toUpperCase
 	    tableName = tableName.toUpperCase();
 	    
-		TableState state = (TableState)tableStateMap.get(tableName);
+		TableState state = tableStateMap.get(tableName);
 		if (state != null){
 			return state;
 		}
 		synchronized(tableStateMap){
-			state = (TableState)tableStateMap.get(tableName);
+			state = tableStateMap.get(tableName);
 			if (state != null){
 				return state;
 			}
@@ -86,20 +86,20 @@ public class TableStateManager {
     /**
      * Return an Iterator of the TableState's.
      */
-	public Iterator<TableState> getTableStateIterator(){
+	private Iterator<TableState> getTableStateIterator(){
 		return tableStateMap.values().iterator();
 	}
 
 	/**
 	 * Set all the tables to have a modified now time.
-	 * This essentially will invalidate anything that is cached dependant
+	 * This essentially will invalidate anything that is cached dependent
 	 * on the tables.  All Lookups and beans cached will be invalidated.
 	 */
 	public void setAllTablesModifiedNow(){
 		synchronized(tableStateMap){
-			Iterator<TableState> i = getTableStateIterator();
-			while (i.hasNext()){
-				TableState tableState = (TableState)i.next();
+			Iterator<TableState> it = getTableStateIterator();
+			while (it.hasNext()){
+				TableState tableState = it.next();
 				tableState.setModifiedNow();
 			}
 		}
