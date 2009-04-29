@@ -259,6 +259,61 @@ public class SqlTreeBuilder {
 		}
 
 	}
+	
+	private void addProperty(SqlTreeProperties selectProps, BeanDescriptor<?> desc, OrmQueryProperties queryProps, String propName) {
+		
+		int basePos = propName.indexOf('.');
+		if (basePos > -1) {
+			// property on an embedded bean
+			String baseName = propName.substring(0, basePos);
+			//String propertyName = propName.substring(basePos + 1);
+			if (!selectProps.containsProperty(baseName)){
+				BeanProperty p = desc.findBeanProperty(baseName);
+				if (p == null) {
+					String m = "property [" + propName + "] not found on " + desc+ " for query - excluding it.";
+					logger.log(Level.SEVERE, m);
+
+				} else if (p.isEmbedded()){
+					// add the embedded bean (and effectively all its properties)
+					selectProps.add(p);
+					// also add to included properties (to avoid unnecessary lazy loading)
+					selectProps.getIncludedProperties().add(baseName);
+					
+				} else {
+					String m = "property [" + p.getFullBeanName() + "] expected to be an embedded bean for query - excluding it.";
+					logger.log(Level.SEVERE, m);
+				}
+			}
+			
+		} else {
+			// find the property including searching the
+			// sub class hierarchy if required
+			
+			BeanProperty p = desc.findBeanProperty(propName);
+			if (p == null) {
+				logger.log(Level.SEVERE, "property [" + propName + "] not found on " + desc
+						+ " for query - excluding it.");
+
+			} else if (p.isId()) {
+				// do not include id
+
+			} else if (p instanceof BeanPropertyAssoc) {
+				// need to check if this property should be
+				// excluded. This occurs when this property is
+				// included as a bean join. With a bean join 
+				// the property should be excluded as the bean
+				// join has its own node in the SqlTree.
+				if (!queryProps.isIncludedBeanJoin(p.getName())) {
+					// include the property... which basically
+					// means include the foreign key column(s)
+					selectProps.add(p);
+				}
+			} else {
+				selectProps.add(p);
+			}
+		}
+	}
+	
 
 	private SqlTreeProperties getBaseSelectPartial(JoinNode node, BeanDescriptor<?> desc,
 			OrmQueryProperties queryProps) {
@@ -278,30 +333,7 @@ public class SqlTreeBuilder {
 		while (it.hasNext()) {
 			String propName = it.next();
 			if (propName.length() > 0){
-				// find the property including searching the
-				// sub class hierarchy if required
-				BeanProperty p = desc.findBeanProperty(propName);
-				if (p == null) {
-					logger.log(Level.SEVERE, "property [" + propName + "] not found on " + desc
-							+ " for query - excluding it.");
-	
-				} else if (p.isId()) {
-					// do not include id
-	
-				} else if (p instanceof BeanPropertyAssoc) {
-					// need to check if this property should be
-					// excluded. This occurs when this property is
-					// included as a bean join. With a bean join 
-					// the property should be excluded as the bean
-					// join has its own node in the SqlTree.
-					if (!queryProps.isIncludedBeanJoin(p.getName())) {
-						// include the property... which basically
-						// means include the foreign key column(s)
-						selectProps.add(p);
-					}
-				} else {
-					selectProps.add(p);
-				}
+				addProperty(selectProps, desc, queryProps, propName);
 			}
 		}
 

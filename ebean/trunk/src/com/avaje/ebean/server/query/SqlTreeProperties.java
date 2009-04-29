@@ -4,6 +4,7 @@
 package com.avaje.ebean.server.query;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,8 +39,17 @@ public class SqlTreeProperties {
 	 */
 	List<BeanProperty> propsList = new ArrayList<BeanProperty>();
 
+	/**
+	 * Maintain a list of property names to detect embedded bean additions.
+	 */
+	LinkedHashSet<String> propNames = new LinkedHashSet<String>();
+	
 	public SqlTreeProperties() {
 
+	}
+	
+	public boolean containsProperty(String propName){
+		return propNames.contains(propName);
 	}
 
 	public void add(BeanProperty[] props) {
@@ -50,6 +60,8 @@ public class SqlTreeProperties {
 
 	public void add(BeanProperty prop) {
 		propsList.add(prop);
+		propNames.add(prop.getName());
+
 	}
 	
 	public BeanProperty[] getProps() {

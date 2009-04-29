@@ -658,7 +658,7 @@ public class BeanDescriptor<T> {
 				BeanProperty property = getBeanProperty(propName);
 
 				// check if we should fire validation on this property
-				if (property.hasValidationRules(cascade)) {
+				if (property != null && property.hasValidationRules(cascade)) {
 					Object value = property.getValue(bean);
 					List<InvalidValue> errs = property.validate(cascade, value);
 					if (errs != null) {
@@ -1014,14 +1014,16 @@ public class BeanDescriptor<T> {
 		if (basePos > -1) {
 			// embedded property
 			String baseName = propName.substring(0, basePos);
-			String propertyName = propName.substring(basePos + 1);
+			return _findBeanProperty(baseName);
 
-			BeanProperty prop = _findBeanProperty(baseName);
-			if (prop != null && prop instanceof BeanPropertyAssoc) {
-				return ((BeanPropertyAssoc<?>) prop).getTargetDescriptor().findBeanProperty(propertyName);
-			}
-
-			return null;
+//			String propertyName = propName.substring(basePos + 1);
+//
+//			BeanProperty prop = _findBeanProperty(baseName);
+//			if (prop != null && prop instanceof BeanPropertyAssoc) {
+//				return ((BeanPropertyAssoc<?>) prop).getTargetDescriptor().findBeanProperty(propertyName);
+//			}
+//
+//			return null;
 		}
 
 		return _findBeanProperty(propName);
