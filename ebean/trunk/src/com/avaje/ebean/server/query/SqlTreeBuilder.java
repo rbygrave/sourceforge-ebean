@@ -294,7 +294,7 @@ public class SqlTreeBuilder {
 				logger.log(Level.SEVERE, "property [" + propName + "] not found on " + desc
 						+ " for query - excluding it.");
 
-			} else if (p.isId()) {
+			} else if (!subQuery && p.isId()) {
 				// do not include id
 
 			} else if (p instanceof BeanPropertyAssoc) {
