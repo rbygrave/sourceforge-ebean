@@ -16,14 +16,6 @@ public interface DbSqlContext {
 	 * Pop the current table alias from the stack.
 	 */
 	public void popTableAlias();
-
-	/**
-	 * Set to true if a column alias is required.
-	 * <p>
-	 * This is for embedded imported keys.
-	 * </p>
-	 */
-	public void setUseColumnAlias(boolean withColumnAlias);
 	
 	/**
 	 * Append a char directly to the SQL buffer.

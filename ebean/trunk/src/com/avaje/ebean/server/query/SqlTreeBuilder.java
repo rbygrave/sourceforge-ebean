@@ -66,8 +66,6 @@ public class SqlTreeBuilder {
 	
 	final String columnAliasPrefix;
 	
-	final boolean alwaysUseColumnAlias;
-
 	final StringBuilder summary = new StringBuilder();
 
 	final CQueryPredicates predicates;
@@ -85,7 +83,7 @@ public class SqlTreeBuilder {
 	 * support the where and/or order by clause. If so these extra joins are
 	 * added to the root node.
 	 */
-	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias,
+	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, 
 			OrmQueryRequest<?> request, CQueryPredicates predicates) {
 		
 		this.subQuery = request.isSubQuery();
@@ -99,7 +97,6 @@ public class SqlTreeBuilder {
     	
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
-		this.alwaysUseColumnAlias = alwaysUseColumnAlias;
 		this.queryDetail = query.getDetail();
 		this.predicates = predicates;
 	}
@@ -142,8 +139,8 @@ public class SqlTreeBuilder {
 
 	private String buildSelectClause(SqlTreeNode rootNode) {
 
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias);
-
+		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix, !subQuery);
+		
 		rootNode.appendSelect(ctx);
 
 		String selectSql = ctx.toString();
@@ -259,14 +256,47 @@ public class SqlTreeBuilder {
 		}
 
 	}
+
+	/**
+	 * A subQuery has slightly different rules in that it just generates SQL (into the where clause) 
+	 * and its properties are not required to read the resultSet etc.
+	 * <p>
+	 * This means it can included individual properties of an embedded bean.
+	 * </p>
+	 */
+	private void addPropertyToSubQuery(SqlTreeProperties selectProps, BeanDescriptor<?> desc,
+			OrmQueryProperties queryProps, String propName) {
+		
+		BeanProperty p = desc.findBeanProperty(propName);
+		if (p == null) {
+			logger.log(Level.SEVERE, "property [" + propName + "]not found on " + desc + " for query - excluding it.");
+			
+		} else if (p instanceof BeanPropertyAssoc) {
+			int pos = propName.indexOf(".");
+			if (pos > -1) {
+				String name = propName.substring(pos + 1);
+				p = ((BeanPropertyAssoc<?>) p).getTargetDescriptor().findBeanProperty(name);
+			}
+		}
+
+		selectProps.add(p);
+	}
 	
 	private void addProperty(SqlTreeProperties selectProps, BeanDescriptor<?> desc, OrmQueryProperties queryProps, String propName) {
 		
+		if (subQuery) {
+			addPropertyToSubQuery(selectProps, desc, queryProps, propName);
+			return;
+		}
+		
 		int basePos = propName.indexOf('.');
 		if (basePos > -1) {
-			// property on an embedded bean
+			// property on an embedded bean.  Embedded beans do not yet
+			// support being partially populated so we include the 
+			// 'base' property and make sure we only do that once
 			String baseName = propName.substring(0, basePos);
-			//String propertyName = propName.substring(basePos + 1);
+			
+			// make sure we only included the base/embedded bean once
 			if (!selectProps.containsProperty(baseName)){
 				BeanProperty p = desc.findBeanProperty(baseName);
 				if (p == null) {
@@ -276,7 +306,8 @@ public class SqlTreeBuilder {
 				} else if (p.isEmbedded()){
 					// add the embedded bean (and effectively all its properties)
 					selectProps.add(p);
-					// also add to included properties (to avoid unnecessary lazy loading)
+					// also make sure it is added to included properties 
+					// to avoid unnecessary lazy loading
 					selectProps.getIncludedProperties().add(baseName);
 					
 				} else {
@@ -288,14 +319,13 @@ public class SqlTreeBuilder {
 		} else {
 			// find the property including searching the
 			// sub class hierarchy if required
-			
 			BeanProperty p = desc.findBeanProperty(propName);
 			if (p == null) {
-				logger.log(Level.SEVERE, "property [" + propName + "] not found on " + desc
-						+ " for query - excluding it.");
+				logger.log(Level.SEVERE, "property [" + propName + "] not found on " + desc+ " for query - excluding it.");
 
-			} else if (!subQuery && p.isId()) {
-				// do not include id
+			} else if (p.isId()) {
+				// do not bother to include id for normal queries as the 
+				// id is always added (except for subQueries)
 
 			} else if (p instanceof BeanPropertyAssoc) {
 				// need to check if this property should be

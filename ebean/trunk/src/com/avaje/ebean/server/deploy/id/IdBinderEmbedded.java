@@ -117,11 +117,9 @@ public final class IdBinderEmbedded implements IdBinder {
 	}
 	
 	public void appendSelect(DbSqlContext ctx) {
-		ctx.setUseColumnAlias(true);
     	for (int i = 0; i < props.length; i++) {
     		props[i].appendSelect(ctx);
 		}
-    	ctx.setUseColumnAlias(false);
 	}
 
 	private String buildBindSql() {

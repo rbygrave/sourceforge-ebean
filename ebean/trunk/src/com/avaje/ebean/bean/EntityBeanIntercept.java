@@ -217,8 +217,16 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		this.loaded = true;
 		this.oldValues = null;
 		this.intercepting = true;
+		this.owner._ebean_setEmbeddedLoaded();
 	}
 
+	public void setEmbeddedLoaded(Object embeddedBean) {
+		if (embeddedBean instanceof EntityBean){
+			EntityBean eb = (EntityBean)embeddedBean;
+			eb._ebean_getIntercept().setLoaded();
+		}
+	}
+	
 	/**
 	 * Set the property names for a partially loaded bean.
 	 * 

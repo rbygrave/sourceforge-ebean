@@ -137,11 +137,9 @@ public final class IdBinderMultiple implements IdBinder {
 	}
 	
 	public void appendSelect(DbSqlContext ctx) {
-		ctx.setUseColumnAlias(true);
-    	for (int i = 0; i < idProps.length; i++) {
+		for (int i = 0; i < idProps.length; i++) {
     		idProps[i].appendSelect(ctx);
 		}
-		ctx.setUseColumnAlias(false);
 	}
 	
 	private String buildBindSql() {

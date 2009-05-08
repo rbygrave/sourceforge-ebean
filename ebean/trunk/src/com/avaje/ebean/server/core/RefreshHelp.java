@@ -21,7 +21,6 @@ package com.avaje.ebean.server.core;
 
 import java.util.Set;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -173,10 +172,14 @@ public class RefreshHelp {
 						props[j].setValue(oEmb, v);
 					}
 		
-					if (oEmb instanceof EntityBean) {
-						EntityBean eb = (EntityBean) oEmb;
-						eb._ebean_getIntercept().setLoaded();
-					}
+					// No longer needed as the EntityBean
+					// .. calls setEmbeddedLoaded() on each of
+					// .. its embedded beans itself.
+					
+					//if (oEmb instanceof EntityBean) {
+					//	EntityBean eb = (EntityBean) oEmb;
+					//	eb._ebean_getIntercept().setLoaded();
+					//}
 				}
 			}
 		}

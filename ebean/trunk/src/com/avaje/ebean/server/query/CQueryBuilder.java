@@ -45,7 +45,6 @@ public class CQueryBuilder implements Constants {
 
 	private final String tableAliasPlaceHolder;
 	private final String columnAliasPrefix;
-	private final boolean alwaysUseColumnAlias;
 	
 	/**
 	 * Get one more than maxRows. This last one is not returned but if it exists
@@ -66,8 +65,7 @@ public class CQueryBuilder implements Constants {
 	public CQueryBuilder(PluginCore pluginCore) {
 		this.binder = pluginCore.getDbConfig().getBinder();
 		this.tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
-		this.columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "as c");
-		this.alwaysUseColumnAlias = pluginCore.getDbConfig().getProperties().getPropertyBoolean("alwaysUseColumnAlias", false);
+		this.columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "c");
 		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
 
 		DbSpecific dbSpecific = pluginCore.getDbConfig().getDbSpecific();
@@ -189,7 +187,7 @@ public class CQueryBuilder implements Constants {
      */
     private SqlTree createSqlTree(OrmQueryRequest<?> request, CQueryPredicates predicates) {
 
-        return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, alwaysUseColumnAlias, request, predicates).build();
+        return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, request, predicates).build();
     }
 	
 	private String buildSql(OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {

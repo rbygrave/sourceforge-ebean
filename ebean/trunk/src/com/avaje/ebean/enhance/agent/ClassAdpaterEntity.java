@@ -236,6 +236,8 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		//Add the getField(index) and setField(index) methods
 		IndexFieldWeaver.addMethods(cv, classMeta);
 		
+		MethodSetEmbeddedLoaded.addMethod(cv, classMeta);
+		
 		// register with the agentContext
 		enhanceContext.addClassMeta(classMeta);
 		

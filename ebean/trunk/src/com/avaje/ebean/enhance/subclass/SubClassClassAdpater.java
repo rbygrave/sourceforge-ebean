@@ -10,6 +10,7 @@ import com.avaje.ebean.enhance.agent.IndexFieldWeaver;
 import com.avaje.ebean.enhance.agent.InterceptField;
 import com.avaje.ebean.enhance.agent.MarkerField;
 import com.avaje.ebean.enhance.agent.MethodEquals;
+import com.avaje.ebean.enhance.agent.MethodSetEmbeddedLoaded;
 import com.avaje.ebean.enhance.agent.NoEnhancementRequiredException;
 import com.avaje.ebean.enhance.agent.VisitMethodParams;
 import com.avaje.ebean.enhance.asm.AnnotationVisitor;
@@ -201,6 +202,8 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 
 		// Add extra methods such as getField(index) etc
 		IndexFieldWeaver.addMethods(cv, classMeta);
+		
+		MethodSetEmbeddedLoaded.addMethod(cv, classMeta);
 				
 		// add a writeReplace method to control serialisation
 		MethodWriteReplace.add(cv, classMeta);

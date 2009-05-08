@@ -27,9 +27,7 @@ public class DefaultDbSqlContext implements DbSqlContext {
 
 	private int columnIndex;
 	 
-	private boolean useColumnAlias;
-	
-	private final boolean alwaysUseColumnAlias;
+	private final boolean useColumnAlias;
 	
 	/**
 	 * A Set used to make sure formula joins are only added once to a query.
@@ -42,7 +40,6 @@ public class DefaultDbSqlContext implements DbSqlContext {
 	public DefaultDbSqlContext(String tableAliasPlaceHolder) {
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = null;
-		this.alwaysUseColumnAlias = false;
 		this.useColumnAlias = false;
 	}
 	
@@ -52,7 +49,6 @@ public class DefaultDbSqlContext implements DbSqlContext {
 	public DefaultDbSqlContext(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias) {
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
-		this.alwaysUseColumnAlias = alwaysUseColumnAlias;
 		this.useColumnAlias = alwaysUseColumnAlias;
 	}
 	
@@ -88,21 +84,6 @@ public class DefaultDbSqlContext implements DbSqlContext {
 	public DefaultDbSqlContext append(char s) {
 		sb.append(s);
 		return this;
-	}
-	
-	/**
-	 * Called with withColumnAlias=true when we really need to use a column alias.
-	 * <p>
-	 * This is for embedded imported keys.
-	 * </p>
-	 */
-	public void setUseColumnAlias(boolean useColumnAlias) {
-		if (useColumnAlias){
-			this.useColumnAlias = true;
-		} else {
-			// set it back to the default
-			this.useColumnAlias = alwaysUseColumnAlias;
-		}
 	}
 
 	public void appendFormulaJoin(String sqlFormulaJoin, boolean forceOuterJoin) {
