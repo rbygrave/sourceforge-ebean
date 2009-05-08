@@ -150,6 +150,13 @@ public class MapBean implements EntityBean, Cloneable, Serializable, Map<String,
 	}
 
 	/**
+	 * No embedded beans on MapBean.
+	 */
+	public void _ebean_setEmbeddedLoaded() {
+		// no embedded bean on MapBean
+	}
+
+	/**
 	 * Return the class name of this instance.
 	 */
 	public String _ebean_getMarker() {

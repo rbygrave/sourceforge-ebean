@@ -262,8 +262,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				// set back to the parent bean
 				setValue(bean, embeddedBean);
 				
+				// Handled by the EntityBean itself now (since 1.2)
 				// make sure it is intercepting setters etc
-				embeddedBean._ebean_getIntercept().setLoaded();
+				//embeddedBean._ebean_getIntercept().setLoaded();
 				return embeddedBean;
 				
 			} else {
@@ -277,11 +278,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 		@Override
 		void appendSelect(DbSqlContext ctx) {
-			ctx.setUseColumnAlias(true);
 			for (int i = 0; i < embeddedProps.length; i++) {
 				embeddedProps[i].appendSelect(ctx);
 			}
-			ctx.setUseColumnAlias(false);
 		}
 	}
 

@@ -40,6 +40,12 @@ public interface EntityBean {
 	public String _ebean_getMarker();
 	
 	/**
+	 * Generated method that sets the loaded state on all the embedded beans
+	 * on this entity bean by using EntityBeanIntercept.setEmbeddedLoaded(Object o); 
+	 */
+	public void _ebean_setEmbeddedLoaded();
+	
+	/**
 	 * Return the intercept for this object.
 	 */
 	public EntityBeanIntercept _ebean_getIntercept();
