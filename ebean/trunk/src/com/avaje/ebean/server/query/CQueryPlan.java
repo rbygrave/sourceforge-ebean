@@ -1,6 +1,8 @@
 package com.avaje.ebean.server.query;
 
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaQueryStatistic;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 
 /**
  * Represents a query for a given SQL statement.
@@ -23,6 +25,10 @@ import com.avaje.ebean.meta.MetaQueryStatistic;
  */
 public class CQueryPlan {
 
+	private final boolean autofetchTuned;
+	
+	private final ObjectGraphOrigin objectGraphOrigin;
+	
 	private final int hash;
 	
 	private final boolean rawSql;
@@ -37,14 +43,39 @@ public class CQueryPlan {
 
 	private CQueryStats queryStats = new CQueryStats();
 
-	public CQueryPlan(int hash, String sql, SqlTree selectClause, boolean rawSql, boolean rowNumberIncluded,
-			String logWhereSql) {
-		this.hash = hash;
+	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree selectClause, 
+			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
+		
+		this.objectGraphOrigin = request.getQuery().getObjectGraphOrigin();
+		this.hash = request.getQueryPlanHash();
+		this.autofetchTuned = request.getQuery().isAutoFetchTuned();
 		this.sql = sql;
 		this.selectClause = selectClause;
 		this.rawSql = rawSql;
 		this.rowNumberIncluded = rowNumberIncluded;
 		this.logWhereSql = logWhereSql;
+	}
+
+	
+	public CQueryPlan(String sql, SqlTree selectClause, 
+			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
+		
+		this.objectGraphOrigin = null;
+		this.hash = 0;
+		this.autofetchTuned = false;
+		this.sql = sql;
+		this.selectClause = selectClause;
+		this.rawSql = rawSql;
+		this.rowNumberIncluded = rowNumberIncluded;
+		this.logWhereSql = logWhereSql;
+	}
+
+	public boolean isAutofetchTuned() {
+		return autofetchTuned;
+	}
+
+	public ObjectGraphOrigin getObjectGraphOrigin() {
+		return objectGraphOrigin;
 	}
 
 	public int getHash() {

@@ -474,6 +474,17 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	/**
+	 * Clear the query execution statistics.
+	 */
+	public void clearQueryStatistics() {
+		Iterator<BeanDescriptor<?>> it = descriptors();
+		while (it.hasNext()) {
+			BeanDescriptor<?> beanDescriptor = it.next();
+			beanDescriptor.clearQueryStatistics();
+		}
+	}
+
+	/**
 	 * Create a new EntityBean bean.
 	 * <p>
 	 * This will generally return a subclass of the parameter 'type' which
@@ -808,6 +819,30 @@ public final class DefaultServer implements InternalEbeanServer {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		return persister.nextId(desc);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> void sort(List<T> list, String sortByClause){
+		
+		if (list == null){
+			throw new NullPointerException("list is null");
+		}
+		if (sortByClause == null){
+			throw new NullPointerException("sortByClause is null");
+		}
+		if (list.size() == 0){
+			// don't need to sort an empty list
+			return;
+		}
+		// use first bean in the list as the correct type
+		Class<T> beanType = (Class<T>)list.get(0).getClass();
+		BeanDescriptor<T> beanDescriptor = getBeanDescriptor(beanType);
+		if (beanDescriptor == null){
+			String m = "BeanDescriptor not found, is ["+beanType+"] an entity bean?";
+			throw new PersistenceException(m);
+		}
+		beanDescriptor.sort(list, sortByClause);
+	}
+
 
 	public <T> Query<T> createQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
 

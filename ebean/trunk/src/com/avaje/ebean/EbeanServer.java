@@ -158,6 +158,16 @@ public interface EbeanServer {
 	public <T> Query<T> find(Class<T> beanType);
 
 	/**
+	 * Sort the list using the sortByClause.
+	 * 
+	 * @see Ebean#sort(List, String)
+	 * 
+	 * @param list the list of entity beans
+	 * @param sortByClause the properties to sort the list by
+	 */
+	public <T> void sort(List<T> list, String sortByClause);
+	
+	/**
 	 * Create a named update for an entity bean (refer
 	 * {@link Ebean#createUpdate(Class, String)}).
 	 */

@@ -32,6 +32,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.el.ElGetValue;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.lib.util.StringHelper;
@@ -46,7 +47,7 @@ import com.avaje.ebean.util.ValueUtil;
  * Description of a property of a bean. Includes its deployment information such
  * as database column mapping information.
  */
-public class BeanProperty {
+public class BeanProperty implements ElGetValue {
 
 
 	/**
@@ -611,7 +612,14 @@ public class BeanProperty {
 			throw new RuntimeException(msg, ex);
 		}
 	}
-	
+		
+	public Object elGetValue(Object bean) {
+		if (bean == null){
+			return null;
+		}
+		return getValueIntercept(bean);
+	}
+
 	/**
 	 * Return the name of the property.
 	 */

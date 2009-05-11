@@ -56,7 +56,8 @@ public class CQueryStats {
 	}
 	
 	public MetaQueryStatistic createMetaQueryStatistic(String beanName, CQueryPlan qp) {
-		return new MetaQueryStatistic(beanName, qp.getHash(), qp.getSql(), count, totalLoadedBeanCount, totalTimeMicros, startCollecting);
+		return new MetaQueryStatistic(qp.isAutofetchTuned(), qp.getObjectGraphOrigin(), beanName, 
+					qp.getHash(), qp.getSql(), count, totalLoadedBeanCount, totalTimeMicros, startCollecting);
 	}
 
 }

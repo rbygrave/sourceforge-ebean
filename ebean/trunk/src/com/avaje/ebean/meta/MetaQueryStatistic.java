@@ -1,16 +1,37 @@
 package com.avaje.ebean.meta;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
+
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 
 /**
  * Query execution statistics Meta data.
  */
 @Entity
-public class MetaQueryStatistic {
+public class MetaQueryStatistic implements Serializable {
 
-	String beanType;
+	private static final long serialVersionUID = -8746524372894472584L;
+
+	boolean autofetchTuned;
 	
-	int queryPlanHash;
+	/**
+	 * Information defining the origin of the query (Call Stack and original query plan hash).
+	 */
+	ObjectGraphOrigin objectGraphOrigin;
+	
+	String beanType;
+
+	/**
+	 * The original query plan hash (calculated prior to autofetch tuning).
+	 */
+	int origQueryPlanHash;
+	
+	/**
+	 * The final query plan hash (calculated prior to autofetch tuning).
+	 */
+	int finalQueryPlanHash;
 	
 	String sql;
 	
@@ -29,9 +50,14 @@ public class MetaQueryStatistic {
 	/**
 	 * Create a MetaQueryStatistic.
 	 */
-	public MetaQueryStatistic(String beanType, int plan, String sql, int executionCount, int totalLoadedBeans, int totalTimeMicros, long collectionStart) {
+	public MetaQueryStatistic(boolean autofetchTuned, ObjectGraphOrigin objectGraphOrigin, String beanType, int plan, String sql, 
+			int executionCount, int totalLoadedBeans, int totalTimeMicros, long collectionStart) {
+		
+		this.autofetchTuned = autofetchTuned;
+		this.objectGraphOrigin = objectGraphOrigin;
+		this.origQueryPlanHash = objectGraphOrigin == null ? 0 : objectGraphOrigin.getQueryPlanHash();
 		this.beanType = beanType;
-		this.queryPlanHash = plan;
+		this.finalQueryPlanHash = plan;
 		this.sql = sql;
 		this.executionCount = executionCount;
 		this.totalLoadedBeans = totalLoadedBeans;
@@ -40,14 +66,39 @@ public class MetaQueryStatistic {
 	}
 
 	public String toString() {
-		return "type="+beanType+" plan="+queryPlanHash+" count="+executionCount+" avgMicros="+getAvgTimeMicros();
+		return "type="+beanType+" tuned:"+autofetchTuned+" origHash="+origQueryPlanHash+" count="+executionCount+" avgMicros="+getAvgTimeMicros();
+	}
+	
+	/**
+	 * Return true if this query plan was built for Autofetch tuned queries.
+	 */
+	public boolean isAutofetchTuned() {
+		return autofetchTuned;
+	}
+	
+	/**
+	 * If tuned via Autofetch this returns the origin point for the query (Call stack and 
+	 * original queryPlan) and otherwise returns null.
+	 */
+	public ObjectGraphOrigin getObjectGraphOrigin() {
+		return objectGraphOrigin;
+	}
+
+	/**
+	 * Return the original query plan hash (calculated prior to autofetch tuning).
+	 * <p>
+	 * This will return 0 if there is no autofetch profiling or tuning on this query.
+	 * </p>
+	 */
+	public int getOrigQueryPlanHash() {
+		return origQueryPlanHash;
 	}
 	
 	/**
 	 * Return the queryPlanHash value. This is unique for a given query plan.
 	 */
-	public int getQueryPlanHash() {
-		return queryPlanHash;
+	public int getFinalQueryPlanHash() {
+		return finalQueryPlanHash;
 	}
 
 	/**
@@ -93,6 +144,13 @@ public class MetaQueryStatistic {
 	 */
 	public long getCollectionStart() {
 		return collectionStart;
+	}
+	
+	/**
+	 * Return the time collection started as a Date.
+	 */
+	public java.util.Date getCollectionStartDate() {
+		return new java.util.Date(collectionStart);
 	}
 	
 	/**

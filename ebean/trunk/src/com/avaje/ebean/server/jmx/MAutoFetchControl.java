@@ -101,6 +101,10 @@ public class MAutoFetchControl implements MAutoFetchControlMBean, AutoFetchContr
 	public int clearTunedQueryInfo() {
 		return autoFetchManager.clearTunedQueryInfo();
 	}
+	
+	public void clearQueryStatistics() {
+		autoFetchManager.clearQueryStatistics();
+	}
 
 	public int getTotalProfileSize() {
 		return autoFetchManager.getTotalProfileSize();

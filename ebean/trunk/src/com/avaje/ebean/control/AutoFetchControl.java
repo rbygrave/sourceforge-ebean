@@ -111,6 +111,11 @@ public interface AutoFetchControl {
 	public int clearProfilingInfo();
 	
 	/**
+	 * Clear the query execution statistics.
+	 */
+	public void clearQueryStatistics();
+	
+	/**
 	 * Return the number of queries tuned by AutoFetch.
 	 */
 	public int getTotalTunedQueryCount();

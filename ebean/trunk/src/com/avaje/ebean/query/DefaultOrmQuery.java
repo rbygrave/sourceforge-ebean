@@ -325,6 +325,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		// can change between JVM restarts.
 		int hc = beanType.getName().hashCode();
 
+		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
 
 		hc = hc * 31 + attributes.queryPlanHash();

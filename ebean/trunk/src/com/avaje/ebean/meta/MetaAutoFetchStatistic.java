@@ -1,7 +1,9 @@
 package com.avaje.ebean.meta;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -150,9 +152,8 @@ public class MetaAutoFetchStatistic implements Serializable {
 
 		final String[] usedProperties;
 
-		public NodeUsageStats(String path, int loadCount, int usedCount,
-				String[] usedProperties) {
-			this.path = path;
+		public NodeUsageStats(String path, int loadCount, int usedCount, String[] usedProperties) {
+			this.path = path == null ? "" : path;
 			this.loadCount = loadCount;
 			this.usedCount = usedCount;
 			this.usedProperties = usedProperties;
@@ -192,6 +193,17 @@ public class MetaAutoFetchStatistic implements Serializable {
 			return usedProperties;
 		}
 
+		/**
+		 * Return the properties as a Set rather than an Array.
+		 */
+		public Set<String> getUsedPropertiesSet() {
+			LinkedHashSet<String> s = new LinkedHashSet<String>();
+			for (int i = 0; i < usedProperties.length; i++) {
+				s.add(usedProperties[i]);
+			}
+			return s;
+		}
+		
 		public String toString() {
 			return "path[" + path + "] load[" + loadCount + "] used[" + usedCount + "] props"+ usedProperties;
 		}

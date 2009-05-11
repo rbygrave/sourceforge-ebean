@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -36,11 +37,15 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.el.ElComparator;
+import com.avaje.ebean.el.ElCompoundComparator;
+import com.avaje.ebean.el.ElGetChainBuilder;
+import com.avaje.ebean.el.ElGetValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.ReferenceOptions;
@@ -53,6 +58,9 @@ import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.reflect.BeanReflect;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
+import com.avaje.ebean.util.SortByClause;
+import com.avaje.ebean.util.SortByClauseParser;
+import com.avaje.ebean.util.SortByClause.Property;
 
 /**
  * Describes Beans including their deployment information.
@@ -62,6 +70,8 @@ public class BeanDescriptor<T> {
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
 	ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
+
+	final ConcurrentHashMap<String, ElGetValue> elCache = new ConcurrentHashMap<String, ElGetValue>();
 
 	/**
 	 * The EbeanServer name. Same as the plugin name.
@@ -528,7 +538,7 @@ public class BeanDescriptor<T> {
 				namedUpdate.initialise(parser);
 			}	
 		}
-	}
+	}	
 	
 	/**
 	 * Convert the logical orm update statement into sql by converting the bean properties and bean name to
@@ -558,7 +568,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * Reset the statistics on all the query plans.
 	 */
-	public void resetStatistics() {
+	public void clearQueryStatistics() {
 		Iterator<CQueryPlan> it = queryPlanCache.values().iterator();
 		while (it.hasNext()) {
 			CQueryPlan queryPlan = (CQueryPlan) it.next();
@@ -1000,6 +1010,84 @@ public class BeanDescriptor<T> {
 	 */
 	public BeanProperty getBeanProperty(String propName) {
 		return (BeanProperty) propMap.get(propName);
+	}
+
+	public void sort(List<T> list, String sortByClause){
+		
+		Comparator<T> comparator = createComparator(sortByClause);
+		Collections.sort(list, comparator);
+	}
+	
+	/**
+	 * Return a Comparator for local sorting of lists.
+	 * @param sortByClause list of property names with optional ASC or DESC suffix.
+	 */
+	@SuppressWarnings("unchecked")
+	public Comparator<T> createComparator(String sortByClause) {
+		
+		SortByClause sortBy = SortByClauseParser.parse(sortByClause);
+		if (sortBy.size() == 1){
+			// simple comparator for a single property
+			return createPropertyComparator(sortBy.getProperties().get(0));
+		}
+		
+		// create a compound comparator based on the list of properties
+		Comparator<T>[] comparators = new Comparator[sortBy.size()];
+		
+		List<Property> sortProps = sortBy.getProperties();
+		for (int i = 0; i < sortProps.size(); i++) {
+			Property sortProperty = sortProps.get(i);
+			comparators[i] = createPropertyComparator(sortProperty);
+		}
+		
+		return new ElCompoundComparator<T>(comparators);
+	}
+	
+	private ElComparator<T> createPropertyComparator(Property sortProp){
+
+		ElGetValue elGetValue = getElGetValue(sortProp.getName());
+
+		Boolean nullsHigh = sortProp.getNullsHigh();
+		if (nullsHigh == null){
+			nullsHigh = Boolean.TRUE;
+		}
+		return new ElComparator<T>(elGetValue, sortProp.isAscending(), nullsHigh);
+	}
+	
+	public ElGetValue getElGetValue(String propName) {
+		ElGetValue elGetValue = elCache.get(propName);
+		if (elGetValue == null){
+			elGetValue = buildElGetValue(propName, null);
+			elCache.put(propName, elGetValue);
+		}
+		return elGetValue;
+	}
+	
+	public ElGetValue buildElGetValue(String propName, ElGetChainBuilder chain){
+		
+		int basePos = propName.indexOf('.');
+		if (basePos > -1) {
+			// embedded property
+			String baseName = propName.substring(0, basePos);
+			String remainder = propName.substring(basePos + 1);
+
+			BeanProperty assocProp = _findBeanProperty(baseName);
+			BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
+			
+			if (chain == null){
+				chain = new ElGetChainBuilder(propName);
+			}
+			chain.add(assocProp);
+			return embDesc.buildElGetValue(remainder, chain);			
+		}
+		
+		BeanProperty property = _findBeanProperty(propName);
+		if (chain == null){
+			return property;						
+		} else {
+			return chain.add(property).build();
+		}
+		
 	}
 	
 	/**

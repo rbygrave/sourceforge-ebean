@@ -50,6 +50,11 @@ public interface AutoFetchManager extends NodeUsageListener {
 	public void setOwner(InternalEbeanServer server);
 
 	/**
+	 * Clear the query execution statistics.
+	 */
+	public void clearQueryStatistics();
+	
+	/**
 	 * Clear all the tuned query info.
 	 * <p>
 	 * Should only need do this for testing and playing around.
