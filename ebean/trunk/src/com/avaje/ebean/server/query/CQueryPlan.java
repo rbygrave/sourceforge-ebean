@@ -43,6 +43,9 @@ public class CQueryPlan {
 
 	private CQueryStats queryStats = new CQueryStats();
 
+	/**
+	 * Create a query plan based on a Orm query request.
+	 */
 	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree selectClause, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
@@ -56,7 +59,9 @@ public class CQueryPlan {
 		this.logWhereSql = logWhereSql;
 	}
 
-	
+	/**
+	 * Create a query plan for a raw sql query.
+	 */
 	public CQueryPlan(String sql, SqlTree selectClause, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
@@ -113,6 +118,7 @@ public class CQueryPlan {
 	 * Register an execution time against this query plan;
 	 */
 	public void executionTime(int loadedBeanCount, int timeMicros) {
+		// Atomic operation
 		queryStats = queryStats.add(loadedBeanCount, timeMicros);
 	}
 

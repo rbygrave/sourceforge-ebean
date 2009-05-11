@@ -43,6 +43,8 @@ public class MetaQueryStatistic implements Serializable {
 	
 	long collectionStart;
 	
+	long lastQueryTime;
+	
 	public MetaQueryStatistic() {
 		
 	}
@@ -51,7 +53,7 @@ public class MetaQueryStatistic implements Serializable {
 	 * Create a MetaQueryStatistic.
 	 */
 	public MetaQueryStatistic(boolean autofetchTuned, ObjectGraphOrigin objectGraphOrigin, String beanType, int plan, String sql, 
-			int executionCount, int totalLoadedBeans, int totalTimeMicros, long collectionStart) {
+			int executionCount, int totalLoadedBeans, int totalTimeMicros, long collectionStart, long lastQueryTime) {
 		
 		this.autofetchTuned = autofetchTuned;
 		this.objectGraphOrigin = objectGraphOrigin;
@@ -63,6 +65,7 @@ public class MetaQueryStatistic implements Serializable {
 		this.totalLoadedBeans = totalLoadedBeans;
 		this.totalTimeMicros = totalTimeMicros;
 		this.collectionStart = collectionStart;
+		this.lastQueryTime = lastQueryTime;
 	}
 
 	public String toString() {
@@ -145,12 +148,12 @@ public class MetaQueryStatistic implements Serializable {
 	public long getCollectionStart() {
 		return collectionStart;
 	}
-	
+			
 	/**
-	 * Return the time collection started as a Date.
+	 * Return the time of the last query executed using this plan.
 	 */
-	public java.util.Date getCollectionStartDate() {
-		return new java.util.Date(collectionStart);
+	public long getLastQueryTime() {
+		return lastQueryTime;
 	}
 	
 	/**

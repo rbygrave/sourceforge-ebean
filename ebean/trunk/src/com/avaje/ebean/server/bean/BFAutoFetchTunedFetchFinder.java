@@ -63,6 +63,13 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder<MetaAutoFetchTune
 			// create a copy for public use
 			list.add(tunedFetch.createPublicMeta());
 		}
+		
+		String orderBy = request.getQuery().getOrderBy();
+		if (orderBy == null){
+			orderBy = "beanType, origQueryPlanHash";
+		}
+		server.sort(list, orderBy);
+
 
 		return list;
 	}

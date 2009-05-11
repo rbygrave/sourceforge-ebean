@@ -3,7 +3,10 @@ package com.avaje.ebean.server.query;
 
 import com.avaje.ebean.meta.MetaQueryStatistic;
 
-public class CQueryStats {
+/**
+ * Statistics for query plan that can accumulate. 
+ */
+public final class CQueryStats {
 
 	private final int count;
 
@@ -13,18 +16,25 @@ public class CQueryStats {
 
 	private final long startCollecting;
 	
+	private final long lastQueryTime;
+	
 	public CQueryStats() {
 		count = 0;
 		totalLoadedBeanCount = 0;
 		totalTimeMicros = 0;
 		startCollecting = System.currentTimeMillis();
+		lastQueryTime = 0;
 	}
 
+	/**
+	 * Accumulate/Increment the statistics based on the previous statistics.
+	 */
 	public CQueryStats(CQueryStats previous, int loadedBeanCount, int timeMicros) {
 		count = previous.count + 1;
 		totalLoadedBeanCount = previous.totalLoadedBeanCount + loadedBeanCount;
 		totalTimeMicros = previous.totalTimeMicros + timeMicros;
 		startCollecting = previous.startCollecting;
+		lastQueryTime = System.currentTimeMillis();
 	}
 
 	public CQueryStats add(int loadedBeanCount, int timeMicros) {
@@ -55,9 +65,13 @@ public class CQueryStats {
 		return startCollecting;
 	}
 	
+	public long getLastQueryTime() {
+		return lastQueryTime;
+	}
+
 	public MetaQueryStatistic createMetaQueryStatistic(String beanName, CQueryPlan qp) {
-		return new MetaQueryStatistic(qp.isAutofetchTuned(), qp.getObjectGraphOrigin(), beanName, 
-					qp.getHash(), qp.getSql(), count, totalLoadedBeanCount, totalTimeMicros, startCollecting);
+		return new MetaQueryStatistic(qp.isAutofetchTuned(), qp.getObjectGraphOrigin(), beanName, qp.getHash(),
+			qp.getSql(), count, totalLoadedBeanCount, totalTimeMicros, startCollecting, lastQueryTime);
 	}
 
 }
