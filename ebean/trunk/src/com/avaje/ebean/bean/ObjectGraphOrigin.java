@@ -33,9 +33,12 @@ import java.io.Serializable;
  */
 public final class ObjectGraphOrigin implements Serializable {
 
-	private static final long serialVersionUID = 410937765287968709L;
+	private static final long serialVersionUID = 410937765287968708L;
 
-	final int autoFetchQueryHash;
+	/**
+	 * The Original query hash (prior to autofetch tuning).
+	 */
+	final int queryPlanHash;
 
 	final CallStack callStack;
 
@@ -43,11 +46,11 @@ public final class ObjectGraphOrigin implements Serializable {
 
 	final String beanType;
 
-	public ObjectGraphOrigin(int autoFetchQueryHash, CallStack callStack, String beanType) {
-		this.autoFetchQueryHash = autoFetchQueryHash;
+	public ObjectGraphOrigin(int queryPlanHash, CallStack callStack, String beanType) {
+		this.queryPlanHash = queryPlanHash;
 		this.callStack = callStack;
 		this.beanType = beanType;
-		this.key = autoFetchQueryHash + ":" + callStack.getHash();
+		this.key = queryPlanHash + ":" + callStack.getHash();
 	}
 
 	/**
@@ -65,6 +68,13 @@ public final class ObjectGraphOrigin implements Serializable {
 		return beanType;
 	}
 
+	/**
+	 * Return the query plan hash calculated prior to any autofetch tuning.
+	 */
+	public int getQueryPlanHash() {
+		return queryPlanHash;
+	}
+	
 	/**
 	 * The call stack involved.
 	 */

@@ -1,5 +1,7 @@
 package com.avaje.ebean.meta;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -15,7 +17,9 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
  * </p>
  */
 @Entity
-public class MetaAutoFetchTunedQueryInfo {
+public class MetaAutoFetchTunedQueryInfo implements Serializable {
+
+	private static final long serialVersionUID = 3119991928889170217L;
 
 	@Id
 	final String id;

@@ -65,6 +65,11 @@ public interface InternalEbeanServer extends InternalEbean {
 	public ServerCache getServerCache();
 
 	/**
+	 * Clear the query execution statistics.
+	 */
+	public void clearQueryStatistics();
+	
+	/**
 	 * Return all the descriptors.
 	 */
 	public Iterator<BeanDescriptor<?>> descriptors();

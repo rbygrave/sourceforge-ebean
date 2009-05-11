@@ -164,7 +164,7 @@ public class CQueryBuilder implements Constants {
 		
 		String sql = buildSql(request, predicates, sqlTree);
 
-		queryPlan = new CQueryPlan(request.getQueryPlanHash(), sql, sqlTree, false, predicates.isRowNumberIncluded(), predicates.getLogWhereSql());
+		queryPlan = new CQueryPlan(request, sql, sqlTree, false, predicates.isRowNumberIncluded(), predicates.getLogWhereSql());
 		
 		// cache the query plan because we can reuse it and also 
 		// gather query performance statistics based on it.

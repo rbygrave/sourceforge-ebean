@@ -39,6 +39,12 @@ public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 		
 		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
 		build(list, server);
+		
+		String orderBy = request.getQuery().getOrderBy();
+		if (orderBy == null){
+			orderBy = "beanType, origQueryPlanHash, autofetchTuned";
+		}
+		server.sort(list, orderBy);
 
 		return list;
 	}

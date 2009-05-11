@@ -21,6 +21,7 @@ package com.avaje.ebean;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -100,7 +101,7 @@ import com.avaje.ebean.server.util.InternalAssert;
  * hrDb.save(contact);                                   
  * </pre>
  * 
- * @version 1.1.0
+ * @version 1.2.0
  */
 public final class Ebean {
 
@@ -109,7 +110,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.1.1-090425";
+	private static final String EBVERSION = "1.2.0-090511";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
@@ -608,6 +609,47 @@ public final class Ebean {
 	 */
 	public static <T> T getReference(Class<T> beanType, Object id) {
 		return serverMgr.getPrimaryServer().getReference(beanType, id);
+	}
+
+	/**
+	 * Sort the list using the sortByClause which can contain a comma delimited
+	 * list of property names and keywords asc, desc, nullsHigh and nullsLow.
+	 * <ul>
+	 * <li>asc - ascending order (which is the default)</li>
+	 * <li>desc - Descending order </li>
+	 * <li>nullsHigh - Treat null values as high/large values (which is the default)</li>
+	 * <li>nullsLow- Treat null values as low/very small values </li>
+	 * </ul>
+	 * <p>
+	 * If you leave off any keywords the defaults are ascending order and treating nulls as high values.
+	 * </p>
+	 * <p>
+	 * Note that the sorting uses a Comparator and Collections.sort(); and does not invoke a DB query.
+	 * </p>
+	 * <pre class="code">
+	 * 
+	 * 	// find orders and their customers
+	 * 	List&lt;Order&gt; list = Ebean.find(Order.class)
+	 * 		.join("customer")
+	 * 		.orderBy("id")
+	 * 		.findList();
+	 * 
+	 * 
+	 * 	// sort by customer name ascending, then by order shipDate 
+	 * 	// ... then by the order status descending
+	 * 	Ebean.sort(list, "customer.name, shipDate, status desc");
+	 * 
+	 * 	// sort by customer name descending (with nulls low) 
+	 * 	// ... then by the order id
+	 * 	Ebean.sort(list, "customer.name desc nullsLow, id");
+	 * 
+	 * </pre>
+	 * 
+	 * @param list the list of entity beans
+	 * @param sortByClause the properties to sort the list by
+	 */
+	public static <T> void sort(List<T> list, String sortByClause){
+		serverMgr.getPrimaryServer().sort(list, sortByClause);
 	}
 
 	/**

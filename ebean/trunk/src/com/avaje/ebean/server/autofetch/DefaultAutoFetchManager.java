@@ -126,6 +126,12 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		logging.logToJavaLogger(msg);
 	}
 
+	
+	
+	public void clearQueryStatistics() {
+		server.clearQueryStatistics();
+	}
+
 	/**
 	 * Return the number of queries tuned by AutoFetch.
 	 */

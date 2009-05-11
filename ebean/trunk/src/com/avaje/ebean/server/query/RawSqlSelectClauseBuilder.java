@@ -94,7 +94,7 @@ public class RawSqlSelectClauseBuilder {
 			
 			SqlTree sqlTree = sqlSelect.getSqlTree();
 			
-			CQueryPlan queryPlan = new CQueryPlan(0, sql, sqlTree, true, false, "");
+			CQueryPlan queryPlan = new CQueryPlan(sql, sqlTree, true, false, "");
 			CQuery<T> compiledQuery = new CQuery<T>(request, predicates, queryPlan);
 
 			return compiledQuery;
