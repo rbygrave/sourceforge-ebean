@@ -24,6 +24,8 @@ public class MetaAutoFetchStatistic implements Serializable {
 	
 	ObjectGraphOrigin origin;
 
+	int origQueryPlanHash;
+	
 	int counter;
 	
 	@Transient
@@ -38,6 +40,7 @@ public class MetaAutoFetchStatistic implements Serializable {
 	public MetaAutoFetchStatistic(ObjectGraphOrigin origin, int counter, List<QueryStats> queryStats, List<NodeUsageStats> nodeUsageStats) {
 		this();
 		this.origin = origin;
+		this.origQueryPlanHash = origin == null ? 0 : origin.getQueryPlanHash();
 		this.id = origin.getKey();
 		this.counter = counter;
 		this.queryStats = queryStats;
@@ -51,7 +54,13 @@ public class MetaAutoFetchStatistic implements Serializable {
 		return id;
 	}
 
-
+	/**
+	 * Return the original query plan hash (calculated prior to autofetch tuning).
+	 */
+	public int getOrigQueryPlanHash() {
+		return origQueryPlanHash;
+	}
+	
 	/**
 	 * Return the query point.
 	 */
