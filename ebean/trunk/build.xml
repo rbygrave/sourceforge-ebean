@@ -5,7 +5,7 @@
 	<property file="build.properties" />
 
 	<property name="name" value="ebean" />
-	<property name="version" value="1.0.3" />
+	<property name="version" value="1.2.0" />
 
 	<property name="lib.dir" value="lib" />
 	<property name="src.dir" value="src" />
@@ -124,6 +124,24 @@
 		<copy overwrite="true" failonerror="true" file="${dist.dir}/${name}-${version}.jar" todir="${webapp.dir}/WEB-INF/lib" />
 	
 	</target>
+
+	<path id="classpath.test">
+		<pathelement location="bin"/>
+		<fileset dir="${lib.dir}" includes="*.jar" />
+	</path>
+			
+	  <target name="test" depends="">
+	  	<property name="myclasspath" refid="classpath.test"/>
+
+	  	<echo message="Classpath = ${myclasspath}"/>
+
+	    <junit>
+		  <classpath refid="classpath.test" />
+	      <formatter type="brief" usefile="false" />
+	      <test name="com.avaje.ebean.util.TestMe" />
+	    </junit>
+
+	  </target>
 
 	<target name="main" depends="jar">
 		<tstamp />
