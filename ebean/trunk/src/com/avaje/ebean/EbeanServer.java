@@ -158,6 +158,11 @@ public interface EbeanServer {
 	public <T> Query<T> find(Class<T> beanType);
 
 	/**
+	 * Create a filter for filtering lists of entity beans.
+	 */
+	public <T> Filter<T> filter(Class<T> beanType);
+
+	/**
 	 * Sort the list using the sortByClause.
 	 * 
 	 * @see Ebean#sort(List, String)

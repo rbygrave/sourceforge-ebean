@@ -33,6 +33,7 @@ import javax.management.ObjectName;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.Filter;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.MapBean;
 import com.avaje.ebean.Query;
@@ -53,6 +54,7 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ScopeTrans;
 import com.avaje.ebean.control.AutoFetchControl;
 import com.avaje.ebean.control.ServerControl;
+import com.avaje.ebean.el.ElFilter;
 import com.avaje.ebean.query.DefaultOrmQuery;
 import com.avaje.ebean.query.DefaultOrmUpdate;
 import com.avaje.ebean.query.DefaultRelationalQuery;
@@ -857,6 +859,14 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		// this will parse the query
 		return new DefaultOrmQuery<T>(beanType, this, deployQuery);
+	}
+	
+	public <T> Filter<T> filter(Class<T> beanType) {
+		BeanDescriptor<T> desc = getBeanDescriptor(beanType);
+		if (desc == null) {
+			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
+		}
+		return new ElFilter<T>(desc);
 	}
 
 	public <T> Query<T> find(Class<T> beanType) {

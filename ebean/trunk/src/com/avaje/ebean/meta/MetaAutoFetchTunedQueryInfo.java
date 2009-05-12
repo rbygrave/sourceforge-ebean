@@ -19,52 +19,52 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 @Entity
 public class MetaAutoFetchTunedQueryInfo implements Serializable {
 
-	private static final long serialVersionUID = 3119991928889170217L;
+	private static final long serialVersionUID = 3119991928889170215L;
 
 	@Id
-	final String id;
+	String id;
 	
-	final int origQueryPlanHash;
+	int origQueryPlanHash;
+	
+	String beanType;
 	
 	/**
 	 * The profile query point (call stack and query).
 	 */
-	final ObjectGraphOrigin origin;
+	ObjectGraphOrigin origin;
 
 	/**
 	 * The tuned query details with joins and properties.
 	 */
-	final String tunedDetail;
+	String tunedDetail;
 
 	/**
 	 * The number of times profiling has been collected for this query point.
 	 */
-	final int profileCount;
+	int profileCount;
 	
 	/**
 	 * The number of queries tuned by this info.
 	 */
-	final int tunedCount;
+	int tunedCount;
 
+	long lastTuneTime;
+	
 	public MetaAutoFetchTunedQueryInfo() {
-		
-		this.origin = null;
-		this.origQueryPlanHash = 0;
-		this.id = null;
-		this.tunedDetail = null;
-		this.profileCount = 0;
-		this.tunedCount = 0;
+
 	}
 	
 	public MetaAutoFetchTunedQueryInfo(final ObjectGraphOrigin origin, String tunedDetail,
-			int profileCount, int tunedCount) {
+			int profileCount, int tunedCount, long lastTuneTime) {
 		
 		this.origin = origin;
 		this.origQueryPlanHash = origin == null ? 0 : origin.getQueryPlanHash();
+		this.beanType = origin == null ? null : origin.getBeanType();
 		this.id = origin.getKey();
 		this.tunedDetail = tunedDetail;
 		this.profileCount = profileCount;
 		this.tunedCount = tunedCount;
+		this.lastTuneTime = lastTuneTime;
 	}
 
 	/**
@@ -74,6 +74,13 @@ public class MetaAutoFetchTunedQueryInfo implements Serializable {
 		return id;
 	}
 	
+	/**
+	 * Return the type of bean this is tuned for.
+	 */
+	public String getBeanType() {
+		return beanType;
+	}
+
 	/**
 	 * Return the original query plan hash (calculated prior to autofetch tuning).
 	 */
@@ -107,6 +114,13 @@ public class MetaAutoFetchTunedQueryInfo implements Serializable {
 	 */
 	public int getTunedCount() {
 		return tunedCount;
+	}
+	
+	/**
+	 * Return the time of the last tune (that changed the query).
+	 */
+	public long getLastTuneTime() {
+		return lastTuneTime;
 	}
 
 	public String toString() {

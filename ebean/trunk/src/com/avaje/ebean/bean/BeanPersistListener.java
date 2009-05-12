@@ -87,8 +87,6 @@ public interface BeanPersistListener<T> {
 	/**
 	 * Notify that a bean was inserted on another node of the cluster.
 	 * 
-	 * @param type
-	 *            the type of bean inserted
 	 * @param id
 	 *            the id value of the inserted bean
 	 */
@@ -97,8 +95,6 @@ public interface BeanPersistListener<T> {
 	/**
 	 * Notify that a bean was updated on another node of the cluster.
 	 * 
-	 * @param type
-	 *            the type of the bean updated.
 	 * @param id
 	 *            the id value of the updated bean.
 	 */
@@ -107,8 +103,6 @@ public interface BeanPersistListener<T> {
 	/**
 	 * Notify that a bean was deleted on another node of the cluster.
 	 * 
-	 * @param type
-	 *            the type of the bean deleted.
 	 * @param id
 	 *            the id value of the deleted bean.
 	 */

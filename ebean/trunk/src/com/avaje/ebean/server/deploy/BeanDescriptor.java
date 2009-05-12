@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -43,7 +42,8 @@ import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.el.ElComparator;
-import com.avaje.ebean.el.ElCompoundComparator;
+import com.avaje.ebean.el.ElComparatorCompound;
+import com.avaje.ebean.el.ElComparatorProperty;
 import com.avaje.ebean.el.ElGetChainBuilder;
 import com.avaje.ebean.el.ElGetValue;
 import com.avaje.ebean.query.OrmQuery;
@@ -69,10 +69,12 @@ public class BeanDescriptor<T> {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
-	ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
+	final ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
 
-	final ConcurrentHashMap<String, ElGetValue> elCache = new ConcurrentHashMap<String, ElGetValue>();
+	final ConcurrentHashMap<String, ElGetValue> elGetCache = new ConcurrentHashMap<String, ElGetValue>();
 
+	final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
+	
 	/**
 	 * The EbeanServer name. Same as the plugin name.
 	 */
@@ -1014,8 +1016,18 @@ public class BeanDescriptor<T> {
 
 	public void sort(List<T> list, String sortByClause){
 		
-		Comparator<T> comparator = createComparator(sortByClause);
+		ElComparator<T> comparator = getElComparator(sortByClause);
 		Collections.sort(list, comparator);
+	}
+
+	
+	public ElComparator<T> getElComparator(String propNameOrSortBy) {
+		ElComparator<T> c = comparatorCache.get(propNameOrSortBy);
+		if (c == null){
+			c = createComparator(propNameOrSortBy);
+			comparatorCache.put(propNameOrSortBy, c);
+		}
+		return c;
 	}
 	
 	/**
@@ -1023,7 +1035,7 @@ public class BeanDescriptor<T> {
 	 * @param sortByClause list of property names with optional ASC or DESC suffix.
 	 */
 	@SuppressWarnings("unchecked")
-	public Comparator<T> createComparator(String sortByClause) {
+	private ElComparator<T> createComparator(String sortByClause) {
 		
 		SortByClause sortBy = SortByClauseParser.parse(sortByClause);
 		if (sortBy.size() == 1){
@@ -1032,7 +1044,7 @@ public class BeanDescriptor<T> {
 		}
 		
 		// create a compound comparator based on the list of properties
-		Comparator<T>[] comparators = new Comparator[sortBy.size()];
+		ElComparator<T>[] comparators = new ElComparator[sortBy.size()];
 		
 		List<Property> sortProps = sortBy.getProperties();
 		for (int i = 0; i < sortProps.size(); i++) {
@@ -1040,7 +1052,7 @@ public class BeanDescriptor<T> {
 			comparators[i] = createPropertyComparator(sortProperty);
 		}
 		
-		return new ElCompoundComparator<T>(comparators);
+		return new ElComparatorCompound<T>(comparators);
 	}
 	
 	private ElComparator<T> createPropertyComparator(Property sortProp){
@@ -1051,14 +1063,17 @@ public class BeanDescriptor<T> {
 		if (nullsHigh == null){
 			nullsHigh = Boolean.TRUE;
 		}
-		return new ElComparator<T>(elGetValue, sortProp.isAscending(), nullsHigh);
+		return new ElComparatorProperty<T>(elGetValue, sortProp.isAscending(), nullsHigh);
 	}
 	
 	public ElGetValue getElGetValue(String propName) {
-		ElGetValue elGetValue = elCache.get(propName);
+		ElGetValue elGetValue = elGetCache.get(propName);
 		if (elGetValue == null){
 			elGetValue = buildElGetValue(propName, null);
-			elCache.put(propName, elGetValue);
+			if (elGetValue == null){
+				throw new PersistenceException("No property ["+propName+"] found on "+getFullName());
+			}
+			elGetCache.put(propName, elGetValue);
 		}
 		return elGetValue;
 	}

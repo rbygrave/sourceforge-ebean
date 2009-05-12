@@ -19,22 +19,49 @@
  */
 package com.avaje.ebean.el;
 
+import java.util.Comparator;
+
 /**
- * The expression language getter method.
+ * Comparator based on multiple ordered comparators.
+ * <p>
+ * eg.  "name, orderDate desc, id"
+ * </p>
  */
-public interface ElGetValue {
+public final class ElComparatorCompound<T> implements Comparator<T>, ElComparator<T> {
 
-	/**
-	 * Return the value from a given entity bean.
-	 */
-	public Object elGetValue(Object bean);
+	private final ElComparator<T>[] array;
+	
+	public ElComparatorCompound(ElComparator<T>[] array) {
+		this.array = array;
+	}
+	
+	public int compare(T o1, T o2) {
+		
+		for (int i = 0; i < array.length; i++) {
+			int ret = array[i].compare(o1, o2);
+			if (ret != 0){
+				return ret;
+			}
+		}
+		
+		return 0;
+	}
 
-	/**
-	 * Convert the value to the expected type.
-	 * <p>
-	 * Typically useful for converting strings to the appropriate number type
-	 * etc.
-	 * </p>
-	 */
-	public Object elConvertType(Object value);
+	public int compareValue(Object value, T o2) {
+		
+		for (int i = 0; i < array.length; i++) {
+			int ret = array[i].compareValue(value, o2);
+			if (ret != 0){
+				return ret;
+			}
+		}
+		
+		return 0;
+	}
+
+
+
+	
+	
+	
 }
