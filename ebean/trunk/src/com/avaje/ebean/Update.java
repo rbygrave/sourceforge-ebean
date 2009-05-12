@@ -60,18 +60,17 @@ public interface Update<T> {
 
 	/**
 	 * Set the insert update or delete statement.
+	 * <p>
+	 * If you use bean and property names these will be translated
+	 * to table and column names.
+	 * </p>
 	 * 
-	 * @param isSql
-	 *            true if already a sql insert/update/delete using tables and
-	 *            columns. False means the statement must be translated by
-	 *            converting the bean types and properties to db tables and
-	 *            columns.
 	 * @param updateStatement
-	 *            either a sql insert/update/delete or orm insert/update/delete
-	 *            using logical bean types and property names rather than tables
+	 *            an insert,update or delete statement where you can use the 
+	 *            bean and property names rather than tables
 	 *            and columns.
 	 */
-	public Update<T> setUpdate(boolean isSql, String updateStatement);
+	public Update<T> setUpdate(String updateStatement);
 
 	/**
 	 * Set this to false if you do not want the cache to invalidate related

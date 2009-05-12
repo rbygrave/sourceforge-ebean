@@ -52,8 +52,6 @@ public final class DefaultOrmUpdate<T> implements OrmUpdate<T>, Serializable {
 	 */
 	String updateStatement;
 
-	boolean isSql;
-
 	/**
 	 * Automatically detect the table being modified by this sql. This will
 	 * register this information so that eBean invalidates cached objects if
@@ -90,11 +88,10 @@ public final class DefaultOrmUpdate<T> implements OrmUpdate<T>, Serializable {
 		
 		// named updates are always converted to sql as part
 		// of the initialisation
-		setUpdate(true, namedUpdate.getSqlUpdateStatement());
+		setUpdate(namedUpdate.getSqlUpdateStatement());
 	}
 	
-	public DefaultOrmUpdate<T> setUpdate(boolean isSql, String updateStatement){
-		this.isSql = isSql;
+	public DefaultOrmUpdate<T> setUpdate(String updateStatement){
 		this.updateStatement = updateStatement;
 		this.type = deriveType(updateStatement);
 		return this;
@@ -171,10 +168,6 @@ public final class DefaultOrmUpdate<T> implements OrmUpdate<T>, Serializable {
 
 	public String getUpdateStatement() {
 		return updateStatement;
-	}
-	
-	public boolean isSql() {
-		return isSql;
 	}
 
 	public DefaultOrmUpdate<T> setQuery(String updateStatement) {

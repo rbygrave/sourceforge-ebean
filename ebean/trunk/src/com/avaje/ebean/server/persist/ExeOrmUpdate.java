@@ -116,9 +116,10 @@ public class ExeOrmUpdate {
     	ServerTransaction t = request.getTransaction();
     	
     	String sql = ormUpdate.getUpdateStatement();
-    	if (!ormUpdate.isSql()){
-    		sql = translate(request, sql);
-    	}
+    	
+    	// convert bean and property names to table and 
+    	// column names if required
+    	sql = translate(request, sql);
     	
     	BindParams bindParams = ormUpdate.getBindParams();
         
