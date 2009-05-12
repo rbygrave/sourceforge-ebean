@@ -45,6 +45,10 @@ public class MetaQueryStatistic implements Serializable {
 	
 	long lastQueryTime;
 	
+	int avgTimeMicros;
+	
+	int avgLoadedBeans;
+	
 	public MetaQueryStatistic() {
 		
 	}
@@ -65,7 +69,10 @@ public class MetaQueryStatistic implements Serializable {
 		this.totalLoadedBeans = totalLoadedBeans;
 		this.totalTimeMicros = totalTimeMicros;
 		this.collectionStart = collectionStart;
+
 		this.lastQueryTime = lastQueryTime;
+		this.avgTimeMicros = executionCount == 0 ? 0 : totalTimeMicros/executionCount;
+		this.avgLoadedBeans = executionCount == 0 ? 0 : totalLoadedBeans/executionCount; 
 	}
 
 	public String toString() {
@@ -163,11 +170,7 @@ public class MetaQueryStatistic implements Serializable {
 	 * </p>
 	 */
 	public int getAvgTimeMicros() {
-		if (executionCount == 0){
-			return 0;
-		} else {
-			return totalTimeMicros/executionCount;
-		}
+		return avgTimeMicros;
 	}
 	
 	/**
@@ -177,11 +180,7 @@ public class MetaQueryStatistic implements Serializable {
 	 * </p>
 	 */
 	public int getAvgLoadedBeans() {
-		if (executionCount == 0){
-			return 0;
-		} else {
-			return totalLoadedBeans/executionCount;
-		}
+		return avgLoadedBeans;
 	}
 	
 }

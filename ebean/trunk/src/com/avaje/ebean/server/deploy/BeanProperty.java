@@ -613,6 +613,15 @@ public class BeanProperty implements ElGetValue {
 		}
 	}
 		
+	
+	
+	public Object elConvertType(Object value) {
+		if (value == null){
+			return null;
+		}
+		return convertToLogicalType(value);
+	}
+
 	public Object elGetValue(Object bean) {
 		if (bean == null){
 			return null;

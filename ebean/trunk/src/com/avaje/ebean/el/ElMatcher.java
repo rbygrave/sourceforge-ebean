@@ -20,21 +20,12 @@
 package com.avaje.ebean.el;
 
 /**
- * The expression language getter method.
+ * Interface for defining matches for filter expressions.
  */
-public interface ElGetValue {
+public interface ElMatcher<T> {
 
 	/**
-	 * Return the value from a given entity bean.
+	 * Return true if the bean matches the expression.
 	 */
-	public Object elGetValue(Object bean);
-
-	/**
-	 * Convert the value to the expected type.
-	 * <p>
-	 * Typically useful for converting strings to the appropriate number type
-	 * etc.
-	 * </p>
-	 */
-	public Object elConvertType(Object value);
+	public boolean isMatch(T bean);
 }

@@ -175,6 +175,9 @@ public class ScalarTypeBoolean {
 			if (value == null) {
 				return null;
 			}
+			if (value instanceof Boolean){
+				return value;
+			}
 			if (trueValue.equals(value)) {
 				return Boolean.TRUE;
 			} else {
@@ -243,6 +246,9 @@ public class ScalarTypeBoolean {
 		public Object toBeanType(Object value) {
 			if (value == null) {
 				return null;
+			}
+			if (value instanceof Boolean){
+				return value;
 			}
 			if (trueValue.equals(value)) {
 				return Boolean.TRUE;

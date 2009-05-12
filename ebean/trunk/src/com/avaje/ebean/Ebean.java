@@ -960,6 +960,20 @@ public final class Ebean {
 	}
 
 	/**
+	 * Create a filter for sorting and filtering lists of entities locally
+	 * without going back to the database. 
+	 * <p>
+	 * This produces and returns a new list with the sort and filters applied.
+	 * </p>
+	 * <p> 
+	 * Refer to {@link Filter} for an example of its use. 
+	 * </p>
+	 */
+	public static <T> Filter<T> filter(Class<T> beanType){
+		return serverMgr.getPrimaryServer().filter(beanType);
+	}
+
+	/**
 	 * Execute a Sql Update Delete or Insert statement. This returns the number
 	 * of rows that where updated, deleted or inserted. If is executed in batch
 	 * then this returns -1. You can get the actual rowCount after commit() from

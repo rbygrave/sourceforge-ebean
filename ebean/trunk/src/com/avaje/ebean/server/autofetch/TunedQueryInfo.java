@@ -13,7 +13,7 @@ import com.avaje.ebean.query.OrmQueryDetail;
  */
 public class TunedQueryInfo implements Serializable {
 
-	private static final long serialVersionUID = 7381493228797997284L;
+	private static final long serialVersionUID = 7381493228797997282L;
 
 	final ObjectGraphOrigin origin;
 
@@ -26,6 +26,8 @@ public class TunedQueryInfo implements Serializable {
 	 * The number of times profiling has been collected for this query point.
 	 */
 	int profileCount;
+	
+	Long lastTuneTime = Long.valueOf(0);
 
 	final String rateMonitor = new String();
 
@@ -77,7 +79,7 @@ public class TunedQueryInfo implements Serializable {
 	 * Create a copy of this tuned fetch data for public consumption.
 	 */
 	public MetaAutoFetchTunedQueryInfo createPublicMeta() {
-		return new MetaAutoFetchTunedQueryInfo(origin, tunedDetail.toString(), profileCount, tunedCount);
+		return new MetaAutoFetchTunedQueryInfo(origin, tunedDetail.toString(), profileCount, tunedCount, lastTuneTime);
 	}
 
 	/**
@@ -95,6 +97,7 @@ public class TunedQueryInfo implements Serializable {
 	public void setTunedDetail(OrmQueryDetail tunedDetail) {
 		// assignment is atomic
 		this.tunedDetail = tunedDetail;
+		this.lastTuneTime = new Long(System.currentTimeMillis());
 	}
 
 	/**
@@ -126,8 +129,14 @@ public class TunedQueryInfo implements Serializable {
 			return false;
 		}
 	}
-
 	
+	/**
+	 * Return the time of the last tune.
+	 */
+	public Long getLastTuneTime() {
+		return lastTuneTime;
+	}
+
 	/**
 	 * Return the number of queries tuned by this object.
 	 */

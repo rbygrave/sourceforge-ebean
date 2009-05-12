@@ -26,6 +26,8 @@ public class MetaAutoFetchStatistic implements Serializable {
 
 	int origQueryPlanHash;
 	
+	String beanType;
+	
 	int counter;
 	
 	@Transient
@@ -41,6 +43,7 @@ public class MetaAutoFetchStatistic implements Serializable {
 		this();
 		this.origin = origin;
 		this.origQueryPlanHash = origin == null ? 0 : origin.getQueryPlanHash();
+		this.beanType = origin == null ? null : origin.getBeanType();
 		this.id = origin.getKey();
 		this.counter = counter;
 		this.queryStats = queryStats;
@@ -52,6 +55,13 @@ public class MetaAutoFetchStatistic implements Serializable {
 	 */
 	public String getId() {
 		return id;
+	}
+	
+	/**
+	 * Return the bean type.
+	 */
+	public String getBeanType() {
+		return beanType;
 	}
 
 	/**
