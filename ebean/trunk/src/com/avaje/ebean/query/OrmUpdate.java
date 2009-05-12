@@ -51,12 +51,6 @@ public interface OrmUpdate<T> extends Update<T> {
 	public String getBaseTable();
 	
 	/**
-	 * Return true if this is sql false if it needs to be translated into sql by converting bean types and property names
-	 * to database tables and columns.
-	 */
-	public boolean isSql();
-	
-	/**
 	 * Return the update statement. This could be either sql or an orm update with bean types and property names.
 	 */
 	public String getUpdateStatement();
