@@ -248,6 +248,8 @@ public final class ElFilter<T> implements Filter<T>  {
 	public List<T> filter(List<T> list) {
 
 		if (sortByClause != null){
+			// create shallow copy and sort 	
+			list = new ArrayList<T>(list);
 			beanDescriptor.sort(list, sortByClause);
 		}
 		

@@ -4,16 +4,20 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Provides support filtering and sorting of lists of entities locally without
+ * Provides support for filtering and sorting lists of entities without
  * going back to the database.
  * <p>
- * That it uses local in-memory sorting and filtering of a list of entity beans.
+ * That is, it uses local in-memory sorting and filtering of a list of entity beans.
  * It is not used in a Database query or invoke a Database query.
  * </p>
  * <p>
  * You can optionally specify a sortByClause and if so, the sort will always
  * execute prior to the filter expressions. You can specify any number of filter
  * expressions and they are effectively joined by logical "AND".
+ * </p>
+ * <p>
+ * The result of the filter method will leave the original list unmodified and
+ * return a new List instance.
  * </p>
  * 
  * <pre class="code">
@@ -43,12 +47,12 @@ import java.util.Set;
  * a property value is null then null is returned.
  * </p>
  * <pre>
- *		// examples of property names that 
- *		// ... will traverse the object graph
- *		// ... where customer is a property of our bean
+ *	// examples of property names that 
+ *	// ... will traverse the object graph
+ *	// ... where customer is a property of our bean
  *
- * 		customer.name
- *      customer.shippingAddress.city
+ *	customer.name
+ *	customer.shippingAddress.city
  * </pre>
  * </p>
  * <pre class="code">
@@ -178,12 +182,13 @@ public interface Filter<T> {
 
 	/**
 	 * Apply the filter to the list returning a new list of the matching
-	 * elements.
+	 * elements in the sorted order.
+	 * <p>
+	 * The sourceList will remain unmodified.
+	 * </p>
 	 * 
-	 * @param list
-	 *            the source list the filter is applied to
 	 * @return Returns a new list with the sorting and filters applied.
 	 */
-	public List<T> filter(List<T> list);
+	public List<T> filter(List<T> sourceList);
 
 }
