@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.bean;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -87,8 +89,10 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	 */
 	protected String serverName;
 
-	private String lazyLoadProperty;
+	protected String lazyLoadProperty;
 
+	transient protected PropertyChangeSupport pcs;
+	
 	/**
 	 * Create a intercept with a given entity.
 	 * <p>
@@ -98,7 +102,20 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	public EntityBeanIntercept(Object owner) {
 		this.owner = (EntityBean)owner;
 	}
-
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		if (pcs == null){
+			this.pcs = new PropertyChangeSupport(owner);
+		}
+		pcs.addPropertyChangeListener(listener);
+	}
+	
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		if (pcs != null){
+			pcs.removePropertyChangeListener(listener);
+		}
+	}
+	
 	/**
 	 * Return the 'owning' entity bean.
 	 */
@@ -382,6 +399,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (!areEqual(newValue, oldValue)) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -393,6 +413,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -404,6 +427,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -415,6 +441,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -426,6 +455,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -437,6 +469,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -448,6 +483,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -459,6 +497,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -470,6 +511,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -481,6 +525,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
@@ -492,6 +539,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (preSetterIsModifyCheck(propertyName)){
 			if (newValue != oldValue) {
 				createOldValues();
+				if (pcs != null){
+					pcs.firePropertyChange(propertyName, oldValue, newValue);
+				}
 			}
 		}
 	}
