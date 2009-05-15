@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.bean.DefaultBeanState;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.core.DefaultServerFactory;
 import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerFactory;
@@ -1189,4 +1191,17 @@ public final class Ebean {
 		serverMgr.getPrimaryServer().externalModification(tableName, inserts, updates, deletes);
 	}
 
+	/**
+	 * Return the BeanState for a given entity bean. 
+	 * <p> 
+	 * This will throw new PersistenceException is the bean is not an 
+	 * enhanced (or subclassed) entity bean. 
+	 * </p>
+	 */
+	public BeanState getBeanState(Object bean){
+		if (bean instanceof EntityBean){
+			return new DefaultBeanState((EntityBean)bean);
+		}
+		throw new PersistenceException("The bean is not an EntityBean");
+	}
 }
