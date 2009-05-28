@@ -69,19 +69,19 @@ public class TransactionLogManager {
 
 	private final String[] logSep = { "", "_" };
 
-	Map<String, TransactionLogger> loggerMap;
+	final Map<String, TransactionLogger> loggerMap = new ConcurrentHashMap<String, TransactionLogger>(200);
 
-	String sharedLogFileName;
+	final String sharedLogFileName;
 
-	String baseDir;
+	final String baseDir;
 
 	int logLevel;
 
 	int logSharing;
 
-	TransactionLogger sharedLogger;
+	final TransactionLogger sharedLogger;
 
-	PluginProperties props;
+	final PluginProperties props;
 
 	/**
 	 * Create the TransactionLogger.
@@ -94,18 +94,20 @@ public class TransactionLogManager {
 	public TransactionLogManager(PluginProperties props) {
 		this.props = props;
 
-		sharedLogFileName = props.getProperty("log.filename", "trans");
+		this.sharedLogFileName = props.getProperty("log.filename", "trans");
+		
 		int dfltLogLevel = props.getPropertyInt("transactionlogging.level", LOG_ALL);
-		logLevel = props.getPropertyInt("log.level", dfltLogLevel);
+		this.logLevel = props.getPropertyInt("log.level", dfltLogLevel);
 
 		int dfltSharing = props.getPropertyInt("transactionlogging.share", IMPLICIT_SHARE_LOGGER);
-		logSharing = props.getPropertyInt("log.share", dfltSharing);
+		this.logSharing = props.getPropertyInt("log.share", dfltSharing);
 
 		String dftlBaseDir = props.getProperty("transactionlogging.directory", null);
-		baseDir = props.getProperty("log.directory", dftlBaseDir);
-		if (baseDir == null) {
-			baseDir = createDefaultLogsDirectory();
+		String dir = props.getProperty("log.directory", dftlBaseDir);
+		if (dir == null) {
+			dir = createDefaultLogsDirectory();
 		}
+		this.baseDir = dir;
 
 		if (logLevel == 0){
 			String m = "Transaction logging is OFF  ... ebean.log.level=0";
@@ -115,7 +117,7 @@ public class TransactionLogManager {
 			logger.info(m);			
 		}
 		
-		loggerMap = new ConcurrentHashMap<String, TransactionLogger>(200);
+		this.sharedLogger = createSharedLogger();
 	}
 
 	private String createDefaultLogsDirectory() {
@@ -145,13 +147,6 @@ public class TransactionLogManager {
 	 */
 	public void setLogSharing(int logSharing) {
 		this.logSharing = logSharing;
-	}
-
-	/**
-	 * Set the base directory where transaction logs are placed.
-	 */
-	public void setBaseDir(String baseDir) {
-		this.baseDir = baseDir;
 	}
 
 	/**
@@ -205,11 +200,12 @@ public class TransactionLogManager {
 	 * Get the Logger for a given transaction.
 	 */
 	private TransactionLogger getLogger(ServerTransaction t) {
+		
 		if (logSharing == ALL_SHARE_LOGGER) {
-			return getSharedLogger();
+			return sharedLogger;
 		}
 		if (logSharing == IMPLICIT_SHARE_LOGGER && !t.isExplicit()) {
-			return getSharedLogger();
+			return sharedLogger;
 		}
 
 		TransactionLogger logger = loggerMap.get(t.getId());
@@ -233,17 +229,14 @@ public class TransactionLogManager {
 	/**
 	 * Return the shared logger.
 	 */
-	private TransactionLogger getSharedLogger() {
+	private TransactionLogger createSharedLogger() {
 
-		if (sharedLogger == null) {
-			String logFileName = "";
-			if (props.getServerName() != null) {
-				logFileName += props.getServerName() + "_";
-			}
-			logFileName += sharedLogFileName;
-			sharedLogger = new DefaultTransactionLogger(baseDir, logFileName, true);
+		String logFileName = "";
+		if (props.getServerName() != null) {
+			logFileName += props.getServerName() + "_";
 		}
-		return sharedLogger;
+		logFileName += sharedLogFileName;
+		return new DefaultTransactionLogger(baseDir, logFileName, true);
 	}
 
 }
