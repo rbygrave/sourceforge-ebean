@@ -266,28 +266,32 @@ public class TransactionManager implements Constants {
 	}
 
 	/**
-	 * Wrap an externally supplied Connection.
+	 * Wrap the externally supplied Connection.
 	 */
 	public ServerTransaction wrapExternalConnection(Connection c) {
+
 		long id;
 		synchronized (monitor) {
 			// Perhaps could use JDK5 atomic Integer instead
 			id = ++transactionCounter;
 		}
 
-		ExternalJdbcTransaction t = new ExternalJdbcTransaction(prefix + id, true, c, this);
+		return wrapExternalConnection(prefix + id, c);
+	}
+	
+	/**
+	 * Wrap an externally supplied Connection with a known transaction id.
+	 */
+	public ServerTransaction wrapExternalConnection(String id, Connection c) {
+
+		ExternalJdbcTransaction t = new ExternalJdbcTransaction(id, true, c, this);
 
 		// set the default batch mode. This can be on for
 		// jdbc drivers that support getGeneratedKeys
 		if (defaultBatchMode){
 			t.setBatchMode(true);
 		}
-
-		if (debugLevel >= 3){
-			String msg = "External Transaction ["+t.getId()+"] wrapped";
-			logger.info(msg);
-		}
-		
+				
 		return t;
 	}
 	
