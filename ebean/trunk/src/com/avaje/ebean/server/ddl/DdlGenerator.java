@@ -203,6 +203,14 @@ public class DdlGenerator {
 
 		try {
 
+			// trim and remove trailing ; or /
+			stmt = stmt.trim();
+			if (stmt.endsWith(";")){
+				stmt = stmt.substring(0, stmt.length()-1);
+			} else if (stmt.endsWith("/")) {
+				stmt = stmt.substring(0, stmt.length()-1);				
+			}
+			
 			if (debug) {
 				out.println("executing "+oneOf+" "+ getSummary(stmt));
 				out.flush();

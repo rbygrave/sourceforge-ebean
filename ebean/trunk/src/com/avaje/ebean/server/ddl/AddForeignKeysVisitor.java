@@ -99,11 +99,14 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 				}
 				ctx.write(columns[i].getForeignDbColumn());
 			}
-			ctx.write(") ");
-			ctx.write("on delete restrict on update restrict");
+			ctx.write(")");
+			
+			String fkeySuffix = ctx.getDdlSyntax().getForeignKeySuffix();
+			if (fkeySuffix != null){
+				ctx.write(" ").write(fkeySuffix);				
+			}
 			ctx.write(";").writeNewLine();
 			
-
 			if (ctx.getDdlSyntax().isRenderIndexForFkey()){
 
 				//create index idx_fk_o_address_ctry on o_address(country_code);
