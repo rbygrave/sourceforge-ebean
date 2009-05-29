@@ -69,6 +69,9 @@ public class Oracle9Plugin extends DbSpecific {
 
 		dbTypeMap.put(Types.TIME, new DbType("timestamp"));
 
+		
+		ddlSyntax.setDropTableCascade("cascade constraints purge");
+		ddlSyntax.setIdentity(null);
     }
 
 }

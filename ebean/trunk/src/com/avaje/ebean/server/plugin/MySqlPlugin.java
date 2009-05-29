@@ -50,6 +50,8 @@ public class MySqlPlugin extends DbSpecific {
         
         ddlSyntax.setDisableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=0");
         ddlSyntax.setEnableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=1");
+        ddlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
+
     }    
 
 }
