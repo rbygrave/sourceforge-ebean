@@ -45,17 +45,15 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
+import com.avaje.ebean.server.deploy.parse.CreateProperties;
 import com.avaje.ebean.server.deploy.parse.DeployBeanInfo;
 import com.avaje.ebean.server.deploy.parse.DeployInheritInfoBuilder;
 import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.deploy.parse.MissingTableException;
 import com.avaje.ebean.server.deploy.parse.ReadAnnotations;
 import com.avaje.ebean.server.deploy.parse.TransientProperties;
-import com.avaje.ebean.server.lib.sql.ColumnInfo;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
 import com.avaje.ebean.server.lib.util.Dnode;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.plugin.PluginProperties;
@@ -65,8 +63,6 @@ import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.reflect.EnhanceBeanReflectFactory;
 import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.server.validate.LengthValidatorFactory;
-import com.avaje.ebean.server.validate.NotNullValidatorFactory;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -115,8 +111,6 @@ public class BeanDescriptorFactory {
 
 	private final DeploymentManager deploymentManager;
 
-	private final DictionaryInfo dictionaryInfo;
-
 	private final DeploySqlSelectParser sqlSelectParser;
 
 	private final TypeManager typeManager;
@@ -133,6 +127,9 @@ public class BeanDescriptorFactory {
 
 	private final NamingConvention namingConvention;
 
+	private final CreateProperties createProperties;
+	
+
 	private int enhancedClassCount;
 	private int subclassClassCount;
 	private HashSet<String> subclassedEntities = new HashSet<String>();
@@ -141,11 +138,22 @@ public class BeanDescriptorFactory {
 	
 	private boolean updateChangesOnly;
 	
+	private final BootupClasses bootupClasses;
+
+	Map<Class<?>, DeployBeanInfo<?>> deplyInfoMap = new HashMap<Class<?>, DeployBeanInfo<?>>();
+	
+	Map<Class<?>, BeanTable> beanTableMap = new HashMap<Class<?>, BeanTable>();
+
+	Map<String, BeanDescriptor<?>> descMap = new HashMap<String, BeanDescriptor<?>>();
+
+	
 	/**
 	 * Create for a given database dbConfig.
 	 */
 	public BeanDescriptorFactory(DeploymentManager deploymentManager, PluginDbConfig dbConfig) {
 
+		this.bootupClasses = dbConfig.getProperties().getBootupClasses();
+		this.createProperties = new CreateProperties(dbConfig);
 		this.subClassManager = new SubClassManager(dbConfig.getProperties());
 		this.typeManager = dbConfig.getTypeManager();
 		this.namingConvention = dbConfig.getNamingConvention();
@@ -153,7 +161,6 @@ public class BeanDescriptorFactory {
 		this.deploymentManager = deploymentManager;
 		this.deployUtil = deploymentManager.getDeployUtil();
 		this.dbConfig = deploymentManager.getDbConfig();
-		this.dictionaryInfo = dbConfig.getDictionaryInfo();
 
 		// Databases that don't support Identity or sequences
 		this.defaultIdentityGeneration = dbConfig.getDbSpecific().getDefaultIdentityGeneration();
@@ -189,6 +196,10 @@ public class BeanDescriptorFactory {
 		}
 	}
 
+	public NamingConvention getNamingConvention() {
+		return namingConvention;
+	}
+	
 	/**
 	 * Create the BeanControllerFactory and BeanFinderFactory.
 	 */
@@ -210,19 +221,40 @@ public class BeanDescriptorFactory {
 		}
 	}
 
-	/**
-	 * Initialise the BeanControllers, BeanFinders and BeanListeners.
-	 */
-	public void initialise() {
+	public void process() {
+		
+		createListeners();		
+		readEmbeddedDeployment();
+		readEntityDeploymentInitial();
+		readEntityBeanTable();
+		readEntityDeploymentAssociations();
+		readEntityRelationships();
+				
+		logStatus();
+	}
 
-		BootupClasses bootupClasses = dbConfig.getProperties().getBootupClasses();
+	public Map<Class<?>, BeanTable> getBeanTables() {
+		return beanTableMap;
+	}
+	
+	public BeanTable getBeanTable(Class<?> type){
+		return beanTableMap.get(type);
+	}
+	
+	public Map<String, BeanDescriptor<?>> getBeanDescriptors() {
+		return descMap;
+	}
+	
+	/**
+	 * Create the BeanControllers, BeanFinders and BeanListeners.
+	 */
+	private void createListeners() {
 
 		int cc = persistControllerManager.createControllers(bootupClasses.getBeanControllers());
 		int fc = beanFinderManager.createBeanFinders(bootupClasses.getBeanFinders());
 		int lc = persistListenerManager.createListeners(bootupClasses.getBeanListeners());
 
 		logger.fine("BeanControllers[" + cc + "] BeanFinders[" + fc + "] BeanListeners[" + lc + "] ");
-
 	}
 
 	/**
@@ -232,7 +264,7 @@ public class BeanDescriptorFactory {
 	 * and vice versa.
 	 * </p>
 	 */
-	public void logStatus() {
+	private void logStatus() {
 		
 		String msg = "Entities enhanced[" + enhancedClassCount + "] subclassed[" + subclassClassCount + "]";
 		logger.info(msg);
@@ -247,47 +279,114 @@ public class BeanDescriptorFactory {
 		}
 	}
 
-	public <T> BeanDescriptor<T> createEmbedded(Class<T> beanClass) {
+	private <T> BeanDescriptor<T> createEmbedded(Class<T> beanClass) {
 
 		DeployBeanInfo<T> info = createDeployBeanInfo(beanClass);
+		readDeployAssociations(info);
 		return new BeanDescriptor<T>(typeManager, info.getDescriptor());
+	}
+	
+	private void registerBeanDescriptor(BeanDescriptor<?> desc) {
+		descMap.put(desc.getBeanType().getName(), desc);
+	}
+	
+		
+	/**
+	 * Read deployment information for all the embedded beans.
+	 */
+	private void readEmbeddedDeployment() {
+		
+		ArrayList<Class<?>> embeddedClasses = bootupClasses.getEmbeddables();
+		for (int i = 0; i < embeddedClasses.size(); i++) {
+			Class<?> cls = embeddedClasses.get(i);
+			if (logger.isLoggable(Level.FINER)) {
+				String msg = "load deployinfo for embeddable:" + cls.getName();
+				logger.finer(msg);
+			}
+			BeanDescriptor<?> embDesc = createEmbedded(cls);
+			registerBeanDescriptor(embDesc);
+		}
+	}
+	
+	/**
+	 * Read the initial deployment information for the entities.
+	 * <p>
+	 * This stops short of reading relationship meta data until 
+	 * after the BeanTables have all been created.
+	 * </p>
+	 */
+	private void readEntityDeploymentInitial() {
+	
+		ArrayList<Class<?>> entityClasses = bootupClasses.getEntities();
+		
+		for (Class<?> entityClass : entityClasses) {
+			DeployBeanInfo<?> info = createDeployBeanInfo(entityClass);
+			deplyInfoMap.put(entityClass, info);
+		}
+	}
+	
+	/**
+	 * Create the BeanTable information which has the base table and id.
+	 * <p>
+	 * This is determined prior to resolving relationship information.
+	 * </p>
+	 */
+	private void readEntityBeanTable(){
+		
+		Iterator<DeployBeanInfo<?>> it = deplyInfoMap.values().iterator();
+		while (it.hasNext()) {
+			DeployBeanInfo<?> info = it.next();
+			BeanTable beanTable = createBeanTable(info);
+			beanTableMap.put(beanTable.getBeanType(), beanTable);
+		}
 	}
 
 	/**
-	 * Create the BeanDescriptor for a type of bean.
+	 * Create the BeanTable information which has the base table and id.
 	 * <p>
-	 * Reads all the deployment information returning a BeanDescriptor.
+	 * This is determined prior to resolving relationship information.
 	 * </p>
 	 */
-	@SuppressWarnings("unchecked")
-	public List<BeanDescriptor<?>> createDescriptor(List<Class<?>> entityClasses) {
-
-		Map<Class<?>, DeployBeanInfo<?>> infoMap = new HashMap<Class<?>, DeployBeanInfo<?>>();
-
-		for (Class<?> entityClass : entityClasses) {
-			DeployBeanInfo<?> info = createDeployBeanInfo(entityClass);
-			infoMap.put(entityClass, info);
+	private void readEntityDeploymentAssociations(){
+		
+		Iterator<DeployBeanInfo<?>> it = deplyInfoMap.values().iterator();
+		while (it.hasNext()) {
+			DeployBeanInfo<?> info = it.next();
+			readDeployAssociations(info);
 		}
+	}
+	
+	/**
+	 * Create the BeanTable from the deployment information gathered so far.
+	 */
+	private BeanTable createBeanTable(DeployBeanInfo<?> info) {
 
+		DeployBeanDescriptor<?> deployDescriptor = info.getDescriptor();
+		DeployBeanTable beanTable = deployDescriptor.createDeployBeanTable();
+		return new BeanTable(beanTable);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void readEntityRelationships() {
+		
 		// We only perform 'circular' checks etc after we have
 		// all the DeployBeanDescriptors created and in the map.
-		Iterator<DeployBeanInfo<?>> it = infoMap.values().iterator();
+		Iterator<DeployBeanInfo<?>> it = deplyInfoMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanInfo<?> info = it.next();
 			if (info.getDescriptor().isBaseTableNotFound()){
 				// skip this, as it will just error badly
 				
 			} else {
-				deriveCircularInfo(info, infoMap);
+				deriveCircularInfo(info, deplyInfoMap);
 			}
 		}
 
-		List<BeanDescriptor<?>> entityList = new ArrayList<BeanDescriptor<?>>();
-		for (DeployBeanInfo<?> info : infoMap.values()) {
-			entityList.add(new BeanDescriptor(typeManager, info.getDescriptor()));
+		for (DeployBeanInfo<?> info : deplyInfoMap.values()) {
+			
+			BeanDescriptor<?> desc = new BeanDescriptor(typeManager, info.getDescriptor());
+			registerBeanDescriptor(desc);
 		}
-
-		return entityList;
 	}
 
 	/**
@@ -301,8 +400,8 @@ public class BeanDescriptorFactory {
 
 		checkMappedBy(info, infoMap);
 
-		// find any missing/undefined joins automatically
-		deployUtil.defineJoins(info);
+//		// find any missing/undefined joins automatically
+//		deployUtil.defineJoins(info);
 	}
 
 	/**
@@ -449,7 +548,7 @@ public class BeanDescriptorFactory {
 		targetDesc.setUnidirectional(unidirectional);
 
 		// specify table and table alias...
-		BeanTable beanTable = deployUtil.getBeanTable(owningType);
+		BeanTable beanTable = getBeanTable(owningType);
 		unidirectional.setBeanTable(beanTable);
 		unidirectional.setName(beanTable.getBaseTable());
 
@@ -457,28 +556,15 @@ public class BeanDescriptorFactory {
 
 		// define the TableJoin
 		DeployTableJoin oneToManyJoin = oneToMany.getTableJoin();
-		if (oneToManyJoin.hasJoinColumns()) {
-			// inverse of the oneToManyJoin
-			DeployTableJoin unidirectionalJoin = unidirectional.getTableJoin();
-			DeployTableJoinColumn[] cols = oneToManyJoin.columns();
-			for (int i = 0; i < cols.length; i++) {
-				unidirectionalJoin.addJoinColumn(cols[i].createInverse());
-			}
-
-		} else {
-			try {
-				// dynamically determine from the database meta data
-				deployUtil.defineJoinDynamically(targetDesc, unidirectional);
-
-			} catch (RuntimeException e) {
-				String msg = "Error on " + oneToMany.getFullBeanName() + ". Unable to find a foreign key ";
-				msg += "relationship to " + targetDesc;
-				throw new PersistenceException(msg, e);
-				
-			} catch (MissingTableException e) {
-				String msg = "Making "+oneToMany.getFullBeanName()+" transient as join table not found";
-				logger.log(Level.WARNING, msg, e);
-			} 
+		if (!oneToManyJoin.hasJoinColumns()) {
+			throw new RuntimeException("No join columns");
+		}
+		
+		// inverse of the oneToManyJoin
+		DeployTableJoin unidirectionalJoin = unidirectional.getTableJoin();
+		DeployTableJoinColumn[] cols = oneToManyJoin.columns();
+		for (int i = 0; i < cols.length; i++) {
+			unidirectionalJoin.addJoinColumn(cols[i].createInverse());
 		}
 
 	}
@@ -570,7 +656,7 @@ public class BeanDescriptorFactory {
 	}
 
 	/**
-	 * Read all the deployment information for a given bean type.
+	 * Read the initial deployment information for a given bean type.
 	 */
 	private <T> DeployBeanInfo<T> createDeployBeanInfo(Class<T> beanClass) {
 
@@ -580,13 +666,21 @@ public class BeanDescriptorFactory {
 		
 		// set bean controller, finder and listener
 		setBeanControllerFinderListener(desc);
+		inheritInfoDeploy.process(desc);
 
-		deployUtil.createProperties(desc);
+		createProperties.createProperties(desc);
 
 		DeployBeanInfo<T> info = new DeployBeanInfo<T>(deployUtil, desc);
 
-		readAnnotations.process(info);
-		inheritInfoDeploy.process(desc);
+		readAnnotations.readInitial(info);
+		return info;
+	}
+
+	private <T> void readDeployAssociations(DeployBeanInfo<T> info) {
+	
+		DeployBeanDescriptor<T> desc = info.getDescriptor();
+		
+		readAnnotations.readAssociations(info, this);
 
 		readXml(desc);
 
@@ -600,45 +694,11 @@ public class BeanDescriptorFactory {
 			desc.setBaseTableAlias(null);			
 		}
 
-		boolean embedded = desc.isEmbedded();
-		
-		if (!embedded && !desc.isSqlSelectBased() && !desc.isMeta()) {
-			// Entity is based on a table so check
-			// that the base table exists
-			String baseTable = desc.getBaseTable();
-			TableInfo ti = dictionaryInfo.getTableInfo(baseTable);
-			if (ti == null) {
-				if (desc.getBeanFinder() != null) {
-					// Using finder so could be in-memory type beans
-					// like the Meta ones
-				} else {
-					// Base table not found. Assuming that the bean is
-					// not valid for this database...
-					String msg = "Error with [" + desc.getFullName() + "]  table [" + baseTable + "] not found?";
-					logger.log(Level.WARNING, msg);
-					desc.setBaseTableNotFound(true);
-				}
-			} else {
-				// get column max length info etc...
-				setColumnInfo(desc, ti);
-
-				if (desc.getDependantTables() == null) {
-					// Sets the baseTable as a dependent in case where it
-					// hasn't been set (by Xml or annotation).
-					// NB: Table dependency is used to determine cache
-					// invalidation.
-					String[] dep = new String[1];
-					dep[0] = desc.getBaseTable();
-					desc.setDependantTables(dep);
-				}
-			}
-		}
-
 		// mark transient properties
 		transientProperties.process(desc);
 		setScalarType(desc);
 
-		if (!embedded) {
+		if (!desc.isEmbedded()) {
 			// check to make sure bean has a Id
 			if (desc.propertiesId().size() == 0 && !desc.isSqlSelectBased()) {
 				if (desc.getBeanFinder() != null) {
@@ -677,15 +737,13 @@ public class BeanDescriptorFactory {
 			}
 		}
 
-		if (!embedded) {
+		if (!desc.isEmbedded()) {
 			// find the appropriate default concurrency mode
 			setConcurrencyMode(desc);
 		}
 
-		// generate the bytecode
+		// generate the byte code
 		createByteCode(desc);
-
-		return info;
 	}
 
 	private void createByteCode(DeployBeanDescriptor<?> deploy) {
@@ -698,68 +756,69 @@ public class BeanDescriptorFactory {
 		setBeanReflect(deploy);
 	}
 
-	private void setColumnInfo(DeployBeanDescriptor<?> deployDesc, TableInfo tableInfo) {
+	//FIXME: autoAddValidators ...
+//	private void setColumnInfo(DeployBeanDescriptor<?> deployDesc, TableInfo tableInfo) {
+//
+//		List<DeployBeanProperty> list = deployDesc.propertiesBase();
+//		for (int i = 0; i < list.size(); i++) {
+//			DeployBeanProperty prop = list.get(i);
+//			if (!prop.isTransient()) {
+//				String dbColumn = prop.getDbColumn();
+//				ColumnInfo info = tableInfo.getColumnInfo(dbColumn);
+//				if (info != null) {
+//					prop.readColumnInfo(info);
+//					if (prop.isNullablePrimitive()){
+//						String msg = "Primitive property "+prop.getFullBeanName()
+//						+" is mapped to a nullable Db Column " + dbColumn + "";
+//						logger.warning(msg);						
+//					}
+//					
+//				} else {
+//					String msg = "Db Column " + dbColumn + " not found ";
+//					msg += "for property " + prop.getFullBeanName();
+//					logger.warning(msg);
+//				} 
+//				if (prop.isDbWrite()) {
+//					autoAddValidators(prop);
+//				}
+//			}
+//		}
+//	}
 
-		List<DeployBeanProperty> list = deployDesc.propertiesBase();
-		for (int i = 0; i < list.size(); i++) {
-			DeployBeanProperty prop = list.get(i);
-			if (!prop.isTransient()) {
-				String dbColumn = prop.getDbColumn();
-				ColumnInfo info = tableInfo.getColumnInfo(dbColumn);
-				if (info != null) {
-					prop.readColumnInfo(info);
-					if (prop.isNullablePrimitive()){
-						String msg = "Primitive property "+prop.getFullBeanName()
-						+" is mapped to a nullable Db Column " + dbColumn + "";
-						logger.warning(msg);						
-					}
-					
-				} else {
-					String msg = "Db Column " + dbColumn + " not found ";
-					msg += "for property " + prop.getFullBeanName();
-					logger.warning(msg);
-				} 
-				if (prop.isDbWrite()) {
-					autoAddValidators(prop);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Automatically add Length and NotNull validators based on database meta
-	 * data.
-	 */
-	private void autoAddValidators(DeployBeanProperty prop) {
-		if (!autoAddValidators) {
-			return;
-		}
-		if (autoAddLengthValidators) {
-			int dbMaxLength = prop.getDbColumnSize();
-			if (dbMaxLength > 0 && prop.getPropertyType().equals(String.class)) {
-				if (dbMaxLength > autoMaxLength) {
-					if (logger.isLoggable(Level.FINEST)) {
-						String msg = "Not automatically adding length validator to " + prop.getFullBeanName();
-						msg += " due to big length " + dbMaxLength + " > max " + autoMaxLength;
-						logger.finest(msg);
-					}
-				} else {
-					// check if the property already has the LengthValidator
-					if (!prop.containsValidatorType(LengthValidatorFactory.LengthValidator.class)) {
-						prop.addValidator(LengthValidatorFactory.create(0, dbMaxLength));
-					}
-				}
-			}
-		}
-		if (autoAddNotNullValidators) {
-			if (!prop.isNullable() && !prop.isId() && !prop.isGenerated()) {
-				// check if the property already has the NotNullValidator
-				if (!prop.containsValidatorType(NotNullValidatorFactory.NotNullValidator.class)) {
-					prop.addValidator(NotNullValidatorFactory.NOT_NULL);
-				}
-			}
-		}
-	}
+//	/**
+//	 * Automatically add Length and NotNull validators based on database meta
+//	 * data.
+//	 */
+//	private void autoAddValidators(DeployBeanProperty prop) {
+//		if (!autoAddValidators) {
+//			return;
+//		}
+//		if (autoAddLengthValidators) {
+//			int dbMaxLength = prop.getDbColumnSize();
+//			if (dbMaxLength > 0 && prop.getPropertyType().equals(String.class)) {
+//				if (dbMaxLength > autoMaxLength) {
+//					if (logger.isLoggable(Level.FINEST)) {
+//						String msg = "Not automatically adding length validator to " + prop.getFullBeanName();
+//						msg += " due to big length " + dbMaxLength + " > max " + autoMaxLength;
+//						logger.finest(msg);
+//					}
+//				} else {
+//					// check if the property already has the LengthValidator
+//					if (!prop.containsValidatorType(LengthValidatorFactory.LengthValidator.class)) {
+//						prop.addValidator(LengthValidatorFactory.create(0, dbMaxLength));
+//					}
+//				}
+//			}
+//		}
+//		if (autoAddNotNullValidators) {
+//			if (!prop.isNullable() && !prop.isId() && !prop.isGenerated()) {
+//				// check if the property already has the NotNullValidator
+//				if (!prop.containsValidatorType(NotNullValidatorFactory.NotNullValidator.class)) {
+//					prop.addValidator(NotNullValidatorFactory.NOT_NULL);
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * Set the Scalar Types on all the simple types. This is done AFTER

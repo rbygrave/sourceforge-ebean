@@ -30,7 +30,6 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.deploy.DeploySqlSelectParser;
 import com.avaje.ebean.server.deploy.DeploymentManager;
@@ -38,14 +37,10 @@ import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.lib.sql.ColumnInfo;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
 import com.avaje.ebean.server.plugin.DbSpecific;
 import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
-import com.avaje.ebean.server.type.ScalarTypeEnum;
+import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
 import com.avaje.ebean.server.validate.ValidatorFactoryManager;
@@ -75,10 +70,6 @@ public class DeployUtil {
 	 */
 	private static final int dbBLOBType = Types.BLOB;
 
-	private final JoinDefineAutomatic dynamicJoins;
-
-	private final JoinDefineManual joinDefineManual;
-
 	private final NamingConvention namingConvention;
 
 	/**
@@ -86,46 +77,23 @@ public class DeployUtil {
 	 */
 	private final GeneratedPropertySettings generateSettings;
 
-	private final boolean useOneToOneOptional;
-
-	private final DeploymentManager deploymentManager;
-
 	private final TypeManager typeManager;
 	
 	private final DeploySqlSelectParser sqlSelectParser;
 	
 	private final ValidatorFactoryManager validatorFactoryManager;
-
-	private final CreateProperties createProperties;
-	
-	private final DictionaryInfo dictionaryInfo;
-	
+		
 	private final String manyToManyAlias;
 	
 	private final DbSpecific dbSpecific;
 	
 	public DeployUtil(DeploymentManager deploymentManager, PluginDbConfig dbConfig) {
-		this.deploymentManager = deploymentManager;
+
 		this.dbSpecific = dbConfig.getDbSpecific();
-		this.dictionaryInfo = dbConfig.getDictionaryInfo();
 		this.typeManager = dbConfig.getTypeManager();
 		this.namingConvention = dbConfig.getNamingConvention();
 		this.sqlSelectParser = new DeploySqlSelectParser(dbConfig);
-		this.createProperties = new CreateProperties(dbConfig);
-		
-		this.dynamicJoins = new JoinDefineAutomatic(dbConfig);
-		this.joinDefineManual = new JoinDefineManual(dbConfig);
 		this.generateSettings = new GeneratedPropertySettings(dbConfig.getProperties());
-
-		// by default I ignore the OneToOne and ManyToOne optional value
-		// This is because I can figure this out, and if left to default
-		// would result in LEFT OUTER JOINS used when they don't need to be
-
-		// change this property to "true" and I will use the annotations as per
-		// the EJB3 specification
-
-		String v = dbConfig.getProperties().getProperty("annotation.onetoone.optional", "ignore");
-		this.useOneToOneOptional = v.equalsIgnoreCase("true");
 
 		// this alias is used for ManyToMany lazy loading queries
 		String key = "manytomany.intersection.alias";
@@ -139,34 +107,6 @@ public class DeployUtil {
 	 */
 	public String getManyToManyAlias() {
 		return manyToManyAlias;
-	}
-
-	/**
-	 * Return the primary key column (assuming there is one) from a table.
-	 * <p>
-	 * Used to help complete manually defined joins.
-	 * </p>
-	 */
-	public String getPrimaryKeyColumn(String table){
-		TableInfo tableInfo = dictionaryInfo.getTableInfo(table);
-		if(tableInfo != null){
-			ColumnInfo[] keyColumns = tableInfo.getKeyColumns();
-			if (keyColumns != null && keyColumns.length == 1){
-				return keyColumns[0].getName();
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Return the associated DictionaryInfo.
-	 */
-	public DictionaryInfo getDictionaryInfo() {
-		return dictionaryInfo;
-	}
-	
-	public void createProperties(DeployBeanDescriptor<?> desc) {
-		createProperties.createProperties(desc);
 	}
 	
 	public void createValidator(DeployBeanProperty prop, Annotation ann) {
@@ -219,13 +159,13 @@ public class DeployUtil {
 
 		if (type == null) {
 			// default as per spec is ORDINAL
-			return new ScalarTypeEnum.OrdinalEnum(enumType);
+			return new ScalarTypeEnumStandard.OrdinalEnum(enumType);
 		
 		} else if (type == EnumType.ORDINAL) {	
-			return new ScalarTypeEnum.OrdinalEnum(enumType);
+			return new ScalarTypeEnumStandard.OrdinalEnum(enumType);
 		
 		} else {	
-			return new ScalarTypeEnum.StringEnum(enumType);
+			return new ScalarTypeEnumStandard.StringEnum(enumType);
 		}
 	}
 	
@@ -236,45 +176,6 @@ public class DeployUtil {
 	 */
 	public String getTableNameFromClass(Class<?> beanType) {
 		return namingConvention.getTableNameFromClass(beanType);
-	}
-
-	/**
-	 * Define a join explicitly.
-	 */
-	public void define(JoinDefineManualInfo joinInfo) {
-
-		joinDefineManual.define(joinInfo);
-	}
-
-	/**
-	 * Define any undefined joins using database meta data.
-	 */
-	public void defineJoins(DeployBeanInfo<?> info) {
-		DeployBeanDescriptor<?> desc = info.getDescriptor();
-		if (desc.getBaseTable() != null) {
-			// dynamically define any missing join information using
-			// foreign key information from the Database
-			dynamicJoins.process(info);
-		} else {
-			// Descriptor based on SqlSelect
-		}
-	}
-
-	public void defineJoinDynamically(DeployBeanDescriptor<?> desc, DeployBeanPropertyAssocOne<?> propBean)
-			throws MissingTableException {
-		
-		dynamicJoins.defineJoinDynamically(desc, propBean);
-	}
-	
-	/**
-	 * True if we should use the annotation to set optional relationships.
-	 * <p>
-	 * IMHO this is better set to false and let Ebean determine the if the
-	 * property is optional for you.
-	 * </p>
-	 */
-	public boolean isUseOneToOneOptional() {
-		return useOneToOneOptional;
 	}
 
 	/**
@@ -363,13 +264,6 @@ public class DeployUtil {
 	 */
 	public void setGeneratedProperty(DeployBeanProperty prop) {
 		generateSettings.setGeneratedProperty(prop);
-	}
-
-	/**
-	 * Get the BeanTable for a given bean class.
-	 */
-	public BeanTable getBeanTable(Class<?> propType) {
-		return deploymentManager.getBeanTable(propType);
 	}
 
 	/**

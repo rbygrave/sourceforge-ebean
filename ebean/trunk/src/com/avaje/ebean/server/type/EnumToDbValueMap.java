@@ -22,7 +22,8 @@ package com.avaje.ebean.server.type;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * Used to map Bean values to DB values.
@@ -42,9 +43,9 @@ public abstract class EnumToDbValueMap<T> {
 		return integerType ? new EnumToDbIntegerMap() : new EnumToDbStringMap();
 	}
 
-	final HashMap<Object, T> keyMap;
+	final LinkedHashMap<Object, T> keyMap;
 
-	final HashMap<T, Object> valueMap;
+	final LinkedHashMap<T, Object> valueMap;
 
 	final boolean allowNulls;
 
@@ -68,10 +69,32 @@ public abstract class EnumToDbValueMap<T> {
 	public EnumToDbValueMap(boolean allowNulls, boolean isIntegerType) {
 		this.allowNulls = allowNulls;
 		this.isIntegerType = isIntegerType;
-		keyMap = new HashMap<Object, T>();
-		valueMap = new HashMap<T, Object>();
+		keyMap = new LinkedHashMap<Object, T>();
+		valueMap = new LinkedHashMap<T, Object>();
 	}
 
+	/**
+	 * Return true if this is mapping to integers, false
+	 * if mapping to Strings.
+	 */
+	public boolean isIntegerType() {
+		return isIntegerType;
+	}
+
+	/**
+	 * Return the DB values.
+	 */
+	public Iterator<T> dbValues() {
+		return valueMap.keySet().iterator();
+	}
+
+	/**
+	 * Return the bean 'key' value.
+	 */
+	public Iterator<Object> beanValues() {
+		return valueMap.values().iterator();
+	}
+	
 	/**
 	 * Bind using the correct database type.
 	 */

@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
-import com.avaje.ebean.server.lib.sql.ColumnInfo;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
+import com.avaje.ebean.server.type.ScalarTypeEnum;
 import com.avaje.ebean.server.validate.Validator;
 
 /**
@@ -86,6 +86,17 @@ public class DeployBeanProperty {
 	 */
 	boolean nullable = true;
 
+	boolean unique;
+	
+	/**
+	 * The length or precision of the DB column.
+	 */
+	int dbLength;	
+	
+	int dbScale;
+
+	String dbColumnDefn;
+	
 	boolean isTransient;
 
 	/**
@@ -182,10 +193,6 @@ public class DeployBeanProperty {
 
 	List<Validator> validators = new ArrayList<Validator>();
 
-	int dbColumnSize;
-	int dbColumnDigits;
-	int dbColumnPrecision;
-
 	final DeployBeanDescriptor<?> desc;
 
 	public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType) {
@@ -216,39 +223,76 @@ public class DeployBeanProperty {
 		}
 		return false;
 	}
-	
-	public void readColumnInfo(ColumnInfo info) {
-		if (nullable) {
-			nullable = info.isNullable();
-		} else {
-			// do not remove if already set
+
+	/**
+	 * Return the DB column length for character columns.
+	 * <p>
+	 * Note if there is no length explicitly defined then
+	 * the scalarType is checked to see if that has one
+	 * (primarily to support putting a length on Enum types).
+	 * </p>
+	 */
+	public int getDbLength() {
+		if (dbLength == 0 && scalarType != null){
+			return scalarType.getLength();
 		}
-		this.dbColumnSize = info.getColumnSize();
-		this.dbColumnDigits = info.getDecimalDigits();
-		this.dbColumnPrecision = info.getNumberPrecisionRadix();
+		
+		return dbLength;
+	}
+	
+	/**
+	 * Set the DB column length for character columns.
+	 */
+	public void setDbLength(int dbLength) {
+		this.dbLength = dbLength;
 	}
 
 	/**
-	 * Return the Db Column maximum size as per DB dictionary.
+	 * Return the Db scale for numeric columns.
 	 */
-	public int getDbColumnSize() {
-		return dbColumnSize;
+	public int getDbScale() {
+		return dbScale;
 	}
 
 	/**
-	 * Return the Db Column max digits as per DB dictionary.
+	 * Set the Db scale for numeric columns.
 	 */
-	public int getDbColumnDigits() {
-		return dbColumnDigits;
+	public void setDbScale(int dbScale) {
+		this.dbScale = dbScale;
+	}
+	
+	/**
+	 * Return the DB column definition if defined.
+	 */
+	public String getDbColumnDefn() {
+		return dbColumnDefn;
 	}
 
 	/**
-	 * Return the Db Column precision as per DB dictionary.
+	 * Set a specific DB column definition.
 	 */
-	public int getDbColumnPrecision() {
-		return dbColumnPrecision;
+	public void setDbColumnDefn(String dbColumnDefn) {
+		if (dbColumnDefn == null || dbColumnDefn.trim().length() == 0){
+			this.dbColumnDefn = null;
+		} else {
+			this.dbColumnDefn = dbColumnDefn;			
+		}
 	}
 
+	public String getDbConstraintExpression() {
+		if (scalarType instanceof ScalarTypeEnum){
+			// create a check constraint for the enum 
+			ScalarTypeEnum etype = (ScalarTypeEnum)scalarType;
+		
+			// check (dbColName IN ('A', 'I', 'D'))
+			String expr = " check ("+dbColumn+ " in "+
+			etype.getContraintInValues()+")";
+			
+			return expr;
+		}
+		return null;
+	}
+	
 	/**
 	 * Add a validator to this property.
 	 */
@@ -410,6 +454,20 @@ public class DeployBeanProperty {
 	 */
 	public void setNullable(boolean isNullable) {
 		this.nullable = isNullable;
+	}
+	
+	/**
+	 * Return true if the DB column is unique.
+	 */
+	public boolean isUnique() {
+		return unique;
+	}
+
+	/**
+	 * Set to true if the DB column is unique.
+	 */
+	public void setUnique(boolean unique) {
+		this.unique = unique;
 	}
 
 	/**
@@ -602,13 +660,6 @@ public class DeployBeanProperty {
 	public Class<?> getPropertyType() {
 		return propertyType;
 	}
-
-//	/**
-//	 * Set the property type.
-//	 */
-//	public void setPropertyType(Class<?> propertyType) {
-//		this.propertyType = propertyType;
-//	}
 
 	/**
 	 * Return true if this is included in the unique id.

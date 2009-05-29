@@ -20,11 +20,6 @@ public interface RelationalQuery extends SqlQuery {
 	public String getQuery();
 
 	/**
-	 * Return the base table for the MapBeans.
-	 */
-	public String getBaseTable();
-	
-	/**
 	 * Return the queryListener.
 	 */
 	public SqlQueryListener getListener();

@@ -439,7 +439,7 @@ public interface EbeanServer {
 	 * @return the list of fetched MapBean.
 	 * @see SqlQuery#findList()
 	 */
-	public List<MapBean> findList(SqlQuery query, Transaction transaction);
+	public List<SqlRow> findList(SqlQuery query, Transaction transaction);
 
 	/**
 	 * Execute the sql query returning a set of MapBean.
@@ -456,7 +456,7 @@ public interface EbeanServer {
 	 * @return the set of fetched MapBean.
 	 * @see SqlQuery#findSet()
 	 */
-	public Set<MapBean> findSet(SqlQuery query, Transaction transaction);
+	public Set<SqlRow> findSet(SqlQuery query, Transaction transaction);
 
 	/**
 	 * Execute the sql query returning a map of MapBean.
@@ -473,7 +473,7 @@ public interface EbeanServer {
 	 * @return the set of fetched MapBean.
 	 * @see SqlQuery#findMap()
 	 */
-	public Map<?, MapBean> findMap(SqlQuery query, Transaction transaction);
+	public Map<?, SqlRow> findMap(SqlQuery query, Transaction transaction);
 
 	/**
 	 * Execute the sql query returning a single MapBean or null.
@@ -494,7 +494,7 @@ public interface EbeanServer {
 	 * @return the fetched MapBean or null if none was found.
 	 * @see SqlQuery#findUnique()
 	 */
-	public MapBean findUnique(SqlQuery query, Transaction transaction);
+	public SqlRow findUnique(SqlQuery query, Transaction transaction);
 
 	/**
 	 * Persist the bean by either performing an insert or update.

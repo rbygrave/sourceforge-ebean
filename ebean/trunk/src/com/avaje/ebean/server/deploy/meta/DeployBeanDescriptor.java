@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
@@ -194,6 +194,16 @@ public class DeployBeanDescriptor<T> {
 		if (owner != null) {
 			this.serverName = owner.getServerName();
 		}
+	}
+	
+	public DeployBeanTable createDeployBeanTable() {
+		
+		DeployBeanTable beanTable = new DeployBeanTable(getBeanType());
+		beanTable.setBaseTable(baseTable);
+		beanTable.setBaseTableAlias(baseTableAlias);
+		beanTable.setIdProperties(propertiesId());
+		
+		return beanTable;
 	}
 	
 	/**

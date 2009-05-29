@@ -19,8 +19,9 @@
  */
 package com.avaje.ebean.server.plugin;
 
-import javax.sql.DataSource;
-
+import com.avaje.ebean.server.ddl.DbTypeMap;
+import com.avaje.ebean.server.ddl.DdlGenContext;
+import com.avaje.ebean.server.ddl.DdlSyntax;
 import com.avaje.ebean.server.deploy.IdentityGeneration;
 
 /**
@@ -66,14 +67,11 @@ public class DbSpecific {
 	 */
 	protected boolean supportsSequences;
 
-	private final PluginProperties properties;
-
-	private final DataSource dataSource;
-
+	protected DbTypeMap dbTypeMap = new DbTypeMap();
+	
+	protected DdlSyntax ddlSyntax = new DdlSyntax();
+	
 	public DbSpecific(PluginProperties properties) {
-
-		this.properties = properties;
-		this.dataSource = properties.getDataSource();
 
 		String rl = properties.getProperty("resultSetLimit", null);
 		if (rl != null) {
@@ -92,13 +90,9 @@ public class DbSpecific {
 		String ia = properties.getProperty("identityGeneration", "auto");
 		identityGeneration = IdentityGeneration.parse(ia);
 	}
-	
-	public PluginProperties getProperties() {
-		return properties;
-	}
 
-	public DataSource getDataSource() {
-		return dataSource;
+	public DdlGenContext createDdlGenContext() {
+		return new DdlGenContext(dbTypeMap, ddlSyntax);
 	}
 
 	public String getCloseQuote() {

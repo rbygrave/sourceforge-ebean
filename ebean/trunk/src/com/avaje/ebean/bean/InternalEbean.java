@@ -17,39 +17,14 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.util;
+package com.avaje.ebean.bean;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
 
 /**
- * Provides non-public API for Serialization support.
- * <p>
- * Implemented by Client and Server implementations of EbeanServer.
- * </p>
+ * API for Client and Server implementations of EbeanServer.
  */
 public interface InternalEbean extends EbeanServer {
-
-//	/**
-//	 * Returns the Class that implements the EntityBean interface for a given
-//	 * base class. Used by the serialization mechanism and otherwise not
-//	 * expected to be that useful.
-//	 * <p>
-//	 * Refer to BeanObjectInputStream and BeanObjectOutputStream.
-//	 * </p>
-//	 * 
-//	 * @param className
-//	 *            the name of the entity bean class.
-//	 * @param methodInfo
-//	 *            information used to provide
-//	 */
-//	public Class<?> resolve(String className, MethodInfo methodInfo);
-//
-//	/**
-//	 * Return the MethodInfo for a given className.
-//	 */
-//	public MethodInfo getMethodInfo(String className);
 
 	/**
 	 * For BeanCollections to call for lazy loading themselves.

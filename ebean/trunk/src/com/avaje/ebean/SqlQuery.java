@@ -46,31 +46,7 @@ import java.util.Set;
  * sqlQuery.setParameter(&quot;status&quot;, &quot;ACTIVE&quot;);
  * 
  * // execute the query returning a List of MapBean objects
- * List&lt;MapBean&gt; list = sqlQuery.findList();
- * </pre>
- * 
- * <p>
- * If you are looking to modify the MapBeans and save them back you need to
- * specify the "base table" for the query. This is the table that the MapBeans
- * with insert/update/delete. The properties related to the base table are
- * detected (others are ignored).
- * </p>
- * 
- * <pre class="code">
- * ...
- * sqlQuery.setQuery(sql);
- * sqlQuery.setBaseTable(&quot;customer&quot;);
- * ...
- * 
- * // execute the query returning a List of MapBean objects
- * List&lt;MapBean&gt; list = sqlQuery.findList();
- * ...
- * mapBean.set(&quot;name&quot;,&quot;I'm a Changed Man!&quot;);
- * 
- *  // saves with optimistic concurrency checking 
- *  // and maintains last updated timestamp type columns etc
- * Ebean.save(mapBean);
- * 
+ * List&lt;SqlRow&gt; list = sqlQuery.findList();
  * </pre>
  * 
  */
@@ -82,33 +58,19 @@ public interface SqlQuery extends Serializable {
 	public SqlQuery setQuery(String sql);
 
 	/**
-	 * Set the "base table" for the MapBeans.
-	 * <p>
-	 * If MapBeans are saved then this is the table that the MapBeans will save
-	 * to.
-	 * </p>
-	 * <p>
-	 * Your query could join various tables and have columns coming from several
-	 * tables. When you save a MapBean only columns in the "base table" are used
-	 * and any other columns are ignored.
-	 * </p>
-	 */
-	public SqlQuery setBaseTable(String baseTable);
-
-	/**
 	 * Execute the query returning a list.
 	 */
-	public List<MapBean> findList();
+	public List<SqlRow> findList();
 
 	/**
 	 * Execute the query returning a set.
 	 */
-	public Set<MapBean> findSet();
+	public Set<SqlRow> findSet();
 
 	/**
 	 * Execute the query returning a map.
 	 */
-	public Map<?, MapBean> findMap();
+	public Map<?, SqlRow> findMap();
 
 	/**
 	 * Execute the query returning a single row or null.
@@ -117,7 +79,7 @@ public interface SqlQuery extends Serializable {
 	 * PersistenceException.
 	 * </p>
 	 */
-	public MapBean findUnique();
+	public SqlRow findUnique();
 
 	/**
 	 * Set an ordered bind parameter according to its position. Note that the

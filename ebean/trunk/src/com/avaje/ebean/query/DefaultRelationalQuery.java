@@ -5,9 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.MapBean;
-import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlQueryListener;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.util.BindParams;
 
 /**
@@ -15,7 +14,7 @@ import com.avaje.ebean.util.BindParams;
  */
 public class DefaultRelationalQuery implements RelationalQuery {
 
-	private static final long serialVersionUID = -1098305779779591069L;
+	private static final long serialVersionUID = -1098305779779591068L;
 
 	transient EbeanServer server;
 
@@ -54,8 +53,6 @@ public class DefaultRelationalQuery implements RelationalQuery {
      */
     BindParams bindParams = new BindParams();
     
-    String baseTable;
-    
 	/**
 	 * Additional supply a query detail object.
 	 */
@@ -69,29 +66,20 @@ public class DefaultRelationalQuery implements RelationalQuery {
 		return this;
 	}
 	
-	public List<MapBean> findList() {
+	public List<SqlRow> findList() {
 		return server.findList(this, null);
 	}	
     
-	public Set<MapBean> findSet() {
+	public Set<SqlRow> findSet() {
 		return server.findSet(this, null);
 	}
 	
-	public Map<?,MapBean> findMap() {
+	public Map<?,SqlRow> findMap() {
 		return server.findMap(this, null);
 	}
 	
-	public MapBean findUnique() {
+	public SqlRow findUnique() {
 		return server.findUnique(this, null);
-	}
-	
-    public SqlQuery setBaseTable(String baseTable) {
-		this.baseTable = baseTable;
-		return this;
-	}
-    
-	public String getBaseTable() {
-		return baseTable;
 	}
 
 	public DefaultRelationalQuery setParameter(int position, Object value) {

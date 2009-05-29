@@ -35,7 +35,6 @@ import com.avaje.ebean.server.autofetch.DefaultAutoFetchManager;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.lib.resource.ResourceSource;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
 import com.avaje.ebean.server.lib.util.FactoryHelper;
 import com.avaje.ebean.server.naming.DefaultNamingConvention;
 import com.avaje.ebean.server.persist.Binder;
@@ -43,7 +42,6 @@ import com.avaje.ebean.server.resource.ResourceControl;
 import com.avaje.ebean.server.resource.ResourceManager;
 import com.avaje.ebean.server.type.DefaultTypeManager;
 import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.util.Message;
 
 /**
  * Plugin level that defines database specific settings.
@@ -60,8 +58,6 @@ public class PluginDbConfig {
 
 	final NamingConvention namingConvention;
 
-	final DictionaryInfo dictionaryInfo;
-	
 	final Binder binder;
 
 	final ResultSetReader resultSetReader;
@@ -84,7 +80,6 @@ public class PluginDbConfig {
 
 		this.typeManager = new DefaultTypeManager(properties);
 		this.logControl = new MLogControl(properties);
-		this.dictionaryInfo = createDictionaryInfo(dataSource);
 		this.namingConvention = createNamingConvention();
 
 		this.binder = new Binder(properties, typeManager);
@@ -99,10 +94,6 @@ public class PluginDbConfig {
 
 	public MLogControl getLogControl() {
 		return logControl;
-	}
-
-	public DictionaryInfo getDictionaryInfo() {
-		return dictionaryInfo;
 	}
 
 	public PluginProperties getProperties() {
@@ -177,33 +168,6 @@ public class PluginDbConfig {
 	public ResourceSource getResourceSource() {
 		return resourceManager.getResourceSource();
 	}
-
-	/**
-	 * Return the file name of the dictionary file.
-	 */
-	protected File getDictionaryFile() {
-
-		String dictFileName = properties.getServerName();
-		if (dictFileName == null) {
-			dictFileName = "primarydatabase";
-		}
-		dictFileName = ".ebean."+dictFileName+".dictionary";
-
-		File dictDir = resourceManager.getDictionaryDirectory();
-
-		if (!dictDir.exists()) {
-			// automatically create the directory if it does not exist.
-			// this is probably a fairly reasonable thing to do
-			if (!dictDir.mkdirs()) {
-				String m = "Unable to create directory [" + dictDir + "] for dictionary file ["
-						+ dictFileName + "]";
-				throw new PersistenceException(m);
-			}
-		}
-
-		return new File(dictDir, dictFileName);
-	}
-
 	
 	/**
 	 * Return the file name of the autoFetch meta data.
@@ -229,63 +193,7 @@ public class PluginDbConfig {
 
 		return new File(dir, fileName);
 	}
-	
-	/**
-	 * Create the DictionaryInfo and set its DataSource. Note the DictionaryInfo
-	 * can be deserialized from a file for performance reasons.
-	 */
-	protected DictionaryInfo createDictionaryInfo(DataSource ds) {
-
-		// find the full name of the dictionary file
-		// Note this file is written to so needs write
-		// permissions on the directory.
-		File dictFile = getDictionaryFile();
-
-		DictionaryInfo dictInfo = null;
-
-		// set this to false to force the dictionary to be populated
-		// by querying the database meta data (Maybe very slow)
-		String readDict = properties.getProperty("dictionary.readfromfile", "true");
-		if (readDict.equalsIgnoreCase("true")) {
-			// try to deserialize the DictionaryInfo from a file
-			dictInfo = deserializeDictionary(dictFile);
-		}
-
-		if (dictInfo == null) {
-			// not deserialized from file so create as empty
-			// It will be populated automatically by querying the
-			// database meta data
-			dictInfo = new DictionaryInfo();
-		}
-
-		// set the data source
-		dictInfo.setDataSource(ds);
-
-		String writeDict = properties.getProperty("dictionary.writetofile", "true");
-		if (writeDict.equalsIgnoreCase("true")) {
-			dictInfo.setSerializeToFile(dictFile.getAbsolutePath());
-		}
-		return dictInfo;
-	}
-
-	protected DictionaryInfo deserializeDictionary(File dictFile) {
-		try {
-			if (!dictFile.exists()) {
-				return null;
-			}
-			FileInputStream fi = new FileInputStream(dictFile);
-			ObjectInputStream ois = new ObjectInputStream(fi);
-			DictionaryInfo dictInfo = (DictionaryInfo) ois.readObject();
-
-			logger.info(Message.msg("plugin.dictionary", dictFile.getAbsolutePath()));
-			return dictInfo;
-
-		} catch (Exception ex) {
-			logger.log(Level.SEVERE, Message.msg("plugin.dictionary.error"), ex);
-			return null;
-		}
-	}
-	
+		
 	public AutoFetchManager createAutoFetchManager(InternalEbeanServer server){
 		
 		AutoFetchManager manager = createAutoFetchManager();

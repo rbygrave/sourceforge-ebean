@@ -39,6 +39,13 @@ public class H2Plugin extends DbSpecific {
         this.supportsGetGeneratedKeys = true;
         this.openQuote = "\"";
         this.closeQuote = "\"";
+        
+        // H2 data types match default JDBC types
+        // so no changes to dbTypeMap required
+        
+        this.ddlSyntax.setDisableReferentialIntegrity("SET REFERENTIAL_INTEGRITY FALSE");
+        this.ddlSyntax.setEnableReferentialIntegrity("SET REFERENTIAL_INTEGRITY TRUE");
+        this.ddlSyntax.setRenderPrimaryKeyName(false);
     }    
 
 }

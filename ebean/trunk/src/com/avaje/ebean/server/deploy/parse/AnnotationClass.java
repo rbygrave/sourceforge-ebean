@@ -29,12 +29,9 @@ import javax.persistence.Table;
 
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
-import com.avaje.ebean.annotation.Sql;
-import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.annotation.UpdateMode;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
 
 /**
  * Read the class level deployment annotations.
@@ -73,19 +70,6 @@ public class AnnotationClass extends AnnotationParser {
 			return table;
 		}
 		return findInheritedTable(cls.getSuperclass());
-	}
-
-	public void readSqlAnnotations() {
-		Class<?> cls = descriptor.getBeanType();
-		Sql sql = cls.getAnnotation(Sql.class);
-		if (sql != null){
-			setSql(sql);
-		}
-		
-		SqlSelect sqlSelect = cls.getAnnotation(SqlSelect.class);
-		if (sqlSelect != null){
-			setSqlSelect(sqlSelect);
-		}
 	}
 
 	private void read(Class<?> cls) {
@@ -143,21 +127,6 @@ public class AnnotationClass extends AnnotationParser {
 			defaultShortName = defaultShortName.substring(dp + 1);
 		}
 		return defaultShortName;
-	}
-	
-	private void setSql(Sql sql) {
-		SqlSelect[] select = sql.select();
-		for (int i = 0; i < select.length; i++) {
-			setSqlSelect(select[i]);
-		}
-	}
-
-	private void setSqlSelect(SqlSelect sqlSelect) {
-
-		DeploySqlSelect parsedSql = util.parseSqlSelect(descriptor, sqlSelect);
-
-		DeployNamedQuery namedQuery = new DeployNamedQuery(sqlSelect.name(), sqlSelect.query(),null, parsedSql);
-		descriptor.add(namedQuery);
 	}
 
 	private void readNamedQueries(NamedQueries namedQueries) {

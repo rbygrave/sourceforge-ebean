@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
@@ -51,6 +50,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DeploymentManager;
+import com.avaje.ebean.server.deploy.IntersectionRow;
 import com.avaje.ebean.server.idgen.IdGeneratorManager;
 import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.plugin.PluginCore;
@@ -536,9 +536,10 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 					logger.log(Level.SEVERE, m);
 
 				} else {
-					// build a MapBean for the intersection table and 'insert'
-					Object insertBean = prop.buildManyToManyMapBean(parentBean, otherBean);
-					saveRecurse(insertBean, t, parentBean);
+					// build a intersection row for 'insert'
+					IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherBean);
+					SqlUpdate sqlInsert = intRow.createInsert(server);
+					sqlInsert.execute();
 				}
 			}
 		}
@@ -548,9 +549,10 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 				// the object from the 'other' side of the ManyToMany
 				Object otherDelete = it.next();
 
-				// build a MapBean for the intersection table and 'delete'
-				Object deleteBean = prop.buildManyToManyMapBean(parentBean, otherDelete);
-				deleteRecurse(deleteBean, t);
+				// build a intersection row for 'delete'
+				IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherDelete);
+				SqlUpdate sqlDelete = intRow.createDelete(server);
+				sqlDelete.execute();
 			}
 		}
 
@@ -766,25 +768,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> BeanManager<T> getPersistDescriptor(T bean) {
-		if (bean instanceof MapBean) {
-			MapBean mapBean = (MapBean) bean;
-			String tableName = mapBean.getTableName();
-			if (tableName != null) {
-				BeanManager<T> mgr = (BeanManager<T>) deploymentManager.getMapBeanManager(tableName);
-				if (mgr == null) {
-					String m = "Could not find MapBean descriptor for table [" + tableName + "]";
-					throw new PersistenceException(m);
-				} else {
-					return mgr;
-				}
-
-			} else {
-				// assuming this is a normal bean that extends MapBean
-				if (bean.getClass().equals(MapBean.class)) {
-					throw new NullPointerException(Message.msg("tablebean.notable"));
-				}
-			}
-		}
+		
 		return (BeanManager<T>) deploymentManager.getBeanManager(bean.getClass());
 	}
 }

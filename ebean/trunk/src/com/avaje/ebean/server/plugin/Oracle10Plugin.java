@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.plugin;
 
+import java.sql.Types;
+
+import com.avaje.ebean.server.ddl.DbType;
+
 
 
 /**
@@ -48,6 +52,26 @@ public class Oracle10Plugin extends DbSpecific {
         this.closeQuote = "\"";
         this.resultSetLimit = ResultSetLimit.RowNumber;
 
+		dbTypeMap.put(Types.BOOLEAN, new DbType("number(1) default 0"));
+
+		dbTypeMap.put(Types.INTEGER, new DbType("number", 10));
+		dbTypeMap.put(Types.BIGINT, new DbType("number", 19));
+		dbTypeMap.put(Types.REAL, new DbType("number", 19, 4));
+		dbTypeMap.put(Types.DOUBLE, new DbType("number", 19, 4));
+		dbTypeMap.put(Types.SMALLINT, new DbType("number", 5));
+		dbTypeMap.put(Types.TINYINT, new DbType("number", 3));
+		dbTypeMap.put(Types.DECIMAL, new DbType("NUMBER", 38));
+		
+		dbTypeMap.put(Types.VARCHAR, new DbType("varchar2", 255));
+
+		dbTypeMap.put(Types.LONGVARBINARY, new DbType("blob"));
+		dbTypeMap.put(Types.LONGVARCHAR, new DbType("clob"));
+		dbTypeMap.put(Types.VARBINARY, new DbType("blob"));
+
+		dbTypeMap.put(Types.TIME, new DbType("timestamp"));
+
+		
+		ddlSyntax.setDropTableCascade("cascade constraints");
     }
 
 }

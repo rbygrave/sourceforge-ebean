@@ -27,7 +27,6 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.ObjectGraphNode;
@@ -434,20 +433,20 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		throw new PersistenceException(msg);
 	}
 	
-	public Object buildManyToManyMapBean(Object parent, Object other) {
+	public IntersectionRow buildManyToManyMapBean(Object parent, Object other) {
 		
-		MapBean mapBean = new MapBean();
-		mapBean.setTableName(intersectionJoin.getTable());
-		buildExport(mapBean, parent);
-		buildImport(mapBean, other);
-		return mapBean;
+		IntersectionRow row = new IntersectionRow(intersectionJoin.getTable());
+		
+		buildExport(row, parent);
+		buildImport(row, other);
+		return row;
 	}
 	
 	/**
 	 * Set the predicates for lazy loading of the association.
 	 * Handles predicates for both OneToMany and ManyToMany.
 	 */
-	private void buildExport(MapBean mapBean, Object parentBean) {
+	private void buildExport(IntersectionRow row, Object parentBean) {
 
 		BeanProperty[] uids = descriptor.propertiesId();
 
@@ -459,7 +458,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			Object val = expProps[i].getValue(parentBean);
 			String fkColumn = expProps[i].getIntersectionDbColumn();
 
-			mapBean.set(fkColumn, val);
+			row.put(fkColumn, val);
 		}
 	}
 	
@@ -467,9 +466,9 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 * Set the predicates for lazy loading of the association.
 	 * Handles predicates for both OneToMany and ManyToMany.
 	 */
-	private void buildImport(MapBean mapBean, Object otherBean) {
+	private void buildImport(IntersectionRow row, Object otherBean) {
 
-		importedId.buildImport(mapBean, otherBean);
+		importedId.buildImport(row, otherBean);
 	}
 
 		

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.MapBean;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.query.RelationalQuery;
@@ -95,21 +95,21 @@ public final class RelationalQueryRequest {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<MapBean> findList() {
+	public List<SqlRow> findList() {
 		manyType = ManyType.LIST;
-		return (List<MapBean>) queryEngine.findMany(this);
+		return (List<SqlRow>) queryEngine.findMany(this);
 	}
 
 	@SuppressWarnings("unchecked")
-	public Set<MapBean> findSet() {
+	public Set<SqlRow> findSet() {
 		manyType = ManyType.SET;
-		return (Set<MapBean>) queryEngine.findMany(this);
+		return (Set<SqlRow>) queryEngine.findMany(this);
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<?, MapBean> findMap() {
+	public Map<?, SqlRow> findMap() {
 		manyType = ManyType.MAP;
-		return (Map<?, MapBean>) queryEngine.findMany(this);
+		return (Map<?, SqlRow>) queryEngine.findMany(this);
 	}
 
 	/**

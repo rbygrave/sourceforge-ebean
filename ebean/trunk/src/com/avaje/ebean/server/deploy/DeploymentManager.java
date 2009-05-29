@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,9 +52,7 @@ public class DeploymentManager implements BeanDescriptorOwner {
 
 	private final DeployUtil deployUtil;
 
-	private final BeanDescriptorCacheFactory beanDescCache;
-
-	private final MapBeanDescriptorCacheFactory mapBeanDescCache;
+	private final BeanDescriptorBuilder beanDescCache;
 
 	private final HashMap<String, DNativeQuery> nativeQueryCache;
 
@@ -66,20 +63,14 @@ public class DeploymentManager implements BeanDescriptorOwner {
 		this.nativeQueryCache = new HashMap<String, DNativeQuery>();
 		this.dbConfig = dbConfig;
 		this.deployUtil = new DeployUtil(this, dbConfig);
-
-		this.beanDescCache = new BeanDescriptorCacheFactory(this, dbConfig, deployUtil);
-
-		this.mapBeanDescCache = new MapBeanDescriptorCacheFactory(this, dbConfig);
-
 		this.ormXmlList = findAllOrmXml();
 
-		initialiseNativeQueries();
+		this.beanDescCache = new BeanDescriptorBuilder(this, dbConfig, deployUtil);
 
 		// initialise all the Entity Bean deployment descriptors
 		beanDescCache.initialiseAll();
 
-		// initialise all the (MapBean) table descriptors
-		mapBeanDescCache.initialiseAll();
+		initialiseNativeQueries();
 	}
 
 	/**
@@ -115,20 +106,10 @@ public class DeploymentManager implements BeanDescriptorOwner {
 		}
 	}
 
-	/**
-	 * Return an Iterator of the BeanDescriptors.
-	 */
-	public Iterator<BeanDescriptor<?>> descriptors() {
-		return beanDescCache.descriptors();
+	public List<BeanDescriptor<?>> getBeanDescriptors() {
+		return beanDescCache.getBeanDescriptors();
 	}
-
-	/**
-	 * Return an Iterator of the table descriptors.
-	 */
-	public Iterator<MapBeanDescriptor> tableDescriptors() {
-		return mapBeanDescCache.tableDescriptors();
-	}
-
+	
 	/**
 	 * Return a native named query.
 	 * <p>
@@ -276,48 +257,6 @@ public class DeploymentManager implements BeanDescriptorOwner {
 		return dbConfig.getProperties().getServerName();
 	}
 
-	// /**
-	// * Resolve the Class for the class name and methodInfo.
-	// * <p>
-	// * The methodInfo is used to determine the method interception on the
-	// * generated class.
-	// * </p>
-	// * <p>
-	// * If the class has already been generated then it is returned out of a
-	// * cache.
-	// * </p>
-	// */
-	// public Class<?> resolve(String name, MethodInfo methodInfo) {
-	// return subClassManager.resolve(name, methodInfo);
-	// }
-
-	/**
-	 * Get the BeanTable for a given bean class.
-	 */
-	public BeanTable getBeanTable(Class<?> beanClz) {
-		return beanDescCache.getBeanTable(beanClz);
-	}
-
-	/**
-	 * Return the MapBeanDescriptor for a given table.
-	 */
-	public MapBeanDescriptor getMapBeanDescriptor(String tableName) {
-		if (tableName == null) {
-			throw new NullPointerException("tableName is null?");
-		}
-		return mapBeanDescCache.get(tableName);
-	}
-
-	/**
-	 * Return the BeanManager for a given table.
-	 */
-	public BeanManager<?> getMapBeanManager(String tableName) {
-		if (tableName == null) {
-			throw new NullPointerException("tableName is null?");
-		}
-		return mapBeanDescCache.getManager(tableName);
-	}
-
 	/**
 	 * Get the BeanDescriptor for a bean.
 	 */
@@ -340,7 +279,6 @@ public class DeploymentManager implements BeanDescriptorOwner {
 	public <T> BeanManager<T> getBeanManager(Class<T> entityType) {
 
 		return beanDescCache.getBeanManager(entityType);
-		//return (BeanManager<T>)getBeanManager(beanClz.getName());
 	}
 
 	/**

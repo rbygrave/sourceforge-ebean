@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy;
 
 import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
+import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
 
 /**
@@ -45,6 +46,7 @@ public class BeanTable {
      */
     private final String baseTableAlias;
 
+    private final BeanProperty[] idProperties;
     /**
      * Create the BeanTable.
      */
@@ -52,6 +54,7 @@ public class BeanTable {
         this.beanType = mutable.getBeanType();
         this.baseTable = mutable.getBaseTable();
         this.baseTableAlias = mutable.getBaseTableAlias();
+        this.idProperties = mutable.getIdProperties();
     }
     
     /**
@@ -69,12 +72,28 @@ public class BeanTable {
     public String getBaseTableAlias() {
         return baseTableAlias;
     }
-
+    
     /**
+     * Return the Id properties.
+     */
+    public BeanProperty[] getIdProperties() {
+		return idProperties;
+	}
+
+	/**
      * Return the class for this beanTable.
      */
     public Class<?> getBeanType() {
         return beanType;
     }
-
+    
+	public DeployTableJoinColumn createJoinColumn(String propertyName) {
+    	if (idProperties.length == 1){
+    		String fk = propertyName+"_"+idProperties[0].getDbColumn();
+    		String lc = idProperties[0].getDbColumn();
+    		return new DeployTableJoinColumn(lc, fk);
+    	}
+    	return null;
+	}
+    
 }

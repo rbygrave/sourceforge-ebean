@@ -90,12 +90,6 @@ public class DataSourcePool implements DataSource {
 	private final String databaseDriver;
 
 	/**
-	 * Holds Database meta data from this connection. Aka Tables, Columns,
-	 * Primary keys etc.
-	 */
-	private final DictionaryInfo dictionaryInfo;
-	
-	/**
 	 * The sql used to test a connection.
 	 */
 	private final String heartbeatsql;
@@ -204,7 +198,6 @@ public class DataSourcePool implements DataSource {
 		this.notify = notify;
 		this.name = params.getName();
 		this.poolListener = createPoolListener(params);
-		this.dictionaryInfo = new DictionaryInfo(this);
 		
 		this.connectionProps = params.getConnectionProperties();
 		
@@ -286,14 +279,7 @@ public class DataSourcePool implements DataSource {
 	public <T> T unwrap(Class<T> arg0) throws SQLException {
 		throw new SQLException("Not Implemented");
 	}
-
-	/**
-	 * Return the dictionary associated with this pool.
-	 */
-	public DictionaryInfo getDictionaryInfo() {
-		return dictionaryInfo;
-	}
-
+	
 	/**
 	 * Return the dataSource name.
 	 */

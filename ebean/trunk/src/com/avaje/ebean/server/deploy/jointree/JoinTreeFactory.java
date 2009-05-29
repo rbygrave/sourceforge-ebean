@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -99,7 +98,7 @@ public class JoinTreeFactory {
 		}
 		
 		if (!sentOutput && (debugJoinTree || logger.isLoggable(Level.FINE))){
-			if (descriptor.getBaseTable() == null || descriptor.getBeanType().equals(MapBean.class)){
+			if (descriptor.getBaseTable() == null){
 				// skipping embedded beans, report beans and MapBeans...
 			} else {
 				String msg = "JoinTree for "+descriptor+"\n"+root.getDescription();

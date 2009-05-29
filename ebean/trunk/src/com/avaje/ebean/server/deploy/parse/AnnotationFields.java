@@ -45,6 +45,8 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.idgen.IdGeneratorManager;
+import com.avaje.ebean.validation.Length;
+import com.avaje.ebean.validation.NotNull;
 import com.avaje.ebean.validation.Pattern;
 import com.avaje.ebean.validation.Patterns;
 import com.avaje.ebean.validation.ValidatorMeta;
@@ -141,6 +143,19 @@ public class AnnotationFields extends AnnotationParser {
 			prop.setVersionColumn(true);
 		}
 		
+		NotNull notNull = get(prop, NotNull.class);
+		if (notNull != null) {
+			// explicitly specify a version column
+			prop.setNullable(false);
+		}
+		
+		Length length = get(prop, Length.class);
+		if (length != null) {
+			if (length.max() < Integer.MAX_VALUE){
+				// explicitly specify a version column
+				prop.setDbLength(length.max());
+			}
+		}
 		// Could add an annotation for GeneratedProperty
 		// but just going to use GeneratedPropertySettings
 		// to do the job for now.
@@ -224,9 +239,16 @@ public class AnnotationFields extends AnnotationParser {
 
 		setDbColumn(prop, columnAnn.name());
 
-		if (!columnAnn.nullable()) {
-			prop.setNullable(false);
+		prop.setNullable(columnAnn.nullable());
+		prop.setUnique(columnAnn.unique());
+		if (columnAnn.precision() > 0){
+			prop.setDbLength(columnAnn.precision());
+		} else if (columnAnn.length() != 255){
+			// set default 255 on DbTypeMap
+			prop.setDbLength(columnAnn.length());			
 		}
+		prop.setDbScale(columnAnn.scale());
+		prop.setDbColumnDefn(columnAnn.columnDefinition());
 
 		String baseTable = descriptor.getBaseTable();
 		String tableName = columnAnn.table();

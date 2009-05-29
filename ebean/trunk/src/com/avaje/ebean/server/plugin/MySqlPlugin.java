@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.plugin;
 
+import java.sql.Types;
+
+import com.avaje.ebean.server.ddl.DbType;
+
 
 
 /**
@@ -39,6 +43,13 @@ public class MySqlPlugin extends DbSpecific {
         this.supportsGetGeneratedKeys = true;
         this.openQuote = "`";
         this.closeQuote = "`";
+        
+        dbTypeMap.put(Types.BOOLEAN, new DbType("tinyint(1) default 0"));
+        dbTypeMap.put(Types.CLOB, new DbType("text"));
+        dbTypeMap.put(Types.TIMESTAMP, new DbType("datetime"));
+        
+        ddlSyntax.setDisableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=0");
+        ddlSyntax.setEnableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=1");
     }    
 
 }

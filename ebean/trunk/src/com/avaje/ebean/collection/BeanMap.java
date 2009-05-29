@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.util.InternalEbean;
 
 /**
  * Map capable of lazy loading.

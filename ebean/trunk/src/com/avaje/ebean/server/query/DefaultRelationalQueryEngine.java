@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.MapBean;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.control.LogControl;
@@ -136,10 +136,8 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 			boolean isMap = wrapper.isMap();
 			String mapKey = query.getMapKey();
 
-			String baseTable = query.getBaseTable();
-
 			while (rset.next()) {
-				MapBean bean = readRow(request, rset, baseTable, propNames, estimateCapacity);
+				SqlRow bean = readRow(request, rset, propNames, estimateCapacity);
 				if (listener != null) {
 					listener.process(bean);
 
@@ -235,15 +233,14 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 	/**
 	 * Read the row from the ResultSet and return as a MapBean.
 	 */
-	protected MapBean readRow(RelationalQueryRequest request, ResultSet rset, String baseTable,
+	protected SqlRow readRow(RelationalQueryRequest request, ResultSet rset,
 			String[] propNames, int initialCapacity) throws SQLException {
 
 		// by default a map will rehash on the 12th entry
 		// it will be pretty common to have 12 or more entries so
 		// to reduce rehashing I am trying to estimate a good
 		// initial capacity for the MapBean to use.
-		MapBean bean = new MapBean(initialCapacity, 0.75f);
-		bean.setBaseTable(baseTable);
+		SqlRow bean = new SqlRow(initialCapacity, 0.75f);
 		
 		int index = 0;
 
@@ -252,9 +249,6 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 			Object value = rset.getObject(index);
 			bean.set(propNames[i], value);
 		}
-
-		// from now on setter methods create oldValues
-		bean._ebean_getIntercept().setLoaded();
 
 		return bean;
 

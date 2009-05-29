@@ -4,11 +4,11 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.deploy.IntersectionRow;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
 import com.avaje.ebean.util.ValueUtil;
@@ -105,7 +105,7 @@ public class ImportedIdEmbedded implements ImportedId {
 		}
 	}
 
-	public void buildImport(MapBean mapBean, Object other){
+	public void buildImport(IntersectionRow row, Object other){
 		
 		Object embeddedId = foreignAssocOne.getValue(other);
 		if (embeddedId == null){
@@ -115,7 +115,7 @@ public class ImportedIdEmbedded implements ImportedId {
 		
 		for (int i = 0; i < imported.length; i++) {
 			Object scalarValue = imported[i].foreignProperty.getValue(embeddedId);
-			mapBean.set(imported[i].localDbColumn, scalarValue);
+			row.put(imported[i].localDbColumn, scalarValue);
 		}
 				
 	}
@@ -124,7 +124,16 @@ public class ImportedIdEmbedded implements ImportedId {
 	 * Not supported for embedded id.
 	 */
 	public BeanProperty findMatchImport(String matchDbColumn) {
-		return null;
+		
+		BeanProperty p = null;
+		for (int i = 0; i < imported.length; i++) {
+			p = imported[i].findMatchImport(matchDbColumn);
+			if (p != null){
+				return p;
+			}
+		}
+		
+		return p;
 	}
 
 }

@@ -19,32 +19,51 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
+import com.avaje.ebean.server.deploy.BeanDescriptorFactory;
+
 
 /**
  * Read the deployment annotations for the bean.
  */
 public class ReadAnnotations {
-    
-    /**
-     * Read and process all the annotations.
-     */
-    public void process(DeployBeanInfo<?> info){
-        
+
+    public void readInitial(DeployBeanInfo<?> info){
+
     	try {
     		
-    		AnnotationClass clsAnnotations = new AnnotationClass(info);
-    		clsAnnotations.parse();
+    		new AnnotationClass(info).parse();
     		
     		// Set default table name if not already set via @Table
 	    	info.setDefaultTableName();
 	        
 	        new AnnotationFields(info).parse();
-	        new AnnotationAssocOnes(info).parse();
-	        new AnnotationAssocManys(info).parse();
+	       
+    	} catch (RuntimeException e){
+    		String msg = "Error reading annotations for "+info;
+    		throw new RuntimeException(msg, e);
+    	}
+    }
+    
+    /**
+     * Read and process the associated relationship annotations.
+     * <p>
+     * These can only be processed after the BeanTables have been created
+     * </p>
+     * <p>
+     * This uses the factory as a call back to get the BeanTable for a given 
+     * associated bean.
+     * </p>
+     */
+    public void readAssociations(DeployBeanInfo<?> info, BeanDescriptorFactory factory){
+        
+    	try {
+    		
+	        new AnnotationAssocOnes(info, factory).parse();
+	        new AnnotationAssocManys(info, factory).parse();
 	        	        
 	        // read the Sql annotations last because they may be
 	        // dependent on field level annotations
-	        clsAnnotations.readSqlAnnotations();
+	        new AnnotationSql(info).parse();
 	        
     	} catch (RuntimeException e){
     		String msg = "Error reading annotations for "+info;

@@ -4,10 +4,10 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.deploy.IntersectionRow;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
 import com.avaje.ebean.util.ValueUtil;
@@ -41,7 +41,7 @@ public class ImportedIdSimple implements ImportedId {
 		return localDbColumn;
 	}
 	
-	public void buildImport(MapBean mapBean, Object other){
+	public void buildImport(IntersectionRow row, Object other){
 		
 		Object value = foreignProperty.getValue(other);
 		if (value == null){
@@ -49,7 +49,7 @@ public class ImportedIdSimple implements ImportedId {
 			throw new PersistenceException(msg);
 		}
 		
-		mapBean.set(localDbColumn, value);
+		row.put(localDbColumn, value);
 	}
 
 	public void sqlAppend(DbSqlContext ctx) {

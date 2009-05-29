@@ -2,10 +2,10 @@ package com.avaje.ebean.server.deploy.id;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.deploy.IntersectionRow;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
 import com.avaje.ebean.util.ValueUtil;
@@ -16,7 +16,6 @@ import com.avaje.ebean.util.ValueUtil;
 public class ImportedIdMultiple implements ImportedId {
 	
 	final BeanPropertyAssoc<?> owner;
-
 
 	final ImportedIdSimple[] imported;
 	
@@ -89,11 +88,11 @@ public class ImportedIdMultiple implements ImportedId {
 		}
 	}
 	
-	public void buildImport(MapBean mapBean, Object other){
+	public void buildImport(IntersectionRow row, Object other){
 				
 		for (int i = 0; i < imported.length; i++) {
 			Object scalarValue = imported[i].foreignProperty.getValue(other);
-			mapBean.set(imported[i].localDbColumn, scalarValue);
+			row.put(imported[i].localDbColumn, scalarValue);
 		}		
 	}
 	
@@ -101,6 +100,15 @@ public class ImportedIdMultiple implements ImportedId {
 	 * Not supported for concatenated id.
 	 */
 	public BeanProperty findMatchImport(String matchDbColumn) {
-		return null;
+		
+		BeanProperty p = null;
+		for (int i = 0; i < imported.length; i++) {
+			p = imported[i].findMatchImport(matchDbColumn);
+			if (p != null){
+				return p;
+			}
+		}
+		
+		return p;
 	}
 }

@@ -48,6 +48,20 @@ import java.sql.SQLException;
 public interface ScalarType {
 
 	/**
+	 * Return the default DB column length for this type.
+	 * <p>
+	 * If a BeanProperty has no explicit length defined then
+	 * this length should be assigned.
+	 * </p>
+	 * <p>
+	 * This is primarily to support defining a length on
+	 * Enum types (to supplement defining the length on the
+	 * BeanProperty directly).
+	 * </p>
+	 */
+	public int getLength();
+	
+	/**
 	 * Return true if the type is native to JDBC.
 	 * <p>
 	 * If it is native to JDBC then its values/instances do not need to be

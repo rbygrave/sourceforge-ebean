@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.plugin;
 
+import java.sql.Types;
+
+import com.avaje.ebean.server.ddl.DbType;
+
 /**
  * Postgres v8.3 plugin.
  * <p>
@@ -40,6 +44,17 @@ public class Postgres83Plugin extends DbSpecific {
         this.resultSetLimit = ResultSetLimit.LimitOffset;
         this.openQuote = "\"";
         this.closeQuote = "\"";
+        
+        dbTypeMap.put(Types.BOOLEAN, new DbType("bit default 0"));
+
+        dbTypeMap.put(Types.DOUBLE, new DbType("float"));
+        dbTypeMap.put(Types.TINYINT, new DbType("smallint"));
+        dbTypeMap.put(Types.DECIMAL, new DbType("decimal", 38));
+
+        dbTypeMap.put(Types.BLOB, new DbType("bytea"));
+        dbTypeMap.put(Types.CLOB, new DbType("text"));
+        dbTypeMap.put(Types.LONGVARBINARY, new DbType("bytea"));
+        dbTypeMap.put(Types.LONGVARCHAR, new DbType("text"));
     }
 
 }
