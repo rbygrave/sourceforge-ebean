@@ -45,7 +45,7 @@ public class H2Plugin extends DbSpecific {
         
         this.ddlSyntax.setDisableReferentialIntegrity("SET REFERENTIAL_INTEGRITY FALSE");
         this.ddlSyntax.setEnableReferentialIntegrity("SET REFERENTIAL_INTEGRITY TRUE");
-        this.ddlSyntax.setRenderPrimaryKeyName(false);
+        this.ddlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
     }    
 
 }
