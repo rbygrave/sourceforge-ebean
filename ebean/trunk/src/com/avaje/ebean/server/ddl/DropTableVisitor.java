@@ -3,6 +3,9 @@ package com.avaje.ebean.server.ddl;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
+/**
+ * Used to generate the drop table DDL script.
+ */
 public class DropTableVisitor implements BeanVisitor {
 
 	final DdlGenContext ctx;

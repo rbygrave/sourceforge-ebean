@@ -5,7 +5,8 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 
 /**
- * Has no implementation. 
+ * Has no implementation. Can be used as a base object so that
+ * selective methods can be implemented. 
  */
 public abstract class AbstractPropertyVisitor implements PropertyVisitor {
 

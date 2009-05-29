@@ -3,24 +3,39 @@ package com.avaje.ebean.server.ddl;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
+/**
+ * Visitor pattern for visiting a BeanDescriptor and potentially all its bean
+ * properties.
+ */
 public interface BeanVisitor {
 
+	/**
+	 * Starting.
+	 */
 	public void visitBegin();
-	
+
+	/**
+	 * Visit a BeanDescriptor.
+	 */
 	public void visitBean(BeanDescriptor<?> descriptor);
 
+	/**
+	 * Visit a property potentially return a specific PropertyVisitor.
+	 * <p>
+	 * A PropertyVisitor can be returned to more easily process bean properties
+	 * by their specific type.
+	 * </p>
+	 */
 	public PropertyVisitor visitProperty(BeanProperty p);
 
+	/**
+	 * Finished visiting the BeanDescriptor.
+	 */
 	public void visitBeanEnd(BeanDescriptor<?> descriptor);
 
-	
-//	public void visitPropertyMany(BeanPropertyAssocMany<?> p);
-//	public void visitPropertyOneImported(BeanPropertyAssocOne<?> p);
-//	public void visitPropertyOneExported(BeanPropertyAssocOne<?> p);
-//	public void visitPropertyEmbedded(BeanPropertyAssocOne<?> p);
-//	public void visitPropertyEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded);
-//	public void visitPropertyScalar(BeanProperty p);
-
+	/**
+	 * Finished all visiting.
+	 */
 	public void visitEnd();
 
 }

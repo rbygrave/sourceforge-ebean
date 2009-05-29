@@ -4,6 +4,9 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used to map bean property types to DB specific DDL types.
+ */
 public class DbTypeMap {
 
 	Map<Integer, DbType> typeMap = new HashMap<Integer, DbType>();
@@ -12,6 +15,10 @@ public class DbTypeMap {
 		loadDefaults();
 	}
 	
+	/**
+	 * Load the standard types.
+	 * These can be overridden by DB specific plugin.
+	 */
 	private void loadDefaults() {
 
 		put(Types.BOOLEAN, new DbType("boolean"));
@@ -39,11 +46,16 @@ public class DbTypeMap {
 
 	}
 
+	/**
+	 * Override the type for a given JDBC type.
+	 */
 	public void put(int jdbcType, DbType dbType) {
 		typeMap.put(Integer.valueOf(jdbcType), dbType);
 	}
 
-
+	/**
+	 * Return the type for a given jdbc type.
+	 */
 	public DbType get(int jdbcType) {
 
 		DbType dbType = typeMap.get(Integer.valueOf(jdbcType));

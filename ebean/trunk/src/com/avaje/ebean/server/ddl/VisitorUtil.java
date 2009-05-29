@@ -9,6 +9,9 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 
+/**
+ * Utility object to use BeanVisitor.
+ */
 public class VisitorUtil {
 
 	/**
@@ -37,6 +40,9 @@ public class VisitorUtil {
 		visitor.visitEnd();
 	}
 
+	/**
+	 * Visit the bean using a visitor.
+	 */
 	public static void visitBean(BeanDescriptor<?> desc, BeanVisitor visitor) {
 		
 		visitor.visitBean(desc);
@@ -54,6 +60,9 @@ public class VisitorUtil {
 		visitor.visitBeanEnd(desc);
 	}
 	
+	/**
+	 * Visit all the properties.
+	 */
 	public static void visit(BeanProperty[] p, PropertyVisitor pv){
 
 		for (int i = 0; i < p.length; i++) {
@@ -61,6 +70,9 @@ public class VisitorUtil {
 		}
 	}
 
+	/**
+	 * Visit the property.
+	 */
 	public static void visit(BeanProperty p, PropertyVisitor pv) {
 		
 		if (p instanceof BeanPropertyAssocMany<?>){
