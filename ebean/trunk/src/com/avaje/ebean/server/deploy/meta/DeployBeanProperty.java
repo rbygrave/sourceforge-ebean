@@ -284,11 +284,8 @@ public class DeployBeanProperty {
 			// create a check constraint for the enum 
 			ScalarTypeEnum etype = (ScalarTypeEnum)scalarType;
 		
-			// check (dbColName IN ('A', 'I', 'D'))
-			String expr = " check ("+dbColumn+ " in "+
-			etype.getContraintInValues()+")";
-			
-			return expr;
+			// check dbColName IN ('A', 'I', 'D')
+			return "check ("+dbColumn+ " in "+etype.getContraintInValues()+")";
 		}
 		return null;
 	}

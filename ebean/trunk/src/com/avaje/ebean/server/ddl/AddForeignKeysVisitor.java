@@ -27,7 +27,7 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 	
 	protected String getIndexName(BeanPropertyAssocOne<?> p) {
 
-		return "idx_"+p.getBeanDescriptor().getBaseTable()+"_"+p.getName();
+		return "ix_"+p.getBeanDescriptor().getBaseTable()+"_"+p.getName();
 	}
 
 	public void visitBean(BeanDescriptor<?> descriptor) {
