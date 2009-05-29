@@ -6,6 +6,9 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.TableJoinColumn;
 
+/**
+ * Used to generate the foreign key DDL and related indexes.
+ */
 public class AddForeignKeysVisitor implements BeanVisitor {
 
 	final DdlGenContext ctx;

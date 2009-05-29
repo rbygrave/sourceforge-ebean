@@ -4,6 +4,10 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 
+/**
+ * Used to help mark PropertyVisitor methods that need to be implemented
+ * to visit base table properties.
+ */
 public abstract class BaseTablePropertyVisitor implements PropertyVisitor {
 
 	/**
@@ -12,6 +16,9 @@ public abstract class BaseTablePropertyVisitor implements PropertyVisitor {
 	public void visitEmbedded(BeanPropertyAssocOne<?> p) {
 	}
 
+	/**
+	 * Override this method.
+	 */
 	public abstract void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded);
 
 	/**
@@ -26,8 +33,14 @@ public abstract class BaseTablePropertyVisitor implements PropertyVisitor {
 	public void visitOneExported(BeanPropertyAssocOne<?> p) {
 	}
 
+	/**
+	 * Override this method for the foreign key.
+	 */
 	public abstract void visitOneImported(BeanPropertyAssocOne<?> p);
 
+	/**
+	 * Override this method for normal scalar property.
+	 */
 	public abstract void visitScalar(BeanProperty p);
 
 	

@@ -7,6 +7,9 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
 
+/**
+ * Used to generated the create table DDL script.
+ */
 public class CreateTableVisitor implements BeanVisitor {
 	
 	protected static final Logger logger = Logger.getLogger(CreateTableVisitor.class.getName());

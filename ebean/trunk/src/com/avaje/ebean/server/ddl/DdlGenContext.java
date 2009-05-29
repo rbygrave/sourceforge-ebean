@@ -2,37 +2,64 @@ package com.avaje.ebean.server.ddl;
 
 import java.io.StringWriter;
 
+/**
+ * The context used during DDL generation.
+ */
 public class DdlGenContext {
 
-	final StringWriter stringWriter;
+	final StringWriter stringWriter = new StringWriter();
 
+	/**
+	 * Used to map bean types to DB specific types.
+	 */
 	final DbTypeMap dbTypeMap;
 	
+	/**
+	 * Handles DB specific DDL syntax.
+	 */
 	final DdlSyntax ddlSyntax;
 	
+	/**
+	 * The new line character that is used.
+	 */
 	final String newLine;
 		
+	/**
+	 * Last content written (used with removeLast())
+	 */
 	String lastContent;
 	
 	public DdlGenContext(DbTypeMap dbTypeMap, DdlSyntax ddlSyntax){
 		this.dbTypeMap = dbTypeMap;
 		this.ddlSyntax = ddlSyntax;
 		this.newLine = ddlSyntax.getNewLine();
-		this.stringWriter = new StringWriter();
 	}
 
+	/**
+	 * Return the generated content (DDL script).
+	 */
 	public String getContent(){
 		return stringWriter.toString();
 	}
 	
+	/**
+	 * Return the map used to determine the DB specific type
+	 * for a given bean property.
+	 */
 	public DbTypeMap getDbTypeMap() {
 		return dbTypeMap;
 	}
 	
+	/**
+	 * Return object to handle DB specific DDL syntax.
+	 */
 	public DdlSyntax getDdlSyntax() {
 		return ddlSyntax;
 	}
 	
+	/**
+	 * Write content to the buffer.
+	 */
 	public DdlGenContext write(String content, int minWidth){
 		
 		content = pad(content, minWidth);
@@ -44,6 +71,10 @@ public class DdlGenContext {
 		return this;
 
 	}
+	
+	/**
+	 * Write content to the buffer.
+	 */
 	public DdlGenContext write(String content){
 		return write(content, 0);
 	}
@@ -53,6 +84,9 @@ public class DdlGenContext {
 		return this;
 	}
 	
+	/**
+	 * Remove the last content that was written.
+	 */
 	public DdlGenContext removeLast() {
 		if (lastContent != null){
 			lastContent = null;
@@ -62,6 +96,9 @@ public class DdlGenContext {
 		return this;
 	}
 	
+	/**
+	 * Flush the content to the buffer.
+	 */
 	public DdlGenContext flush() {
 		if (lastContent != null){
 			stringWriter.write(lastContent);

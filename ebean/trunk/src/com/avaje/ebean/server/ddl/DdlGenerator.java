@@ -17,9 +17,13 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.plugin.PluginProperties;
 
+/**
+ * Controls the generation of DDL and potentially runs the resulting scripts.
+ */
 public class DdlGenerator {
 
 	final InternalEbeanServer server;
+	
 	final PluginProperties properties;
 
 	PrintStream out = System.out;
@@ -50,7 +54,7 @@ public class DdlGenerator {
 	 * Generate the DDL drop and create scripts if the properties have been set.
 	 */
 	public void generateDdl() {
-		if (properties.getPropertyBoolean("ddl.generate", true)) {
+		if (properties.getPropertyBoolean("ddl.generate", false)) {
 			writeDrop();
 			writeCreate();
 		}
@@ -61,7 +65,7 @@ public class DdlGenerator {
 	 */
 	public void runDdl() {
 		
-		boolean runBoth = properties.getPropertyBoolean("ddl.run", true);
+		boolean runBoth = properties.getPropertyBoolean("ddl.run", false);
 		boolean runDrop = properties.getPropertyBoolean("ddl.runDrop", runBoth);
 		boolean runCreate = properties.getPropertyBoolean("ddl.runCreate", runBoth);
 		
