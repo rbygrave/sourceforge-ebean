@@ -221,10 +221,24 @@ public class BeanProperty implements ElGetValue {
 
 	boolean cascadeValidate;
 	
+	/**
+	 * The length or precision for DB column.
+	 */
 	final int dbLength;
-	//final int dbPrecision;
+	
+	/**
+	 * The scale for DB column (decimal).
+	 */
 	final int dbScale;
+	
+	/**
+	 * Deployment defined DB column definition.
+	 */
 	final String dbColumnDefn;
+	
+	/**
+	 * DB Constraint (typically check constraint on enum)
+	 */
 	final String dbConstraintExpression;
 	
 	public BeanProperty(DeployBeanProperty deploy) {

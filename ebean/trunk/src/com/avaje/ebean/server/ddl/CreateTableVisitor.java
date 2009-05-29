@@ -1,5 +1,6 @@
 package com.avaje.ebean.server.ddl;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -21,6 +22,8 @@ public class CreateTableVisitor implements BeanVisitor {
 	final DdlSyntax ddl;
 	
 	final int columnNameWidth;
+	
+	ArrayList<String> checkConstraints = new ArrayList<String>();
 	
 	public CreateTableVisitor(DdlGenContext ctx) {
 		this.ctx = ctx;
@@ -56,17 +59,24 @@ public class CreateTableVisitor implements BeanVisitor {
 		ctx.write("  ").write(columnName, columnNameWidth).write(" ");
 	}
 	
+	/**
+	 * Build a check constraint for the property if required.
+	 * <p>
+	 * Typically check constraint based on Enum mapping values.
+	 * </p>
+	 */
 	protected void writeConstraint(BeanProperty p) {
 		
 		String constraintExpression = p.getDbConstraintExpression();
 		
 		if (constraintExpression != null){
-//			ctx.write(",");
-//			ctx.write(" ").write("constraint ");
-//			ctx.write("chk_").write(p.getDbColumn());
-//			ctx.write(" ").write(constraintExpression);
 
-			ctx.write(" ").write(constraintExpression);
+			// build constraint clause 
+			String s = "constraint ck_"+p.getBeanDescriptor().getBaseTable()
+					+"_"+p.getDbColumn()+" "+constraintExpression;
+			
+			// add to list as we render all check constraints just prior to primary key
+			checkConstraints.add(s);
 		}
 	}
 		
@@ -78,6 +88,13 @@ public class CreateTableVisitor implements BeanVisitor {
 	
 	public void visitBeanEnd(BeanDescriptor<?> descriptor) {
 
+		if (checkConstraints.size() > 0){
+			for (String checkConstraint : checkConstraints) {
+				ctx.write("  ").write(checkConstraint).write(",").writeNewLine();
+			}
+			checkConstraints = new ArrayList<String>();
+		}
+		
 		String pkName = ddl.getPrimaryKeyName(descriptor);
 
 		ctx.write("  constraint ").write(pkName).write(" primary key (");
