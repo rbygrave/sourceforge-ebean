@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.plugin;
 
+import java.sql.Types;
+
+import com.avaje.ebean.server.ddl.DbType;
+
 
 
 /**
@@ -40,6 +44,25 @@ public class MsSqlServer2005 extends DbSpecific {
         this.supportsGetGeneratedKeys = true;
         this.openQuote = "[";
         this.closeQuote = "]";
+
+        
+        dbTypeMap.put(Types.BOOLEAN, new DbType("bit default 0"));
+
+        dbTypeMap.put(Types.BIGINT, new DbType("numeric", 19));
+        dbTypeMap.put(Types.REAL, new DbType("float(16)"));
+        dbTypeMap.put(Types.DOUBLE, new DbType("float(32)"));
+        dbTypeMap.put(Types.TINYINT, new DbType("smallint"));
+        dbTypeMap.put(Types.DECIMAL, new DbType("numeric", 28));
+
+        dbTypeMap.put(Types.BLOB, new DbType("image"));
+        dbTypeMap.put(Types.CLOB, new DbType("text"));
+        dbTypeMap.put(Types.LONGVARBINARY, new DbType("image"));
+        dbTypeMap.put(Types.LONGVARCHAR, new DbType("text"));
+
+        dbTypeMap.put(Types.DATE, new DbType("datetime"));
+        dbTypeMap.put(Types.TIME, new DbType("datetime"));
+        dbTypeMap.put(Types.TIMESTAMP, new DbType("datetime"));
+
     }    
 
 }

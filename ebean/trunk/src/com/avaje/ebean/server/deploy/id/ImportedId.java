@@ -2,9 +2,9 @@ package com.avaje.ebean.server.deploy.id;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.deploy.IntersectionRow;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
 
@@ -61,7 +61,7 @@ public interface ImportedId {
 	/**
 	 * For inserting into ManyToMany intersection.
 	 */
-	public void buildImport(MapBean mapBean, Object other);
+	public void buildImport(IntersectionRow row, Object other);
 
 	/**
 	 * Used to derive a missing concatenated key from multiple imported keys.

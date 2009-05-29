@@ -33,7 +33,14 @@ public abstract class ScalarTypeBase implements ScalarType {
 		this.jdbcNative = jdbcNative;
 		this.jdbcType = jdbcType;
 	}
-	
+
+	/**
+	 * Just return 0.
+	 */
+	public int getLength() {
+		return 0;
+	}
+
 	public boolean isJdbcNative() {
 		return jdbcNative;
 	}

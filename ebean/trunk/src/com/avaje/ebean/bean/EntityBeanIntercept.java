@@ -31,7 +31,6 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.io.SerializeControl;
-import com.avaje.ebean.util.InternalEbean;
 
 /**
  * This is the object added to every entity bean using byte code enhancement.
@@ -212,6 +211,29 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		this.intercepting = true;
 	}
 
+	
+	/**
+	 * Return true if the bean currently has interception on.
+	 * <p>
+	 * With interception on the bean will invoke lazy loading and dirty checking.
+	 * </p>
+	 */
+	public boolean isIntercepting() {
+		return intercepting;
+	}
+
+	/**
+	 * Turn interception off or on.
+	 * <p>
+	 * This is to support custom serialization mechanisms that just read all
+	 * the properties on the bean.
+	 * </p>
+	 * 
+	 */
+	public void setIntercepting(boolean intercepting) {
+		this.intercepting = intercepting;
+	}
+
 	/**
 	 * Return true if the entity has been loaded.
 	 */
@@ -237,6 +259,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		this.owner._ebean_setEmbeddedLoaded();
 	}
 
+	/**
+	 * Set the loaded status for the embedded bean.
+	 */
 	public void setEmbeddedLoaded(Object embeddedBean) {
 		if (embeddedBean instanceof EntityBean){
 			EntityBean eb = (EntityBean)embeddedBean;

@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.server.deploy.meta;
 
+import java.util.List;
+
+import com.avaje.ebean.server.deploy.BeanProperty;
+
 
 /**
  * Used for associated beans in place of a BeanDescriptor. This is done to avoid
@@ -43,6 +47,8 @@ public class DeployBeanTable {
      */
     String baseTableAlias;
 
+    List<DeployBeanProperty> idProperties;
+    
     /**
      * Create the BeanTable.
      */
@@ -79,8 +85,27 @@ public class DeployBeanTable {
     public void setBaseTableAlias(String baseTableAlias) {
         this.baseTableAlias = baseTableAlias;
     }
+    
+    /**
+     * Return the id properties.
+     */
+    public BeanProperty[] getIdProperties() {
+    	BeanProperty[] props = new BeanProperty[idProperties.size()];
+    	for (int i = 0; i < idProperties.size(); i++) {
+    		props[i] = new BeanProperty(idProperties.get(i));
+		}
+		return props;
+	}
 
     /**
+     * Set the Id properties.
+     * @param idProperties
+     */
+	public void setIdProperties(List<DeployBeanProperty> idProperties) {
+		this.idProperties = idProperties;
+	}
+
+	/**
      * Return the class for this beanTable.
      */
     public Class<?> getBeanType() {

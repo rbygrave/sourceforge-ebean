@@ -298,6 +298,7 @@ public final class DefaultTypeManager implements TypeManager {
 	@SuppressWarnings("unchecked")
 	public ScalarType createEnumScalarType(Class enumType) {
 
+		int length = 0;
 		boolean integerType = false;
 		String nameValuePairs = null;
 		
@@ -309,6 +310,7 @@ public final class DefaultTypeManager implements TypeManager {
 			if (enumMapping != null){
 				nameValuePairs  = enumMapping.nameValuePairs();
 				integerType = enumMapping.integerType();
+				length = enumMapping.length();
 			}
 		}
 		
@@ -321,17 +323,25 @@ public final class DefaultTypeManager implements TypeManager {
 
 		EnumToDbValueMap<?> beanDbMap = EnumToDbValueMap.create(integerType);
 		
+		int maxValueLen = 0;
+		
 		Iterator it = nameValueMap.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry entry = (Map.Entry) it.next();
 			String name = (String) entry.getKey();
 			String value = (String) entry.getValue();
 
+			maxValueLen = Math.max(maxValueLen, value.length());
+			
 			Object enumValue = Enum.valueOf(enumType, name.trim());
 			beanDbMap.add(enumValue, value.trim());
 		}
+		
+		if (length == 0 && !integerType){
+			length = maxValueLen;
+		}
 
-		return new ScalarTypeEnumWithMapping(beanDbMap, enumType);
+		return new ScalarTypeEnumWithMapping(beanDbMap, enumType, length);
 	}
 
 	/**

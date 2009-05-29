@@ -26,8 +26,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.lib.sql.DictionaryInfo;
-import com.avaje.ebean.server.lib.sql.TableInfo;
 
 /**
  * Wraps information about a bean during deployment parsing.
@@ -56,26 +54,6 @@ public class DeployBeanInfo<T> {
 	public DeployBeanInfo(DeployUtil util, DeployBeanDescriptor<T> descriptor) {
 		this.util = util;
 		this.descriptor = descriptor;
-	}
-
-	/**
-	 * Return the TableInfo for the base table.
-	 */
-	public TableInfo getBaseTableInfo(){
-		if (descriptor.getBaseTable() == null){
-			return null;
-		} else {
-			// search for the TableInfo
-			return getTableInfo(descriptor.getBaseTable());	
-		}
-	}
-	
-	/**
-	 * Return the TableInfo for a given table name.
-	 */
-	public TableInfo getTableInfo(String tableName){
-		DictionaryInfo dictionaryInfo = util.getDictionaryInfo();
-		return dictionaryInfo.getTableInfo(tableName);
 	}
 	
 	public String toString() {
@@ -151,7 +129,7 @@ public class DeployBeanInfo<T> {
 	public void setBeanJoinAlias(DeployBeanPropertyAssocOne<?> beanProp, boolean annOptional) {
 
 		String joinType = TableJoin.JOIN;
-		if (annOptional && util.isUseOneToOneOptional()) {
+		if (annOptional){// && util.isUseOneToOneOptional()) {
 			joinType = TableJoin.LEFT_OUTER;
 		}
 
@@ -194,15 +172,15 @@ public class DeployBeanInfo<T> {
 		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
 	}
 
-	/**
-	 * Set a the join alias for a TableJoin (Secondary table).
-	 */
-	public void setTableJoinAlias(DeployTableJoin tableJoin, String type) {
-		String alias = getAlias(tableJoin.getTable(), null);
-		tableJoin.setType(type);
-		tableJoin.setForeignTableAlias(alias);
-		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
-	}
+//	/**
+//	 * Set a the join alias for a TableJoin (Secondary table).
+//	 */
+//	public void setTableJoinAlias(DeployTableJoin tableJoin, String type) {
+//		String alias = getAlias(tableJoin.getTable(), null);
+//		tableJoin.setType(type);
+//		tableJoin.setForeignTableAlias(alias);
+//		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
+//	}
 
 	/**
 	 * Set the base table name and alias.

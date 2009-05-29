@@ -361,9 +361,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				String tableAlias = node.getTableAlias();
 				ctx.appendColumn(tableAlias, targetInheritInfo.getDiscriminatorColumn());
 			}
-			//ctx.setWithColumnAlias(true);
 			importedId.sqlAppend(ctx);
-			//ctx.setWithColumnAlias(false);
 		}
 	}
 

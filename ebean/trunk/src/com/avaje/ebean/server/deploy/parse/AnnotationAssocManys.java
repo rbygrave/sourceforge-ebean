@@ -30,22 +30,26 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
 import com.avaje.ebean.annotation.Where;
+import com.avaje.ebean.server.deploy.BeanDescriptorFactory;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.lib.sql.TableInfo;
+import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
 /**
  * Read the deployment annotation for Assoc Many beans.
  */
 public class AnnotationAssocManys extends AnnotationParser {
 
+	final BeanDescriptorFactory factory;
+	
 	/**
 	 * Create with the DeployInfo.
 	 */
-	public AnnotationAssocManys(DeployBeanInfo<?> info) {
+	public AnnotationAssocManys(DeployBeanInfo<?> info, BeanDescriptorFactory factory) {
 		super(info);
+		this.factory = factory;
 	}
 
 	/**
@@ -63,64 +67,60 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 	private void read(DeployBeanPropertyAssocMany<?> prop) {
 
-		OneToMany oneToMany = (OneToMany) get(prop, OneToMany.class);
+		OneToMany oneToMany = get(prop, OneToMany.class);
 		if (oneToMany != null) {
 			readToOne(oneToMany, prop);
 		}
-		ManyToMany manyToMany = (ManyToMany) get(prop, ManyToMany.class);
+		ManyToMany manyToMany = get(prop, ManyToMany.class);
 		if (manyToMany != null) {
 			readToMany(manyToMany, prop);
 		}
 
-		OrderBy orderBy = (OrderBy) get(prop, OrderBy.class);
+		OrderBy orderBy = get(prop, OrderBy.class);
 		if (orderBy != null) {
 			prop.setFetchOrderBy(orderBy.value());
 		}
 
-		MapKey mapKey = (MapKey) get(prop, MapKey.class);
+		MapKey mapKey = get(prop, MapKey.class);
 		if (mapKey != null) {
 			prop.setMapKey(mapKey.name());
 		}
 
-		Where where = (Where) get(prop, Where.class);
+		Where where = get(prop, Where.class);
 		if (where != null) {
 			prop.setExtraWhere(where.clause());
 		}
 
-		TableInfo baseTableInfo = info.getBaseTableInfo();
-		if (baseTableInfo == null){
-			// do not try to define joins manually as they will 
-			// likely fail for this database schema as the base
-			// table has not been found.
+		// check for manually defined joins
+		BeanTable beanTable = prop.getBeanTable();
+		JoinColumn joinColumn = get(prop, JoinColumn.class);
+		if (joinColumn != null) {
+			prop.getTableJoin().addJoinColumn(true, joinColumn, beanTable);
+		}
 
-		} else {
-			// check for manually defined joins
-			JoinColumn joinColumn = (JoinColumn) get(prop, JoinColumn.class);
-			if (joinColumn != null) {
-				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-				defineJoin.add(true, joinColumn);
-				util.define(defineJoin);
+		JoinColumns joinColumns = get(prop, JoinColumns.class);
+		if (joinColumns != null) {
+			prop.getTableJoin().addJoinColumn(true, joinColumns.value(), beanTable);
+		}
+
+		JoinTable joinTable = get(prop, JoinTable.class);
+		if (joinTable != null) {
+			if (prop.isManyToMany()){
+				// expected this 
+				readJoinTable(joinTable, prop);
+				
+			} else {
+				// OneToMany in theory 
+				prop.getTableJoin().addJoinColumn(true, joinTable.joinColumns(), beanTable);
 			}
-	
-			JoinColumns joinColumns = (JoinColumns) get(prop, JoinColumns.class);
-			if (joinColumns != null) {
-				JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-				defineJoin.add(true, joinColumns);
-				util.define(defineJoin);
-			}
-	
-			JoinTable joinTable = (JoinTable) get(prop, JoinTable.class);
-			if (joinTable != null) {
-				if (prop.isManyToMany()){
-					// expected this 
-					readJoinTable(joinTable, prop);
-					
-				} else {
-					// OneToMany in theory 
-					JoinDefineManualInfo defineJoin = new JoinDefineManualInfo(descriptor, prop);
-					defineJoin.add(true, joinTable, joinTable.joinColumns());
-					util.define(defineJoin);					
-				}
+		}
+			
+		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
+			// use naming convention to define join
+			String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), prop.getName());
+			DeployTableJoinColumn join = beanTable.createJoinColumn(fkeyPrefix);
+			if (join != null){
+				prop.getTableJoin().addJoinColumn(join);
 			}
 		}
 	}
@@ -140,13 +140,11 @@ public class AnnotationAssocManys extends AnnotationParser {
 		intJoin.setTable(intTableName);
 
 		// add the source to intersection join columns
-		intJoin.addJoinColumn(true, joinTable.joinColumns());
-		intJoin.setUndefinedColumnIfRequired(info.getUtil(), info.getBaseTableInfo().getName());
+		intJoin.addJoinColumn(true, joinTable.joinColumns(), prop.getBeanTable());
 
 		// set the intersection to dest table join columns
 		DeployTableJoin destJoin = prop.getTableJoin();
-		destJoin.addJoinColumn(false, joinTable.inverseJoinColumns());
-		destJoin.setUndefinedColumnIfRequired(info.getUtil(), destJoin.getTable());
+		destJoin.addJoinColumn(false, joinTable.inverseJoinColumns(), prop.getBeanTable());
 
 		// set table alias etc for the join to intersection
 		info.setManyIntersectionAlias(prop, intJoin);
@@ -187,7 +185,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 		}
 
 		// find the other many table (not intersection)
-		BeanTable assoc = util.getBeanTable(targetType);
+		BeanTable assoc = factory.getBeanTable(targetType);
 		if (assoc == null) {
         	String msg = errorMsgMissingBeanTable(targetType, manyProp.getFullBeanName());
         	throw new RuntimeException(msg);
@@ -211,7 +209,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 			manyProp.setTargetType(targetType);
 		}
 
-		BeanTable assoc = util.getBeanTable(targetType);
+		BeanTable assoc = factory.getBeanTable(targetType);
 		if (assoc == null) {
         	String msg = errorMsgMissingBeanTable(targetType, manyProp.getFullBeanName());
         	throw new RuntimeException(msg);

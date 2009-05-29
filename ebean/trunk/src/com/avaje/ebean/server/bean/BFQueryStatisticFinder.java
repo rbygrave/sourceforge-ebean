@@ -51,11 +51,10 @@ public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 
 	private void build(List<MetaQueryStatistic> list, InternalEbeanServer server) {
 
-		Iterator<BeanDescriptor<?>> it = server.descriptors();
-		while (it.hasNext()) {
-			BeanDescriptor<?> desc = (BeanDescriptor<?>) it.next();
+		for (BeanDescriptor<?> desc : server.getBeanDescriptors()) {
+			desc.clearQueryStatistics();			
 			build(list, desc);
-		}
+		}		
 	}
 	
 	private void build(List<MetaQueryStatistic> list, BeanDescriptor<?> desc) {

@@ -22,13 +22,14 @@ package com.avaje.ebean.server.type;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 
 
 
 /**
  * Additional control over mapping to DB values.
  */
-public class ScalarTypeEnumWithMapping implements ScalarType {
+public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 
 	/**
 	 * Data type of the database columns converted to.
@@ -41,15 +42,62 @@ public class ScalarTypeEnumWithMapping implements ScalarType {
 	@SuppressWarnings("unchecked")
 	private final EnumToDbValueMap beanDbMap;
 	
+	private final int length;
+	
 	/**
 	 * Create with an explicit mapping of bean to database values.
 	 */
-	public ScalarTypeEnumWithMapping(EnumToDbValueMap<?> beanDbMap, Class<?> enumType) {
+	public ScalarTypeEnumWithMapping(EnumToDbValueMap<?> beanDbMap, Class<?> enumType, int length) {
 		this.beanDbMap = beanDbMap;
 		this.enumType = enumType;
 		this.dbType = beanDbMap.getDbType();
+		this.length = length;
 	}
 	
+	
+	/**
+	 * Return the IN values for DB constraint construction.
+	 */
+	public String getContraintInValues(){
+
+		StringBuilder sb = new StringBuilder();
+		
+		int i = 0;
+		
+		sb.append("(");		
+		
+		Iterator<?> it = beanDbMap.dbValues();
+		while (it.hasNext()) {
+			Object dbValue = it.next();
+			if (i++ > 0){				
+				sb.append(",");
+			}
+			if (!beanDbMap.isIntegerType()){
+				sb.append("'");
+			}
+			sb.append(dbValue.toString());
+			if (!beanDbMap.isIntegerType()){
+				sb.append("'");
+			}
+		}
+		
+		sb.append(")");
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Return the DB column length for storing the enum value.
+	 * <p>
+	 * This is for enum's mapped to strings.
+	 * </p>
+	 */
+	public int getLength() {
+		return length;
+	}
+
+
+
 	public int getJdbcType() {
 		return dbType;
 	}

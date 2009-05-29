@@ -65,7 +65,7 @@ import com.avaje.ebean.util.SortByClause.Property;
 /**
  * Describes Beans including their deployment information.
  */
-public class BeanDescriptor<T> {
+public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
@@ -445,6 +445,14 @@ public class BeanDescriptor<T> {
 		// object used to handle Id values
 		this.idBinder = IdBinderFactory.createIdBinder(propertiesId);
 	}
+
+	/**
+	 * Compare using the name of the BeanDescriptor.
+	 */
+	public int compareTo(BeanDescriptor<?> o) {
+		return name.compareTo(o.getName());
+	}
+
 
 	/**
 	 * Return true if the base table for this entity bean is not found.

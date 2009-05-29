@@ -173,9 +173,17 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 		}
 		logger.info(Message.msg("plugin.startup", new Object[] { name, dbConfig }));
 
+		executeDDL(server);
+		
 		return server;
 	}
 
+	protected void executeDDL(InternalEbeanServer server) {
+		
+		
+		server.createDdlGenerator().execute();	
+	}
+	
 	/**
 	 * Add extra sql reserved words to the ones known by Ebean.
 	 * <p>

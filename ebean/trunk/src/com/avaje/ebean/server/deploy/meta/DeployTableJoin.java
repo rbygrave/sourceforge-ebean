@@ -24,10 +24,8 @@ import java.util.ArrayList;
 import javax.persistence.JoinColumn;
 
 import com.avaje.ebean.server.deploy.BeanCascadeInfo;
+import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.lib.sql.Fkey;
-import com.avaje.ebean.server.lib.sql.FkeyColumn;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -86,19 +84,6 @@ public class DeployTableJoin {
     public DeployTableJoin() {
     }
     
-    /**
-     * If the join has only specified one of the columns, then find and assign the missing one.
-     * <p>
-     * This will find the PK of the table and assign that to the missing side of the join.
-     * </p>
-     */
-    public void setUndefinedColumnIfRequired(DeployUtil util, String table){
-    	if (columns.size() == 1){
-    		DeployTableJoinColumn joinColumn = columns.get(0);
-    		joinColumn.setUndefinedColumnIfRequired(util, table);
-    	}
-    }
-    
     public String toString() {
         return type + " " + table + " " + columns;
     }
@@ -133,41 +118,6 @@ public class DeployTableJoin {
     }
     
     /**
-     * Add columns from DB dictionary foreign key information.
-     */
-    public void addColumns(Fkey fkey) {
-		
-    	boolean exported = fkey.isExported();
-    	
-    	if (fkey.isPrimaryKey()) {
-			// foreign key maps to the primary key
-			setImportedPrimaryKey(true);
-		}
-	
-    	FkeyColumn[] cols = fkey.columns();
-		for (int i = 0; i < cols.length; i++) {
-			FkeyColumn col = cols[i];
-			
-			DeployTableJoinColumn joinColumn;
-			if (exported) {
-				// its around the other way...
-				joinColumn = new DeployTableJoinColumn(col.getPkColumnName(), col.getFkColumnName());
-			} else {
-				joinColumn = new DeployTableJoinColumn(col.getFkColumnName(), col.getPkColumnName());
-			}
-	
-			addJoinColumn(joinColumn);
-		}
-		
-    	if (!exported){
-    		if(fkey.isImportNullable()) {
-    			// make this an outer join as some of the columns are nullable
-    			setType(TableJoin.LEFT_OUTER);
-    		}
-    	}
-	}
-    
-    /**
      * Add a join pair
      */
     public void addJoinColumn(DeployTableJoinColumn pair) {
@@ -180,19 +130,19 @@ public class DeployTableJoin {
      * The order is generally true for OneToMany and false for ManyToOne relationships.
      * </p>
      */
-    public void addJoinColumn(boolean order, JoinColumn jc) {
+    public void addJoinColumn(boolean order, JoinColumn jc, BeanTable beanTable) {
 		if (!"".equals(jc.table())) {
 			setTable(jc.table());
 		}
-    	addJoinColumn(new DeployTableJoinColumn(order, jc));
+    	addJoinColumn(new DeployTableJoinColumn(order, jc, beanTable));
     }
     
     /**
      * Add a JoinColumn array.
      */
-    public void addJoinColumn(boolean order, JoinColumn[] jcArray) {
+    public void addJoinColumn(boolean order, JoinColumn[] jcArray, BeanTable beanTable) {
     	for (int i = 0; i < jcArray.length; i++) {
-    		addJoinColumn(order, jcArray[i]);
+    		addJoinColumn(order, jcArray[i], beanTable);
 		}
     }
     

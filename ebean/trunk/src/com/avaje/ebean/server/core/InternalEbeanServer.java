@@ -19,15 +19,17 @@
  */
 package com.avaje.ebean.server.core;
 
-import java.util.Iterator;
+import java.util.List;
 
 import javax.management.MBeanServer;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ScopeTrans;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.plugin.Plugin;
@@ -35,7 +37,6 @@ import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
 import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.InternalEbean;
 
 /**
  * Service Provider extension to EbeanServer.
@@ -43,10 +44,10 @@ import com.avaje.ebean.util.InternalEbean;
 public interface InternalEbeanServer extends InternalEbean {
 
 	/**
-	 * Return the server name.
+	 * Create a DDL generator.
 	 */
-	public String getName();
-
+	public DdlGenerator createDdlGenerator();
+	
 	/**
 	 * Return the associated ServerPlugin.
 	 */
@@ -72,7 +73,7 @@ public interface InternalEbeanServer extends InternalEbean {
 	/**
 	 * Return all the descriptors.
 	 */
-	public Iterator<BeanDescriptor<?>> descriptors();
+	public List<BeanDescriptor<?>> getBeanDescriptors();
 	
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
@@ -83,11 +84,6 @@ public interface InternalEbeanServer extends InternalEbean {
 	 * Return the BeanManager for a given type of bean.
 	 */
 	public <T> BeanManager<T> getBeanManager(Class<T> type);
-
-	/**
-	 * Return the BeanDescriptor for a database table.
-	 */
-	public BeanDescriptor<?> getMapBeanDescriptor(String tableName);
 
 	/**
 	 * Process committed changes from another framework.

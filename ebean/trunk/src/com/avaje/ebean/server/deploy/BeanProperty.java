@@ -33,6 +33,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.server.ddl.DbType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.lib.util.StringHelper;
@@ -95,6 +96,8 @@ public class BeanProperty implements ElGetValue {
 	 */
 	final boolean nullable;
 
+	final boolean unique;
+	
 	/**
 	 * Is this property include in database resultSet.
 	 */
@@ -217,7 +220,17 @@ public class BeanProperty implements ElGetValue {
 	final boolean hasLocalValidators;
 
 	boolean cascadeValidate;
-
+	
+	final int dbLength;
+	//final int dbPrecision;
+	final int dbScale;
+	final String dbColumnDefn;
+	final String dbConstraintExpression;
+	
+	public BeanProperty(DeployBeanProperty deploy) {
+		this(null, null, deploy);
+	}
+	
 	public BeanProperty(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor,
 			DeployBeanProperty deploy) {
 		this.descriptor = descriptor;
@@ -232,6 +245,12 @@ public class BeanProperty implements ElGetValue {
 		this.secondaryTable = deploy.isSecondaryTable();
 		this.isTransient = deploy.isTransient();
 		this.nullable = deploy.isNullable();
+		this.unique = deploy.isUnique();
+		this.dbLength = deploy.getDbLength();
+		this.dbScale = deploy.getDbScale();
+		this.dbColumnDefn = deploy.getDbColumnDefn();
+		this.dbConstraintExpression = deploy.getDbConstraintExpression();
+		
 		this.inherited = false;// deploy.isInherited();
 		this.owningType = deploy.getOwningType();
 		this.local = deploy.isLocal();
@@ -288,6 +307,12 @@ public class BeanProperty implements ElGetValue {
 		this.dbRead = source.isDbRead();
 		this.dbWrite = source.isDbWrite();
 		this.nullable = source.isNullable();
+		this.unique = source.isUnique();
+		this.dbLength = source.getDbLength();
+		this.dbScale = source.getDbScale();
+		this.dbColumnDefn = source.getDbColumnDefn();
+		this.dbConstraintExpression = source.getDbConstraintExpression();
+		
 		this.inherited = source.isInherited();
 		this.owningType = source.owningType;
 		this.local = owningType.equals(descriptor.getBeanType());
@@ -322,6 +347,13 @@ public class BeanProperty implements ElGetValue {
 			String msg = "No ScalarType assigned to " + descriptor.getFullName() + "." + getName();
 			throw new RuntimeException(msg);
 		}
+	}
+	
+	/**
+	 * Return the BeanDescriptor that owns this property.
+	 */
+	public BeanDescriptor<?> getBeanDescriptor() {
+		return descriptor;
 	}
 
 	/**
@@ -649,7 +681,49 @@ public class BeanProperty implements ElGetValue {
 	public ScalarType getScalarType() {
 		return scalarType;
 	}
+	
+	/**
+	 * Return the DB max length (varchar) or precision (decimal).
+	 */
+	public int getDbLength() {
+		return dbLength;
+	}
 
+	/**
+	 * Return the DB scale for numeric columns.
+	 */
+	public int getDbScale() {
+		return dbScale;
+	}
+		
+	/**
+	 * Return a specific column DDL definition if specified (otherwise null).
+	 */
+	public String getDbColumnDefn() {
+		return dbColumnDefn;
+	}
+
+	
+	/**
+	 * Return the DB constraint expression (can be null).
+	 * <p>
+	 * For an Enum returns IN expression for the set of Enum values.
+	 * </p>
+	 */
+	public String getDbConstraintExpression() {
+		return dbConstraintExpression;
+	}
+
+	/**
+	 * Return the DB column type definition.
+	 */
+	public String renderDbType(DbType dbType){
+		if (dbColumnDefn != null){
+			return dbColumnDefn;
+		}
+		return dbType.renderType(dbLength, dbScale);
+	}
+	
 	/**
 	 * Return the bean Field associated with this property.
 	 */
@@ -669,6 +743,13 @@ public class BeanProperty implements ElGetValue {
 	 */
 	public boolean isNullable() {
 		return nullable;
+	}
+	
+	/**
+	 * Return true if the DB column should be unique.
+	 */
+	public boolean isUnique() {
+		return unique;
 	}
 
 	/**

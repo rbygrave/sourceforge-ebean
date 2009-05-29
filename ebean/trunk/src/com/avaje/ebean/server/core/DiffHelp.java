@@ -19,12 +19,9 @@
  */
 package com.avaje.ebean.server.core;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.avaje.ebean.MapBean;
 import com.avaje.ebean.ValuePair;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -39,38 +36,6 @@ import com.avaje.ebean.util.ValueUtil;
  * </p>
  */
 public class DiffHelp {
-
-	/**
-	 * Get the difference between two MapBeans.
-	 * <p>
-	 * If b is null then it gets the difference between a and a's oldValues.
-	 * </p>
-	 */
-	public Map<String, ValuePair> diffMapBean(MapBean a, MapBean b) {
-
-		if (b == null) {
-			b = (MapBean)a._ebean_getIntercept().getOldValues();
-		}
-
-		Map<String, ValuePair> map = new LinkedHashMap<String, ValuePair>();
-
-		if (b == null) {
-			return map;
-		}
-
-		Iterator<Entry<String, Object>> it = a.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, Object> entry = it.next();
-			String columnName = entry.getKey();
-			Object aval = entry.getValue();
-			Object bval = b.get(columnName);
-			if (!ValueUtil.areEqual(aval, bval)) {
-				map.put(columnName, new ValuePair(aval, bval));
-			}
-		}
-		
-		return map;
-	}
 
 	
 	/**

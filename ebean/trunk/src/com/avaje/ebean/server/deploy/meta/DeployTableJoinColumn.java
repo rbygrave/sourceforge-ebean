@@ -21,7 +21,8 @@ package com.avaje.ebean.server.deploy.meta;
 
 import javax.persistence.JoinColumn;
 
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
+import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.deploy.BeanTable;
 
 /**
  * A join pair of local and foreign properties.
@@ -61,19 +62,32 @@ public class DeployTableJoinColumn {
 		this.insertable = insertable;
 		this.updateable = updateable;
 	}
+    
+    public DeployTableJoinColumn(boolean order, JoinColumn jc, BeanTable beanTable) {
+    	this(jc.referencedColumnName(), jc.name(), jc.insertable(), jc.updatable());
+    	setReferencedColumn(beanTable);
+    	if (!order){
+    		reverse();
+    	}
+    }
 
-	/**
-	 * Construct with a JoinColumn where "order" is true for normal order and false for the "reverse" column order.
-	 */
-    public DeployTableJoinColumn(boolean order, JoinColumn jc) {
-    	this(getByOrder(order, jc), getByOrder(!order, jc), jc.insertable(), jc.updatable());
+    private void setReferencedColumn(BeanTable beanTable){
+    	if (localDbColumn == null){
+    		BeanProperty[] idProperties = beanTable.getIdProperties();
+    		if (idProperties.length == 1){
+    			localDbColumn = idProperties[0].getDbColumn();
+    		}
+    	}
     }
     
     /**
-     * Helper method to return the normal or reverse order of the columns.
+     * Reverse the direction of the join.
      */
-    private static String getByOrder(boolean order, JoinColumn jc){
-    	return order ?  jc.referencedColumnName() : jc.name();
+    public DeployTableJoinColumn reverse() {
+    	String temp = localDbColumn;
+    	localDbColumn = foreignDbColumn;
+    	foreignDbColumn = temp;
+    	return this;
     }
 
     /**
@@ -86,37 +100,6 @@ public class DeployTableJoinColumn {
 		return s;
 	}
 	
-	/**
-	 * One of the columns can be defaulted to the primary key column (Not specified in the Join annotation).
-	 * <p>
-	 * If one column is found to be undefined then set its value to the primary key.
-	 * </p>
-	 */
-    public void setUndefinedColumnIfRequired(DeployUtil util, String table){
-    	
-		if (isLocalDbColumnUndefined()){
-			String primaryKeyColumn = util.getPrimaryKeyColumn(table);
-			setLocalDbColumn(primaryKeyColumn);
-		} else if (isForeignDbColumnUndefined()) {
-			String primaryKeyColumn = util.getPrimaryKeyColumn(table);
-			setForeignDbColumn(primaryKeyColumn);
-		}
-    }
-    
-	/**
-	 * Return true if the localDbColumn has not been defined.
-	 */
-	private boolean isLocalDbColumnUndefined() {
-		return localDbColumn == null || localDbColumn.length() == 0;
-	}
-
-	/**
-	 * Return true if the foreignDbColumn has not been defined.
-	 */
-	private boolean isForeignDbColumnUndefined() {
-		return foreignDbColumn == null || foreignDbColumn.length() == 0;
-	}
-
 	/**
 	 * Create a TableJoinColumn with the local and foreign columns swapped.
 	 */

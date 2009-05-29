@@ -94,4 +94,9 @@ public @interface EnumMapping {
 	 * </p>
 	 */
 	boolean integerType() default false;
+	
+	/**
+	 * The length of DB column if mapping to string values.
+	 */
+	int length() default 0;
 };

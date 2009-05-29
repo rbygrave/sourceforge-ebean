@@ -34,23 +34,23 @@ public interface NamingConvention {
 	 */
 	public String getPropertyFromColumn(Class<?> beanClass, String dbColumnName);
 
-	/**
-	 * Used to dynamically find a foreign key when more than one exists to
-	 * choose from.
-	 * <p>
-	 * For example say Customer has billingAddress and shippingAddress. The
-	 * foreign key column name for billingAddress would be determined as
-	 * billing_address_id (where id is the foreignKeySuffix and
-	 * toColumnFromProperty() converts camel case to underscore.
-	 * </p>
-	 */
-	public String getForeignKeyColumn(Class<?> beanClass, String propertyName);
-
-	/**
-	 * Used by code generator to determine the logical property name for a given
-	 * foreign key column.
-	 */
-	public String getForeignKeyProperty(Class<?> beanClass, String dbForeignKeyColumn);
+//	/**
+//	 * Used to dynamically find a foreign key when more than one exists to
+//	 * choose from.
+//	 * <p>
+//	 * For example say Customer has billingAddress and shippingAddress. The
+//	 * foreign key column name for billingAddress would be determined as
+//	 * billing_address_id (where id is the foreignKeySuffix and
+//	 * toColumnFromProperty() converts camel case to underscore.
+//	 * </p>
+//	 */
+//	public String getForeignKeyColumn(Class<?> beanClass, String propertyName);
+//
+//	/**
+//	 * Used by code generator to determine the logical property name for a given
+//	 * foreign key column.
+//	 */
+//	public String getForeignKeyProperty(Class<?> beanClass, String dbForeignKeyColumn);
 
 	/**
 	 * Return the sequence name given the table name.

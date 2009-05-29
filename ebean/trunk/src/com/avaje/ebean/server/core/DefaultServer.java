@@ -35,7 +35,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.Filter;
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.MapBean;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlUpdate;
@@ -60,6 +60,7 @@ import com.avaje.ebean.query.DefaultOrmUpdate;
 import com.avaje.ebean.query.DefaultRelationalQuery;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -182,6 +183,10 @@ public final class DefaultServer implements InternalEbeanServer {
 		serverControl = new MServerControl(logControl, autoFetchControl);
 
 		ShutdownManager.register(new Shutdown());
+	}
+	
+	public DdlGenerator createDdlGenerator() {
+		return new DdlGenerator(this);
 	}
 
 	public ServerControl getServerControl() {
@@ -412,24 +417,9 @@ public final class DefaultServer implements InternalEbeanServer {
 			return null;
 		}
 
-		if (a instanceof MapBean) {
-			try {
-				MapBean arow = (MapBean) a;
-				MapBean brow = null;
-				if (b != null) {
-					brow = (MapBean) b;
-				}
-				return diffHelp.diffMapBean(arow, brow);
-
-			} catch (ClassCastException e) {
-				String msg = "Second object expected to be a MapBean but is not? ";
-				throw new PersistenceException(msg, e);
-			}
-		} else {
-			Class<?> cls = a.getClass();
-			BeanDescriptor<?> desc = getBeanDescriptor(cls);
-			return diffHelp.diff(a, b, desc);
-		}
+		Class<?> cls = a.getClass();
+		BeanDescriptor<?> desc = getBeanDescriptor(cls);
+		return diffHelp.diff(a, b, desc);
 	}
 
 	/**
@@ -479,10 +469,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * Clear the query execution statistics.
 	 */
 	public void clearQueryStatistics() {
-		Iterator<BeanDescriptor<?>> it = descriptors();
-		while (it.hasNext()) {
-			BeanDescriptor<?> beanDescriptor = it.next();
-			beanDescriptor.clearQueryStatistics();
+		for (BeanDescriptor<?> desc : getBeanDescriptors()) {
+			desc.clearQueryStatistics();			
 		}
 	}
 
@@ -803,14 +791,6 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	/**
-	 * Return the next unique identity for a given table name.
-	 */
-	public Object nextId(String tableName) {
-		BeanDescriptor<?> desc = getMapBeanDescriptor(tableName);
-		return persister.nextId(desc);
-	}
-
-	/**
 	 * return the next unique identity value.
 	 * <p>
 	 * Uses the BeanDescriptor deployment information to determine the sequence
@@ -1061,11 +1041,11 @@ public final class DefaultServer implements InternalEbeanServer {
 		}
 	}
 
-	public MapBean findUnique(SqlQuery query, Transaction t) {
+	public SqlRow findUnique(SqlQuery query, Transaction t) {
 
 		// no findId() method for SqlQuery...
 		// a query that is expected to return either 0 or 1 rows
-		List<MapBean> list = findList(query, t);
+		List<SqlRow> list = findList(query, t);
 
 		if (list.size() == 0) {
 			return null;
@@ -1079,13 +1059,13 @@ public final class DefaultServer implements InternalEbeanServer {
 		}
 	}
 
-	public List<MapBean> findList(SqlQuery query, Transaction t) {
+	public List<SqlRow> findList(SqlQuery query, Transaction t) {
 
 		RelationalQueryRequest request = new RelationalQueryRequest(this, relationalQueryEngine, query, t);
 
 		try {
 			request.initTransIfRequired();
-			List<MapBean> list = request.findList();
+			List<SqlRow> list = request.findList();
 			request.endTransIfRequired();
 
 			return list;
@@ -1096,13 +1076,13 @@ public final class DefaultServer implements InternalEbeanServer {
 		}
 	}
 
-	public Set<MapBean> findSet(SqlQuery query, Transaction t) {
+	public Set<SqlRow> findSet(SqlQuery query, Transaction t) {
 
 		RelationalQueryRequest request = new RelationalQueryRequest(this, relationalQueryEngine, query, t);
 
 		try {
 			request.initTransIfRequired();
-			Set<MapBean> set = request.findSet();
+			Set<SqlRow> set = request.findSet();
 			request.endTransIfRequired();
 
 			return set;
@@ -1113,12 +1093,12 @@ public final class DefaultServer implements InternalEbeanServer {
 		}
 	}
 
-	public Map<?, MapBean> findMap(SqlQuery query, Transaction t) {
+	public Map<?, SqlRow> findMap(SqlQuery query, Transaction t) {
 
 		RelationalQueryRequest request = new RelationalQueryRequest(this, relationalQueryEngine, query, t);
 		try {
 			request.initTransIfRequired();
-			Map<?, MapBean> map = request.findMap();
+			Map<?, SqlRow> map = request.findMap();
 			request.endTransIfRequired();
 
 			return map;
@@ -1278,10 +1258,10 @@ public final class DefaultServer implements InternalEbeanServer {
 	/**
 	 * Return all the BeanDescriptors.
 	 */
-	public Iterator<BeanDescriptor<?>> descriptors() {
-		return deploymentManager.descriptors();
+	public List<BeanDescriptor<?>> getBeanDescriptors() {
+		return deploymentManager.getBeanDescriptors();
 	}
-
+	
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
@@ -1289,12 +1269,6 @@ public final class DefaultServer implements InternalEbeanServer {
 		return deploymentManager.getBeanDescriptor(beanClass);
 	}
 
-	/**
-	 * Return the BeanDescriptor for a database table.
-	 */
-	public BeanDescriptor<?> getMapBeanDescriptor(String tableName) {
-		return deploymentManager.getMapBeanDescriptor(tableName);
-	}
 
 	/**
 	 * Another server in the cluster sent this event so that we can inform local

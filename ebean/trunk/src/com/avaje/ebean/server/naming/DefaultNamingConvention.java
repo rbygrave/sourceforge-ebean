@@ -29,10 +29,10 @@ import com.avaje.ebean.server.plugin.PluginProperties;
  */
 public class DefaultNamingConvention implements NamingConvention {
 
-	/**
-	 * refer to getForeignKeyColumn();
-	 */
-	protected final String foreignKeySuffix;
+//	/**
+//	 * refer to getForeignKeyColumn();
+//	 */
+//	protected final String foreignKeySuffix;
 
 	/**
 	 * CamelCase to underscore converter.
@@ -41,8 +41,6 @@ public class DefaultNamingConvention implements NamingConvention {
 
 	protected final PluginProperties properties;
 
-	protected final boolean mapBeanLowerCase;
-
 	/**
 	 * Create the NamingConvention.
 	 */
@@ -50,9 +48,7 @@ public class DefaultNamingConvention implements NamingConvention {
 		this.properties = properties;
 		this.propertyNamingConvention = createPropertyNamingConvention(properties);
 
-		this.foreignKeySuffix = properties.getProperty("namingconvention.foreignkey.suffix", "Id");
-
-		this.mapBeanLowerCase = properties.getPropertyBoolean("namingconvention.mapbean.lowercase", true);
+		//this.foreignKeySuffix = properties.getProperty("namingconvention.foreignkey.suffix", "Id");
 	}
 
 	/**
@@ -94,36 +90,29 @@ public class DefaultNamingConvention implements NamingConvention {
 		return propertyNamingConvention.toPropertyFromColumn(beanClass, dbColumnName);
 	}
 
-	public String getMapBeanPropertyFromColumn(String dbColumnName) {
-		if (mapBeanLowerCase) {
-			return dbColumnName.toLowerCase();
-		}
-		return dbColumnName;
-	}
-
-	public String getForeignKeyColumn(Class<?> beanClass, String propertyName) {
-		String joinedProp = propertyName + foreignKeySuffix;
-
-		return getColumnFromProperty(beanClass, joinedProp);
-	}
-
-	public String getForeignKeyProperty(Class<?> beanClass, String dbForeignKeyColumn) {
-		
-		if (dbForeignKeyColumn.endsWith(foreignKeySuffix)) {
-			// trim of the foreignKeySuffix
-			int endIndex = dbForeignKeyColumn.length() - foreignKeySuffix.length();
-			dbForeignKeyColumn = dbForeignKeyColumn.substring(0, endIndex);
-
-		} else {
-			// trim off after last underscore
-			int lastUnderscore = dbForeignKeyColumn.lastIndexOf('_');
-			if (lastUnderscore > -1) {
-				dbForeignKeyColumn = dbForeignKeyColumn.substring(0, lastUnderscore);
-			}
-		}
-
-		return getPropertyFromColumn(beanClass, dbForeignKeyColumn);
-	}
+//	public String getForeignKeyColumn(Class<?> beanClass, String propertyName) {
+//		String joinedProp = propertyName + foreignKeySuffix;
+//
+//		return getColumnFromProperty(beanClass, joinedProp);
+//	}
+//
+//	public String getForeignKeyProperty(Class<?> beanClass, String dbForeignKeyColumn) {
+//		
+//		if (dbForeignKeyColumn.endsWith(foreignKeySuffix)) {
+//			// trim of the foreignKeySuffix
+//			int endIndex = dbForeignKeyColumn.length() - foreignKeySuffix.length();
+//			dbForeignKeyColumn = dbForeignKeyColumn.substring(0, endIndex);
+//
+//		} else {
+//			// trim off after last underscore
+//			int lastUnderscore = dbForeignKeyColumn.lastIndexOf('_');
+//			if (lastUnderscore > -1) {
+//				dbForeignKeyColumn = dbForeignKeyColumn.substring(0, lastUnderscore);
+//			}
+//		}
+//
+//		return getPropertyFromColumn(beanClass, dbForeignKeyColumn);
+//	}
 
 	public String getSequenceName(String tableName) {
 		
