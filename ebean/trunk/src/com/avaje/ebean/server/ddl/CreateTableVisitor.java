@@ -69,17 +69,7 @@ public class CreateTableVisitor implements BeanVisitor {
 			ctx.write(" ").write(constraintExpression);
 		}
 	}
-	
-	protected void writePrimaryKeyName(BeanDescriptor<?> descriptor) {
 		
-		if (ddl.isRenderPrimaryKeyName()){
-			String pkName = ddl.getPrimaryKeyName(descriptor);
-			if (pkName != null && pkName.length() > 0){
-				ctx.write(pkName).write(" ");
-			}
-		}
-	}
-	
 	public void visitBean(BeanDescriptor<?> descriptor) {
 		ctx.write("create table ");
 		writeTableName(descriptor);
@@ -87,11 +77,10 @@ public class CreateTableVisitor implements BeanVisitor {
 	}
 	
 	public void visitBeanEnd(BeanDescriptor<?> descriptor) {
-		
-		ctx.write("  primary key ");
-		writePrimaryKeyName(descriptor);
-		
-		ctx.write("(");
+
+		String pkName = ddl.getPrimaryKeyName(descriptor);
+
+		ctx.write("  constraint ").write(pkName).write(" primary key (");
 		
 		BeanProperty[] ids = descriptor.propertiesId();
 		VisitorUtil.visit(ids, new AbstractPropertyVisitor() {

@@ -9,13 +9,11 @@ public class DdlSyntax {
 
 	boolean renderIndexForFkey = true;
 	
-	boolean renderPrimaryKeyName = true;
-	
 	int columnNameWidth = 25;
 	
 	String dropTableCascade;
 	
-	String newLine = "\n";
+	String newLine = "\r\n";
 	
 	String identity = "auto_increment";
 	
@@ -23,6 +21,8 @@ public class DdlSyntax {
 	
 	String disableReferentialIntegrity;
 	String enableReferentialIntegrity;
+	
+	String foreignKeySuffix;
 	
 	/**
 	 * Return the primary key name for a given bean descriptor.
@@ -114,20 +114,6 @@ public class DdlSyntax {
 	}
 
 	/**
-	 * Return true if the primary key name should be rendered.
-	 */
-	public boolean isRenderPrimaryKeyName() {
-		return renderPrimaryKeyName;
-	}
-
-	/**
-	 * Set whether or not to render the primary key name.
-	 */
-	public void setRenderPrimaryKeyName(boolean renderPrimaryKeyName) {
-		this.renderPrimaryKeyName = renderPrimaryKeyName;
-	}
-
-	/**
 	 * Return true if indexes should be created for the foreign keys.
 	 */
 	public boolean isRenderIndexForFkey() {
@@ -155,6 +141,12 @@ public class DdlSyntax {
 		this.dropTableCascade = dropTableCascade;
 	}
 
-	
-	
+	public String getForeignKeySuffix() {
+		return foreignKeySuffix;
+	}
+
+	public void setForeignKeySuffix(String foreignKeySuffix) {
+		this.foreignKeySuffix = foreignKeySuffix;
+	}
+
 }
