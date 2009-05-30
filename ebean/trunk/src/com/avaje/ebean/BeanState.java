@@ -28,6 +28,16 @@ import java.util.Set;
 public interface BeanState {
 
 	/**
+	 * Return true if the bean is new (and not yet saved).
+	 */
+	public boolean isNew();
+
+	/**
+	 * Return true if the bean is new or dirty (and probably needs to be saved).
+	 */
+	public boolean isNewOrDirty();
+
+	/**
 	 * Return true if the bean has been changed but not yet saved.
 	 */
 	public boolean isDirty();

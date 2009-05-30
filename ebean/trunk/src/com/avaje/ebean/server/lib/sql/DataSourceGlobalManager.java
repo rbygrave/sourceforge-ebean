@@ -19,7 +19,7 @@ package com.avaje.ebean.server.lib.sql;
 
 import java.util.List;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 
 /**
  * Manages access to named DataSources using singleton scope.

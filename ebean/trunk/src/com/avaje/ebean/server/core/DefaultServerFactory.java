@@ -30,10 +30,10 @@ import javax.management.MBeanServerFactory;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.ServerConfiguration;
+import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;

@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.server.util.ClassPathSearch;
 import com.avaje.ebean.server.util.ClassPathSearchFilter;
 import com.avaje.ebean.server.util.ClassPathSearchMatcher;

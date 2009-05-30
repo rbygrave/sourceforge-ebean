@@ -14,7 +14,15 @@ public class DefaultBeanState implements BeanState {
 		this.entityBean = entityBean;
 		this.intercept = entityBean._ebean_getIntercept();
 	}
-	
+		
+	public boolean isNew() {
+		return intercept.isNew();
+	}
+
+	public boolean isNewOrDirty() {
+		return intercept.isNewOrDirty();
+	}
+
 	public boolean isDirty() {
 		return intercept.isDirty();
 	}

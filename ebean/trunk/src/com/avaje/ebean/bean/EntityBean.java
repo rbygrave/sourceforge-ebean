@@ -44,7 +44,12 @@ public interface EntityBean {
 	 * on this entity bean by using EntityBeanIntercept.setEmbeddedLoaded(Object o); 
 	 */
 	public void _ebean_setEmbeddedLoaded();
-	
+
+	/**
+	 * Return true if any embedded beans are new or dirty.
+	 */
+	public boolean _ebean_isEmbeddedNewOrDirty();
+
 	/**
 	 * Return the intercept for this object.
 	 */

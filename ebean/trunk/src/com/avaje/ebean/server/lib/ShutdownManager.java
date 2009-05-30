@@ -22,6 +22,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.core.ServerFactory;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;

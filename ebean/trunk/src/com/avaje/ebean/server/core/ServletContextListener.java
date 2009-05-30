@@ -23,7 +23,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.server.lib.GlobalProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.ShutdownManager;
 
 /**

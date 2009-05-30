@@ -139,10 +139,12 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 	public boolean isSaveRecurseSkippable(Object bean) {
 		if (!saveRecurseSkippable){
+			// we have to saveRecurse even if the bean is not dirty
+			// as this bean has cascade save on some of its properties
 			return false;
 		}
 		if (bean instanceof EntityBean){
-			return ((EntityBean)bean)._ebean_getIntercept().isDirty();
+			return ((EntityBean)bean)._ebean_getIntercept().isNewOrDirty();
 		} else {
 			// we don't know so we say no
 			return false;

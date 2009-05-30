@@ -3,7 +3,7 @@ package com.avaje.ebean.server.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.server.plugin.Plugin;
 
 /**

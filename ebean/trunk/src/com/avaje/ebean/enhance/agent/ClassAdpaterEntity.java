@@ -122,6 +122,13 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		}
 		return false;
 	}
+
+	private boolean isPropertyChangeListenerField(String name, String desc, String signature) {
+		if (desc.equals("Ljava/beans/PropertyChangeSupport;")){
+			return true;
+		}
+		return false;
+	}
 	
 	/**
 	 * The ebeanIntercept field is added once but thats all. Note the other
@@ -142,7 +149,17 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 					log("Skip intercepting static field "+name);					
 				}
 			}
+
 			// no interception of static fields
+			return super.visitField(access, name, desc, signature, value);
+		}
+		
+		if (isPropertyChangeListenerField(name, desc, signature)) {
+			classMeta.setExistingPropertyChangeSupport(name);
+			if (isLog(1)){
+				classMeta.log("Found existing PropertyChangeSupport field "+name);
+			}
+			// no interception on PropertyChangeSupport field
 			return super.visitField(access, name, desc, signature, value);
 		}
 		
@@ -192,6 +209,11 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 				}
 				InterceptField.addField(cv);
 				MethodEquals.addIdentityField(cv);
+				
+				if (!classMeta.isExistingPropertyChangeSupport()){
+					MethodPropertyChangeListener.addField(cv, classMeta);
+				}
+				
 			}
 			firstMethod = false;
 		}
@@ -227,6 +249,11 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		if (!classMeta.isSuperClassEntity()){
 			// Add the _ebean_getIntercept() _ebean_setIntercept() methods
 			InterceptField.addGetterSetter(cv, classMeta.getClassName());
+			
+			if (!classMeta.isExistingPropertyChangeSupport()){
+				// Add add/removePropertyChangeListener methods
+				MethodPropertyChangeListener.addMethod(cv, classMeta);
+			}
 		}
 		
 		// Add the field set/get methods which are used in place
@@ -237,6 +264,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		IndexFieldWeaver.addMethods(cv, classMeta);
 		
 		MethodSetEmbeddedLoaded.addMethod(cv, classMeta);
+		MethodIsEmbeddedNewOrDirty.addMethod(cv, classMeta);
 		
 		// register with the agentContext
 		enhanceContext.addClassMeta(classMeta);

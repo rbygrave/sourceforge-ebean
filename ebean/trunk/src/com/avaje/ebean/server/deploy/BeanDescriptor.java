@@ -755,36 +755,14 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		return idBinder.getBindIdSql();
 	}
 
-	public Object getOldValues(EntityBeanIntercept intercept) {
-		if (intercept.isDirty()){
-			return intercept.getOldValues();
-		} else {
-			return intercept.getOwner();
-		}
-	}
-	
-	public boolean isDirty(EntityBeanIntercept intercept) {
+//	public Object getOldValues(EntityBeanIntercept intercept) {
+//		if (intercept.isDirty()){
+//			return intercept.getOldValues();
+//		} else {
+//			return intercept.getOwner();
+//		}
+//	}
 		
-		if (intercept.isDirty()){
-			return true;
-		}
-		
-		Object bean = intercept.getOwner();
-		
-		// check the embedded beans if there are any
-		for (int i = 0; i < propertiesEmbedded.length; i++) {
-			Object v = propertiesEmbedded[i].getValue(bean);
-			if (v instanceof EntityBean){
-				if (((EntityBean)v)._ebean_getIntercept().isDirty()){
-					return true;
-				}
-			} else if (v != null){
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	/**
 	 * Bind the idValue to the preparedStatement.
 	 * <p>

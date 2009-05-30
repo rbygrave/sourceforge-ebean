@@ -1,15 +1,11 @@
-package com.avaje.ebean.server.lib;
+package com.avaje.ebean.config;
 
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
-import com.avaje.ebean.server.lib.util.GeneralException;
-import com.avaje.ebean.server.lib.util.NotFoundException;
 
 /**
  * Finds and translates the properties used to configure Ebean.
@@ -34,6 +30,10 @@ public class GlobalProperties {
 		return configProperties;
 	}
 	
+	public synchronized static void setProperty(String key, String value) {
+		getConfigProperties().setProperty(key, value);
+	}
+	
 	public synchronized static String getProperty(String key) {
 		return getConfigProperties().getProperty(key);
 	}
@@ -56,8 +56,6 @@ public class GlobalProperties {
 		// to write content to (as opposed to being read-only).
 		//String realPath = servletContext.getRealPath("/");
 
-		String propsResourceName = "/WEB-INF/" + propsFile0;
-		
 		// try loading from WEB-INF
 		InputStream in = null;
 		in = servletContext.getResourceAsStream("/WEB-INF/" + propsFile0);
@@ -76,15 +74,8 @@ public class GlobalProperties {
 			configProperties = new ConfigProperties(in);
 			
 		} else {
-			try {
-				// try environment variables and working directory
-				configProperties = defaultInit();
-
-			} catch (NotFoundException ex) {
-				String msg = "ServletContext can not find file [" + propsResourceName
-						+ "] to load properties";
-				throw new GeneralException(msg);
-			}
+			// try environment variables and working directory
+			configProperties = defaultInit();
 		}
 	}
 	
@@ -123,29 +114,29 @@ public class GlobalProperties {
 			logger.warning("ebean.properties file not found");
 			return new ConfigProperties(new Properties());
 		}
-		loggingInit(configProperties);
+		//loggingInit(configProperties);
 		return configProperties;
 	}
 
 	
-	private static void loggingInit(ConfigProperties configProperties) {
-		
-		String loggingProps = configProperties.getProperty("logging.properties.file");
-		if (loggingProps != null){
-			try {
-				InputStream is = ConfigProperties.findInputStream(loggingProps);
-				if (is != null){
-					LogManager logManager = LogManager.getLogManager();
-					logManager.readConfiguration(is);
-				} else {
-					String msg = "Logging Properties file ["+loggingProps+"] not found";
-					logger.warning(msg);
-				}
-			} catch (Exception e) {
-				String msg = "Error initialising LogManager";
-				logger.log(Level.SEVERE, msg, e);
-			}
-		}
-	}
+//	private static void loggingInit(ConfigProperties configProperties) {
+//		
+//		String loggingProps = configProperties.getProperty("logging.properties.file");
+//		if (loggingProps != null){
+//			try {
+//				InputStream is = ConfigProperties.findInputStream(loggingProps);
+//				if (is != null){
+//					LogManager logManager = LogManager.getLogManager();
+//					logManager.readConfiguration(is);
+//				} else {
+//					String msg = "Logging Properties file ["+loggingProps+"] not found";
+//					logger.warning(msg);
+//				}
+//			} catch (Exception e) {
+//				String msg = "Error initialising LogManager";
+//				logger.log(Level.SEVERE, msg, e);
+//			}
+//		}
+//	}
 	
 }

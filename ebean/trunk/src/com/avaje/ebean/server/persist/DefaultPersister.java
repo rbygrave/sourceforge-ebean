@@ -438,7 +438,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 					// set the 'parent/master' bean to the detailBean as long
 					// as we don't make it 'dirty' in doing so
 					if (detailBean instanceof EntityBean) {
-						if (((EntityBean) detailBean)._ebean_getIntercept().isDirty()) {
+						if (((EntityBean) detailBean)._ebean_getIntercept().isNewOrDirty()) {
 							// set the parent bean to detailBean
 							prop.setJoinValuesToChild(request, parentBean, detailBean, mapKeyValue);
 						} else {

@@ -21,7 +21,7 @@ package com.avaje.ebean.server.net;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 
 /**
  * Creates various implementation objects for CommandProcessor.

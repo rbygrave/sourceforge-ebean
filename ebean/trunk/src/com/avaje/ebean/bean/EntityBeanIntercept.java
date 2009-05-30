@@ -166,13 +166,47 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Return true if oldValues exist. That is the bean has been modified and
-	 * holds uncommitted changes.
+	 * Return true if this bean has been directly modified
+	 * (it has oldValues) or if any embedded beans are either
+	 * new or dirty (and hence need saving).
 	 */
 	public boolean isDirty() {
-		return (oldValues != null);
+		if (oldValues != null){
+			return true;
+		}
+		// need to check all the embedded beans
+		return owner._ebean_isEmbeddedNewOrDirty();
 	}
 
+	/**
+	 * Return true if this entity bean is new and not yet saved.
+	 */
+	public boolean isNew() {
+		return !intercepting && !loaded;
+	}
+	
+	/**
+	 * Return true if the entity bean is new or dirty (and should be saved).
+	 */
+	public boolean isNewOrDirty() {
+		return isNew() || isDirty();
+	}
+	
+	/**
+	 * Return true if the entity is a reference.
+	 */
+	public boolean isReference() {
+		return intercepting && !loaded;
+	}
+
+	/**
+	 * Set this as a reference object.
+	 */
+	public void setReference() {
+		this.loaded = false;
+		this.intercepting = true;
+	}
+	
 	/**
 	 * Return the old values used for ConcurrencyMode.ALL.
 	 */
@@ -195,22 +229,6 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
-
-	/**
-	 * Return true if the entity is a reference.
-	 */
-	public boolean isReference() {
-		return intercepting && !loaded;
-	}
-
-	/**
-	 * Set this as a reference object.
-	 */
-	public void setReference() {
-		this.loaded = false;
-		this.intercepting = true;
-	}
-
 	
 	/**
 	 * Return true if the bean currently has interception on.
@@ -266,6 +284,25 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		if (embeddedBean instanceof EntityBean){
 			EntityBean eb = (EntityBean)embeddedBean;
 			eb._ebean_getIntercept().setLoaded();
+		}
+	}
+	
+	/**
+	 * Return true if the embedded bean is new or dirty and hence needs saving.
+	 */
+	public boolean isEmbeddedNewOrDirty(Object embeddedBean) {
+		
+		if (embeddedBean == null){
+			// if it was previously set then the owning bean would 
+			// have oldValues containing the previous embedded bean
+			return false;
+		}
+		if (embeddedBean instanceof EntityBean){
+			return ((EntityBean)embeddedBean)._ebean_getIntercept().isNewOrDirty();
+			
+		} else {
+			// non-enhanced so must assume it is new and needs to be saved
+			return true;
 		}
 	}
 	
