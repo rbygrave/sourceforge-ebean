@@ -40,7 +40,6 @@ import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
-import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
 import com.avaje.ebean.util.ValueUtil;
 
@@ -205,8 +204,6 @@ public class BeanProperty implements ElGetValue {
 
 	final BeanReflectSetter setter;
 
-	final TypeManager typeManager;
-
 	final BeanDescriptor<?> descriptor;
 
 	/**
@@ -245,14 +242,10 @@ public class BeanProperty implements ElGetValue {
 		this(null, null, deploy);
 	}
 	
-	public BeanProperty(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor,
+	public BeanProperty(BeanDescriptorMap owner, BeanDescriptor<?> descriptor,
 			DeployBeanProperty deploy) {
+		
 		this.descriptor = descriptor;
-		if (owner != null) {
-			this.typeManager = owner.getTypeManager();
-		} else {
-			this.typeManager = null;
-		}
 		this.name = deploy.getName();
 		this.dbRead = deploy.isDbRead();
 		this.dbWrite = deploy.isDbWrite();
@@ -306,7 +299,6 @@ public class BeanProperty implements ElGetValue {
 	public BeanProperty(BeanProperty source, BeanPropertyOverride override) {
 
 		this.descriptor = source.descriptor;
-		this.typeManager = source.typeManager;
 		this.name = source.getName();
 
 		this.dbColumn = override.getDbColumn();

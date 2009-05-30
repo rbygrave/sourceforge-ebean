@@ -177,7 +177,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * This is not sent to a remote client.
 	 */
-	final BeanDescriptorOwner owner;
+	final BeanDescriptorMap owner;
 
 	/**
 	 * The EntityBean type used to create new EntityBeans.
@@ -352,16 +352,16 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * Construct the BeanDescriptor.
 	 */
-	public BeanDescriptor(TypeManager typeManager, DeployBeanDescriptor<T> deploy) {
+	public BeanDescriptor(BeanDescriptorMap owner, TypeManager typeManager, DeployBeanDescriptor<T> deploy) {
 
+		this.owner = owner;
+		this.serverName = owner.getServerName();
 		this.baseTableNotFound = deploy.isBaseTableNotFound();
 		this.name = deploy.getName();
 		this.fullName = deploy.getFullName();
 		this.typeManager = typeManager;
-		this.owner = deploy.getOwner();
 		this.beanType = deploy.getBeanType();
 		this.factoryType = deploy.getFactoryType();
-		this.serverName = deploy.getServerName();
 		this.namedQueries = deploy.getNamedQueries();
 		this.namedUpdates = deploy.getNamedUpdates();
 		

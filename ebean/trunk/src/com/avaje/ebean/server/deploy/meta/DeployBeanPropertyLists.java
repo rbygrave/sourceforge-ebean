@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
+import com.avaje.ebean.server.deploy.BeanDescriptorMap;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -66,7 +66,7 @@ public class DeployBeanPropertyLists {
 	private final BeanPropertyAssocOne<?> unidirectional;
 	
 	@SuppressWarnings("unchecked")
-	public DeployBeanPropertyLists(BeanDescriptorOwner owner, BeanDescriptor<?> desc, DeployBeanDescriptor<?> deploy){
+	public DeployBeanPropertyLists(BeanDescriptorMap owner, BeanDescriptor<?> desc, DeployBeanDescriptor<?> deploy){
 		this.desc = desc;
 		
 		DeployBeanPropertyAssocOne<?> deployUnidirectional = deploy.getUnidirectional();
@@ -323,7 +323,7 @@ public class DeployBeanPropertyLists {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private BeanProperty createBeanProperty(BeanDescriptorOwner owner, DeployBeanProperty deployProp){
+	private BeanProperty createBeanProperty(BeanDescriptorMap owner, DeployBeanProperty deployProp){
 		
 		if (deployProp instanceof DeployBeanPropertyAssocOne){
 			

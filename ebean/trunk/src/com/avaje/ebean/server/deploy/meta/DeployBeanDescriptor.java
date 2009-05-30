@@ -33,7 +33,6 @@ import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
-import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.IdentityGeneration;
@@ -61,21 +60,11 @@ public class DeployBeanDescriptor<T> {
 	 */
 	final Class<T> beanType;
 
-	/**
-	 * This is not sent to a remote client.
-	 */
-	final BeanDescriptorOwner owner;
-
 	final Map<String, DeployNamedQuery> namedQueries = new LinkedHashMap<String, DeployNamedQuery>();
 
 	final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
 	
 	DeployBeanPropertyAssocOne<?> unidirectional;
-	
-	/**
-	 * The EbeanServer name. Same as the plugin name.
-	 */
-	String serverName;
 
 	/**
 	 * Type of Identity generation strategy used.
@@ -184,16 +173,11 @@ public class DeployBeanDescriptor<T> {
 
 	String name;
 	
-
 	/**
 	 * Construct the BeanDescriptor.
 	 */
-	public DeployBeanDescriptor(BeanDescriptorOwner owner, Class<T> beanType) {
-		this.owner = owner;
+	public DeployBeanDescriptor(Class<T> beanType) {
 		this.beanType = beanType;
-		if (owner != null) {
-			this.serverName = owner.getServerName();
-		}
 	}
 	
 	public DeployBeanTable createDeployBeanTable() {
@@ -291,10 +275,6 @@ public class DeployBeanDescriptor<T> {
 		return namedUpdates;
 	}
 	
-	public BeanDescriptorOwner getOwner() {
-		return owner;
-	}
-
 	public BeanReflect getBeanReflect() {
 		return beanReflect;
 	}
@@ -329,13 +309,6 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setBeanReflect(BeanReflect beanReflect) {
 		this.beanReflect = beanReflect;
-	}
-
-	/**
-	 * Return the name of the server this BeanDescriptor belongs to.
-	 */
-	public String getServerName() {
-		return serverName;
 	}
 	
 	/**

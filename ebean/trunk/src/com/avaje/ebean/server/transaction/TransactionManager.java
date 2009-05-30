@@ -30,8 +30,6 @@ import javax.sql.DataSource;
 import com.avaje.ebean.TxIsolation;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.deploy.BeanDescriptorOwner;
-import com.avaje.ebean.server.deploy.DeploymentManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
@@ -122,9 +120,7 @@ public class TransactionManager implements Constants {
 	private final ListenerNotify listenerNotify;
 
 	private final PluginProperties properties;
-	
-	private final DeploymentManager deploy;
-		
+			
 	private final boolean logCommitEvent;
 	
 	private final ClusterManager clusterManager;
@@ -142,7 +138,6 @@ public class TransactionManager implements Constants {
 	public TransactionManager(PluginCore pluginCore) {
 		this.clusterManager = pluginCore.getClusterManager();
 		this.properties = pluginCore.getDbConfig().getProperties();
-		this.deploy = pluginCore.getDeploymentManager();
 		
 		this.transLogger = new TransactionLogManager(properties);
 		this.threadPool = ThreadPoolManager.getThreadPool("TransactionManager");
@@ -227,10 +222,6 @@ public class TransactionManager implements Constants {
 	
 	public DataSource getDataSource() {
 		return dataSource;
-	}
-	
-	public BeanDescriptorOwner getDeploy() {
-		return deploy;
 	}
 	
 	public TableStateManager getTableStateManager() {
