@@ -19,16 +19,14 @@
  */
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.type.TypeManager;
 
 /**
- * Owner attached to a BeanDescriptor.
+ * Provides a method to find a BeanDescriptor.
  * <p>
- * Provides methods to a BeanDescriptor that hook back to more server-wide
- * 'services'.
+ * Used during deployment of to resolve relationships between beans.
  * </p>
  */
-public interface BeanDescriptorOwner {
+public interface BeanDescriptorMap {
 
 	/**
 	 * Return the name of the server/database.
@@ -36,28 +34,8 @@ public interface BeanDescriptorOwner {
 	public String getServerName();
 
 	/**
-	 * Return the BeanManager for a given class.
-	 */
-	public <T> BeanManager<T> getBeanManager(Class<T> entityType);
-
-	/**
 	 * Return the BeanDescriptor for a given class.
-	 * <p>
-	 * This is slightly special in that it bypasses the BeanManager, so it can
-	 * be used in the process of creating BeanManager such as defining join
-	 * information (JoinTree) etc.
-	 * </p>
 	 */
 	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
-
-	/**
-	 * Return the TypeConverter for the server.
-	 */
-	public TypeManager getTypeManager();
-
-	/**
-	 * Convert a Object using the type (typically type as per java.sql.Types).
-	 */
-	public Object convert(Object v, int type);
 
 }

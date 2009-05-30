@@ -68,7 +68,7 @@ import com.avaje.ebean.util.Message;
 /**
  * Creates BeanDescriptors.
  */
-public class BeanDescriptorFactory {
+public class BeanDescriptorFactory implements BeanDescriptorMap {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptorFactory.class.getName());
 
@@ -196,6 +196,15 @@ public class BeanDescriptorFactory {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType) {
+		return (BeanDescriptor<T>)descMap.get(entityType.getName());
+	}
+
+	public String getServerName() {
+		return dbConfig.getProperties().getServerName();
+	}
+
 	public NamingConvention getNamingConvention() {
 		return namingConvention;
 	}
@@ -283,7 +292,7 @@ public class BeanDescriptorFactory {
 
 		DeployBeanInfo<T> info = createDeployBeanInfo(beanClass);
 		readDeployAssociations(info);
-		return new BeanDescriptor<T>(typeManager, info.getDescriptor());
+		return new BeanDescriptor<T>(this, typeManager, info.getDescriptor());
 	}
 	
 	private void registerBeanDescriptor(BeanDescriptor<?> desc) {
@@ -384,7 +393,7 @@ public class BeanDescriptorFactory {
 
 		for (DeployBeanInfo<?> info : deplyInfoMap.values()) {
 			
-			BeanDescriptor<?> desc = new BeanDescriptor(typeManager, info.getDescriptor());
+			BeanDescriptor<?> desc = new BeanDescriptor(this, typeManager, info.getDescriptor());
 			registerBeanDescriptor(desc);
 		}
 	}
@@ -660,7 +669,7 @@ public class BeanDescriptorFactory {
 	 */
 	private <T> DeployBeanInfo<T> createDeployBeanInfo(Class<T> beanClass) {
 
-		DeployBeanDescriptor<T> desc = new DeployBeanDescriptor<T>(deploymentManager, beanClass);
+		DeployBeanDescriptor<T> desc = new DeployBeanDescriptor<T>(beanClass);
 
 		desc.setUpdateChangesOnly(updateChangesOnly);
 		

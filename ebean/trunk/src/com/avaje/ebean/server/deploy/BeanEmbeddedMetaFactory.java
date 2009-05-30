@@ -32,7 +32,7 @@ public class BeanEmbeddedMetaFactory {
 	/**
 	 * Create BeanProperties for embedded beans using the deployment specific DB column name and table alias. 
 	 */
-	public static BeanEmbeddedMeta create(BeanDescriptorOwner owner, DeployBeanPropertyAssocOne<?> prop,
+	public static BeanEmbeddedMeta create(BeanDescriptorMap owner, DeployBeanPropertyAssocOne<?> prop,
 			BeanDescriptor<?> descriptor) {
 
 		// Use the tableAlias from the owning BeanDescriptor

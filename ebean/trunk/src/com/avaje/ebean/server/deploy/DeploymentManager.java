@@ -44,7 +44,7 @@ import com.avaje.ebean.server.type.TypeManager;
  * Also supports some other deployment features such as type conversion.
  * </p>
  */
-public class DeploymentManager implements BeanDescriptorOwner {
+public class DeploymentManager {
 
 	private static final Logger logger = Logger.getLogger(DeploymentManager.class.getName());
 

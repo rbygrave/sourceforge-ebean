@@ -56,7 +56,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	/**
 	 * Create the property.
 	 */
-	public BeanPropertyAssocOne(BeanDescriptorOwner owner, BeanDescriptor<?> descriptor,
+	public BeanPropertyAssocOne(BeanDescriptorMap owner, BeanDescriptor<?> descriptor,
 			DeployBeanPropertyAssocOne<T> deploy) {
 
 		super(owner, descriptor, deploy);
