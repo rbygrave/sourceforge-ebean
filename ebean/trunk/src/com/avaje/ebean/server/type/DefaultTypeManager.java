@@ -127,7 +127,6 @@ public final class DefaultTypeManager implements TypeManager {
 		
 		initialiseJodaTypes();
 		initialiseFromBootupSearch();
-		initialiseEnumsWithMapping();
 		initialiseFromProperties();
 	}
 
@@ -250,40 +249,6 @@ public final class DefaultTypeManager implements TypeManager {
 			return type.toJdbcType(value);
 		}
 		return value;
-	}
-
-	/**
-	 * Initialise ScalarTypes for Enums that use a Mapping.
-	 * <p>
-	 * That is, Enums that use an explicit mapping rather than the JPA Ordinal
-	 * or String types.
-	 * </p>
-	 */
-	protected void initialiseEnumsWithMapping() {
-
-		String prefix = "ebean.type.enum.";
-
-		Iterator<String> it = properties.keys();
-		while (it.hasNext()) {
-			String key = it.next();
-			if (key.startsWith(prefix)) {
-				// we have found a enum that uses a mapping
-				String enumClassName = key.substring(prefix.length());
-				try {
-					Class<?> enumType = Class.forName(enumClassName);
-					if (enumType.isEnum()) {
-						ScalarType scalarType = createEnumScalarType(enumType);
-						add(scalarType);
-					} else {
-						String msg = "Class [" + enumClassName + "] is not an Enum?";
-						logger.log(Level.SEVERE, msg);
-					}
-				} catch (Throwable ex) {
-					String msg = "Error creating Enum ScalarType for [" + enumClassName + "]";
-					logger.log(Level.SEVERE, msg, ex);
-				}
-			}
-		}
 	}
 
 	/**
