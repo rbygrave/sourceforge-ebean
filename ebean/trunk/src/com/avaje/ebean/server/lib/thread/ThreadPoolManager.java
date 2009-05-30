@@ -20,9 +20,9 @@ package com.avaje.ebean.server.lib.thread;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.BackgroundThread;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
 
 /**
  * Singleton that manages a list of named ThreadPools.

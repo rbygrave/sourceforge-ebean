@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.servlet.ServletContext;
 
-import com.avaje.ebean.server.lib.GlobalProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.resource.DirectoryFinder;
 import com.avaje.ebean.server.lib.resource.FileResourceSource;
 import com.avaje.ebean.server.lib.resource.ResourceSource;

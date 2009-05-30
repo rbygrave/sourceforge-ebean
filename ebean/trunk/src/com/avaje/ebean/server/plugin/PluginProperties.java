@@ -19,14 +19,12 @@
  */
 package com.avaje.ebean.server.plugin;
 
-import java.util.Iterator;
-
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.ServerConfiguration;
+import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.server.core.BootupClasses;
-import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -105,16 +103,6 @@ public class PluginProperties {
 	public boolean getPropertyBoolean(String key, boolean defaultValue) {
 		String val = getProperty(key, "" + defaultValue);
 		return val.equalsIgnoreCase("true");
-	}
-
-	/**
-	 * Return all the keys in the property map.
-	 * <p>
-	 * This includes ALL keys and not just ones for Ebean.
-	 * </p>
-	 */
-	public Iterator<String> keys() {
-		return configProperties.keys();
 	}
 
 	/**

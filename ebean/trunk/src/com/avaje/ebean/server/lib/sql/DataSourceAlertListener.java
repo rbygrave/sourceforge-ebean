@@ -17,7 +17,7 @@
  */
 package com.avaje.ebean.server.lib.sql;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 
 /**
  * Listens for alerting events such as DataSource down.

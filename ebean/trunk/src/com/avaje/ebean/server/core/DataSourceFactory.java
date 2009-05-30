@@ -21,7 +21,7 @@ package com.avaje.ebean.server.core;
 
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 
 /**
  * Create the DataSource. Refer to ServerFactoryImpl.

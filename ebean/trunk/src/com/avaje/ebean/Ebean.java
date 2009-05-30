@@ -32,11 +32,11 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.DefaultBeanState;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.core.DefaultServerFactory;
 import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerFactory;
-import com.avaje.ebean.server.lib.ConfigProperties;
-import com.avaje.ebean.server.lib.GlobalProperties;
 import com.avaje.ebean.server.util.InternalAssert;
 
 /**
@@ -112,7 +112,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.2.0-090513";
+	private static final String EBVERSION = "1.3.0-beta";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
@@ -1198,10 +1198,13 @@ public final class Ebean {
 	 * enhanced (or subclassed) entity bean. 
 	 * </p>
 	 */
-	public BeanState getBeanState(Object bean){
+	public static BeanState getBeanState(Object bean){
 		if (bean instanceof EntityBean){
 			return new DefaultBeanState((EntityBean)bean);
 		}
-		throw new PersistenceException("The bean is not an EntityBean");
+		// if using "subclassing" (not enhancement) this will
+		// return null for 'vanilla' instances (not subclassed) 
+		return null;
+		//throw new PersistenceException("The bean is not an EntityBean");
 	}
 }

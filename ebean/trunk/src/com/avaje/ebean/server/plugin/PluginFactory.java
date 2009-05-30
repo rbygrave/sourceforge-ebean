@@ -27,10 +27,10 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.ServerConfiguration;
+import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.server.core.BootupClassPathSearch;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.core.ProtectedMethod;
-import com.avaje.ebean.server.lib.ConfigProperties;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.util.FactoryHelper;
 

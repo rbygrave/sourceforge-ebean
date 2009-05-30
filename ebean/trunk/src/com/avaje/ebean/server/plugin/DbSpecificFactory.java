@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.server.lib.ConfigProperties;
+import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.server.lib.util.FactoryHelper;
 
 public class DbSpecificFactory {

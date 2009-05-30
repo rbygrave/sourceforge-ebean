@@ -38,7 +38,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.lib.GlobalProperties;
+import com.avaje.ebean.config.GlobalProperties;
 
 /**
  * Can search the class path for classes using a ClassPathSearchMatcher. A

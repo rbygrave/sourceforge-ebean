@@ -23,7 +23,6 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.TransactionContextClass;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -111,8 +110,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		Object embValue = getValue(oldValues);
 		if (embValue instanceof EntityBean){
 			// the embedded bean .. has its own old values
-			EntityBeanIntercept ebi = ((EntityBean)embValue)._ebean_getIntercept();
-			return ebi.isDirty();
+			return ((EntityBean)embValue)._ebean_getIntercept().isNewOrDirty();
 		}
 		if (embValue == null){
 			return getValue(bean) != null;

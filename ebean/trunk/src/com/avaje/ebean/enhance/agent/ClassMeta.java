@@ -51,6 +51,9 @@ public class ClassMeta {
 	 */
 	boolean hasEntityBeanInterface;
 
+	boolean existingPropertyChangeSupport;
+	String existingPropertyChangeSupportField;
+	
 	boolean alreadyEnhanced;
 
 	boolean hasEqualsOrHashcode;
@@ -413,6 +416,15 @@ public class ClassMeta {
 			fields.put(localField.getName(), fieldMeta);
 		}
 		return localField;
+	}
+
+	public boolean isExistingPropertyChangeSupport() {
+		return existingPropertyChangeSupport;
+	}
+
+	public void setExistingPropertyChangeSupport(String propChangeField) {
+		this.existingPropertyChangeSupport = true;
+		this.existingPropertyChangeSupportField = propChangeField;
 	}
 
 	public boolean isAlreadyEnhanced() {

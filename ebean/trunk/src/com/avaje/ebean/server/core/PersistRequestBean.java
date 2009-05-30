@@ -113,7 +113,8 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 				// with no concurrency checking
 				concurrencyMode = NONE;
 			}
-			isDirty = beanDescriptor.isDirty(intercept);
+			// this is ok to not use isNewOrDirty() as used for updates only
+			isDirty = intercept.isDirty();
 			loadedProps = intercept.getLoadedProps();
 			oldValues = (T)intercept.getOldValues();
 			

@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.avaje.ebean.server.lib.GlobalProperties;
+import com.avaje.ebean.config.GlobalProperties;
 
 /**
  * Processes ebean requests from http clients.
