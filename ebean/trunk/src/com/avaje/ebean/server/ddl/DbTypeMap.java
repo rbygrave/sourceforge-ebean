@@ -39,6 +39,7 @@ public class DbTypeMap {
 		put(Types.LONGVARBINARY, new DbType("longvarbinary"));
 		put(Types.LONGVARCHAR, new DbType("lonvarcahr"));
 		put(Types.VARBINARY, new DbType("varbinary"));
+		put(Types.BINARY, new DbType("binary"));
 
 		put(Types.DATE, new DbType("date"));
 		put(Types.TIME, new DbType("time"));
