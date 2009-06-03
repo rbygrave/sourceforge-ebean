@@ -405,17 +405,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		}
 
 		if (primativeType) {
-			// use valueOf methods to return primitives as objects
-			Type objectWrapperType = PrimitiveHelper.getObjectWrapper(asmType);
-
-			String objDesc = objectWrapperType.getInternalName();
-			String primDesc = asmType.getDescriptor();
-
-			if (intercept && classMeta.isLog(9)) {
-				classMeta.log(" ... get primitive field "+fieldName+" " + objDesc + " valueOf " + primDesc);
-			}
-
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, objDesc, "valueOf", "(" + primDesc + ")L" + objDesc + ";");
+			appendValueOf(mv, classMeta);
 		}
 	}
 
@@ -466,13 +456,16 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	public void addPublicGetSetMethods(ClassVisitor cv, ClassMeta classMeta, boolean checkExisting) {
 
 		if (isPersistent()){
+						
 			if (isId()){
-				// don't intercept id properties
-				// so no methods added
+				// don't intercept id properties 
+				// setter required for propertyChangeListener
+				addPublicSetMethod(cv, classMeta, checkExisting);
 				
 			} else if (isMany()){
-				// don't intercept setter
+				// setter required for propertyChangeListener
 				addPublicGetMethod(cv, classMeta, checkExisting);				
+				addPublicSetMethod(cv, classMeta, checkExisting);
 				
 			} else {
 				addPublicGetMethod(cv, classMeta, checkExisting);				
@@ -538,13 +531,17 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		String publicGetterName = getPublicGetterName();
 		
 		String preSetterArgTypes = "Ljava/lang/Object;Ljava/lang/Object;";
-		if (!objectType) {
+		if (primativeType) {
 			// preSetter method overloaded for primitive type comparison
 			preSetterArgTypes = fieldDesc + fieldDesc;
 		}
 
 		// ALOAD or ILOAD etc
 		int iLoadOpcode = asmType.getOpcode(Opcodes.ILOAD);
+
+		// double and long have a size of 2
+		int iPosition = asmType.getSize();
+
 		
 		String className = classMeta.getClassName();
 		String superClassName = classMeta.getSuperClassName();
@@ -555,27 +552,53 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		mv.visitLineNumber(1, l0);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, L_INTERCEPT);
+		if (isInterceptSet()){
+			mv.visitInsn(ICONST_1);
+		} else {
+			// id or OneToMany field etc 
+			mv.visitInsn(ICONST_0);			
+		}
 		mv.visitLdcInsn(fieldName);
-		mv.visitVarInsn(iLoadOpcode, 1);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitMethodInsn(INVOKEVIRTUAL, className, publicGetterName, getMethodDesc);
-		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preSetter", "(Ljava/lang/String;"+preSetterArgTypes+")V");
+		mv.visitVarInsn(iLoadOpcode, 1);	
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preSetter", "(ZLjava/lang/String;"+preSetterArgTypes+")Ljava/beans/PropertyChangeEvent;");
+		mv.visitVarInsn(ASTORE, 1+iPosition);
+		
 		Label l1 = new Label();
 		mv.visitLabel(l1);
 		mv.visitLineNumber(1, l1);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitVarInsn(iLoadOpcode, 1);
 		mv.visitMethodInsn(INVOKESPECIAL, superClassName, params.name, params.desc);
+
+		Label levt = new Label();
+		mv.visitLabel(levt);
+		mv.visitLineNumber(3, levt);
+
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, L_INTERCEPT);
+		mv.visitVarInsn(ALOAD, 1+iPosition);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitMethodInsn(INVOKESPECIAL, superClassName, publicGetterName, getMethodDesc);
+		if (primativeType){
+			appendValueOf(mv, classMeta);
+		}
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "postSetter", "(Ljava/beans/PropertyChangeEvent;Ljava/lang/Object;)V");
+
 		Label l2 = new Label();
 		mv.visitLabel(l2);
 		mv.visitLineNumber(1, l2);
 		mv.visitInsn(RETURN);
+		
 		Label l3 = new Label();
 		mv.visitLabel(l3);
 		mv.visitLocalVariable("this", "L"+className+";", null, l0, l3, 0);
 		mv.visitLocalVariable("newValue", fieldDesc, null, l0, l3, 1);
-		mv.visitMaxs(4, 2);
+		mv.visitLocalVariable("evt", "Ljava/beans/PropertyChangeEvent;", null, l1, l3, 2);
+		mv.visitMaxs(5, 3);
 		mv.visitEnd();
+				
 	}
 	
 	/**
@@ -672,12 +695,19 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		mv.visitEnd();
 	}
 	
-	
+
 	/**
-	 * Add set method for field interception.
+	 * Setter method with interception.
+	 * <pre>
+	 * 	public void _ebean_set_propname(String newValue) {
+	 * 		PropertyChangeEvent evt = ebi.preSetter(true, "propname", _ebean_get_propname(), newValue);
+	 * 		this.propname = newValue;
+	 * 		ebi.postSetter(evt);
+	 * 	}
+	 * </pre>
 	 */
 	private void addSet(ClassVisitor cw, ClassMeta classMeta) {
-
+		
 		String preSetterArgTypes = "Ljava/lang/Object;Ljava/lang/Object;";
 		if (!objectType) {
 			// preSetter method overloaded for primitive type comparison
@@ -697,39 +727,49 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 
 		MethodVisitor mv = cw.visitMethod(ACC_PROTECTED, setMethodName, setMethodDesc, null, null);
 		mv.visitCode();
-		Label l0 = null;
-		if (isInterceptSet()) {
-			l0 = new Label();
-			mv.visitLabel(l0);
-			mv.visitLineNumber(1, l0);
-			mv.visitVarInsn(ALOAD, 0);
-			mv.visitFieldInsn(GETFIELD, fieldClass, INTERCEPT_FIELD, L_INTERCEPT);
-			mv.visitLdcInsn(fieldName);
-			mv.visitVarInsn(iLoadOpcode, 1);// ALOAD or ILOAD
-			mv.visitVarInsn(ALOAD, 0);
-			mv.visitMethodInsn(INVOKEVIRTUAL, fieldClass, getMethodName, getMethodDesc);
-			mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preSetter", "(Ljava/lang/String;" + preSetterArgTypes + ")V");
+
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitLineNumber(1, l0);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitFieldInsn(GETFIELD, fieldClass, INTERCEPT_FIELD, L_INTERCEPT);
+		if (isInterceptSet()){
+			mv.visitInsn(ICONST_1);
+		} else {
+			// id or OneToMany field etc 
+			mv.visitInsn(ICONST_0);			
 		}
+		mv.visitLdcInsn(fieldName);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitMethodInsn(INVOKEVIRTUAL, fieldClass, getMethodName, getMethodDesc);
+		mv.visitVarInsn(iLoadOpcode, 1);
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preSetter", "(ZLjava/lang/String;"+preSetterArgTypes+")Ljava/beans/PropertyChangeEvent;");
+		mv.visitVarInsn(ASTORE, 1+iPosition);
 		Label l1 = new Label();
-		if (l0 == null) {
-			l0 = l1;
-		}
 		mv.visitLabel(l1);
 		mv.visitLineNumber(2, l1);
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitVarInsn(iLoadOpcode, 1);// ALOAD or ILOAD
-		
+		mv.visitVarInsn(iLoadOpcode, 1);// ALOAD or ILOAD		
 		mv.visitFieldInsn(PUTFIELD, fieldClass, fieldName, fieldDesc);
-		
+
 		Label l2 = new Label();
 		mv.visitLabel(l2);
-		mv.visitLineNumber(1, l2);
-		mv.visitInsn(RETURN);
+		mv.visitLineNumber(3, l2);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitFieldInsn(GETFIELD, fieldClass, INTERCEPT_FIELD, L_INTERCEPT);
+		mv.visitVarInsn(ALOAD, 1+iPosition);
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "postSetter", "(Ljava/beans/PropertyChangeEvent;)V");
+		
 		Label l3 = new Label();
 		mv.visitLabel(l3);
-		mv.visitLocalVariable("this", "L" + fieldClass + ";", null, l0, l3, 0);
-		mv.visitLocalVariable("_newValue", fieldDesc, null, l0, l3, 1);
-		mv.visitMaxs(4, 2);
+		mv.visitLineNumber(4, l3);
+		mv.visitInsn(RETURN);
+		Label l4 = new Label();
+		mv.visitLabel(l4);
+		mv.visitLocalVariable("this", "L"+fieldClass+";", null, l0, l4, 0);
+		mv.visitLocalVariable("newValue", fieldDesc, null, l0, l4, 1);
+		mv.visitLocalVariable("evt", "Ljava/beans/PropertyChangeEvent;", null, l1, l4, 2);
+		mv.visitMaxs(5, 3);
 		mv.visitEnd();
 	}
 	

@@ -1194,7 +1194,7 @@ public final class Ebean {
 	/**
 	 * Return the BeanState for a given entity bean. 
 	 * <p> 
-	 * This will throw new PersistenceException is the bean is not an 
+	 * This will return null if the bean is not an 
 	 * enhanced (or subclassed) entity bean. 
 	 * </p>
 	 */

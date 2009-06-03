@@ -155,7 +155,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		}
 		
 		if (isPropertyChangeListenerField(name, desc, signature)) {
-			classMeta.setExistingPropertyChangeSupport(name);
+			//classMeta.setExistingPropertyChangeSupport(name);
 			if (isLog(1)){
 				classMeta.log("Found existing PropertyChangeSupport field "+name);
 			}
@@ -210,16 +210,14 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 				InterceptField.addField(cv);
 				MethodEquals.addIdentityField(cv);
 				
-				if (!classMeta.isExistingPropertyChangeSupport()){
-					MethodPropertyChangeListener.addField(cv, classMeta);
-				}
-				
 			}
 			firstMethod = false;
 		}
 
 		MethodVisitor mv =  super.visitMethod(access, name, desc, signature, exceptions);
 
+		classMeta.addExistingMethod(name, desc);
+		
 		if (isConstructor(access, name, desc, signature, exceptions)){
 			// also create the entityBeanIntercept object
 			return new ConstructorAdapter(mv, classMeta, desc);
@@ -250,10 +248,8 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 			// Add the _ebean_getIntercept() _ebean_setIntercept() methods
 			InterceptField.addGetterSetter(cv, classMeta.getClassName());
 			
-			if (!classMeta.isExistingPropertyChangeSupport()){
-				// Add add/removePropertyChangeListener methods
-				MethodPropertyChangeListener.addMethod(cv, classMeta);
-			}
+			// Add add/removePropertyChangeListener methods
+			MethodPropertyChangeListener.addMethod(cv, classMeta);
 		}
 		
 		// Add the field set/get methods which are used in place
