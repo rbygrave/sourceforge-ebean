@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.bean;
 
+import java.beans.PropertyChangeListener;
+
 /**
  * Bean that is aware of EntityBeanIntercept.
  * <p>
@@ -38,6 +40,10 @@ public interface EntityBean {
 	 * </p>
 	 */
 	public String _ebean_getMarker();
+
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+	
+	public void removePropertyChangeListener(PropertyChangeListener listener);
 	
 	/**
 	 * Generated method that sets the loaded state on all the embedded beans

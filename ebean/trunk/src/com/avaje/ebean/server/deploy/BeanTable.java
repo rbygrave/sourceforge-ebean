@@ -87,9 +87,9 @@ public class BeanTable {
         return beanType;
     }
     
-	public DeployTableJoinColumn createJoinColumn(String propertyName) {
+	public DeployTableJoinColumn createJoinColumn(String foreignKeyPrefix) {
     	if (idProperties.length == 1){
-    		String fk = propertyName+"_"+idProperties[0].getDbColumn();
+    		String fk = foreignKeyPrefix+"_"+idProperties[0].getDbColumn();
     		String lc = idProperties[0].getDbColumn();
     		return new DeployTableJoinColumn(lc, fk);
     	}

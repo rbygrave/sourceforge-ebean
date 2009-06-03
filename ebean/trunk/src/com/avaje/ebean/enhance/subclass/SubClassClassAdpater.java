@@ -11,6 +11,7 @@ import com.avaje.ebean.enhance.agent.InterceptField;
 import com.avaje.ebean.enhance.agent.MarkerField;
 import com.avaje.ebean.enhance.agent.MethodEquals;
 import com.avaje.ebean.enhance.agent.MethodIsEmbeddedNewOrDirty;
+import com.avaje.ebean.enhance.agent.MethodPropertyChangeListener;
 import com.avaje.ebean.enhance.agent.MethodSetEmbeddedLoaded;
 import com.avaje.ebean.enhance.agent.NoEnhancementRequiredException;
 import com.avaje.ebean.enhance.agent.VisitMethodParams;
@@ -196,7 +197,10 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 
 		// Add the _ebean_getIntercept() _ebean_setIntercept() methods
 		InterceptField.addGetterSetter(cv, classMeta.getClassName());
-
+		
+		// Add add/removePropertyChangeListener methods
+		MethodPropertyChangeListener.addMethod(cv, classMeta);
+		
 		// Add getter and setter methods for both local
 		// and inherited properties
 		GetterSetterMethods.add(cv, classMeta);

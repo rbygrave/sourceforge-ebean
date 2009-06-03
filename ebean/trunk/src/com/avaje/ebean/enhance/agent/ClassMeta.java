@@ -50,15 +50,14 @@ public class ClassMeta {
 	 * Set to true if the class already implements the EntityBean interface.
 	 */
 	boolean hasEntityBeanInterface;
-
-	boolean existingPropertyChangeSupport;
-	String existingPropertyChangeSupportField;
 	
 	boolean alreadyEnhanced;
 
 	boolean hasEqualsOrHashcode;
 
 	boolean hasDefaultConstructor;
+
+	HashSet<String> existingMethods = new HashSet<String>();
 
 	HashSet<String> existingSuperMethods = new HashSet<String>();
 
@@ -359,6 +358,20 @@ public class ClassMeta {
 	}
 
 	/**
+	 * Add an existing method.
+	 */
+	public void addExistingMethod(String methodName, String methodDesc) {
+		existingMethods.add(methodName + methodDesc);
+	}
+
+	/**
+	 * Return true if the method already exists on the bean.
+	 */
+	public boolean isExistingMethod(String methodName, String methodDesc) {
+		return existingMethods.contains(methodName + methodDesc);
+	}
+	
+	/**
 	 * Only for subclassing return true if the method exists on the original
 	 * entity class.
 	 */
@@ -416,15 +429,6 @@ public class ClassMeta {
 			fields.put(localField.getName(), fieldMeta);
 		}
 		return localField;
-	}
-
-	public boolean isExistingPropertyChangeSupport() {
-		return existingPropertyChangeSupport;
-	}
-
-	public void setExistingPropertyChangeSupport(String propChangeField) {
-		this.existingPropertyChangeSupport = true;
-		this.existingPropertyChangeSupportField = propChangeField;
 	}
 
 	public boolean isAlreadyEnhanced() {

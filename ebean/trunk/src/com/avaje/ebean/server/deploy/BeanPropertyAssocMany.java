@@ -266,11 +266,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			iq.setIncludeTableJoin(inverseJoin);
 		}
 		
-		BeanProperty[] uids = descriptor.propertiesId();
-
 		ExportedProperty[] expProps = getExported();
 		if (embeddedExportedProperties) {
 			// use the EmbeddedId object instead of the parentBean
+			BeanProperty[] uids = descriptor.propertiesId();
 			parentBean = uids[0].getValue(parentBean);
 		}
 		

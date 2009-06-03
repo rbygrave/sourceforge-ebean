@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.bean;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.ObjectStreamException;
@@ -102,19 +103,6 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		this.owner = (EntityBean)owner;
 	}
 	
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		if (pcs == null){
-			this.pcs = new PropertyChangeSupport(owner);
-		}
-		pcs.addPropertyChangeListener(listener);
-	}
-	
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		if (pcs != null){
-			pcs.removePropertyChangeListener(listener);
-		}
-	}
-	
 	/**
 	 * Return the 'owning' entity bean.
 	 */
@@ -127,6 +115,44 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 			return "Reference...";
 		}
 		return "OldValues: " + oldValues;
+	}
+	
+	/**
+	 * Add a property change listener for this entity bean.
+	 */
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		if (pcs == null){
+			pcs = new PropertyChangeSupport(owner);
+		}
+		pcs.addPropertyChangeListener(listener);
+	}
+
+	/**
+	 * Add a property change listener for this entity bean for a specific property.
+	 */
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener){
+		if (pcs == null){
+			pcs = new PropertyChangeSupport(owner);
+		}
+		pcs.addPropertyChangeListener(propertyName, listener);
+	}
+
+	/**
+	 * Remove a property change listener for this entity bean.
+	 */
+	public void removePropertyChangeListener(PropertyChangeListener listener){
+		if (pcs != null){
+			pcs.removePropertyChangeListener(listener);
+		}
+	}
+
+	/**
+	 * Remove a property change listener for this entity bean for a specific property.
+	 */
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener){
+		if (pcs != null){
+			pcs.removePropertyChangeListener(propertyName, listener);
+		}
 	}
 	
 	/**
@@ -439,6 +465,32 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	}
 
 	/**
+	 * Called for "enhancement" postSetter processing.
+	 * This is around a PUTFIELD so no need to check the newValue afterwards.
+	 */
+	public void postSetter(PropertyChangeEvent event){
+		if (pcs != null && event != null){
+			pcs.firePropertyChange(event);
+		}
+	}
+
+	/**
+	 * Called for "subclassed" postSetter processing. 
+	 * Here the newValue has to be re-fetched (and passed into this method)
+	 * in case there is code inside the setter that further mutates the value.
+	 */
+	public void postSetter(PropertyChangeEvent event, Object newValue){
+		if (pcs != null && event != null){
+			if (newValue != null && newValue.equals(event.getNewValue())){
+				pcs.firePropertyChange(event);
+			} else {
+				pcs.firePropertyChange(event.getPropertyName(), event.getOldValue(), newValue);
+			}
+		}
+	}
+
+	
+	/**
 	 * Return true if a modification check should be performed. That is, return
 	 * true if we need to compare the new and old values to see if they have
 	 * changed.
@@ -457,154 +509,190 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	 * Check to see if the values are not equal. If they are not equal then
 	 * create the old values for use with ConcurrencyMode.ALL.
 	 */
-	public void preSetter(String propertyName, Object newValue, Object oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (!areEqual(newValue, oldValue)) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, Object oldValue, Object newValue) {
+		
+		boolean changed = !areEqual(oldValue, newValue);
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
+		}
+		
+		return null; 
 	}
 
 	/**
 	 * Check for primitive boolean.
 	 */
-	public void preSetter(String propertyName, boolean newValue, boolean oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, boolean oldValue, boolean newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Boolean.valueOf(oldValue), Boolean.valueOf(newValue));
+		}
+		
+		return null; 
 	}
 	
 	/**
 	 * Check for primitive int.
 	 */
-	public void preSetter(String propertyName, int newValue, int oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, int oldValue, int newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Integer.valueOf(oldValue), Integer.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive long.
+	 * long.
 	 */
-	public void preSetter(String propertyName,long newValue, long oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, long oldValue, long newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Long.valueOf(oldValue), Long.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive double.
+	 * double.
 	 */
-	public void preSetter(String propertyName,double newValue, double oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, double oldValue, double newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Double.valueOf(oldValue), Double.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive float.
+	 * float.
 	 */
-	public void preSetter(String propertyName,float newValue, float oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, float oldValue, float newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Float.valueOf(oldValue), Float.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive short.
+	 * short.
 	 */
-	public void preSetter(String propertyName,short newValue, short oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, short oldValue, short newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Short.valueOf(oldValue), Short.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive char.
+	 * char.
 	 */
-	public void preSetter(String propertyName,char newValue, char oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, char oldValue, char newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Character.valueOf(oldValue), Character.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive byte.
+	 * char.
 	 */
-	public void preSetter(String propertyName,byte newValue, byte oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, byte oldValue, byte newValue) {
+		
+		boolean changed = oldValue != newValue;
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, Byte.valueOf(oldValue), Byte.valueOf(newValue));
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive char[].
+	 * char[].
 	 */
-	public void preSetter(String propertyName,char[] newValue, char[] oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, char[] oldValue, char[] newValue) {
+		
+		boolean changed = !areEqual(oldValue, newValue);
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
+		}
+		return null; 
 	}
 
 	/**
-	 * Check for primitive byte[].
+	 * byte[].
 	 */
-	public void preSetter(String propertyName,byte[] newValue, byte[] oldValue) {
-		if (preSetterIsModifyCheck(propertyName)){
-			if (newValue != oldValue) {
-				createOldValues();
-				if (pcs != null){
-					pcs.firePropertyChange(propertyName, oldValue, newValue);
-				}
-			}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, byte[] oldValue, byte[] newValue) {
+		
+		boolean changed = !areEqual(oldValue, newValue);
+
+		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+			createOldValues();			
 		}
+		
+		if (changed && pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
+		}
+		return null; 
 	}
+
 }

@@ -8,6 +8,7 @@ import com.avaje.ebean.BeanState;
 public class DefaultBeanState implements BeanState {
 
 	final EntityBean entityBean;
+	
 	final EntityBeanIntercept intercept;
 	
 	public DefaultBeanState(EntityBean  entityBean){
@@ -40,10 +41,10 @@ public class DefaultBeanState implements BeanState {
 	}
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		intercept.addPropertyChangeListener(listener);
+		entityBean.addPropertyChangeListener(listener);
 	}
 	
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		intercept.removePropertyChangeListener(listener);
+		entityBean.removePropertyChangeListener(listener);
 	}
 }

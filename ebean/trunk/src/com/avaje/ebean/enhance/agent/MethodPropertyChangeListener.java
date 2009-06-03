@@ -1,7 +1,6 @@
 package com.avaje.ebean.enhance.agent;
 
 import com.avaje.ebean.enhance.asm.ClassVisitor;
-import com.avaje.ebean.enhance.asm.FieldVisitor;
 import com.avaje.ebean.enhance.asm.Label;
 import com.avaje.ebean.enhance.asm.MethodVisitor;
 import com.avaje.ebean.enhance.asm.Opcodes;
@@ -16,19 +15,24 @@ import com.avaje.ebean.enhance.asm.Opcodes;
 public class MethodPropertyChangeListener implements Opcodes, EnhanceConstants {
 
 	/**
-	 * Add the PropertyChangeSupport _ebean_pcs field.
-	 */
-	public static void addField(ClassVisitor cv, ClassMeta classMeta) {
-		FieldVisitor fv = cv.visitField(ACC_PROTECTED + ACC_TRANSIENT, "_ebean_pcs", "Ljava/beans/PropertyChangeSupport;", null, null);
-		fv.visitEnd();
-	}
-
-	/**
 	 * Add the addPropertyChangeListener and removePropertyChangeListener methods.
 	 */
 	public static void addMethod(ClassVisitor cv, ClassMeta classMeta) {
 		addAddListenerMethod(cv, classMeta);
+		addAddPropertyListenerMethod(cv, classMeta);
 		addRemoveListenerMethod(cv, classMeta);
+		addRemovePropertyListenerMethod(cv, classMeta);
+	}
+	
+	private static boolean alreadyExisting(ClassMeta classMeta, String method, String desc) {
+
+		if (classMeta.isExistingMethod(method, desc)){
+			if (classMeta.isLog(1)){
+				classMeta.log("Existing method... "+method+desc+"  - not adding Ebean's implementation");
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -36,98 +40,153 @@ public class MethodPropertyChangeListener implements Opcodes, EnhanceConstants {
 	 * 
 	 * <pre>
 	 *   public void addPropertyChangeListener(PropertyChangeListener listener) {
-	 *     if (_ebean_pcs == null){
-	 *       _ebean_pcs = new PropertyChangeSupport(this);
-	 *     }
-	 *     _ebean_pcs.addPropertyChangeListener(listener);
+	 *     _ebean_intercept.addPropertyChangeListener(listener);
 	 *   }
 	 * </pre>
 	 */
 	private static void addAddListenerMethod(ClassVisitor cv, ClassMeta classMeta) {
+	
+		String desc = "(Ljava/beans/PropertyChangeListener;)V";
+	
+		if (alreadyExisting(classMeta, "addPropertyChangeListener", desc)){
+			return;
+		}
 		
 		String className = classMeta.getClassName();
 		
 		MethodVisitor mv;
 
-		mv = cv.visitMethod(ACC_PUBLIC, "addPropertyChangeListener", "(Ljava/beans/PropertyChangeListener;)V", null, null);
+		mv = cv.visitMethod(ACC_PUBLIC, "addPropertyChangeListener", desc, null, null);
 		mv.visitCode();
 		Label l0 = new Label();
 		mv.visitLabel(l0);
-		mv.visitLineNumber(46, l0);
+		mv.visitLineNumber(1, l0);
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, className, "_ebean_pcs", "Ljava/beans/PropertyChangeSupport;");
+		mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, "Lcom/avaje/ebean/bean/EntityBeanIntercept;");
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/bean/EntityBeanIntercept", "addPropertyChangeListener", "(Ljava/beans/PropertyChangeListener;)V");
 		Label l1 = new Label();
-		mv.visitJumpInsn(IFNONNULL, l1);
+		mv.visitLabel(l1);
+		mv.visitLineNumber(2, l1);
+		mv.visitInsn(RETURN);
 		Label l2 = new Label();
 		mv.visitLabel(l2);
-		mv.visitLineNumber(47, l2);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitTypeInsn(NEW, "java/beans/PropertyChangeSupport");
-		mv.visitInsn(DUP);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitMethodInsn(INVOKESPECIAL, "java/beans/PropertyChangeSupport", "<init>", "(Ljava/lang/Object;)V");
-		mv.visitFieldInsn(PUTFIELD, className, "_ebean_pcs", "Ljava/beans/PropertyChangeSupport;");
-		mv.visitLabel(l1);
-		mv.visitLineNumber(49, l1);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, className, "_ebean_pcs", "Ljava/beans/PropertyChangeSupport;");
-		mv.visitVarInsn(ALOAD, 1);
-		mv.visitMethodInsn(INVOKEVIRTUAL, "java/beans/PropertyChangeSupport", "addPropertyChangeListener", "(Ljava/beans/PropertyChangeListener;)V");
-		Label l3 = new Label();
-		mv.visitLabel(l3);
-		mv.visitLineNumber(50, l3);
-		mv.visitInsn(RETURN);
-		Label l4 = new Label();
-		mv.visitLabel(l4);
-		mv.visitLocalVariable("this", "L"+className+";", null, l0, l4, 0);
-		mv.visitLocalVariable("listener", "Ljava/beans/PropertyChangeListener;", null, l0, l4, 1);
-		mv.visitMaxs(4, 2);
+		mv.visitLocalVariable("this", "L"+className+";", null, l0, l2, 0);
+		mv.visitLocalVariable("listener", "Ljava/beans/PropertyChangeListener;", null, l0, l2, 1);
+		mv.visitMaxs(2, 2);
 		mv.visitEnd();
 	}
 
+	private static void addAddPropertyListenerMethod(ClassVisitor cv, ClassMeta classMeta) {
+		
+		String desc = "(Ljava/lang/String;Ljava/beans/PropertyChangeListener;)V";
+		
+		if (alreadyExisting(classMeta, "addPropertyChangeListener", desc)){
+			return;
+		}
+
+		
+		String className = classMeta.getClassName();
+		
+		MethodVisitor mv;
+	
+		mv = cv.visitMethod(ACC_PUBLIC, "addPropertyChangeListener", desc, null, null);
+		mv.visitCode();
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitLineNumber(1, l0);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, "Lcom/avaje/ebean/bean/EntityBeanIntercept;");
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitVarInsn(ALOAD, 2);
+		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/bean/EntityBeanIntercept", "addPropertyChangeListener", "(Ljava/lang/String;Ljava/beans/PropertyChangeListener;)V");
+		Label l1 = new Label();
+		mv.visitLabel(l1);
+		mv.visitLineNumber(2, l1);
+		mv.visitInsn(RETURN);
+		Label l2 = new Label();
+		mv.visitLabel(l2);
+		mv.visitLocalVariable("this", "L"+className+";", null, l0, l2, 0);
+		mv.visitLocalVariable("name", "Ljava/lang/String;", null, l0, l2, 1);
+		mv.visitLocalVariable("listener", "Ljava/beans/PropertyChangeListener;", null, l0, l2, 2);
+		mv.visitMaxs(3, 3);
+		mv.visitEnd();
+	}
+	
 	/**
 	 * Add the removePropertyChangeListener method.
 	 * 
 	 * <pre>
 	 * 	public void removePropertyChangeListener(PropertyChangeListener listener) {
-	 *    if (_ebean_pcs != null){
-	 *        _ebean_pcs.removePropertyChangeListener(listener);
-	 *    }
+	 *    _ebean_intercept.removePropertyChangeListener(listener);
 	 *  }
 	 * </pre>
 	 */
 	private static void addRemoveListenerMethod(ClassVisitor cv, ClassMeta classMeta) {
 		
+		String desc = "(Ljava/beans/PropertyChangeListener;)V";
+		
+		if (alreadyExisting(classMeta, "removePropertyChangeListener", desc)){
+			return;
+		}
+		
 		String className = classMeta.getClassName();
 		
 		MethodVisitor mv;
 		
-		mv = cv.visitMethod(ACC_PUBLIC, "removePropertyChangeListener", "(Ljava/beans/PropertyChangeListener;)V", null, null);
+		mv = cv.visitMethod(ACC_PUBLIC, "removePropertyChangeListener", desc, null, null);
 		mv.visitCode();
 		Label l0 = new Label();
 		mv.visitLabel(l0);
-		mv.visitLineNumber(53, l0);
+		mv.visitLineNumber(1, l0);
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, className, "_ebean_pcs", "Ljava/beans/PropertyChangeSupport;");
+		mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, "Lcom/avaje/ebean/bean/EntityBeanIntercept;");
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/bean/EntityBeanIntercept", "removePropertyChangeListener", "(Ljava/beans/PropertyChangeListener;)V");
 		Label l1 = new Label();
-		mv.visitJumpInsn(IFNULL, l1);
+		mv.visitLabel(l1);
+		mv.visitLineNumber(2, l1);
+		mv.visitInsn(RETURN);
 		Label l2 = new Label();
 		mv.visitLabel(l2);
-		mv.visitLineNumber(54, l2);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, className, "_ebean_pcs", "Ljava/beans/PropertyChangeSupport;");
-		mv.visitVarInsn(ALOAD, 1);
-		mv.visitMethodInsn(INVOKEVIRTUAL, "java/beans/PropertyChangeSupport", "removePropertyChangeListener", "(Ljava/beans/PropertyChangeListener;)V");
-		mv.visitLabel(l1);
-		mv.visitLineNumber(56, l1);
-		mv.visitInsn(RETURN);
-		Label l3 = new Label();
-		mv.visitLabel(l3);
-		mv.visitLocalVariable("this", "L"+className+";", null, l0, l3, 0);
-		mv.visitLocalVariable("listener", "Ljava/beans/PropertyChangeListener;", null, l0, l3, 1);
+		mv.visitLocalVariable("this", "L"+className+";", null, l0, l2, 0);
+		mv.visitLocalVariable("listener", "Ljava/beans/PropertyChangeListener;", null, l0, l2, 1);
 		mv.visitMaxs(2, 2);
 		mv.visitEnd();
-		
+	}
 
+	private static void addRemovePropertyListenerMethod(ClassVisitor cv, ClassMeta classMeta) {
+		
+		String desc = "(Ljava/lang/String;Ljava/beans/PropertyChangeListener;)V";
+		
+		if (alreadyExisting(classMeta, "removePropertyChangeListener", desc)){
+			return;
+		}
+		
+		String className = classMeta.getClassName();
+		
+		MethodVisitor mv;
+
+		mv = cv.visitMethod(ACC_PUBLIC, "removePropertyChangeListener", desc, null, null);
+		mv.visitCode();
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitLineNumber(1, l0);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, "Lcom/avaje/ebean/bean/EntityBeanIntercept;");
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitVarInsn(ALOAD, 2);
+		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/bean/EntityBeanIntercept", "removePropertyChangeListener", "(Ljava/lang/String;Ljava/beans/PropertyChangeListener;)V");
+		Label l1 = new Label();
+		mv.visitLabel(l1);
+		mv.visitLineNumber(2, l1);
+		mv.visitInsn(RETURN);
+		Label l2 = new Label();
+		mv.visitLabel(l2);
+		mv.visitLocalVariable("this", "L"+className+";", null, l0, l2, 0);
+		mv.visitLocalVariable("name", "Ljava/lang/String;", null, l0, l2, 1);
+		mv.visitLocalVariable("listener", "Ljava/beans/PropertyChangeListener;", null, l0, l2, 2);
+		mv.visitMaxs(3, 3);
+		mv.visitEnd();
 	}
 }
