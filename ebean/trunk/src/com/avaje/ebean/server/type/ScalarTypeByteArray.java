@@ -37,7 +37,11 @@ public class ScalarTypeByteArray extends ScalarTypeBase {
 		if (value == null){
 			pstmt.setNull(index, Types.BINARY);
 		} else {
-			pstmt.setByte(index, (Byte)value);
+			if (value instanceof byte[]){
+				pstmt.setBytes(index, (byte[])value);					
+			} else {
+				pstmt.setByte(index, (Byte)value);				
+			}
 		}
 	}
 
