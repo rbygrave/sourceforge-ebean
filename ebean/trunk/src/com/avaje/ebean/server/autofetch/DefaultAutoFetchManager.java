@@ -341,8 +341,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 					Class<?> beanClass = Class.forName(beanType);
 					BeanManager<?> beanMgr = server.getBeanManager(beanClass);
 					if (beanMgr == null){
-						// perhaps a entity as an inner class
-						logging.logToJavaLogger("No BeanMgr for "+beanClass);
+						// previously was an entity but not longer
 						
 					} else {
 						JoinTree beanJoinTree = beanMgr.getBeanJoinTree();
