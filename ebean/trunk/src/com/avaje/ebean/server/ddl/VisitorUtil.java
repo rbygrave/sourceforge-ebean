@@ -22,21 +22,21 @@ public class VisitorUtil {
 		visit(server.getBeanDescriptors(), visitor);
 	}
 
-	
+
 	/**
 	 * Visit all the descriptors in the list.
 	 */
 	public static void visit(List<BeanDescriptor<?>> descriptors, BeanVisitor visitor){
-	
+
 		visitor.visitBegin();
-		
+
 		for (BeanDescriptor<?> desc : descriptors) {
-			
+
 			if (desc.getBaseTable() != null){
 				visitBean(desc, visitor);
-			} 
+			}
 		}
-		
+
 		visitor.visitEnd();
 	}
 
@@ -44,22 +44,24 @@ public class VisitorUtil {
 	 * Visit the bean using a visitor.
 	 */
 	public static void visitBean(BeanDescriptor<?> desc, BeanVisitor visitor) {
-		
+
 		visitor.visitBean(desc);
-		
+
 		Iterator<BeanProperty> it = desc.propertiesAll();
 		while (it.hasNext()) {
 			BeanProperty p = it.next();
-			
-			PropertyVisitor pv = visitor.visitProperty(p);
-			if (pv != null){
-				visit(p, pv);
+
+			if (!p.isTransient()){
+				PropertyVisitor pv = visitor.visitProperty(p);
+				if (pv != null){
+					visit(p, pv);
+				}
 			}
-		}		
-	
+		}
+
 		visitor.visitBeanEnd(desc);
 	}
-	
+
 	/**
 	 * Visit all the properties.
 	 */
@@ -74,26 +76,26 @@ public class VisitorUtil {
 	 * Visit the property.
 	 */
 	public static void visit(BeanProperty p, PropertyVisitor pv) {
-		
+
 		if (p instanceof BeanPropertyAssocMany<?>){
 			pv.visitMany((BeanPropertyAssocMany<?>)p);
-			
+
 		} else if (p instanceof BeanPropertyAssocOne<?>){
 			BeanPropertyAssocOne<?> assocOne = (BeanPropertyAssocOne<?>)p;
 			if (assocOne.isEmbedded()){
 				pv.visitEmbedded(assocOne);
 				BeanProperty[] embProps = assocOne.getProperties();
 				for (int i = 0; i < embProps.length; i++) {
-					pv.visitEmbeddedScalar(embProps[i], assocOne);							
+					pv.visitEmbeddedScalar(embProps[i], assocOne);
 				}
-				
-				
+
+
 			} else if (assocOne.isOneToOneExported()){
 				pv.visitOneExported(assocOne);
-				
+
 			} else {
 				pv.visitOneImported(assocOne);
-				
+
 			}
 		} else {
 			pv.visitScalar(p);
