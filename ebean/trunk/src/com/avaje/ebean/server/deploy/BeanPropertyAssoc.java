@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy;
 
@@ -40,17 +40,17 @@ import com.avaje.ebean.server.lib.util.StringHelper;
 public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 	private static final Logger logger = Logger.getLogger(BeanPropertyAssoc.class.getName());
-	
+
 	/**
-	 * The descriptor of the target. This MUST be initialised after construction 
+	 * The descriptor of the target. This MUST be initialised after construction
 	 * so as to avoid a dependency loop between BeanDescriptors.
 	 */
 	BeanDescriptor<T> targetDescriptor;
-	
+
 	IdBinder targetIdBinder;
-	
+
 	InheritInfo targetInheritInfo;
-	
+
 	/**
 	 * Persist settings.
 	 */
@@ -75,13 +75,13 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	 * Whether the associated join type should be an outer join.
 	 */
 	final boolean isOuterJoin;
-	
+
 	String extraWhere;
 
 	String targetTableAlias;
-	
+
 	boolean saveRecurseSkippable;
-	
+
 	boolean deleteRecurseSkippable;
 
 	/**
@@ -110,12 +110,12 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 			targetDescriptor = descriptor.getBeanDescriptor(targetType);
 			targetIdBinder = targetDescriptor.getIdBinder();
 			targetInheritInfo = targetDescriptor.getInheritInfo();
-			
+
 			saveRecurseSkippable = targetDescriptor.isSaveRecurseSkippable();
 			deleteRecurseSkippable = targetDescriptor.isDeleteRecurseSkippable();
-			
+
 			cascadeValidate = cascadeInfo.isValidate();
-			
+
 			targetTableAlias = targetDescriptor.getBaseTableAlias();
 			if (extraWhere != null){
 				extraWhere = StringHelper.replaceString(extraWhere, "${ta}", targetTableAlias);
@@ -129,7 +129,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	public boolean isScalar() {
 		return false;
 	}
-	
+
 	/**
 	 * Return the BeanDescriptor of the target.
 	 */
@@ -144,13 +144,13 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 			return false;
 		}
 		if (bean instanceof EntityBean){
-			return ((EntityBean)bean)._ebean_getIntercept().isNewOrDirty();
+			return !((EntityBean)bean)._ebean_getIntercept().isNewOrDirty();
 		} else {
 			// we don't know so we say no
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Return true if save can be skipped for unmodified bean(s) of this
 	 * property.
@@ -237,7 +237,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 		return true;
 	}
-		 
+
 	/**
 	 * return the join to use for the bean.
 	 */
@@ -262,7 +262,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	public BeanCascadeInfo getCascadeInfo() {
 		return cascadeInfo;
 	}
-	
+
 	/**
 	 * Build the list of imported property. Matches BeanProperty from the target
 	 * descriptor back to local database columns in the TableJoin.
@@ -270,12 +270,12 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	protected ImportedId createImportedId(BeanPropertyAssoc<?> owner, BeanDescriptor<?> target, TableJoin join) {
 
 		BeanProperty[] props = target.propertiesId();
-		
+
 		if (descriptor.isSqlSelectBased()){
 			String dbColumn = owner.getDbColumn();
 			return new ImportedIdSimple(owner, dbColumn, props[0]);
 		}
-		
+
 		TableJoinColumn[] cols = join.columns();
 
 
@@ -294,19 +294,19 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 				BeanPropertyAssocOne<?> embProp = (BeanPropertyAssocOne<?>)props[0];
 				BeanProperty[] embBaseProps = embProp.getTargetDescriptor().propertiesBaseScalar();
 				ImportedIdSimple[] scalars = createImportedList(owner, cols, embBaseProps);
-				
+
 				return new ImportedIdEmbedded(owner, embProp, scalars);
 			}
-			
+
 		} else {
 			// Concatenated key that is not embedded
 			ImportedIdSimple[] scalars = createImportedList(owner, cols, props);
 			return new ImportedIdMultiple(owner, scalars);
-		}	
+		}
 	}
-	
+
 	private ImportedIdSimple[] createImportedList(BeanPropertyAssoc<?> owner, TableJoinColumn[] cols, BeanProperty[] props) {
-		
+
 		ArrayList<ImportedIdSimple> list = new ArrayList<ImportedIdSimple>();
 
 		for (int i = 0; i < cols.length; i++) {
@@ -315,7 +315,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 		return (ImportedIdSimple[]) list.toArray(new ImportedIdSimple[list.size()]);
 	}
-	
+
 	private ImportedIdSimple createImportedScalar(BeanPropertyAssoc<?> owner, TableJoinColumn col, BeanProperty[] props) {
 
 		String matchColumn = col.getForeignDbColumn();
@@ -326,7 +326,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 				return new ImportedIdSimple(owner, localColumn, props[j]);
 			}
 		}
-		
+
 		String msg = "Error with the Join on ["+getFullBeanName()
 			+"]. Could not find the local match for ["+matchColumn+"] "//in table["+searchTable+"]?"
 			+" Perhaps an error in a @JoinColumn";
