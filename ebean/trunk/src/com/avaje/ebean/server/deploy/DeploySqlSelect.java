@@ -195,7 +195,7 @@ public class DeploySqlSelect {
 		}
 
 		String dbWhere = predicates.getDbWhere();
-		if (dbWhere.length() > 0) {
+		if (dbWhere != null && dbWhere.length() > 0) {
 			if (dynamicWhere == null) {
 				dynamicWhere = dbWhere;
 			} else {
