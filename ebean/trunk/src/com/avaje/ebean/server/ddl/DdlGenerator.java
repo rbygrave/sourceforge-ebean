@@ -2,8 +2,10 @@ package com.avaje.ebean.server.ddl;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.sql.Connection;
@@ -14,8 +16,9 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Controls the generation of DDL and potentially runs the resulting scripts.
@@ -24,22 +27,27 @@ public class DdlGenerator {
 
 	final InternalEbeanServer server;
 	
-	final PluginProperties properties;
+	final DatabasePlatform dbPlatform;
 
 	PrintStream out = System.out;
 
 	int summaryLength = 40;
 
 	boolean debug = true;
+	
+	boolean generateDdl;
+	boolean runDdl;
 
 	String dropContent;
 	String createContent;
 	String dropFile;
 	String createFile;
 
-	public DdlGenerator(InternalEbeanServer server) {
+	public DdlGenerator(InternalEbeanServer server, DatabasePlatform dbPlatform, ServerConfig serverConfig) {
 		this.server = server;
-		this.properties = server.getPlugin().getDbConfig().getProperties();
+		this.dbPlatform = dbPlatform;
+		this.generateDdl = serverConfig.isDdlGenerate();
+		this.runDdl = serverConfig.isDdlRun();
 	}
 	
 	/**
@@ -54,9 +62,9 @@ public class DdlGenerator {
 	 * Generate the DDL drop and create scripts if the properties have been set.
 	 */
 	public void generateDdl() {
-		if (properties.getPropertyBoolean("ddl.generate", false)) {
-			writeDrop();
-			writeCreate();
+		if (generateDdl) {
+			writeDrop(getDropFileName());
+			writeCreate(getCreateFileName());
 		}
 	}
 	
@@ -64,46 +72,52 @@ public class DdlGenerator {
 	 * Run the DDL drop and DDL create scripts if properties have been set.
 	 */
 	public void runDdl() {
-		
-		boolean runBoth = properties.getPropertyBoolean("ddl.run", false);
-		boolean runDrop = properties.getPropertyBoolean("ddl.runDrop", runBoth);
-		boolean runCreate = properties.getPropertyBoolean("ddl.runCreate", runBoth);
-		
-		if (runDrop) {
-			runScript(true, dropContent);
-		}
-		if (runCreate){
-			runScript(false, createContent);
-		}
-	}
-
-	public void writeDrop() {
-
-		try {
-			String c = genDropDdl();
-			dropFile = getDropFile();
-			writeFile(dropFile, c);
-
-		} catch (IOException e) {
-			String msg = "Error generating Drop DDL";
-			throw new PersistenceException(msg, e);
+				
+		if (runDdl) {
+			try {
+				if (dropContent == null){
+					dropContent = readFile(getDropFileName());
+				}
+				if (createContent == null){
+					createContent = readFile(getCreateFileName());
+				}
+				runScript(true, dropContent);
+				runScript(false, createContent);
+				
+			} catch (IOException e){
+				String msg = "Error reading drop/create script from file system";
+				throw new RuntimeException(msg, e);
+			}
 		}
 	}
 
-	public void writeCreate() {
+	protected void writeDrop(String dropFile) {
 
-		try {
-			String c = genCreateDdl();
-			createFile = getCreateFile();
-			writeFile(createFile, c);
-
-		} catch (IOException e) {
-			String msg = "Error generating Create DDL";
-			throw new PersistenceException(msg, e);
-		}
+		String c = generateDropDdl();
+//		try {
+//			String c = generateDropDdl();
+//			writeFile(dropFile, c);
+//
+//		} catch (IOException e) {
+//			String msg = "Error generating Drop DDL";
+//			throw new PersistenceException(msg, e);
+//		}
 	}
 
-	public String genDropDdl() {
+	protected void writeCreate(String createFile) {
+
+		String c = generateCreateDdl();
+//		try {
+//			String c = generateCreateDdl();
+//			writeFile(createFile, c);
+//
+//		} catch (IOException e) {
+//			String msg = "Error generating Create DDL";
+//			throw new PersistenceException(msg, e);
+//		}
+	}
+
+	public String generateDropDdl() {
 
 		DdlGenContext ctx = createContext();
 
@@ -114,7 +128,7 @@ public class DdlGenerator {
 		return dropContent;
 	}
 
-	public String genCreateDdl() {
+	public String generateCreateDdl() {
 
 		DdlGenContext ctx = createContext();
 		CreateTableVisitor create = new CreateTableVisitor(ctx);
@@ -128,24 +142,16 @@ public class DdlGenerator {
 		return createContent;
 	}
 
-	protected String getDropFile() {
-		String dropFile = properties.getProperty("ddl.dropfile", null);
-		if (dropFile != null) {
-			return dropFile;
-		}
+	protected String getDropFileName() {
 		return server.getName() + "-drop.sql";
 	}
 
-	protected String getCreateFile() {
-		String file = properties.getProperty("ddl.createfile", null);
-		if (file != null) {
-			return file;
-		}
+	protected String getCreateFileName() {
 		return server.getName() + "-create.sql";
 	}
 
 	protected DdlGenContext createContext() {
-		return server.getPlugin().getDbConfig().getDbSpecific().createDdlGenContext();
+		return dbPlatform.createDdlGenContext();
 	}
 
 	protected void writeFile(String fileName, String fileContent) throws IOException {
@@ -153,9 +159,35 @@ public class DdlGenerator {
 		File f = new File(fileName);
 
 		FileWriter fw = new FileWriter(f);
-		fw.write(fileContent);
-		fw.flush();
-		fw.close();
+		try {
+			fw.write(fileContent);
+			fw.flush();
+		} finally {
+			fw.close();
+		}
+	}
+	
+	protected String readFile(String fileName) throws IOException {
+
+		File f = new File(fileName);
+		if (!f.exists()){
+			return null;
+		}
+
+		StringBuilder buf = new StringBuilder();
+
+		FileReader fr = new FileReader(f);
+		LineNumberReader lr = new LineNumberReader(fr);
+		try {
+			String s = null;
+			while ((s = lr.readLine()) != null){
+				buf.append(s).append("\n");
+			}
+		} finally {
+			lr.close();
+		}
+		
+		return buf.toString();
 	}
 
 	/**
@@ -191,8 +223,8 @@ public class DdlGenerator {
 	private void runStatements(boolean expectErrors, List<String> statements, Connection c) {
 
 		for (int i = 0; i < statements.size(); i++) {
-			String oneOf = (i + 1) + " of " + statements.size();
-			runStatement(expectErrors, oneOf, statements.get(i), c);
+			String xOfy = (i + 1) + " of " + statements.size();
+			runStatement(expectErrors, xOfy, statements.get(i), c);
 		}
 	}
 
