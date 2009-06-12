@@ -1,6 +1,11 @@
 package com.avaje.ebean.server.ddl;
 
 import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.type.ScalarType;
 
 /**
  * The context used during DDL generation.
@@ -29,12 +34,19 @@ public class DdlGenContext {
 	 */
 	String lastContent;
 	
+	Set<String> intersectionTables = new HashSet<String>();
+	
 	public DdlGenContext(DbTypeMap dbTypeMap, DdlSyntax ddlSyntax){
 		this.dbTypeMap = dbTypeMap;
 		this.ddlSyntax = ddlSyntax;
 		this.newLine = ddlSyntax.getNewLine();
 	}
 
+	public boolean createIntersectionTable(String tableName){
+		
+		return intersectionTables.add(tableName);
+	}
+	
 	/**
 	 * Return the generated content (DDL script).
 	 */
@@ -56,7 +68,20 @@ public class DdlGenContext {
 	public DdlSyntax getDdlSyntax() {
 		return ddlSyntax;
 	}
+
+	public String getColumnDefn(BeanProperty p) {
+		DbType dbType = getDbType(p);
+		return p.renderDbType(dbType);
+	}
 	
+	private DbType getDbType(BeanProperty p) {
+
+		ScalarType scalarType = p.getScalarType();
+		if (scalarType == null) {
+			throw new RuntimeException("No scalarType for " + p.getFullBeanName());
+		}
+		return dbTypeMap.get(scalarType.getJdbcType());
+	}
 	/**
 	 * Write content to the buffer.
 	 */
@@ -116,7 +141,7 @@ public class DdlGenContext {
 		return sb.toString();
 	}
 	
-	private String pad(String content, int minWidth){
+	public String pad(String content, int minWidth){
 		if (minWidth > 0 && content.length() < minWidth){
 			int padding = minWidth - content.length();
 			return content + padding(padding);

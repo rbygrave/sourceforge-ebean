@@ -3,10 +3,11 @@ package com.avaje.ebean.server.ddl;
 import java.sql.Types;
 
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.TableJoinColumn;
 import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.type.ScalarType;
 
 /**
  * Used as part of CreateTableVisitor to generated the create table DDL script.
@@ -28,6 +29,25 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		this.columnNameWidth = ddl.getColumnNameWidth();
 	}
 
+	
+	@Override
+	public void visitMany(BeanPropertyAssocMany<?> p) {
+		if (p.isManyToMany()){
+			TableJoin intersectionTableJoin = p.getIntersectionTableJoin();
+			
+			// check if the intersection table has already been created
+			if (ctx.createIntersectionTable(intersectionTableJoin.getTable())){
+				
+				CreateIntersectionTable ic = new CreateIntersectionTable(ctx, p);
+				String ct = ic.build();
+
+			}
+			
+		}
+	}
+
+
+
 	@Override
 	public void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded) {
 
@@ -48,8 +68,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 			BeanProperty importedProperty = importedId.findMatchImport(dbCol);
 			if (importedProperty != null) {
 
-				DbType dbType = getDbType(importedProperty);
-				String columnDefn = importedProperty.renderDbType(dbType);
+				String columnDefn = ctx.getColumnDefn(importedProperty);
 				ctx.write(columnDefn);
 
 			} else {
@@ -68,8 +87,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
 		parent.writeColumnName(p.getDbColumn(), p);
 
-		DbType dbType = getDbType(p);
-		String columnDefn = p.renderDbType(dbType);
+		String columnDefn = ctx.getColumnDefn(p);
 		ctx.write(columnDefn);
 
 		if (!p.isNullable()) {
@@ -104,13 +122,5 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		return false;
 	}
 
-	protected DbType getDbType(BeanProperty p) {
-
-		ScalarType scalarType = p.getScalarType();
-		if (scalarType == null) {
-			throw new RuntimeException("No scalarType for " + p.getFullBeanName());
-		}
-		return ctx.getDbTypeMap().get(scalarType.getJdbcType());
-	}
 
 }
