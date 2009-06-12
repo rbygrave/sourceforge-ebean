@@ -18,6 +18,11 @@ public interface IdBinder {
 	public void initialise();
 	
 	/**
+	 * Find a BeanProperty that is mapped to the database column.
+	 */
+	public BeanProperty findBeanProperty(String dbColumnName);
+	
+	/**
 	 * Return false if the id is a simple scalar and false if it is embedded or concatenated.
 	 */
 	public boolean isComplexId();
