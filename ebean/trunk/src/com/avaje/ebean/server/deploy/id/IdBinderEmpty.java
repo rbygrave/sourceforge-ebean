@@ -25,7 +25,10 @@ public final class IdBinderEmpty implements IdBinder {
 	public void initialise(){
 		
 	}
-
+	
+	public BeanProperty findBeanProperty(String dbColumnName) {
+		return null;
+	}
 	public boolean isComplexId(){
 		return true;
 	}

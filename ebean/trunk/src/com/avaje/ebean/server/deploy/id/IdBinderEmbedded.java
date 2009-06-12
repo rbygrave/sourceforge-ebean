@@ -33,6 +33,15 @@ public final class IdBinderEmbedded implements IdBinder {
 		idBindSql = buildBindSql();
 	}
 	
+	public BeanProperty findBeanProperty(String dbColumnName){
+		for (int i = 0; i < props.length; i++) {
+			if (dbColumnName.equalsIgnoreCase(props[i].getDbColumn())) {
+				return props[i];
+			}
+		}
+		return null;
+	}
+	
 	public boolean isComplexId(){
 		return true;
 	}

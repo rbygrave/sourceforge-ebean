@@ -36,6 +36,15 @@ public final class IdBinderSimple implements IdBinder {
 		// do nothing
 	}
 
+	
+	
+	public BeanProperty findBeanProperty(String dbColumnName) {
+		if (dbColumnName.equalsIgnoreCase(idProperty.getDbColumn())){
+			return idProperty;
+		}
+		return null;
+	}
+
 	public boolean isComplexId(){
 		return false;
 	}
