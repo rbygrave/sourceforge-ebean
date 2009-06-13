@@ -93,28 +93,28 @@ public class DdlGenerator {
 
 	protected void writeDrop(String dropFile) {
 
-		String c = generateDropDdl();
-//		try {
-//			String c = generateDropDdl();
-//			writeFile(dropFile, c);
-//
-//		} catch (IOException e) {
-//			String msg = "Error generating Drop DDL";
-//			throw new PersistenceException(msg, e);
-//		}
+//		String c = generateDropDdl();
+		try {
+			String c = generateDropDdl();
+			writeFile(dropFile, c);
+
+		} catch (IOException e) {
+			String msg = "Error generating Drop DDL";
+			throw new PersistenceException(msg, e);
+		}
 	}
 
 	protected void writeCreate(String createFile) {
 
-		String c = generateCreateDdl();
-//		try {
-//			String c = generateCreateDdl();
-//			writeFile(createFile, c);
-//
-//		} catch (IOException e) {
-//			String msg = "Error generating Create DDL";
-//			throw new PersistenceException(msg, e);
-//		}
+//		String c = generateCreateDdl();
+		try {
+			String c = generateCreateDdl();
+			writeFile(createFile, c);
+
+		} catch (IOException e) {
+			String msg = "Error generating Create DDL";
+			throw new PersistenceException(msg, e);
+		}
 	}
 
 	public String generateDropDdl() {
@@ -276,11 +276,26 @@ public class DdlGenerator {
 			StringBuilder sb = new StringBuilder();
 			String s;
 			while ((s = br.readLine()) != null) {
-				sb.append(s);
-				if (s.endsWith(";")) {
+				s = s.trim();
+				int semiPos = s.indexOf(';');
+				if (semiPos == -1) {
+					sb.append(s);
+				
+				} else if (semiPos == s.length()-1) {
+					// semicolon at end of line
+					sb.append(s);
 					statements.add(sb.toString().trim());
 					sb = new StringBuilder();
-				}
+					
+				} else {
+					// semicolon in middle of line
+					String preSemi = s.substring(0, semiPos);
+					sb.append(preSemi);
+					statements.add(sb.toString().trim());
+					sb = new StringBuilder();
+					sb.append(s.substring(semiPos+1));
+					
+				} 
 			}
 
 			return statements;
