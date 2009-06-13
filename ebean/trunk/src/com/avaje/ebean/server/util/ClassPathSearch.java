@@ -79,7 +79,7 @@ public class ClassPathSearch {
 		
 		try {
 			
-			String cn = GlobalProperties.getProperty("ebean.classpathreader");
+			String cn = GlobalProperties.get("ebean.classpathreader", null);
 			if (cn != null){
 				// use a user defined classPathReader
 				logger.info("Using ["+cn+"] to read the searchable class path");

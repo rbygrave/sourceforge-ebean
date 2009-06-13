@@ -25,9 +25,8 @@ import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.plugin.PluginCore;
 
 /**
  * Helper for TransactionManager to notify BeanListeners.
@@ -41,14 +40,15 @@ public class ListenerNotify {
 
 	private final TransactionManager manager;
 	
-	private final DeploymentManager deploymentManager;
+	
+	private final BeanDescriptorManager descriptorManager;
 	
 	/**
 	 * Create with the TransactionManager.
 	 */
-	public ListenerNotify(TransactionManager manager, PluginCore pluginCore) {
+	public ListenerNotify(TransactionManager manager, BeanDescriptorManager descriptorManager) {
 		this.manager = manager;
-		this.deploymentManager = pluginCore.getDeploymentManager();
+		this.descriptorManager = descriptorManager;
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ListenerNotify {
 
 		PersistRequest.Type type = payload.getType();
 		String typeDesc = payload.getTypeDescription();
-		BeanManager<?> mgr = deploymentManager.getBeanManager(typeDesc);
+		BeanManager<?> mgr = descriptorManager.getBeanManager(typeDesc);
 		BeanDescriptor<?> desc = mgr.getBeanDescriptor();
 		BeanPersistListener<?> beanListener = desc.getBeanListener();
 

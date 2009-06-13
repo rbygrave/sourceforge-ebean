@@ -27,8 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.enhance.agent.EnhanceConstants;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Creates and caches the dynamically generated subclasses.
@@ -54,10 +54,10 @@ public class SubClassManager implements EnhanceConstants {
 	 * Construct with the ClassLoader used to load Ebean.class.
 	 */
 	@SuppressWarnings("unchecked")
-	public SubClassManager(PluginProperties props) {
+	public SubClassManager(ServerConfig serverConfig) {
 		
-		this.serverName = props.getServerName();
-		this.logLevel =  props.getPropertyInt("enhance.log.level", -1);
+		this.serverName = serverConfig.getName();
+		this.logLevel =  serverConfig.getEnhanceLogLevel();
 		this.clzMap = new ConcurrentHashMap<String, Class<?>>();
 		
 		try {

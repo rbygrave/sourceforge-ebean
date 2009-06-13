@@ -42,7 +42,7 @@ public class CQueryPredicates {
 
 	final Object idValue;
 
-	boolean rowNumberIncluded;
+//	boolean rowNumberIncluded;
 
 	/**
 	 * Flag set if this is a SqlSelect type query.
@@ -430,20 +430,20 @@ public class CQueryPredicates {
 		return predicateIncludes;
 	}
 
-	/**
-	 * Returns true if a ROW_NUMBER column is used. e.g. using firstRow with
-	 * Oracle.
-	 */
-	public boolean isRowNumberIncluded() {
-		return rowNumberIncluded;
-	}
+//	/**
+//	 * Returns true if a ROW_NUMBER column is used. e.g. using firstRow with
+//	 * Oracle.
+//	 */
+//	public boolean isRowNumberIncluded() {
+//		return rowNumberIncluded;
+//	}
 
-	/**
-	 * Set when the sql also includes a ROW_NUMBER column.
-	 */
-	public void setRowNumberIncluded(boolean isRowNumberIncluded) {
-		this.rowNumberIncluded = isRowNumberIncluded;
-	}
+//	/**
+//	 * Set when the sql also includes a ROW_NUMBER column.
+//	 */
+//	public void setRowNumberIncluded(boolean isRowNumberIncluded) {
+//		this.rowNumberIncluded = isRowNumberIncluded;
+//	}
 
 	/**
 	 * The where sql with named bind parameters converted to ?.

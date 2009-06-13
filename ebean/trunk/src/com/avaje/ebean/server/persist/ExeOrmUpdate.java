@@ -30,7 +30,6 @@ import com.avaje.ebean.query.OrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
 
@@ -46,11 +45,11 @@ public class ExeOrmUpdate {
     private final PstmtFactory pstmtFactory;
     
     /**
-     * Create with a given plugin.
+     * Create with a given binder.
      */
-    public ExeOrmUpdate(PluginDbConfig dbConfig) {
-    	pstmtFactory = new PstmtFactory();
-    	binder = dbConfig.getBinder();
+    public ExeOrmUpdate(Binder binder) {
+    	this.pstmtFactory = new PstmtFactory();
+    	this.binder = binder;
     }
     
     /**

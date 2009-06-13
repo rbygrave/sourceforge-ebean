@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.NamingConvention;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.server.deploy.DeploySqlSelect.ColumnInfo;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;

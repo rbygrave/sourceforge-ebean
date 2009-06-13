@@ -21,17 +21,14 @@ package com.avaje.ebean.server.net;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 
 /**
  * Creates various implementation objects for CommandProcessor.
  */
 public class UtilFactory {
-
-	ConfigProperties configProperties;
 	
-	UtilFactory(ConfigProperties configProperties){
-		this.configProperties = configProperties;
+	UtilFactory(){
 	}
 	
     /**
@@ -39,7 +36,7 @@ public class UtilFactory {
      */
     public Authenticate createAuthenticate(String dftl) {
         
-        String cn = configProperties.getProperty("ebean.server.authenticate", dftl);
+        String cn = GlobalProperties.get("ebean.server.authenticate", dftl);
         if (cn == null){
             return null;
         }
@@ -59,7 +56,7 @@ public class UtilFactory {
      */
     public CommandSecurity createCommandSecurity(String dftl) {
         
-        String cn = configProperties.getProperty("ebean.server.commandsecurity", dftl);
+        String cn = GlobalProperties.get("ebean.server.commandsecurity", dftl);
         if (cn == null){
             return null;
         }
@@ -78,7 +75,7 @@ public class UtilFactory {
      */
     public CommandContextManager createCommandContextManager(String dftl) {
                
-        String cn = configProperties.getProperty("ebean.server.commandcontextmanager", dftl);
+        String cn = GlobalProperties.get("ebean.server.commandcontextmanager", dftl);
         if (cn == null){
             return null;
         }

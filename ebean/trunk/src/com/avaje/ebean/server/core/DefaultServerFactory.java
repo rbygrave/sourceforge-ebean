@@ -22,18 +22,23 @@ package com.avaje.ebean.server.core;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.ServerConfiguration;
-import com.avaje.ebean.config.ConfigProperties;
-import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.DataSourceConfig;
+import com.avaje.ebean.config.UnderscoreNamingConvention;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.dbplatform.DatabasePlatformFactory;
 import com.avaje.ebean.net.Constants;
-import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
+import com.avaje.ebean.server.cache.BasicCacheManager;
+import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
@@ -41,9 +46,6 @@ import com.avaje.ebean.server.lib.sql.TransactionIsolation;
 import com.avaje.ebean.server.net.ClusterCommandSecurity;
 import com.avaje.ebean.server.net.ClusterContextManager;
 import com.avaje.ebean.server.net.CommandProcessor;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginFactory;
-import com.avaje.ebean.util.Message;
 
 /**
  * Default Server side implementation of ServerFactory.
@@ -56,104 +58,62 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 
 	private static final Logger logger = Logger.getLogger(DefaultServerFactory.class.getName());
 
-	final PluginFactory pluginFactory;
-
-	final ConfigProperties baseProperties;
-	
 	final ClusterManager clusterManager;
-	
-	DataSourceFactory dsFactory;
 
+	final JndiDataSourceLookup jndiDataSourceFactory;
+
+	final BootupClassPathSearch bootupClassSearch;	
+
+	
 	public DefaultServerFactory() {
 
-		baseProperties = GlobalProperties.getConfigProperties();
-		
-		clusterManager = createClusterManager(baseProperties);
-		pluginFactory = new PluginFactory(baseProperties, clusterManager);
-		
-		
-		String cn = baseProperties.getProperty("ebean.datasource.factory");
-
-		if (cn != null) {
-			if (cn.equalsIgnoreCase("default")) {
-				// Use built in DataSourceManager
-
-			} else if (cn.equalsIgnoreCase("jndi")) {
-				// Use built in JNDI support
-				dsFactory = new JndiDataSourceFactory();
-
-			} else {
-				try {
-					// use a custom DataSourceFactory
-					Class<?> cls = Class.forName(cn);
-					dsFactory = (DataSourceFactory) cls.newInstance();
-				} catch (Exception ex) {
-					throw new RuntimeException("FATAL Error:", ex);
-				}
-			}
-		}
+		this.clusterManager = createClusterManager();
+		this.jndiDataSourceFactory = new JndiDataSourceLookup();
+		this.bootupClassSearch = new BootupClassPathSearch(null);
 		
 		// register so that we can shutdown any Ebean wide
 		// resources such as clustering
 		ShutdownManager.registerServerFactory(this);
 	}
 
-	/**
-	 * Register the cluster command processor with the ClusterManager.
-	 */
-	protected ClusterManager createClusterManager(ConfigProperties properties) {
 
-		// register with the cluster manager
-		// TransactionEvent commands are sent around the cluster
-		ClusterContextManager cm = new ClusterContextManager();
-		ClusterCommandSecurity sec = new ClusterCommandSecurity();
-
-		CommandProcessor p = new CommandProcessor();
-		p.setUseSessionId(false);
-		p.setContextManager(cm);
-		p.setCommandSecurity(sec);
-
-		ClusterManager clusterManager = new ClusterManager(properties);
-		clusterManager.register(PROCESS_KEY, p);
-		return clusterManager;
-	}
-
-	
 	public void shutdown() {
 		clusterManager.shutdown();	
 	}
 
+	/**
+	 * Create the server reading configuration information
+	 * from ebean.properties.
+	 */
 	public InternalEbeanServer createServer(String name) {
-		return createServer(new ServerConfiguration(name));
+
+		ConfigBuilder b = new ConfigBuilder();
+		ServerConfig config = b.build(name);
+
+		return createServer(config);
 	}
 	
+	
 	/**
-	 * Create the implementation for a serverName. Note that the serverName
-	 * typically matches the DataSource name.
+	 * Create the implementation from the configuration.
 	 */
-	public InternalEbeanServer createServer(ServerConfiguration serverConfig) {
+	public InternalEbeanServer createServer(ServerConfig serverConfig) {
 
-		String name = serverConfig.getName();
-
-		// start with baseProperties and then override with
-		// the server specific properties
-		ConfigProperties configProps = new ConfigProperties(baseProperties, serverConfig.getProperties());
+		setNamingConvention(serverConfig);
 		
-		addExtraSqlReservedWords(configProps);
+		BootupClasses bootupClasses = getBootupClasses(serverConfig);
 		
-		DataSource ds = serverConfig.getDataSource();
-		if (ds == null){
-			// Get the DataSource using the built in DataSourceFactory.
-			ds = getDataSource(name, configProps);
-		} 
-		
-
+		setDataSource(serverConfig);
 		// check the autoCommit and Transaction Isolation
-		checkDataSource(ds, name);
+		checkDataSource(serverConfig);
 
-		Plugin plugin = pluginFactory.create(ds, serverConfig, configProps);
+		// determine database platform (Oracle etc)
+		setDatabasePlatform(serverConfig);
 		
-		DefaultServer server = new DefaultServer(plugin);
+		InternalConfiguration c = new InternalConfiguration(clusterManager, serverConfig, bootupClasses);
+		
+		CacheManager serverCache = new BasicCacheManager();
+		DefaultServer server = new DefaultServer(c, serverCache);
 		
 		MBeanServer mbeanServer;
 		ArrayList<?> list = MBeanServerFactory.findMBeanServer(null);
@@ -167,53 +127,88 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 
 		server.registerMBeans(mbeanServer);
 		
-		String dbConfig = plugin.getDbConfig().getClass().getName();
-		if (name == null) {
-			name = "";
-		}
-		logger.info(Message.msg("plugin.startup", new Object[] { name, dbConfig }));
-
 		executeDDL(server);
 		
 		return server;
 	}
 
-	protected void executeDDL(InternalEbeanServer server) {
+	/**
+	 * Get the classes (entities, scalarTypes, Listeners etc).
+	 */
+	private BootupClasses getBootupClasses(ServerConfig serverConfig) {
 		
+		List<Class<?>> entityClasses = serverConfig.getClasses();
+		if (entityClasses == null || entityClasses.size() == 0){
+			// just use classes we can find via class path search
+			return bootupClassSearch.getBootupClasses();
+		}
 		
-		server.createDdlGenerator().execute();	
+		// use classes we explicitly added via configuration
+		return new BootupClasses(serverConfig.getClasses());		
 	}
 	
 	/**
-	 * Add extra sql reserved words to the ones known by Ebean.
-	 * <p>
-	 * When Ebean generates sql table alias it checks to make sure that the
-	 * alias is not a reserved word such as "as".
-	 * </p>
+	 * Execute the DDL if required.
 	 */
-	private void addExtraSqlReservedWords(ConfigProperties configProps){
-		String extraKeywords = configProps.getProperty("ebean.sqlreservedwords");
-		if (extraKeywords != null){
-			String[] keywords = extraKeywords.split(",");
-			for (int i = 0; i < keywords.length; i++) {
-				SqlReservedWords.addKeyword(keywords[i]);
+	private void executeDDL(InternalEbeanServer server) {
+		
+		server.getDdlGenerator().execute();	
+	}
+
+	/**
+	 * Set the naming convention to underscore if it has not already been set.
+	 */
+	private void setNamingConvention(ServerConfig config){
+		if (config.getNamingConvention() == null){
+			config.setNamingConvention(new UnderscoreNamingConvention());
+		}
+	}
+	
+	/**
+	 * Set the DatabasePlatform if it has not already been set.
+	 */
+	private void setDatabasePlatform(ServerConfig config) {
+
+		DatabasePlatformFactory factory = new DatabasePlatformFactory();
+		
+		DatabasePlatform dbPlatform = config.getDatabasePlatform();
+		if (dbPlatform == null) {
+			DatabasePlatform db = factory.create(config);
+			config.setDatabasePlatform(db);
+		}
+	}
+	
+	/**
+	 * Set the DataSource if it has not already been set.
+	 */
+	private void setDataSource(ServerConfig config) {
+		if (config.getDataSource() == null){
+			DataSource ds = getDataSourceFromConfig(config);
+			config.setDataSource(ds);
+		}
+	}
+	
+	private DataSource getDataSourceFromConfig(ServerConfig config) {
+		
+		DataSource ds = null;
+		
+		if (config.getDataSourceJndiName() != null){
+			ds = jndiDataSourceFactory.lookup(config.getDataSourceJndiName());
+			if (ds == null){
+				String m = "JNDI lookup for DataSource "+config.getDataSourceJndiName()+" returned null.";
+				throw new PersistenceException(m);
+			} else {
+				return ds;
 			}
 		}
-	}
-	
-	/**
-	 * Return the DataSource given the name.
-	 * <p>
-	 * Note the Ebean "serverName" is the same as the "DataSource" name.
-	 * </p>
-	 */
-	public DataSource getDataSource(String name, ConfigProperties configProps) {
 		
-		if (dsFactory != null) {
-			return dsFactory.createDataSource(name, configProps);
+		DataSourceConfig dsConfig = config.getDataSourceConfig();
+		if (dsConfig == null){
+			String m = "No DataSourceConfig definded for "+config.getName();
+			throw new PersistenceException(m);			
 		}
-
-		return DataSourceGlobalManager.getDataSource(name, configProps);
+			
+		return DataSourceGlobalManager.getDataSource(config.getName(), dsConfig);
 	}
 
 	/**
@@ -226,14 +221,18 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 	 * checking may not work as expected.
 	 * </p>
 	 */
-	private void checkDataSource(DataSource dataSource, String name) {
+	private void checkDataSource(ServerConfig serverConfig) {
 
+		if (serverConfig.getDataSource() == null){
+			throw new RuntimeException("DataSource not set?");
+		}
+		
 		Connection c = null;
 		try {
-			c = dataSource.getConnection();
+			c = serverConfig.getDataSource().getConnection();
 
 			if (c.getAutoCommit()) {
-				String m = "DataSource [" + name + "] has autoCommit defaulting to true!";
+				String m = "DataSource [" + serverConfig.getName()+ "] has autoCommit defaulting to true!";
 				logger.warning(m);
 			}
 
@@ -241,7 +240,8 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 			if (isolationLevel != Connection.TRANSACTION_READ_COMMITTED) {
 				
 				String desc = TransactionIsolation.getLevelDescription(isolationLevel);
-				String m = "DataSource [" + name + "] has Transaction Isolation [" + desc
+				String m = "DataSource [" + serverConfig.getName() 
+						+ "] has Transaction Isolation [" + desc
 						+ "] rather than READ_COMMITTED!";
 				logger.warning(m);
 			}
@@ -257,6 +257,25 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Register the cluster command processor with the ClusterManager.
+	 */
+	private ClusterManager createClusterManager() {
 
+		// register with the cluster manager
+		// TransactionEvent commands are sent around the cluster
+		ClusterContextManager cm = new ClusterContextManager();
+		ClusterCommandSecurity sec = new ClusterCommandSecurity();
+
+		CommandProcessor p = new CommandProcessor();
+		p.setUseSessionId(false);
+		p.setContextManager(cm);
+		p.setCommandSecurity(sec);
+
+		ClusterManager clusterManager = new ClusterManager();
+		clusterManager.register(PROCESS_KEY, p);
+		return clusterManager;
 	}
 }

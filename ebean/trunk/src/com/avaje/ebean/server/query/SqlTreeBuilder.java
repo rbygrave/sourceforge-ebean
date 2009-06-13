@@ -127,7 +127,7 @@ public class SqlTreeBuilder {
 		clause.setInheritanceWhereSql(buildWhereClause(rootNode));
 
 		summary.append("]");
-		if (query.isAutoFetchTuned()){
+		if (query.isAutofetchTuned()){
 			summary.append(" autoFetchTuned[true]");
 		}
 

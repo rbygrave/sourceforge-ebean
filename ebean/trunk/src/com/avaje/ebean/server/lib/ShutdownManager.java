@@ -22,7 +22,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.core.ServerFactory;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
@@ -51,8 +50,7 @@ public final class ShutdownManager {
 	static {
 		// Register the Shutdown hook
 		register();
-		ConfigProperties properties = GlobalProperties.getConfigProperties();
-		whyShutdown = properties.getBooleanProperty("debug.shutdown.why",false);
+		whyShutdown = GlobalProperties.getBoolean("debug.shutdown.why",false);
 	}
 
 	/**
@@ -149,8 +147,7 @@ public final class ShutdownManager {
 			// stop the BackgroundThread
 			BackgroundThread.shutdown();
 
-			ConfigProperties properties = GlobalProperties.getConfigProperties();
-			String shutdownRunner = properties.getProperty("system.shutdown.runnable");
+			String shutdownRunner = GlobalProperties.get("system.shutdown.runnable", null);
 			if (shutdownRunner != null) {
 				try {
 					Class<?> c = Class.forName(shutdownRunner);

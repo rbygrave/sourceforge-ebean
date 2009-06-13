@@ -23,7 +23,7 @@ import java.util.List;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.persist.dml.Modes;
+import com.avaje.ebean.server.persist.dml.DmlMode;
 
 /**
  * Add base properties to the BindableList for a bean type.
@@ -31,7 +31,7 @@ import com.avaje.ebean.server.persist.dml.Modes;
  * This excludes unique embedded and associated properties.
  * </p>
  */
-public class FactoryBaseProperties implements Modes {
+public class FactoryBaseProperties {
 
 	private final FactoryProperty factoryProperty;
 	
@@ -43,7 +43,7 @@ public class FactoryBaseProperties implements Modes {
 	/**
 	 * Add Bindable for the base properties to the list.
 	 */
-	public void create(List<Bindable> list, BeanDescriptor<?> desc, int mode, boolean withLobs) {
+	public void create(List<Bindable> list, BeanDescriptor<?> desc, DmlMode mode, boolean withLobs) {
 
 
 		BeanProperty[] props = desc.propertiesBaseScalar();

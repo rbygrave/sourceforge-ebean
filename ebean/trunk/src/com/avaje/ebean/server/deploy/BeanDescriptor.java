@@ -41,6 +41,8 @@ import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.config.dbplatform.IdGenerator;
+import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
 import com.avaje.ebean.el.ElComparatorCompound;
 import com.avaje.ebean.el.ElComparatorProperty;
@@ -48,6 +50,7 @@ import com.avaje.ebean.el.ElGetChainBuilder;
 import com.avaje.ebean.el.ElGetValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
+import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.IdBinderFactory;
@@ -83,8 +86,10 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * Type of Identity generation strategy used.
 	 */
-	final IdentityGeneration identityGeneration;
+	final IdType idType;
 
+	final IdGenerator idGenerator;
+	
 	/**
 	 * The name of an IdGenerator (optional).
 	 */
@@ -129,7 +134,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * The concurrency mode for beans of this type.
 	 */
-	final int concurrencyMode;
+	final ConcurrencyMode concurrencyMode;
 
 	/**
 	 * The tables this bean is dependent on.
@@ -371,8 +376,9 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.beanController = deploy.getBeanController();
 		this.beanListener = deploy.getBeanListener();
 
-		this.identityGeneration = deploy.getIdentityGeneration();
+		this.idType = deploy.getIdType();
 		this.idGeneratorName = deploy.getIdGeneratorName();
+		this.idGenerator = deploy.getIdGenerator();
 		this.sequenceNextVal = deploy.getSequenceNextVal();
 		this.selectLastInsertedId = deploy.getSelectLastInsertedId();
 		this.tableGenerated = deploy.isTableGenerated();
@@ -549,6 +555,14 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 			}	
 		}
 	}	
+	
+	public Object nextId() {
+		if (idGenerator != null){
+			return idGenerator.nextId();
+		} else {
+			return null;
+		}
+	}
 	
 	/**
 	 * Convert the logical orm update statement into sql by converting the bean properties and bean name to
@@ -895,7 +909,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * </p>
 	 */
 	public boolean isUseIdGenerator() {
-		return identityGeneration == IdentityGeneration.ID_GENERATOR;
+		return idType == IdType.GENERATOR;
 	}
 
 	/**
@@ -1178,7 +1192,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * Return the concurrency mode used for beans of this type.
 	 */
-	public int getConcurrencyMode() {
+	public ConcurrencyMode getConcurrencyMode() {
 		return concurrencyMode;
 	}
 
@@ -1260,8 +1274,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * Return the identity generation type.
 	 */
-	public IdentityGeneration getIdentityGeneration() {
-		return identityGeneration;
+	public IdType getIdType() {
+		return idType;
 	}
 
 	/**

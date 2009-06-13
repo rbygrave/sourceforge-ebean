@@ -26,7 +26,8 @@ import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.NodeUsageListener;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.control.ImplicitAutoFetchMode;
+import com.avaje.ebean.config.AutofetchMode;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 
@@ -47,7 +48,7 @@ public interface AutoFetchManager extends NodeUsageListener {
 	/**
 	 * Set the owning ebean server.
 	 */
-	public void setOwner(InternalEbeanServer server);
+	public void setOwner(InternalEbeanServer server, ServerConfig serverConfig);
 
 	/**
 	 * Clear the query execution statistics.
@@ -148,13 +149,13 @@ public interface AutoFetchManager extends NodeUsageListener {
 	 * This controls whether autoFetch is used when it has not been explicitly
 	 * set on a query via {@link Query#setAutoFetch(boolean)}.
 	 */
-	public ImplicitAutoFetchMode getImplicitAutoFetchMode();
+	public AutofetchMode getMode();
 
 	/**
 	 * Set the auto fetch mode used when a query has not had
 	 * {@link Query#setAutoFetch(boolean)}.
 	 */
-	public void setImplicitAutoFetchMode(ImplicitAutoFetchMode implicitAutoFetchMode);
+	public void setMode(AutofetchMode Mode);
 
 	/**
 	 * Return the profiling rate (int between 0 and 100).

@@ -20,7 +20,7 @@ package com.avaje.ebean.server.lib.sql;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.util.MailEvent;
 import com.avaje.ebean.server.lib.util.MailListener;
 import com.avaje.ebean.server.lib.util.MailMessage;
@@ -41,19 +41,12 @@ public class SimpleAlerter implements DataSourceAlertListener, MailListener {
 	private static final Logger logger = Logger.getLogger(SimpleAlerter.class.getName());
 	
     //boolean sendInBackGround = true;
-	ConfigProperties configProperties;
 	
     /**
      * Create a SimpleAlerter.
      */
-    public SimpleAlerter(ConfigProperties configProperties) {
-    	this.configProperties = configProperties;
+    public SimpleAlerter() {
     }
-    
-    public void initialise(ConfigProperties configProperties) {
-    	this.configProperties = configProperties;
-	}
-
 
 	/**
      * If the email failed then log the error.
@@ -100,10 +93,10 @@ public class SimpleAlerter implements DataSourceAlertListener, MailListener {
     
     private void sendMessage(String subject, String msg){
         
-        String fromUser 		= configProperties.getProperty("alert.fromuser");
-        String fromEmail 		= configProperties.getProperty("alert.fromemail");
-        String mailServerName 	= configProperties.getProperty("alert.mailserver");
-        String toEmail 			= configProperties.getProperty("alert.toemail");        
+        String fromUser 		= GlobalProperties.get("alert.fromuser", null);
+        String fromEmail 		= GlobalProperties.get("alert.fromemail", null);
+        String mailServerName 	= GlobalProperties.get("alert.mailserver", null);
+        String toEmail 			= GlobalProperties.get("alert.toemail", null);        
 
         if (mailServerName == null){
             //throw new RuntimeException("alert.mailserver not set...");

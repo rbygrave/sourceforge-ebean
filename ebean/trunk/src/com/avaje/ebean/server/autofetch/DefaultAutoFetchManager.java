@@ -17,14 +17,15 @@ import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.control.ImplicitAutoFetchMode;
+import com.avaje.ebean.config.AutofetchConfig;
+import com.avaje.ebean.config.AutofetchMode;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * The manager of all the usage/query statistics as well as the tuned fetch
@@ -71,7 +72,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 	transient boolean queryTuning;
 
-	transient ImplicitAutoFetchMode implicitAutoFetchMode;
+	transient AutofetchMode mode;
 
 	/**
 	 * Server that owns this Profile Listener.
@@ -90,37 +91,29 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	/**
 	 * Set up this profile listener before it is active.
 	 */
-	public void setOwner(InternalEbeanServer server) {
+	public void setOwner(InternalEbeanServer server, ServerConfig serverConfig) {
 		this.server = server;
-		this.logging = new DefaultAutoFetchManagerLogging(server.getPlugin(), this);
+		this.logging = new DefaultAutoFetchManagerLogging(serverConfig, this);
 
-		PluginProperties properties = server.getPlugin().getProperties();
-		queryTuning = properties.getPropertyBoolean("autofetch.querytuning", false);
-		profiling = properties.getPropertyBoolean("autofetch.profiling", false);
-		profilingMin = properties.getPropertyInt("autofetch.profiling.min", 1);
-		profilingBase = properties.getPropertyInt("autofetch.profiling.base", 10);
-
-		String strRate = properties.getProperty("autofetch.profiling.rate", "0.05");
-		try {
-			double rate = Double.parseDouble(strRate);
-			setProfilingRate(rate);
-		} catch (Exception e){
-			setProfilingRate(0.05d);
-		}
+		AutofetchConfig autofetchConfig = serverConfig.getAutofetchConfig();
 		
+		queryTuning = autofetchConfig.isQueryTuning();
+		profiling = autofetchConfig.isProfiling();
+		profilingMin = autofetchConfig.getProfilingMin();
+		profilingBase = autofetchConfig.getProfilingBase();
 
-		defaultGarbageCollectionWait = (long) properties.getPropertyInt(
-			"autofetch.garbageCollectionWait", 100);
+		setProfilingRate(autofetchConfig.getProfilingRate());
+				
+
+		defaultGarbageCollectionWait = (long) autofetchConfig.getGarbageCollectionWait();
 
 		// determine the mode to use when Query.setAutoFetch() was
 		// not explicitly set
-		String mode = properties.getProperty("autofetch.implicitmode",
-			ImplicitAutoFetchMode.DEFAULT_ON_IF_EMPTY.name());
-		implicitAutoFetchMode = ImplicitAutoFetchMode.valueOf(mode.toUpperCase());
+		mode = autofetchConfig.getMode();
 
 		// log the guts of the autoFetch setup
 		String msg = "AutoFetch queryTuning[" + queryTuning + "] profiling[" + profiling
-				+ "] implicitMode[" + implicitAutoFetchMode + "]  profiling rate[" + profilingRate
+				+ "] mode[" + mode + "]  profiling rate[" + profilingRate
 				+ "] min[" + profilingMin + "] base[" + profilingBase + "]";
 
 		logging.logToJavaLogger(msg);
@@ -231,17 +224,17 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	public void setQueryTuning(boolean queryTuning) {
 		this.queryTuning = queryTuning;
 	}
-
-	public ImplicitAutoFetchMode getImplicitAutoFetchMode() {
-		return implicitAutoFetchMode;
-	}
-
-	public void setImplicitAutoFetchMode(ImplicitAutoFetchMode implicitAutoFetchMode) {
-		this.implicitAutoFetchMode = implicitAutoFetchMode;
-	}
-
+	
 	public double getProfilingRate() {
 		return profilingRate;
+	}
+
+	public AutofetchMode getMode() {
+		return mode;
+	}
+
+	public void setMode(AutofetchMode mode) {
+		this.mode = mode;
 	}
 
 	public void setProfilingRate(double rate) {
@@ -402,25 +395,25 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	 */
 	private boolean useAutoFetch(OrmQuery<?> query) {
 
-		Boolean autoFetch = query.isAutoFetch();
+		Boolean autoFetch = query.isAutofetch();
 		if (autoFetch != null) {
 			// explicitly set...
 			return autoFetch.booleanValue();
 
 		} else {
 			// determine using implicit mode...
-			switch (implicitAutoFetchMode) {
+			switch (mode) {
 			case DEFAULT_ON:
 				return true;
 
 			case DEFAULT_OFF:
 				return false;
 
-			case DEFAULT_ON_IF_EMPTY:
+			case DEFAULT_ONIFEMPTY:
 				return query.isDetailEmpty();
 
 			default:
-				throw new PersistenceException("Invalid autoFetchMode " + implicitAutoFetchMode);
+				throw new PersistenceException("Invalid autoFetchMode " + mode);
 			}
 		}
 	}

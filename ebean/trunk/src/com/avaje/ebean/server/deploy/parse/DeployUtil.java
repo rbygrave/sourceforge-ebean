@@ -28,17 +28,14 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.config.NamingConvention;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.deploy.DeploySqlSelectParser;
-import com.avaje.ebean.server.deploy.DeploymentManager;
 import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertySettings;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.plugin.DbSpecific;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
 import com.avaje.ebean.server.type.TypeManager;
@@ -72,11 +69,6 @@ public class DeployUtil {
 
 	private final NamingConvention namingConvention;
 
-	/**
-	 * Used to find special properties such as update timestamp.
-	 */
-	private final GeneratedPropertySettings generateSettings;
-
 	private final TypeManager typeManager;
 	
 	private final DeploySqlSelectParser sqlSelectParser;
@@ -85,19 +77,17 @@ public class DeployUtil {
 		
 	private final String manyToManyAlias;
 	
-	private final DbSpecific dbSpecific;
+	private final DatabasePlatform dbSpecific;
 	
-	public DeployUtil(DeploymentManager deploymentManager, PluginDbConfig dbConfig) {
+	public DeployUtil(DatabasePlatform dbSpecific, TypeManager typeMgr, NamingConvention nc) {
 
-		this.dbSpecific = dbConfig.getDbSpecific();
-		this.typeManager = dbConfig.getTypeManager();
-		this.namingConvention = dbConfig.getNamingConvention();
-		this.sqlSelectParser = new DeploySqlSelectParser(dbConfig);
-		this.generateSettings = new GeneratedPropertySettings(dbConfig.getProperties());
+		this.dbSpecific = dbSpecific;
+		this.typeManager = typeMgr;
+		this.namingConvention = nc;
+		this.sqlSelectParser = new DeploySqlSelectParser(namingConvention);
 
 		// this alias is used for ManyToMany lazy loading queries
-		String key = "manytomany.intersection.alias";
-		this.manyToManyAlias = dbConfig.getProperties().getProperty(key, "zzzzzz");
+		this.manyToManyAlias = "zzzzzz";
 		
 		this.validatorFactoryManager = new ValidatorFactoryManager();
 	}
@@ -256,14 +246,6 @@ public class DeployUtil {
 			return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * Will use GeneratedPropertySettings to determine if any GeneratedProperty
-	 * needs to be set on this.
-	 */
-	public void setGeneratedProperty(DeployBeanProperty prop) {
-		generateSettings.setGeneratedProperty(prop);
 	}
 
 	/**

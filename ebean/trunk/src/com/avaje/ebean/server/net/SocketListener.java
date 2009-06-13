@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
@@ -87,14 +86,11 @@ public class SocketListener implements Runnable {
      * A cache of the ConnectionProcessor.
      */
     HashMap<String,ConnectionProcessor> processorMap = new HashMap<String, ConnectionProcessor>();
-
-    final ConfigProperties configProperties;
     
     /**
      * Construct with a given thread pool name.
      */
     public SocketListener(String threadPoolName, int port) {
-    	configProperties = GlobalProperties.getConfigProperties();
         threadPool = ThreadPoolManager.getThreadPool(threadPoolName);
         this.port = port;
     }
@@ -150,7 +146,7 @@ public class SocketListener implements Runnable {
     protected ConnectionProcessor createRequestHandler(String serviceKey) throws IOException {
 
         serviceKey = serviceKey.toLowerCase();
-        String handlerName = configProperties.getProperty("connectionprocessor." + serviceKey);
+        String handlerName = GlobalProperties.get("connectionprocessor." + serviceKey, null);
         if (handlerName == null) {
             String msg = "No ConnectionProcessor has been defined for [" + serviceKey + "]";
             throw new IOException(msg);

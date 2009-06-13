@@ -17,18 +17,12 @@
  */
 package com.avaje.ebean.server.lib.sql;
 
-import com.avaje.ebean.config.ConfigProperties;
 
 /**
  * Listens for alerting events such as DataSource down.
  */
 public interface DataSourceAlertListener {
 
-	/**
-	 * Called just after construction to initialise based on configuration.
-	 */
-	public void initialise(ConfigProperties configProperties);
-	
 	/**
 	 * Send an Alert saying the dataSource is down.
 	 */

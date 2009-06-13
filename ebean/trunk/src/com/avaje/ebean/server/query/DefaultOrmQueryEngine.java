@@ -25,15 +25,13 @@ import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.core.ServerCache;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.DeploymentManager;
-import com.avaje.ebean.server.plugin.Plugin;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 
 /**
  * Main Finder implementation.
@@ -45,18 +43,18 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
      */
     private final CQueryEngine queryEngine;
     
-	private final ServerCache serverCache;
+	private final CacheManager serverCache;
 
-    private final DeploymentManager deploymentManager;
+    private final BeanDescriptorManager beanDescriptorManager;
     
     /**
      * Create the Finder.
      */
-    public DefaultOrmQueryEngine(Plugin plugin, InternalEbeanServer server) {
+    public DefaultOrmQueryEngine(BeanDescriptorManager descMgr, CQueryEngine queryEngine, CacheManager serverCache) {
    
-        queryEngine = server.getQueryEngine();
-        serverCache = server.getServerCache();
-        deploymentManager = plugin.getPluginCore().getDeploymentManager();
+        this.queryEngine = queryEngine;
+        this.serverCache = serverCache;
+        this.beanDescriptorManager = descMgr;
     }
     
     
@@ -81,7 +79,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             TransactionContext pc = t.getTransactionContext();
             for (int i = 0; i < adds.size(); i++) {
             	EntityBean bean = adds.get(i);
-            	BeanDescriptor<?> desc = deploymentManager.getBeanDescriptor(bean.getClass());
+            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
             	Object id = desc.getId(bean);
             	pc.add(bean, id, false);
 			}
@@ -130,7 +128,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             TransactionContext pc = t.getTransactionContext();
             for (int i = 0; i < adds.size(); i++) {
             	EntityBean bean = adds.get(i);
-            	BeanDescriptor<?> desc = deploymentManager.getBeanDescriptor(bean.getClass());
+            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
             	Object id = desc.getId(bean);
             	pc.add(bean, id, false);
 			}

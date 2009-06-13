@@ -532,13 +532,13 @@ public class CQuery<T> implements DbReadContext {
 		collection.setFinishedFetch(true);
 	}
 
-	public BeanCollection<T> readCollection(boolean useResultSetLimit) throws SQLException {
+	public BeanCollection<T> readCollection() throws SQLException {
 		
-		if (useResultSetLimit) {
-			if (!navigateFirst()) {
-				return collection;
-			}
-		}
+//		if (useResultSetLimit) {
+//			if (!navigateFirst()) {
+//				return collection;
+//			}
+//		}
 
 		readTheRows(true);
 
@@ -588,13 +588,13 @@ public class CQuery<T> implements DbReadContext {
 		}
 	}
 
-	private boolean navigateFirst() throws SQLException {
-		if (query.getFirstRow() > 0 && !rset.absolute(query.getFirstRow())) {
-			// firstRow has moved us beyond the end of the resultSet
-			return false;
-		}
-		return true;
-	}
+//	private boolean navigateFirst() throws SQLException {
+//		if (query.getFirstRow() > 0 && !rset.absolute(query.getFirstRow())) {
+//			// firstRow has moved us beyond the end of the resultSet
+//			return false;
+//		}
+//		return true;
+//	}
 
 	public String getLoadedRowDetail() {
 		if (!manyIncluded) {

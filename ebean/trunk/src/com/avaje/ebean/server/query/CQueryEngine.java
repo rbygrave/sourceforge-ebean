@@ -24,12 +24,13 @@ import java.sql.SQLException;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
+import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.ebean.server.plugin.PluginCore;
+import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -38,26 +39,19 @@ import com.avaje.ebean.util.Message;
 public class CQueryEngine {
 
 	/**
-	 * Use JDBC row navigation to limit results.
-	 */
-	private final boolean useResultSetLimit;
-
-	/**
 	 * Thread pool used for background fetching.
 	 */
 	private final ThreadPool threadPool;
 
 	private final CQueryBuilder queryBuilder;
 
-	private final MLogControlMBean logControl;
+	private final MLogControl logControl;
 
-	public CQueryEngine(PluginCore pluginCore) {
-		this.logControl = pluginCore.getDbConfig().getLogControl();
-
-		this.queryBuilder = new CQueryBuilder(pluginCore);
+	public CQueryEngine(DatabasePlatform dbPlatform, MLogControl logControl, Binder binder) {
+		
+		this.logControl = logControl;
+		this.queryBuilder = new CQueryBuilder(dbPlatform, binder);
 		this.threadPool = ThreadPoolManager.getThreadPool("BGFetch");
-
-		this.useResultSetLimit = pluginCore.getDbConfig().getDbSpecific().useJdbcResultSetLimit();
 	}
 
 	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {
@@ -85,7 +79,7 @@ public class CQueryEngine {
 
 			cquery.prepareBindExecuteQuery();
 
-			BeanCollection<T> beanCollection = cquery.readCollection(useResultSetLimit);
+			BeanCollection<T> beanCollection = cquery.readCollection();
 
 			if (cquery.useBackgroundToContinueFetch()) {
 				// stop the request from putting connection back into pool

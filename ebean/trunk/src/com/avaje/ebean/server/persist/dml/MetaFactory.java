@@ -22,6 +22,7 @@ package com.avaje.ebean.server.persist.dml;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
@@ -33,12 +34,11 @@ import com.avaje.ebean.server.persist.dmlbind.FactoryBaseProperties;
 import com.avaje.ebean.server.persist.dmlbind.FactoryEmbedded;
 import com.avaje.ebean.server.persist.dmlbind.FactoryId;
 import com.avaje.ebean.server.persist.dmlbind.FactoryVersion;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Factory for creating InsertMeta UpdateMeta and DeleteMeta.
  */
-public class MetaFactory implements Modes {
+public class MetaFactory {
 
 	private final FactoryVersion versionFact = new FactoryVersion();
 
@@ -56,10 +56,10 @@ public class MetaFactory implements Modes {
 	 */
 	private static final boolean includeLobs = true;
 
-	private final PluginDbConfig dbConfig;
-
-	public MetaFactory(PluginDbConfig dbConfig) {
-		this.dbConfig = dbConfig;
+	private final DatabasePlatform dbPlatform;
+	
+	public MetaFactory(DatabasePlatform dbPlatform) {
+		this.dbPlatform = dbPlatform;
 	}
 
 	/**
@@ -69,9 +69,9 @@ public class MetaFactory implements Modes {
 
 		List<Bindable> setList = new ArrayList<Bindable>();
 
-		baseFact.create(setList, desc, MODE_UPDATE, includeLobs);
-		embeddedFact.create(setList, desc, MODE_UPDATE, includeLobs);
-		assocOneFact.create(setList, desc, MODE_UPDATE);
+		baseFact.create(setList, desc, DmlMode.UPDATE, includeLobs);
+		embeddedFact.create(setList, desc, DmlMode.UPDATE, includeLobs);
+		assocOneFact.create(setList, desc, DmlMode.UPDATE);
 
 		Bindable id = idFact.createId(desc);
 
@@ -80,9 +80,9 @@ public class MetaFactory implements Modes {
 		
 		List<Bindable> allList = new ArrayList<Bindable>();
 
-		baseFact.create(allList, desc, MODE_WHERE, false);
-		embeddedFact.create(allList, desc, MODE_WHERE, false);
-		assocOneFact.create(allList, desc, MODE_WHERE);
+		baseFact.create(allList, desc, DmlMode.WHERE, false);
+		embeddedFact.create(allList, desc, DmlMode.WHERE, false);
+		assocOneFact.create(allList, desc, DmlMode.WHERE);
 		
 		
 		Bindable setBindable = new BindableList(setList);
@@ -102,9 +102,9 @@ public class MetaFactory implements Modes {
 
 		List<Bindable> allList = new ArrayList<Bindable>();
 		
-		baseFact.create(allList, desc, MODE_WHERE, false);
-		embeddedFact.create(allList, desc, MODE_WHERE, false);
-		assocOneFact.create(allList, desc, MODE_WHERE);
+		baseFact.create(allList, desc, DmlMode.WHERE, false);
+		embeddedFact.create(allList, desc, DmlMode.WHERE, false);
+		assocOneFact.create(allList, desc, DmlMode.WHERE);
 
 		Bindable allBindable = new BindableList(allList);
 		
@@ -120,9 +120,9 @@ public class MetaFactory implements Modes {
 
 		List<Bindable> allList = new ArrayList<Bindable>();
 
-		baseFact.create(allList, desc, MODE_INSERT, includeLobs);
-		embeddedFact.create(allList, desc, MODE_INSERT, includeLobs);
-		assocOneFact.create(allList, desc, MODE_INSERT);
+		baseFact.create(allList, desc, DmlMode.INSERT, includeLobs);
+		embeddedFact.create(allList, desc, DmlMode.INSERT, includeLobs);
+		assocOneFact.create(allList, desc, DmlMode.INSERT);
 
 		Bindable allBindable = new BindableList(allList);
 		
@@ -135,6 +135,6 @@ public class MetaFactory implements Modes {
 			shadowFkey = new BindableUnidirectional(desc, unidirectional);
 		}
 		
-		return new InsertMeta(dbConfig, desc, shadowFkey, id, allBindable);
+		return new InsertMeta(dbPlatform, desc, shadowFkey, id, allBindable);
 	}
 }

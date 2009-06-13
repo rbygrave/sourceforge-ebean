@@ -103,7 +103,7 @@ public class JdbcTransaction implements ServerTransaction {
 	/**
 	 * Behaviour for ending query only transactions.
 	 */
-	OnQueryOnly onQueryOnly;
+	final OnQueryOnly onQueryOnly;
 	
 	/**
 	 * Flag to explicitly turn off transaction logging for this transaction.
@@ -139,7 +139,7 @@ public class JdbcTransaction implements ServerTransaction {
 			this.explicit = explicit;
 			this.manager = manager;
 			this.connection = connection;
-			this.onQueryOnly = manager.getOnQueryOnly();
+			this.onQueryOnly = manager == null ? OnQueryOnly.ROLLBACK : manager.getOnQueryOnly();
 			this.transactionContext = new TransContext();
 
 		} catch (Exception e) {
@@ -343,7 +343,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Log a message to the transaction log.
 	 */
 	public void log(String msg) {
-		if (loggingOn) {
+		if (loggingOn && manager != null) {
 			manager.log(this, msg);
 		}
 	}
@@ -396,6 +396,9 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Notify the transaction manager.
 	 */
 	protected void notifyCommit() {
+		if (manager == null){
+			return;
+		}
 		if (queryOnly){
 			manager.notifyOfQueryOnly(true, this, null);
 		} else {
@@ -463,6 +466,9 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Notify the transaction manager.
 	 */
 	protected void notifyRollback(Throwable cause) {
+		if (manager == null){
+			return;
+		}
 		if (queryOnly){
 			manager.notifyOfQueryOnly(false, this, cause);
 		} else {

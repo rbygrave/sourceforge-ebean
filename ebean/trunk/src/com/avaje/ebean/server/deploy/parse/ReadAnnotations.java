@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
-import com.avaje.ebean.server.deploy.BeanDescriptorFactory;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 
 
 /**
@@ -54,7 +54,7 @@ public class ReadAnnotations {
      * associated bean.
      * </p>
      */
-    public void readAssociations(DeployBeanInfo<?> info, BeanDescriptorFactory factory){
+    public void readAssociations(DeployBeanInfo<?> info, BeanDescriptorManager factory){
         
     	try {
     		

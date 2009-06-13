@@ -19,10 +19,10 @@
  */
 package com.avaje.ebean.server.persist.dml;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.persist.BeanPersister;
 import com.avaje.ebean.server.persist.BeanPersisterFactory;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Factory for creating a DmlBeanPersister for a bean type.
@@ -31,8 +31,8 @@ public class DmlBeanPersisterFactory implements BeanPersisterFactory {
 	
 	private final MetaFactory metaFactory;
 	
-	public DmlBeanPersisterFactory(PluginDbConfig config) {
-		metaFactory = new MetaFactory(config);
+	public DmlBeanPersisterFactory(DatabasePlatform dbPlatform) {
+		metaFactory = new MetaFactory(dbPlatform);
 	}
 	
 	

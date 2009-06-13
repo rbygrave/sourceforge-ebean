@@ -68,7 +68,12 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	final Object parentBean;
 
 	final boolean isDirty;
-
+	
+	/**
+	 * True if this is a vanilla bean.
+	 */
+	final boolean vanilla;
+	
 	/**
 	 * The bean being persisted.
 	 */
@@ -83,7 +88,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	/**
 	 * The concurrency mode used for update or delete.
 	 */
-	int concurrencyMode;
+	ConcurrencyMode concurrencyMode;
 
 	final Set<String> loadedProps;
 	
@@ -111,22 +116,24 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 			if (intercept.isReference()) {
 				// allowed to delete reference objects
 				// with no concurrency checking
-				concurrencyMode = NONE;
+				concurrencyMode = ConcurrencyMode.NONE;
 			}
 			// this is ok to not use isNewOrDirty() as used for updates only
 			isDirty = intercept.isDirty();
 			loadedProps = intercept.getLoadedProps();
 			oldValues = (T)intercept.getOldValues();
+			vanilla = false;
 			
 		} else {
+			// have to assume the vanilla bean is dirty
+			vanilla = true;
+			isDirty = true;
 			loadedProps = null;
 			intercept = null;
-			// have to assume the vanilla bean is dirty
-			isDirty = true;
 
 			// degrade concurrency checking to none for vanilla bean
-			if (concurrencyMode == ALL) {
-				concurrencyMode = NONE;
+			if (concurrencyMode.equals(ConcurrencyMode.ALL)) {
+				concurrencyMode = ConcurrencyMode.NONE;
 			}
 		}
     }
@@ -167,7 +174,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	/**
 	 * Return the concurrency mode used for this persist.
 	 */
-	public int getConcurrencyMode() {
+	public ConcurrencyMode getConcurrencyMode() {
 		return concurrencyMode;
 	}
 
@@ -400,10 +407,10 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
      * property was one of the loaded properties.
      * </p>
      */
-	public int determineConcurrencyMode() {    
+	public ConcurrencyMode determineConcurrencyMode() {    
 		if (loadedProps != null){
 			// 'partial bean' update/delete...
-			if (concurrencyMode == ConcurrencyMode.VERSION){
+			if (concurrencyMode.equals(ConcurrencyMode.VERSION)){
 				// check the version property was loaded
 				BeanProperty prop = beanDescriptor.firstVersionProperty();
 				if (prop != null && loadedProps.contains(prop.getName())){
@@ -423,7 +430,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	 * </p>
 	 */
 	public boolean isDynamicUpdateSql() {
-		return beanDescriptor.isUpdateChangesOnly() || (loadedProps != null);
+		return !vanilla && beanDescriptor.isUpdateChangesOnly() || (loadedProps != null);
 	}
 	
 	/**

@@ -20,7 +20,6 @@ package com.avaje.ebean.server.lib.thread;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.BackgroundThread;
 
@@ -64,20 +63,17 @@ public class ThreadPoolManager implements Runnable {
      */
     private long defaultIdleTime;
 
-    ConfigProperties configProperties;
-    
     private ThreadPoolManager() {
-    	configProperties = GlobalProperties.getConfigProperties();
         initialise();
     }
 
     private void initialise() {
 
-        debugLevel = configProperties.getIntProperty("threadpool.debugLevel", 0);
+        debugLevel = GlobalProperties.getInt("threadpool.debugLevel", 0);
         
-        defaultIdleTime = 1000 * configProperties.getIntProperty("threadpool.idletime", 60);
+        defaultIdleTime = 1000 * GlobalProperties.getInt("threadpool.idletime", 60);
 
-        int freqIsSecs = configProperties.getIntProperty("threadpool.sleeptime", 30);
+        int freqIsSecs = GlobalProperties.getInt("threadpool.sleeptime", 30);
 
         BackgroundThread.add(freqIsSecs, this);
     }
@@ -210,17 +206,17 @@ public class ThreadPoolManager implements Runnable {
 
     private ThreadPool createThreadPool(String poolName) {
 
-        int min = configProperties.getIntProperty("threadpool." + poolName + ".min", 0);
-        int max = configProperties.getIntProperty("threadpool." + poolName + ".max", 100);
+        int min = GlobalProperties.getInt("threadpool." + poolName + ".min", 0);
+        int max = GlobalProperties.getInt("threadpool." + poolName + ".max", 100);
 
-        long idle = 1000 * configProperties.getIntProperty("threadpool." + poolName + ".idletime", -1);
+        long idle = 1000 * GlobalProperties.getInt("threadpool." + poolName + ".idletime", -1);
         if (idle < 0) {
             idle = defaultIdleTime;
         }
 
         boolean isDaemon = true;
         Integer priority = null;
-        String threadPriority = configProperties.getProperty("threadpool." + poolName + ".priority");
+        String threadPriority = GlobalProperties.get("threadpool." + poolName + ".priority", null);
         if (threadPriority != null) {
             priority = new Integer(threadPriority);
         }

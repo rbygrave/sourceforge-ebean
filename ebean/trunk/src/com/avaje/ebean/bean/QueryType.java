@@ -1,5 +1,8 @@
 package com.avaje.ebean.bean;
 
+/**
+ * The type of query result.
+ */
 public enum QueryType {
 
 	/**

@@ -31,7 +31,6 @@ import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql.SqlType;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
 
@@ -47,11 +46,11 @@ public class ExeUpdateSql {
     private final PstmtFactory pstmtFactory;
     
     /**
-     * Create with a given plugin.
+     * Create with a given binder.
      */
-    public ExeUpdateSql(PluginDbConfig dbConfig) {
-    	pstmtFactory = new PstmtFactory();
-    	binder = dbConfig.getBinder();
+    public ExeUpdateSql(Binder binder) {
+    	this.binder = binder;
+    	this.pstmtFactory = new PstmtFactory();
     }
     
     /**

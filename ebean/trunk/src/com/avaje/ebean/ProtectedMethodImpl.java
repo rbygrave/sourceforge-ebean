@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean;
 
-import java.util.ArrayList;
-
 import com.avaje.ebean.server.core.ProtectedMethodAPI;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.util.BindParams;
@@ -52,10 +50,4 @@ class ProtectedMethodImpl implements ProtectedMethodAPI {
         return callSql.getTransactionEvent();
     }
     
-    /**
-     * Return the classes (entities, embeddable, finders, scalar types etc). 
-     */
-    public ArrayList<Class<?>> getClasses(ServerConfiguration serverConfig) {
-		return serverConfig.getClasses();
-	}
 }

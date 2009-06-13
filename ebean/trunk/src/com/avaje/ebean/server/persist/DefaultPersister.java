@@ -35,7 +35,6 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmUpdate;
-import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
@@ -45,16 +44,14 @@ import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.Persister;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.DeploymentManager;
 import com.avaje.ebean.server.deploy.IntersectionRow;
-import com.avaje.ebean.server.idgen.IdGeneratorManager;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import com.avaje.ebean.server.idgen.IdGeneratorMap;
+import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -73,7 +70,7 @@ import com.avaje.ebean.util.Message;
  * 
  * @see com.avaje.ebean.server.persist.DefaultPersistExecute
  */
-public final class DefaultPersister implements Persister, ConcurrencyMode {
+public final class DefaultPersister implements Persister {
 
 	private static final Logger logger = Logger.getLogger(DefaultPersister.class.getName());
 
@@ -82,33 +79,27 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	 */
 	private final PersistExecute persistExecute;
 
-	private final Plugin plugin;
-
 	private final boolean validation;
 
 	private final InternalEbeanServer server;
 
-	private final DeploymentManager deploymentManager;
+	private final BeanDescriptorManager beanDescriptorManager;
 
-	final IdGeneratorManager idGeneratorManager;
+	final IdGeneratorMap idGeneratorManager;
 	
-	public DefaultPersister(Plugin plugin, InternalEbeanServer server) {
+	public DefaultPersister(InternalEbeanServer server, boolean validate, MLogControl logControl, Binder binder, BeanDescriptorManager descMgr) {
 
-		PluginCore pluginCore = plugin.getPluginCore();
-
-		this.plugin = plugin;
 		this.server = server;
-		this.deploymentManager = pluginCore.getDeploymentManager();
-		this.persistExecute = new DefaultPersistExecute(pluginCore.getDbConfig());
+		this.beanDescriptorManager = descMgr;
+		this.persistExecute = new DefaultPersistExecute(logControl, binder);
 
-		this.idGeneratorManager = plugin.createIdGeneratorManager(server);
-		PluginProperties props = pluginCore.getDbConfig().getProperties();
+		this.idGeneratorManager = null;//FIXME: plugin.createIdGeneratorManager(server);
 
-		validation = props.getPropertyBoolean("validation", true);
+		this.validation = validate;
 	}
 
 	public Object nextId(BeanDescriptor<?> desc) {
-		return idGeneratorManager.nextId(desc);
+		return desc.nextId();
 	}
 
 	/**
@@ -134,7 +125,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		OrmUpdate<?> ormUpdate = (OrmUpdate<?>) update;
 		
-		BeanManager<?> mgr = deploymentManager.getBeanManager(ormUpdate.getBeanType());
+		BeanManager<?> mgr = beanDescriptorManager.getBeanManager(ormUpdate.getBeanType());
 		
 		if (mgr == null){
 			String msg = "No BeanManager found for type ["+ormUpdate.getBeanType()+"]. Is it an entity?";
@@ -300,7 +291,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		} else {
 			// skip validation on unchanged bean
-			if (plugin.getDebugLevel() > 0) {
+			if (logger.isLoggable(Level.FINE)) {
 				logger.fine(Message.msg("persist.update.skipped", request.getBean()));
 			}
 		}
@@ -709,7 +700,7 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 
 		} else {
 			// generate the nextId and set it to the property
-			Object nextId = idGeneratorManager.nextId(desc);
+			Object nextId = desc.nextId();
 
 			// cast the data type if required and set it
 			desc.convertSetId(nextId, bean);
@@ -769,6 +760,6 @@ public final class DefaultPersister implements Persister, ConcurrencyMode {
 	@SuppressWarnings("unchecked")
 	private <T> BeanManager<T> getPersistDescriptor(T bean) {
 		
-		return (BeanManager<T>) deploymentManager.getBeanManager(bean.getClass());
+		return (BeanManager<T>) beanDescriptorManager.getBeanManager(bean.getClass());
 	}
 }

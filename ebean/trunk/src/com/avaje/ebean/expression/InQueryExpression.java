@@ -34,7 +34,7 @@ class InQueryExpression implements Expression {
 	public int queryAutoFetchHash() {
 		int hc = InQueryExpression.class.getName().hashCode();
 		hc = hc * 31 + propertyName.hashCode();
-		hc = hc * 31 + subQuery.queryAutoFetchHash();
+		hc = hc * 31 + subQuery.queryAutofetchHash();
 		return hc;
 	}
 

@@ -22,21 +22,23 @@ package com.avaje.ebean.server.core;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.server.type.ScalarType;
+import com.avaje.ebean.server.util.ClassPathSearchMatcher;
 
 /**
  * Interesting classes for a EbeanServer such as Embeddable, Entity,
  * ScalarTypes, Finders, Listeners and Controllers.
  */
-public class BootupClasses {
+public class BootupClasses implements ClassPathSearchMatcher {
 
 	ArrayList<Class<?>> embeddableList = new ArrayList<Class<?>>();
 
@@ -53,8 +55,10 @@ public class BootupClasses {
 	public BootupClasses(){
 	}
 	
-	public BootupClasses(ArrayList<Class<?>> list){
-		process(list.iterator());
+	public BootupClasses(List<Class<?>> list){
+		if (list != null){
+			process(list.iterator());
+		}
 	}
 	
 	private BootupClasses(BootupClasses parent){

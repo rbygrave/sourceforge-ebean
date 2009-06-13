@@ -24,15 +24,17 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
+import com.avaje.ebean.config.dbplatform.SqlLimiter;
 import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.query.OrmQueryLimitRequest;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.ResultSetLimit;
 
 /**
  * Factory for SqlSelectClause based on raw sql.
@@ -44,20 +46,15 @@ import com.avaje.ebean.server.plugin.ResultSetLimit;
 public class RawSqlSelectClauseBuilder {
 
 	private static final Logger logger = Logger.getLogger(RawSqlSelectClauseBuilder.class.getName());
-
-	private static final int MAX_OFFSET = 1;
 	
 	private final Binder binder;
 
-	private final ResultSetLimit resultSetLimit;
-	
-	private final boolean useLimitOffset;
-		
-	public RawSqlSelectClauseBuilder(PluginCore pluginCore) {
+	private final SqlLimiter dbQueryLimiter;
+			
+	public RawSqlSelectClauseBuilder(DatabasePlatform dbPlatform, Binder binder) {
 
-		this.binder = pluginCore.getDbConfig().getBinder();
-		this.resultSetLimit = getLimitMode(pluginCore.getDbConfig().getDbSpecific().getResultSetLimit());
-		this.useLimitOffset = resultSetLimit.equals(ResultSetLimit.LimitOffset);
+		this.binder = binder;
+		this.dbQueryLimiter = dbPlatform.getSqlLimiter();
 	}
 
 
@@ -84,17 +81,26 @@ public class RawSqlSelectClauseBuilder {
 		String sql = null;
 		try {
 
+			boolean includeRowNumColumn = false;
+			String orderBy = sqlSelect.getOrderBy(predicates);
+			
 			// build the actual sql String
-			sql = sqlSelect.buildSql(predicates, request);
-			if (useLimitOffset && query.hasMaxRowsOrFirstRow()) {
-				// wrap with a limit offset clause
-				// Not going to wrap with ROW_NUMBER() at this stage.
-				sql = wrapLimitOffset(query, sql);
+			sql = sqlSelect.buildSql(orderBy, predicates, request);
+			if (query.hasMaxRowsOrFirstRow() && dbQueryLimiter != null) {
+				// wrap with a limit offset or ROW_NUMBER() etc
+				SqlLimitResponse limitSql = dbQueryLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query));
+				includeRowNumColumn = limitSql.isIncludesRowNumberColumn();
+				
+				sql = limitSql.getSql();
+			} else {
+				// add back select keyword 
+				// ... was removed to support dbQueryLimiter
+				sql = "select "+sql;
 			}
 			
 			SqlTree sqlTree = sqlSelect.getSqlTree();
 			
-			CQueryPlan queryPlan = new CQueryPlan(sql, sqlTree, true, false, "");
+			CQueryPlan queryPlan = new CQueryPlan(sql, sqlTree, true, includeRowNumColumn, "");
 			CQuery<T> compiledQuery = new CQuery<T>(request, predicates, queryPlan);
 
 			return compiledQuery;
@@ -106,44 +112,5 @@ public class RawSqlSelectClauseBuilder {
 			throw new PersistenceException(e);
 		}
 	}
-
-	/**
-	 * Determine how row limits will be supported.
-	 */
-	private ResultSetLimit getLimitMode(ResultSetLimit limit) {
 	
-	    if (limit == null) {
-	    	return ResultSetLimit.JdbcRowNavigation;
-	
-	    } else {
-	    	return limit;
-	    }
-	}
-	
-	/**
-	 * Wrap the sql with LIMIT OFFSET keywords. Used by MySql and Postgres.
-	 */
-	protected String wrapLimitOffset(OrmQuery<?> q, String sql) {
-
-		int firstRow = q.getFirstRow();
-		int lastRow = q.getMaxRows();
-		if (lastRow > 0) {
-			lastRow = lastRow + firstRow + MAX_OFFSET;
-		}
-
-		StringBuilder sb = new StringBuilder(512);
-		sb.append(sql);
-		sb.append(" ").append(Constants.NEW_LINE).append(Constants.LIMIT).append(" ");
-		if (lastRow > 0) {
-			sb.append(lastRow);
-			if (firstRow > 0) {
-				sb.append(" ").append(Constants.OFFSET).append(" ");
-			}
-		}
-		if (firstRow > 0) {
-			sb.append(firstRow);
-		}
-
-		return sb.toString();
-	}
 }

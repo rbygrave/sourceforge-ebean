@@ -25,7 +25,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
@@ -76,15 +75,12 @@ public final class CronManager {
      * passed.  This is because Thread.sleep() only approximates the sleep time.
      */
     private static final long SMALL_DELAY = 10;
-	
-    final ConfigProperties configProperties;
-    
+	    
 	/** 
 	 * Singleton private constructor.
 	 */
 	private CronManager() {
-		configProperties = GlobalProperties.getConfigProperties();
-        runList = new Vector<CronRunnable>(); 
+	    runList = new Vector<CronRunnable>(); 
         threadPool = ThreadPoolManager.getThreadPool("CronManager");
         
         backgroundThread = new Thread(new Runner(),"CronManager Daemon");
@@ -102,7 +98,7 @@ public final class CronManager {
 	    CronRunnable dt = new CronRunnable("25 23 * * *", new Downtime(this));
 	    dt.setEnabled(false);
 	    
-		String downtimeSchedule = configProperties.getProperty("system.downtime.schedule");
+		String downtimeSchedule = GlobalProperties.get("system.downtime.schedule", null);
 		if (downtimeSchedule != null){
 		    // there is acutally downtime
 			dt.setSchedule(downtimeSchedule);
@@ -127,7 +123,7 @@ public final class CronManager {
 	protected void setDowntime(boolean isDowntime){
 	    this.isDowntime = isDowntime;
 	    if (isDowntime){
-	        String duration = configProperties.getProperty("system.downtime.duration");
+	        String duration = GlobalProperties.get("system.downtime.duration", null);
 	        logger.warning("System downtime has started for ["+duration+"] seconds");
 	    } else {
 	        logger.warning("System downtime has finished.");	        

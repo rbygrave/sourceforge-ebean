@@ -91,7 +91,7 @@ public interface EbeanServer {
 	 * @see Ebean#getServer(String)
 	 */
 	public String getName();
-
+	
 	/**
 	 * Return a map of the differences between two objects of the same type.
 	 * <p>

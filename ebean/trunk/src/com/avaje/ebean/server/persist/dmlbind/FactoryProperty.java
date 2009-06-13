@@ -21,7 +21,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
-import com.avaje.ebean.server.persist.dml.Modes;
+import com.avaje.ebean.server.persist.dml.DmlMode;
 
 /**
  * Creates the appropriate Bindable for a BeanProperty.
@@ -30,7 +30,7 @@ import com.avaje.ebean.server.persist.dml.Modes;
  * and BindablePropertyUpdateGenerated as required.
  * </p>
  */
-public class FactoryProperty implements Modes {
+public class FactoryProperty {
 
 	public FactoryProperty() {
 	}
@@ -38,14 +38,17 @@ public class FactoryProperty implements Modes {
 	/**
 	 * Create a Bindable for the property given the mode and withLobs flag.
 	 */
-	public Bindable create(BeanProperty prop, int mode, boolean withLobs) {
+	public Bindable create(BeanProperty prop, DmlMode mode, boolean withLobs) {
 
-		if (!prop.isDbWrite()) {
-			// read only property
+		if (DmlMode.INSERT.equals(mode) && !prop.isDbInsertable()){
 			return null;
 		}
+		if (DmlMode.UPDATE.equals(mode) && !prop.isDbUpdatable()){
+			return null;
+		}
+		
 		if (prop.isLob()) {
-			if (mode == MODE_WHERE || !withLobs) {
+			if (DmlMode.WHERE.equals(mode) || !withLobs) {
 				// Lob exclusion
 				return null;
 			} else {
@@ -55,7 +58,7 @@ public class FactoryProperty implements Modes {
 
 		GeneratedProperty gen = prop.getGeneratedProperty();
 		if (gen != null) {
-			if (mode == MODE_INSERT) {
+			if (DmlMode.INSERT.equals(mode)) {
 				if (gen.includeInInsert()) {
 					return new BindablePropertyInsertGenerated(prop, gen);					
 				} else {
@@ -63,7 +66,7 @@ public class FactoryProperty implements Modes {
 				}
 
 			}
-			if (mode == MODE_UPDATE) {
+			if (DmlMode.UPDATE.equals(mode)) {
 				if (gen.includeInUpdate()) {
 					return new BindablePropertyUpdateGenerated(prop, gen);
 				} else {

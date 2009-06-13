@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.server.lib.cron.CronManager;
 
 /**
@@ -52,11 +53,6 @@ import com.avaje.ebean.server.lib.cron.CronManager;
 public class DataSourcePool implements DataSource {
 
 	private static final Logger logger = Logger.getLogger(DataSourcePool.class.getName());
-
-	/**
-	 * The deployment parameters.
-	 */
-	private final DataSourceParams params;
 
 	/**
 	 * The name given to this dataSource.
@@ -194,12 +190,10 @@ public class DataSourcePool implements DataSource {
 	 * Create the pool.
 	 */
 	public DataSourcePool(DataSourceNotify notify, DataSourceParams params) {
-		this.params = params;
+
 		this.notify = notify;
 		this.name = params.getName();
-		this.poolListener = createPoolListener(params);
-		
-		this.connectionProps = params.getConnectionProperties();
+		this.poolListener = createPoolListener(params.getPoolListener());
 		
 		this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
 		this.leakTimeMinutes = params.getLeakTimeMinutes();
@@ -214,6 +208,41 @@ public class DataSourcePool implements DataSource {
 		this.transactionIsolation = params.getIsolationLevel();
 		this.heartbeatsql = params.getHeartBeatSql();
 		
+        connectionProps = new Properties();
+        connectionProps.setProperty("user", params.getUsername());
+        connectionProps.setProperty("password", params.getPassword());
+        
+		try {
+			initialise();
+		} catch (SQLException ex) {
+			throw new DataSourceException(ex);
+		}
+	}
+	
+	public DataSourcePool(DataSourceNotify notify, String name, DataSourceConfig params) {
+		//this.params = params;
+		this.notify = notify;
+		this.name = name;
+		this.poolListener = createPoolListener(params.getPoolListener());
+		
+
+		this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
+		this.leakTimeMinutes = params.getLeakTimeMinutes();
+		this.captureStackTrace = params.isCaptureStackTrace();
+		this.autoCommit = true;
+		this.databaseDriver = params.getDriver();
+		this.databaseUrl = params.getUrl();
+		this.pstmtCacheSize = params.getPstmtCacheSize();
+		this.minConnections = params.getMinConnections();
+		this.maxConnections = params.getMaxConnections();
+		this.waitTimeout = params.getWaitTimeout();
+		this.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
+		this.heartbeatsql = params.getHeartbeatSql();
+		
+        connectionProps = new Properties();
+        connectionProps.setProperty("user", params.getUsername());
+        connectionProps.setProperty("password", params.getPassword());
+        
 		try {
 			initialise();
 		} catch (SQLException ex) {
@@ -224,8 +253,7 @@ public class DataSourcePool implements DataSource {
 	/**
 	 * Create the DataSourcePoolListener if there is one.
 	 */
-	private DataSourcePoolListener createPoolListener(DataSourceParams params) {
-		String cn = params.getPoolListener();
+	private DataSourcePoolListener createPoolListener(String cn) {
 		if (cn == null){
 			return null;
 		} 
@@ -257,13 +285,6 @@ public class DataSourcePool implements DataSource {
 		logger.info(sb.toString());
 
 		ensureMinimumConnections();
-	}
-	
-	/**
-	 * Return the parameters used by this pool.
-	 */
-	public DataSourceParams getParams() {
-		return params;
 	}
 
 	/**

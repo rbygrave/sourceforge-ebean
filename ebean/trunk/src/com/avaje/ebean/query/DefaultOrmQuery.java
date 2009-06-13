@@ -251,7 +251,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		return detail.isEmpty();
 	}
 
-	public boolean isAutoFetchTuned() {
+	public boolean isAutofetchTuned() {
 		return autoFetchTuned;
 	}
 
@@ -259,11 +259,15 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		this.autoFetchTuned = autoFetchTuned;
 	}
 
-	public Boolean isAutoFetch() {
+	public Boolean isAutofetch() {
 		return sqlSelect ? Boolean.FALSE : autoFetch;
 	}
 
 	public DefaultOrmQuery<T> setAutoFetch(boolean autoFetch) {
+		return setAutofetch(autoFetch);
+	}
+	
+	public DefaultOrmQuery<T> setAutofetch(boolean autoFetch) {
 		this.autoFetch = autoFetch;
 		return this;
 	}
@@ -300,7 +304,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	public ObjectGraphOrigin createObjectGraphOrigin(CallStack callStack) {
 
 		// calculate base query hash prior to it being tuned
-		objectGraphOrigin = new ObjectGraphOrigin(queryAutoFetchHash(), callStack, beanType.getName());
+		objectGraphOrigin = new ObjectGraphOrigin(queryAutofetchHash(), callStack, beanType.getName());
 		return objectGraphOrigin;
 	}
 
@@ -355,7 +359,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * Calculate a hash used by AutoFetch to identify when a query has changed 
 	 * (and hence potentially needs a new tuned query plan to be developed).
 	 */
-	public int queryAutoFetchHash() {
+	public int queryAutofetchHash() {
 		
 		return calculateHash(null);
 	}

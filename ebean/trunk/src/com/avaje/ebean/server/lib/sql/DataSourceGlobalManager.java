@@ -19,7 +19,7 @@ package com.avaje.ebean.server.lib.sql;
 
 import java.util.List;
 
-import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.DataSourceConfig;
 
 /**
  * Manages access to named DataSources using singleton scope.
@@ -59,12 +59,17 @@ public final class DataSourceGlobalManager {
 		return manager.getDataSource(name);
 	}
 
-	/**
-	 * Return the named DataSourcePool additionally supplying configuration
-	 * properties.
-	 */
-	public static DataSourcePool getDataSource(String name, ConfigProperties configProps) {
-		return manager.getDataSource(name, configProps);
+//	/**
+//	 * Return the named DataSourcePool additionally supplying configuration
+//	 * properties.
+//	 */
+//	public static DataSourcePool getDataSource(String name, ConfigProperties configProps) {
+//		return manager.getDataSource(name, configProps);
+//	}
+	
+	public static DataSourcePool getDataSource(String name, DataSourceConfig dsConfig) {
+		return manager.getDataSource(name, dsConfig);
 	}
+	
 
 }

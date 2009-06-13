@@ -43,10 +43,9 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import com.avaje.ebean.annotation.EnumMapping;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.core.BootupClasses;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
 import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Default implementation of TypeManager.
@@ -102,32 +101,27 @@ public final class DefaultTypeManager implements TypeManager {
 	final ScalarType urlType = new ScalarTypeURL();
 	final ScalarType uriType = new ScalarTypeURI();
 
-	final PluginProperties properties;
-
 	/**
 	 * Create the DefaultTypeManager.
 	 */
-	public DefaultTypeManager(PluginProperties properties) {
-		this.properties = properties;
+	public DefaultTypeManager(ServerConfig config, BootupClasses bootupClasses) {
+		
 		this.typeMap = new ConcurrentHashMap<Class<?>, ScalarType>();
 		this.nativeMap = new ConcurrentHashMap<Integer, ScalarType>();
-		this.extraTypeFactory = new DefaultTypeFactory(properties);
+		this.extraTypeFactory = new DefaultTypeFactory(config);
 
-		boolean emptyAsNull = properties.getPropertyBoolean("treatEmptyStringsAsNull", false);
-		
 		ScalarType stringType;
-		if (!emptyAsNull){
-			stringType = new ScalarTypeString();
-		} else {
+		if (config.getDatabasePlatform().isTreatEmptyStringsAsNull()){
 			// use type that translates empty strings into DB nulls
 			stringType = new ScalarTypeStringOracle();
+		} else {
+			stringType = new ScalarTypeString();
 		}
 		
 		initialiseStandard(stringType);
 		
 		initialiseJodaTypes();
-		initialiseFromBootupSearch();
-		initialiseFromProperties();
+		initialiseFromBootupSearch(bootupClasses);
 	}
 
 	/**
@@ -263,27 +257,18 @@ public final class DefaultTypeManager implements TypeManager {
 	@SuppressWarnings("unchecked")
 	public ScalarType createEnumScalarType(Class enumType) {
 
-		int length = 0;
-		boolean integerType = false;
-		String nameValuePairs = null;
 		
-		String key = "type.enum." + enumType.getName();
-		nameValuePairs = properties.getProperty(key, null);
-		if (nameValuePairs == null) {
-			// get the mapping information from EnumMapping
-			EnumMapping enumMapping = (EnumMapping)enumType.getAnnotation(EnumMapping.class);
-			if (enumMapping != null){
-				nameValuePairs  = enumMapping.nameValuePairs();
-				integerType = enumMapping.integerType();
-				length = enumMapping.length();
-			}
-		}
-		
-		if (nameValuePairs == null){
-			// there are no name value pairs for this mapping...
+		// get the mapping information from EnumMapping
+		EnumMapping enumMapping = (EnumMapping)enumType.getAnnotation(EnumMapping.class);
+		if (enumMapping == null){
 			return null;
 		}
-
+		
+		String nameValuePairs  = enumMapping.nameValuePairs();
+		boolean integerType = enumMapping.integerType();
+		int length = enumMapping.length();
+		
+	
 		Map<String, String> nameValueMap = StringHelper.delimitedToMap(nameValuePairs, ",", "=");
 
 		EnumToDbValueMap<?> beanDbMap = EnumToDbValueMap.create(integerType);
@@ -317,9 +302,8 @@ public final class DefaultTypeManager implements TypeManager {
 	 * interface and register it with this TypeManager.
 	 * </p>
 	 */
-	protected void initialiseFromBootupSearch() {
+	protected void initialiseFromBootupSearch(BootupClasses bootupClasses) {
 
-		BootupClasses bootupClasses = properties.getBootupClasses();
 		List<Class<?>> foundTypes = bootupClasses.getScalarTypes();
 		
 		for (int i = 0; i < foundTypes.size(); i++) {
@@ -336,25 +320,7 @@ public final class DefaultTypeManager implements TypeManager {
 		}
 	}
 
-	/**
-	 * Add any ScalarTypes that are registered via ebean.type.0 to ebean.type.99
-	 * properties.
-	 */
-	protected void initialiseFromProperties() {
 
-		for (int i = 0; i < 100; i++) {
-			String type = properties.getProperty("type." + i, null);
-			try {
-				if (type != null) {
-					ScalarType scalarType = (ScalarType) FactoryHelper.create(type);
-					add(scalarType);
-				}
-			} catch (Exception ex) {
-				String msg = "Error creating ScalarType " + type;
-				logger.log(Level.SEVERE, msg, ex);
-			}
-		}
-	}
 
 	/**
 	 * Detect if Joda classes are in the classpath and if so

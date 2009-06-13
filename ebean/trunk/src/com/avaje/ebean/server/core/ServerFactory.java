@@ -20,7 +20,7 @@
 package com.avaje.ebean.server.core;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.ServerConfiguration;
+import com.avaje.ebean.config.ServerConfig;
 
 /**
  * Creates the EbeanServer implementations. This is used by the Ebean singleton
@@ -32,14 +32,15 @@ import com.avaje.ebean.ServerConfiguration;
  * </p>
  */
 public interface ServerFactory {
-
+	
 	/**
 	 * Create the EbeanServer for a given configuration.
 	 * 
 	 * @param configuration
 	 *            The configuration information for this server.
 	 */
-	public EbeanServer createServer(ServerConfiguration configuration);
+	//public EbeanServer createServer(ServerConfiguration configuration);
+	public EbeanServer createServer(ServerConfig configuration);
 
 	/**
 	 * Create an EbeanServer just using the name.

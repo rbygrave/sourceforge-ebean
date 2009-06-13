@@ -105,9 +105,14 @@ public class DeployBeanProperty {
 	boolean dbRead;
 
 	/**
-	 * Is this property mapped to the BASE table.
+	 * Include this in DB insert.
 	 */
-	boolean dbWrite;
+	boolean dbInsertable;
+	
+	/**
+	 * Include this in a DB update.
+	 */
+	boolean dbUpdateable;
 
 	/**
 	 * Set to true if this property is based on a secondary table.
@@ -516,7 +521,8 @@ public class DeployBeanProperty {
 		this.sqlFormulaSelect = formulaSelect;
 		this.sqlFormulaJoin = formulaJoin.equals("") ? null : formulaJoin;
 		this.dbRead = true;
-		this.dbWrite = false;
+		this.dbInsertable = false;
+		this.dbUpdateable = false;
 	}
 
 	/**
@@ -580,21 +586,6 @@ public class DeployBeanProperty {
 	}
 
 	/**
-	 * Return true if this property is included in persisting. This is always
-	 * false for List and Bean types regardless.
-	 */
-	public boolean isDbWrite() {
-		return dbWrite;
-	}
-
-	/**
-	 * Set to true if this property is included in persisting.
-	 */
-	public void setDbWrite(boolean isDBWrite) {
-		this.dbWrite = isDBWrite;
-	}
-
-	/**
 	 * Set to true if this property is included in persisting.
 	 */
 	public void setSecondaryTable() {
@@ -613,6 +604,22 @@ public class DeployBeanProperty {
 	 */
 	public void setDbRead(boolean isDBRead) {
 		this.dbRead = isDBRead;
+	}
+	
+	public boolean isDbInsertable() {
+		return dbInsertable;
+	}
+
+	public void setDbInsertable(boolean insertable) {
+		this.dbInsertable = insertable;
+	}
+
+	public boolean isDbUpdateable() {
+		return dbUpdateable;
+	}
+
+	public void setDbUpdateable(boolean updateable) {
+		this.dbUpdateable = updateable;
 	}
 
 	/**

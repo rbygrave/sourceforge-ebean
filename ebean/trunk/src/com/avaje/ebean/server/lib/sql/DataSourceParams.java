@@ -172,7 +172,15 @@ public class DataSourceParams {
 	public String getPoolListener() {
 		return getParam("poolListener", false);
 	}
-    
+
+	public String getUsername() {
+		return getParam("username", false);
+	}
+	
+	public String getPassword() {
+		return getParam("password", false);
+	}
+	
     /**
 	 * Return a parameter value.
 	 */

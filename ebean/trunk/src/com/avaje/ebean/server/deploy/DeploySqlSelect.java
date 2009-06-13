@@ -174,7 +174,7 @@ public class DeploySqlSelect {
 	/**
 	 * Build the full SQL Select statement for the request.
 	 */
-	public String buildSql(CQueryPredicates predicates, OrmQueryRequest<?> request) {
+	public String buildSql(String orderBy, CQueryPredicates predicates, OrmQueryRequest<?> request) {
 
 
 		StringBuilder sb = new StringBuilder();
@@ -191,7 +191,6 @@ public class DeploySqlSelect {
 			//FIXME: I think this is broken... needs to be logical 
 			// and then parsed for SqlSelect...
 			dynamicWhere = descriptor.getBindIdSql();
-			//parser.parse(descriptor.getBindIdSql());
 		}
 
 		String dbWhere = predicates.getDbWhere();
@@ -230,10 +229,6 @@ public class DeploySqlSelect {
 			sb.append(" ");
 		}
 
-		String orderBy = predicates.getDbOrderBy();
-		if (orderBy == null) {
-			orderBy = orderBySql;
-		} 
 		if (orderBy != null) {
 			sb.append(" order by ").append(orderBy);
 		}
@@ -241,6 +236,15 @@ public class DeploySqlSelect {
 		return sb.toString();
 	}
 
+	public String getOrderBy(CQueryPredicates predicates) {
+		String orderBy = predicates.getDbOrderBy();
+		if (orderBy != null) {
+			return orderBy;
+		} else {
+			return orderBySql;			
+		}
+	}
+	
 	
 	public SqlTree getSqlTree() {
 		return sqlTree;

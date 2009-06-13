@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -31,8 +32,6 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.jointree.DeployPropertyFactory.DeployPropertyRequest;
 import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Creates JoinTree's for given BeanDescriptors.
@@ -40,6 +39,8 @@ import com.avaje.ebean.server.plugin.PluginProperties;
 public class JoinTreeFactory {
 
 	private final Logger logger = Logger.getLogger(JoinTreeFactory.class.getName());
+	
+	private final String tableAliasPlaceholder;
 	
 	private final int maxDepth;
 	
@@ -49,15 +50,17 @@ public class JoinTreeFactory {
 	
 	private final DeployPropertyFactory deployPropertyFactory;
 	
-	public JoinTreeFactory(PluginDbConfig dbConfig) {
-		PluginProperties properties = dbConfig.getProperties();
-		deployPropertyFactory = new DeployPropertyFactory(dbConfig);
-		maxDepth = properties.getPropertyInt("jointree.maxdepth", 10);
-		sysoutOnMaxDepth = properties.getPropertyBoolean("jointree.sysoutOnMaxDepth", true);
+	public JoinTreeFactory() {
+		
+		tableAliasPlaceholder = GlobalProperties.get("ebean.tableAliasPlaceholder", "${ta}");
+		deployPropertyFactory = new DeployPropertyFactory(tableAliasPlaceholder);
+		
+		maxDepth = GlobalProperties.getInt("jointree.maxdepth", 10);
+		sysoutOnMaxDepth = GlobalProperties.getBoolean("jointree.sysoutOnMaxDepth", true);
 		
 		// set this to true or increase logging level to FINE to get
 		// the join tree output (for debugging purposes)
-		debugJoinTree = properties.getPropertyBoolean("debug.jointree", false);
+		debugJoinTree = GlobalProperties.getBoolean("debug.jointree", false);
 	}
 	
 	/**

@@ -19,43 +19,66 @@
  */
 package com.avaje.ebean.server.deploy.generatedproperty;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 
 /**
- * Creates GeneratedProperty for counters, insert timestamps and update
- * timestamps.
+ * Default implementation of GeneratedPropertyFactory.
  */
-public interface GeneratedPropertyFactory {
+public class GeneratedPropertyFactory {
 
-	/**
-	 * Create a counter GeneratedProperty.
-	 * <p>
-	 * This is used to support version properties. (for optimistic concurrency
-	 * checking based on counters).
-	 * </p>
-	 */
-	public GeneratedProperty createCounter(DeployBeanProperty prop);
+	CounterFactory counterFactory;
 
-	/**
-	 * Create a insert timestamp GeneratedProperty.
-	 * <p>
-	 * This maps to a property that has the 'inserted timestamp' set when a bean
-	 * is first persisted.
-	 * </p>
-	 */
-	public GeneratedProperty createInsertTimestamp(DeployBeanProperty prop);
+	InsertTimestampFactory insertFactory;
 
-	/**
-	 * Create a update timestamp GeneratedProperty.
-	 * <p>
-	 * This maps to a property that has the 'updated timestamp' set whenever a
-	 * bean persisted.
-	 * </p>
-	 * <p>
-	 * This is used to support version properties. (for optimistic concurrency
-	 * checking based on timestamps).
-	 * </p>
-	 */
-	public GeneratedProperty createUpdateTimestamp(DeployBeanProperty prop);
+	UpdateTimestampFactory updateFactory;
+
+	HashSet<String> numberTypes = new HashSet<String>();
+
+	public GeneratedPropertyFactory() {
+		counterFactory = new CounterFactory();
+		insertFactory = new InsertTimestampFactory();
+		updateFactory = new UpdateTimestampFactory();
+		
+
+		numberTypes.add(Integer.class.getName());
+		numberTypes.add(int.class.getName());
+		numberTypes.add(Long.class.getName());
+		numberTypes.add(long.class.getName());
+		numberTypes.add(Short.class.getName());
+		numberTypes.add(short.class.getName());
+		numberTypes.add(Double.class.getName());
+		numberTypes.add(double.class.getName());
+		numberTypes.add(BigDecimal.class.getName());
+	}
+
+	private boolean isNumberType(String typeClassName) {
+		return numberTypes.contains(typeClassName);
+	}
+	
+	public void setVersion(DeployBeanProperty property) {
+		if (isNumberType(property.getPropertyType().getName())) {
+			setCounter(property);
+		} else {
+			setUpdateTimestamp(property);
+		}
+	}
+	
+	public void setCounter(DeployBeanProperty property) {
+		
+		counterFactory.setCounter(property);
+	}
+
+	public void setInsertTimestamp(DeployBeanProperty property) {
+		
+		insertFactory.setInsertTimestamp(property);
+	}
+
+	public void setUpdateTimestamp(DeployBeanProperty property) {
+		
+		updateFactory.setUpdateTimestamp(property);
+	}
 
 }

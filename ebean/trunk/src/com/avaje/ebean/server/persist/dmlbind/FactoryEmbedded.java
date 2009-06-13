@@ -25,6 +25,7 @@ import java.util.List;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.persist.dml.DmlMode;
 
 /**
  * A factory that builds Bindable for embedded bean properties.
@@ -40,7 +41,7 @@ public class FactoryEmbedded {
 	/**
 	 * Add bindable for the embedded properties to the list.
 	 */
-	public void create(List<Bindable> list, BeanDescriptor<?> desc, int mode, boolean withLobs) {
+	public void create(List<Bindable> list, BeanDescriptor<?> desc, DmlMode mode, boolean withLobs) {
 		
 		BeanPropertyAssocOne<?>[] embedded = desc.propertiesEmbedded();
 				

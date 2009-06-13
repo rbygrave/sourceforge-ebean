@@ -40,10 +40,15 @@ public class CounterFactory {
 
 	final GeneratedCounterLong longCounter = new GeneratedCounterLong();
 
+	public void setCounter(DeployBeanProperty property) {
+
+		property.setGeneratedProperty(createCounter(property));
+	}
+	
 	/**
 	 * Create the GeneratedProperty based on the property type.
 	 */
-	public GeneratedProperty createCounter(DeployBeanProperty property) {
+	private GeneratedProperty createCounter(DeployBeanProperty property) {
 		
 		Class<?> propType = property.getPropertyType();
 		if (propType.equals(Integer.class) || propType.equals(int.class)) {

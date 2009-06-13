@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.net.ConnectionProcessor;
 import com.avaje.ebean.server.net.Endpoint;
@@ -32,8 +32,8 @@ import com.avaje.ebean.server.net.SocketListener;
 /**
  * Manages the cluster service.
  * <p>
- * SystemProperties:<br>
- * <pre><code>
+ * ebean.properties:<br>
+ * <pre>
  * ## the local member host:port
  * cluster.local=121.1.1.10:9001
  * 
@@ -42,7 +42,7 @@ import com.avaje.ebean.server.net.SocketListener;
  * 
  * ## specify the broadcast implementation, defaults to SocketBroadcast 
  * #cluster.broadcast=com.avaje.lib.cluster.SocketBroadcast
- * </code></pre>
+ * </pre>
  * </p>
  */
 public class ClusterManager {
@@ -59,16 +59,16 @@ public class ClusterManager {
 
     ArrayList<Endpoint> otherMembers = new ArrayList<Endpoint>();
  
-    public ClusterManager(ConfigProperties properties) {
+    public ClusterManager() {
      
-        String localHostPort = properties.getProperty("cluster.local");
+        String localHostPort = GlobalProperties.get("cluster.local", null);
         if (localHostPort == null){
             // there is no clustering
             return;
         }
         try {
             
-            String broadcastCn = properties.getProperty("cluster.broadcast");
+            String broadcastCn = GlobalProperties.get("cluster.broadcast", null);
             if (broadcastCn != null){
                 Class<?> cls = Class.forName(broadcastCn);
                 broadcast = (Broadcast)cls.newInstance();
@@ -78,7 +78,7 @@ public class ClusterManager {
             
             localMember = new Endpoint(localHostPort);
             
-            String members = properties.getProperty("cluster.members");
+            String members = GlobalProperties.get("cluster.members", null);
             if (members != null){
                 String[] memArray = StringHelper.delimitedToArray(members,",",false);
                 for (int i = 0; i < memArray.length; i++) {

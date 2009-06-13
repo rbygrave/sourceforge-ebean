@@ -3,8 +3,8 @@ package com.avaje.ebean.server.jmx;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.control.AutoFetchControl;
-import com.avaje.ebean.control.ImplicitAutoFetchMode;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 
 /**
@@ -20,13 +20,13 @@ public class MAutoFetchControl implements MAutoFetchControlMBean, AutoFetchContr
 
 	final AutoFetchManager autoFetchManager;
 
-	final String implicitModeOptions;
+	final String modeOptions;
 
 	public MAutoFetchControl(AutoFetchManager autoFetchListener) {
 		this.autoFetchManager = autoFetchListener;
-		this.implicitModeOptions = ImplicitAutoFetchMode.DEFAULT_OFF + ", "
-				+ ImplicitAutoFetchMode.DEFAULT_ON + ", "
-				+ ImplicitAutoFetchMode.DEFAULT_ON_IF_EMPTY;
+		this.modeOptions = AutofetchMode.DEFAULT_OFF + ", "
+				+ AutofetchMode.DEFAULT_ON + ", "
+				+ AutofetchMode.DEFAULT_ONIFEMPTY;
 	}
 
 	public boolean isQueryTuning() {
@@ -45,18 +45,18 @@ public class MAutoFetchControl implements MAutoFetchControlMBean, AutoFetchContr
 		autoFetchManager.setProfiling(enable);
 	}
 
-	public String getImplicitModeOptions() {
-		return implicitModeOptions;
+	public String getModeOptions() {
+		return modeOptions;
 	}
 
-	public String getImplicitMode() {
-		return autoFetchManager.getImplicitAutoFetchMode().name();
+	public String getMode() {
+		return autoFetchManager.getMode().name();
 	}
 
-	public void setImplicitMode(String implicitMode) {
+	public void setMode(String implicitMode) {
 		try {
-			ImplicitAutoFetchMode mode = ImplicitAutoFetchMode.valueOf(implicitMode);
-			autoFetchManager.setImplicitAutoFetchMode(mode);
+			AutofetchMode mode = AutofetchMode.valueOf(implicitMode);
+			autoFetchManager.setMode(mode);
 		} catch (Exception e) {
 			logger.info("Invalid implicit mode attempted "+e.getMessage());
 		}

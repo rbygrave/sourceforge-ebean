@@ -47,7 +47,7 @@ public interface OrmQuery<T> extends Query<T> {
 	 * Return explicit autoFetch setting or null. If null then not explicitly
 	 * set so we use the default behaviour.
 	 */
-	public Boolean isAutoFetch();
+	public Boolean isAutofetch();
 
 	/**
 	 * If return null then no autoFetch profiling for this query. If a
@@ -132,7 +132,7 @@ public interface OrmQuery<T> extends Query<T> {
 	 * Excludes bind values and occurs prior to AutoFetch potentially tuning/modifying the query.
 	 * </p>
 	 */
-	public int queryAutoFetchHash();
+	public int queryAutofetchHash();
 
 	/**
 	 * Identifies queries that are the same bar the bind variables.

@@ -103,10 +103,15 @@ public class BeanProperty implements ElGetValue {
 	final boolean dbRead;
 
 	/**
-	 * Is this property mapped to the BASE table.
+	 * Include in DB insert.
 	 */
-	final boolean dbWrite;
-
+	final boolean dbInsertable;
+	
+	/**
+	 * Include in DB update.
+	 */
+	final boolean dbUpdatable;
+	
 	/**
 	 * True if the property is based on a SECONDARY table.
 	 */
@@ -248,7 +253,8 @@ public class BeanProperty implements ElGetValue {
 		this.descriptor = descriptor;
 		this.name = deploy.getName();
 		this.dbRead = deploy.isDbRead();
-		this.dbWrite = deploy.isDbWrite();
+		this.dbInsertable = deploy.isDbInsertable();
+		this.dbUpdatable = deploy.isDbUpdateable();
 		this.secondaryTable = deploy.isSecondaryTable();
 		this.isTransient = deploy.isTransient();
 		this.nullable = deploy.isNullable();
@@ -311,7 +317,8 @@ public class BeanProperty implements ElGetValue {
 		this.isTransient = source.isTransient();
 		this.secondaryTable = source.isSecondaryTable();
 		this.dbRead = source.isDbRead();
-		this.dbWrite = source.isDbWrite();
+		this.dbInsertable = source.isDbInsertable();
+		this.dbUpdatable = source.isDbUpdatable();
 		this.nullable = source.isNullable();
 		this.unique = source.isUnique();
 		this.dbLength = source.getDbLength();
@@ -852,11 +859,17 @@ public class BeanProperty implements ElGetValue {
 	}
 
 	/**
-	 * Return true if this property is included in persisting. This is always
-	 * false for List and Bean types regardless.
+	 * Return true if this property should be included in an Insert.
 	 */
-	public boolean isDbWrite() {
-		return dbWrite;
+	public boolean isDbInsertable() {
+		return dbInsertable;
+	}
+		
+	/**
+	 * Return true if this property should be included in an Update.
+	 */
+	public boolean isDbUpdatable() {
+		return dbUpdatable;
 	}
 
 	/**
