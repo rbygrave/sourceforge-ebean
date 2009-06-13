@@ -19,10 +19,7 @@
  */
 package com.avaje.ebean.server.core;
 
-import java.util.ArrayList;
-
 import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.ServerConfiguration;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.util.BindParams;
@@ -60,13 +57,6 @@ public class ProtectedMethod {
      */
     public static TransactionEvent getTransactionEvent(CallableSql callSql){
         return pa.getTransactionEvent(callSql);
-    }
-     
-    /**
-     * Return the classes (entities, embeddable, finders, scalar types etc). 
-     */
-    public static ArrayList<Class<?>> getClasses(ServerConfiguration serverConfig) {
-    	return pa.getClasses(serverConfig);
     }
         
 }

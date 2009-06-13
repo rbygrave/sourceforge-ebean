@@ -1,9 +1,8 @@
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.NamingConvention;
 import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Parser used to handling sql-select queries and creating DeploySqlSelect objects.
@@ -20,8 +19,8 @@ public class DeploySqlSelectParser {
 
 	final NamingConvention namingConvention;
 
-	public DeploySqlSelectParser(PluginDbConfig dbConfig) {
-		this.namingConvention = dbConfig.getNamingConvention();
+	public DeploySqlSelectParser(NamingConvention namingConvention) {
+		this.namingConvention = namingConvention;
 	}
 
 	public static Meta createMeta(DeployBeanDescriptor<?> desc, SqlSelect sqlSelect) {

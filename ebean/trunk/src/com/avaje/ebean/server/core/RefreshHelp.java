@@ -28,7 +28,6 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.jmx.MLogControlMBean;
 import com.avaje.ebean.server.lib.util.StringHelper;
-import com.avaje.ebean.server.plugin.Plugin;
 
 /**
  * Helper for performing a 'refresh' on an Entity bean.
@@ -46,9 +45,9 @@ public class RefreshHelp {
 	
 	private final MLogControlMBean logControl;
 	
-	public RefreshHelp(MLogControlMBean logControl, Plugin plugin){
+	public RefreshHelp(MLogControlMBean logControl, boolean debugLazyLoad){
 		this.logControl = logControl;
-		this.debugLazyLoad = new DebugLazyLoad(plugin);
+		this.debugLazyLoad = new DebugLazyLoad(debugLazyLoad);
 	}
 
 	/**

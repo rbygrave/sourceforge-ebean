@@ -20,7 +20,6 @@ package com.avaje.ebean.server.lib.cron;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 
 
@@ -65,8 +64,7 @@ public class Downtime implements Runnable {
      */
     public void run() {
         
-    	ConfigProperties properties = GlobalProperties.getConfigProperties();
-        String downtime = properties.getProperty("system.downtime.duration");
+        String downtime = GlobalProperties.get("system.downtime.duration", null);
         if (downtime == null){
             logger.info("system.downtime not set");
             

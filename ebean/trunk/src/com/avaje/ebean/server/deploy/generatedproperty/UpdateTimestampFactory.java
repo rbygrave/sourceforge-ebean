@@ -36,10 +36,15 @@ public class UpdateTimestampFactory {
 
 	final GeneratedUpdateLong longTime = new GeneratedUpdateLong();
 
+	public void setUpdateTimestamp(DeployBeanProperty property) {
+
+		property.setGeneratedProperty(createUpdateTimestamp(property));
+	}
+	
 	/**
 	 * Create the update GeneratedProperty depending on the property type.
 	 */
-	public GeneratedProperty createUpdateTimestamp(DeployBeanProperty property) {
+	private GeneratedProperty createUpdateTimestamp(DeployBeanProperty property) {
 		
 		Class<?> propType = property.getPropertyType();
 		if (propType.equals(Timestamp.class)) {

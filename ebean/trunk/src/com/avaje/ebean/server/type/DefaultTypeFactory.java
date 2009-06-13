@@ -21,7 +21,7 @@ package com.avaje.ebean.server.type;
 
 import java.sql.Types;
 
-import com.avaje.ebean.server.plugin.PluginProperties;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.util.BasicTypeConverter;
 
 /**
@@ -30,10 +30,10 @@ import com.avaje.ebean.util.BasicTypeConverter;
  */
 public class DefaultTypeFactory {
 
-	final PluginProperties properties;
+	final ServerConfig serverConfig;
 
-	public DefaultTypeFactory(PluginProperties properties) {
-		this.properties = properties;
+	public DefaultTypeFactory(ServerConfig serverConfig) {
+		this.serverConfig = serverConfig;
 	}
 
 	/**
@@ -43,39 +43,43 @@ public class DefaultTypeFactory {
 	 */
 	public ScalarType createBoolean() {
 
-		String sf0 = properties.getProperty("booleanconverter.false", null);
-		String st0 = properties.getProperty("booleanconverter.true", null);
 
-		String sFalse = properties.getProperty("type.boolean.false", sf0);
-		String sTrue = properties.getProperty("type.boolean.true", st0);
-
-		String type = properties.getProperty("type.boolean.dbtype", "varchar");
-
+		int booleanDbType = serverConfig.getDatabasePlatform().getBooleanDbType();
+		
+		if (booleanDbType == Types.BOOLEAN){
+			return new ScalarTypeBoolean.Native();			
+		}
+		
 		// Some dbs use BIT e.g. MySQL
-		if ("bit".equalsIgnoreCase(type)){
+		if (booleanDbType == Types.BIT){
 			return new ScalarTypeBoolean.BitBoolean();
 		}
+		
+	
+		String falseValue = serverConfig.getDatabaseBooleanFalse();
+		String trueValue = serverConfig.getDatabaseBooleanTrue();
 
-		if (sFalse == null || sTrue == null) {
+		if (falseValue == null || trueValue == null){
+			// assume native boolean support
+			return new ScalarTypeBoolean.Native();
+		}
+		
+		try {
+
+			Integer intTrue = BasicTypeConverter.toInteger(trueValue);
+			Integer intFalse = BasicTypeConverter.toInteger(falseValue);
+
+			return new ScalarTypeBoolean.IntBoolean(intTrue, intFalse);
+
+		} catch (NumberFormatException e){
+		}
+		
+		if (falseValue == null || trueValue == null) {
 			// the JDBC driver/Database supports Booleans
 			return new ScalarTypeBoolean.Native();
 		}
 
-		String trueValue = sFalse.trim();
-		String falseValue = sTrue.trim();
-
-		type = type.toLowerCase();
-		if (type.indexOf("char") != -1) {
-			// convert to/from string values...
-			return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
-		}
-		
-
-		// convert to/from integer values...
-		Integer intTrue = BasicTypeConverter.toInteger(sTrue);
-		Integer intFalse = BasicTypeConverter.toInteger(sFalse);
-
-		return new ScalarTypeBoolean.IntBoolean(intTrue, intFalse);
+		return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
 	}
 
 	/**
@@ -83,9 +87,8 @@ public class DefaultTypeFactory {
 	 */
 	public ScalarType createUtilDate() {
 		// by default map anonymous java.util.Date to java.sql.Timestamp.
-		String mapType = properties.getProperty("type.mapping.java.util.Date",
-				"timestamp");
-		int utilDateType = getTemporalMapType(mapType);
+		//String mapType = properties.getProperty("type.mapping.java.util.Date","timestamp");
+		int utilDateType = getTemporalMapType("timestamp");
 
 		return createUtilDate(utilDateType);
 	}
@@ -113,9 +116,8 @@ public class DefaultTypeFactory {
 	 */
 	public ScalarType createCalendar() {
 		// by default map anonymous java.util.Calendar to java.sql.Timestamp.
-		String mapType = properties.getProperty(
-				"type.mapping.java.util.Calendar", "timestamp");
-		int jdbcType = getTemporalMapType(mapType);
+		//String mapType = properties.getProperty("type.mapping.java.util.Calendar", "timestamp");
+		int jdbcType = getTemporalMapType("timestamp");
 
 		return createCalendar(jdbcType);
 	}

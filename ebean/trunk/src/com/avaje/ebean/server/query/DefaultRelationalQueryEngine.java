@@ -30,20 +30,17 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.SqlQueryListener;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.query.RelationalQuery;
-import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.core.RelationalQueryEngine;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
+import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.Message;
@@ -59,14 +56,12 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
 	private final Binder binder;
 
-	private final MLogControlMBean logControl;
+	private final MLogControl logControl;
 
-	public DefaultRelationalQueryEngine(Plugin plugin, InternalEbeanServer server) {
-		PluginCore pluginCore = plugin.getPluginCore();
-		PluginDbConfig dbConfig = pluginCore.getDbConfig();
-		this.binder = dbConfig.getBinder();
-		this.logControl = dbConfig.getLogControl();
-		this.defaultMaxRows = dbConfig.getProperties().getPropertyInt("nativesql.defaultmaxrows",100000);
+	public DefaultRelationalQueryEngine(MLogControl logControl, Binder binder) {
+		this.binder = binder;
+		this.logControl = logControl;
+		this.defaultMaxRows = GlobalProperties.getInt("nativesql.defaultmaxrows",100000);
 	}
 
 	public Object findMany(RelationalQueryRequest request) {

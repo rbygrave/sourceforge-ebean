@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.plugin.PluginProperties;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.util.BindParams;
@@ -53,7 +52,7 @@ public class Binder {
 	/**
 	 * Set the PreparedStatement with which to bind variables to.
 	 */
-	public Binder(PluginProperties props, TypeManager typeManager) {
+	public Binder(TypeManager typeManager) {
 
 		this.typeManager = typeManager;
 		//this.calendar = new GregorianCalendar();

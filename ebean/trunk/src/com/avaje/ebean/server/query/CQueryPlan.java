@@ -51,7 +51,7 @@ public class CQueryPlan {
 		
 		this.objectGraphOrigin = request.getQuery().getObjectGraphOrigin();
 		this.hash = request.getQueryPlanHash();
-		this.autofetchTuned = request.getQuery().isAutoFetchTuned();
+		this.autofetchTuned = request.getQuery().isAutofetchTuned();
 		this.sql = sql;
 		this.selectClause = selectClause;
 		this.rawSql = rawSql;

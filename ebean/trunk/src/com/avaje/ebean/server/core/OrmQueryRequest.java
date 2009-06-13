@@ -27,12 +27,13 @@ import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.bean.QueryType;
 import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.server.cache.Cache;
+import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.lib.cache.Cache;
 import com.avaje.ebean.server.query.CQueryPlan;
 
 /**
@@ -59,7 +60,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
 	private ManyType manyType;
 
-	private Cache beanCache;
+	private Cache beanQueryCache;
 
 	private Integer cacheKey;
 
@@ -307,10 +308,10 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	/**
 	 * Try to get the query result from cache.
 	 */
-	public Object getFromCache(ServerCache serverCache) {
+	public Object getFromCache(CacheManager serverCache) {
 
 		if (query.isUseCache()) {
-			beanCache = serverCache.getBeanCache(beanDescriptor);
+			beanQueryCache = serverCache.getQueryCache(beanDescriptor.getBeanType());
 
 			if (manyType == null) {
 				// the query plan and bind values must be the same
@@ -321,16 +322,16 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 				cacheKey = Integer.valueOf(31 * query.queryHash() + manyType.hashCode());
 			}
 
-			return beanCache.get(cacheKey);
+			return beanQueryCache.get(cacheKey);
 		}
 		return null;
 	}
 
 	public void putToCacheOne(Object queryResult) {
-		beanCache.put(cacheKey, queryResult);
+		beanQueryCache.put(cacheKey, queryResult);
 	}
 
 	public void putToCacheMany(Object queryResult) {
-		beanCache.putUsingAltValid(cacheKey, queryResult);
+		beanQueryCache.put(cacheKey, queryResult);
 	}
 }

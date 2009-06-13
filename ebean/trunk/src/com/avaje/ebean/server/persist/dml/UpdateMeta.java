@@ -77,14 +77,17 @@ public final class UpdateMeta {
 		bind.bindLogAppend("] where[");
 		id.dmlBind(bind, false, bean, true);
 
-		int mode = persist.getConcurrencyMode();
-		if (mode == ConcurrencyMode.VERSION) {
-			version.dmlBind(bind, false, bean, true);
-			
-		} else if (mode == ConcurrencyMode.ALL) {
-			
+		switch (persist.getConcurrencyMode()) {
+		case VERSION:
+			version.dmlBind(bind, false, bean, true);			
+			break;
+		case ALL:
 			Object oldBean = persist.getOldValues();
 			all.dmlBind(bind, true, oldBean, false);
+			break;
+
+		default:
+			break;
 		}
 	}
 	
@@ -93,20 +96,20 @@ public final class UpdateMeta {
 	 */
 	public String getSql(PersistRequestBean<?> request) {
 
-		int mode = request.determineConcurrencyMode();
+		ConcurrencyMode mode = request.determineConcurrencyMode();
 		if (request.isDynamicUpdateSql()){
 			return genSql(mode, request);
 		}
 		
 		// 'full bean' update...
 		switch (mode) {
-		case ConcurrencyMode.NONE:
+		case NONE:
 			return sqlNone;
 			
-		case ConcurrencyMode.VERSION:
+		case VERSION:
 			return sqlVersion;
 			
-		case ConcurrencyMode.ALL:
+		case ALL:
 			Object oldValues = request.getOldValues();
 			if (oldValues == null) {
 				throw new PersistenceException("OldValues are null?");
@@ -118,7 +121,7 @@ public final class UpdateMeta {
 		}
 	}
 	
-	private String genSql(int conMode, PersistRequestBean<?> persistRequest) {
+	private String genSql(ConcurrencyMode conMode, PersistRequestBean<?> persistRequest) {
 
 		// update  set col0=?, col1=?, col2=? where bcol=? and bc1=? and bc2=?
 
@@ -143,14 +146,14 @@ public final class UpdateMeta {
 		request.setWhereIdMode();
 		id.dmlAppend(request, false);
 		
-		if (conMode == ConcurrencyMode.VERSION) {
+		if (ConcurrencyMode.VERSION.equals(conMode)) {
 			if (version == null){
 				return null;
 			}
 			//request.setWhereMode();
 			version.dmlAppend(request, false);
 			
-		} else if (conMode == ConcurrencyMode.ALL) {
+		} else if (ConcurrencyMode.ALL.equals(conMode)) {
 			
 			//request.setWhereMode();
 			all.dmlWhere(request, true, request.getOldValues());

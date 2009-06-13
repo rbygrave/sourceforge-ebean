@@ -42,7 +42,7 @@ public class TransientProperties {
         List<DeployBeanProperty> props = desc.propertiesBase();
         for (int i = 0; i < props.size(); i++) {
         	DeployBeanProperty prop = props.get(i);
-            if (!prop.isDbRead() && !prop.isDbWrite()) {
+            if (!prop.isDbRead() && !prop.isDbInsertable() && !prop.isDbUpdateable()) {
             	// non-transient...
             	prop.setTransient(true);
             }

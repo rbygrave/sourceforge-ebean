@@ -3,11 +3,10 @@ package com.avaje.ebean.server.autofetch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.config.AutofetchConfig;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.lib.BackgroundThread;
-import com.avaje.ebean.server.plugin.Plugin;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
 import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
 
 /**
@@ -23,20 +22,17 @@ public class DefaultAutoFetchManagerLogging {
 
 	final DefaultTransactionLogger fileLogger;
 
-	final PluginDbConfig dbConfig;
-
 	final DefaultAutoFetchManager manager;
 
 	final boolean useFileLogger;
 
-	public DefaultAutoFetchManagerLogging(Plugin plugin, DefaultAutoFetchManager profileListener) {
+	public DefaultAutoFetchManagerLogging(ServerConfig serverConfig, DefaultAutoFetchManager profileListener) {
 
-		this.dbConfig = plugin.getDbConfig();
 		this.manager = profileListener;
 
-		PluginProperties props = plugin.getProperties();
+		AutofetchConfig autofetchConfig = serverConfig.getAutofetchConfig();
 
-		useFileLogger = props.getPropertyBoolean("autofetch.usefilelogging", true);
+		useFileLogger = autofetchConfig.isUseFileLogging();
 
 		if (!useFileLogger) {
 			fileLogger = null;
@@ -45,12 +41,11 @@ public class DefaultAutoFetchManagerLogging {
 			// a separate log file just like the transaction logging
 			// for putting the profiling log messages. The benefit is that
 			// this doesn't pollute the main log with heaps of messages.
-			String dftlBaseDir = props.getProperty("transactionlogging.directory", null);
-			String baseDir = props.getProperty("log.directory", dftlBaseDir);
+			String baseDir = serverConfig.getTransactionLogDirectoryWithEval();
 			fileLogger = new DefaultTransactionLogger(baseDir, "autofetch", true, "csv");
 		}
 
-		int updateFreqInSecs = props.getPropertyInt("autofetch.profiling.updatefrequency", 60);
+		int updateFreqInSecs = autofetchConfig.getProfileUpdateFrequency();
 
 		BackgroundThread.add(updateFreqInSecs, new UpdateProfile());
 	}

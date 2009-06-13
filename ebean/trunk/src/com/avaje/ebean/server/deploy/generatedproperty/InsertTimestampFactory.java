@@ -36,6 +36,11 @@ public class InsertTimestampFactory {
 
 	final GeneratedInsertLong longTime = new GeneratedInsertLong();
 
+	public void setInsertTimestamp(DeployBeanProperty property) {
+
+		property.setGeneratedProperty(createInsertTimestamp(property));
+	}
+	
 	/**
 	 * Create the insert GeneratedProperty depending on the property type.
 	 */

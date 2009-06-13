@@ -20,6 +20,16 @@ import javax.persistence.RollbackException;
  */
 public class ExternalJdbcTransaction extends JdbcTransaction {
 
+	/**
+	 * Create a Transaction that will have no transaction logging support.
+	 * <p>
+	 * You need to create with a TransactionManager to have transaction logging.
+	 * </p>
+	 */
+	public ExternalJdbcTransaction(Connection connection) {
+		super(null, true, connection, null);
+	}
+	
 	public ExternalJdbcTransaction(String id, boolean explicit, Connection connection, TransactionManager manager) {
 		super(id, explicit, connection, manager);
 	}

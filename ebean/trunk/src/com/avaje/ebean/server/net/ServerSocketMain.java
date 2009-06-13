@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.server.net;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 
 /**
@@ -36,11 +35,10 @@ public class ServerSocketMain {
 	public static void main(String[] args) throws Exception {
 
 		// default run for 60 seconds
-		ConfigProperties properties = GlobalProperties.getConfigProperties();
-		int sleep = properties.getIntProperty("ebean.serversocket.sleep",60000);
+		int sleep = GlobalProperties.getInt("ebean.serversocket.sleep",60000);
 		
 		// default listen on the port 10100
-		int port = properties.getIntProperty("ebean.serversocket.port",10100);
+		int port = GlobalProperties.getInt("ebean.serversocket.port",10100);
 		
         ServerSocketListener sl = new ServerSocketListener("ebsocket",port);
 	    sl.startListening();

@@ -3,9 +3,9 @@ package com.avaje.ebean.server.deploy.parse;
 import java.util.HashSet;
 
 /**
- * Keywords deemed inappropriate for use as table alias'.
+ * Keywords deemed inappropriate for use as table alias' column or table name.
  * <p>
- * That is, they would cause sql syntax errors if used.
+ * That is, they might cause sql syntax errors if used.
  * </p>
  */
 public class SqlReservedWords {

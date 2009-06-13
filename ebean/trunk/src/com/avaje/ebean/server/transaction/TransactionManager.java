@@ -28,16 +28,17 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
 import com.avaje.ebean.server.net.CmdRemoteListenerEvent;
 import com.avaje.ebean.server.net.CmdServerTransactionEvent;
 import com.avaje.ebean.server.net.Headers;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Manages transactions.
@@ -91,6 +92,8 @@ public class TransactionManager implements Constants {
 	 */
 	private final String prefix;
 
+	private final String externalTransPrefix;
+
 	/**
 	 * The dataSource of connections.
 	 */
@@ -119,7 +122,7 @@ public class TransactionManager implements Constants {
 	 */
 	private final ListenerNotify listenerNotify;
 
-	private final PluginProperties properties;
+	//private final PluginProperties properties;
 			
 	private final boolean logCommitEvent;
 	
@@ -127,6 +130,8 @@ public class TransactionManager implements Constants {
 	
 	private final int debugLevel;
 
+	private final String serverName;
+	
 	/**
 	 * Id's for transaction logging.
 	 */
@@ -135,26 +140,31 @@ public class TransactionManager implements Constants {
 	/**
 	 * Create the TransactionManager
 	 */
-	public TransactionManager(PluginCore pluginCore) {
-		this.clusterManager = pluginCore.getClusterManager();
-		this.properties = pluginCore.getDbConfig().getProperties();
+	public TransactionManager(ClusterManager clusterManager, ServerConfig config, BeanDescriptorManager descMgr) {
 		
-		this.transLogger = new TransactionLogManager(properties);
+		this.clusterManager = clusterManager;
+		this.serverName = config.getName();
+		
+		this.transLogger = new TransactionLogManager(config);
 		this.threadPool = ThreadPoolManager.getThreadPool("TransactionManager");
 		if (threadPool.getMinSize() == 0) {
 			threadPool.setMinSize(1);
 		}
 		
-		this.listenerNotify = new ListenerNotify(this, pluginCore);
-		this.dataSource = pluginCore.getDbConfig().getDataSource();
+		this.listenerNotify = new ListenerNotify(this, descMgr);
+		this.dataSource = config.getDataSource();
 		
-		this.logCommitEvent = properties.getPropertyBoolean("log.commit", false);
-		this.debugLevel = properties.getPropertyInt("debug.transaction", 0);	
-		this.defaultBatchMode = properties.getPropertyBoolean("batch.mode", false);
+		this.debugLevel = config.getTransactionDebugLevel();	
+		this.defaultBatchMode = config.getDatabasePlatform().isDefaultBatching();
 		
-		this.prefix = properties.getProperty("transaction.prefix", "");
-		this.logAllCommits = properties.getPropertyBoolean("transaction.logallcommits", false);
-		this.onQueryOnly = getOnQueryOnly(properties, dataSource);
+		this.prefix = GlobalProperties.get("transaction.prefix", "");
+		this.externalTransPrefix = GlobalProperties.get("transaction.prefix", "e");
+		this.logCommitEvent = GlobalProperties.getBoolean("log.commit", false);
+		this.logAllCommits = GlobalProperties.getBoolean("transaction.logallcommits", false);
+		
+		String value = GlobalProperties.get("transaction.onqueryonly", "ROLLBACK").toUpperCase().trim();
+
+		this.onQueryOnly = getOnQueryOnly(value, dataSource);
 	}
 	
 	/**
@@ -169,15 +179,13 @@ public class TransactionManager implements Constants {
 	 * just for queries do need to be committed or rollback after the query.
 	 * </p>
 	 */
-	private OnQueryOnly getOnQueryOnly(PluginProperties props, DataSource ds) {
+	private OnQueryOnly getOnQueryOnly(String onQueryOnly, DataSource ds) {
 		
-		String value = props.getProperty("transaction.onqueryonly", "ROLLBACK");
-		value = value.toUpperCase().trim();
 		
-		if (value.equals("COMMIT")){
+		if (onQueryOnly.equals("COMMIT")){
 			return OnQueryOnly.COMMIT;
 		}
-		if (value.startsWith("CLOSE")){
+		if (onQueryOnly.startsWith("CLOSE")){
 			if (!isReadCommitedIsolation(ds)){
 				String m = "transaction.queryonlyclose is true but the transaction Isolation Level is not READ_COMMITTED";
 				throw new PersistenceException(m);
@@ -217,7 +225,7 @@ public class TransactionManager implements Constants {
 	}
 	
 	public String getServerName() {
-		return properties.getServerName();
+		return serverName;
 	}
 	
 	public DataSource getDataSource() {
@@ -261,13 +269,7 @@ public class TransactionManager implements Constants {
 	 */
 	public ServerTransaction wrapExternalConnection(Connection c) {
 
-		long id;
-		synchronized (monitor) {
-			// Perhaps could use JDK5 atomic Integer instead
-			id = ++transactionCounter;
-		}
-
-		return wrapExternalConnection(prefix + id, c);
+		return wrapExternalConnection(externalTransPrefix + c.hashCode(), c);
 	}
 	
 	/**
@@ -309,7 +311,7 @@ public class TransactionManager implements Constants {
 				c.setTransactionIsolation(isolationLevel);
 			}
 
-			if (debugLevel >= 3){
+			if (debugLevel >= 2){
 				String msg = "Transaction ["+t.getId()+"] begin";
 				if (isolationLevel > -1){
 					TxIsolation txi = TxIsolation.fromLevel(isolationLevel);
@@ -337,13 +339,13 @@ public class TransactionManager implements Constants {
 
 			JdbcTransaction t = new JdbcTransaction(prefix + id, false, c, this);
 			
-			// set the default batch mode. This can be on for
+			// set the default batch mode. Can be true for
 			// jdbc drivers that support getGeneratedKeys
 			if (defaultBatchMode){
 				t.setBatchMode(true);
 			}
 
-			if (debugLevel >= 9){
+			if (debugLevel >= 2){
 				logger.info("Transaction ["+t.getId()+"] begin - queryOnly");
 			}
 			
@@ -403,7 +405,7 @@ public class TransactionManager implements Constants {
 			}
 			transLogger.transactionEnded(transaction, msg);	
 			
-			if (debugLevel >= 3){
+			if (debugLevel >= 2){
 				logger.info("Transaction ["+transaction.getId()+"] "+msg);
 			}
 		} catch (Exception ex) {
@@ -453,7 +455,7 @@ public class TransactionManager implements Constants {
 			TransactionEvent event = transaction.getEvent();
 			if (!event.hasModifications()) {
 				// ignore as it has no modifications
-				if (debugLevel >= 3){
+				if (debugLevel >= 2){
 					logger.info("Transaction ["+transaction.getId()+"] commit with no changes");
 				}
 				return;
@@ -536,7 +538,7 @@ public class TransactionManager implements Constants {
 		if (event.isLocal() && clusterManager.isClusteringOn()) {
 			Headers h = new Headers();
 			h.setProcesorId(PROCESS_KEY);
-			h.set(SERVER_NAME_KEY, properties.getServerName());
+			h.set(SERVER_NAME_KEY, serverName);
 
 			CmdServerTransactionEvent cmd = new CmdServerTransactionEvent(event);
 			clusterManager.broadcast(h, cmd);
@@ -566,7 +568,7 @@ public class TransactionManager implements Constants {
 		if (clusterManager.isClusteringOn()) {
 			Headers h = new Headers();
 			h.setProcesorId(PROCESS_KEY);
-			h.set(SERVER_NAME_KEY, properties.getServerName());
+			h.set(SERVER_NAME_KEY, serverName);
 
 			CmdRemoteListenerEvent cmd = new CmdRemoteListenerEvent(event);
 

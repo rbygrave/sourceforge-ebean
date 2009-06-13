@@ -24,20 +24,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.DefaultBeanState;
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.server.core.DefaultServerFactory;
+import com.avaje.ebean.server.core.DefaultBeanState;
 import com.avaje.ebean.server.core.ProtectedMethod;
-import com.avaje.ebean.server.core.ServerFactory;
-import com.avaje.ebean.server.util.InternalAssert;
 
 /**
  * Provides API access for the 'default' Database and access to other Databases.
@@ -117,6 +112,9 @@ public final class Ebean {
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
 		ProtectedMethod.setPublicAccess(pa);
+		
+		String version = System.getProperty("java.version");
+		logger.info("Ebean Version[" + EBVERSION + "] Java Version[" + version + "]");
 	}
 
 	/**
@@ -136,17 +134,12 @@ public final class Ebean {
 		private final ConcurrentHashMap<String, EbeanServer> concMap = new ConcurrentHashMap<String, EbeanServer>();
 
 		/**
-		 * Cache for synchronized read, creation and put. Protected by the
-		 * monitor object.
+		 * Cache for synchronized read, creation and put. 
+		 * Protected by the monitor object.
 		 */
 		private final HashMap<String, EbeanServer> syncMap = new HashMap<String, EbeanServer>();
 
 		private final Object monitor = new Object();
-
-		/**
-		 * Factory for creating EbeanServer implementations.
-		 */
-		private final ServerFactory serverFactory;
 
 		/**
 		 * The 'default/primary' EbeanServer.
@@ -155,14 +148,25 @@ public final class Ebean {
 
 		private ServerManager() {
 
-			ConfigProperties props = GlobalProperties.getConfigProperties();
-
-			String defaultServerName = getDefaultDataSourceName(props);
-			serverFactory = createServerFactory(props);
-
-			if (defaultServerName != null) {
-				primaryServer = get(defaultServerName);
-			}
+			// skipDefaultServer is set by EbeanServerFactory
+			// ... when it is creating the primaryServer
+			if (GlobalProperties.getBoolean("ebean.skipPrimaryServer", false)){
+				// primary server being created by EbeanServerFactory
+				// ... so we should not try and create it here
+				
+			} else {
+				// look to see if there is a default server defined
+				String primaryName = getPrimaryServerName();
+				if (primaryName != null){
+					primaryServer = getWithCreate(primaryName);
+				}	
+			}			
+		}
+		
+		private String getPrimaryServerName() {
+	
+			String serverName = GlobalProperties.get("ebean.default.datasource", null);
+			return GlobalProperties.get("datasource.default", serverName);
 		}
 
 		private EbeanServer getPrimaryServer() {
@@ -173,32 +177,6 @@ public final class Ebean {
 				throw new PersistenceException(msg);
 			}
 			return primaryServer;
-		}
-
-		private EbeanServer register(ServerConfiguration configuration) {
-
-			synchronized (monitor) {
-
-				String name = configuration.getName();
-				InternalAssert.notNull(name, "A name must be supplied");
-
-				EbeanServer existingServer = syncMap.get(name);
-				if (existingServer != null) {
-					String msg = "Existing EbeanServer [" + name + "] is being replaced?";
-					logger.warning(msg);
-				}
-
-				// create and put into both maps
-				EbeanServer server = serverFactory.createServer(configuration);
-				syncMap.put(name, server);
-				concMap.put(name, server);
-
-				if (configuration.isDefaultServer()) {
-					primaryServer = server;
-				}
-
-				return server;
-			}
 		}
 
 		private EbeanServer get(String name) {
@@ -223,62 +201,32 @@ public final class Ebean {
 
 				EbeanServer server = syncMap.get(name);
 				if (server == null) {
-					// create and put into both maps
-					server = serverFactory.createServer(name);
-					syncMap.put(name, server);
-					concMap.put(name, server);
+					// register when creating server this way
+					server = EbeanServerFactory.create(name);
+					register(server, false);
 				}
 				return server;
 			}
 		}
 
-		private ServerFactory createServerFactory(ConfigProperties baseProperties) {
-
-			String implClassName = baseProperties.getProperty("ebean.serverfactory");
-
-			String version = System.getProperty("java.version");
-			logger.info("Ebean Version[" + EBVERSION + "] Java Version[" + version + "]");
-
-			int delaySecs = baseProperties.getIntProperty("debug.start.delay", 0);
-			delaySecs = baseProperties.getIntProperty("ebean.start.delay", delaySecs);
-			if (delaySecs > 0) {
-				try {
-					// perhaps useful to delay the startup to give time to
-					// attach a debugger when running in a server like tomcat.
-					String m = "Ebean sleeping " + delaySecs + " seconds due to ebean.start.delay";
-					logger.log(Level.INFO, m);
-					Thread.sleep(delaySecs * 1000);
-
-				} catch (InterruptedException e) {
-					String m = "Interrupting debug.start.delay of " + delaySecs;
-					logger.log(Level.SEVERE, m, e);
-				}
-			}
-			if (implClassName == null) {
-				return new DefaultServerFactory();
-
-			} else {
-				try {
-					// use a client side implementation?
-					Class<?> cz = Class.forName(implClassName);
-					return (ServerFactory) cz.newInstance();
-				} catch (Exception ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		}
-
 		/**
-		 * Return the 'default' EbeanServer name. If this is null, then the
-		 * default EbeanServer should be registered programmatically.
+		 * Register a server so we can get it by its name.
 		 */
-		private String getDefaultDataSourceName(ConfigProperties props) {
-			String dflt = props.getProperty("ebean.datasource.default");
-			if (dflt == null) {
-				dflt = props.getProperty("datasource.default");
+		private void register(EbeanServer server, boolean isPrimaryServer){
+			synchronized (monitor) {
+				concMap.put(server.getName(), server);
+				EbeanServer existingServer = syncMap.put(server.getName(), server);
+				if (existingServer != null) {
+					String msg = "Existing EbeanServer [" + server.getName()+ "] is being replaced?";
+					logger.warning(msg);
+				}
+				
+				if (isPrimaryServer){
+					primaryServer = server; 
+				}
 			}
-			return dflt;
 		}
+
 	}
 
 	private Ebean() {
@@ -309,25 +257,33 @@ public final class Ebean {
 	}
 
 	/**
-	 * Programmatically create and register a EbeanServer.
-	 * <p>
-	 * You can register as many EbeanServers as you like but only one can be the
-	 * 'default/primary' EbeanServer.
-	 * </p>
-	 * <p>
-	 * Create a ServerConfiguration with a name and typically some other
-	 * parameters such as the DataSource properties (or an already existing
-	 * DataSource).
-	 * </p>
-	 * 
-	 * @param configuration
-	 *            Information used to construct the EbeanServer
-	 * 
-	 * @return the newly created and registered EbeanServer
+	 * Register the server with this Ebean singleton.
+	 * Specify if the registered server is the primary/default server.
 	 */
-	public static EbeanServer registerServer(ServerConfiguration configuration) {
-		return serverMgr.register(configuration);
+	protected static void register(EbeanServer server, boolean isPrimaryServer){
+		serverMgr.register(server, isPrimaryServer);
 	}
+	
+//	/**
+//	 * Programmatically create and register a EbeanServer.
+//	 * <p>
+//	 * You can register as many EbeanServers as you like but only one can be the
+//	 * 'default/primary' EbeanServer.
+//	 * </p>
+//	 * <p>
+//	 * Create a ServerConfiguration with a name and typically some other
+//	 * parameters such as the DataSource properties (or an already existing
+//	 * DataSource).
+//	 * </p>
+//	 * 
+//	 * @param configuration
+//	 *            Information used to construct the EbeanServer
+//	 * 
+//	 * @return the newly created and registered EbeanServer
+//	 */
+//	public static EbeanServer registerServer(ServerConfiguration configuration) {
+//		return serverMgr.register(configuration);
+//	}
 
 	/**
 	 * Log a comment to the transaction log of the current transaction.

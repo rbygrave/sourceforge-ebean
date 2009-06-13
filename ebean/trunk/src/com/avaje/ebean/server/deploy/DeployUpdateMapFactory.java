@@ -35,7 +35,7 @@ public class DeployUpdateMapFactory {
 		BeanProperty[] baseScalar = descriptor.propertiesBaseScalar();
 		for (BeanProperty baseProp : baseScalar) {
 			// excluding formula, secondary table properties
-			if (baseProp.isDbWrite()){
+			if (baseProp.isDbInsertable() || baseProp.isDbUpdatable()){
 				deployMap.put(baseProp.getName().toLowerCase(), baseProp.getDbColumn());
 			}
 		}

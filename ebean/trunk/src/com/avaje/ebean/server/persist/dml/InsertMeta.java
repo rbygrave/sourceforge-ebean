@@ -22,13 +22,14 @@ package com.avaje.ebean.server.persist.dml;
 import java.sql.SQLException;
 import java.util.Set;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
 import com.avaje.ebean.server.persist.dmlbind.BindableDiscriminator;
 import com.avaje.ebean.server.persist.dmlbind.BindableId;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Meta data for insert handler. The meta data is for a particular bean type. It
@@ -61,9 +62,11 @@ public final class InsertMeta {
 
 	private final Bindable shadowFKey;
 	
-	public InsertMeta(PluginDbConfig dbConfig, BeanDescriptor<?> desc, Bindable shadowFKey, BindableId id, Bindable all) {
+	public InsertMeta(DatabasePlatform dbPlatform, BeanDescriptor<?> desc, Bindable shadowFKey, BindableId id, Bindable all) {
 
-		this.sequenceNextVal = desc.getSequenceNextVal();
+		// only get sequenceNextVal if we are going to use it
+		// (for DB's which support both sequence and identity)
+		this.sequenceNextVal = desc.getIdType() != IdType.SEQUENCE ? null : desc.getSequenceNextVal();
 		this.tableName = desc.getBaseTable();
 		this.discriminator = getDiscriminator(desc);
 		this.id = id;
@@ -84,7 +87,7 @@ public final class InsertMeta {
 			// insert sql for db identity or sequence insert
 			this.concatinatedKey = false;
 			this.sqlNullId = genSql(true, null);
-			this.supportsGetGeneratedKeys = dbConfig.getDbSpecific().isSupportsGetGeneratedKeys();
+			this.supportsGetGeneratedKeys = dbPlatform.getDbIdentity().isSupportsGetGeneratedKeys();
 			this.selectLastInsertedId = desc.getSelectLastInsertedId();
 		}
 	}

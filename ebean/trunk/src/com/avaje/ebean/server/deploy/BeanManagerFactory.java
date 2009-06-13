@@ -19,13 +19,12 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
-import com.avaje.ebean.server.lib.util.FactoryHelper;
 import com.avaje.ebean.server.persist.BeanPersister;
 import com.avaje.ebean.server.persist.BeanPersisterFactory;
 import com.avaje.ebean.server.persist.dml.DmlBeanPersisterFactory;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Creates BeanManagers.
@@ -36,9 +35,9 @@ public class BeanManagerFactory {
 	
 	final JoinTreeFactory joinTreeFactory;
 	
-	public BeanManagerFactory(PluginDbConfig dbConfig) {
-		joinTreeFactory = new JoinTreeFactory(dbConfig);
-		peristerFactory = createBeanPersisterFactory(dbConfig);
+	public BeanManagerFactory(DatabasePlatform dbPlatform) {
+		joinTreeFactory = new JoinTreeFactory();
+		peristerFactory = new DmlBeanPersisterFactory(dbPlatform);
 	}
 	
 	public <T> BeanManager<T> create(BeanDescriptor<T> desc) {
@@ -53,17 +52,4 @@ public class BeanManagerFactory {
 		return new BeanManager<T>(desc, joinTree, persister);
 	}
 
-    private BeanPersisterFactory createBeanPersisterFactory(PluginDbConfig dbConfig) {
-    	
-    	String cn = dbConfig.getProperties().getProperty("persisterFactory", null);
-    	if (cn != null){
-    		Class<?>[] argTypes = {PluginDbConfig.class};
-    		Object[] args = {dbConfig};
-    		
-    		return (BeanPersisterFactory)FactoryHelper.create(cn, argTypes, args);
-    		
-    	} else {
-    		return new DmlBeanPersisterFactory(dbConfig);
-    	}
-    }
 }

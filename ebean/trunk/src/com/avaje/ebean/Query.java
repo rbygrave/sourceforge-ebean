@@ -336,21 +336,27 @@ public interface Query<T> extends Serializable {
 	/**
 	 * Returns true if this query was tuned by autoFetch.
 	 */
-	public boolean isAutoFetchTuned();
+	public boolean isAutofetchTuned();
 
 	/**
-	 * Explicitly specify whether to use autoFetch for this query.
+	 * Explicitly specify whether to use Autofetch for this query.
 	 * <p>
-	 * If you do not call this method on a query the "Implicit AutoFetch mode"
-	 * is used to determine if autoFetch should be used for a given query.
+	 * If you do not call this method on a query the "Implicit Autofetch mode"
+	 * is used to determine if Autofetch should be used for a given query.
 	 * </p>
 	 * <p>
-	 * When using autoFetch the select() and join() information is controlled by
+	 * When using Autofetch the select() and join() information is controlled by
 	 * autoFetch. Profiling is used to determine the joins and properties that
 	 * are used and this information is then used to build a "optimal query
 	 * plan". Before the query is executed it is modified by applying this
 	 * "optimal query plan" which sets the select() and join() information.
 	 * </p>
+	 */
+	public Query<T> setAutofetch(boolean autofetch);
+
+	/**
+	 * Please use {@link #setAutofetch(boolean)}. 
+	 * @deprecated
 	 */
 	public Query<T> setAutoFetch(boolean autoFetch);
 
@@ -542,19 +548,21 @@ public interface Query<T> extends Serializable {
 	public T findUnique();
 
 	/**
-	 * The same as {@link #setParameter(int, Object)} for positioned parameters.
+	 * Deprecated: Please use {@link #setParameter(int, Object)} for positioned parameters.
 	 * <p>
 	 * set() is just an alias for setParameter().
 	 * </p>
+	 * @deprecated
 	 */
 	public Query<T> set(int position, Object value);
 
 	/**
-	 * Exactly the same as {@link #setParameter(String, Object)} for named
+	 * Deprecated: Please use {@link #setParameter(String, Object)} for named
 	 * parameters.
 	 * <p>
 	 * set() is just an alias for setParameter().
 	 * </p>
+	 * @deprecated
 	 */
 	public Query<T> set(String name, Object value);
 
@@ -818,11 +826,12 @@ public interface Query<T> extends Serializable {
 	public Query<T> setBackgroundFetchAfter(int backgroundFetchAfter);
 
 	/**
+	 * Deprecated: Will look to remove this in future.
+	 * <p>
 	 * Set the initial capacity that should be allocated for a collection type
 	 * (List, Set or Map).
-	 * 
-	 * @param initialCapacity
-	 *            the initial capacity of List Set or Maps.
+	 * </p>
+	 * @deprecated
 	 */
 	public Query<T> setInitialCapacity(int initialCapacity);
 

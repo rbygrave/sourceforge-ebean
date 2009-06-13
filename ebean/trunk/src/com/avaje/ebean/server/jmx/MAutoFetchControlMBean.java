@@ -28,17 +28,17 @@ public interface MAutoFetchControlMBean {
 	 * This controls whether autoFetch is used when it has not
 	 * been explicitly set on a query via {@link Query#setAutoFetch(boolean)}.
 	 */
-	public String getImplicitMode();
+	public String getMode();
 
 	/**
 	 * List of the valid implicit modes that can be used.
 	 */
-	public String getImplicitModeOptions();
+	public String getModeOptions();
 	
 	/**
 	 * Set the auto fetch mode used when a query has not had {@link Query#setAutoFetch(boolean)}.
 	 */
-	public void setImplicitMode(String implicitMode);
+	public void setMode(String mode);
 
 	/**
 	 * Return the max number of queries profiled (per query point).

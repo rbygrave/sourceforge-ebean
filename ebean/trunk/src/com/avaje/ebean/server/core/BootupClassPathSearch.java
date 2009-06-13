@@ -20,66 +20,57 @@
 package com.avaje.ebean.server.core;
 
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.util.ClassPathSearch;
 import com.avaje.ebean.server.util.ClassPathSearchFilter;
-import com.avaje.ebean.server.util.ClassPathSearchMatcher;
 
 /**
  * Searches for interesting classes such as Entities, Embedded and ScalarTypes.
  */
-public class BootupClassPathSearch implements ClassPathSearchMatcher {
+public class BootupClassPathSearch {
 
 	private static final Logger logger = Logger.getLogger(BootupClassPathSearch.class.getName());
 
 	final String monitor = new String();
 
-	final BootupClasses bootupClasses = new BootupClasses();
-
 	final ClassLoader classLoader;
 
-	final ConfigProperties baseProperties;
-
-	boolean performedSearch;
+	BootupClasses bootupClasses;
 
 	/**
 	 * Construct and search for interesting classes.
 	 */
-	public BootupClassPathSearch(ClassLoader classLoader, ConfigProperties baseProperties) {
+	public BootupClassPathSearch(ClassLoader classLoader) {
 		this.classLoader = (classLoader == null) ? getClass().getClassLoader() : classLoader;
-		this.baseProperties = baseProperties;
 	}
 
 	public BootupClasses getBootupClasses() {
-		return bootupClasses;
-	}
-
-	public boolean isMatch(Class<?> cls) {
-		return bootupClasses.isMatch(cls);
+		synchronized (monitor) {
+			
+			if (bootupClasses == null){
+				bootupClasses = search();
+			}
+			
+			return bootupClasses;
+		}
 	}
 
 	/**
 	 * Search the classPath for the classes we are interested in.
-	 * 
-	 * @param classLoader
-	 *            can be null in which case we use the classLoader of this
-	 *            object.
 	 */
-	public void search() {
+	private BootupClasses search() {
 		synchronized (monitor) {
 			try {
-				if (performedSearch) {
-					return;
-				}
+				
+				BootupClasses bc = new BootupClasses();
 
 				long st = System.currentTimeMillis();
 
 				ClassPathSearchFilter filter = createFilter();
 
-				ClassPathSearch finder = new ClassPathSearch(classLoader, filter, this);
+				ClassPathSearch finder = new ClassPathSearch(classLoader, filter, bc);
 
 				finder.findClasses();
 				Set<String> jars = finder.getJarHits();
@@ -87,14 +78,14 @@ public class BootupClassPathSearch implements ClassPathSearchMatcher {
 
 				long searchTime = System.currentTimeMillis() - st;
 
-				String msg = "Classpath search hits in jars" + jars + " pkgs" + pkgs + "  searchTime[" + searchTime
-						+ "]";
+				String msg = "Classpath search hits in jars" + jars + " pkgs" + pkgs + "  searchTime[" + searchTime+ "]";
 				logger.info(msg);
 
-				performedSearch = true;
+				return bc;
 
 			} catch (Exception ex) {
-				logger.log(Level.SEVERE, "Error", ex);
+				String msg = "Error in classpath search (looking for entities etc)";
+				throw new RuntimeException(msg, ex);
 			}
 		}
 	}
@@ -104,7 +95,7 @@ public class BootupClassPathSearch implements ClassPathSearchMatcher {
 		ClassPathSearchFilter filter = new ClassPathSearchFilter();
 		filter.addDefaultExcludePackages();
 
-		String packages = baseProperties.getProperty("ebean.search.packages", null);
+		String packages = GlobalProperties.get("ebean.search.packages", null);
 		if (packages != null) {
 			String[] packageList = packages.split(",");
 			for (int i = 0; i < packageList.length; i++) {
@@ -112,7 +103,7 @@ public class BootupClassPathSearch implements ClassPathSearchMatcher {
 			}
 		}
 
-		String searchJars = baseProperties.getProperty("ebean.search.jars", null);
+		String searchJars = GlobalProperties.get("ebean.search.jars", null);
 		if (searchJars != null) {
 			String[] jarList = searchJars.split(",");
 			for (int i = 0; i < jarList.length; i++) {

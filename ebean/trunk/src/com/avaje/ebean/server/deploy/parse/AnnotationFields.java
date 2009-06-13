@@ -39,12 +39,15 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.Formula;
-import com.avaje.ebean.server.deploy.IdentityGeneration;
+import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.avaje.ebean.config.dbplatform.IdType;
+import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.idgen.IdGeneratorManager;
+import com.avaje.ebean.server.idgen.UuidIdGenerator;
 import com.avaje.ebean.validation.Length;
 import com.avaje.ebean.validation.NotNull;
 import com.avaje.ebean.validation.Pattern;
@@ -56,6 +59,8 @@ import com.avaje.ebean.validation.ValidatorMeta;
  */
 public class AnnotationFields extends AnnotationParser {
 
+	GeneratedPropertyFactory generatedPropFactory = new GeneratedPropertyFactory();
+	
 	public AnnotationFields(DeployBeanInfo<?> info) {
 		super(info);
 	}
@@ -91,7 +96,8 @@ public class AnnotationFields extends AnnotationParser {
 		if (t != null) {
 			// it is not a persistent property.
 			prop.setDbRead(false);
-			prop.setDbWrite(false);
+			prop.setDbInsertable(false);
+			prop.setDbUpdateable(false);
 			prop.setTransient(true);
 			return;
 		}
@@ -99,7 +105,8 @@ public class AnnotationFields extends AnnotationParser {
 		// its persistent and assumed to be on the base table
 		// rather than on a secondary table
 		prop.setDbRead(true);
-		prop.setDbWrite(true);
+		prop.setDbInsertable(true);
+		prop.setDbUpdateable(true);
 		prop.setDbTableAlias(descriptor.getBaseTableAlias());
 
 		Column column = get(prop, Column.class);
@@ -141,6 +148,17 @@ public class AnnotationFields extends AnnotationParser {
 		if (version != null) {
 			// explicitly specify a version column
 			prop.setVersionColumn(true);
+			generatedPropFactory.setVersion(prop);
+		}
+		
+		CreatedTimestamp ct = get(prop, CreatedTimestamp.class);
+		if (ct != null) {
+			generatedPropFactory.setInsertTimestamp(prop);
+		}
+		
+		UpdatedTimestamp ut = get(prop, UpdatedTimestamp.class);
+		if (ut != null) {
+			generatedPropFactory.setUpdateTimestamp(prop);
 		}
 		
 		NotNull notNull = get(prop, NotNull.class);
@@ -156,13 +174,6 @@ public class AnnotationFields extends AnnotationParser {
 				prop.setDbLength(length.max());
 			}
 		}
-		// Could add an annotation for GeneratedProperty
-		// but just going to use GeneratedPropertySettings
-		// to do the job for now.
-
-		// Using naming conventions to determine if this field
-		// is a GeneratedProperty such as 'Insert Timestamp'
-		util.setGeneratedProperty(prop);
 	}
 
 	private void readId(Id id, DeployBeanProperty prop) {
@@ -175,8 +186,8 @@ public class AnnotationFields extends AnnotationParser {
 			if (descriptor.getIdGeneratorName() == null){
 				// Without a generator explicitly specified
 				// so will use the default one AUTO_UUID
-				descriptor.setIdGeneratorName(IdGeneratorManager.AUTO_UUID);
-				descriptor.setIdentityGeneration(IdentityGeneration.ID_GENERATOR);
+				descriptor.setIdGeneratorName(UuidIdGenerator.AUTO_UUID);
+				descriptor.setIdType(IdType.GENERATOR);
 			}
 		}
 	}
@@ -195,22 +206,22 @@ public class AnnotationFields extends AnnotationParser {
 		GenerationType strategy = gen.strategy();
 
 		if (strategy == GenerationType.IDENTITY) {
-			descriptor.setIdentityGeneration(IdentityGeneration.DB_IDENTITY);
+			descriptor.setIdType(IdType.IDENTITY);
 
 		} else if (strategy == GenerationType.SEQUENCE) {
-			descriptor.setIdentityGeneration(IdentityGeneration.DB_SEQUENCE);
+			descriptor.setIdType(IdType.SEQUENCE);
 			if (genName != null && genName.length() > 0) {
 				descriptor.setIdGeneratorName(genName);
 			}
 
 		} else if (strategy == GenerationType.AUTO) {
 			if (prop.getPropertyType().equals(UUID.class)){
-				descriptor.setIdGeneratorName(IdGeneratorManager.AUTO_UUID);
-				descriptor.setIdentityGeneration(IdentityGeneration.ID_GENERATOR);
+				descriptor.setIdGeneratorName(UuidIdGenerator.AUTO_UUID);
+				descriptor.setIdType(IdType.GENERATOR);
 				
 			} else {
 				
-				descriptor.setIdentityGeneration(IdentityGeneration.ID_GENERATOR);
+				descriptor.setIdType(IdType.GENERATOR);
 				if (genName != null && genName.length() > 0) {
 					descriptor.setIdGeneratorName(genName);
 				}
@@ -239,6 +250,8 @@ public class AnnotationFields extends AnnotationParser {
 
 		setDbColumn(prop, columnAnn.name());
 
+		prop.setDbInsertable(columnAnn.insertable());
+		prop.setDbUpdateable(columnAnn.updatable());
 		prop.setNullable(columnAnn.nullable());
 		prop.setUnique(columnAnn.unique());
 		if (columnAnn.precision() > 0){

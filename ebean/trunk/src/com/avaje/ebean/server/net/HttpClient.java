@@ -27,7 +27,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
-import com.avaje.ebean.config.ConfigProperties;
 import com.avaje.ebean.config.GlobalProperties;
 
 /**
@@ -64,9 +63,7 @@ public class HttpClient implements IoConnectionFactory {
     public void initialiseHostNameVerifier() {
         HostnameVerifier verifier = new NoHostnameVerify();
         
-        ConfigProperties props = GlobalProperties.getConfigProperties();
-        
-        String hnv = props.getProperty("avaje.httpclient.hostnameverifier");
+        String hnv = GlobalProperties.get("avaje.httpclient.hostnameverifier", null);
         if (hnv != null){
             try {
                 Class<?> clz = Class.forName(hnv);

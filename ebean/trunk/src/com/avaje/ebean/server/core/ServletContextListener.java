@@ -55,7 +55,7 @@ public class ServletContextListener implements javax.servlet.ServletContextListe
         try {
             ServletContext servletContext = event.getServletContext();
 
-            GlobalProperties.initWebapp(servletContext);
+            GlobalProperties.setServletContext(servletContext);
  
             Ebean.getServer(null);
             

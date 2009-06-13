@@ -31,11 +31,12 @@ import java.util.logging.Logger;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
+import com.avaje.ebean.config.dbplatform.IdGenerator;
+import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.server.deploy.IdentityGeneration;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.reflect.BeanReflect;
 
@@ -69,13 +70,15 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Type of Identity generation strategy used.
 	 */
-	IdentityGeneration identityGeneration = IdentityGeneration.AUTO;
+	IdType idType;
 
 	/**
 	 * The name of an IdGenerator (optional).
 	 */
 	String idGeneratorName;
 
+	IdGenerator idGenerator;
+	
 	/**
 	 * The database sequence name (optional).
 	 */
@@ -108,7 +111,7 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * The concurrency mode for beans of this type.
 	 */
-	int concurrencyMode = ConcurrencyMode.ALL;
+	ConcurrencyMode concurrencyMode = ConcurrencyMode.ALL;
 
 	boolean updateChangesOnly;
 	
@@ -382,14 +385,14 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Return the concurrency mode used for beans of this type.
 	 */
-	public int getConcurrencyMode() {
+	public ConcurrencyMode getConcurrencyMode() {
 		return concurrencyMode;
 	}
 
 	/**
 	 * Set the concurrency mode used for beans of this type.
 	 */
-	public void setConcurrencyMode(int concurrencyMode) {
+	public void setConcurrencyMode(ConcurrencyMode concurrencyMode) {
 		this.concurrencyMode = concurrencyMode;
 	}
 
@@ -469,7 +472,7 @@ public class DeployBeanDescriptor<T> {
 	 * </p>
 	 */
 	public boolean isUseIdGenerator() {
-		return identityGeneration == IdentityGeneration.ID_GENERATOR;
+		return idType == IdType.GENERATOR;
 	}
 
 	/**
@@ -572,15 +575,15 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Return the identity generation type.
 	 */
-	public IdentityGeneration getIdentityGeneration() {
-		return identityGeneration;
+	public IdType getIdType() {
+		return idType;
 	}
 
 	/**
 	 * Set the identity generation type.
 	 */
-	public void setIdentityGeneration(IdentityGeneration identityGeneration) {
-		this.identityGeneration = identityGeneration;
+	public void setIdType(IdType idType) {
+		this.idType = idType;
 	}
 
 	/**
@@ -628,6 +631,20 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setIdGeneratorName(String idGeneratorName) {
 		this.idGeneratorName = idGeneratorName;
+	}
+
+	/**
+	 * Return the actual IdGenerator for this bean type (can be null).
+	 */
+	public IdGenerator getIdGenerator() {
+		return idGenerator;
+	}
+
+	/**
+	 * Set the actual IdGenerator for this bean type.
+	 */
+	public void setIdGenerator(IdGenerator idGenerator) {
+		this.idGenerator = idGenerator;
 	}
 
 	/**

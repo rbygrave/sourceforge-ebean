@@ -20,9 +20,10 @@
 package com.avaje.ebean.server.jmx;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.control.ServerControl;
-import com.avaje.ebean.server.plugin.PluginProperties;
 
 /**
  * Implementation of the LogControl.
@@ -38,7 +39,7 @@ public class MLogControl implements MLogControlMBean, LogControl {
 	int queryManyLevel;
 	
 	int sqlQueryLevel;
-
+	
 	int insertLevel;
 
 	int updateLevel;
@@ -58,26 +59,24 @@ public class MLogControl implements MLogControlMBean, LogControl {
 	/**
 	 * Configure from plugin properties.
 	 */
-	public MLogControl(PluginProperties properties) {
+	public MLogControl(ServerConfig serverConfig) {
 
-		boolean sqlConsole = properties.getPropertyBoolean("log.sqltoconsole", false);
-		debugSql = properties.getPropertyBoolean("debug.sql", sqlConsole);
+		debugSql = serverConfig.isDebugSql();
+		debugLazyLoad = serverConfig.isDebugLazyLoad();
 		
-		debugLazyLoad = properties.getPropertyBoolean("debug.lazyload", false);
-		
-		queryByIdLevel = properties.getPropertyInt("log.findid", 1);
-		queryManyLevel = properties.getPropertyInt("log.findmany", 1);
-		sqlQueryLevel = properties.getPropertyInt("log.findnative", 1);
-		
-		int iudLevel = properties.getPropertyInt("log.iud", 1);
+		queryByIdLevel = serverConfig.getFindIdLogLevel().ordinal();
+		queryManyLevel = serverConfig.getFindManyLogLevel().ordinal();
+		sqlQueryLevel =  GlobalProperties.getInt("log.nativesql", 0);
+			
+		int iudLevel = serverConfig.getInsertUpdateDeleteLogLevel().ordinal();
 
-		insertLevel = properties.getPropertyInt("log.insert", iudLevel);
-		updateLevel = properties.getPropertyInt("log.update", iudLevel);
-		deleteLevel = properties.getPropertyInt("log.delete", iudLevel);
-		ormUpdateLevel = properties.getPropertyInt("log.ormupdate", iudLevel);
+		insertLevel = GlobalProperties.getInt("log.insert", iudLevel);
+		updateLevel = GlobalProperties.getInt("log.update", iudLevel);
+		deleteLevel = GlobalProperties.getInt("log.delete", iudLevel);
+		ormUpdateLevel = GlobalProperties.getInt("log.ormupdate", iudLevel);
 
-		sqlUpdateLevel = properties.getPropertyInt("log.updatablesql", iudLevel);
-		callableSqlLevel = properties.getPropertyInt("log.callablesql", iudLevel);
+		sqlUpdateLevel = GlobalProperties.getInt("log.updatablesql", iudLevel);
+		callableSqlLevel = GlobalProperties.getInt("log.callablesql", iudLevel);
 
 	}
 

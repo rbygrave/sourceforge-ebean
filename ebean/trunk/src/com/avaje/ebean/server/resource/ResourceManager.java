@@ -24,46 +24,25 @@ import java.io.File;
 import com.avaje.ebean.server.lib.resource.ResourceSource;
 
 /**
- * Controls access to the required resources.
+ * The ResourceManager implementation.
  */
-public interface ResourceManager {
+public class ResourceManager {
 
-	/**
-	 * Return the directory the database dictionary is serialized to.
-	 * <p>
-	 * This needs to be a directory with read/write permissions.
-	 * </p>
-	 */
-	public File getDictionaryDirectory();
-
-	/**
-	 * Return the directory the autofetch file is serialized to.
-	 * <p>
-	 * This needs to be a directory with read/write permissions.
-	 * </p>
-	 */
-	public File getAutofetchDirectory();
+	final ResourceSource resourceSource;
 	
-	/**
-	 * Return the directory to put lucene indexes in.
-	 * <p>
-	 * This needs to be a directory with read/write permissions.
-	 * </p>
-	 */
-	public File getIndexDirectory();
-
-	/**
-	 * Return external SQL.
-	 */
-	public String getSql(String fileName);
+	final File autofetchDir;
 	
-	/**
-	 * Access to resources.
-	 * <p>
-	 * This provides access to deployment resources (xml, sql etc). This is
-	 * provided via Url or File based access depending on the configuration.
-	 * </p>
-	 */
-	public ResourceSource getResourceSource();
+	public ResourceManager(ResourceSource resourceSource, File autofetchDir) {
+		this.resourceSource = resourceSource;
+		this.autofetchDir = autofetchDir;
+	}
+	
+	public ResourceSource getResourceSource() {
+		return resourceSource;
+	}
+	
+	public File getAutofetchDirectory() {
+		return autofetchDir;
+	}
 
 }

@@ -71,14 +71,18 @@ public final class DeleteMeta {
 
 		id.dmlBind(bind, false, bean, true);
 
-		int mode = persist.getConcurrencyMode();
-		if (mode == ConcurrencyMode.VERSION) {
+		switch (persist.getConcurrencyMode()) {
+		case VERSION:
 			version.dmlBind(bind, false, bean, true);
+			break;
 
-		} else if (mode == ConcurrencyMode.ALL) {
-			
+		case ALL:
 			Object oldBean = persist.getOldValues();
 			all.dmlBind(bind, true, oldBean, false);
+			break;
+
+		default:
+			break;
 		}
 	}
 
@@ -87,25 +91,24 @@ public final class DeleteMeta {
 	 */
 	public String getSql(PersistRequestBean<?> request) throws SQLException {
 
-		int mode = request.determineConcurrencyMode();
 		
-		switch (mode) {
-		case ConcurrencyMode.NONE:
+		switch (request.determineConcurrencyMode()) {
+		case NONE:
 			return sqlNone;
 		
-		case ConcurrencyMode.VERSION:
+		case VERSION:
 			return sqlVersion;
 			
-		case ConcurrencyMode.ALL:
+		case ALL:
 			Object oldValues = request.getOldValues();
 			return genDynamicWhere(oldValues);
 
 		default:
-			throw new RuntimeException("Invalid mode " + mode);
+			throw new RuntimeException("Invalid mode " + request.determineConcurrencyMode());
 		}
 	}
 
-	private String genSql(int conMode) {
+	private String genSql(ConcurrencyMode conMode) {
 
 		// delete ... where bcol=? and bc1=? and bc2 is null and ...
 
@@ -117,13 +120,13 @@ public final class DeleteMeta {
 		request.setWhereIdMode();
 		id.dmlAppend(request, false);
 
-		if (conMode == ConcurrencyMode.VERSION) {
+		if (ConcurrencyMode.VERSION.equals(conMode)) {
 			if (version == null) {
 				return null;
 			}
 			version.dmlAppend(request, false);
 
-		} else if (conMode == ConcurrencyMode.ALL) {
+		} else if (ConcurrencyMode.ALL.equals(conMode)) {
 			throw new RuntimeException("Never called for ConcurrencyMode.ALL");
 		}
 

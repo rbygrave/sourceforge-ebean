@@ -29,10 +29,10 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ScopeTrans;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
@@ -42,16 +42,11 @@ import com.avaje.ebean.server.transaction.TransactionEvent;
  * Service Provider extension to EbeanServer.
  */
 public interface InternalEbeanServer extends InternalEbean {
-
-	/**
-	 * Create a DDL generator.
-	 */
-	public DdlGenerator createDdlGenerator();
 	
 	/**
-	 * Return the associated ServerPlugin.
+	 * Return the DDL generator.
 	 */
-	public Plugin getPlugin();
+	public DdlGenerator getDdlGenerator();
 
 	public void registerMBeans(MBeanServer mbeanServer);
 	
@@ -63,7 +58,7 @@ public interface InternalEbeanServer extends InternalEbean {
 	/**
 	 * Return the server cache.
 	 */
-	public ServerCache getServerCache();
+	public CacheManager getServerCache();
 
 	/**
 	 * Clear the query execution statistics.

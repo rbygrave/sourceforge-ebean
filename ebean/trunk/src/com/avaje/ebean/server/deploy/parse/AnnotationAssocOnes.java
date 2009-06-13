@@ -37,7 +37,7 @@ import javax.persistence.OneToOne;
 
 import com.avaje.ebean.annotation.EmbeddedColumns;
 import com.avaje.ebean.annotation.Where;
-import com.avaje.ebean.server.deploy.BeanDescriptorFactory;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -51,12 +51,12 @@ import com.avaje.ebean.validation.NotNull;
  */
 public class AnnotationAssocOnes extends AnnotationParser {
     
-	final BeanDescriptorFactory factory;
+	final BeanDescriptorManager factory;
 	
 	/**
 	 * Create with the deploy Info.
 	 */
-    public AnnotationAssocOnes(DeployBeanInfo<?> info, BeanDescriptorFactory factory) {
+    public AnnotationAssocOnes(DeployBeanInfo<?> info, BeanDescriptorManager factory) {
         super(info);
         this.factory = factory;
     }

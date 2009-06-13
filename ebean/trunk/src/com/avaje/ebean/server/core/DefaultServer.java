@@ -35,9 +35,9 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.Filter;
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxCallable;
@@ -52,6 +52,7 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ScopeTrans;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.control.AutoFetchControl;
 import com.avaje.ebean.control.ServerControl;
 import com.avaje.ebean.el.ElFilter;
@@ -60,21 +61,21 @@ import com.avaje.ebean.query.DefaultOrmUpdate;
 import com.avaje.ebean.query.DefaultRelationalQuery;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
+import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DNativeQuery;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.server.deploy.DeploymentManager;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.jmx.MAutoFetchControl;
 import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.server.jmx.MServerControl;
 import com.avaje.ebean.server.lib.ShutdownManager;
-import com.avaje.ebean.server.plugin.Plugin;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
@@ -86,107 +87,101 @@ import com.avaje.ebean.util.Message;
 
 /**
  * The default server side implementation of EbeanServer.
- * <p>
- * It uses ServerPlugin to manage the implementation details that can be thought
- * of as 'pluggable'. This includes database vendor specific issues as well.
- * </p>
  */
 public final class DefaultServer implements InternalEbeanServer {
 
-	static final Logger logger = Logger.getLogger(DefaultServer.class.getName());
+	private static final Logger logger = Logger.getLogger(DefaultServer.class.getName());
 
 	/**
 	 * Used when no errors are found validating a property.
 	 */
-	static final InvalidValue[] EMPTY_INVALID_VALUES = new InvalidValue[0];
+	private static final InvalidValue[] EMPTY_INVALID_VALUES = new InvalidValue[0];
 
-	/**
-	 * The implementation to use.
-	 */
-	final Plugin plugin;
 
 	/**
 	 * The name, null for the 'primary' server.
 	 */
-	final String serverName;
+	private final String serverName;
 
-	final ServerControl serverControl;
+	private final ServerControl serverControl;
 
 	/**
 	 * Manages the transaction.
 	 */
-	final TransactionManager transactionManager;
+	private final TransactionManager transactionManager;
 
-	final TransactionScopeManager transactionScopeManager;
+	private final TransactionScopeManager transactionScopeManager;
 
 	/**
-	 * Ebean defaults this to true but for EJB compatible behaviour set this to
-	 * false;
+	 * Ebean defaults this to true but for EJB compatible behaviour 
+	 * set this to false;
 	 */
-	final boolean rollbackOnChecked;
+	private final boolean rollbackOnChecked;
 
 	/**
 	 * Handles the save, delete, updateSql CallableSql.
 	 */
-	final Persister persister;
+	private final Persister persister;
 
-	final OrmQueryEngine queryEngine;
+	private final OrmQueryEngine queryEngine;
 
-	final RelationalQueryEngine relationalQueryEngine;
+	private final RelationalQueryEngine relationalQueryEngine;
 
 	/**
 	 * The cache implementation.
 	 */
-	final ServerCache serverCache;
+	private final CacheManager serverCache;
 
-	final DeploymentManager deploymentManager;
+	private final BeanDescriptorManager beanDescriptorManager;
 
-	final DiffHelp diffHelp = new DiffHelp();
+	private final DiffHelp diffHelp = new DiffHelp();
 
-	final MLogControl logControl;
+	private final MLogControl logControl;
 
-	final AutoFetchControl autoFetchControl;
+	private final AutoFetchControl autoFetchControl;
 
-	final RefreshHelp refreshHelp;
+	private final RefreshHelp refreshHelp;
 
-	final AutoFetchManager autoFetchManager;
+	private final AutoFetchManager autoFetchManager;
 
-	final DebugLazyLoad debugLazyHelper;
+	private final DebugLazyLoad debugLazyHelper;
 
-	final CQueryEngine cqueryEngine;
+	private final CQueryEngine cqueryEngine;
+	 
+	private final DdlGenerator ddlGenerator;
 	
 	/**
 	 * Create the DefaultServer.
 	 */
-	public DefaultServer(Plugin plugin) {
+	public DefaultServer(InternalConfiguration config, CacheManager serverCache) {
+		
+		this.serverCache = serverCache;
+		this.serverName = config.getServerConfig().getName();
+		this.cqueryEngine = config.getCQueryEngine();
+		this.logControl = config.getLogControl();
+		this.refreshHelp = config.getRefreshHelp();
+		this.debugLazyHelper = config.getDebugLazyLoad();
+		this.beanDescriptorManager = config.getBeanDescriptorManager();
+		this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
 
-		this.plugin = plugin;
-		this.serverName = plugin.getServerName();
-		this.cqueryEngine = new CQueryEngine(plugin.getPluginCore());
-		this.logControl = plugin.getLogControl();
-		this.refreshHelp = new RefreshHelp(logControl, plugin);
-		this.debugLazyHelper = new DebugLazyLoad(plugin);
-		this.deploymentManager = plugin.getDeploymentManager();
-		this.serverCache = plugin.createServerCache(this);
-		this.transactionManager = plugin.getTransactionManager();
-		this.transactionScopeManager = plugin.getTransactionScopeManager();
-		this.rollbackOnChecked = plugin.getProperties().getPropertyBoolean("transaction.rollbackOnChecked", true);
+		this.transactionManager = config.getTransactionManager();
+		this.transactionScopeManager = config.getTransactionScopeManager();
 
-		this.persister = plugin.createPersister(this);
+		this.persister = config.createPersister(this);
+		this.queryEngine = config.createOrmQueryEngine(serverCache);
+		this.relationalQueryEngine = config.createRelationalQueryEngine();
 
-		this.queryEngine = plugin.createOrmQueryEngine(this);
-		this.relationalQueryEngine = plugin.createRelationalQueryEngine(this);
-
-		autoFetchManager = plugin.createAutoFetchManager(this);
+		autoFetchManager = config.createAutoFetchManager(this);
 		autoFetchControl = new MAutoFetchControl(autoFetchManager);
 
 		serverControl = new MServerControl(logControl, autoFetchControl);
 
+		this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
 		ShutdownManager.register(new Shutdown());
 	}
 	
-	public DdlGenerator createDdlGenerator() {
-		return new DdlGenerator(this);
+	public DdlGenerator getDdlGenerator() {
+		return ddlGenerator;
 	}
 
 	public ServerControl getServerControl() {
@@ -245,7 +240,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		return cqueryEngine;
 	}
 
-	public ServerCache getServerCache() {
+	public CacheManager getServerCache() {
 		return serverCache;
 	}
 
@@ -456,13 +451,6 @@ public final class DefaultServer implements InternalEbeanServer {
 			evt.addDelete(tableName);
 		}
 		externalModification(evt);
-	}
-
-	/**
-	 * Return the underlying plugin implementation.
-	 */
-	public Plugin getPlugin() {
-		return plugin;
 	}
 
 	/**
@@ -896,7 +884,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public SqlQuery createSqlQuery(String namedQuery) {
-		DNativeQuery nq = deploymentManager.getNativeQuery(namedQuery);
+		DNativeQuery nq = beanDescriptorManager.getNativeQuery(namedQuery);
 		if (nq == null) {
 			throw new PersistenceException("SqlQuery " + namedQuery + " not found.");
 		}
@@ -908,7 +896,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public SqlUpdate createSqlUpdate(String namedQuery) {
-		DNativeQuery nq = deploymentManager.getNativeQuery(namedQuery);
+		DNativeQuery nq = beanDescriptorManager.getNativeQuery(namedQuery);
 		if (nq == null) {
 			throw new PersistenceException("SqlUpdate " + namedQuery + " not found.");
 		}
@@ -936,7 +924,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
 		OrmQuery<T> query = (OrmQuery<T>) q;
-		BeanManager<T> mgr = deploymentManager.getBeanManager(query.getBeanType());
+		BeanManager<T> mgr = beanDescriptorManager.getBeanManager(query.getBeanType());
 
 		if (mgr.isAutoFetchTunable() && !query.isSqlSelect()) {
 			// its a tunable query
@@ -1252,21 +1240,21 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public <T> BeanManager<T> getBeanManager(Class<T> beanClass) {
-		return deploymentManager.getBeanManager(beanClass);
+		return beanDescriptorManager.getBeanManager(beanClass);
 	}
 
 	/**
 	 * Return all the BeanDescriptors.
 	 */
 	public List<BeanDescriptor<?>> getBeanDescriptors() {
-		return deploymentManager.getBeanDescriptors();
+		return beanDescriptorManager.getBeanDescriptorList();
 	}
 	
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
 	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> beanClass) {
-		return deploymentManager.getBeanDescriptor(beanClass);
+		return beanDescriptorManager.getBeanDescriptor(beanClass);
 	}
 
 

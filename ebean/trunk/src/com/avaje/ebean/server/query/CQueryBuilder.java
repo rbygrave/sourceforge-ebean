@@ -19,18 +19,18 @@
  */
 package com.avaje.ebean.server.query;
 
-import javax.persistence.PersistenceException;
-
+import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
+import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
+import com.avaje.ebean.config.dbplatform.SqlLimiter;
 import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.query.OrmQueryLimitRequest;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.server.plugin.DbSpecific;
-import com.avaje.ebean.server.plugin.PluginCore;
-import com.avaje.ebean.server.plugin.ResultSetLimit;
-import com.avaje.ebean.util.Message;
 
 /**
  * Generates the SQL SELECT statements taking into account the physical
@@ -38,22 +38,11 @@ import com.avaje.ebean.util.Message;
  */
 public class CQueryBuilder implements Constants {
 
-	/**
-	 * Set this to empty string for Oracle. Otherwise "as limitresult".
-	 */
-	private final String rowNumberWindowAlias;
 
 	private final String tableAliasPlaceHolder;
 	private final String columnAliasPrefix;
 	
-	/**
-	 * Get one more than maxRows. This last one is not returned but if it exists
-	 * is used to set a flag so the client knows there is more data to get if
-	 * they want.
-	 */
-	private static final int maxOffset = 1;
-
-	private final ResultSetLimit resultSetLimit;
+	private final SqlLimiter dbQueryLimiter;
 	
 	private final RawSqlSelectClauseBuilder rawSqlBuilder;
 	
@@ -62,38 +51,36 @@ public class CQueryBuilder implements Constants {
 	/**
 	 * Create the SqlGenSelect.
 	 */
-	public CQueryBuilder(PluginCore pluginCore) {
-		this.binder = pluginCore.getDbConfig().getBinder();
-		this.tableAliasPlaceHolder = pluginCore.getDbConfig().getTableAliasPlaceHolder();
-		this.columnAliasPrefix = pluginCore.getDbConfig().getProperties().getProperty("columnAliasPrefix", "c");
-		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(pluginCore);
+	public CQueryBuilder(DatabasePlatform dbPlatform, Binder binder) {
+		this.binder = binder;
+		this.tableAliasPlaceHolder = GlobalProperties.get("ebean.tableAliasPlaceHolder","${ta}");
+		this.columnAliasPrefix = GlobalProperties.get("ebean.columnAliasPrefix", "c");
+		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(dbPlatform, binder);
 
-		DbSpecific dbSpecific = pluginCore.getDbConfig().getDbSpecific();
-		this.resultSetLimit = dbSpecific.getResultSetLimit();
-		this.rowNumberWindowAlias = dbSpecific.getRowNumberWindowAlias();
+		this.dbQueryLimiter = dbPlatform.getSqlLimiter();
 	}
 
-	/**
-	 * Create the ROW_NUMBER() column used for firstRow maxRows limits. Returns
-	 * null if the limitMode is not set to LIMIT_MODE_ROWNUMBER.
-	 * <p>
-	 * Only do this is there are detail rows joined. With detail rows joined
-	 * this way of limiting the result set will not work.
-	 * </p>
-	 */
-	protected String getRowNumberColumn(OrmQuery<?> find, String orderBy) {
-		if (!resultSetLimit.equals(ResultSetLimit.RowNumber)) {
-			return null;
-		}
-
-		if (find.getFirstRow() > 0 || find.getMaxRows() > 0) {
-			if (orderBy == null || orderBy.trim().length() == 0) {
-				throw new PersistenceException(Message.msg("fetch.limit.orderby"));
-			}
-			return ROW_NUMBER_OVER + orderBy + ROW_NUMBER_AS;
-		}
-		return null;
-	}
+//	/**
+//	 * Create the ROW_NUMBER() column used for firstRow maxRows limits. Returns
+//	 * null if the limitMode is not set to LIMIT_MODE_ROWNUMBER.
+//	 * <p>
+//	 * Only do this is there are detail rows joined. With detail rows joined
+//	 * this way of limiting the result set will not work.
+//	 * </p>
+//	 */
+//	protected String getRowNumberColumn(OrmQuery<?> find, String orderBy) {
+//		if (!resultSetLimit.equals(ResultSetLimit.RowNumber)) {
+//			return null;
+//		}
+//
+//		if (find.getFirstRow() > 0 || find.getMaxRows() > 0) {
+//			if (orderBy == null || orderBy.trim().length() == 0) {
+//				throw new PersistenceException(Message.msg("fetch.limit.orderby"));
+//			}
+//			return ROW_NUMBER_OVER + orderBy + ROW_NUMBER_AS;
+//		}
+//		return null;
+//	}
 
 	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
 			boolean hasListener) {
@@ -162,9 +149,9 @@ public class CQueryBuilder implements Constants {
 		// Build the tree structure that represents the query.
 		SqlTree sqlTree = createSqlTree(request, predicates);
 		
-		String sql = buildSql(request, predicates, sqlTree);
+		SqlLimitResponse s = buildSql(request, predicates, sqlTree);
 
-		queryPlan = new CQueryPlan(request, sql, sqlTree, false, predicates.isRowNumberIncluded(), predicates.getLogWhereSql());
+		queryPlan = new CQueryPlan(request, s.getSql(), sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
 		
 		// cache the query plan because we can reuse it and also 
 		// gather query performance statistics based on it.
@@ -190,7 +177,7 @@ public class CQueryBuilder implements Constants {
         return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, request, predicates).build();
     }
 	
-	private String buildSql(OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
+	private SqlLimitResponse buildSql(OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
 		OrmQuery<?> query = request.getQuery();
 		BeanPropertyAssocMany<?> manyProp = select.getManyProperty();
@@ -198,23 +185,27 @@ public class CQueryBuilder implements Constants {
 		String dbOrderBy = predicates.getDbOrderBy();
 
 
+		boolean useSqlLimiter = (query.getMaxRows() > 0 || query.getFirstRow() > 0 && manyProp != null);
+
 		StringBuilder sb = new StringBuilder(500);
 
-		sb.append("select ");
-		if (query.isDistinct()) {
-			sb.append("distinct ");
-		}
-
-		if (manyProp == null) {
-			// setup ROW_NUMBER() column if required
-			String rowNumberCol = getRowNumberColumn(query, dbOrderBy);
-			if (rowNumberCol != null) {
-				// column used to limit rows returned based on
-				//firstRow and maxRows
-				predicates.setRowNumberIncluded(true);
-				sb.append(rowNumberCol);
+		if (!useSqlLimiter){
+			sb.append("select ");
+			if (query.isDistinct()) {
+				sb.append("distinct ");
 			}
 		}
+
+//		if (manyProp == null) {
+//			// setup ROW_NUMBER() column if required
+//			String rowNumberCol = getRowNumberColumn(query, dbOrderBy);
+//			if (rowNumberCol != null) {
+//				// column used to limit rows returned based on
+//				//firstRow and maxRows
+//				predicates.setRowNumberIncluded(true);
+//				sb.append(rowNumberCol);
+//			}
+//		}
 
 		sb.append(select.getSelectSql());
 
@@ -264,92 +255,101 @@ public class CQueryBuilder implements Constants {
 			sb.append("order by ").append(dbOrderBy);
 		}
 
-		String genSql = sb.toString();
-		if (manyProp == null) {
-			// finish wrapping ROW_NUMBER() or LIMIT clause
-			genSql = wrapSql(query, genSql);
-		}
+//		String genSql = sb.toString();
+//		if (manyProp == null) {
+//			// finish wrapping ROW_NUMBER() or LIMIT clause
+//			genSql = wrapSql(query, genSql);
+//		}
 
-		return genSql;
+		if (useSqlLimiter){
+			// use LIMIT/OFFSET, ROW_NUMBER() or rownum type SQL query limitation
+			SqlLimitRequest r = new OrmQueryLimitRequest(sb.toString(), dbOrderBy, query);
+			return dbQueryLimiter.limit(r);
+			
+		} else {
+
+			return new SqlLimitResponse(sb.toString(), false);
+		}
+		
 	}
 
-	/**
-	 * Wrap the sql to implement firstRow maxRows limits. Use the standard
-	 * ROW_NUMBER() function or MySQL/Postgres LIMIT OFFSET clause.
-	 */
-	protected String wrapSql(OrmQuery<?> f, String sql) {
-		if (!f.hasMaxRowsOrFirstRow()){
-			return sql;
-		}
-		switch (resultSetLimit) {
-		case RowNumber:
-			return wrapRowNumberLimit(f, sql);
-		case LimitOffset:
-			return wrapLimitOffset(f, sql);
-		case JdbcRowNavigation:
-			return sql;
-
-		default:
-			return sql;
-		}
-	}
-
-	/**
-	 * Wrap the select statement to use firstRows maxRows limit features.
-	 */
-	protected String wrapRowNumberLimit(OrmQuery<?> f, String sql) {
-
-		int firstRow = f.getFirstRow();
-
-		int lastRow = f.getMaxRows();
-		if (lastRow > 0) {
-			lastRow = lastRow + firstRow + maxOffset;
-		}
-
-		StringBuilder sb = new StringBuilder(512);
-		sb.append("select * from (").append(NEW_LINE);
-		sb.append(sql);
-		sb.append(NEW_LINE).append(") ");
-		sb.append(rowNumberWindowAlias);
-		sb.append(" where ");
-		if (firstRow > 0) {
-			sb.append(" rn > ").append(firstRow);
-			if (lastRow > 0) {
-				sb.append(" and ");
-			}
-		}
-		if (lastRow > 0) {
-			sb.append(" rn <= ").append(lastRow);
-		}
-
-		return sb.toString();
-	}
-
-	/**
-	 * Wrap the sql with LIMIT OFFSET keywords. Used by MySql and Postgres.
-	 */
-	protected String wrapLimitOffset(OrmQuery<?> f, String sql) {
-
-		int firstRow = f.getFirstRow();
-		int lastRow = f.getMaxRows();
-		if (lastRow > 0) {
-			lastRow = lastRow + firstRow + maxOffset;
-		}
-
-		StringBuilder sb = new StringBuilder(512);
-		sb.append(sql);
-		sb.append(" ").append(NEW_LINE).append(LIMIT).append(" ");
-		if (lastRow > 0) {
-			sb.append(lastRow);
-			if (firstRow > 0) {
-				sb.append(" ").append(OFFSET).append(" ");
-			}
-		}
-		if (firstRow > 0) {
-			sb.append(firstRow);
-		}
-
-		return sb.toString();
-	}
+//	/**
+//	 * Wrap the sql to implement firstRow maxRows limits. Use the standard
+//	 * ROW_NUMBER() function or MySQL/Postgres LIMIT OFFSET clause.
+//	 */
+//	protected String wrapSql(OrmQuery<?> f, String sql) {
+//		if (!f.hasMaxRowsOrFirstRow()){
+//			return sql;
+//		}
+//		switch (resultSetLimit) {
+//		case RowNumber:
+//			return wrapRowNumberLimit(f, sql);
+//		case LimitOffset:
+//			return wrapLimitOffset(f, sql);
+//		case JdbcRowNavigation:
+//			return sql;
+//
+//		default:
+//			return sql;
+//		}
+//	}
+//
+//	/**
+//	 * Wrap the select statement to use firstRows maxRows limit features.
+//	 */
+//	protected String wrapRowNumberLimit(OrmQuery<?> f, String sql) {
+//
+//		int firstRow = f.getFirstRow();
+//
+//		int lastRow = f.getMaxRows();
+//		if (lastRow > 0) {
+//			lastRow = lastRow + firstRow + maxOffset;
+//		}
+//
+//		StringBuilder sb = new StringBuilder(512);
+//		sb.append("select * from (").append(NEW_LINE);
+//		sb.append(sql);
+//		sb.append(NEW_LINE).append(") ");
+//		sb.append(rowNumberWindowAlias);
+//		sb.append(" where ");
+//		if (firstRow > 0) {
+//			sb.append(" rn > ").append(firstRow);
+//			if (lastRow > 0) {
+//				sb.append(" and ");
+//			}
+//		}
+//		if (lastRow > 0) {
+//			sb.append(" rn <= ").append(lastRow);
+//		}
+//
+//		return sb.toString();
+//	}
+//
+//	/**
+//	 * Wrap the sql with LIMIT OFFSET keywords. Used by MySql and Postgres.
+//	 */
+//	protected String wrapLimitOffset(OrmQuery<?> f, String sql) {
+//
+//		int firstRow = f.getFirstRow();
+//		int lastRow = f.getMaxRows();
+//		if (lastRow > 0) {
+//			lastRow = lastRow + firstRow + maxOffset;
+//		}
+//
+//		StringBuilder sb = new StringBuilder(512);
+//		sb.append(sql);
+//		sb.append(" ").append(NEW_LINE).append(LIMIT).append(" ");
+//		if (lastRow > 0) {
+//			sb.append(lastRow);
+//			if (firstRow > 0) {
+//				sb.append(" ").append(OFFSET).append(" ");
+//			}
+//		}
+//		if (firstRow > 0) {
+//			sb.append(firstRow);
+//		}
+//
+//		return sb.toString();
+//	}
 
 }

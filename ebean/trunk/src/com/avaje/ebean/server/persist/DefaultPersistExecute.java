@@ -20,15 +20,14 @@
 package com.avaje.ebean.server.persist;
 
 import com.avaje.ebean.bean.BeanPersistController;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
-import com.avaje.ebean.server.plugin.PluginProperties;
+import com.avaje.ebean.server.jmx.MLogControl;
 
 /**
  * Default PersistExecute implementation using DML statements.
@@ -41,7 +40,7 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * Defines the logging levels.
      */
-    private final MLogControlMBean logControl;
+    private final MLogControl logControl;
     
     private final ExeCallableSql exeCallableSql;
     
@@ -62,16 +61,15 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * Construct this DmlPersistExecute.
      */
-    public DefaultPersistExecute(PluginDbConfig dbConfig) {
+    public DefaultPersistExecute(MLogControl logControl, Binder binder) {
     
-        this.logControl = dbConfig.getLogControl();
-        this.exeOrmUpdate = new ExeOrmUpdate(dbConfig);
-        this.exeUpdateSql = new ExeUpdateSql(dbConfig);
-        this.exeCallableSql = new ExeCallableSql(dbConfig);
+        this.logControl = logControl;
+        this.exeOrmUpdate = new ExeOrmUpdate(binder);
+        this.exeUpdateSql = new ExeUpdateSql(binder);
+        this.exeCallableSql = new ExeCallableSql(binder);
         
-        PluginProperties properties = dbConfig.getProperties();
-		this.defaultBatchGenKeys = properties.getPropertyBoolean("batch.getgeneratedkeys", true);
-		this.defaultBatchSize = properties.getPropertyInt("batch.size", 20);
+		this.defaultBatchGenKeys = GlobalProperties.getBoolean("batch.getgeneratedkeys", true);
+		this.defaultBatchSize = GlobalProperties.getInt("batch.size", 20);
     }
 
 	public BatchControl createBatchControl(ServerTransaction t) {

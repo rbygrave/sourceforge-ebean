@@ -26,8 +26,7 @@ import com.avaje.ebean.server.persist.PersistExecute;
 /**
  * Wraps all the objects used to persist a bean.
  */
-public abstract class PersistRequest extends BeanRequest implements ConcurrencyMode,
-		BatchPostExecute {
+public abstract class PersistRequest extends BeanRequest implements BatchPostExecute {
 
 	public enum Type {
 		INSERT, UPDATE, DELETE, ORMUPDATE, UPDATESQL, CALLABLESQL

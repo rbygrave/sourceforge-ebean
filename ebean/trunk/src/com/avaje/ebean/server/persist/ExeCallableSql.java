@@ -30,7 +30,6 @@ import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.BindParams;
 
@@ -45,9 +44,9 @@ public class ExeCallableSql {
     
     private final PstmtFactory pstmtFactory;
     
-    public ExeCallableSql(PluginDbConfig dbConfig) {
-    	pstmtFactory = new PstmtFactory();
-    	binder = dbConfig.getBinder();
+    public ExeCallableSql(Binder binder) {
+    	this.binder = binder;
+    	this.pstmtFactory = new PstmtFactory();
     }
     
     /**

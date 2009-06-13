@@ -3,8 +3,7 @@ package com.avaje.ebean.server.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.config.ConfigProperties;
-import com.avaje.ebean.server.plugin.Plugin;
+import com.avaje.ebean.config.GlobalProperties;
 
 /**
  * Helper used in producing debug output on lazy loading.
@@ -12,15 +11,12 @@ import com.avaje.ebean.server.plugin.Plugin;
 public class DebugLazyLoad {
 
 	private final String[] ignoreList;
-
-	private final ConfigProperties properties;
 	
 	private final boolean debug;
 
-	public DebugLazyLoad(Plugin plugin) {
-		properties = plugin.getProperties().getConfigProperties();
+	public DebugLazyLoad(boolean lazyLoadDebug) {
 		ignoreList = buildLazyLoadIgnoreList();
-		debug = isLazyLoadDebug();
+		debug = lazyLoadDebug;
 	}
 
 	/**
@@ -86,9 +82,6 @@ public class DebugLazyLoad {
 		}
 	}
 	
-	private boolean isLazyLoadDebug() {
-		return properties.getBooleanProperty("debug.lazyload", false);
-	}
 
 	/**
 	 * Build list of prefixes used to find the application code that triggered
@@ -105,7 +98,7 @@ public class DebugLazyLoad {
 		ignore.add("sun.reflect");
 		ignore.add("org.codehaus.groovy.runtime.");
 
-		String extraIgnore = properties.getProperty("debug.lazyload.ignore", null);
+		String extraIgnore = GlobalProperties.get("debug.lazyload.ignore", null);
 		if (extraIgnore != null) {
 			String[] split = extraIgnore.split(",");
 			for (int i = 0; i < split.length; i++) {

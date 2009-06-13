@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.avaje.ebean.NamingConvention;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.query.SimpleTextParser;
 import com.avaje.ebean.server.deploy.DeploySqlSelect.ColumnInfo;
 import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
@@ -135,12 +135,30 @@ public class DefaultDeploySqlSelectParser {
 		String preWhereExprSql = removeWhitespace(findPreWhereExprSql());
 		String preHavingExprSql = removeWhitespace(findPreHavingExprSql());
 
+		preWhereExprSql = trimSelectKeyword(preWhereExprSql);
+		
 		String orderBySql = findOrderBySql();
 
 		return new DeploySqlSelect(deployPropMap, selectColumns, preWhereExprSql, whereExprAnd,
 				preHavingExprSql, havingExprAnd, orderBySql, meta);
 	}
 
+	/**
+	 * Trim off the select keyword (to support row_number() limit function).
+	 */
+	private String trimSelectKeyword(String preWhereExprSql) {
+
+		if (preWhereExprSql.length() < 7){
+			throw new RuntimeException("Expecting at least 7 chars in ["+preWhereExprSql+"]");
+		}
+		
+		String select = preWhereExprSql.substring(0, 7);
+		if (!select.equalsIgnoreCase("select ")){
+			throw new RuntimeException("Expecting ["+preWhereExprSql+"] to start with \"select\"");
+		}
+		return preWhereExprSql.substring(7);
+	}
+	
 	/**
 	 * Build the map used to translate logical bean property names to db columns.
 	 * <p>

@@ -21,11 +21,10 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ConfigProperties;
+import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.lib.BackgroundRunnable;
 import com.avaje.ebean.server.lib.BackgroundThread;
@@ -67,38 +66,28 @@ public class DataSourceManager implements DataSourceNotify {
      * The frequency to test db while it is down.
      */
     private final int dbDownFreqInSecs;
-    
-    private final ConfigProperties defaultConfig;
-    
-    /** 
-     * The default dataSource used (can be null). 
-     */
-    private final String defaultDataSource;
+        
+//    /** 
+//     * The default dataSource used (can be null). 
+//     */
+//    private final String defaultDataSource;
 
     /**
      * Set to true when shutting down.
      */
     private boolean shuttingDown;
-    
-    /**
-     * Construct based on the GlobalProperties.
-     */
-	public DataSourceManager() {
-		this(GlobalProperties.getConfigProperties());
-	}
-	
+    	
 	/** 
 	 * Construct with explicit ConfigProperties.
 	 */
-	public DataSourceManager(ConfigProperties defaultConfig) {
-		this.defaultConfig = defaultConfig;
-	    
-		this.alertlistener = createAlertListener(defaultConfig);
+	public DataSourceManager() {
+		
+		this.alertlistener = createAlertListener();
 		
 		// perform heart beat every 30 seconds by default
-        this.dbUpFreqInSecs = defaultConfig.getIntProperty("datasource.heartbeatfreq",30);
-        this.dbDownFreqInSecs = defaultConfig.getIntProperty("datasource.deadbeatfreq",10);
-        this.defaultDataSource = defaultConfig.getProperty("datasource.default");
+        this.dbUpFreqInSecs = GlobalProperties.getInt("datasource.heartbeatfreq",30);
+        this.dbDownFreqInSecs = GlobalProperties.getInt("datasource.deadbeatfreq",10);
+//        this.defaultDataSource = GlobalPropertyMap.get("datasource.default", null);
         
         this.dbChecker = new BackgroundRunnable(new Checker(), dbUpFreqInSecs);
         
@@ -110,18 +99,16 @@ public class DataSourceManager implements DataSourceNotify {
 		}
 	}
 
-	private DataSourceAlertListener createAlertListener(ConfigProperties configProperties) throws DataSourceException {
+	private DataSourceAlertListener createAlertListener() throws DataSourceException {
 		
-		String alertCN = configProperties.getProperty("datasource.alert.class");
+		String alertCN = GlobalProperties.get("datasource.alert.class", null);
 		if (alertCN == null){
-			return new SimpleAlerter(configProperties);
+			return new SimpleAlerter();
 			
 		} else {
 		    try {
 		        Class<?> claz = Class.forName(alertCN);
-		        DataSourceAlertListener alert = (DataSourceAlertListener)claz.newInstance();
-		        alert.initialise(configProperties);
-		        return alert;
+		        return (DataSourceAlertListener)claz.newInstance();
 		        
 		    } catch (Exception ex){
 		    	throw new DataSourceException(ex);
@@ -210,39 +197,55 @@ public class DataSourceManager implements DataSourceNotify {
 	 * Get the dataSource using the default ConfigProperties.
 	 */
 	public DataSourcePool getDataSource(String name) {
-		return getDataSource(name, defaultConfig);
+		return getDataSource(name);
 	}
 	
-    /**
-     * Get the dataSource using explicit ConfigProperties.
-     */
-    public DataSourcePool getDataSource(String name, ConfigProperties configProps){
-        return get(name, configProps);
-    }
-    
-	private DataSourcePool get(String name, ConfigProperties configProps){
-	    if (name == null){
-	        name = defaultDataSource;
-	        if (defaultDataSource == null){
-	            throw new DataSourceException("No default datasource [datasource.default] has been defined.");
-	        }
-	    }
-	    
-	    if (configProps == null){
-	    	configProps = defaultConfig;
-	    }
-	    
+	
+	public DataSourcePool getDataSource(String name, DataSourceConfig dsConfig){
+		
+		if (name == null){
+			throw new RuntimeException("name not defined");
+		}
+		
 	    synchronized(monitor){
 		    DataSourcePool pool = (DataSourcePool)dsMap.get(name);
 		    if (pool == null){
-		        Map<String,String> systemProps = configProps.getMap();
-                DataSourceParams params = new DataSourceParams(systemProps, "datasource", name);
-		        pool = new DataSourcePool(this, params);
+		        pool = new DataSourcePool(this, name, dsConfig);
 		        dsMap.put(name, pool); 
 		    }
 		    return pool;
 		}
 	}
+//    /**
+//     * Get the dataSource using explicit ConfigProperties.
+//     */
+//    public DataSourcePool getDataSource(String name, ConfigProperties configProps){
+//        return get(name, configProps);
+//    }
+//    
+//	private DataSourcePool get(String name, ConfigProperties configProps){
+//	    if (name == null){
+//	        name = defaultDataSource;
+//	        if (defaultDataSource == null){
+//	            throw new DataSourceException("No default datasource [datasource.default] has been defined.");
+//	        }
+//	    }
+//	    
+//	    if (configProps == null){
+//	    	configProps = defaultConfig;
+//	    }
+//	    
+//	    synchronized(monitor){
+//		    DataSourcePool pool = (DataSourcePool)dsMap.get(name);
+//		    if (pool == null){
+//		        Map<String,String> systemProps = configProps.getMap();
+//                DataSourceParams params = new DataSourceParams(systemProps, "datasource", name);
+//		        pool = new DataSourcePool(this, params);
+//		        dsMap.put(name, pool); 
+//		    }
+//		    return pool;
+//		}
+//	}
 	
 	/**
 	 * Check that the database is up by performing a simple query. This should

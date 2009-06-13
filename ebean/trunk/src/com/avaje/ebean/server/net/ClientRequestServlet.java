@@ -29,8 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.avaje.ebean.config.GlobalProperties;
-
 /**
  * Processes ebean requests from http clients.
  */
@@ -55,7 +53,7 @@ public class ClientRequestServlet extends HttpServlet {
     private void initProcessor() {
         String dftl = ServletContextManager.class.getName();
         
-        UtilFactory utilFactory = new UtilFactory(GlobalProperties.getConfigProperties());
+        UtilFactory utilFactory = new UtilFactory();
         CommandContextManager cm = utilFactory.createCommandContextManager(dftl);
         
         CommandSecurity cs = utilFactory.createCommandSecurity(null);

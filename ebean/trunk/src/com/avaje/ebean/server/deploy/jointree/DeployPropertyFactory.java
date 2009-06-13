@@ -25,7 +25,6 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.plugin.PluginDbConfig;
 
 /**
  * Creates the List of DeployProperty for a given node.
@@ -34,8 +33,8 @@ public class DeployPropertyFactory {
 
 	private final String tableAliasPlaceHolder;
 	
-	public DeployPropertyFactory(PluginDbConfig dbConfig){
-		tableAliasPlaceHolder = dbConfig.getTableAliasPlaceHolder();
+	public DeployPropertyFactory(String tableAliasPlaceHolder){
+		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 	}
 	
 	/**
