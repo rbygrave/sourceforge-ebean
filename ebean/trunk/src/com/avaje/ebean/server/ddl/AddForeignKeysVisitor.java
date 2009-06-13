@@ -40,6 +40,7 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 	}
 
 	public void visitEnd() {
+		ctx.addIntersectionFkeys();
 	}
 
 	public PropertyVisitor visitProperty(BeanProperty p) {

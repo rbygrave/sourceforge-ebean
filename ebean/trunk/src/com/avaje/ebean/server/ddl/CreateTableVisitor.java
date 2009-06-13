@@ -136,7 +136,7 @@ public class CreateTableVisitor implements BeanVisitor {
 	}
 
 	public void visitEnd() {
-		
+		ctx.addIntersectionCreateTables();
 	}
 
 }

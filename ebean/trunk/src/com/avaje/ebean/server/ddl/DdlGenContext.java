@@ -1,7 +1,9 @@
 package com.avaje.ebean.server.ddl;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -36,21 +38,49 @@ public class DdlGenContext {
 	
 	Set<String> intersectionTables = new HashSet<String>();
 	
+	List<String> intersectionTablesCreateDdl = new ArrayList<String>();
+	List<String> intersectionTablesFkDdl = new ArrayList<String>();
+	
 	public DdlGenContext(DbTypeMap dbTypeMap, DdlSyntax ddlSyntax){
 		this.dbTypeMap = dbTypeMap;
 		this.ddlSyntax = ddlSyntax;
 		this.newLine = ddlSyntax.getNewLine();
 	}
 
-	public boolean createIntersectionTable(String tableName){
+	public boolean isProcessIntersectionTable(String tableName){
 		
 		return intersectionTables.add(tableName);
+	}
+	
+	public void addCreateIntersectionTable(String createTableDdl){
+		intersectionTablesCreateDdl.add(createTableDdl);
+	}
+	
+	public void addIntersectionTableFk(String intTableFk){
+		intersectionTablesFkDdl.add(intTableFk);
+	}
+	
+	public void addIntersectionCreateTables() {
+		for (String intTableCreate : intersectionTablesCreateDdl) {
+			stringWriter.write(newLine);
+			stringWriter.write(intTableCreate);
+		}		
+	}
+
+	public void addIntersectionFkeys() {
+		stringWriter.write(newLine);
+		stringWriter.write(newLine);
+		for (String intTableFk : intersectionTablesFkDdl) {
+			stringWriter.write(newLine);
+			stringWriter.write(intTableFk);
+		}
 	}
 	
 	/**
 	 * Return the generated content (DDL script).
 	 */
 	public String getContent(){
+
 		return stringWriter.toString();
 	}
 	

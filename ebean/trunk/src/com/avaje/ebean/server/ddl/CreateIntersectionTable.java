@@ -8,7 +8,6 @@ import com.avaje.ebean.server.deploy.TableJoinColumn;
 
 public class CreateIntersectionTable {
 
-	StringBuilder sb = new StringBuilder();
 	
 	final DdlGenContext ctx;
 	
@@ -18,6 +17,11 @@ public class CreateIntersectionTable {
 	
 	final String NEW_LINE = "\n";
 	
+
+	StringBuilder sb = new StringBuilder();
+	
+	StringBuilder pkeySb = new StringBuilder();
+	
 	public CreateIntersectionTable(DdlGenContext ctx, BeanPropertyAssocMany<?> manyProp) {
 		this.ctx = ctx;
 		this.manyProp = manyProp;
@@ -25,9 +29,67 @@ public class CreateIntersectionTable {
 		this.tableJoin = manyProp.getTableJoin();
 	}
 	
+	//alter table muser_mrole add constraint fk_muser_mrole_muser foreign key (muserid) references muser (userid) on delete restrict on update restrict;
+	//alter table muser_mrole add constraint fk_muser_mrole_mrole foreign key (mroleid) references mrole (roleid) on delete restrict on update restrict;
+
+	public void build() {
+		String createTable = buildCreateTable();
+		ctx.addCreateIntersectionTable(createTable);
+		
+		buildFkConstraints();
+	}
+
+	private void buildFkConstraints() {
+
+		BeanDescriptor<?> localDesc = manyProp.getBeanDescriptor();
+		
+		
+		BeanDescriptor<?> targetDesc = manyProp.getTargetDescriptor();
+
+		String fk1 = buildFkConstraints(localDesc, intersectionTableJoin.columns(), true);
+		ctx.addIntersectionTableFk(fk1);
+		
+		String fk2 = buildFkConstraints(targetDesc, tableJoin.columns(), false);
+		ctx.addIntersectionTableFk(fk2);
+				
+	}
 	
+	private String buildFkConstraints(BeanDescriptor<?> desc, TableJoinColumn[] columns, boolean direction ) {
+
+		
+		StringBuilder fkBuf = new StringBuilder();
+		
+		fkBuf.append("alter table ");
+		fkBuf.append(intersectionTableJoin.getTable());
+		fkBuf.append(" add constraint fk_").append(intersectionTableJoin.getTable());
+		fkBuf.append("_").append(desc.getBaseTable());
+		
+		fkBuf.append(" foreign key (");
+		
+		for (int i = 0; i < columns.length; i++) {
+			if (i > 0){
+				fkBuf.append(", ");
+			}
+			String col = direction ? columns[i].getForeignDbColumn() : columns[i].getLocalDbColumn();
+			fkBuf.append(col);
+		}
+		fkBuf.append(") references ").append(desc.getBaseTable()).append(" (");
+
+		for (int i = 0; i < columns.length; i++) {
+			if (i > 0){
+				fkBuf.append(", ");
+			}
+			String col = !direction ? columns[i].getForeignDbColumn() : columns[i].getLocalDbColumn();
+			fkBuf.append(col);
+		}
+		fkBuf.append(") on delete restrict on update restrict; ");
+		
+		fkBuf.append(NEW_LINE);
+		
+		return fkBuf.toString();
+	}
 	
-	public String build() {
+	private String buildCreateTable() {
 		
 		BeanDescriptor<?> localDesc = manyProp.getBeanDescriptor();
 		BeanDescriptor<?> targetDesc = manyProp.getTargetDescriptor();
@@ -36,53 +98,44 @@ public class CreateIntersectionTable {
 		sb.append(intersectionTableJoin.getTable());
 		sb.append(" (").append(NEW_LINE);
 		
-		StringBuilder pkeySb = new StringBuilder();
-		
 		TableJoinColumn[] columns = intersectionTableJoin.columns();
 		for (int i = 0; i < columns.length; i++) {
-			if (i  > 0){
-				pkeySb.append(",");
-			}
-			pkeySb.append(columns[i].getForeignDbColumn());
-			writeColumn(columns[i].getForeignDbColumn());
-			
-			BeanProperty p = localDesc.getIdBinder().findBeanProperty(columns[i].getLocalDbColumn());
-			if (p == null){
-				throw new RuntimeException("Could not find id property for "+columns[i].getLocalDbColumn());
-			}
-			
-			String columnDefn = ctx.getColumnDefn(p);
-			sb.append(columnDefn);
-			sb.append("  ,").append(NEW_LINE);
+
+			addColumn(localDesc, columns[i].getForeignDbColumn(), columns[i].getLocalDbColumn());
 		}
 		
 		TableJoinColumn[] otherColumns = tableJoin.columns();
 		for (int i = 0; i < otherColumns.length; i++) {
 			
-			pkeySb.append(",");
-			pkeySb.append(otherColumns[i].getLocalDbColumn());
-			
-			writeColumn(otherColumns[i].getLocalDbColumn());
-			
-			BeanProperty p = targetDesc.getIdBinder().findBeanProperty(otherColumns[i].getForeignDbColumn());
-			if (p == null){
-				throw new RuntimeException("Could not find id property for "+otherColumns[i].getForeignDbColumn());
-			}
-			
-			String columnDefn = ctx.getColumnDefn(p);
-			sb.append(columnDefn);
-			
-			sb.append("  ,").append(NEW_LINE);
+			addColumn(targetDesc, otherColumns[i].getLocalDbColumn(), otherColumns[i].getForeignDbColumn());
 		}
 		
-		sb.append("constraint pk_").append(intersectionTableJoin.getTable());
-		sb.append(" primary key (").append(pkeySb.toString());
+		sb.append("  constraint pk_").append(intersectionTableJoin.getTable());
+		sb.append(" primary key (").append(pkeySb.toString().substring(2));
 		sb.append("))").append(NEW_LINE).append(";").append(NEW_LINE);
 		
 		return sb.toString();
 	}
 	
+	private void addColumn(BeanDescriptor<?> desc, String column, String findPropColumn) {
+		
+		pkeySb.append(", ");
+		pkeySb.append(column);
+		
+		writeColumn(column);
+		
+		BeanProperty p = desc.getIdBinder().findBeanProperty(findPropColumn);
+		if (p == null){
+			throw new RuntimeException("Could not find id property for "+findPropColumn);
+		}
+		
+		String columnDefn = ctx.getColumnDefn(p);
+		sb.append(columnDefn);
+		sb.append(" not null");
+		sb.append(",").append(NEW_LINE);
+	}
+	
 	private void writeColumn(String columnName) {
-		sb.append("  ").append(ctx.pad(columnName, 40)).append(" ");
+		sb.append("  ").append(ctx.pad(columnName, 30)).append(" ");
 	}
 }
