@@ -347,8 +347,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 	final String name;
 	
-	final boolean baseTableNotFound;
-	
 	/**
 	 * If true then only changed properties get updated.
 	 */
@@ -361,7 +359,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 		this.owner = owner;
 		this.serverName = owner.getServerName();
-		this.baseTableNotFound = deploy.isBaseTableNotFound();
 		this.name = deploy.getName();
 		this.fullName = deploy.getFullName();
 		this.typeManager = typeManager;
@@ -458,18 +455,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	public int compareTo(BeanDescriptor<?> o) {
 		return name.compareTo(o.getName());
 	}
-
-
-	/**
-	 * Return true if the base table for this entity bean is not found.
-	 * <p>
-	 * Handling this case so that Ebean will start even if some entity beans
-	 * will not work.
-	 * </p>
-	 */
-	public boolean isBaseTableNotFound() {
-		return baseTableNotFound;
-	}
 	
 	/**
 	 * Initialisation after the JoinTree has been built.
@@ -486,11 +471,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * </p>
 	 */
 	public void initialiseId() {
-		if (baseTableNotFound){
-			String msg = "BeanDescriptor " + fullName+" skipping initialisation as base table ["+baseTable+"] not found";
-			logger.log(Level.FINER, msg);
-			return;
-		}
 		
 		if (logger.isLoggable(Level.FINER)) {
 			logger.finer("BeanDescriptor initialise " + fullName);
@@ -520,10 +500,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * Initialise the exported and imported parts for associated properties.
 	 */
 	public void initialiseOther() {
-		if (baseTableNotFound){
-			return;
-		}
-
+		
 		if (!embedded){
 			// initialise all the non-id properties
 			Iterator<BeanProperty> it = propertiesAll();

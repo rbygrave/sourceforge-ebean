@@ -126,10 +126,10 @@ public class DeployBeanInfo<T> {
 	/**
 	 * Set a the join alias for a assoc one property.
 	 */
-	public void setBeanJoinAlias(DeployBeanPropertyAssocOne<?> beanProp, boolean annOptional) {
+	public void setBeanJoinAlias(DeployBeanPropertyAssocOne<?> beanProp, boolean outerJoin) {
 
 		String joinType = TableJoin.JOIN;
-		if (annOptional){// && util.isUseOneToOneOptional()) {
+		if (outerJoin){// && util.isUseOneToOneOptional()) {
 			joinType = TableJoin.LEFT_OUTER;
 		}
 

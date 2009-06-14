@@ -51,7 +51,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 import com.avaje.ebean.server.deploy.parse.DeployBeanInfo;
 import com.avaje.ebean.server.deploy.parse.DeployCreateProperties;
 import com.avaje.ebean.server.deploy.parse.DeployInherit;
@@ -86,17 +85,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	private final BeanReflectFactory reflectFactory;
 
 	private final DeployUtil deployUtil;
-
-//	/**
-//	 * Determines the IdentityGeneration used based on the support for
-//	 * getGeneratedKeys and sequences.
-//	 */
-//	private final IdType defaultIdentityGeneration;
-
-//	/**
-//	 * Set to true if a Db supports Sequences.
-//	 */
-//	private final boolean supportsSequences;
 
 	private final DeploySqlSelectParser sqlSelectParser;
 
@@ -409,61 +397,49 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		
 		// We only perform 'circular' checks etc after we have
 		// all the DeployBeanDescriptors created and in the map.
-		Iterator<DeployBeanInfo<?>> it = deplyInfoMap.values().iterator();
-		while (it.hasNext()) {
-			DeployBeanInfo<?> info = it.next();
-			if (info.getDescriptor().isBaseTableNotFound()){
-				// skip this, as it will just error badly
-				
-			} else {
-				deriveCircularInfo(info, deplyInfoMap);
-			}
+		
+		for (DeployBeanInfo<?> info : deplyInfoMap.values()) {			
+			checkMappedBy(info);
 		}
-
+		
 		for (DeployBeanInfo<?> info : deplyInfoMap.values()) {
-			
-			BeanDescriptor<?> desc = new BeanDescriptor(this, typeManager, info.getDescriptor());
-			registerBeanDescriptor(desc);
+			registerBeanDescriptor(new BeanDescriptor(this, typeManager, info.getDescriptor()));
 		}
 	}
 
 	/**
-	 * Perform 'circular' checks such as mappedBy attributes.
+	 * Check the mappedBy attributes for properties on this descriptor.
 	 * <p>
-	 * This will also dynamically determine any table joins that have not been
-	 * defined explicitly.
+	 * This will read join information defined on the 'owning/other'
+	 * side of the relationship. It also does some extra work for 
+	 * unidirectional relationships.
 	 * </p>
 	 */
-	private void deriveCircularInfo(DeployBeanInfo<?> info, Map<Class<?>, DeployBeanInfo<?>> infoMap) {
+	private void checkMappedBy(DeployBeanInfo<?> info) {
 
-		checkMappedBy(info, infoMap);
-
-//		// find any missing/undefined joins automatically
-//		deployUtil.defineJoins(info);
-	}
-
-	/**
-	 * Check the mappedBy attribute on all the OneToMany associations for this
-	 * descriptor.
-	 */
-	private void checkMappedBy(DeployBeanInfo<?> info, Map<Class<?>, DeployBeanInfo<?>> infoMap) {
-
-		DeployBeanDescriptor<?> desc = info.getDescriptor();
-
-		List<DeployBeanPropertyAssocMany<?>> manyList = desc.propertiesAssocMany();
-		for (DeployBeanPropertyAssocMany<?> manyProp : manyList) {
-			if (!manyProp.isManyToMany() && !manyProp.isTransient()) {
-				checkMappedBy(info, manyProp, infoMap);
+		for (DeployBeanPropertyAssocOne<?> oneProp : info.getDescriptor().propertiesAssocOne()) {
+			if (!oneProp.isTransient()) {
+				if (oneProp.getMappedBy() != null){
+					checkMappedByOneToOne(info, oneProp);
+				}
 			}
 		}
-
+		
+		for (DeployBeanPropertyAssocMany<?> manyProp : info.getDescriptor().propertiesAssocMany()) {
+			if (!manyProp.isTransient()) {
+				if (manyProp.isManyToMany()){
+					checkMappedByManyToMany(info, manyProp);
+				} else {
+					checkMappedByOneToMany(info, manyProp);					
+				}
+			}
+		}
 	}
 
-	private DeployBeanDescriptor<?> getTargetDescriptor(DeployBeanPropertyAssocMany<?> prop,
-			Map<Class<?>, DeployBeanInfo<?>> infoMap) {
+	private DeployBeanDescriptor<?> getTargetDescriptor(DeployBeanPropertyAssoc<?> prop) {
 
 		Class<?> targetType = prop.getTargetType();
-		DeployBeanInfo<?> info = infoMap.get(targetType);
+		DeployBeanInfo<?> info = deplyInfoMap.get(targetType);
 		if (info == null) {
 			String msg = "Can not find descriptor [" + targetType + "] for " + prop.getFullBeanName();
 			throw new PersistenceException(msg);
@@ -476,7 +452,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 * Check that the many property has either an implied mappedBy property or
 	 * mark it as unidirectional.
 	 */
-	private boolean findMappedBy(DeployBeanPropertyAssocMany<?> prop, Map<Class<?>, DeployBeanInfo<?>> infoMap) {
+	private boolean findMappedBy(DeployBeanPropertyAssocMany<?> prop) {
 
 		// this is the entity bean type - that owns this property
 		Class<?> owningType = prop.getOwningType();
@@ -484,7 +460,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		Set<String> matchSet = new HashSet<String>();
 
 		// get the bean descriptor that holds the mappedBy property
-		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop, infoMap);
+		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop);
 		List<DeployBeanPropertyAssocOne<?>> ones = targetDesc.propertiesAssocOne();
 		for (DeployBeanPropertyAssocOne<?> possibleMappedBy : ones) {
 			Class<?> possibleMappedByType = possibleMappedBy.getTargetType();
@@ -559,8 +535,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 * </p>
 	 */
 	@SuppressWarnings("unchecked")
-	private void makeUnidirectional(DeployBeanInfo<?> info, DeployBeanPropertyAssocMany<?> oneToMany,
-			Map<Class<?>, DeployBeanInfo<?>> infoMap, DeployBeanDescriptor<?> targetDesc) {
+	private void makeUnidirectional(DeployBeanInfo<?> info, DeployBeanPropertyAssocMany<?> oneToMany) {
+
+		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(oneToMany);
 
 		Class<?> owningType = oneToMany.getOwningType();
 
@@ -588,7 +565,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		unidirectional.setBeanTable(beanTable);
 		unidirectional.setName(beanTable.getBaseTable());
 
-		info.setBeanJoinAlias(unidirectional, false);
+		info.setBeanJoinAlias(unidirectional, true);
 
 		// define the TableJoin
 		DeployTableJoin oneToManyJoin = oneToMany.getTableJoin();
@@ -598,39 +575,21 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		
 		// inverse of the oneToManyJoin
 		DeployTableJoin unidirectionalJoin = unidirectional.getTableJoin();
-		DeployTableJoinColumn[] cols = oneToManyJoin.columns();
-		for (int i = 0; i < cols.length; i++) {
-			unidirectionalJoin.addJoinColumn(cols[i].createInverse());
-		}
-
+		unidirectionalJoin.setColumns(oneToManyJoin.columns(), true);
+		
 	}
 
-	/**
-	 * If the property has mappedBy set then do two things. Make sure the
-	 * mappedBy property exists, and secondly read its join information.
-	 * <p>
-	 * We can use the join information from the mappedBy property and reverse it
-	 * for using in the OneToMany direction.
-	 * </p>
-	 */
-	private void checkMappedBy(DeployBeanInfo<?> info, DeployBeanPropertyAssocMany<?> prop,
-			Map<Class<?>, DeployBeanInfo<?>> infoMap) {
+	private void checkMappedByOneToOne(DeployBeanInfo<?> info, DeployBeanPropertyAssocOne<?> prop) {
 
 		// get the bean descriptor that holds the mappedBy property
-		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop, infoMap);
 
-		if (prop.getMappedBy() == null) {
-			if (!findMappedBy(prop, infoMap)) {
-				makeUnidirectional(info, prop, infoMap, targetDesc);
-				return;
-			}
-		}
 
 		// check that the mappedBy property is valid and read
 		// its associated join information if it is available
 		String mappedBy = prop.getMappedBy();
 
 		// get the mappedBy property
+		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop);
 		DeployBeanProperty mappedProp = targetDesc.getBeanProperty(mappedBy);
 		if (mappedProp == null) {
 
@@ -651,24 +610,120 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		DeployTableJoin tableJoin = prop.getTableJoin();
 		if (!tableJoin.hasJoinColumns()) {
-			// try to defined TableJoin as the inverse of the
-			// TableJoin on mappedBy property
-
-			// read table join info on foreign mappedBy property
-			// and apply to local property (with inverse)
+			// define Join as the inverse of the mappedBy property
 			DeployTableJoin otherTableJoin = mappedAssocOne.getTableJoin();
-			if (otherTableJoin.hasJoinColumns()) {
-				// add the columns from the other join but
-				// reverse the db columns
-				DeployTableJoinColumn[] cols = otherTableJoin.columns();
-				for (int i = 0; i < cols.length; i++) {
-					tableJoin.addJoinColumn(cols[i].createInverse());
-				}
+			otherTableJoin.copyTo(tableJoin, true, otherTableJoin.getTable());
+		}
+
+	}
+	
+	/**
+	 * If the property has mappedBy set then do two things. Make sure the
+	 * mappedBy property exists, and secondly read its join information.
+	 * <p>
+	 * We can use the join information from the mappedBy property and reverse it
+	 * for using in the OneToMany direction.
+	 * </p>
+	 */
+	private void checkMappedByOneToMany(DeployBeanInfo<?> info, DeployBeanPropertyAssocMany<?> prop) {
+
+		// get the bean descriptor that holds the mappedBy property
+
+		if (prop.getMappedBy() == null) {
+			if (!findMappedBy(prop)) {
+				makeUnidirectional(info, prop);
+				return;
 			}
+		}
+
+		// check that the mappedBy property is valid and read
+		// its associated join information if it is available
+		String mappedBy = prop.getMappedBy();
+
+		// get the mappedBy property
+		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop);
+		DeployBeanProperty mappedProp = targetDesc.getBeanProperty(mappedBy);
+		if (mappedProp == null) {
+
+			String m = "Error on " + prop.getFullBeanName();
+			m += "  Can not find mappedBy property [" + mappedBy + "] ";
+			m += "in [" + targetDesc + "]";
+			throw new PersistenceException(m);
+		}
+
+		if (!(mappedProp instanceof DeployBeanPropertyAssocOne)) {
+			String m = "Error on " + prop.getFullBeanName();
+			m += ". mappedBy property [" + mappedBy + "]is not a ManyToOne?";
+			m += "in [" + targetDesc + "]";
+			throw new PersistenceException(m);
+		}
+
+		DeployBeanPropertyAssocOne<?> mappedAssocOne = (DeployBeanPropertyAssocOne<?>) mappedProp;
+
+		DeployTableJoin tableJoin = prop.getTableJoin();
+		if (!tableJoin.hasJoinColumns()) {
+			// define Join as the inverse of the mappedBy property
+			DeployTableJoin otherTableJoin = mappedAssocOne.getTableJoin();
+			otherTableJoin.copyTo(tableJoin, true, otherTableJoin.getTable());
 		}
 
 	}
 
+	/**
+	 * For mappedBy copy the joins from the other side.
+	 */
+	private void checkMappedByManyToMany(DeployBeanInfo<?> info, DeployBeanPropertyAssocMany<?> prop) {
+
+		// get the bean descriptor that holds the mappedBy property
+		String mappedBy = prop.getMappedBy();
+		if (mappedBy == null) {
+			return;
+		}
+
+		// get the mappedBy property
+		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop);
+		DeployBeanProperty mappedProp = targetDesc.getBeanProperty(mappedBy);
+		if (mappedProp == null) {
+
+			String m = "Error on " + prop.getFullBeanName();
+			m += "  Can not find mappedBy property [" + mappedBy + "] ";
+			m += "in [" + targetDesc + "]";
+			throw new PersistenceException(m);
+		}
+
+		if (!(mappedProp instanceof DeployBeanPropertyAssocMany)) {
+			String m = "Error on " + prop.getFullBeanName();
+			m += ". mappedBy property [" + mappedBy + "]is not a ManyToMany?";
+			m += "in [" + targetDesc + "]";
+			throw new PersistenceException(m);
+		}
+
+		DeployBeanPropertyAssocMany<?> mappedAssocMany = (DeployBeanPropertyAssocMany<?>) mappedProp;
+
+		DeployTableJoin mappedJoin = mappedAssocMany.getTableJoin();
+		DeployTableJoin mappedIntJoin = mappedAssocMany.getIntersectionJoin();
+		DeployTableJoin mappendInverseJoin = mappedAssocMany.getInverseJoin();
+		
+		//FIXME: Review this Rob.
+		
+		String intTableName = mappedIntJoin.getTable();
+		
+		DeployTableJoin tableJoin = prop.getTableJoin();
+		mappedIntJoin.copyTo(tableJoin, true, targetDesc.getBaseTable());
+		tableJoin.setForeignTableAlias(mappedJoin.getForeignTableAlias());
+		
+		DeployTableJoin intJoin = new DeployTableJoin();
+		mappendInverseJoin.copyTo(intJoin, false, intTableName);
+		prop.setIntersectionJoin(intJoin);
+		intJoin.setForeignTableAlias(mappedJoin.getLocalTableAlias());
+		
+		DeployTableJoin inverseJoin = new DeployTableJoin();
+		mappedIntJoin.copyTo(inverseJoin, false, intTableName);
+		inverseJoin.setForeignTableAlias(mappedJoin.getForeignTableAlias());
+		prop.setInverseJoin(inverseJoin);
+
+	}
+	
 	private <T> void setBeanControllerFinderListener(DeployBeanDescriptor<T> descriptor) {
 
 		Class<T> beanType = descriptor.getBeanType();

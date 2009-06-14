@@ -31,6 +31,7 @@ import javax.persistence.OrderBy;
 
 import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
+import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
@@ -113,11 +114,25 @@ public class AnnotationAssocManys extends AnnotationParser {
 				// OneToMany in theory 
 				prop.getTableJoin().addJoinColumn(true, joinTable.joinColumns(), beanTable);
 			}
+		} 
+		
+		if (prop.getMappedBy() != null){
+			// the join is derived by reversing the join information 
+			// from the mapped by property. 
+			// Refer BeanDescriptorManager.readEntityRelationships()
+			return;
 		}
+		
+		if (prop.isManyToMany()){
+			manyToManyDefaultJoins(prop);
+			return;
+		}
+		
 			
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
-			// checked mappedBy
-			String propName =  (null != prop.getMappedBy() ? prop.getMappedBy() : prop.getName() );
+			
+			//String propName =  (null != prop.getMappedBy() ? prop.getMappedBy() : prop.getName() );
+			String propName =  prop.getName();
 			
 			// use naming convention to define join
 			String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), propName);
@@ -160,19 +175,87 @@ public class AnnotationAssocManys extends AnnotationParser {
 		destJoin.setLocalTableAlias(intAlias);
 
 		// reverse join from dest back to intersection
-		DeployTableJoin inverseDest = destJoin.createInverse();
-		inverseDest.setTable(intTableName);
+		DeployTableJoin inverseDest = destJoin.createInverse(intTableName);
 		// try to make sure we don't get a tableAlias clash
 		inverseDest.setLocalTableAlias(prop.getBeanTable().getBaseTableAlias());
 
 		// zzzzzz is typically the ManyToManyAlias
 		inverseDest.setForeignTableAlias(info.getUtil().getManyToManyAlias());
 
-		prop.setIntersectionTableJoin(intJoin);
+		prop.setIntersectionJoin(intJoin);
 		prop.setInverseJoin(inverseDest);
 	}
 	
-    
+    private void manyToManyDefaultJoins(DeployBeanPropertyAssocMany<?> prop) {
+		
+    	String intTableName = null;
+    	
+    	DeployTableJoin intJoin = prop.getIntersectionJoin();
+    	if (intJoin == null){
+    		intJoin = new DeployTableJoin();
+    		prop.setIntersectionJoin(intJoin);
+    	} else {
+    		intTableName = intJoin.getTable();
+    	}
+    	
+    	BeanTable localTable = factory.getBeanTable(descriptor.getBeanType());
+    	BeanTable otherTable = factory.getBeanTable(prop.getTargetType());
+
+    	String localTableName = localTable.getBaseTable();
+    	String otherTableName = otherTable.getBaseTable();
+
+    	if (intTableName == null){
+    		intTableName = localTableName+"_"+otherTableName;
+    		intJoin.setTable(intTableName);
+    		
+    		// set table alias etc for the join to intersection
+    		info.setManyIntersectionAlias(prop, intJoin);
+    	}
+    	
+		DeployTableJoin destJoin = prop.getTableJoin();
+
+		
+    	if (intJoin.hasJoinColumns() && destJoin.hasJoinColumns()){
+    		// already defined
+    		return;
+    	}
+    	if (!intJoin.hasJoinColumns()){
+		
+			BeanProperty[] localIds = localTable.getIdProperties();
+			for (int i = 0; i < localIds.length; i++) {
+				// add the source to intersection join columns
+				String fkCol = localTableName+"_"+localIds[i].getDbColumn();
+				intJoin.addJoinColumn(new DeployTableJoinColumn(localIds[i].getDbColumn(), fkCol));
+			}
+    	}
+		
+		if (!destJoin.hasJoinColumns()){
+			BeanProperty[] otherIds = otherTable.getIdProperties();
+			for (int i = 0; i < otherIds.length; i++) {
+				// set the intersection to dest table join columns
+				String fkCol = otherTableName+"_"+otherIds[i].getDbColumn();
+				destJoin.addJoinColumn(new DeployTableJoinColumn(fkCol, otherIds[i].getDbColumn()));			
+			}
+		}
+		
+
+		// set the intersection alias to the destJoin
+		destJoin.setLocalTableAlias(intJoin.getForeignTableAlias());
+
+		// reverse join from dest back to intersection
+		DeployTableJoin inverseDest = destJoin.createInverse(intTableName);
+		
+		// try to make sure we don't get a tableAlias clash
+		inverseDest.setLocalTableAlias(prop.getBeanTable().getBaseTableAlias());
+
+		// zzzzzz is typically the ManyToManyAlias
+		inverseDest.setForeignTableAlias(info.getUtil().getManyToManyAlias());
+
+		prop.setInverseJoin(inverseDest);
+	}
+	
+	
+	
     private String errorMsgMissingBeanTable(Class<?> type, String from) {
     	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
     }

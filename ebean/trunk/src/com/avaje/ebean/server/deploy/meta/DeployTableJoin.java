@@ -117,6 +117,17 @@ public class DeployTableJoin {
         return cascadeInfo;
     }
     
+
+    /**
+     * Copy all the columns to this join potentially reversing the columns.
+     */
+	public void setColumns(DeployTableJoinColumn[] cols, boolean reverse) {
+		columns = new ArrayList<DeployTableJoinColumn>();
+		for (int i = 0; i < cols.length; i++) {
+			addJoinColumn(cols[i].copy(reverse));
+		}
+	}
+	
     /**
      * Add a join pair
      */
@@ -244,19 +255,27 @@ public class DeployTableJoin {
         }
     }
     
-    public DeployTableJoin createInverse() {
+    public DeployTableJoin createInverse(String tableName) {
     	
     	DeployTableJoin inverse = new DeployTableJoin();
-    	inverse.setTable("ERROR:CHANGE THE TABLE");
-    	inverse.setForeignTableAlias(localTableAlias);
-    	inverse.setLocalTableAlias(foreignTableAlias);
-    	inverse.setType(type);
+
+        return copyTo(inverse, true, tableName);
+
+    }
+    
+    public DeployTableJoin copyTo(DeployTableJoin destJoin, boolean reverse, String tableName) {
     	
-    	DeployTableJoinColumn[] cols = columns();
-    	for (int i = 0; i < cols.length; i++) {
-    		inverse.addJoinColumn(cols[i].createInverse());
-		}
+    	destJoin.setTable(tableName);
+    	if (reverse){
+	    	destJoin.setForeignTableAlias(localTableAlias);
+	    	destJoin.setLocalTableAlias(foreignTableAlias);
+    	} else {
+	    	destJoin.setForeignTableAlias(foreignTableAlias);
+	    	destJoin.setLocalTableAlias(localTableAlias);
+    	}
+    	destJoin.setType(type);
+    	destJoin.setColumns(columns(), reverse);
     	
-    	return inverse;
+    	return destJoin;
     }
 }

@@ -33,15 +33,20 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 	@Override
 	public void visitMany(BeanPropertyAssocMany<?> p) {
 		if (p.isManyToMany()){
-			TableJoin intersectionTableJoin = p.getIntersectionTableJoin();
-			
-			// check if the intersection table has already been created
-			String intTable = intersectionTableJoin.getTable();
-			if (ctx.isProcessIntersectionTable(intTable)){
-				// build the create table and fkey constraints 
-				// putting the DDL into ctx for later output as we are 
-				// in the middle of rendering the create table DDL
-				new CreateIntersectionTable(ctx, p).build();
+			if (p.getMappedBy() != null) {
+				// only create on other 'owning' side
+				
+			} else {
+				TableJoin intersectionTableJoin = p.getIntersectionTableJoin();
+				
+				// check if the intersection table has already been created
+				String intTable = intersectionTableJoin.getTable();
+				if (ctx.isProcessIntersectionTable(intTable)){
+					// build the create table and fkey constraints 
+					// putting the DDL into ctx for later output as we are 
+					// in the middle of rendering the create table DDL
+					new CreateIntersectionTable(ctx, p).build();
+				}
 			}
 		}
 	}

@@ -100,14 +100,17 @@ public class DeployTableJoinColumn {
 		return s;
 	}
 	
-	/**
-	 * Create a TableJoinColumn with the local and foreign columns swapped.
-	 */
-	public DeployTableJoinColumn createInverse() {
+	
+	public DeployTableJoinColumn copy(boolean reverse) {
 		// Note that the insertable and updateable are just copied 
 		// which may not always be the correct thing to do
 		// but will leave it like this for now
-		return new DeployTableJoinColumn(foreignDbColumn, localDbColumn, insertable, updateable);
+		if (reverse){
+			return new DeployTableJoinColumn(foreignDbColumn, localDbColumn, insertable, updateable);
+			
+		} else {
+			return new DeployTableJoinColumn(localDbColumn, foreignDbColumn, insertable, updateable);			
+		}
 	}
 
 	public String toString() {
