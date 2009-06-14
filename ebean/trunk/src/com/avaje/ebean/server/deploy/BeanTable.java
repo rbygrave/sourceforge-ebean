@@ -57,6 +57,10 @@ public class BeanTable {
         this.idProperties = mutable.getIdProperties();
     }
     
+    public String toString(){
+    	return baseTable; 
+    }
+    
     /**
      * Return the base table for this BeanTable.
      * This is used to determine the join information

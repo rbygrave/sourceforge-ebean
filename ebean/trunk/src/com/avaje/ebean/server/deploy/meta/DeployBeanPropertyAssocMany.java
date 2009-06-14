@@ -52,11 +52,6 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	String mapKey;
 
 	/**
-	 * From the deployment mappedBy attribute.
-	 */
-	String mappedBy;
-
-	/**
 	 * The type of the many, set, list or map.
 	 */
 	ManyType manyType;
@@ -117,26 +112,6 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	}
 
 	/**
-	 * Return the mappedBy deployment attribute.
-	 * <p>
-	 * This is the name of the property in the 'detail' bean that maps back to
-	 * this 'master' bean.
-	 * </p>
-	 */
-	public String getMappedBy() {
-		return mappedBy;
-	}
-
-	/**
-	 * Set mappedBy deployment attribute.
-	 */
-	public void setMappedBy(String mappedBy) {
-		if (!"".equals(mappedBy)) {
-			this.mappedBy = mappedBy;
-		}
-	}
-
-	/**
 	 * Create the immutable version of the intersection join.
 	 */
 	public TableJoin createIntersectionTableJoin() {
@@ -161,7 +136,7 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	/**
 	 * ManyToMany only, join from local table to intersection table.
 	 */
-	public DeployTableJoin getIntersectionTableJoin() {
+	public DeployTableJoin getIntersectionJoin() {
 		return intersectionJoin;
 	}
 
@@ -172,7 +147,7 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	/**
 	 * ManyToMany only, join from local table to intersection table.
 	 */
-	public void setIntersectionTableJoin(DeployTableJoin intersectionJoin) {
+	public void setIntersectionJoin(DeployTableJoin intersectionJoin) {
 		this.intersectionJoin = intersectionJoin;
 	}
 

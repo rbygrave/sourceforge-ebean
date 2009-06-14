@@ -141,12 +141,22 @@ public class AnnotationAssocOnes extends AnnotationParser {
         	prop.getTableJoin().addJoinColumn(false, joinTable.joinColumns(), beanTable);
         }
 	        
+        info.setBeanJoinAlias(prop, prop.isNullable());
+        
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
-			// use naming convention to define join
-			String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), prop.getName());
-			DeployTableJoinColumn join = beanTable.createJoinColumn(fkeyPrefix);
-			if (join != null){
-				prop.getTableJoin().addJoinColumn(join.reverse());
+			
+			if (prop.getMappedBy() != null){
+				// the join is derived by reversing the join information 
+				// from the mapped by property. 
+				// Refer BeanDescriptorManager.readEntityRelationships()
+				
+			} else {			
+				// use naming convention to define join
+				String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), prop.getName());
+				DeployTableJoinColumn join = beanTable.createJoinColumn(fkeyPrefix);
+				if (join != null){
+					prop.getTableJoin().addJoinColumn(join.reverse());
+				}
 			}
 		}
     }
@@ -166,14 +176,19 @@ public class AnnotationAssocOnes extends AnnotationParser {
         	String msg = errorMsgMissingBeanTable(beanProp.getPropertyType(), prop.getFullBeanName());
         	throw new RuntimeException(msg);
         }
-        
         beanProp.setBeanTable(assoc);
-        info.setBeanJoinAlias(beanProp, propAnn.optional());
+        beanProp.setNullable(propAnn.optional());
     }
 
     private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne<?> prop) {
         
     	prop.setOneToOne(true);
+        prop.setNullable(propAnn.optional());
+        prop.setMappedBy(propAnn.mappedBy());
+        if (propAnn.mappedBy() != null){
+        	prop.setOneToOneExported(true);
+        }
+        
         setCascadeTypes(propAnn.cascade(), prop.getCascadeInfo());
 
         BeanTable assoc = factory.getBeanTable(prop.getPropertyType());
@@ -183,7 +198,6 @@ public class AnnotationAssocOnes extends AnnotationParser {
         }
 
         prop.setBeanTable(assoc);
-        info.setBeanJoinAlias(prop, propAnn.optional());
     }
     
     private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne<?> prop) {

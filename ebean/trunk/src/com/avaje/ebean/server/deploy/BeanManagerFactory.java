@@ -41,10 +41,6 @@ public class BeanManagerFactory {
 	}
 	
 	public <T> BeanManager<T> create(BeanDescriptor<T> desc) {
-
-		if (desc.isBaseTableNotFound()){
-			return new BeanManager<T>(desc, null, null);
-		}
 		
 		BeanPersister persister = peristerFactory.create(desc);
 		JoinTree joinTree = joinTreeFactory.create(desc);

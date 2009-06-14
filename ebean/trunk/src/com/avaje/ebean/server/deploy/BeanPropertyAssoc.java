@@ -70,6 +70,8 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	 * The join table information.
 	 */
 	final BeanTable beanTable;
+	
+	final String mappedBy;
 
 	/**
 	 * Whether the associated join type should be an outer join.
@@ -92,6 +94,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 		this.extraWhere = deploy.getExtraWhere();
 		this.isOuterJoin = deploy.isOuterJoin();
 		this.beanTable = deploy.getBeanTable();
+		this.mappedBy = deploy.getMappedBy();
 
 		this.tableJoin = new TableJoin(deploy.getTableJoin(), null);
 
@@ -128,6 +131,14 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	 */
 	public boolean isScalar() {
 		return false;
+	}
+	
+	/**
+	 * Return the mappedBy property.
+	 * This will be null on the owning side.
+	 */
+	public String getMappedBy() {
+		return mappedBy;
 	}
 
 	/**

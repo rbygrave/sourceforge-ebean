@@ -58,6 +58,11 @@ public abstract class DeployBeanPropertyAssoc<T> extends DeployBeanProperty {
 	String extraWhere;
 
 	/**
+	 * From the deployment mappedBy attribute.
+	 */
+	String mappedBy;
+	
+	/**
 	 * Construct the property.
 	 */
 	public DeployBeanPropertyAssoc(DeployBeanDescriptor<?> desc, Class<T> targetType) {
@@ -154,4 +159,24 @@ public abstract class DeployBeanPropertyAssoc<T> extends DeployBeanProperty {
 		return cascadeInfo;
 	}
 
+
+	/**
+	 * Return the mappedBy deployment attribute.
+	 * <p>
+	 * This is the name of the property in the 'detail' bean that maps back to
+	 * this 'master' bean.
+	 * </p>
+	 */
+	public String getMappedBy() {
+		return mappedBy;
+	}
+
+	/**
+	 * Set mappedBy deployment attribute.
+	 */
+	public void setMappedBy(String mappedBy) {
+		if (!"".equals(mappedBy)) {
+			this.mappedBy = mappedBy;
+		}
+	}
 }

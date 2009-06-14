@@ -48,8 +48,6 @@ public class DeployBeanDescriptor<T> {
 	private static final Logger logger = Logger.getLogger(DeployBeanDescriptor.class.getName());
 	
 	private static final String META_BEAN_PREFIX = MetaAutoFetchStatistic.class.getName().substring(0,20);
-
-	boolean baseTableNotFound;
 	
 	/**
 	 * Map of BeanProperty Linked so as to preserve order.
@@ -235,24 +233,6 @@ public class DeployBeanDescriptor<T> {
 	public boolean isMeta() {
 		return beanType.getName().startsWith(META_BEAN_PREFIX);
 	}
-	
-	/**
-	 * Return true if the base table for this entity bean was not found.
-	 */
-	public boolean isBaseTableNotFound() {
-		return baseTableNotFound;
-	}
-
-
-	/**
-	 * This this to true when the base table for this entity bean
-	 * was not found in the dictionary.
-	 */
-	public void setBaseTableNotFound(boolean baseTableNotFound) {
-		this.baseTableNotFound = baseTableNotFound;
-	}
-
-
 
 	public boolean isSqlSelectBased() {
 		DeployNamedQuery defaultQuery = namedQueries.get("default");

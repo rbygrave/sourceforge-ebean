@@ -78,8 +78,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	BeanProperty mapKeyProperty;
 
 	final String mapKey;
-
-	final String mappedBy;
 	
 	/**
 	 * The type of the many, set, list or map.
@@ -105,7 +103,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		this.manyType = deploy.getManyType();
 		this.mapKey = deploy.getMapKey();
 		this.fetchOrderBy = deploy.getFetchOrderBy();
-		this.mappedBy = deploy.getMappedBy();
 		
 		this.intersectionJoin = deploy.createIntersectionTableJoin();
 		this.inverseJoin = deploy.createInverseTableJoin();
