@@ -197,7 +197,7 @@ public class DataSourceManager implements DataSourceNotify {
 	 * Get the dataSource using the default ConfigProperties.
 	 */
 	public DataSourcePool getDataSource(String name) {
-		return getDataSource(name);
+		return getDataSource(name, null);
 	}
 	
 	
@@ -206,10 +206,14 @@ public class DataSourceManager implements DataSourceNotify {
 		if (name == null){
 			throw new RuntimeException("name not defined");
 		}
-		
+				
 	    synchronized(monitor){
 		    DataSourcePool pool = (DataSourcePool)dsMap.get(name);
 		    if (pool == null){
+		    	if (dsConfig == null){
+					dsConfig = new DataSourceConfig();
+					dsConfig.loadSettings(name);
+				}
 		        pool = new DataSourcePool(this, name, dsConfig);
 		        dsMap.put(name, pool); 
 		    }

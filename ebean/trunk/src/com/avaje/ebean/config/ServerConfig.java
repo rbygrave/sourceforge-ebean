@@ -43,6 +43,7 @@ public class ServerConfig {
 	boolean debugLazyLoad;
 	boolean debugJoinTree;
 
+	ExternalTransactionManager externalTransactionManager;
 
 	int transactionDebugLevel;
 	
@@ -129,6 +130,14 @@ public class ServerConfig {
 	 */
 	public void setDefaultServer(boolean defaultServer) {
 		this.defaultServer = defaultServer;
+	}
+
+	public ExternalTransactionManager getExternalTransactionManager() {
+		return externalTransactionManager;
+	}
+
+	public void setExternalTransactionManager(ExternalTransactionManager externalTransactionManager) {
+		this.externalTransactionManager = externalTransactionManager;
 	}
 
 	/**
@@ -627,7 +636,7 @@ public class ServerConfig {
 		if (dataSourceConfig == null){
 			dataSourceConfig = new DataSourceConfig();
 		}
-		dataSourceConfig.loadSettings(p);
+		dataSourceConfig.loadSettings(p.getServerName());
 
 		ddlGenerate = p.getBoolean("ddl.generate", false);
 		ddlRun = p.getBoolean("ddl.run", false);

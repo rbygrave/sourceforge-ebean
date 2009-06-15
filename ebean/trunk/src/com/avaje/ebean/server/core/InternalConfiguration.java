@@ -1,5 +1,8 @@
 package com.avaje.ebean.server.core;
 
+import java.util.logging.Logger;
+
+import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
@@ -22,6 +25,7 @@ import com.avaje.ebean.server.query.DefaultRelationalQueryEngine;
 import com.avaje.ebean.server.resource.ResourceManager;
 import com.avaje.ebean.server.resource.ResourceManagerFactory;
 import com.avaje.ebean.server.transaction.DefaultTransactionScopeManager;
+import com.avaje.ebean.server.transaction.ExternalTransactionScopeManager;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 import com.avaje.ebean.server.type.DefaultTypeManager;
@@ -29,6 +33,8 @@ import com.avaje.ebean.server.type.TypeManager;
 
 public class InternalConfiguration {
 
+	private static final Logger logger = Logger.getLogger(InternalConfiguration.class.getName());
+	
 	final ServerConfig serverConfig;
 
 	final BootupClasses bootupClasses;
@@ -95,8 +101,17 @@ public class InternalConfiguration {
 		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder);
 
 		this.transactionManager = new TransactionManager(clusterManager, serverConfig, beanDescriptorManager);
-		this.transactionScopeManager = new DefaultTransactionScopeManager(transactionManager);
-
+		
+		ExternalTransactionManager externalTransactionManager = serverConfig.getExternalTransactionManager();
+		if (externalTransactionManager != null){
+			
+			externalTransactionManager.setTransactionManager(transactionManager);
+			this.transactionScopeManager = new ExternalTransactionScopeManager(transactionManager,externalTransactionManager);
+			logger.info("Using external Transaction Manager");
+		} else {
+			this.transactionScopeManager = new DefaultTransactionScopeManager(transactionManager);			
+		}
+		
 	}
 
 	public AutoFetchManager createAutoFetchManager(InternalEbeanServer server){

@@ -173,7 +173,7 @@ public class JdbcTransaction implements ServerTransaction {
 	}
 	
 	public boolean isReadOnly() {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		try {
@@ -184,7 +184,7 @@ public class JdbcTransaction implements ServerTransaction {
 	}
 	
 	public void setReadOnly(boolean readOnly) {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		try {
@@ -196,7 +196,7 @@ public class JdbcTransaction implements ServerTransaction {
 	}
 	
 	public void setBatchMode(boolean batchMode) {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		this.batchMode = batchMode;
@@ -277,7 +277,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * </p>
 	 */
 	public void batchFlush() {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		if (batchControl != null){
@@ -301,7 +301,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * </p>
 	 */
 	public void setTransactionContext(TransactionContext context) {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		this.transactionContext = context;
@@ -359,7 +359,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Return the underlying connection for internal use.
 	 */
 	public Connection getInternalConnection() {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		return connection;
@@ -439,7 +439,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Commit the transaction.
 	 */
 	public void commit() throws RollbackException {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		try {
@@ -488,7 +488,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * If there is a throwable it is logged as the cause in the transaction log.
 	 */
 	public void rollback(Throwable cause) throws PersistenceException {
-		if (activeStatus != STATUS_ACTIVE) {
+		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
 		try {
@@ -507,7 +507,7 @@ public class JdbcTransaction implements ServerTransaction {
 	 * If the transaction is active then perform rollback.
 	 */
 	public void end() throws PersistenceException {
-		if (activeStatus == STATUS_ACTIVE) {
+		if (isActive()) {
 			rollback();
 		}
 	}
