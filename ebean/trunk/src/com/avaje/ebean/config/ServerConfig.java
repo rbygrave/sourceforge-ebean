@@ -362,6 +362,12 @@ public class ServerConfig {
 	 * Return how transactions should share log files.
 	 */
 	public TransactionLogSharing getTransactionLogSharing() {
+		if (externalTransactionManager != null){
+			// with external transaction managers we need to share a 
+			// single transaction log file as we don't get notified
+			// of commit/rollback events
+			return TransactionLogSharing.ALL;
+		}
 		return transactionLogSharing;
 	}
 
