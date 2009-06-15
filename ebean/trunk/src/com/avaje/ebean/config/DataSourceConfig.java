@@ -200,38 +200,38 @@ public class DataSourceConfig {
 
 
 
-	public void loadSettings(ConfigPropertyMap p){
+	public void loadSettings(String serverName){
 		
-		String prefix = "datasource."+p.getServerName()+".";
+		String prefix = "datasource."+serverName+".";
 		
 		//autocommit false;
 		// isolation level
 		
-		username = p.getRaw(prefix+"username", null);
-		password = p.getRaw(prefix+"password", null);
+		username = GlobalProperties.get(prefix+"username", null);
+		password = GlobalProperties.get(prefix+"password", null);
 		
 		String v;
 		
-		v = p.getRaw(prefix+"databaseDriver", null);
-		driver = p.getRaw(prefix+"driver", v);
+		v = GlobalProperties.get(prefix+"databaseDriver", null);
+		driver = GlobalProperties.get(prefix+"driver", v);
 		
 		
-		v = p.getRaw(prefix+"databaseUrl", null);
-		url = p.getRaw(prefix+"url", v);
+		v = GlobalProperties.get(prefix+"databaseUrl", null);
+		url = GlobalProperties.get(prefix+"url", v);
 		
-		captureStackTrace = p.getRawBoolean(prefix+"captureStackTrace", false);
-		leakTimeMinutes = p.getRawInt(prefix+"leakTimeMinutes", 30);
-		maxInactiveTimeSecs = p.getRawInt(prefix+"maxInactiveTimeSecs", 900);
+		captureStackTrace = GlobalProperties.getBoolean(prefix+"captureStackTrace", false);
+		leakTimeMinutes = GlobalProperties.getInt(prefix+"leakTimeMinutes", 30);
+		maxInactiveTimeSecs = GlobalProperties.getInt(prefix+"maxInactiveTimeSecs", 900);
 
-		minConnections = p.getRawInt(prefix+"minConnections", 0);
-		maxConnections = p.getRawInt(prefix+"maxConnections", 20);
-		pstmtCacheSize = p.getRawInt(prefix+"pstmtCacheSize", 20);
-		cstmtCacheSize = p.getRawInt(prefix+"cstmtCacheSize", 20);
+		minConnections = GlobalProperties.getInt(prefix+"minConnections", 0);
+		maxConnections = GlobalProperties.getInt(prefix+"maxConnections", 20);
+		pstmtCacheSize = GlobalProperties.getInt(prefix+"pstmtCacheSize", 20);
+		cstmtCacheSize = GlobalProperties.getInt(prefix+"cstmtCacheSize", 20);
 		
-		waitTimeout = p.getRawInt(prefix+"waitTimeout", 1);
+		waitTimeout = GlobalProperties.getInt(prefix+"waitTimeout", 1);
 		
-		heartbeatSql = p.getRaw(prefix+"heartbeatSql", null);
-		poolListener = p.getRaw(prefix+"poolListener", null);
+		heartbeatSql = GlobalProperties.get(prefix+"heartbeatSql", null);
+		poolListener = GlobalProperties.get(prefix+"poolListener", null);
 
 	}
 }

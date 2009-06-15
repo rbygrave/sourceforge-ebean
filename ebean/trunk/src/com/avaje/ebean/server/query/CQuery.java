@@ -41,7 +41,6 @@ import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.core.TransactionContextClass;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
 import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -356,10 +355,13 @@ public class CQuery<T> implements DbReadContext {
 		}
 	}
 
-	public TransactionContextClass getClassContext(Class<?> beanType) {
-		return transactionContext.getClassContext(beanType);
+	/**
+	 * Return the persistence context.
+	 */
+	public TransactionContext getTransactionContext(){
+		return transactionContext;
 	}
-
+	
 	public void setLoadedBean(EntityBean bean, Object id) {
 		if (id != null && id.equals(loadedBeanId)) {
 			// master/detail loading with master bean

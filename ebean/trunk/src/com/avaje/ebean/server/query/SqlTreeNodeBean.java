@@ -25,7 +25,7 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.server.core.TransactionContextClass;
+import com.avaje.ebean.server.core.TransactionContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -170,7 +170,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				localBean = null;
 			} else {
 				// check the TransactionContext to see if the bean already exists
-				TransactionContextClass classContext = ctx.getClassContext(localBean.getClass());
+				TransactionContext persistCtx = ctx.getTransactionContext();
 
 //				contextBean = classContext.getOrSet(id, localBean);
 //				if (contextBean != null){
@@ -180,7 +180,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 //					contextBean = localBean;
 //				}
 				
-				contextBean = classContext.get(id);
+				contextBean = persistCtx.get(localBean.getClass(), id);
 				if (contextBean != null && !contextBean._ebean_getIntercept().isReference()) {
 					// bean already exists in transaction context
 					localBean = null;
@@ -189,7 +189,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 					// load the bean into the TransactionContext
 					// it may be accessed by other beans in the same jdbc
 					// resultSet row (detail beans in master/detail query).
-					classContext.put(id, localBean);
+					persistCtx.set(localBean.getClass(), id, localBean);
 					contextBean = localBean;
 				}
 			}
