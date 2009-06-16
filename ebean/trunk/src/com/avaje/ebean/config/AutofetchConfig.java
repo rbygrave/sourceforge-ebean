@@ -146,6 +146,14 @@ public class AutofetchConfig {
 	public String getLogDirectory() {
 		return logDirectory;
 	}
+	
+	/**
+	 * Return the log directory substituting any expressions 
+	 * such as ${catalina.base} etc.
+	 */
+	public String getLogDirectoryWithEval() {
+		return PropertyExpression.eval(logDirectory);
+	}
 
 	/**
 	 * Set the directory to put the autofetch log in.

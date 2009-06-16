@@ -68,7 +68,7 @@ public class ResourceManagerFactory {
 
 		String dir = null;
 		if (serverConfig.getAutofetchConfig() != null) {
-			dir = serverConfig.getAutofetchConfig().getLogDirectory();
+			dir = serverConfig.getAutofetchConfig().getLogDirectoryWithEval();
 		}
 		if (dir != null) {
 			return new File(dir);

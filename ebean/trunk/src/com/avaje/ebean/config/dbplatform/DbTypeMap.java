@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Used to map bean property types to DB specific DDL types.
+ * Used to map bean property types to DB specific types for DDL generation.
  */
 public class DbTypeMap {
 
@@ -17,11 +17,12 @@ public class DbTypeMap {
 	
 	/**
 	 * Load the standard types.
-	 * These can be overridden by DB specific plugin.
+	 * These can be overridden by DB specific platform.
 	 */
 	private void loadDefaults() {
 
 		put(Types.BOOLEAN, new DbType("boolean"));
+		put(Types.BIT, new DbType("bit"));
 
 		put(Types.INTEGER, new DbType("integer"));
 		put(Types.BIGINT, new DbType("bigint"));
