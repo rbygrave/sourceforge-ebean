@@ -3,6 +3,7 @@ package com.avaje.ebean.server.ddl;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -19,7 +20,7 @@ public class CreateTableVisitor implements BeanVisitor {
 	
 	final PropertyVisitor pv;
 	
-	final DdlSyntax ddl;
+	final DbDdlSyntax ddl;
 	
 	final int columnNameWidth;
 	

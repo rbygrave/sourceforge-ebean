@@ -1,5 +1,6 @@
 package com.avaje.ebean.server.ddl;
 
+import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -11,7 +12,7 @@ public class DropTableVisitor implements BeanVisitor {
 
 	final DdlGenContext ctx;
 	
-	final DdlSyntax ddlSyntax;
+	final DbDdlSyntax ddlSyntax;
 
 	public DropTableVisitor(DdlGenContext ctx) {
 		this.ctx = ctx;

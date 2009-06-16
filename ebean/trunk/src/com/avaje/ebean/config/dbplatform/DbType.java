@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.ddl;
+package com.avaje.ebean.config.dbplatform;
 
 /**
  * Represents a DB type with name, length, precision, and scale.

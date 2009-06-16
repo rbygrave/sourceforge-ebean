@@ -21,7 +21,6 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
-import com.avaje.ebean.server.ddl.DbType;
 
 
 
@@ -67,8 +66,8 @@ public class Oracle9Platform extends DatabasePlatform {
 		dbTypeMap.put(Types.TIME, new DbType("timestamp"));
 
 		
-		ddlSyntax.setDropTableCascade("cascade constraints purge");
-		ddlSyntax.setIdentity(null);
+		dbDdlSyntax.setDropTableCascade("cascade constraints purge");
+		dbDdlSyntax.setIdentity(null);
     }
 
 }

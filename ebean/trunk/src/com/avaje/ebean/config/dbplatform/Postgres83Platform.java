@@ -21,7 +21,6 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
-import com.avaje.ebean.server.ddl.DbType;
 
 /**
  * Postgres v8.3 plugin.
