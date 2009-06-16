@@ -186,6 +186,13 @@ public class AnnotationAssocManys extends AnnotationParser {
 		prop.setInverseJoin(inverseDest);
 	}
 	
+	/**
+	 * Define intersection table and foreign key columns for ManyToMany.
+	 * <p>
+	 * Some of these (maybe all) have been already defined via @JoinTable
+	 * and @JoinColumns etc.
+	 * </p>
+	 */
     private void manyToManyDefaultJoins(DeployBeanPropertyAssocMany<?> prop) {
 		
     	String intTableName = null;
@@ -195,6 +202,7 @@ public class AnnotationAssocManys extends AnnotationParser {
     		intJoin = new DeployTableJoin();
     		prop.setIntersectionJoin(intJoin);
     	} else {
+    		// intersection table already defined (by @JoinTable)
     		intTableName = intJoin.getTable();
     	}
     	
@@ -205,6 +213,7 @@ public class AnnotationAssocManys extends AnnotationParser {
     	String otherTableName = otherTable.getBaseTable();
 
     	if (intTableName == null){
+    		// define intersection table name
     		intTableName = localTableName+"_"+otherTableName;
     		intJoin.setTable(intTableName);
     		
@@ -216,11 +225,11 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 		
     	if (intJoin.hasJoinColumns() && destJoin.hasJoinColumns()){
-    		// already defined
+    		// already defined the foreign key columns etc
     		return;
     	}
     	if (!intJoin.hasJoinColumns()){
-		
+    		// define foreign key columns
 			BeanProperty[] localIds = localTable.getIdProperties();
 			for (int i = 0; i < localIds.length; i++) {
 				// add the source to intersection join columns
@@ -230,6 +239,7 @@ public class AnnotationAssocManys extends AnnotationParser {
     	}
 		
 		if (!destJoin.hasJoinColumns()){
+    		// define inverse foreign key columns
 			BeanProperty[] otherIds = otherTable.getIdProperties();
 			for (int i = 0; i < otherIds.length; i++) {
 				// set the intersection to dest table join columns
