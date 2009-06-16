@@ -155,7 +155,7 @@ public class DataSourcePool implements DataSource {
 	/**
 	 * The time a thread will wait for a connection to become available.
 	 */
-	private int waitTimeout;
+	private int waitTimeoutMillis;
 
 	/**
 	 * Flag indicating that the pool is shutting down.
@@ -204,7 +204,7 @@ public class DataSourcePool implements DataSource {
 		this.pstmtCacheSize = params.getPstmtCacheSize();
 		this.minConnections = params.getMinConnections();
 		this.maxConnections = params.getMaxConnections();
-		this.waitTimeout = params.getWaitTimeout();
+		this.waitTimeoutMillis = params.getWaitTimeout();
 		this.transactionIsolation = params.getIsolationLevel();
 		this.heartbeatsql = params.getHeartBeatSql();
 		
@@ -235,7 +235,7 @@ public class DataSourcePool implements DataSource {
 		this.pstmtCacheSize = params.getPstmtCacheSize();
 		this.minConnections = params.getMinConnections();
 		this.maxConnections = params.getMaxConnections();
-		this.waitTimeout = params.getWaitTimeout();
+		this.waitTimeoutMillis = params.getWaitTimeoutMillis();
 		this.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
 		this.heartbeatsql = params.getHeartbeatSql();
 		
@@ -799,7 +799,7 @@ public class DataSourcePool implements DataSource {
 			reset();
 
 			try {
-				freeList.wait(waitTimeout);
+				freeList.wait(waitTimeoutMillis);
 			} catch (InterruptedException e) {
 			}
 

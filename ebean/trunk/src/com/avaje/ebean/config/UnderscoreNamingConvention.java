@@ -1,6 +1,8 @@
 package com.avaje.ebean.config;
 
-
+/**
+ * Converts between Camel Case and Underscore based names.
+ */
 public class UnderscoreNamingConvention implements NamingConvention {
 
 	public static final String DEFAULT_SEQ_FORMAT = "{table}_seq";
@@ -9,10 +11,16 @@ public class UnderscoreNamingConvention implements NamingConvention {
 
 	final CamelUnderscore camelUnderscore = new CamelUnderscore();
 	
+	/**
+	 * Create with a given sequence format.
+	 */
 	public UnderscoreNamingConvention(String sequenceFormat) {
 		this.sequenceFormat = sequenceFormat;
 	}
 	
+	/**
+	 * Create with a sequence format of "{table}_seq".
+	 */
 	public UnderscoreNamingConvention() {
 		this(DEFAULT_SEQ_FORMAT);
 	}
@@ -32,17 +40,25 @@ public class UnderscoreNamingConvention implements NamingConvention {
 		return camelUnderscore.toUnderscoreFromCamel(clsName);
 	}
 
+	/**
+	 * Converts Camel case property name to underscore based column name.
+	 */
 	public String getColumnFromProperty(Class<?> beanClass, String beanPropertyName) {
 		
 		return camelUnderscore.toUnderscoreFromCamel(beanPropertyName);
 	}
 
+	/**
+	 * Converts underscore based column name to Camel case property name.
+	 */
 	public String getPropertyFromColumn(Class<?> beanClass, String dbColumnName) {
 		
 		return camelUnderscore.toCamelFromUnderscore(dbColumnName);
 	}
 
-
+	/**
+	 * Returns the sequence name for a given table name.
+	 */
 	public String getSequenceName(String table) {
 		
 		return sequenceFormat.replace("{table}", table);
