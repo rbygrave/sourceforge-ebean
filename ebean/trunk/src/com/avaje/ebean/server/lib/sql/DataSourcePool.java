@@ -239,9 +239,17 @@ public class DataSourcePool implements DataSource {
 		this.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
 		this.heartbeatsql = params.getHeartbeatSql();
 		
+		String un = params.getUsername();
+		String pw = params.getPassword();
+		if (un == null){
+			throw new RuntimeException("DataSource user is null?");
+		}
+		if (pw == null){
+			throw new RuntimeException("DataSource password is null?");
+		}
         connectionProps = new Properties();
-        connectionProps.setProperty("user", params.getUsername());
-        connectionProps.setProperty("password", params.getPassword());
+        connectionProps.setProperty("user", un);
+        connectionProps.setProperty("password", pw);
         
 		try {
 			initialise();

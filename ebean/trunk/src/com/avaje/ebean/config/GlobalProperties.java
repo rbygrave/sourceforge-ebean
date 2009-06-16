@@ -48,6 +48,11 @@ public final class GlobalProperties {
 		
 		if (globalMap == null){
 			globalMap = PropertyMapLoader.load(null, "ebean.properties");
+			if (globalMap == null){
+				// ebean.properties file was not found... but that 
+				// is ok because we are likely doing programmatic config
+				globalMap = new PropertyMap();
+			}
 		}
 		
 		return globalMap;
