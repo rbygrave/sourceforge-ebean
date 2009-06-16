@@ -36,6 +36,7 @@ import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
@@ -144,7 +145,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		this.deployOrmXml = config.getDeployOrmXml();
 		this.deployUtil = config.getDeployUtil();
 
-		this.beanManagerFactory = new BeanManagerFactory(config.getDatabasePlatform());
+		this.beanManagerFactory = new BeanManagerFactory(config.getServerConfig(), config.getDatabasePlatform());
 		
 		this.updateChangesOnly = config.getServerConfig().isUpdateChangesOnly();
 
@@ -169,6 +170,15 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	public NamingConvention getNamingConvention() {
 		return namingConvention;
+	}
+
+	/**
+	 * Set the internal EbeanServer instance to all BeanDescriptors.
+	 */
+	public void setInternalEbean(InternalEbean internalEbean) {
+		for (BeanDescriptor<?> desc: immutableDescriptorList) {
+			desc.setInternalEbean(internalEbean);
+		}
 	}
 	
 	public void deploy() {
@@ -612,7 +622,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		if (!tableJoin.hasJoinColumns()) {
 			// define Join as the inverse of the mappedBy property
 			DeployTableJoin otherTableJoin = mappedAssocOne.getTableJoin();
-			otherTableJoin.copyTo(tableJoin, true, otherTableJoin.getTable());
+			otherTableJoin.copyTo(tableJoin, true, tableJoin.getTable());
 		}
 
 	}
@@ -664,7 +674,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		if (!tableJoin.hasJoinColumns()) {
 			// define Join as the inverse of the mappedBy property
 			DeployTableJoin otherTableJoin = mappedAssocOne.getTableJoin();
-			otherTableJoin.copyTo(tableJoin, true, otherTableJoin.getTable());
+			otherTableJoin.copyTo(tableJoin, true, tableJoin.getTable());
 		}
 
 	}

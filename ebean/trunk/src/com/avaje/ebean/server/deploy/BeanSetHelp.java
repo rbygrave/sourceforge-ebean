@@ -8,6 +8,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.collection.BeanSet;
@@ -19,6 +20,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	
 	final BeanPropertyAssocMany<T> many;
 	final BeanDescriptor<T> targetDescriptor;
+	InternalEbean internalEbean;
 	
 	/**
 	 * When attached to a specific many property.
@@ -36,6 +38,11 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		this.targetDescriptor = null;
 	}
 	
+	public void setInternalEbean(InternalEbean internalEbean){
+		this.internalEbean = internalEbean;
+	}
+	
+	
 	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
 	}
@@ -47,7 +54,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 		
-		return new BeanSet<T>(serverName, parentBean, propertyName, profilePoint);
+		return new BeanSet<T>(internalEbean, parentBean, propertyName, profilePoint);
 	}
 	
 	public ArrayList<InvalidValue> validate(Object manyValue) {

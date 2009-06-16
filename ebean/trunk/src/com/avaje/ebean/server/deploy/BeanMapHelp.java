@@ -8,6 +8,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.collection.BeanMap;
@@ -21,6 +22,7 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	final BeanDescriptor<T> targetDescriptor;
 	final String mapKey;
 	final BeanProperty beanProperty;
+	InternalEbean internalEbean;
 	
 	/**
 	 * When created for a given query that will return a map.
@@ -44,6 +46,10 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 	
 	
+	public void setInternalEbean(InternalEbean internalEbean){
+		this.internalEbean = internalEbean;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public BeanCollection<T> createEmpty() {
 		return new BeanMap();
@@ -62,7 +68,7 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 
-		return new BeanMap(serverName, parentBean, propertyName, profilePoint);
+		return new BeanMap(internalEbean, parentBean, propertyName, profilePoint);
 	}
 
 	public ArrayList<InvalidValue> validate(Object manyValue) {

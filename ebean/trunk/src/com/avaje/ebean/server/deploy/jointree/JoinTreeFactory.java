@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -50,7 +51,7 @@ public class JoinTreeFactory {
 	
 	private final DeployPropertyFactory deployPropertyFactory;
 	
-	public JoinTreeFactory() {
+	public JoinTreeFactory(ServerConfig serverConfig) {
 		
 		tableAliasPlaceholder = GlobalProperties.get("ebean.tableAliasPlaceholder", "${ta}");
 		deployPropertyFactory = new DeployPropertyFactory(tableAliasPlaceholder);
@@ -60,7 +61,7 @@ public class JoinTreeFactory {
 		
 		// set this to true or increase logging level to FINE to get
 		// the join tree output (for debugging purposes)
-		debugJoinTree = GlobalProperties.getBoolean("debug.jointree", false);
+		debugJoinTree = serverConfig.isDebugJoinTree();
 	}
 	
 	/**
