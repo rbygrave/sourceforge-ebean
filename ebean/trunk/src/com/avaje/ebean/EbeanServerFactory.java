@@ -32,7 +32,7 @@ public class EbeanServerFactory {
 		EbeanServer server = serverFactory.createServer(config);
 		
 		if (config.isDefaultServer()){
-			GlobalProperties.put("ebean.skipDefaultServer", "true");
+			GlobalProperties.setSkipPrimaryServer(true);
 		}
 		if (config.isRegister()){
 			Ebean.register(server, config.isDefaultServer());

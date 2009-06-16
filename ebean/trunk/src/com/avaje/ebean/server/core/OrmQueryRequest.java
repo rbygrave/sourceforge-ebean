@@ -54,7 +54,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
 	private final BeanFinder<T> finder;
 
-	private TransactionContext transactionContext;
+	private PersistenceContext persistenceContext;
 
 	private boolean createdTransaction;
 
@@ -114,8 +114,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return query.isSqlSelect();
 	}
 
-	public TransactionContext getTransactionContext() {
-		return transactionContext;
+	public PersistenceContext getPersistenceContext() {
+		return persistenceContext;
 	}
 
 //	/**
@@ -150,17 +150,17 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 				createdTransaction = true;
 			}
 		}
-		this.transactionContext = determineTransactionContext(query, transaction);
+		this.persistenceContext = getPersistenceContext(query, transaction);
 	}
 
 	/**
 	 * Get the TransactionContext either explicitly set on the query or transaction scoped.
 	 */
-	private TransactionContext determineTransactionContext(OrmQuery<?> query, ServerTransaction t){
+	private PersistenceContext getPersistenceContext(OrmQuery<?> query, ServerTransaction t){
 		
-		TransactionContext ctx = query.getTransactionContext();
+		PersistenceContext ctx = query.getPersistenceContext();
 		if (ctx == null){
-			ctx = t.getTransactionContext();
+			ctx = t.getPersistenceContext();
 		}
 		return ctx;
 	}

@@ -40,7 +40,7 @@ import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
 import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -48,7 +48,7 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.transaction.TransContext;
+import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 
 /**
  * An object that represents a SqlSelect statement.
@@ -202,7 +202,7 @@ public class CQuery<T> implements DbReadContext {
 	 */
 	boolean hasHitBackgroundFetchAfter;
 
-	final TransactionContext transactionContext;
+	final PersistenceContext persistenceContext;
 
 	/**
 	 * The resultSet that is read and converted to objects.
@@ -273,12 +273,12 @@ public class CQuery<T> implements DbReadContext {
 		queryListener = query.getListener();
 		if (queryListener == null) {
 			// normal, use the one from the transaction
-			this.transactionContext = request.getTransactionContext();
+			this.persistenceContext = request.getPersistenceContext();
 		} else {
 			// 'Row Level Transaction Context'...
 			// local transaction context that will be reset
 			// after each 'master' bean is sent to the listener
-			this.transactionContext = new TransContext();
+			this.persistenceContext = new DefaultPersistenceContext();
 		}
 
 		maxRowsLimit = query.getMaxRows() > 0 ? query.getMaxRows() : GLOBAL_ROW_LIMIT;
@@ -358,8 +358,8 @@ public class CQuery<T> implements DbReadContext {
 	/**
 	 * Return the persistence context.
 	 */
-	public TransactionContext getTransactionContext(){
-		return transactionContext;
+	public PersistenceContext getPersistenceContext(){
+		return persistenceContext;
 	}
 	
 	public void setLoadedBean(EntityBean bean, Object id) {
@@ -571,7 +571,7 @@ public class CQuery<T> implements DbReadContext {
 				queryListener.process(getLoadedBean());
 				// clear the transaction context after each
 				// 'master' bean has been sent to the listener
-				transactionContext.clear();
+				persistenceContext.clear();
 
 			} else {
 				// add to the list/set/map

@@ -105,7 +105,7 @@ public interface ServerTransaction extends Transaction {
      * behaviour.
      * </p>
      */
-    public TransactionContext getTransactionContext();
+    public PersistenceContext getPersistenceContext();
 
     /**
      * Set the persistence context to this transaction.
@@ -118,7 +118,7 @@ public interface ServerTransaction extends Transaction {
      * PersistenceContext with multiple transactions.
      * </p>
      */
-    public void setTransactionContext(TransactionContext context);
+    public void setPersistenceContext(PersistenceContext context);
 
     /**
      * Return the underlying Connection for internal use.

@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
@@ -311,7 +311,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			// check transaction context to see if it already exists
 //			TransactionContextClass classContext = ctx.getClassContext(rowType);
 //			EntityBean existing = classContext.get(id);
-			EntityBean existing = ctx.getTransactionContext().get(rowType, id);
+			EntityBean existing = ctx.getPersistenceContext().get(rowType, id);
 
 			if (existing != null) {
 				setValue(bean, existing);
@@ -334,7 +334,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				}
 				
 				setValue(bean, ref);
-				ctx.getTransactionContext().set(rowType, id, ref);
+				ctx.getPersistenceContext().set(rowType, id, ref);
 				//classContext.put(id, ref);
 				return ref;
 			}
@@ -383,7 +383,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				return null;
 			}
 
-			TransactionContext persistCtx = ctx.getTransactionContext();
+			PersistenceContext persistCtx = ctx.getPersistenceContext();
 			EntityBean existing = persistCtx.get(targetType, id);
 
 			if (existing != null) {

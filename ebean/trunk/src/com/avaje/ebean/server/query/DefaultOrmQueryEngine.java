@@ -29,7 +29,7 @@ import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 
@@ -76,7 +76,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         OrmQuery<T> query = request.getQuery();
         ArrayList<EntityBean> adds = query.getContextAdditions();
         if (adds != null){
-            TransactionContext pc = t.getTransactionContext();
+            PersistenceContext pc = t.getPersistenceContext();
             for (int i = 0; i < adds.size(); i++) {
             	EntityBean bean = adds.get(i);
             	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
@@ -125,7 +125,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 
         ArrayList<EntityBean> adds = query.getContextAdditions();
         if (adds != null){
-            TransactionContext pc = t.getTransactionContext();
+            PersistenceContext pc = t.getPersistenceContext();
             for (int i = 0; i < adds.size(); i++) {
             	EntityBean bean = adds.get(i);
             	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());

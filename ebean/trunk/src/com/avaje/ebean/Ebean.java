@@ -150,7 +150,7 @@ public final class Ebean {
 
 			// skipDefaultServer is set by EbeanServerFactory
 			// ... when it is creating the primaryServer
-			if (GlobalProperties.getBoolean("ebean.skipPrimaryServer", false)){
+			if (GlobalProperties.isSkipPrimaryServer()){
 				// primary server being created by EbeanServerFactory
 				// ... so we should not try and create it here
 				

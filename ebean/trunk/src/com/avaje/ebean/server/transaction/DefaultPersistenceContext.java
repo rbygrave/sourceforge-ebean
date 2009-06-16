@@ -23,17 +23,16 @@ import java.util.HashMap;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
-import com.avaje.ebean.server.core.TransactionContext;
-import com.avaje.ebean.server.core.TransactionContextClass;
+import com.avaje.ebean.server.core.PersistenceContext;
 
 /**
- * Core implementation of TransactionContext.
+ * Default implementation of PersistenceContext.
  * <p>
  * Ensures only one instance of a bean is used according to its type and unique
  * id.
  * </p>
  * <p>
- * TransactionContext lives on a Transaction and as such is expected to only have
+ * PersistenceContext lives on a Transaction and as such is expected to only have
  * a single thread accessing it at a time. This is not expected to be used concurrently.
  * </p>
  * <p>
@@ -42,7 +41,7 @@ import com.avaje.ebean.server.core.TransactionContextClass;
  * loaded into the PersistanceContext.
  * </p>
  */
-public final class TransContext implements TransactionContext {
+public final class DefaultPersistenceContext implements PersistenceContext {
 
    
     /**
@@ -53,7 +52,7 @@ public final class TransContext implements TransactionContext {
     /**
      * Create a new PersistanceContext.
      */
-    public TransContext() {
+    public DefaultPersistenceContext() {
     }
 
     /**
@@ -68,7 +67,7 @@ public final class TransContext implements TransactionContext {
      */
     public boolean add(EntityBean entityBean, Object id, boolean forceReplace) {
 
-        TransactionContextClass classMap = getClassContext(entityBean.getClass());
+    	ClassContext classMap = getClassContext(entityBean.getClass());
         if (forceReplace || !classMap.containsKey(id)) {
             classMap.put(id, entityBean);
             return true;
@@ -93,7 +92,7 @@ public final class TransContext implements TransactionContext {
     }
 
     /**
-     * Clear the transaction context.
+     * Clear the PersistenceContext.
      */
     public void clear() {
         typeCache.clear();
@@ -114,7 +113,7 @@ public final class TransContext implements TransactionContext {
         }
     }
    
-    public TransactionContextClass getClassContext(Class<?> beanType) {
+    public ClassContext getClassContext(Class<?> beanType) {
 
     	// strip off $$EntityBean.. suffix...
     	String clsName = SubClassUtil.getSuperClassName(beanType.getName());
@@ -127,7 +126,7 @@ public final class TransContext implements TransactionContext {
         return classMap;
     }
 
-    private static class ClassContext implements TransactionContextClass {
+    private static class ClassContext {
     	
     	HashMap<Object,EntityBean> map = new HashMap<Object, EntityBean>();
         

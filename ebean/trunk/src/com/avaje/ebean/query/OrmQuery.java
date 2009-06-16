@@ -11,7 +11,7 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.util.BindParams;
 
@@ -27,7 +27,7 @@ public interface OrmQuery<T> extends Query<T> {
 	 * from the Transaction is used (transaction scoped persistence context).
 	 * </p>
 	 */
-	public TransactionContext getTransactionContext();
+	public PersistenceContext getPersistenceContext();
 	
 	/**
 	 * Set an explicit TransactionContext (typically for a refresh query).
@@ -36,7 +36,7 @@ public interface OrmQuery<T> extends Query<T> {
 	 * from the Transaction is used (transaction scoped persistence context).
 	 * </p>
 	 */
-	public void setTransactionContext(TransactionContext transactionContext);
+	public void setPersistenceContext(PersistenceContext transactionContext);
 	
 	/**
 	 * Return true if the query detail has neither select or joins specified.

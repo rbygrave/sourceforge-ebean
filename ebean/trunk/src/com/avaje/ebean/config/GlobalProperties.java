@@ -9,6 +9,22 @@ public final class GlobalProperties {
 	
 	private static PropertyMap globalMap;
 	
+	private static boolean skipPrimaryServer;
+	
+	/**
+	 * Set whether to skip automatically creating the primary server.
+	 */
+	public static synchronized void setSkipPrimaryServer(boolean skip){
+		skipPrimaryServer = skip;
+	}
+	
+	/**
+	 * Return true to skip automatically creating the primary server.
+	 */
+	public static synchronized boolean isSkipPrimaryServer(){
+		return skipPrimaryServer;
+	}
+	
 	/**
 	 * Parse the string replacing any expressions like ${catalina.base}.
 	 * <p>

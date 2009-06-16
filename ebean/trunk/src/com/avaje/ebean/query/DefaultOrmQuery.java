@@ -18,7 +18,7 @@ import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeploySqlSelect;
 import com.avaje.ebean.server.deploy.TableJoin;
@@ -142,7 +142,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 */
 	int queryPlanHash;
 	
-	TransactionContext transactionContext;
+	PersistenceContext persistenceContext;
 
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server) {
 		this.beanType = beanType;
@@ -229,8 +229,8 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * from the Transaction is used (transaction scoped persistence context).
 	 * </p>
 	 */
-	public TransactionContext getTransactionContext() {
-		return transactionContext;
+	public PersistenceContext getPersistenceContext() {
+		return persistenceContext;
 	}
 
 	/**
@@ -240,8 +240,8 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * from the Transaction is used (transaction scoped persistence context).
 	 * </p>
 	 */
-	public void setTransactionContext(TransactionContext transactionContext) {
-		this.transactionContext = transactionContext;
+	public void setPersistenceContext(PersistenceContext persistenceContext) {
+		this.persistenceContext = persistenceContext;
 	}
 
 	/**
