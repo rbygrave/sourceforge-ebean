@@ -683,8 +683,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		// get the mappedBy property
 		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop);
 		DeployBeanProperty mappedProp = targetDesc.getBeanProperty(mappedBy);
-		if (mappedProp == null) {
 
+		if (mappedProp == null) {
 			String m = "Error on " + prop.getFullBeanName();
 			m += "  Can not find mappedBy property [" + mappedBy + "] ";
 			m += "in [" + targetDesc + "]";
@@ -693,35 +693,47 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		if (!(mappedProp instanceof DeployBeanPropertyAssocMany)) {
 			String m = "Error on " + prop.getFullBeanName();
-			m += ". mappedBy property [" + mappedBy + "]is not a ManyToMany?";
-			m += "in [" + targetDesc + "]";
+			m += ". mappedBy property [" +targetDesc+"."+mappedBy + "] is not a ManyToMany?" ;
 			throw new PersistenceException(m);
 		}
 
 		DeployBeanPropertyAssocMany<?> mappedAssocMany = (DeployBeanPropertyAssocMany<?>) mappedProp;
 
+		if (!mappedAssocMany.isManyToMany()){
+			String m = "Error on " + prop.getFullBeanName();
+			m += ". mappedBy property [" +targetDesc+"."+mappedBy + "] is not a ManyToMany?" ;
+			throw new PersistenceException(m);			
+		}
+
+		// define the relationships/joins on this side as the
+		// reverse of the other mappedBy side ...
+
 		DeployTableJoin mappedJoin = mappedAssocMany.getTableJoin();
 		DeployTableJoin mappedIntJoin = mappedAssocMany.getIntersectionJoin();
 		DeployTableJoin mappendInverseJoin = mappedAssocMany.getInverseJoin();
-		
-		//FIXME: Review this Rob.
-		
+				
 		String intTableName = mappedIntJoin.getTable();
+		
+		// prefix table alias' with zz as these table alias' may 
+		// not be unique on this side of the relationship
+		String alias1 = "zz"+mappedJoin.getForeignTableAlias();
+		String alias2 = "zz"+mappedJoin.getLocalTableAlias();
 		
 		DeployTableJoin tableJoin = prop.getTableJoin();
 		mappedIntJoin.copyTo(tableJoin, true, targetDesc.getBaseTable());
-		tableJoin.setForeignTableAlias(mappedJoin.getForeignTableAlias());
+		tableJoin.setForeignTableAlias(alias1);
+		tableJoin.setLocalTableAlias(alias2);
 		
 		DeployTableJoin intJoin = new DeployTableJoin();
 		mappendInverseJoin.copyTo(intJoin, false, intTableName);
 		prop.setIntersectionJoin(intJoin);
-		intJoin.setForeignTableAlias(mappedJoin.getLocalTableAlias());
+		intJoin.setForeignTableAlias(alias2);
 		
 		DeployTableJoin inverseJoin = new DeployTableJoin();
 		mappedIntJoin.copyTo(inverseJoin, false, intTableName);
-		inverseJoin.setForeignTableAlias(mappedJoin.getForeignTableAlias());
+		inverseJoin.setForeignTableAlias(alias1);
+		inverseJoin.setLocalTableAlias(alias2);
 		prop.setInverseJoin(inverseJoin);
-
 	}
 	
 	private <T> void setBeanControllerFinderListener(DeployBeanDescriptor<T> descriptor) {
