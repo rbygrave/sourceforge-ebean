@@ -19,15 +19,16 @@
  */
 package com.avaje.ebean.collection;
 
+import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.io.SerializeControl;
 
 /**
  * Map capable of lazy loading.
@@ -36,6 +37,24 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 
 	static final long serialVersionUID = 1748601350011695655L;
 
+	/**
+	 * The name of the EbeanServer this is associated with. (used for lazy
+	 * fetch).
+	 */
+	transient InternalEbean internalEbean;
+
+	/**
+	 * The owning bean (used for lazy fetch).
+	 */
+	final Object ownerBean;
+
+	/**
+	 * The name of this property in the owning bean (used for lazy fetch).
+	 */
+	final String propertyName;
+
+	transient final ObjectGraphNode profilePoint;
+	
 	/**
 	 * The underlying map implementation.
 	 */
@@ -54,23 +73,6 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 	 */
 	boolean hasMoreRows;
 
-	/**
-	 * The name of the EbeanServer this is associated with. (used for lazy
-	 * fetch).
-	 */
-	String serverName;
-
-	/**
-	 * The owning bean (used for lazy fetch).
-	 */
-	Object ownerBean;
-
-	/**
-	 * The name of this property in the owning bean (used for lazy fetch).
-	 */
-	String propertyName;
-
-	transient final ObjectGraphNode profilePoint;
 	
 	/**
 	 * Create with a given Map.
@@ -78,6 +80,8 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 	public BeanMap(Map<K, E> map) {
 		this.map = map;
 		this.profilePoint = null;
+		this.propertyName = null;
+		this.ownerBean = null;
 	}
 
 	/**
@@ -87,26 +91,26 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		this(new LinkedHashMap<K, E>());
 	}
 
-	public BeanMap(String serverName, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		this.serverName = serverName;
+	public BeanMap(InternalEbean internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
 		this.profilePoint = profilePoint;
 	}
 
-//	Object readResolve() throws ObjectStreamException {
-//		if (SerializeControl.isVanillaCollections()) {
-//			return map;
-//		}
-//		return this;
-//	}
-//
-//	Object writeReplace() throws ObjectStreamException {
-//		if (SerializeControl.isVanillaCollections()) {
-//			return map;
-//		}
-//		return this;
-//	}
+	Object readResolve() throws ObjectStreamException {
+		if (SerializeControl.isVanillaCollections()) {
+			return map;
+		}
+		return this;
+	}
+
+	Object writeReplace() throws ObjectStreamException {
+		if (SerializeControl.isVanillaCollections()) {
+			return map;
+		}
+		return this;
+	}
 	
 	public void internalAdd(Object bean) {
 		throw new RuntimeException("Not allowed for map");
@@ -122,9 +126,9 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 
 	//@SuppressWarnings("unchecked")
 	private void init() {
-		if (map == null) {
-			InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
-			eb.lazyLoadMany(ownerBean, propertyName, profilePoint);
+		if (map == null && internalEbean != null) {
+			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
+			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
 		}
 	}
 

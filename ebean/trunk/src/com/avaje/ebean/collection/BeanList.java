@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.collection;
 
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,9 +27,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.io.SerializeControl;
 
 /**
  * List capable of lazy loading.
@@ -37,6 +38,24 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 
 	static final long serialVersionUID = 7594954368722184476L;
 
+	/**
+	 * The EbeanServer this is associated with. (used for lazy fetch).
+	 */
+	transient InternalEbean internalEbean;
+	
+
+	final transient ObjectGraphNode profilePoint;
+	
+	/**
+	 * The owning bean (used for lazy fetch).
+	 */
+	final Object ownerBean;
+
+	/**
+	 * The name of this property in the owning bean (used for lazy fetch).
+	 */
+	final String propertyName;
+	
 	/**
 	 * The underlying List implementation.
 	 */
@@ -54,23 +73,6 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	 * exist. For use by client to enable 'next' for paging.
 	 */
 	boolean hasMoreRows;
-
-	/**
-	 * The name of the EbeanServer this is associated with. (used for lazy fetch).
-	 */
-	String serverName;
-
-	/**
-	 * The owning bean (used for lazy fetch).
-	 */
-	Object ownerBean;
-
-	/**
-	 * The name of this property in the owning bean (used for lazy fetch).
-	 */
-	String propertyName;
-
-	final transient ObjectGraphNode profilePoint;
 	
 	/**
 	 * Specify the underlying List implementation.
@@ -78,6 +80,8 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	public BeanList(List<E> list) {
 		this.list = list;
 		this.profilePoint = null;
+		this.propertyName = null;
+		this.ownerBean = null;
 	}
 
 	/**
@@ -90,26 +94,26 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	/**
 	 * Used to create deferred fetch proxy.
 	 */	
-	public BeanList(String serverName, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		this.serverName = serverName;
+	public BeanList(InternalEbean internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
 		this.profilePoint = profilePoint;
 	}
 
-//	Object readResolve() throws ObjectStreamException {
-//		if (SerializeControl.isVanillaCollections()) {
-//			return list;
-//		}
-//		return this;
-//	}
-//
-//	Object writeReplace() throws ObjectStreamException {
-//		if (SerializeControl.isVanillaCollections()) {
-//			return list;
-//		}
-//		return this;
-//	}
+	Object readResolve() throws ObjectStreamException {
+		if (SerializeControl.isVanillaCollections()) {
+			return list;
+		}
+		return this;
+	}
+
+	Object writeReplace() throws ObjectStreamException {
+		if (SerializeControl.isVanillaCollections()) {
+			return list;
+		}
+		return this;
+	}
 
 	@SuppressWarnings("unchecked")
 	public void internalAdd(Object bean) {
@@ -117,9 +121,9 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	}
 
 	private void init() {
-		if (list == null) {			
-			InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
-			eb.lazyLoadMany(ownerBean, propertyName, profilePoint);
+		if (list == null && internalEbean != null){
+			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
+			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
 		}
 	}
 

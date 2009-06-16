@@ -19,14 +19,15 @@
  */
 package com.avaje.ebean.collection;
 
+import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.io.SerializeControl;
 
 /**
  * Set capable of lazy loading.
@@ -35,6 +36,23 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     
     static final long serialVersionUID = 2435724099234280064L;
     
+	/**
+	 * The EbeanServer this is associated with. (used for lazy fetch).
+	 */
+    transient InternalEbean internalEbean;
+    
+	transient final ObjectGraphNode profilePoint;
+	
+	/**
+	 * The owning bean (used for lazy fetch).
+	 */
+	final Object ownerBean;
+
+	/**
+	 * The name of this property in the owning bean (used for lazy fetch).
+	 */
+	final String propertyName;
+	
     /**
      * The underlying Set implementation.
      */
@@ -53,29 +71,15 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
      */
     boolean hasMoreRows;
 
-	/**
-	 * The name of the EbeanServer this is associated with. (used for lazy fetch).
-	 */
-	String serverName;
 
-	/**
-	 * The owning bean (used for lazy fetch).
-	 */
-	Object ownerBean;
-
-	/**
-	 * The name of this property in the owning bean (used for lazy fetch).
-	 */
-	String propertyName;
-
-	transient final ObjectGraphNode profilePoint;
-	
     /**
      * Create with a specific Set implementation.
      */
     public BeanSet(Set<E> set) {
         this.set = set;
         this.profilePoint = null;
+        this.propertyName = null;
+        this.ownerBean = null;
     }
     
     /**
@@ -85,26 +89,26 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         this(new LinkedHashSet<E>());
     }
 	
-    public BeanSet(String serverName, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		this.serverName = serverName;
+    public BeanSet(InternalEbean internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
 		this.profilePoint = profilePoint;
 	}
 	
-//    Object readResolve() throws ObjectStreamException {
-//        if (SerializeControl.isVanillaCollections()){
-//            return set;
-//        }
-//        return this;
-//    }
-//    
-//    Object writeReplace() throws ObjectStreamException {
-//        if (SerializeControl.isVanillaCollections()){
-//            return set;
-//        }
-//        return this;
-//    }
+    Object readResolve() throws ObjectStreamException {
+        if (SerializeControl.isVanillaCollections()){
+            return set;
+        }
+        return this;
+    }
+    
+    Object writeReplace() throws ObjectStreamException {
+        if (SerializeControl.isVanillaCollections()){
+            return set;
+        }
+        return this;
+    }
     
     @SuppressWarnings("unchecked")
 	public void internalAdd(Object bean) {
@@ -119,9 +123,9 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
 	private void init() {
-        if (set == null) {
-			InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
-			eb.lazyLoadMany(ownerBean, propertyName, profilePoint);
+        if (set == null && internalEbean != null) {
+			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
+			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
         }
     }
 

@@ -29,6 +29,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
@@ -133,6 +134,11 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			if (exportedProperties.length > 0){
 				embeddedExportedProperties = exportedProperties[0].isEmbedded();
 			}
+		}
+	}
+	public void setInternalEbean(InternalEbean internalEbean){
+		if (help != null){
+			help.setInternalEbean(internalEbean);
 		}
 	}
 	

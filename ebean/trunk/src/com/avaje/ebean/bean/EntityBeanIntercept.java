@@ -30,7 +30,6 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.io.SerializeControl;
 
 /**
@@ -49,49 +48,51 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	/**
 	 * The actual entity bean that 'owns' this intercept.
 	 */
-	protected EntityBean owner;
+	private EntityBean owner;
 
 	/**
 	 * The parent bean by relationship (1-1 or 1-M).
 	 */
-	protected Object parentBean;
+	private Object parentBean;
 
 	/**
 	 * true if the bean properties have been loaded. false if it is a reference
 	 * bean (will lazy load etc).
 	 */
-	protected boolean loaded;
+	private boolean loaded;
 
 	/**
 	 * Set true when loaded or reference. 
 	 * Used to bypass interception when created by user code.
 	 */
-	protected boolean intercepting;
+	private boolean intercepting;
 
 	/**
 	 * If true calling setters throws an exception.
 	 */
-	protected boolean readOnly;
+	private boolean readOnly;
 
 	/**
 	 * The bean as it was before it was modified. Null if no non-transient
 	 * setters have been called.
 	 */
-	protected Object oldValues;
+	private Object oldValues;
 
 	/**
 	 * Used when a bean is partially filled.
 	 */
-	protected Set<String> loadedProps;
+	private Set<String> loadedProps;
 
-	/**
-	 * The EbeanServer this bean came from.
-	 */
-	protected String serverName;
+//	/**
+//	 * The EbeanServer this bean came from.
+//	 */
+//	protected String serverName;
 
-	protected String lazyLoadProperty;
+	private InternalEbean internalEbean;
+	
+	private String lazyLoadProperty;
 
-	transient protected PropertyChangeSupport pcs;
+	transient private PropertyChangeSupport pcs;
 	
 	/**
 	 * Create a intercept with a given entity.
@@ -162,18 +163,22 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		this.nodeUsageCollector = usageCollector;
 	}
 
-	/**
-	 * Return the name of the associated EbeanServer.
-	 */
-	public String getServerName() {
-		return serverName;
-	}
-
-	/**
-	 * Set the name of the associated EbeanServer.
-	 */
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
+//	/**
+//	 * Return the name of the associated EbeanServer.
+//	 */
+//	public String getServerName() {
+//		return serverName;
+//	}
+//
+//	/**
+//	 * Set the name of the associated EbeanServer.
+//	 */
+//	public void setServerName(String serverName) {
+//		this.serverName = serverName;
+//	}
+	
+	public void setInternalEbean(InternalEbean internalEbean) {
+		this.internalEbean = internalEbean;
 	}
 
 	/**
@@ -367,8 +372,8 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 			nodeUsageCollector.setLoadProperty(lazyLoadProperty);
 		}
 
-		InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
-		eb.lazyLoadBean(owner, nodeUsageCollector);
+		//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
+		internalEbean.lazyLoadBean(owner, nodeUsageCollector);
 
 		// the refresh always loads all properties
 		loadedProps = null;

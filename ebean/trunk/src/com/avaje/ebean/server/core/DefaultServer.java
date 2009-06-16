@@ -78,8 +78,8 @@ import com.avaje.ebean.server.jmx.MServerControl;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
-import com.avaje.ebean.server.transaction.RemoteListenerEvent;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
+import com.avaje.ebean.server.transaction.RemoteListenerEvent;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
@@ -162,6 +162,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		this.refreshHelp = config.getRefreshHelp();
 		this.debugLazyHelper = config.getDebugLazyLoad();
 		this.beanDescriptorManager = config.getBeanDescriptorManager();
+		beanDescriptorManager.setInternalEbean(this);
 		this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
 
 		this.transactionManager = config.getTransactionManager();
@@ -179,6 +180,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
 		ShutdownManager.register(new Shutdown());
 	}
+
 	
 	public DdlGenerator getDdlGenerator() {
 		return ddlGenerator;

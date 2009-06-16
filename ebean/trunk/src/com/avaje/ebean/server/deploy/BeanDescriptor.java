@@ -41,6 +41,7 @@ import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
@@ -352,6 +353,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 */
 	final boolean updateChangesOnly;
 	
+	InternalEbean internalEbean;
+	
 	/**
 	 * Construct the BeanDescriptor.
 	 */
@@ -448,6 +451,28 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		// object used to handle Id values
 		this.idBinder = IdBinderFactory.createIdBinder(propertiesId);
 	}
+
+	
+	public void setInternalEbean(InternalEbean internalEbean){
+		this.internalEbean = internalEbean;
+//		... could use reflection and make internalEbean final
+//		try {
+//			Field field = BeanDescriptor.class.getDeclaredField("internalEbean");
+//			field.setAccessible(true);
+//			field.set(this, internalEbean);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+	}
+	
+	
+	/**
+	 * Return the EbeanServer instance that owns this BeanDescriptor.
+	 */
+	public InternalEbean getInternalEbean() {
+		return internalEbean;
+	}
+
 
 	/**
 	 * Compare using the name of the BeanDescriptor.
@@ -805,8 +830,9 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		try {
 			// Note factoryType is used indirectly via beanReflect
 			EntityBean eb = (EntityBean) beanReflect.createEntityBean();
-			EntityBeanIntercept in = eb._ebean_getIntercept();
-			in.setServerName(serverName);
+			EntityBeanIntercept ebi = eb._ebean_getIntercept();
+			//ebi.setServerName(serverName);
+			ebi.setInternalEbean(internalEbean);
 
 			return eb;
 
@@ -825,7 +851,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 			EntityBean eb = (EntityBean) beanReflect.createEntityBean();
 
 			EntityBeanIntercept ebi = eb._ebean_getIntercept();
-			ebi.setServerName(serverName);
+			//ebi.setServerName(serverName);
+			ebi.setInternalEbean(internalEbean);
 			if (parent != null) {
 				// Special case for a OneToOne ... parent
 				// needs to be added to context prior to query

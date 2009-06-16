@@ -579,6 +579,9 @@ public class ServerConfig {
 	 *            this server.
 	 */
 	public void addClass(Class<?> cls) {
+		if (classes == null){
+			classes = new ArrayList<Class<?>>();
+		}
 		classes.add(cls);
 	}
 
