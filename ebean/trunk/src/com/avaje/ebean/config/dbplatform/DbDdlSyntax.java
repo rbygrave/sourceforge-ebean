@@ -77,10 +77,16 @@ public class DbDdlSyntax {
 		this.newLine = newLine;
 	}
 
+	/**
+	 * Return the prefix used in naming primary keys.
+	 */
 	public String getPkPrefix() {
 		return pkPrefix;
 	}
 
+	/**
+	 * Set the prefix used in naming primary keys.
+	 */
 	public void setPkPrefix(String pkPrefix) {
 		this.pkPrefix = pkPrefix;
 	}

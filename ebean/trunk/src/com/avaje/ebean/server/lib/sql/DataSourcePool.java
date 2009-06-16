@@ -220,23 +220,23 @@ public class DataSourcePool implements DataSource {
 	}
 	
 	public DataSourcePool(DataSourceNotify notify, String name, DataSourceConfig params) {
-		//this.params = params;
+
 		this.notify = notify;
 		this.name = name;
 		this.poolListener = createPoolListener(params.getPoolListener());
 		
+		this.autoCommit = false;
+		this.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
 
 		this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
 		this.leakTimeMinutes = params.getLeakTimeMinutes();
 		this.captureStackTrace = params.isCaptureStackTrace();
-		this.autoCommit = true;
 		this.databaseDriver = params.getDriver();
 		this.databaseUrl = params.getUrl();
 		this.pstmtCacheSize = params.getPstmtCacheSize();
 		this.minConnections = params.getMinConnections();
 		this.maxConnections = params.getMaxConnections();
 		this.waitTimeoutMillis = params.getWaitTimeoutMillis();
-		this.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
 		this.heartbeatsql = params.getHeartbeatSql();
 		
 		String un = params.getUsername();

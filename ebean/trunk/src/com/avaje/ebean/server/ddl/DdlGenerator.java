@@ -211,7 +211,10 @@ public class DdlGenerator {
 			out.flush();
 
 			t.commit();
-
+			
+		} catch (Exception e){
+			String msg = "Error runing script";
+			throw new PersistenceException(msg, e);
 		} finally {
 			t.end();
 		}
