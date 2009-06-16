@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
@@ -54,7 +54,7 @@ public interface DbReadContext {
 	/**
 	 * Return the persistence context. 
 	 */
-	public TransactionContext getTransactionContext();
+	public PersistenceContext getPersistenceContext();
 
 	/**
 	 * Return the property that is associated with the many. There can only be

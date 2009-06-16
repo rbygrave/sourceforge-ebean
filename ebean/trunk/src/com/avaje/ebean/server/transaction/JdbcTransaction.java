@@ -28,7 +28,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.transaction.TransactionManager.OnQueryOnly;
 
@@ -41,20 +41,10 @@ public class JdbcTransaction implements ServerTransaction {
 	
 	private static final String illegalStateMessage = "Transaction is Inactive";
 
-	private static final int STATUS_ACTIVE = 100;
-
-	private static final int STATUS_INACTIVE = 101;
-
-
 	/**
 	 * The associated TransactionManager.
 	 */
 	final TransactionManager manager;
-	
-	/**
-	 * The status of the transaction.
-	 */
-	int activeStatus = STATUS_INACTIVE;
 	
 	/**
 	 * The transaction id.
@@ -65,6 +55,16 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Flag to indicate if this was an explicitly created Transaction.
 	 */
 	final boolean explicit;
+	
+	/**
+	 * Behaviour for ending query only transactions.
+	 */
+	final OnQueryOnly onQueryOnly;
+	
+	/**
+	 * The status of the transaction.
+	 */
+	boolean active;
 	
 	/**
 	 * The underlying Connection.
@@ -84,7 +84,7 @@ public class JdbcTransaction implements ServerTransaction {
 	/**
 	 * Holder of the objects fetched to ensure unique objects are used.
 	 */
-	TransactionContext transactionContext;
+	PersistenceContext persistenceContext;
 	
 	/**
 	 * Used to give developers more control over the insert update and delete
@@ -100,11 +100,6 @@ public class JdbcTransaction implements ServerTransaction {
 	
 	boolean localReadOnly;
 
-	/**
-	 * Behaviour for ending query only transactions.
-	 */
-	final OnQueryOnly onQueryOnly;
-	
 	/**
 	 * Flag to explicitly turn off transaction logging for this transaction.
 	 */
@@ -134,13 +129,13 @@ public class JdbcTransaction implements ServerTransaction {
 	 */
 	public JdbcTransaction(String id, boolean explicit, Connection connection, TransactionManager manager) {
 		try {
-			this.activeStatus = STATUS_ACTIVE;
+			this.active = true;
 			this.id = id;
 			this.explicit = explicit;
 			this.manager = manager;
 			this.connection = connection;
 			this.onQueryOnly = manager == null ? OnQueryOnly.ROLLBACK : manager.getOnQueryOnly();
-			this.transactionContext = new TransContext();
+			this.persistenceContext = new DefaultPersistenceContext();
 
 		} catch (Exception e) {
 			throw new PersistenceException(e);
@@ -288,8 +283,8 @@ public class JdbcTransaction implements ServerTransaction {
 	/**
 	 * Return the persistence context associated with this transaction.
 	 */
-	public TransactionContext getTransactionContext() {
-		return transactionContext;
+	public PersistenceContext getPersistenceContext() {
+		return persistenceContext;
 	}
 
 	/**
@@ -300,11 +295,11 @@ public class JdbcTransaction implements ServerTransaction {
 	 * then set it back later to a second transaction.
 	 * </p>
 	 */
-	public void setTransactionContext(TransactionContext context) {
+	public void setPersistenceContext(PersistenceContext context) {
 		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
-		this.transactionContext = context;
+		this.persistenceContext = context;
 	}
 
 	/**
@@ -389,7 +384,7 @@ public class JdbcTransaction implements ServerTransaction {
 			logger.log(Level.SEVERE, "Error closing connection", ex);
 		}
 		connection = null;
-		activeStatus = STATUS_INACTIVE;
+		active = false;
 	}
 
 	/**
@@ -516,9 +511,8 @@ public class JdbcTransaction implements ServerTransaction {
 	 * Return true if the transaction is active.
 	 */
 	public boolean isActive() {
-		return (activeStatus == STATUS_ACTIVE);
+		return active;
 	}
-
 
 	public boolean isPersistCascade() {
 		return persistCascade;
@@ -530,7 +524,6 @@ public class JdbcTransaction implements ServerTransaction {
 
 	public void addModification(String tableName, boolean inserts, boolean updates, boolean deletes) {
 		getEvent().add(tableName, inserts, updates, deletes);
-		
 	}
 
 	

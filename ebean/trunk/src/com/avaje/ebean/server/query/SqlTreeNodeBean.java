@@ -25,7 +25,7 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.server.core.TransactionContext;
+import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -170,7 +170,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				localBean = null;
 			} else {
 				// check the TransactionContext to see if the bean already exists
-				TransactionContext persistCtx = ctx.getTransactionContext();
+				PersistenceContext persistCtx = ctx.getPersistenceContext();
 
 //				contextBean = classContext.getOrSet(id, localBean);
 //				if (contextBean != null){

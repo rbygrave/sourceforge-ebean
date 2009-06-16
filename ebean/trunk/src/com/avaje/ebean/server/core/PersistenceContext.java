@@ -24,12 +24,7 @@ import com.avaje.ebean.bean.EntityBean;
 /**
  * TransactionContext for internal use.
  */
-public interface TransactionContext {
-
-//	/**
-//	 * Get the context specific to a bean type.
-//	 */
-//    public TransactionContextClass getClassContext(Class<?> beanType);
+public interface PersistenceContext {
 
     /**
      * Add the bean to the TransactionContext. If forceReplace is true then this

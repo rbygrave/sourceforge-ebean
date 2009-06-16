@@ -79,7 +79,7 @@ import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteListenerEvent;
-import com.avaje.ebean.server.transaction.TransContext;
+import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
@@ -352,7 +352,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			if (!isLazyLoad){
 				// for refresh we want to run in our own
 				// context (not an existing transaction scoped one)
-				query.setTransactionContext(new TransContext());
+				query.setPersistenceContext(new DefaultPersistenceContext());
 			}
 
 			if (parentBean != null) {
@@ -491,11 +491,11 @@ public final class DefaultServer implements InternalEbeanServer {
 		}
 
 		EntityBean ref = null;
-		TransactionContext ctx = null;
+		PersistenceContext ctx = null;
 
 		ServerTransaction t = transactionScopeManager.get();
 		if (t != null) {
-			ctx = t.getTransactionContext();
+			ctx = t.getPersistenceContext();
 			ref = ctx.get(type, id);
 		}
 		if (ref == null) {
