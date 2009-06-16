@@ -1,6 +1,9 @@
 package com.avaje.ebean.config;
 
-
+/**
+ * Naming convention where the database columns and java properties 
+ * are the same.
+ */
 public class MatchingNamingConvention implements NamingConvention {
 
 	public static final String DEFAULT_SEQ_FORMAT = "{table}_seq";
@@ -29,15 +32,23 @@ public class MatchingNamingConvention implements NamingConvention {
 		return clsName;
 	}
 
+	/**
+	 * Returns the bean property name.
+	 */
 	public String getColumnFromProperty(Class<?> beanClass, String beanPropertyName) {
 		return beanPropertyName;
 	}
 
+	/**
+	 * Returns the database column name.
+	 */
 	public String getPropertyFromColumn(Class<?> beanClass, String dbColumnName) {
 		return dbColumnName;
 	}
 
-
+	/**
+	 * Return the sequence name given the table name. 
+	 */
 	public String getSequenceName(String table) {
 		
 		return sequenceFormat.replace("{table}", table);

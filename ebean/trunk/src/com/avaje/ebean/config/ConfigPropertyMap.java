@@ -17,26 +17,6 @@ class ConfigPropertyMap {
 	public String getServerName() {
 		return serverName;
 	}
-
-	/**
-	 * Get a property with a 'raw' key. That is, it will not prepend "ebean" 
-	 * or the server name the key for looking up the value.
-	 */
-	public String getRaw(String key, String defaultValue){
-		return GlobalProperties.get(key, defaultValue);
-	}
-
-	public int getRawInt(String key, int defaultValue){
-
-		String value = getRaw(key, String.valueOf(defaultValue));
-		return Integer.parseInt(value);
-	}
-	
-	public boolean getRawBoolean(String key, boolean defaultValue){
-
-		String value = getRaw(key, String.valueOf(defaultValue));
-		return Boolean.parseBoolean(value);
-	}
 	
 	/**
 	 * Get a property. This will prepend "ebean" and the server name to lookup

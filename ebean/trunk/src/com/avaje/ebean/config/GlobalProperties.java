@@ -74,18 +74,30 @@ public final class GlobalProperties {
 		return globalMap;
 	}
 	
+	/**
+	 * Return a String property with a default value.
+	 */
 	public static synchronized String get(String key, String defaultValue) {
 		return getPropertyMap().get(key, defaultValue);
 	}
 	
+	/**
+	 * Return a int property with a default value.
+	 */
 	public static synchronized int getInt(String key, int defaultValue) {
 		return getPropertyMap().getInt(key, defaultValue);
 	}
 	
+	/**
+	 * Return a boolean property with a default value.
+	 */
 	public static synchronized boolean getBoolean(String key, boolean defaultValue) {
 		return getPropertyMap().getBoolean(key, defaultValue);
 	}
 	
+	/**
+	 * Set a property return the previous value.
+	 */
 	public static synchronized String put(String key, String defaultValue) {
 		return getPropertyMap().put(key, defaultValue);
 	}

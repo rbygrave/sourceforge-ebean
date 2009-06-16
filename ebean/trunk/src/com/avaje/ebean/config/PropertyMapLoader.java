@@ -13,20 +13,35 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
+/**
+ * Helper used to load the PropertyMap.
+ */
 final class PropertyMapLoader {
 
 	private static Logger logger = Logger.getLogger(PropertyMapLoader.class.getName());
 	
 	private static ServletContext servletContext;
 
+	/**
+	 * Return the servlet context when in a web environment.
+	 */
 	public static ServletContext getServletContext() {
 		return servletContext;
 	}
 	
+	/**
+	 * Set the ServletContext for when ebean.properties is in WEB-INF
+	 * in a web application environment.
+	 */
 	public static void setServletContext(ServletContext servletContext) {
 		PropertyMapLoader.servletContext = servletContext;
 	}
 
+	/**
+	 * Load the file returning the property map.
+	 * @param p an existing property map to load into.
+	 * @param fileName the name of the properties file to load.
+	 */
 	public static PropertyMap load(PropertyMap p, String fileName){
 
 		InputStream is = findInputStream(fileName);
@@ -37,6 +52,11 @@ final class PropertyMapLoader {
 		}
 	}
 	
+	/**
+	 * Load the inputstream returning the property map.
+	 * @param p an existing property map to load into.
+	 * @param in the InputStream of the properties file to load.
+	 */
 	private static PropertyMap load(PropertyMap p, InputStream in){
 		
 		Properties props = new Properties();
@@ -74,6 +94,9 @@ final class PropertyMapLoader {
 		return p;
 	}
 
+	/**
+	 * Find the input stream given the file name.
+	 */
 	private static InputStream findInputStream(String fileName) {
 
 		if (fileName == null) {

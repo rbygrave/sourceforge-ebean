@@ -1,19 +1,20 @@
 package com.avaje.ebean.server.core;
 
-import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.config.DataSourceConfig;
 
 
+/**
+ * Build a ServerConfig from ebean.properties.
+ */
 public class ConfigBuilder {
 
+	/**
+	 * Create a ServerConfig and load it from ebean.properties.
+	 */
 	public ServerConfig build(String serverName) {
 		
 		ServerConfig config = new ServerConfig();
 		config.setName(serverName);	
-		config.setAutofetchConfig(new AutofetchConfig());
-		config.setDataSourceConfig(new DataSourceConfig());
-		
 		
 		config.loadFromProperties();
 		

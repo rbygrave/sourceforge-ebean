@@ -30,7 +30,7 @@ public class ServerConfig {
 	 */
 	List<Class<?>> classes = new ArrayList<Class<?>>();
 	
-	AutofetchConfig autofetchConfig;
+	AutofetchConfig autofetchConfig = new AutofetchConfig();
 	
 	String databasePlatformName;
 	
@@ -60,7 +60,7 @@ public class ServerConfig {
 
 	DataSource dataSource;
 	
-	DataSourceConfig dataSourceConfig;
+	DataSourceConfig dataSourceConfig = new DataSourceConfig();
 	
 	String dataSourceJndiName;
 	
@@ -132,10 +132,16 @@ public class ServerConfig {
 		this.defaultServer = defaultServer;
 	}
 
+	/**
+	 * Return the external transaction manager.
+	 */
 	public ExternalTransactionManager getExternalTransactionManager() {
 		return externalTransactionManager;
 	}
 
+	/**
+	 * Set the external transaction manager.
+	 */
 	public void setExternalTransactionManager(ExternalTransactionManager externalTransactionManager) {
 		this.externalTransactionManager = externalTransactionManager;
 	}
