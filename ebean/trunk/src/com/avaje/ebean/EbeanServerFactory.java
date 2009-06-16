@@ -13,37 +13,37 @@ import com.avaje.ebean.server.core.ServerFactory;
 public class EbeanServerFactory {
 
 	private static final Logger logger = Logger.getLogger(EbeanServerFactory.class.getName());
-	
+
 	private static ServerFactory serverFactory = createServerFactory();
-	
+
 	public static EbeanServer create(String name){
-		
+
 		EbeanServer server = serverFactory.createServer(name);
-		
+
 		return server;
 	}
-	
+
 	public static EbeanServer create(ServerConfig config){
-		
+
 		if (config.getName() == null){
 			throw new PersistenceException("The name is null (it is required)");
 		}
-		
+
 		EbeanServer server = serverFactory.createServer(config);
-		
+
 		if (config.isDefaultServer()){
 			GlobalProperties.setSkipPrimaryServer(true);
 		}
 		if (config.isRegister()){
 			Ebean.register(server, config.isDefaultServer());
 		}
-		
-		return null;
+
+		return server;
 	}
-	
+
 	private static ServerFactory createServerFactory() {
 
-		
+
 		String implClassName = GlobalProperties.get("ebean.serverfactory", null);
 
 		int delaySecs = GlobalProperties.getInt("ebean.start.delay", 0);
