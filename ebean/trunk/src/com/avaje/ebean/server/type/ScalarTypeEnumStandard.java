@@ -167,7 +167,7 @@ public class ScalarTypeEnumStandard {
 				if (i > 0){
 					sb.append(",");
 				}
-				sb.append(e.toString());
+				sb.append(e.ordinal());
 			}
 			sb.append(")");
 			
