@@ -1,4 +1,4 @@
-package com.avaje.ebean.server.ddl;
+package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 import java.util.HashMap;

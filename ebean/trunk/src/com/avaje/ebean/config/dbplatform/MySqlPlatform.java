@@ -21,7 +21,6 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
-import com.avaje.ebean.server.ddl.DbType;
 
 
 
@@ -49,9 +48,9 @@ public class MySqlPlatform extends DatabasePlatform {
         dbTypeMap.put(Types.CLOB, new DbType("text"));
         dbTypeMap.put(Types.TIMESTAMP, new DbType("datetime"));
         
-        ddlSyntax.setDisableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=0");
-        ddlSyntax.setEnableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=1");
-        ddlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
+        dbDdlSyntax.setDisableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=0");
+        dbDdlSyntax.setEnableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=1");
+        dbDdlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
 
     }    
 

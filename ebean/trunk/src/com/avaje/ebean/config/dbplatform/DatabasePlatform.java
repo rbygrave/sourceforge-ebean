@@ -21,10 +21,6 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
-import com.avaje.ebean.server.ddl.DbTypeMap;
-import com.avaje.ebean.server.ddl.DdlGenContext;
-import com.avaje.ebean.server.ddl.DdlSyntax;
-
 /**
  * Database platform specific settings.
  */
@@ -40,11 +36,20 @@ public class DatabasePlatform {
 	 */
 	protected String closeQuote = "\"";
 
+	/**
+	 * For limit/offset, row_number etc limiting of SQL queries.
+	 */
 	protected SqlLimiter sqlLimiter = new LimitOffsetSqlLimiter();
 	
+	/**
+	 * Mapping of JDBC to Database types.
+	 */
 	protected DbTypeMap dbTypeMap = new DbTypeMap();
 	
-	protected DdlSyntax ddlSyntax = new DdlSyntax();
+	/**
+	 * DB specific DDL syntax.
+	 */
+	protected DbDdlSyntax dbDdlSyntax = new DbDdlSyntax();
 	
 	/**
 	 * Defines DB identity/sequence features.
@@ -71,12 +76,19 @@ public class DatabasePlatform {
 	}
 
 	/**
-	 * Create a context object for DDL generation.
+	 * Return the mapping of JDBC to DB types.
 	 */
-	public DdlGenContext createDdlGenContext() {
-		return new DdlGenContext(dbTypeMap, ddlSyntax);
+	public DbTypeMap getDbTypeMap() {
+		return dbTypeMap;
 	}
 
+	/**
+	 * Return the DDL syntax for this platform.
+	 */
+	public DbDdlSyntax getDbDdlSyntax() {
+		return dbDdlSyntax;
+	}
+	
 	/**
 	 * Return the close quote for quoted identifiers.
 	 */

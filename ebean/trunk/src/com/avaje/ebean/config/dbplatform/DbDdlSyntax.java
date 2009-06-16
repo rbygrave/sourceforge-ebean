@@ -1,11 +1,11 @@
-package com.avaje.ebean.server.ddl;
+package com.avaje.ebean.config.dbplatform;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Used to support DB specific syntax for DDL generation.
  */
-public class DdlSyntax {
+public class DbDdlSyntax {
 
 	boolean renderIndexForFkey = true;
 	

@@ -48,9 +48,9 @@ public class H2Platform extends DatabasePlatform {
         // H2 data types match default JDBC types
         // so no changes to dbTypeMap required
         
-        this.ddlSyntax.setDisableReferentialIntegrity("SET REFERENTIAL_INTEGRITY FALSE");
-        this.ddlSyntax.setEnableReferentialIntegrity("SET REFERENTIAL_INTEGRITY TRUE");
-        this.ddlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
+        this.dbDdlSyntax.setDisableReferentialIntegrity("SET REFERENTIAL_INTEGRITY FALSE");
+        this.dbDdlSyntax.setEnableReferentialIntegrity("SET REFERENTIAL_INTEGRITY TRUE");
+        this.dbDdlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
     }    
 
 }

@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.avaje.ebean.config.dbplatform.DbType;
+import com.avaje.ebean.config.dbplatform.DbTypeMap;
+import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.type.ScalarType;
 
@@ -24,7 +27,7 @@ public class DdlGenContext {
 	/**
 	 * Handles DB specific DDL syntax.
 	 */
-	final DdlSyntax ddlSyntax;
+	final DbDdlSyntax ddlSyntax;
 	
 	/**
 	 * The new line character that is used.
@@ -41,7 +44,7 @@ public class DdlGenContext {
 	List<String> intersectionTablesCreateDdl = new ArrayList<String>();
 	List<String> intersectionTablesFkDdl = new ArrayList<String>();
 	
-	public DdlGenContext(DbTypeMap dbTypeMap, DdlSyntax ddlSyntax){
+	public DdlGenContext(DbTypeMap dbTypeMap, DbDdlSyntax ddlSyntax){
 		this.dbTypeMap = dbTypeMap;
 		this.ddlSyntax = ddlSyntax;
 		this.newLine = ddlSyntax.getNewLine();
@@ -95,7 +98,7 @@ public class DdlGenContext {
 	/**
 	 * Return object to handle DB specific DDL syntax.
 	 */
-	public DdlSyntax getDdlSyntax() {
+	public DbDdlSyntax getDdlSyntax() {
 		return ddlSyntax;
 	}
 

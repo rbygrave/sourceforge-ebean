@@ -2,6 +2,7 @@ package com.avaje.ebean.server.ddl;
 
 import java.sql.Types;
 
+import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -16,7 +17,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
 	final DdlGenContext ctx;
 
-	final DdlSyntax ddl;
+	final DbDdlSyntax ddl;
 
 	final int columnNameWidth;
 

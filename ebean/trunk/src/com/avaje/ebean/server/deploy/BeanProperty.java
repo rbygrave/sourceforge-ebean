@@ -32,8 +32,8 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.el.ElGetValue;
-import com.avaje.ebean.server.ddl.DbType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.lib.util.StringHelper;

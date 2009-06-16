@@ -151,7 +151,7 @@ public class DdlGenerator {
 	}
 
 	protected DdlGenContext createContext() {
-		return dbPlatform.createDdlGenContext();
+		return new DdlGenContext(dbPlatform.getDbTypeMap(), dbPlatform.getDbDdlSyntax());
 	}
 
 	protected void writeFile(String fileName, String fileContent) throws IOException {
