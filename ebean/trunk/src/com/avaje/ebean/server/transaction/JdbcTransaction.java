@@ -21,14 +21,15 @@ package com.avaje.ebean.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.transaction.TransactionManager.OnQueryOnly;
 
@@ -124,6 +125,8 @@ public class JdbcTransaction implements ServerTransaction {
 	 */
 	int depth = 0;
 
+	HashSet<Object> savedVanillaBeans;
+	
 	/**
 	 * Create a new JdbcTransaction.
 	 */
@@ -145,7 +148,32 @@ public class JdbcTransaction implements ServerTransaction {
 	public String toString() {
 		return "Trans["+id+"]";
 	}
+
+	/**
+	 * Add a vanilla bean to the saved list.
+	 * <p>
+	 * This is to handle bi-directional relationships where
+	 * both sides have cascade.PERSIST.
+	 * </p>
+	 */
+	public void savedVanilla(Object vanillaBean) {
+		if (savedVanillaBeans == null){
+			savedVanillaBeans = new HashSet<Object>();
+		}
+		savedVanillaBeans.add(vanillaBean);
+	}
 	
+	/**
+	 * Return true if this is a vanilla bean that has already been saved.
+	 */
+	public boolean isAlreadySavedVanilla(Object vanillaBean) {
+		if (savedVanillaBeans == null){
+			return false;
+		} else {
+			return savedVanillaBeans.contains(vanillaBean);
+		}
+	}
+
 	/**
 	 * Return the depth of the current persist request plus the diff.
 	 * This has the effect of changing the current depth and returning

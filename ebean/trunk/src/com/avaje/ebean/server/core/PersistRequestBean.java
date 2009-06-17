@@ -137,6 +137,43 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 			}
 		}
     }
+
+    /**
+     * If this in a vanilla bean add it to the saved set.
+     * <p>
+     * This is because we don't know when vanilla beans are dirty
+     * so we keep track of the ones we have saved to avoid an 
+     * infinite loop when cascade.PERSIST is on both sides of a
+     * bi-directional relationship.
+     * </p>
+     */
+    public void addSavedVanilla() {
+    	if (vanilla){
+    		transaction.savedVanilla(bean);
+    	}
+    }
+    
+    /**
+     * Return true if this is an already saved vanilla bean.
+     * <p>
+     * We know when EntityBean's are dirty but we don't for 
+     * vanilla beans. So we track which ones we have saved. 
+     * </p>
+     * <p>
+     * This is to stop infinite loop when a bi-directional 
+     * relationship is cascade.PERSIST on both sides.
+     * </p>
+     */
+    public boolean isAlreadySavedVanilla() {
+		
+		if (transaction != null 
+			&& !(bean instanceof EntityBean) 
+			&& transaction.isAlreadySavedVanilla(bean)){
+			return true;	
+		} else {
+			return false;
+		}
+	}
     
 	/**
 	 * Set the type of this request. One of INSERT, UPDATE, DELETE, UPDATESQL or
