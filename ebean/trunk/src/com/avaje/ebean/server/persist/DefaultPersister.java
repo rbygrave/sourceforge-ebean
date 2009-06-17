@@ -174,9 +174,14 @@ public final class DefaultPersister implements Persister {
 		if (bean == null) {
 			throw new NullPointerException(Message.msg("bean.isnull"));
 		}
+	
 		PersistRequestBean<?> req = createPersistRequest(bean, t, parentBean);
+		if (req.isAlreadySavedVanilla()){
+			return;
+		}
 		try {
 			req.initTransIfRequired();
+			req.addSavedVanilla();
 			save(req);
 			req.commitTransIfRequired();
 
