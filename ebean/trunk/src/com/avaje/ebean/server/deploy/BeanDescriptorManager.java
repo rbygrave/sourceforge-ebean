@@ -161,7 +161,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	@SuppressWarnings("unchecked")
 	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType) {
-		return (BeanDescriptor<T>)descMap.get(entityType.getName());
+
+		// remove $$EntityBean stuff
+		String className = SubClassUtil.getSuperClassName(entityType.getName());
+		return (BeanDescriptor<T>)descMap.get(className);
 	}
 
 	public String getServerName() {
@@ -591,9 +594,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private void checkMappedByOneToOne(DeployBeanInfo<?> info, DeployBeanPropertyAssocOne<?> prop) {
 
-		// get the bean descriptor that holds the mappedBy property
-
-
 		// check that the mappedBy property is valid and read
 		// its associated join information if it is available
 		String mappedBy = prop.getMappedBy();
@@ -602,29 +602,32 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(prop);
 		DeployBeanProperty mappedProp = targetDesc.getBeanProperty(mappedBy);
 		if (mappedProp == null) {
-
 			String m = "Error on " + prop.getFullBeanName();
-			m += "  Can not find mappedBy property [" + mappedBy + "] ";
-			m += "in [" + targetDesc + "]";
+			m += "  Can not find mappedBy property [" + targetDesc+"."+mappedBy + "] ";
 			throw new PersistenceException(m);
 		}
 
 		if (!(mappedProp instanceof DeployBeanPropertyAssocOne)) {
 			String m = "Error on " + prop.getFullBeanName();
-			m += ". mappedBy property [" + mappedBy + "]is not a ManyToOne?";
-			m += "in [" + targetDesc + "]";
+			m += ". mappedBy property [" + targetDesc+"."+mappedBy + "]is not a OneToOne?";
 			throw new PersistenceException(m);
 		}
 
 		DeployBeanPropertyAssocOne<?> mappedAssocOne = (DeployBeanPropertyAssocOne<?>) mappedProp;
 
+		if (!mappedAssocOne.isOneToOne()) {
+			String m = "Error on " + prop.getFullBeanName();
+			m += ". mappedBy property [" + targetDesc+"."+mappedBy + "]is not a OneToOne?";
+			throw new PersistenceException(m);
+		}
+		
 		DeployTableJoin tableJoin = prop.getTableJoin();
 		if (!tableJoin.hasJoinColumns()) {
 			// define Join as the inverse of the mappedBy property
 			DeployTableJoin otherTableJoin = mappedAssocOne.getTableJoin();
 			otherTableJoin.copyTo(tableJoin, true, tableJoin.getTable());
+			tableJoin.setForeignTableAlias("zz"+tableJoin.getForeignTableAlias());
 		}
-
 	}
 	
 	/**
