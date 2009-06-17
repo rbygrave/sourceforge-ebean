@@ -185,7 +185,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
     	prop.setOneToOne(true);
         prop.setNullable(propAnn.optional());
         prop.setMappedBy(propAnn.mappedBy());
-        if (propAnn.mappedBy() != null){
+        if (!"".equals(propAnn.mappedBy())){
         	prop.setOneToOneExported(true);
         }
         

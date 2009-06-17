@@ -329,55 +329,54 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	private void refreshBeanInternal(Object bean, NodeUsageCollector collector, boolean isLazyLoad) {
 
-		if (bean instanceof EntityBean) {
-
-			EntityBean eb = (EntityBean) bean;
-			Class<?> beanType = bean.getClass();
-
-			BeanDescriptor<?> desc = getBeanDescriptor(beanType);
-			// get the real POJO type (no $$EntityBean stuff)
-			beanType = desc.getBeanType();
-
-			Object id = desc.getId(bean);
-
-			EntityBeanIntercept ebi = eb._ebean_getIntercept();
-
-			Object parentBean = ebi.getParentBean();
-
-			OrmQuery<?> query = (OrmQuery<?>) createQuery(beanType);
-			
-			// don't collect autoFetch usage profiling information
-			// as we just copy the data out of these fetched beans
-			// and put the data into the original bean
-			query.setUsageProfiling(false);
-			
-			if (!isLazyLoad){
-				// for refresh we want to run in our own
-				// context (not an existing transaction scoped one)
-				query.setPersistenceContext(new DefaultPersistenceContext());
-			}
-
-			if (parentBean != null) {
-				query.contextAdd(eb);
-			}
-
-			if (collector != null) {
-				query.setParentNode(collector.getNode());
-			}
-
-			query.setId(id);
-			Object dbBean = query.findUnique();
-			if (dbBean == null) {
-				String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
-				throw new PersistenceException(msg);
-			}
-
-			// merge the existing and new dbBean bean
-			refreshHelp.refresh(bean, dbBean, desc, ebi, id, isLazyLoad);
-
-		} else {
+		if (!(bean instanceof EntityBean)) {
 			throw new PersistenceException("Can only refresh a previously fetched bean.");
 		}
+		EntityBean eb = (EntityBean) bean;
+		Class<?> beanType = bean.getClass();
+
+		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
+		// get the real POJO type (no $$EntityBean stuff)
+		beanType = desc.getBeanType();
+
+		Object id = desc.getId(bean);
+
+		EntityBeanIntercept ebi = eb._ebean_getIntercept();
+
+		Object parentBean = ebi.getParentBean();
+
+		OrmQuery<?> query = (OrmQuery<?>) createQuery(beanType);
+		
+		// don't collect autoFetch usage profiling information
+		// as we just copy the data out of these fetched beans
+		// and put the data into the original bean
+		query.setUsageProfiling(false);
+		
+		if (!isLazyLoad){
+			// for refresh we want to run in our own
+			// context (not an existing transaction scoped one)
+			query.setPersistenceContext(new DefaultPersistenceContext());
+		}
+
+		if (parentBean != null) {
+			query.contextAdd(eb);
+		}
+
+		if (collector != null) {
+			query.setParentNode(collector.getNode());
+		}
+
+		query.setId(id);
+		Object dbBean = query.findUnique();
+		if (dbBean == null) {
+			String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
+			throw new PersistenceException(msg);
+		}
+
+		// merge the existing and new dbBean bean
+		refreshHelp.refresh(bean, dbBean, desc, ebi, id, isLazyLoad);
+
+	
 	}
 
 	public InvalidValue validate(Object bean) {
@@ -834,7 +833,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	public <T> Filter<T> filter(Class<T> beanType) {
 		BeanDescriptor<T> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
-			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
+			String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
+			throw new PersistenceException(m);
 		}
 		return new ElFilter<T>(desc);
 	}
@@ -846,7 +846,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	public <T> Query<T> createQuery(Class<T> beanType) {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
-			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
+			String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
+			throw new PersistenceException(m);
 		}
 		if (desc.isSqlSelectBased()) {
 			// use the "default" SqlSelect
@@ -861,7 +862,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	public <T> Update<T> createUpdate(Class<T> beanType, String namedUpdate) {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
-			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
+			String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
+			throw new PersistenceException(m);
 		}
 
 		DeployNamedUpdate deployUpdate = desc.getNamedUpdate(namedUpdate);
@@ -875,7 +877,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	public <T> Update<T> createUpdate(Class<T> beanType) {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
-			throw new PersistenceException(beanType.getName() + " is NOT an Entity Bean?");
+			String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
+			throw new PersistenceException(m);
 		}
 
 		return new DefaultOrmUpdate<T>(beanType, this, desc.getBaseTable());
