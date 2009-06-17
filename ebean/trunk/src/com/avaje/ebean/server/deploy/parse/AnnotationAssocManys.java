@@ -130,12 +130,9 @@ public class AnnotationAssocManys extends AnnotationParser {
 		
 			
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
-			
-			//String propName =  (null != prop.getMappedBy() ? prop.getMappedBy() : prop.getName() );
-			String propName =  prop.getName();
-			
+						
 			// use naming convention to define join
-			String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), propName);
+			String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), prop.getName());
 
 			// Use the owning bean table to define the join
 			BeanTable owningBeanTable = factory.getBeanTable(descriptor.getBeanType());
