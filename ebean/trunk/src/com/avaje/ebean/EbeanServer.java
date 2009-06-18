@@ -158,6 +158,21 @@ public interface EbeanServer {
 	public <T> Query<T> find(Class<T> beanType);
 
 	/**
+	 * Return the next unique identity value for a given bean type.
+	 * <p>
+	 * This will only work when a IdGenerator is on the bean such as 
+	 * for beans that use a DB sequence or UUID.
+	 * </p>
+	 * <p>
+	 * For DB's supporting getGeneratedKeys and sequences such 
+	 * as Oracle10 you do not need to use this method generally.
+	 * It is made available for more complex cases where it is useful 
+	 * to get an ID prior to some processing.  
+	 * </p>
+	 */
+	public Object nextId(Class<?> beanType);
+	
+	/**
 	 * Create a filter for filtering lists of entity beans.
 	 */
 	public <T> Filter<T> filter(Class<T> beanType);

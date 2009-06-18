@@ -788,7 +788,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 */
 	public Object nextId(Class<?> beanType) {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
-		return persister.nextId(desc);
+		return desc.nextId();
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -98,10 +98,6 @@ public final class DefaultPersister implements Persister {
 		this.validation = validate;
 	}
 
-	public Object nextId(BeanDescriptor<?> desc) {
-		return desc.nextId();
-	}
-
 	/**
 	 * Execute the CallableSql.
 	 */
@@ -748,7 +744,7 @@ public final class DefaultPersister implements Persister {
 
 		BeanManager<T> mgr = getPersistDescriptor(bean);
 		if (mgr == null){
-			String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it an entity?";
+			String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it a registered entity?";
 			throw new PersistenceException(msg);
 		}
 

@@ -17,14 +17,25 @@ public class DbIdentity {
 	
 	private String selectLastInsertedIdTemplate;
 
-	private IdType IdType;
+	private String selectSequenceNextValSqlTemplate;
 	
+	private IdType idType = IdType.IDENTITY;
+	
+	public DbIdentity() {
+	}
 	
 	/**
 	 * Return the sequence nextval SQL given the sequence name.
 	 */
 	public String getSequenceNextVal(String sequence){
 		return sequenceNextValTemplate.replace("{sequence}", sequence);
+	}
+
+	/**
+	 * Return the sequence nextval SQL given the sequence name.
+	 */
+	public String getSelectSequenceNextValSql(String sequenceNextVal){
+		return selectSequenceNextValSqlTemplate.replace("{sequencenextval}", sequenceNextVal);
 	}
 
 	/**
@@ -92,27 +103,42 @@ public class DbIdentity {
 
 	/**
 	 * Set to true if the database supports sequences.
+	 * Generally this also means you want to set the default IdType
+	 * to sequence (some DB's support both sequences and identity).
 	 */
-	public void setSupportsSequence(boolean supportsSequence) {
+	public void setSupportsSequence(boolean supportsSequence, IdType idType) {
 		this.supportsSequence = supportsSequence;
+		this.idType = idType;
 	}
 
 	/**
 	 * Return the default ID generation type that should be used.
+	 * This should be either SEQUENCE or IDENTITY (aka Autoincrement).
 	 * <p>
 	 * Note: Id properties of type UUID automatically get a UUID 
 	 * generator assigned to them.
 	 * </p>
 	 */
 	public IdType getIdType() {
-		return IdType;
+		return idType;
 	}
 
 	/**
 	 * Set the default ID generation type that should be used.
 	 */
 	public void setIdType(IdType idType) {
-		IdType = idType;
+		this.idType = idType;
+	}
+
+	/**
+	 * Set a template used to create the SQL to fetch the sequence nextval.
+	 * <p>
+	 * {sequencenextval} is replaced in the template with the actual sequence 
+	 * nextval expression.
+	 * </p>
+	 */
+	public void setSelectSequenceNextValSqlTemplate(String selectSequenceNextValSqlTemplate) {
+		this.selectSequenceNextValSqlTemplate = selectSequenceNextValSqlTemplate;
 	}
 	
 	

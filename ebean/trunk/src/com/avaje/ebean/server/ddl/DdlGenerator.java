@@ -123,6 +123,10 @@ public class DdlGenerator {
 
 		DropTableVisitor drop = new DropTableVisitor(ctx);
 		VisitorUtil.visit(server, drop);
+		
+		DropSequenceVisitor dropSequence = new DropSequenceVisitor(ctx);
+		VisitorUtil.visit(server, dropSequence);
+
 
 		dropContent = ctx.getContent();
 		return dropContent;
@@ -132,8 +136,10 @@ public class DdlGenerator {
 
 		DdlGenContext ctx = createContext();
 		CreateTableVisitor create = new CreateTableVisitor(ctx);
-
 		VisitorUtil.visit(server, create);
+
+		CreateSequenceVisitor createSequence = new CreateSequenceVisitor(ctx);
+		VisitorUtil.visit(server, createSequence);
 
 		AddForeignKeysVisitor fkeys = new AddForeignKeysVisitor(ctx);
 		VisitorUtil.visit(server, fkeys);

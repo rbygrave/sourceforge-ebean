@@ -264,26 +264,22 @@ public final class Ebean {
 		serverMgr.register(server, isPrimaryServer);
 	}
 	
-//	/**
-//	 * Programmatically create and register a EbeanServer.
-//	 * <p>
-//	 * You can register as many EbeanServers as you like but only one can be the
-//	 * 'default/primary' EbeanServer.
-//	 * </p>
-//	 * <p>
-//	 * Create a ServerConfiguration with a name and typically some other
-//	 * parameters such as the DataSource properties (or an already existing
-//	 * DataSource).
-//	 * </p>
-//	 * 
-//	 * @param configuration
-//	 *            Information used to construct the EbeanServer
-//	 * 
-//	 * @return the newly created and registered EbeanServer
-//	 */
-//	public static EbeanServer registerServer(ServerConfiguration configuration) {
-//		return serverMgr.register(configuration);
-//	}
+	/**
+	 * Return the next identity value for a given bean type.
+	 * <p>
+	 * This will only work when a IdGenerator is on this bean type 
+	 * such as a DB sequence or UUID.
+	 * </p>
+	 * <p>
+	 * For DB's supporting getGeneratedKeys and sequences such 
+	 * as Oracle10 you do not need to use this method generally.
+	 * It is made available for more complex cases where it is useful 
+	 * to get an ID prior to some processing.  
+	 * </p>
+	 */
+	public static Object nextId(Class<?> beanType){
+		return serverMgr.getPrimaryServer().nextId(beanType);
+	}
 
 	/**
 	 * Log a comment to the transaction log of the current transaction.

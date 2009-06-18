@@ -36,6 +36,12 @@ public class ScalarTypeUUID extends ScalarTypeBase {
 		super(UUID.class, false, Types.VARCHAR);
 	}
 	
+		
+	@Override
+	public int getLength() {
+		return 40;
+	}
+
 	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
 		if (value == null){
 			pstmt.setNull(index, Types.VARCHAR);

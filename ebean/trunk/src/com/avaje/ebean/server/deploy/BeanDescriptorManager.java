@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
+import javax.sql.DataSource;
 
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
@@ -38,7 +39,9 @@ import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.config.NamingConvention;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
+import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.core.BootupClasses;
@@ -58,6 +61,7 @@ import com.avaje.ebean.server.deploy.parse.DeployInherit;
 import com.avaje.ebean.server.deploy.parse.DeployUtil;
 import com.avaje.ebean.server.deploy.parse.ReadAnnotations;
 import com.avaje.ebean.server.deploy.parse.TransientProperties;
+import com.avaje.ebean.server.idgen.UuidIdGenerator;
 import com.avaje.ebean.server.lib.util.Dnode;
 import com.avaje.ebean.server.reflect.BeanReflect;
 import com.avaje.ebean.server.reflect.BeanReflectFactory;
@@ -129,12 +133,20 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	
 	private final DbIdentity dbIdentity;
 	
+	private final DataSource dataSource;
+	
+	private final DatabasePlatform databasePlatform;
+	
+	private final UuidIdGenerator uuidIdGenerator = new UuidIdGenerator();
+	
 	/**
 	 * Create for a given database dbConfig.
 	 */
 	public BeanDescriptorManager(InternalConfiguration config) {
 
 		this.serverName = config.getServerConfig().getName();
+		this.dataSource = config.getServerConfig().getDataSource();
+		this.databasePlatform = config.getServerConfig().getDatabasePlatform();
 		this.bootupClasses = config.getBootupClasses();
 		this.createProperties = config.getDeployCreateProperties();
 		this.subClassManager = config.getSubClassManager();
@@ -825,19 +837,22 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 				}
 			}
 
-			if (dbIdentity.isSupportsSequence() && (desc.getBaseTable() != null)) {
-				// Derive the SequenceNextVal and set it to the descriptor.
-				// Note: the sequence only gets used *IF* the value of the
-				// id property is null when inserted and IdType.SEQUENCE is set.
-				String dbSeqNextVal = desc.getSequenceNextVal();
-				if (dbSeqNextVal == null) {
-					String seqName = desc.getIdGeneratorName();
-					if (seqName == null){
-						seqName = namingConvention.getSequenceName(desc.getBaseTable());
-					}
-					dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
-					desc.setSequenceNextVal(dbSeqNextVal);
+			String genName = desc.getIdGeneratorName();
+			if (UuidIdGenerator.AUTO_UUID.equals(genName)) {
+				desc.setIdGenerator(uuidIdGenerator);
+				
+			} else if (dbIdentity.isSupportsSequence() && (desc.getBaseTable() != null)) {
+				// define the sequence 
+				String seqName = desc.getSequenceName();
+				if (seqName == null){
+					seqName = namingConvention.getSequenceName(desc.getBaseTable());
 				}
+				String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
+				String sql = databasePlatform.getDbIdentity().getSelectSequenceNextValSql(dbSeqNextVal);
+
+				desc.setIdGenerator(new DbSequenceIdGenerator(dataSource, sql));
+				desc.setSequenceNextVal(dbSeqNextVal);
+				desc.setSequenceName(seqName);
 			}
 			
 			if (desc.getBaseTable() != null){
@@ -847,7 +862,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			}
 
 			if (desc.getIdType() == null){
-				// set the default IdType (SEQUENCE or IDENTITY generally)
+				// set the default IdType. SEQUENCE or IDENTITY hopefully.
 				desc.setIdType(dbIdentity.getIdType());
 			}
 			

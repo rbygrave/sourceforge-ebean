@@ -33,10 +33,10 @@ public class Postgres83Platform extends DatabasePlatform {
     public Postgres83Platform() {
         super();
         	        
-        this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
-        this.dbIdentity.setSupportsSequence(true);
+        this.dbIdentity.setSupportsSequence(true, IdType.GENERATOR);
         this.dbIdentity.setSequenceNextValTemplate("nextval('{sequence}')");
+        this.dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} ");
 
         this.openQuote = "\"";
         this.closeQuote = "\"";
