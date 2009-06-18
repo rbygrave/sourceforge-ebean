@@ -41,10 +41,12 @@ public class Oracle10Platform extends DatabasePlatform {
         //this.dbQueryLimiter = new DbQueryLimiterRowNumber("");
         this.sqlLimiter = new RownumSqlLimiter();
 
+        // use Sequence as default IdType
         dbIdentity.setSupportsGetGeneratedKeys(true);
-        dbIdentity.setSupportsSequence(true);
+        dbIdentity.setSupportsSequence(true, IdType.SEQUENCE);
         dbIdentity.setSequenceNextValTemplate("{sequence}.nextval");
-        
+        dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} from dual");
+
         this.treatEmptyStringsAsNull = true;
     
         this.openQuote = "\"";

@@ -97,9 +97,14 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	final String idGeneratorName;
 
 	/**
-	 * The database sequence name (optional).
+	 * The database sequence nextval (optional).
 	 */
 	final String sequenceNextVal;
+
+	/**
+	 * The database sequence name (optional).
+	 */
+	final String sequenceName;
 
 	/**
 	 * SQL used to return last inserted id.
@@ -379,6 +384,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.idType = deploy.getIdType();
 		this.idGeneratorName = deploy.getIdGeneratorName();
 		this.idGenerator = deploy.getIdGenerator();
+		this.sequenceName = deploy.getSequenceName();
 		this.sequenceNextVal = deploy.getSequenceNextVal();
 		this.selectLastInsertedId = deploy.getSelectLastInsertedId();
 		this.tableGenerated = deploy.isTableGenerated();
@@ -1289,6 +1295,13 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		return sequenceNextVal;
 	}
 
+	/**
+	 * Return the sequence name.
+	 */
+	public String getSequenceName() {
+		return sequenceName;
+	}
+	
 	/**
 	 * Return the SQL used to return the last inserted id.
 	 * <p>

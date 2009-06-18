@@ -76,9 +76,14 @@ public class DeployBeanDescriptor<T> {
 	String idGeneratorName;
 
 	IdGenerator idGenerator;
-	
+
 	/**
 	 * The database sequence name (optional).
+	 */
+	String sequenceName;
+
+	/**
+	 * The database sequence nextval (optional).
 	 */
 	String sequenceNextVal;
 	
@@ -564,6 +569,20 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setIdType(IdType idType) {
 		this.idType = idType;
+	}
+
+	/**
+	 * Return the DB sequence name (can be null).
+	 */
+	public String getSequenceName() {
+		return sequenceName;
+	}
+
+	/**
+	 * Set the DB sequence name.
+	 */
+	public void setSequenceName(String sequenceName) {
+		this.sequenceName = sequenceName;
 	}
 
 	/**

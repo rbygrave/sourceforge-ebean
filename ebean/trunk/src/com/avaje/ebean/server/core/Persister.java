@@ -20,10 +20,9 @@
 package com.avaje.ebean.server.core;
 
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 
 /**
@@ -31,9 +30,6 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
  */
 public interface Persister {
 
-
-	public Object nextId(BeanDescriptor<?> desc);
-	
     /**
      * Insert or update the bean depending on its state.
      */

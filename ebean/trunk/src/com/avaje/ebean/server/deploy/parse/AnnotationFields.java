@@ -211,7 +211,7 @@ public class AnnotationFields extends AnnotationParser {
 		} else if (strategy == GenerationType.SEQUENCE) {
 			descriptor.setIdType(IdType.SEQUENCE);
 			if (genName != null && genName.length() > 0) {
-				descriptor.setIdGeneratorName(genName);
+				descriptor.setSequenceName(genName);
 			}
 
 		} else if (strategy == GenerationType.AUTO) {
@@ -220,11 +220,7 @@ public class AnnotationFields extends AnnotationParser {
 				descriptor.setIdType(IdType.GENERATOR);
 				
 			} else {
-				
-				descriptor.setIdType(IdType.GENERATOR);
-				if (genName != null && genName.length() > 0) {
-					descriptor.setIdGeneratorName(genName);
-				}
+				// use DatabasePlatform defaults
 			}
 		}
 	}
