@@ -21,8 +21,7 @@ package com.avaje.ebean.server.deploy.parse;
 
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
+import com.avaje.ebean.server.deploy.RawSqlMeta;
 
 /**
  * Read the class level deployment annotations.
@@ -55,9 +54,7 @@ public class AnnotationSql extends AnnotationParser {
 
 	private void setSqlSelect(SqlSelect sqlSelect) {
 
-		DeploySqlSelect parsedSql = util.parseSqlSelect(descriptor, sqlSelect);
-
-		DeployNamedQuery namedQuery = new DeployNamedQuery(sqlSelect.name(), sqlSelect.query(),null, parsedSql);
-		descriptor.add(namedQuery);
+		RawSqlMeta rawSqlMeta = new RawSqlMeta(sqlSelect);
+		descriptor.add(rawSqlMeta);
 	}
 }

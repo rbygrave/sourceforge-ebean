@@ -4,14 +4,14 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
 public final class SqlTreeNodeManyRoot extends SqlTreeNodeBean {
 
-	public SqlTreeNodeManyRoot(JoinNode node, SqlTreeProperties props, List<SqlTreeNode> myList) {
-		super(node, props, myList, true);
+	public SqlTreeNodeManyRoot(String prefix, BeanPropertyAssocMany<?> prop, SqlTreeProperties props, List<SqlTreeNode> myList) {
+		super(prefix, prop, prop.getTargetDescriptor(), props, myList, true);
 	}
 
     @Override

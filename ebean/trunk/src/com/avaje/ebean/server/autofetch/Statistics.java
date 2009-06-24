@@ -14,7 +14,7 @@ import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.QueryStats;
 import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 public class Statistics implements Serializable {
 
@@ -82,7 +82,7 @@ public class Statistics implements Serializable {
 		return counter;
 	}
 	
-	public OrmQueryDetail buildTunedFetch(JoinNode joinRoot){
+	public OrmQueryDetail buildTunedFetch(BeanDescriptor<?> rootDesc){
 		
 		synchronized (monitor) {
 			
@@ -91,7 +91,7 @@ public class Statistics implements Serializable {
 			Iterator<StatisticsNodeUsage> it = nodeUsageMap.values().iterator();
 			while (it.hasNext()) {
 				StatisticsNodeUsage statsNode = (StatisticsNodeUsage) it.next();
-				statsNode.buildTunedFetch(detail, joinRoot);
+				statsNode.buildTunedFetch(detail, rootDesc);
 			}
 			
 			return detail;

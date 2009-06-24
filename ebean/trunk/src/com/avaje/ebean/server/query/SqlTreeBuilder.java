@@ -27,11 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.PersistenceException;
-
+import com.avaje.ebean.el.ElGetValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.query.OrmQueryProperties;
@@ -42,9 +42,6 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.JoinNode.Type;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -57,8 +54,6 @@ public class SqlTreeBuilder {
 	final OrmQuery<?> query;
 
 	final OrmQueryDetail queryDetail;
-
-	final JoinTree joinTree;
 
 	final SqlTree clause = new SqlTree();
 
@@ -77,7 +72,12 @@ public class SqlTreeBuilder {
 	 */
 	BeanPropertyAssocMany<?> manyProperty;
 
-
+	OrmQueryRequest<?> request;
+	
+	SqlTreeAlias alias;
+	
+	DefaultDbSqlContext ctx;
+	
 	/**
 	 * The predicates are used to determine if 'extra' joins are required to
 	 * support the where and/or order by clause. If so these extra joins are
@@ -85,20 +85,18 @@ public class SqlTreeBuilder {
 	 */
 	public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, 
 			OrmQueryRequest<?> request, CQueryPredicates predicates) {
-		
+	
+		this.request = request;
 		this.subQuery = request.isSubQuery();
         this.query = request.getQuery();
-    	this.joinTree = request.getBeanJoinTree();
-    	if (joinTree == null){
-    		String msg = "Error with query on "+request.getBeanDescriptor().getFullName();
-    		msg +=". Has it got a valid base table? (joinTree is null!)";
-    		throw new PersistenceException(msg);
-    	}
     	
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
 		this.queryDetail = query.getDetail();
 		this.predicates = predicates;
+
+		this.alias = request.getSqlTreeAlias();
+		this.ctx = new DefaultDbSqlContext(alias, tableAliasPlaceHolder, columnAliasPrefix, !subQuery);
 	}
 
 	/**
@@ -106,8 +104,7 @@ public class SqlTreeBuilder {
 	 */
 	public SqlTree build() {
 
-		JoinNode root = joinTree.getRoot();
-		BeanDescriptor<?> desc = root.getBeanDescriptor();
+		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		summary.append("[");
 		if (desc.isTableGenerated()) {
 			summary.append(desc.getBaseTable());
@@ -117,7 +114,7 @@ public class SqlTreeBuilder {
 		}
 
 		// build the appropriate chain of SelectAdapter's
-		build(root);
+		buildRoot(desc);
 
 		// build the actual String
 		SqlTreeNode rootNode = clause.getRootNode();
@@ -134,13 +131,13 @@ public class SqlTreeBuilder {
 		clause.setIncludes(queryDetail.getIncludes());
 		clause.setSummary(summary.toString());
 		clause.setManyProperty(manyProperty);
+
+
 		return clause;
 	}
 
 	private String buildSelectClause(SqlTreeNode rootNode) {
 
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder, columnAliasPrefix, !subQuery);
-		
 		rootNode.appendSelect(ctx);
 
 		String selectSql = ctx.toString();
@@ -155,69 +152,79 @@ public class SqlTreeBuilder {
 
 	private String buildWhereClause(SqlTreeNode rootNode) {
 
-		StringBuilder sb = new StringBuilder();
+		rootNode.appendWhere(ctx);
 
-		rootNode.appendWhere(sb);
-
-		return sb.toString();
+		return ctx.toString();
 	}
 
 	private String buildFromClause(SqlTreeNode rootNode) {
-
-		DefaultDbSqlContext ctx = new DefaultDbSqlContext(tableAliasPlaceHolder);
 
 		rootNode.appendFrom(ctx, false);
 
 		return ctx.toString();
 	}
 
-	private void build(JoinNode root) {
+	private void buildRoot(BeanDescriptor<?> desc){
 
-		SqlTreeNode selectRoot = buildSelectChain(root, null);
+		SqlTreeNode selectRoot = buildSelectChain(null, null, desc, null);
 		clause.setRootNode(selectRoot);
+		
+		alias.add(queryDetail.getIncludes());
+		alias.add(predicates.getPredicateIncludes());
+		
+		// build set of table alias
+		alias.buildAlias();
+		
+		predicates.parseTableAlias(alias);
 	}
 
 	/**
 	 * Recursively build the query tree depending on what leaves in the tree
 	 * should be included.
 	 */
-	private SqlTreeNode buildSelectChain(JoinNode node, List<SqlTreeNode> joinList) {
+	private SqlTreeNode buildSelectChain(String prefix, BeanPropertyAssoc<?> prop, BeanDescriptor<?> desc, List<SqlTreeNode> joinList) {
 
-		if (!isInclude(node)) {
-			return null;
-		}
 
 		List<SqlTreeNode> myJoinList = new ArrayList<SqlTreeNode>();
 
-		JoinNode[] children = node.children();
-		for (int i = 0; i < children.length; i++) {
-			buildSelectChain(children[i], myJoinList);
+		BeanPropertyAssocOne<?>[] ones = desc.propertiesOne();
+		for (int i = 0; i < ones.length; i++) {
+			String propPrefix = SplitName.add(prefix, ones[i].getName());
+			if (isIncludeBean(propPrefix, ones[i])){
+				buildSelectChain(propPrefix, ones[i], ones[i].getTargetDescriptor(), myJoinList);
+			}
+		}
+		
+		BeanPropertyAssocMany<?>[] manys = desc.propertiesMany();
+		for (int i = 0; i < manys.length; i++) {
+			String propPrefix = SplitName.add(prefix, manys[i].getName());
+			if (isIncludeMany(propPrefix, manys[i])){
+				buildSelectChain(propPrefix, manys[i], manys[i].getTargetDescriptor(), myJoinList);
+			}
 		}
 
-		SqlTreeNode selectNode = buildNode(node, myJoinList);
+		SqlTreeNode selectNode = buildNode(prefix, prop, desc, myJoinList);
 		if (joinList != null) {
 			joinList.add(selectNode);
 		}
 		return selectNode;
 	}
 
-	private SqlTreeNode buildNode(JoinNode node, List<SqlTreeNode> myList) {
+	private SqlTreeNode buildNode(String prefix, BeanPropertyAssoc<?> prop, BeanDescriptor<?> desc, List<SqlTreeNode> myList) {
 
-		OrmQueryProperties queryProps = queryDetail.getChunk(node.getPropertyPrefix(), false);
+		OrmQueryProperties queryProps = queryDetail.getChunk(prefix, false);
 
-		BeanDescriptor<?> desc = node.getBeanDescriptor();
+		SqlTreeProperties props = getBaseSelect(desc, queryProps);
 
-		SqlTreeProperties props = getBaseSelect(node, desc, queryProps);
+		if (prefix == null) {
+			buildExtraJoins(desc, myList);
+			return new SqlTreeNodeRoot(desc, props, myList, !subQuery, query.getIncludeTableJoin());
 
-		if (node.isRoot()) {
-			buildExtraJoins(node, myList);
-			return new SqlTreeNodeRoot(node, props, myList, !subQuery, query.getIncludeTableJoin());
-
-		} else if (node.isManyJoin()) {
-			return new SqlTreeNodeManyRoot(node, props, myList);
+		} else if (prop instanceof BeanPropertyAssocMany<?>) {
+			return new SqlTreeNodeManyRoot(prefix, (BeanPropertyAssocMany<?>)prop, props, myList);
 
 		} else {
-			return new SqlTreeNodeBean(node, props, myList, true);
+			return new SqlTreeNodeBean(prefix, prop, props, myList, true);
 		}
 	}
 
@@ -225,21 +232,24 @@ public class SqlTreeBuilder {
 	 * Build extra joins to support properties used in where clause but not
 	 * already in select clause.
 	 */
-	private void buildExtraJoins(JoinNode root, List<SqlTreeNode> myList) {
+	private void buildExtraJoins(BeanDescriptor<?> desc, List<SqlTreeNode> myList) {
 
 		Set<String> predicateIncludes = predicates.getPredicateIncludes();
+
 		if (predicateIncludes == null) {
 			return;
 		}
-		IncludesDistiller extraJoinDistill = new IncludesDistiller(root, queryDetail.getIncludes(),
+		
+		IncludesDistiller extraJoinDistill = new IncludesDistiller(desc, queryDetail.getIncludes(),
 				predicateIncludes);
 
 		Collection<SqlTreeNodeExtraJoin> extraJoins = extraJoinDistill.getExtraJoinRootNodes();
 		if (extraJoins.isEmpty()) {
+			return;
 
 		} else {
-			// add extra joins required to support predicates and/or order by
-			// clause
+			// add extra joins required to support predicates 
+			// and/or order by clause
 			Iterator<SqlTreeNodeExtraJoin> it = extraJoins.iterator();
 			while (it.hasNext()) {
 				SqlTreeNodeExtraJoin extraJoin = it.next();
@@ -251,10 +261,8 @@ public class SqlTreeBuilder {
 					// rows...
 					query.setDistinct(true);
 				}
-				
 			}
 		}
-
 	}
 
 	/**
@@ -345,7 +353,7 @@ public class SqlTreeBuilder {
 	}
 	
 
-	private SqlTreeProperties getBaseSelectPartial(JoinNode node, BeanDescriptor<?> desc,
+	private SqlTreeProperties getBaseSelectPartial(BeanDescriptor<?> desc,
 			OrmQueryProperties queryProps) {
 
 		SqlTreeProperties selectProps = new SqlTreeProperties();
@@ -370,12 +378,11 @@ public class SqlTreeBuilder {
 		return selectProps;
 	}
 
-	private SqlTreeProperties getBaseSelect(JoinNode node, BeanDescriptor<?> desc,
-			OrmQueryProperties queryProps) {
+	private SqlTreeProperties getBaseSelect(BeanDescriptor<?> desc, OrmQueryProperties queryProps) {
 
 		boolean partial = queryProps != null && !queryProps.allProperties();
 		if (partial) {
-			return getBaseSelectPartial(node, desc, queryProps);
+			return getBaseSelectPartial(desc, queryProps);
 		}
 
 		SqlTreeProperties selectProps = new SqlTreeProperties();
@@ -408,12 +415,11 @@ public class SqlTreeBuilder {
 	/**
 	 * Return true if this many node should be included in the query.
 	 */
-	private boolean isIncludeMany(JoinNode node) {
+	private boolean isIncludeMany(String propName, BeanPropertyAssocMany<?> manyProp) {//BeanDescriptor<?> desc) {
+		
 		if (queryDetail.isFetchJoinsEmpty()) {
 			return false;
 		}
-
-		String propName = node.getPropertyPrefix();
 
 		if (queryDetail.includes(propName)) {
 			// add the 'many' property to the baseProps list
@@ -421,21 +427,21 @@ public class SqlTreeBuilder {
 			// when reading the resultSet data
 			// queryDetail.addBaseProperty(propName);
 
-			if (node.getJoinDepth() != 1) {
-				// many must be directly associated with root object
-				String m = Message.msg("fetch.many.depth", node.getPropertyPrefix());
-				logger.warning(m);
-				return false;
-			}
+//			if (node.getJoinDepth() != 1) {
+//				// many must be directly associated with root object
+//				String m = Message.msg("fetch.many.depth", node.getPropertyPrefix());
+//				logger.warning(m);
+//				return false;
+//			}
 			if (manyProperty != null) {
 				// only one many associated allowed to be included in fetch
-				String m = Message.msg("fetch.many.one", node.getPropertyPrefix());
+				String m = Message.msg("fetch.many.one", propName);
 				logger.warning(m);
 				return false;
 			}
 
-			manyProperty = node.getManyProp();
-			summary.append("] +many[").append(node.getPropertyPrefix());
+			manyProperty = manyProp;
+			summary.append("] +many[").append(propName);
 			return true;
 		}
 		return false;
@@ -449,42 +455,17 @@ public class SqlTreeBuilder {
 	 * proxy" is added and false is returned.
 	 * </p>
 	 */
-	private boolean isIncludeBean(JoinNode node) {
+	private boolean isIncludeBean(String prefix, BeanPropertyAssocOne<?> prop) {
 
-		String prefix = node.getPropertyPrefix();
-		String parentProp = node.getParent().getPropertyPrefix();
-		String propertyName = node.getBeanProp().getName();
 		if (queryDetail.includes(prefix)) {
 			// explicitly included
 			summary.append(", ").append(prefix);
-			queryDetail.includeBeanJoin(parentProp, propertyName);
+			String[] splitNames = SplitName.split(prefix);
+			queryDetail.includeBeanJoin(splitNames[0], splitNames[1]);
 			return true;
 		}
 
 		return false;
-	}
-
-	/**
-	 * Test to see if we are including this node into the query.
-	 */
-	private boolean isInclude(JoinNode node) {
-		Type type = node.getType();
-		switch (type) {
-		case ROOT:
-			return true;
-			
-		case EMBEDDED:
-			return false;
-
-		case BEAN:
-			return isIncludeBean(node);
-
-		case LIST:
-			return isIncludeMany(node);
-
-		default:
-			throw new IllegalArgumentException("Unknown type " + type);
-		}
 	}
 
 	/**
@@ -510,12 +491,21 @@ public class SqlTreeBuilder {
 		 */
 		final Map<String, SqlTreeNodeExtraJoin> rootRegister = new HashMap<String, SqlTreeNodeExtraJoin>();
 
-		final JoinNode root;
-
-		IncludesDistiller(JoinNode root, Set<String> selectIncludes, Set<String> predicateIncludes) {
-			this.root = root;
+		final BeanDescriptor<?> desc;
+		
+		IncludesDistiller(BeanDescriptor<?> desc, Set<String> selectIncludes, Set<String> predicateIncludes) {
+			this.desc = desc;
 			this.selectIncludes = selectIncludes;
 			this.predicateIncludes = predicateIncludes;
+		}
+		
+		public Set<String> getIncludesOrdered() {
+			
+			TreeSet<String> total = new TreeSet<String>();
+			total.addAll(selectIncludes);
+			total.addAll(predicateIncludes);
+			
+			return total;
 		}
 
 		/**
@@ -565,21 +555,26 @@ public class SqlTreeBuilder {
 		 * Create a SqlTreeNodeExtraJoin, register and return it.
 		 */
 		private SqlTreeNodeExtraJoin createJoinLeaf(String propertyName) {
-			JoinNode node = root.findChild(propertyName);
-			if (node == null){
+			
+			ElGetValue elGetValue = desc.getElGetValue(propertyName);
+
+			if (elGetValue == null){
 				// this can occur for master detail queries
 				// with concatenated keys (so not an error now)
 				return null;
 			}
-			if (node.isEmbeddedBean()){
-				// no extra join required for embedded beans
-				return null;
-				
-			} else {
-				SqlTreeNodeExtraJoin extraJoin = new SqlTreeNodeExtraJoin(node);
+			BeanProperty beanProperty = elGetValue.getBeanProperty();
+			if (beanProperty instanceof BeanPropertyAssoc<?>){
+				BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>)beanProperty;
+				if (assocProp.isEmbedded()){
+					// no extra join required for embedded beans
+					return null;
+				}
+				SqlTreeNodeExtraJoin extraJoin = new SqlTreeNodeExtraJoin(propertyName, assocProp);
 				joinRegister.put(propertyName, extraJoin);
 				return extraJoin;
 			}
+			return null;
 		}
 
 		/**

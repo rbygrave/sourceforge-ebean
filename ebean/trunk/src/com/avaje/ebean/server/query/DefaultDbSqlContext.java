@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Stack;
 
 import com.avaje.ebean.server.deploy.DbSqlContext;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.lib.util.StringHelper;
 
 public class DefaultDbSqlContext implements DbSqlContext {
@@ -18,54 +17,99 @@ public class DefaultDbSqlContext implements DbSqlContext {
 	private final String tableAliasPlaceHolder;
 	
 	private final String columnAliasPrefix;
-	
-	private final StringBuilder sb = new StringBuilder();
 
 	private final Stack<String> tableAliasStack = new Stack<String>();
 
-	private final Stack<JoinNode> joinStack = new Stack<JoinNode>();
+	private final Stack<String> joinStack = new Stack<String>();
+ 
+	private final boolean useColumnAlias;
 
 	private int columnIndex;
-	 
-	private final boolean useColumnAlias;
 	
+	private StringBuilder sb = new StringBuilder();
+
 	/**
 	 * A Set used to make sure formula joins are only added once to a query.
 	 */
 	private HashSet<String> formulaJoins;
 
+	private SqlTreeAlias alias;
+
+	private String currentPrefix;
+
 	/**
 	 * Construct for FROM clause (no column alias used).
 	 */
-	public DefaultDbSqlContext(String tableAliasPlaceHolder) {
+	public DefaultDbSqlContext(SqlTreeAlias alias, String tableAliasPlaceHolder) {
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = null;
 		this.useColumnAlias = false;
+		this.alias = alias;
 	}
 	
 	/**
 	 * Construct for SELECT clause (with column alias settings).
 	 */
-	public DefaultDbSqlContext(String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias) {
+	public DefaultDbSqlContext(SqlTreeAlias alias, String tableAliasPlaceHolder, String columnAliasPrefix, boolean alwaysUseColumnAlias) {
+		this.alias = alias;
 		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
 		this.columnAliasPrefix = columnAliasPrefix;
 		this.useColumnAlias = alwaysUseColumnAlias;
 	}
-	
-	public JoinNode peekJoinNode() {
+
+	public String peekJoin() {
 		return joinStack.peek();
 	}
 
-	public void popJoinNode() {
+	public void popJoin() {
 		joinStack.pop();
 	}
 
-	public void pushJoinNode(JoinNode node) {
+	public void pushJoin(String node) {
 		joinStack.push(node);
 	}
 
-	public void pushTableAlias(String tableAlias) {
-		tableAliasStack.push(tableAlias);
+	
+//	public JoinNode peekJoinNode() {
+//		return joinStack.peek();
+//	}
+//
+//	public void popJoinNode() {
+//		joinStack.pop();
+//	}
+//
+//	public void pushJoinNode(JoinNode node) {
+//		joinStack.push(node);
+//	}
+
+	public String getRelativePrefix(String propName){
+		
+		return currentPrefix == null ? propName : currentPrefix+"."+propName;
+	}
+	
+	public String getRelativeAlias(String propName){
+		
+		String pref = currentPrefix == null ? propName : currentPrefix+"."+propName;
+		return getTableAlias(pref);
+	}
+	
+	public String getTableAlias(String prefix){
+	
+		return alias.getTableAlias(prefix);
+		
+//		if(prefix == null){
+//			return "r";
+//		} else {
+//			return prefix.replace('.', '_')+"_";
+//		}
+	}
+	public void pushSecondaryTableAlias(String alias) {
+		tableAliasStack.push(alias);	
+	}
+	
+	public void pushTableAlias(String prefix) {
+		currentPrefix = prefix;	
+		tableAliasStack.push(getTableAlias(prefix));
 	}
 
 	public void popTableAlias() {
@@ -144,8 +188,14 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		columnIndex++;
 	}
 
+	public int length() {
+		return sb.length();
+	}
+	
 	public String toString() {
-		return sb.toString();
+		String s = sb.toString();
+		sb = new StringBuilder();
+		return s;
 	}
 
 }

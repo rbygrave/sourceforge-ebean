@@ -11,7 +11,6 @@ import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
 import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.DeployOrmXml;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser;
 import com.avaje.ebean.server.deploy.parse.DeployCreateProperties;
 import com.avaje.ebean.server.deploy.parse.DeployInherit;
 import com.avaje.ebean.server.deploy.parse.DeployUtil;
@@ -53,8 +52,6 @@ public class InternalConfiguration {
 	
 	final DeployCreateProperties deployCreateProperties;
 	
-	final DeploySqlSelectParser deploySqlSelectParser;
-	
 	final DeployUtil deployUtil;
 	
 	final BeanDescriptorManager beanDescriptorManager;
@@ -87,7 +84,6 @@ public class InternalConfiguration {
 		this.deployInherit = new DeployInherit(bootupClasses);		
 		
 		this.deployCreateProperties = new DeployCreateProperties(typeManager);
-		this.deploySqlSelectParser = new DeploySqlSelectParser(serverConfig.getNamingConvention());
 		this.deployUtil = new DeployUtil(serverConfig.getDatabasePlatform(), typeManager, serverConfig.getNamingConvention());
 
 		
@@ -173,10 +169,6 @@ public class InternalConfiguration {
 
 	public DeployCreateProperties getDeployCreateProperties() {
 		return deployCreateProperties;
-	}
-
-	public DeploySqlSelectParser getDeploySqlSelectParser() {
-		return deploySqlSelectParser;
 	}
 
 	public DeployUtil getDeployUtil() {

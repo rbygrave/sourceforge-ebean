@@ -1,39 +1,41 @@
 package com.avaje.ebean.server.deploy;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.query.SimpleTextParser;
-import com.avaje.ebean.server.deploy.DeploySqlSelect.ColumnInfo;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 
 /**
  * Parses sql-select queries to try and determine the location where WHERE and HAVING
  * clauses can be added dynamically to the sql.
  */
-public class DefaultDeploySqlSelectParser {
+public class RawSqlSelectBuilder {
+
+	public static final String $_AND_HAVING = "${andHaving}";
+	
+	public static final String $_HAVING = "${having}";
+
+	public static final String $_AND_WHERE = "${andWhere}";
+
+	public static final String $_WHERE = "${where}";
 
 	private static final String ORDER_BY = "order by";
 
-	final DeployBeanDescriptor<?> deployDesc;
+	private final BeanDescriptor<?> desc;
 
-	final NamingConvention namingConvention;
+	private final NamingConvention namingConvention;
 
-	final Meta meta;
+	private final RawSqlMeta meta;
 
-	final boolean debug;
+	private final boolean debug;
 
 	private String sql;
 
 	private final SimpleTextParser textParser;
 
-	private List<ColumnInfo> selectColumns;
+	private List<RawSqlColumnInfo> selectColumns;
 
-	private Map<String, PropertyDeploy> deployPropMap;
+//	private Map<String, PropertyDeploy> deployPropMap;
 
 	private int placeHolderWhere;
 	private int placeHolderAndWhere;
@@ -53,30 +55,81 @@ public class DefaultDeploySqlSelectParser {
 	private boolean havingExprAnd;
 	private int havingExprPos = -1;
 
-	public DefaultDeploySqlSelectParser(NamingConvention namingConvention,
-			DeployBeanDescriptor<?> deployDesc, Meta sqlSelectMeta) {
+	public RawSqlSelectBuilder(NamingConvention namingConvention, BeanDescriptor<?> desc, RawSqlMeta sqlSelectMeta) {
 
 		this.namingConvention = namingConvention;
-		this.deployDesc = deployDesc;
+		this.desc = desc;
 		this.meta = sqlSelectMeta;
-		this.debug = sqlSelectMeta.debug;
-		this.sql = sqlSelectMeta.query.trim();
+		this.debug = sqlSelectMeta.isDebug();
+		this.sql = sqlSelectMeta.getQuery().trim();
 		this.hasPlaceHolders = findAndRemovePlaceHolders();
 		this.textParser = new SimpleTextParser(this.sql);
+	}
+
+	protected NamingConvention getNamingConvention() {
+		return namingConvention;
+	}
+
+	protected BeanDescriptor<?> getBeanDescriptor() {
+		return desc;
+	}
+	
+	protected boolean isDebug() {
+		return debug;
+	}
+
+	protected void debug(String msg) {
+		if (debug) {
+			System.out.println("debug> " + msg);
+		}
+	}
+	
+	public DeployNamedQuery parse() {
+
+		if (debug) {
+			debug("");
+			debug("Parsing sql-select in " + getErrName());
+		}
+
+		if (hasPlaceHolders()) {
+
+		} else {
+			// parse the sql for the keywords...
+			// select, from, where, having, group by, order by
+			parseSqlFindKeywords(true);
+		}
+
+		selectColumns = findSelectColumns(meta.getColumnMapping());
+//		deployPropMap = buildDeployMap();
+
+		whereExprPos = findWhereExprPosition();
+		havingExprPos = findHavingExprPosition();
+
+		String preWhereExprSql = removeWhitespace(findPreWhereExprSql());
+		String preHavingExprSql = removeWhitespace(findPreHavingExprSql());
+
+		preWhereExprSql = trimSelectKeyword(preWhereExprSql);
+		
+		String orderBySql = findOrderBySql();	
+		
+		RawSqlSelect rawSqlSelect = new RawSqlSelect(desc, selectColumns, preWhereExprSql, 
+				whereExprAnd, preHavingExprSql, havingExprAnd, orderBySql, meta);
+		
+		return new DeployNamedQuery(rawSqlSelect);
 	}
 
 	/**
 	 * Find and remove the known place holders such as ${where}.
 	 */
 	private boolean findAndRemovePlaceHolders() {
-		placeHolderWhere = removePlaceHolder(DeploySqlSelectParser.$_WHERE);
-		placeHolderAndWhere = removePlaceHolder(DeploySqlSelectParser.$_AND_WHERE);
-		placeHolderHaving = removePlaceHolder(DeploySqlSelectParser.$_HAVING);
-		placeHolderAndHaving = removePlaceHolder(DeploySqlSelectParser.$_AND_HAVING);
+		placeHolderWhere = removePlaceHolder($_WHERE);
+		placeHolderAndWhere = removePlaceHolder($_AND_WHERE);
+		placeHolderHaving = removePlaceHolder($_HAVING);
+		placeHolderAndHaving = removePlaceHolder($_AND_HAVING);
 		return hasPlaceHolders();
 	}
 
-	public int removePlaceHolder(String placeHolder) {
+	private int removePlaceHolder(String placeHolder) {
 		int pos = sql.indexOf(placeHolder);
 		if (pos > -1) {
 			int after = pos + placeHolder.length() + 1;
@@ -105,44 +158,6 @@ public class DefaultDeploySqlSelectParser {
 		return false;
 	}
 
-	void debug(String msg) {
-		if (debug) {
-			System.out.println("debug> " + msg);
-		}
-	}
-
-	public DeploySqlSelect parse() {
-
-		if (debug) {
-			debug("");
-			debug("Parsing sql-select in " + getErrName());
-		}
-
-		if (hasPlaceHolders()) {
-
-		} else {
-			// parse the sql for the keywords...
-			// select, from, where, having, group by, order by
-			parseSqlFindKeywords(true);
-		}
-
-		selectColumns = findSelectColumns(meta.columnMapping);
-		deployPropMap = buildDeployMap();
-
-		whereExprPos = findWhereExprPosition();
-		havingExprPos = findHavingExprPosition();
-
-		String preWhereExprSql = removeWhitespace(findPreWhereExprSql());
-		String preHavingExprSql = removeWhitespace(findPreHavingExprSql());
-
-		preWhereExprSql = trimSelectKeyword(preWhereExprSql);
-		
-		String orderBySql = findOrderBySql();
-
-		return new DeploySqlSelect(deployPropMap, selectColumns, preWhereExprSql, whereExprAnd,
-				preHavingExprSql, havingExprAnd, orderBySql, meta);
-	}
-
 	/**
 	 * Trim off the select keyword (to support row_number() limit function).
 	 */
@@ -159,23 +174,6 @@ public class DefaultDeploySqlSelectParser {
 		return preWhereExprSql.substring(7);
 	}
 	
-	/**
-	 * Build the map used to translate logical bean property names to db columns.
-	 * <p>
-	 * Used in converting logical where expressions to actual sql.
-	 * </p>
-	 */
-	private Map<String, PropertyDeploy> buildDeployMap() {
-		
-		Map<String, PropertyDeploy> map = new HashMap<String, PropertyDeploy>();
-		for (int i = 0; i < selectColumns.size(); i++) {
-			ColumnInfo columnInfo = selectColumns.get(i);
-			
-			PropertyDeploy deploy = columnInfo.createPropertyDeploy();
-			map.put(columnInfo.getPropertyName(), deploy);
-		}
-		return map;
-	}
 
 	private String findOrderBySql() {
 		if (orderByPos > -1) {
@@ -205,15 +203,15 @@ public class DefaultDeploySqlSelectParser {
 		}
 	}
 
-	String getErrName() {
-		return "entity[" + deployDesc.getFullName() + "] query[" + meta.name + "]";
+	protected String getErrName() {
+		return "entity[" + desc.getFullName() + "] query[" + meta.getName() + "]";
 	}
 
 	/**
 	 * Find the columns in the select clause including the table alias' and
 	 * column alias.
 	 */
-	private List<ColumnInfo> findSelectColumns(String selectClause) {
+	private List<RawSqlColumnInfo> findSelectColumns(String selectClause) {
 
 		if (selectClause == null || selectClause.trim().length() == 0) {
 			if (hasPlaceHolders) {
@@ -238,9 +236,7 @@ public class DefaultDeploySqlSelectParser {
 			debug("ColumnMapping ... [" + selectClause + "]");
 		}
 
-		DefaultDeploySqlSelectColumnsParser parser = new DefaultDeploySqlSelectColumnsParser(this,
-				selectClause);
-		return parser.parse();
+		return new RawSqlSelectColumnsParser(this,selectClause).parse();
 	}
 
 	private void parseSqlFindKeywords(boolean allKeywords) {

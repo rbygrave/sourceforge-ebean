@@ -19,11 +19,25 @@
  */
 package com.avaje.ebean.el;
 
+import com.avaje.ebean.server.deploy.BeanProperty;
+
 /**
  * The expression language getter method.
  */
-public interface ElGetValue {
+public interface ElGetValue extends ElPropertyDeploy {
 
+	public boolean isDeployOnly();
+	
+	public String getPrefix();
+
+	public String getName();
+		
+	public String getDbColumn();
+	
+	public BeanProperty getBeanProperty();
+	
+	public String getDeployProperty();
+	
 	/**
 	 * Return the value from a given entity bean.
 	 */

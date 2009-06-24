@@ -45,6 +45,10 @@ public class ElGetChainBuilder {
 		this.expression = expression;
 	}
 
+	public String getExpression() {
+		return expression;
+	}
+
 	/**
 	 * Add a ElGetValue element to the chain.
 	 */

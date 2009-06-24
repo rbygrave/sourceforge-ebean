@@ -1,23 +1,21 @@
 package com.avaje.ebean.server.deploy;
 
-import java.util.Map;
+import com.avaje.ebean.el.ElGetValue;
 
 /**
  * For updates converts logical property names to database columns and bean type to base table.
  */
 public final class DeployUpdateParser extends DeployParser {
 
-
-	private final Map<String, String> deployMap;
-
-
-	public DeployUpdateParser(final Map<String, String> deployMap) {
-		this.deployMap = deployMap;
+	private final BeanDescriptor<?> beanDescriptor;
+	
+	public DeployUpdateParser(BeanDescriptor<?> beanDescriptor) {
+		this.beanDescriptor = beanDescriptor;
 	}
 
 	public String convertWord() {
 
-		String dbWord = deployMap.get(word.toLowerCase());
+		String dbWord = getDeployWord(word);
 
 		if (dbWord != null) {
 			return dbWord;
@@ -53,7 +51,8 @@ public final class DeployUpdateParser extends DeployParser {
 		start = dotPos+1;
 		String remainder = currentWord.substring(start, currentWord.length());
 		
-		String dbWord = deployMap.get(remainder.toLowerCase());
+		//String dbWord = deployMap.get(remainder.toLowerCase());
+		String dbWord = getDeployWord(remainder);
 		if (dbWord != null){
 			// we have found a match for the remainder
 			localBuffer.append(dbWord);
@@ -64,5 +63,14 @@ public final class DeployUpdateParser extends DeployParser {
 		}
 	}
 	
+	private String getDeployWord(String expression) {
+	
+		ElGetValue elGetValue = beanDescriptor.getElGetValue(expression);
+		if (elGetValue != null){
+			return elGetValue.getDbColumn();
+		} else {
+			return null;
+		}
+	}
 	
 }

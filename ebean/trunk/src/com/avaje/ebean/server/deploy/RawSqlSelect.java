@@ -1,22 +1,14 @@
 package com.avaje.ebean.server.deploy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
 import com.avaje.ebean.server.query.CQueryPredicates;
 import com.avaje.ebean.server.query.SqlTree;
 import com.avaje.ebean.server.query.SqlTreeNode;
@@ -26,91 +18,93 @@ import com.avaje.ebean.server.query.SqlTreeProperties;
 /**
  * Represents a SqlSelect raw sql query.
  */
-public class DeploySqlSelect {
+public class RawSqlSelect {
 
-	static final Logger logger = Logger.getLogger(DeploySqlSelect.class.getName());
+	private static final Logger logger = Logger.getLogger(RawSqlSelect.class.getName());
 
-	final Map<String, PropertyDeploy> deployPropMap;
-
-	final ColumnInfo[] selectColumns;
-
-	final String preWhereExprSql;
-
-	final boolean andWhereExpr;
-
-	final String preHavingExprSql;
-
-	final boolean andHavingExpr;
-
-	final String orderBySql;
-
-	final String whereClause;
-
-	final String havingClause;
-
-	final String query;
-
-	final String columnMapping;
-
-	final String name;
+	private final BeanDescriptor<?> desc;
 	
-	SqlTree sqlTree;
-	
-	boolean withId;
+	private final RawSqlColumnInfo[] selectColumns;
 
-	public DeploySqlSelect(Map<String, PropertyDeploy> deployPropMap, List<ColumnInfo> select,
+	private final String preWhereExprSql;
+
+	private final boolean andWhereExpr;
+
+	private final String preHavingExprSql;
+
+	private final boolean andHavingExpr;
+
+	private final String orderBySql;
+
+	private final String whereClause;
+
+	private final String havingClause;
+
+	private final String query;
+
+	private final String columnMapping;
+
+	private final String name;
+	
+	private final SqlTree sqlTree;
+	
+	private boolean withId;
+
+	public RawSqlSelect(BeanDescriptor<?> desc, List<RawSqlColumnInfo> selectColumns,
 			String preWhereExprSql, boolean andWhereExpr, String preHavingExprSql,
-			boolean andHavingExpr, String orderBySql, Meta meta) {
+			boolean andHavingExpr, String orderBySql, RawSqlMeta meta) {
 
-		this.deployPropMap = deployPropMap;
-		this.selectColumns = select.toArray(new ColumnInfo[select.size()]);
+		this.desc = desc;
+		this.selectColumns = selectColumns.toArray(new RawSqlColumnInfo[selectColumns.size()]);
 		this.preHavingExprSql = preHavingExprSql;
 		this.preWhereExprSql = preWhereExprSql;
 		this.andHavingExpr = andHavingExpr;
 		this.andWhereExpr = andWhereExpr;
 		this.orderBySql = orderBySql;
-		this.name = meta.name;
-		this.whereClause = meta.where;
-		this.havingClause = meta.having;
-		this.query = meta.query;
-		this.columnMapping = meta.columnMapping;
+		this.name = meta.getName();
+		this.whereClause = meta.getWhere();
+		this.havingClause = meta.getHaving();
+		this.query = meta.getQuery();
+		this.columnMapping = meta.getColumnMapping();
+		
+		this.sqlTree = initialise(desc);
 	}
 
 	/**
 	 * Find foreign keys for assoc one types and build SqlTree.
 	 */
-	public void initialise(BeanDescriptor<?> owner, JoinTree joinTree) {
+	private SqlTree initialise(BeanDescriptor<?> owner){
 		
 		try {
-			List<PropertyDeploy> fkAdditions = new ArrayList<PropertyDeploy>();
+//			List<PropertyDeploy> fkAdditions = new ArrayList<PropertyDeploy>();
+//			
+//			Iterator<PropertyDeploy> it = deployPropMap.values().iterator();
+//			while (it.hasNext()) {
+//				PropertyDeploy propertyDeploy = it.next();
+//				if (propertyDeploy.isForeignKey()){
+//					
+//					String logicalFk = propertyDeploy.getLogical();
+//					BeanPropertyAssocOne<?> property = (BeanPropertyAssocOne<?>)owner.getBeanProperty(logicalFk);
+//					IdBinder idBinder = property.getTargetDescriptor().getIdBinder();
+//					if (!idBinder.isComplexId()){
+//						BeanProperty[] ids = idBinder.getProperties();
+//						
+//						String logicalFkImported = logicalFk+"."+ ids[0].getName();
+//						PropertyDeploy fkDeploy = propertyDeploy.createFkey(logicalFkImported);
+//						fkAdditions.add(fkDeploy);
+//					}
+//				}			
+//			}
+//			
+//			for (PropertyDeploy fkDeploy : fkAdditions) {
+//				if (logger.isLoggable(Level.FINER)){
+//					String m = "... adding foreign key  on "+owner+" query "+name+" "+fkDeploy;
+//					logger.finer(m);
+//				}
+//				deployPropMap.put(fkDeploy.getLogical(), fkDeploy);
+//			}
 			
-			Iterator<PropertyDeploy> it = deployPropMap.values().iterator();
-			while (it.hasNext()) {
-				PropertyDeploy propertyDeploy = it.next();
-				if (propertyDeploy.isForeignKey()){
-					
-					String logicalFk = propertyDeploy.getLogical();
-					BeanPropertyAssocOne<?> property = (BeanPropertyAssocOne<?>)owner.getBeanProperty(logicalFk);
-					IdBinder idBinder = property.getTargetDescriptor().getIdBinder();
-					if (!idBinder.isComplexId()){
-						BeanProperty[] ids = idBinder.getProperties();
-						
-						String logicalFkImported = logicalFk+"."+ ids[0].getName();
-						PropertyDeploy fkDeploy = propertyDeploy.createFkey(logicalFkImported);
-						fkAdditions.add(fkDeploy);
-					}
-				}			
-			}
-			
-			for (PropertyDeploy fkDeploy : fkAdditions) {
-				if (logger.isLoggable(Level.FINER)){
-					String m = "... adding foreign key  on "+owner+" query "+name+" "+fkDeploy;
-					logger.finer(m);
-				}
-				deployPropMap.put(fkDeploy.getLogical(), fkDeploy);
-			}
-			
-			sqlTree = buildSqlTree(owner, joinTree);
+			return buildSqlTree(owner);
 			
 		} catch (Exception e){
 			String m = "Bug? initialising query "+name+" on "+owner;
@@ -126,10 +120,8 @@ public class DeploySqlSelect {
 	 * could be a real object graph tree for more complex scenarios.
 	 * </p>
 	 */
-	private SqlTree buildSqlTree(BeanDescriptor<?> desc, JoinTree joinTree) {
+	private SqlTree buildSqlTree(BeanDescriptor<?> desc){
 
-		
-		JoinNode joinRoot = joinTree.getRoot();
 
 		SqlTree sqlTree = new SqlTree();
 		sqlTree.setSummary("[" + desc.getFullName() + "]");
@@ -139,7 +131,7 @@ public class DeploySqlSelect {
 
 		for (int i = 0; i < selectColumns.length; i++) {
 
-			ColumnInfo columnInfo = selectColumns[i];
+			RawSqlColumnInfo columnInfo = selectColumns[i];
 			String propName = columnInfo.getPropertyName();
 			BeanProperty beanProperty = desc.getBeanProperty(propName);
 			if (beanProperty != null) {
@@ -165,7 +157,7 @@ public class DeploySqlSelect {
 		}
 
 		selectProps.setIncludedProperties(includedProps);
-		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(joinRoot, selectProps, null, withId, null);
+		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(desc, selectProps, null, withId, null);
 		sqlTree.setRootNode(sqlRoot);
 
 		return sqlTree;
@@ -189,7 +181,7 @@ public class DeploySqlSelect {
 			// against the same bean.
 			BeanDescriptor<?> descriptor = request.getBeanDescriptor();
 			//FIXME: I think this is broken... needs to be logical 
-			// and then parsed for SqlSelect...
+			// and then parsed for RawSqlSelect...
 			dynamicWhere = descriptor.getBindIdSql();
 		}
 
@@ -246,6 +238,10 @@ public class DeploySqlSelect {
 	}
 	
 	
+	public String getName() {
+		return name;
+	}
+
 	public SqlTree getSqlTree() {
 		return sqlTree;
 	}
@@ -275,48 +271,7 @@ public class DeploySqlSelect {
 	}
 
 	public DeployPropertyParser createDeployPropertyParser() {
-		return new DeployPropertyParser(deployPropMap);
+		return new DeployPropertyParser(desc);
 	}
 	
-	public static class ColumnInfo {
-
-		final String name;
-
-		final String label;
-
-		final String propertyName;
-
-		final boolean scalarProperty;
-		
-		public ColumnInfo(String name, String label, String propertyName, boolean scalarProperty) {
-			this.name = name;
-			this.label = label;
-			this.propertyName = propertyName;
-			this.scalarProperty = scalarProperty;
-		}
-
-		public PropertyDeploy createPropertyDeploy() {
-			return new PropertyDeploy(!scalarProperty, propertyName, name);
-		}
-		
-		public String getName() {
-			return name;
-		}
-
-		public String getLabel() {
-			return label;
-		}
-
-		public String getPropertyName() {
-			return propertyName;
-		}
-		
-		public boolean isScalarProperty() {
-			return scalarProperty;
-		}
-
-		public String toString() {
-			return "name:" + name + " label:" + label + " prop:" + propertyName;
-		}
-	}
 }

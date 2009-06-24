@@ -22,10 +22,10 @@ package com.avaje.ebean.server.deploy;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
+import com.avaje.ebean.server.query.SplitName;
 
 /**
  * Represents a join to another table.
@@ -49,16 +49,6 @@ public final class TableJoin {
      * The joined table.
      */
     private final String table;
-
-    /**
-     * The table alias for the joined table.
-     */
-    private final String foreignTableAlias;
-
-    /**
-     * The table alias for local base table.
-     */
-    private final String localTableAlias;
     
     /**
      * The type of join. LEFT OUTER etc.
@@ -87,8 +77,6 @@ public final class TableJoin {
     	
         this.importedPrimaryKey = deploy.isImportedPrimaryKey();
         this.table = deploy.getTable();
-        this.foreignTableAlias = deploy.getForeignTableAlias();
-        this.localTableAlias = deploy.getLocalTableAlias();
         this.type = deploy.getType();
         this.cascadeInfo = deploy.getCascadeInfo();
         
@@ -123,9 +111,6 @@ public final class TableJoin {
 	 * Construct a copy but with different table alias'.
 	 */
 	private TableJoin(TableJoin join, String localAlias, String foreignAlias){
-
-		this.foreignTableAlias = foreignAlias;
-		this.localTableAlias = localAlias;
 
 		// copy the immutable fields
 		this.importedPrimaryKey = join.importedPrimaryKey;
@@ -188,20 +173,6 @@ public final class TableJoin {
     }
 
     /**
-     * Return the table alias used by this join.
-     */
-    public String getForeignTableAlias() {
-        return foreignTableAlias;
-    }
-
-    /**
-     * Return the local base table alias.
-     */
-    public String getLocalTableAlias() {
-		return localTableAlias;
-	}
-
-    /**
      * Return the joined table name.
      */
     public String getTable() {
@@ -221,32 +192,17 @@ public final class TableJoin {
     public boolean isOuterJoin() {
         return type.equals(LEFT_OUTER);
     }
-    
-	/**
-     * Generate the on clause.
-     */
-    private void addOnClause(String ZZprefix, DbSqlContext ctx) {
-        
-    	ctx.append(" on ");
-    	
-        TableJoinColumn[] cols = columns();
-        for (int i = 0; i < cols.length; i++) {
-            TableJoinColumn pair = cols[i];
-            if (i > 0) {
-            	ctx.append(" and ");
-            }
-            
-            ctx.append(localTableAlias);
-            ctx.append(".").append(pair.getLocalDbColumn());
-            ctx.append(" = ");
-            ctx.append(foreignTableAlias);
-            ctx.append(".").append(pair.getForeignDbColumn());
-        }
-        
-        ctx.append(" ");
-    }
 
-    public void addJoin(boolean forceOuterJoin, JoinNode node, DbSqlContext ctx) {
+    public void addJoin(boolean forceOuterJoin, String prefix, DbSqlContext ctx) {
+
+    	String[] names = SplitName.split(prefix);
+    	String a1 = ctx.getTableAlias(names[0]);
+    	String a2 = ctx.getTableAlias(prefix);
+
+    	addJoin(forceOuterJoin, a1, a2, ctx);
+    }
+    
+    public void addJoin(boolean forceOuterJoin, String a1, String a2, DbSqlContext ctx) {
     	
     	
     	ctx.append(NEW_LINE);
@@ -256,7 +212,24 @@ public final class TableJoin {
     		ctx.append(type);
     	}
     	ctx.append(" ").append(table).append(" ");
-    	ctx.append(foreignTableAlias);
-    	addOnClause(null, ctx);
+    	ctx.append(a2);
+    	
+    	ctx.append(" on ");
+    	
+        TableJoinColumn[] cols = columns();
+        for (int i = 0; i < cols.length; i++) {
+            TableJoinColumn pair = cols[i];
+            if (i > 0) {
+            	ctx.append(" and ");
+            }
+            
+            ctx.append(a2);
+            ctx.append(".").append(pair.getForeignDbColumn());
+            ctx.append(" = ");
+            ctx.append(a1);
+            ctx.append(".").append(pair.getLocalDbColumn());
+        }
+        
+        ctx.append(" ");
     }
 }

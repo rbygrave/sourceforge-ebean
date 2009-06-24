@@ -28,34 +28,23 @@ package com.avaje.ebean.server.deploy;
 public class BeanPropertyOverride {
 
 	final String dbColumn;
-	
-	final String dbTableAlias;
-	
+		
 	final String sqlFormulaSelect;
 
 	final String sqlFormulaJoin;
 
-	public BeanPropertyOverride(String dbColumn, String tableAlias) {
-		this(dbColumn, tableAlias, null, null);
+	public BeanPropertyOverride(String dbColumn) {
+		this(dbColumn, null, null);
 	}
 	
-	public BeanPropertyOverride(String dbColumn, String tableAlias, String sqlFormulaSelect, String sqlFormulaJoin) {
+	public BeanPropertyOverride(String dbColumn, String sqlFormulaSelect, String sqlFormulaJoin) {
 		this.dbColumn = dbColumn;
-		this.dbTableAlias = tableAlias;
 		this.sqlFormulaSelect = sqlFormulaSelect;
 		this.sqlFormulaJoin = sqlFormulaJoin;
 	}
 
 	public String getDbColumn() {
 		return dbColumn;
-	}
-
-	public String getDbTableAlias() {
-		return dbTableAlias;
-	}
-	
-	public String getDbFullName() {
-		return dbTableAlias+"."+dbColumn;
 	}
 
 	public String getSqlFormulaSelect() {
@@ -65,6 +54,4 @@ public class BeanPropertyOverride {
 	public String getSqlFormulaJoin() {
 		return sqlFormulaJoin;
 	}
-	
-	
 }

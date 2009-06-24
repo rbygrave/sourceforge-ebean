@@ -87,8 +87,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	final String serverName;
 	
-	String targetTablePrefix;
-	
 	BeanCollectionHelp<T> help;
 
 	ImportedId importedId;
@@ -112,8 +110,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public void initialise() {
 		super.initialise();
 		if (!isTransient){
-			targetTablePrefix = targetTableAlias+".";
-
+			
 			help = BeanCollectionHelpFactory.create(this);
 			
 			if (manyToMany){
@@ -280,7 +277,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			Object val = expProps[i].getValue(parentBean);
 			String fkColumn = expProps[i].getForeignDbColumn();
 			if (!manyToMany){
-				fkColumn = targetTablePrefix+fkColumn;
+				fkColumn = targetDescriptor.getBaseTableAlias()+"."+fkColumn;
+			} else {
+				// use hard coded alias for intersection table
+				fkColumn = "int_."+fkColumn;				
 			}
 			query.where().eq(fkColumn, val);
 		}
@@ -357,8 +357,8 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 				if (manyToMany){
 					// we use the inverseJoin alias as thats the join
 					// we will use for the reference find
-					String refQuery = inverseJoin.getForeignTableAlias()+"." + foreignCol;
-					return new ExportedProperty(embedded, refQuery, prop, foreignCol);
+					//String refQuery = inverseJoin.getForeignTableAlias()+"." + foreignCol;
+					return new ExportedProperty(embedded, foreignCol, prop);//refQuery, prop, foreignCol);
 					
 				} else {
 					
@@ -458,7 +458,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 		for (int i = 0; i < expProps.length; i++) {
 			Object val = expProps[i].getValue(parentBean);
-			String fkColumn = expProps[i].getIntersectionDbColumn();
+			String fkColumn = expProps[i].getForeignDbColumn();
 
 			row.put(fkColumn, val);
 		}

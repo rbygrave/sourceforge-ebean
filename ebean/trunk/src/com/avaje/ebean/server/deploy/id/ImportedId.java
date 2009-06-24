@@ -13,6 +13,8 @@ import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
  */
 public interface ImportedId {
 
+	public void addFkeys(String name);
+	
 	/**
 	 * Return true if this id is a simple single scalar value. False if it is a
 	 * compound id (embedded or multiple).

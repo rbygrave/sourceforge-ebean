@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.server.deploy.BeanFkeyProperty;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -28,6 +29,17 @@ public class ImportedIdEmbedded implements ImportedId {
 		this.owner = owner;
 		this.foreignAssocOne = foreignAssocOne;
 		this.imported = imported;
+	}
+	
+	public void addFkeys(String name) {
+		
+		BeanProperty[] embeddedProps = foreignAssocOne.getProperties();
+		
+		for (int i = 0; i < imported.length; i++) {
+			String n = name+"."+foreignAssocOne.getName()+"."+embeddedProps[i].getName();
+			BeanFkeyProperty fkey = new BeanFkeyProperty(null, n, imported[i].localDbColumn);
+			owner.getBeanDescriptor().add(fkey);
+		}
 	}
 	
 	public boolean isScalar(){

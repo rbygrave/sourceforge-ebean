@@ -3,8 +3,6 @@ package com.avaje.ebean.server.deploy;
 import javax.persistence.NamedQuery;
 import javax.persistence.QueryHint;
 
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-
 public class DeployNamedQuery {
 
 	final String name;
@@ -13,7 +11,7 @@ public class DeployNamedQuery {
 	
 	final QueryHint[] hints;
 	
-	final DeploySqlSelect sqlSelect;
+	final RawSqlSelect sqlSelect;
 	
 	public DeployNamedQuery(NamedQuery namedQuery) {
 		this.name = namedQuery.name();
@@ -23,20 +21,17 @@ public class DeployNamedQuery {
 	}
 	
 	public DeployNamedQuery(String name, String query, QueryHint[] hints) {
-		this(name, query, hints, null);
-	}
-	
-	public DeployNamedQuery(String name, String query, QueryHint[] hints, DeploySqlSelect sqlSelect) {
 		this.name = name;
 		this.query = query;
 		this.hints = hints;
-		this.sqlSelect = sqlSelect;
+		this.sqlSelect = null;
 	}
-
-	public void initialise(BeanDescriptor<?> owner, JoinTree joinTree) {
-		if (isSqlSelect()){
-			sqlSelect.initialise(owner, joinTree);
-		}
+	
+	public DeployNamedQuery(RawSqlSelect sqlSelect) {
+		this.name = sqlSelect.getName();
+		this.query = null;
+		this.hints = null;
+		this.sqlSelect = sqlSelect;
 	}
 	
 	public boolean isSqlSelect() {
@@ -55,7 +50,7 @@ public class DeployNamedQuery {
 		return hints;
 	}
 	
-	public DeploySqlSelect getSqlSelect() {
+	public RawSqlSelect getSqlSelect() {
 		return sqlSelect;
 	}
 	

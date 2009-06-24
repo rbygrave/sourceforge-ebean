@@ -107,7 +107,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "1.3.0-beta";
+	private static final String EBVERSION = "1.3.0-beta2";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
@@ -153,10 +153,12 @@ public final class Ebean {
 			if (GlobalProperties.isSkipPrimaryServer()){
 				// primary server being created by EbeanServerFactory
 				// ... so we should not try and create it here
+				logger.fine("GlobalProperties.isSkipPrimaryServer()");
 				
 			} else {
 				// look to see if there is a default server defined
 				String primaryName = getPrimaryServerName();
+				logger.fine("primaryName:"+primaryName);
 				if (primaryName != null){
 					primaryServer = getWithCreate(primaryName);
 				}	

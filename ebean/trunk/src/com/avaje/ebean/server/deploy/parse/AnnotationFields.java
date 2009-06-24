@@ -107,7 +107,6 @@ public class AnnotationFields extends AnnotationParser {
 		prop.setDbRead(true);
 		prop.setDbInsertable(true);
 		prop.setDbUpdateable(true);
-		prop.setDbTableAlias(descriptor.getBaseTableAlias());
 
 		Column column = get(prop, Column.class);
 		if (column != null) {
@@ -274,7 +273,6 @@ public class AnnotationFields extends AnnotationParser {
 		dbColumn = util.getDbColumn(descriptor.getBeanType(), prop.getName(), dbColumn);
 
 		prop.setDbColumn(dbColumn);
-		prop.setDbTableAlias(descriptor.getBaseTableAlias());
 	}
 
 	private void readValidations(DeployBeanProperty prop) {

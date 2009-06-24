@@ -7,11 +7,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.el.ElGetValue;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 
 /**
  * Collects usages statistics for a given node in the object graph.
@@ -46,22 +47,30 @@ public class StatisticsNodeUsage implements Serializable {
 	}
 	
 	
-	public void buildTunedFetch(OrmQueryDetail detail, JoinNode joinRoot) {
+	public void buildTunedFetch(OrmQueryDetail detail, BeanDescriptor<?> rootDesc) {
 		
 		synchronized(monitor){
 							
-			JoinNode joinNode = joinRoot.findChild(path);
-			if (joinNode == null){
-				logger.warning("Can't find join for path["+path+"] for "+joinRoot.getBeanDescriptor().getName());
-				
-			} else {
-				BeanDescriptor<?> descriptor = joinNode.getBeanDescriptor();
-				BeanProperty[] versionProps = descriptor.propertiesVersion();
+			BeanDescriptor<?> desc = rootDesc;
+			if (path != null){
+				ElGetValue elGetValue = rootDesc.getElGetValue(path);
+				if (elGetValue == null){
+					desc = null;
+					logger.warning("Can't find join for path["+path+"] for "+rootDesc.getName());
+					
+				} else {
+					BeanProperty beanProperty = elGetValue.getBeanProperty();
+					if (beanProperty instanceof BeanPropertyAssoc<?>){
+						desc = ((BeanPropertyAssoc<?>) beanProperty).getTargetDescriptor();
+					}
+				}
+			}
+			if (desc != null){
+				BeanProperty[] versionProps = desc.propertiesVersion();
 				if (versionProps.length > 0){
 					aggregateUsed.add(versionProps[0].getName());
 				}
 			}
-			
 			
 			String propList = aggregateUsed.toString();
 			// chop of leading "[" and trailing "]" characters

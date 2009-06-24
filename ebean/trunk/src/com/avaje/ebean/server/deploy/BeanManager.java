@@ -19,10 +19,6 @@
  */
 package com.avaje.ebean.server.deploy;
 
-import java.util.Map;
-
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
 import com.avaje.ebean.server.persist.BeanPersister;
 
 /**
@@ -42,19 +38,12 @@ public class BeanManager<T> {
 
 	private final BeanDescriptor<T> descriptor;
 
-	private final JoinTree joinTree;
-
-	private final Map<String,PropertyDeploy> propMap;
-
 	private final boolean autoFetchTunable;
 	
-	public BeanManager(BeanDescriptor<T> descriptor, JoinTree joinTree, BeanPersister persister) {
+	public BeanManager(BeanDescriptor<T> descriptor, BeanPersister persister) {
 		this.descriptor = descriptor;
-		this.joinTree = joinTree;
-		this.propMap = joinTree == null? null : joinTree.getDeployMap();
 		this.persister = persister;
 		this.autoFetchTunable = descriptor.isAutoFetchTunable();
-		descriptor.initialiseWithJoinTree(joinTree);
 	}
 
 
@@ -69,15 +58,7 @@ public class BeanManager<T> {
 	 * Create a parser for converting logical property names to deployment names.
 	 */
 	public DeployPropertyParser createParser() {
-		return new DeployPropertyParser(propMap);
-	}
-
-	
-	/**
-	 * Return the associated JoinTree.
-	 */
-	public JoinTree getBeanJoinTree() {
-		return joinTree;
+		return descriptor.createDeployPropertyParser();
 	}
 
 	/**

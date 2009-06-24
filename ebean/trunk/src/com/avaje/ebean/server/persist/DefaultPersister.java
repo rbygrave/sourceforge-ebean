@@ -50,7 +50,6 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.IntersectionRow;
-import com.avaje.ebean.server.idgen.IdGeneratorMap;
 import com.avaje.ebean.server.jmx.MLogControl;
 import com.avaje.ebean.util.Message;
 
@@ -84,17 +83,12 @@ public final class DefaultPersister implements Persister {
 	private final InternalEbeanServer server;
 
 	private final BeanDescriptorManager beanDescriptorManager;
-
-	final IdGeneratorMap idGeneratorManager;
 	
 	public DefaultPersister(InternalEbeanServer server, boolean validate, MLogControl logControl, Binder binder, BeanDescriptorManager descMgr) {
 
 		this.server = server;
 		this.beanDescriptorManager = descMgr;
 		this.persistExecute = new DefaultPersistExecute(logControl, binder);
-
-		this.idGeneratorManager = null;//FIXME: plugin.createIdGeneratorManager(server);
-
 		this.validation = validate;
 	}
 
@@ -531,6 +525,7 @@ public final class DefaultPersister implements Persister {
 					// build a intersection row for 'insert'
 					IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherBean);
 					SqlUpdate sqlInsert = intRow.createInsert(server);
+					t.log(sqlInsert.getSql());
 					sqlInsert.execute();
 				}
 			}
@@ -544,6 +539,7 @@ public final class DefaultPersister implements Persister {
 				// build a intersection row for 'delete'
 				IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherDelete);
 				SqlUpdate sqlDelete = intRow.createDelete(server);
+				t.log(sqlDelete.getSql());
 				sqlDelete.execute();
 			}
 		}

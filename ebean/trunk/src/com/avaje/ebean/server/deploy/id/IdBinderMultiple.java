@@ -23,11 +23,8 @@ public final class IdBinderMultiple implements IdBinder {
 
 	final BeanProperty[] idProps;
 
-	final String bindIdSql;
-	
 	public IdBinderMultiple(BeanProperty[] idProps) {
 		this.idProps = idProps;
-		this.bindIdSql = buildBindSql();
 	}
 	
 	public void initialise(){
@@ -65,10 +62,6 @@ public final class IdBinderMultiple implements IdBinder {
 	
 	public BeanProperty[] getProperties() {
 		return idProps;
-	}
-
-	public String getBindIdSql() {
-		return bindIdSql;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -153,13 +146,16 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 	
-	private String buildBindSql() {
+	public String getBindIdSql(String baseTableAlias) {
+		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < idProps.length; i++) {
 			if (i > 0) {
 				sb.append(" and ");
 			}
-			sb.append(idProps[i].getDbFullName());
+			sb.append(baseTableAlias);
+			sb.append(".");
+			sb.append(idProps[i].getDbColumn());
 			sb.append(" = ? ");
 		}
 		return sb.toString();

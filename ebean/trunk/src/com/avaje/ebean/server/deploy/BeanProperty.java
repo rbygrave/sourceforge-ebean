@@ -171,11 +171,6 @@ public class BeanProperty implements ElGetValue {
 	final int dbType;
 
 	/**
-	 * The database table alias.
-	 */
-	final String dbTableAlias;
-
-	/**
 	 * The default value to insert if null.
 	 */
 	final Object defaultValue;
@@ -194,11 +189,6 @@ public class BeanProperty implements ElGetValue {
 	 * The method used to write the property.
 	 */
 	final Method writeMethod;
-
-	/**
-	 * Derived full database name including table alias.
-	 */
-	final String dbFullName;
 
 	/**
 	 * Generator for insert or update timestamp etc.
@@ -278,8 +268,6 @@ public class BeanProperty implements ElGetValue {
 		this.setter = deploy.getSetter();
 
 		this.dbColumn = deploy.getDbColumn();
-		this.dbFullName = deploy.getDbFullName();
-		this.dbTableAlias = deploy.getDbTableAlias();
 		this.sqlFormulaJoin = deploy.getSqlFormulaJoin();
 		this.sqlFormulaSelect = deploy.getSqlFormulaSelect();
 		this.formula = sqlFormulaSelect != null;
@@ -308,8 +296,6 @@ public class BeanProperty implements ElGetValue {
 		this.name = source.getName();
 
 		this.dbColumn = override.getDbColumn();
-		this.dbFullName = override.getDbFullName();
-		this.dbTableAlias = override.getDbTableAlias();
 		this.sqlFormulaJoin = override.getSqlFormulaJoin();
 		this.sqlFormulaSelect = override.getSqlFormulaSelect();
 		this.formula = sqlFormulaSelect != null;
@@ -538,6 +524,10 @@ public class BeanProperty implements ElGetValue {
 		return list;
 	}
 
+	public BeanProperty getBeanProperty() {
+		return this;
+	}
+	
 	/**
 	 * Return the getter method.
 	 */
@@ -682,6 +672,17 @@ public class BeanProperty implements ElGetValue {
 	}
 	
 	/**
+	 * This is a full ElGetValue.
+	 */
+	public boolean isDeployOnly() {
+		return false;
+	}
+
+	public String getPrefix() {
+		return null;
+	}
+	
+	/**
 	 * Return the full name of this property.
 	 */
 	public String getFullBeanName() {
@@ -799,17 +800,10 @@ public class BeanProperty implements ElGetValue {
 		}
 	}
 
-	/**
-	 * Return the full deployment name of the property including a table alias
-	 * if required.
-	 * <p>
-	 * This is derived information. Done for ease of use.
-	 * </p>
-	 */
-	public String getDbFullName() {
-		return dbFullName;
+	public String getDeployProperty() {
+		return dbColumn;
 	}
-
+	
 	/**
 	 * The database column name this is mapped to.
 	 */
@@ -921,13 +915,6 @@ public class BeanProperty implements ElGetValue {
 	 */
 	public Object getDefaultValue() {
 		return defaultValue;
-	}
-
-	/**
-	 * Return the database table alias.
-	 */
-	public String getDbTableAlias() {
-		return dbTableAlias;
 	}
 
 	public String toString() {

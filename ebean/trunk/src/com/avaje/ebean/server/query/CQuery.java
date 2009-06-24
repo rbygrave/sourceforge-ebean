@@ -39,15 +39,14 @@ import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
 import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.ManyType;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 
 /**
@@ -138,7 +137,7 @@ public class CQuery<T> implements DbReadContext {
 
 	final QueryListener<T> queryListener;
 
-	JoinNode currentJoinNode;
+	String currentPrefix;
 	
 	/**
 	 * When building a BeanMap result.
@@ -686,8 +685,7 @@ public class CQuery<T> implements DbReadContext {
 		return autoFetchProfiling && query.isUsageProfiling();
 	}
 	
-	public ObjectGraphNode createAutoFetchNode(String extra, JoinNode joinNode) {
-		String path = joinNode.getPropertyPrefix();
+	public ObjectGraphNode createAutoFetchNode(String extra, String path) {
 		if (path == null){
 			path = extra;
 		} else {
@@ -700,25 +698,26 @@ public class CQuery<T> implements DbReadContext {
 	}
 	
 	public void profileReference(EntityBeanIntercept ebi, String extraPath) {
-		profileBean(false, ebi, extraPath, currentJoinNode);		
+		profileBean(false, ebi, extraPath, currentPrefix);		
 	}
 	
-	public void profileBean(EntityBeanIntercept ebi, String extraPath, JoinNode joinNode) {
-		profileBean(true, ebi, extraPath, joinNode);
+	public void profileBean(EntityBeanIntercept ebi, String extraPath, String prefix) {
+		profileBean(true, ebi, extraPath, prefix);
 	}
 	
-	private void profileBean(boolean bean, EntityBeanIntercept ebi, String extraPath, JoinNode joinNode) {
+	private void profileBean(boolean bean, EntityBeanIntercept ebi, String extraPath, String prefix) {
 		
-		ObjectGraphNode node = createAutoFetchNode(extraPath, joinNode);
+		ObjectGraphNode node = createAutoFetchNode(extraPath, prefix);
 		
 		ebi.setNodeUsageCollector(new NodeUsageCollector(bean, node, autoFetchManager));
 	}
-	
-	public void setCurrentJoinNode(JoinNode currentJoinNode){
-		this.currentJoinNode = currentJoinNode;
+
+	public String getCurrentPrefix() {
+		return currentPrefix;
+	}
+
+	public void setCurrentPrefix(String currentPrefix) {
+		this.currentPrefix = currentPrefix;
 	}
 	
-	public JoinNode getCurrentJoinNode(){
-		return currentJoinNode;
-	}
 }

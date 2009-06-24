@@ -46,6 +46,7 @@ final class PropertyMapLoader {
 
 		InputStream is = findInputStream(fileName);
 		if (is == null){
+			logger.fine(fileName+" not found");
 			return null;
 		} else {
 			return load(p, is);
@@ -78,19 +79,25 @@ final class PropertyMapLoader {
 			String val = ((String)entry.getValue());
 			val = PropertyExpression.eval(val);
 			
+			logger.finer("... loading "+key+" = "+val);
 			p.put(key, val);
 		}
 		
-		String otherProps = (String)p.remove("load.properties");
+		String otherProps = p.remove("load.properties");
+		if (otherProps == null){
+			otherProps = p.remove("load.properties.override");
+		}
 		if (otherProps != null){
+			otherProps = otherProps.replace("\\", "/");
 			InputStream is = findInputStream(otherProps);
 			if (is != null){
-				load(p, in);
+				logger.fine("loading properties from "+otherProps);
+				load(p, is);
 			} else {
 				logger.severe("load.properties "+otherProps+" not found.");
 			}
 		}
-		
+
 		return p;
 	}
 
@@ -103,10 +110,14 @@ final class PropertyMapLoader {
 			throw new NullPointerException("fileName is null?");
 		}
 
-		if (servletContext != null){
+		if (servletContext == null){
+			logger.fine("No servletContext so not looking in WEB-INF for "+fileName);
+			
+		} else {
 			// first look in WEB-INF ...
 			InputStream in = servletContext.getResourceAsStream("/WEB-INF/" + fileName);
 			if (in != null){
+				logger.fine(fileName+" found in WEB-INF");
 				return in;
 			}
 		}
@@ -115,9 +126,14 @@ final class PropertyMapLoader {
 			File f = new File(fileName);
 
 			if (f.exists()) {
+				logger.fine(fileName+" found in file system");
 				return new FileInputStream(f);
 			} else {
-				return findInClassPath(fileName);
+				InputStream in = findInClassPath(fileName);
+				if (in != null){
+					logger.fine(fileName+" found in classpath");	
+				}
+				return in;
 			}
 
 		} catch (FileNotFoundException ex) {

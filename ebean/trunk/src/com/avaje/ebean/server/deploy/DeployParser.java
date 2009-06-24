@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.deploy;
 
 
+
 /**
  * Converts logical property names to database columns.
  */
@@ -38,7 +39,7 @@ public abstract class DeployParser {
 
 	char wordTerminator;
 
-	public abstract String convertWord();
+	protected abstract String convertWord();
 
 	public String parse(String source) {
 		pos = -1;

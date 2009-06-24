@@ -31,6 +31,10 @@ package com.avaje.ebean.config.dbplatform;
  */
 public interface IdGenerator {
 
+    /**
+     * The name of the default UUID generator.
+     */
+    public static final String AUTO_UUID = "auto.uuid";
     
     /**
      * return the next unique identity value.

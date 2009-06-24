@@ -43,7 +43,7 @@ public final class IdBinderEmpty implements IdBinder {
 		return properties;
 	}
 
-	public String getBindIdSql() {
+	public String getBindIdSql(String baseTableAlias) {
 		return bindIdSql;
 	}
 

@@ -11,6 +11,10 @@ final class PropertyMap {
 
 	private LinkedHashMap<String,String> map = new LinkedHashMap<String,String>();
 	
+	public String toString() {
+		return map.toString();
+	}
+	
 	public synchronized boolean getBoolean(String key, boolean defaultValue){
 		String value = get(key);
 		if (value == null){

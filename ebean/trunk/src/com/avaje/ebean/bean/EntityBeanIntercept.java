@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.io.SerializeControl;
 
 /**
@@ -515,6 +516,15 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	 * create the old values for use with ConcurrencyMode.ALL.
 	 */
 	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, Object oldValue, Object newValue) {
+		
+		if (newValue instanceof BeanCollection<?> || oldValue instanceof BeanCollection<?>){
+			// skip setter interception on many's
+			if (pcs != null){
+				return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
+			} else {
+				return null;
+			}
+		}
 		
 		boolean changed = !areEqual(oldValue, newValue);
 

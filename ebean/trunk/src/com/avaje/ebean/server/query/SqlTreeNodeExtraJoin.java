@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * The purpose is to add an extra join to the query.
@@ -22,15 +22,18 @@ import com.avaje.ebean.server.deploy.jointree.JoinNode;
 public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 
 	
-	final JoinNode node;
+	final BeanPropertyAssoc<?> assocBeanProperty;
+	
+	final String prefix;
 	
 	final boolean manyJoin;
 	
 	List<SqlTreeNodeExtraJoin> children;
 	
-	public SqlTreeNodeExtraJoin(JoinNode node) {
-		this.node = node;
-		this.manyJoin = node.isManyJoin();
+	public SqlTreeNodeExtraJoin(String prefix, BeanPropertyAssoc<?> assocBeanProperty) {
+		this.prefix = prefix;
+		this.assocBeanProperty = assocBeanProperty;
+		this.manyJoin = assocBeanProperty instanceof BeanPropertyAssocMany<?>;
 	}
 	
 	/**
@@ -45,7 +48,7 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 
 
 	public String getName() {
-		return node.getName();
+		return prefix;
 	}
 	
 	public void addChild(SqlTreeNodeExtraJoin child){
@@ -57,16 +60,29 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 	
 	public void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
 		
-        if (node.isManyJoin()) {
-            BeanPropertyAssocMany<?> manyProp = node.getManyProp();
-            if (manyProp.isManyToMany()) {
-            	// add ManyToMany join
-                TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();
-                manyToManyJoin.addJoin(forceOuterJoin, node, ctx);
-            }
-        }
+		boolean manyToMany = false;
+		
+		if (assocBeanProperty instanceof BeanPropertyAssocMany<?>){
+			BeanPropertyAssocMany<?> manyProp = (BeanPropertyAssocMany<?>)assocBeanProperty;
+			if (manyProp.isManyToMany()){
+				
+				manyToMany = true;
+				
+				String alias = ctx.getTableAlias(prefix);
+				String[] split = SplitName.split(prefix);
+				String parentAlias = ctx.getTableAlias(split[0]);
+				String alias2 = alias+"z_";
+				
+				TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();
+				manyToManyJoin.addJoin(forceOuterJoin, parentAlias, alias2, ctx);
+				
+				assocBeanProperty.addJoin(forceOuterJoin, alias2, alias, ctx);
+			}
+		}
         
-        node.addJoin(forceOuterJoin, ctx);
+		if (!manyToMany){
+			assocBeanProperty.addJoin(forceOuterJoin, prefix, ctx);
+		}
         
         if (children != null){
         	
@@ -91,7 +107,7 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 	/**
 	 * Does nothing.
 	 */
-	public void appendWhere(StringBuilder sb) {
+	public void appendWhere(DbSqlContext ctx) {
 	}
 
 	/**

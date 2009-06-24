@@ -131,8 +131,9 @@ public class AnnotationAssocManys extends AnnotationParser {
 			
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
 						
-			// use naming convention to define join
-			String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), prop.getName());
+			// use naming convention to define join (based on the bean name for this side of relationship)
+			String fkeyPrefix = factory.getNamingConvention()
+								.getColumnFromProperty(descriptor.getBeanType(), descriptor.getName());
 
 			// Use the owning bean table to define the join
 			BeanTable owningBeanTable = factory.getBeanTable(descriptor.getBeanType());
@@ -167,18 +168,8 @@ public class AnnotationAssocManys extends AnnotationParser {
 		// set table alias etc for the join to intersection
 		info.setManyIntersectionAlias(prop, intJoin);
 
-		// set the intersection alias to the destJoin
-		String intAlias = intJoin.getForeignTableAlias();
-		destJoin.setLocalTableAlias(intAlias);
-
 		// reverse join from dest back to intersection
 		DeployTableJoin inverseDest = destJoin.createInverse(intTableName);
-		// try to make sure we don't get a tableAlias clash
-		inverseDest.setLocalTableAlias(prop.getBeanTable().getBaseTableAlias());
-
-		// zzzzzz is typically the ManyToManyAlias
-		inverseDest.setForeignTableAlias(info.getUtil().getManyToManyAlias());
-
 		prop.setIntersectionJoin(intJoin);
 		prop.setInverseJoin(inverseDest);
 	}
@@ -244,20 +235,9 @@ public class AnnotationAssocManys extends AnnotationParser {
 				destJoin.addJoinColumn(new DeployTableJoinColumn(fkCol, otherIds[i].getDbColumn()));			
 			}
 		}
-		
-
-		// set the intersection alias to the destJoin
-		destJoin.setLocalTableAlias(intJoin.getForeignTableAlias());
 
 		// reverse join from dest back to intersection
 		DeployTableJoin inverseDest = destJoin.createInverse(intTableName);
-		
-		// try to make sure we don't get a tableAlias clash
-		inverseDest.setLocalTableAlias(prop.getBeanTable().getBaseTableAlias());
-
-		// zzzzzz is typically the ManyToManyAlias
-		inverseDest.setForeignTableAlias(info.getUtil().getManyToManyAlias());
-
 		prop.setInverseJoin(inverseDest);
 	}
 	

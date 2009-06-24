@@ -47,7 +47,6 @@ import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternalConfiguration;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
@@ -91,8 +90,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private final DeployUtil deployUtil;
 
-	private final DeploySqlSelectParser sqlSelectParser;
-
 	private final TypeManager typeManager;
 
 	private final PersistControllerManager persistControllerManager;
@@ -121,7 +118,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private final String serverName;
 
-	private final Map<Class<?>, DeployBeanInfo<?>> deplyInfoMap = new HashMap<Class<?>, DeployBeanInfo<?>>();
+	private Map<Class<?>, DeployBeanInfo<?>> deplyInfoMap = new HashMap<Class<?>, DeployBeanInfo<?>>();
 	
 	private final Map<Class<?>, BeanTable> beanTableMap = new HashMap<Class<?>, BeanTable>();
 
@@ -166,7 +163,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		this.persistListenerManager = new DefaultPersistListenerManager();
 
 		this.reflectFactory = createReflectionFactory();
-		this.sqlSelectParser = config.getDeploySqlSelectParser();
 		this.transientProperties = new TransientProperties();
 
 	}
@@ -204,14 +200,26 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		readEntityBeanTable();
 		readEntityDeploymentAssociations();
 		readEntityRelationships();
+		readRawSqlQueries();
 				
-		logStatus();
-		
 		List<BeanDescriptor<?>> list = new ArrayList<BeanDescriptor<?>>(descMap.values());
 		Collections.sort(list);
 		immutableDescriptorList = Collections.unmodifiableList(list);
 
 		initialiseAll();
+		readForeignKeys();
+
+		logStatus();
+
+		deplyInfoMap.clear();
+		deplyInfoMap = null;
+	}
+	
+	private void readForeignKeys() {
+		
+		for (BeanDescriptor<?> d : descMap.values()) {
+			d.initialiseFkeys();
+		}
 	}
 	
 	/**
@@ -236,24 +244,18 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		// initialise the ID properties of all the beans
 		// first (as they are needed to initialise the 
 		// associated properties in the second pass).
-		Iterator<BeanDescriptor<?>> initId = descMap.values().iterator();
-		while (initId.hasNext()) {
-			BeanDescriptor<?> d = initId.next();
+		for (BeanDescriptor<?> d : descMap.values()) {
 			d.initialiseId();
 		}
 		
 		// PASS 2:
 		// now initialise all the associated properties
-		Iterator<BeanDescriptor<?>> otherBeans = descMap.values().iterator();
-		while (otherBeans.hasNext()) {
-			BeanDescriptor<?> d = otherBeans.next();
+		for (BeanDescriptor<?> d : descMap.values()) {
 			d.initialiseOther();
 		}
 		
 		// create BeanManager for each non-embedded entity bean
-		Iterator<BeanDescriptor<?>> it = descMap.values().iterator();
-		while (it.hasNext()) {
-			BeanDescriptor<?> d = it.next();
+		for (BeanDescriptor<?> d : descMap.values()) {
 			if (!d.isEmbedded()){
 				BeanManager<?> m = beanManagerFactory.create(d);
 				beanManagerMap.put(d.getFullName(), m);
@@ -416,6 +418,24 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		DeployBeanTable beanTable = deployDescriptor.createDeployBeanTable();
 		return new BeanTable(beanTable);
 	}
+
+	/**
+	 * Parse the named Raw Sql queries using BeanDescriptor.
+	 */
+	private void readRawSqlQueries() {
+		
+		for (DeployBeanInfo<?> info : deplyInfoMap.values()) {			
+			
+			DeployBeanDescriptor<?> deployDesc = info.getDescriptor();
+			BeanDescriptor<?> desc = getBeanDescriptor(deployDesc.getBeanType());
+			
+			for (RawSqlMeta rawSqlMeta : deployDesc.getRawSqlMeta()) {
+				DeployNamedQuery nq = new RawSqlSelectBuilder(namingConvention, desc, rawSqlMeta).parse();
+				desc.addNamedQuery(nq);
+			}
+		}
+	}
+	
 	
 	@SuppressWarnings("unchecked")
 	private void readEntityRelationships() {
@@ -638,7 +658,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			// define Join as the inverse of the mappedBy property
 			DeployTableJoin otherTableJoin = mappedAssocOne.getTableJoin();
 			otherTableJoin.copyTo(tableJoin, true, tableJoin.getTable());
-			tableJoin.setForeignTableAlias("zz"+tableJoin.getForeignTableAlias());
 		}
 	}
 	
@@ -733,31 +752,22 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		// define the relationships/joins on this side as the
 		// reverse of the other mappedBy side ...
 
-		DeployTableJoin mappedJoin = mappedAssocMany.getTableJoin();
+		//DeployTableJoin mappedJoin = mappedAssocMany.getTableJoin();
 		DeployTableJoin mappedIntJoin = mappedAssocMany.getIntersectionJoin();
 		DeployTableJoin mappendInverseJoin = mappedAssocMany.getInverseJoin();
 				
 		String intTableName = mappedIntJoin.getTable();
 		
-		// prefix table alias' with zz as these table alias' may 
-		// not be unique on this side of the relationship
-		String alias1 = "zz"+mappedJoin.getForeignTableAlias();
-		String alias2 = "zz"+mappedJoin.getLocalTableAlias();
 		
 		DeployTableJoin tableJoin = prop.getTableJoin();
 		mappedIntJoin.copyTo(tableJoin, true, targetDesc.getBaseTable());
-		tableJoin.setForeignTableAlias(alias1);
-		tableJoin.setLocalTableAlias(alias2);
 		
 		DeployTableJoin intJoin = new DeployTableJoin();
 		mappendInverseJoin.copyTo(intJoin, false, intTableName);
 		prop.setIntersectionJoin(intJoin);
-		intJoin.setForeignTableAlias(alias2);
 		
 		DeployTableJoin inverseJoin = new DeployTableJoin();
 		mappedIntJoin.copyTo(inverseJoin, false, intTableName);
-		inverseJoin.setForeignTableAlias(alias1);
-		inverseJoin.setLocalTableAlias(alias2);
 		prop.setInverseJoin(inverseJoin);
 	}
 	
@@ -814,12 +824,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		if (desc.isSqlSelectBased()) {
 			desc.setBaseTable(null);
-			desc.setBaseTableAlias(null);
 		}
 		
 		if (desc.isMeta()){
 			desc.setBaseTable(null);
-			desc.setBaseTableAlias(null);			
 		}
 
 		// mark transient properties
@@ -1019,19 +1027,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		String having = findContent(sqlSelect, "having");
 		String columnMapping = findContent(sqlSelect, "columnMapping");
 
-		Meta meta = DeploySqlSelectParser.createMeta(deployDesc, name, extend, query, debug, where, having,
-			columnMapping);
+		
+		RawSqlMeta m = new RawSqlMeta(name, extend, query, debug, where, having, columnMapping);
 
-		if (meta.query == null) {
-			String msg = "Error with sql-select xml: <query> tag missing <entity class=\"" + deployDesc.getFullName()
-					+ "\"><sql-select> ?";
-			throw new PersistenceException(msg);
-		}
-
-		DeploySqlSelect parsedSql = sqlSelectParser.parse(deployDesc, meta);
-
-		DeployNamedQuery namedQuery = new DeployNamedQuery(name, query, null, parsedSql);
-		deployDesc.add(namedQuery);
+		deployDesc.add(m);
 
 	}
 

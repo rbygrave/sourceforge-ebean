@@ -60,28 +60,6 @@ public class CQueryBuilder implements Constants {
 		this.dbQueryLimiter = dbPlatform.getSqlLimiter();
 	}
 
-//	/**
-//	 * Create the ROW_NUMBER() column used for firstRow maxRows limits. Returns
-//	 * null if the limitMode is not set to LIMIT_MODE_ROWNUMBER.
-//	 * <p>
-//	 * Only do this is there are detail rows joined. With detail rows joined
-//	 * this way of limiting the result set will not work.
-//	 * </p>
-//	 */
-//	protected String getRowNumberColumn(OrmQuery<?> find, String orderBy) {
-//		if (!resultSetLimit.equals(ResultSetLimit.RowNumber)) {
-//			return null;
-//		}
-//
-//		if (find.getFirstRow() > 0 || find.getMaxRows() > 0) {
-//			if (orderBy == null || orderBy.trim().length() == 0) {
-//				throw new PersistenceException(Message.msg("fetch.limit.orderby"));
-//			}
-//			return ROW_NUMBER_OVER + orderBy + ROW_NUMBER_AS;
-//		}
-//		return null;
-//	}
-
 	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
 			boolean hasListener) {
 
@@ -195,17 +173,6 @@ public class CQueryBuilder implements Constants {
 				sb.append("distinct ");
 			}
 		}
-
-//		if (manyProp == null) {
-//			// setup ROW_NUMBER() column if required
-//			String rowNumberCol = getRowNumberColumn(query, dbOrderBy);
-//			if (rowNumberCol != null) {
-//				// column used to limit rows returned based on
-//				//firstRow and maxRows
-//				predicates.setRowNumberIncluded(true);
-//				sb.append(rowNumberCol);
-//			}
-//		}
 
 		sb.append(select.getSelectSql());
 

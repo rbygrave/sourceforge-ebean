@@ -15,9 +15,7 @@ import com.avaje.ebean.server.deploy.DbSqlContext;
 public final class IdBinderEmbedded implements IdBinder {
 
 	BeanProperty[] props;
-	
-	String idBindSql;
-	
+		
 	BeanDescriptor<?> idDesc;
 	
 	final BeanPropertyAssocOne<?> embIdProperty;
@@ -30,7 +28,6 @@ public final class IdBinderEmbedded implements IdBinder {
 	public void initialise() {
 		idDesc = embIdProperty.getTargetDescriptor();
 		props = embIdProperty.getProperties();
-		idBindSql = buildBindSql();
 	}
 	
 	public BeanProperty findBeanProperty(String dbColumnName){
@@ -65,11 +62,6 @@ public final class IdBinderEmbedded implements IdBinder {
 	
 	public BeanProperty[] getProperties() {
 		return props;
-	}
-
-
-	public String getBindIdSql(){
-		return idBindSql;
 	}
 	
 	public Object[] getBindValues(Object value){
@@ -131,14 +123,16 @@ public final class IdBinderEmbedded implements IdBinder {
 		}
 	}
 
-	private String buildBindSql() {
+	public String getBindIdSql(String baseTableAlias) {
 		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < props.length; i++) {
 			if (i > 0) {
 				sb.append(" and ");
 			}
-			sb.append(props[i].getDbFullName());
+			sb.append(baseTableAlias);
+			sb.append(".");
+			sb.append(props[i].getDbColumn());
 			sb.append(" = ? ");
 		}
 		return sb.toString();
