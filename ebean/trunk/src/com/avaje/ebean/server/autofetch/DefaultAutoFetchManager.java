@@ -23,9 +23,8 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
 
 /**
  * The manager of all the usage/query statistics as well as the tuned fetch
@@ -337,12 +336,11 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 						// previously was an entity but not longer
 						
 					} else {
-						JoinTree beanJoinTree = beanMgr.getBeanJoinTree();
-						JoinNode joinRoot = beanJoinTree.getRoot();
+						BeanDescriptor<?> beanDescriptor = beanMgr.getBeanDescriptor();
 	
 						// Determine the fetch plan from the latest statistics.
 						// Use this to compare with current "tuned fetch plan".
-						OrmQueryDetail newFetchDetail = queryPointStatistics.buildTunedFetch(joinRoot);
+						OrmQueryDetail newFetchDetail = queryPointStatistics.buildTunedFetch(beanDescriptor);
 	
 						// get the current tuned fetch info...
 						TunedQueryInfo currentFetch = tunedQueryInfoMap.get(queryPoint.getKey());

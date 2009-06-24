@@ -46,16 +46,6 @@ public class DeployTableJoin {
      * The joined table.
      */
     String table;
-
-    /**
-     * The table alias for the joined table.
-     */
-    String foreignTableAlias;
-
-    /**
-     * The table alias for local base table.
-     */
-    String localTableAlias;
     
     /**
      * The type of join. LEFT OUTER etc.
@@ -176,38 +166,9 @@ public class DeployTableJoin {
      * Add a property for this tableJoin.
      */
     public void addProperty(DeployBeanProperty prop) {
-        prop.setDbTableAlias(getForeignTableAlias());
         prop.setSecondaryTable();
         properties.add(prop);
     }
-
-    /**
-     * Return the table alias used by this join.
-     */
-    public String getForeignTableAlias() {
-        return foreignTableAlias;
-    }
-
-    /**
-     * Set the table alias used by this join.
-     */
-    public void setForeignTableAlias(String alias) {
-        this.foreignTableAlias = alias;
-    }
-
-    /**
-     * Return the local base table alias.
-     */
-    public String getLocalTableAlias() {
-		return localTableAlias;
-	}
-
-    /**
-     * set the local base table alias.
-     */
-	public void setLocalTableAlias(String localTableAlias) {
-		this.localTableAlias = localTableAlias;
-	}
 
     /**
      * Return the joined table name.
@@ -266,13 +227,6 @@ public class DeployTableJoin {
     public DeployTableJoin copyTo(DeployTableJoin destJoin, boolean reverse, String tableName) {
     	
     	destJoin.setTable(tableName);
-    	if (reverse){
-	    	destJoin.setForeignTableAlias(localTableAlias);
-	    	destJoin.setLocalTableAlias(foreignTableAlias);
-    	} else {
-	    	destJoin.setForeignTableAlias(foreignTableAlias);
-	    	destJoin.setLocalTableAlias(localTableAlias);
-    	}
     	destJoin.setType(type);
     	destJoin.setColumns(columns(), reverse);
     	

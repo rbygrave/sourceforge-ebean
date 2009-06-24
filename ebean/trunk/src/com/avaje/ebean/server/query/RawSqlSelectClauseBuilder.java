@@ -33,7 +33,7 @@ import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
+import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.persist.Binder;
 
 /**
@@ -67,7 +67,7 @@ public class RawSqlSelectClauseBuilder {
 		BeanDescriptor<T> desc = request.getBeanDescriptor();
 		
 		DeployNamedQuery namedQuery = desc.getNamedQuery(query.getName());
-		DeploySqlSelect sqlSelect = namedQuery.getSqlSelect();
+		RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
 
 		
 		// create a parser for this specific SqlSelect... has to be really

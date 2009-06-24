@@ -29,15 +29,13 @@ public final class IdBinderSimple implements IdBinder {
 		this.expectedType = idProperty.getPropertyType();
 		this.properties = new BeanProperty[1];
 		properties[0] = idProperty;
-		bindIdSql = idProperty.getDbFullName()+" = ? ";
+		bindIdSql = idProperty.getDbColumn()+" = ? ";
 	}
-
+	
 	public void initialise(){
 		// do nothing
 	}
 
-	
-	
 	public BeanProperty findBeanProperty(String dbColumnName) {
 		if (dbColumnName.equalsIgnoreCase(idProperty.getDbColumn())){
 			return idProperty;
@@ -57,8 +55,8 @@ public final class IdBinderSimple implements IdBinder {
 		return properties;
 	}
 
-	public String getBindIdSql() {
-		return bindIdSql;
+	public String getBindIdSql(String baseTableAlias) {
+		return baseTableAlias+"."+bindIdSql;
 	}
 
 	public Object[] getBindValues(Object idValue){

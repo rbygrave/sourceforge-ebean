@@ -163,11 +163,6 @@ public class DeployBeanProperty {
 	int dbType;
 
 	/**
-	 * The database table alias.
-	 */
-	String dbTableAlias;
-
-	/**
 	 * The default value to insert if null.
 	 */
 	Object defaultValue;
@@ -487,23 +482,6 @@ public class DeployBeanProperty {
 	}
 
 	/**
-	 * Return the full deployment name of the property including a table alias
-	 * if required.
-	 * <p>
-	 * This is derived information. Done for ease of use.
-	 * </p>
-	 */
-	public String getDbFullName() {
-
-		String dbFullName = getDbColumn();
-		if (getDbTableAlias() != null) {
-			dbFullName = getDbTableAlias() + "." + dbFullName;
-		}
-
-		return dbFullName;
-	}
-
-	/**
 	 * Return the formula this property is based on.
 	 */
 	public String getSqlFormulaSelect() {
@@ -724,20 +702,6 @@ public class DeployBeanProperty {
 	 */
 	public void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
-	}
-
-	/**
-	 * Return the database table alias.
-	 */
-	public String getDbTableAlias() {
-		return dbTableAlias;
-	}
-
-	/**
-	 * Set the database table alias.
-	 */
-	public void setDbTableAlias(String dbTableAlias) {
-		this.dbTableAlias = dbTableAlias;
 	}
 
 	public String toString() {

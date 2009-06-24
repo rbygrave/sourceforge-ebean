@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy.meta;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -38,6 +39,7 @@ import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
+import com.avaje.ebean.server.deploy.RawSqlMeta;
 import com.avaje.ebean.server.reflect.BeanReflect;
 
 /**
@@ -62,6 +64,8 @@ public class DeployBeanDescriptor<T> {
 	final Map<String, DeployNamedQuery> namedQueries = new LinkedHashMap<String, DeployNamedQuery>();
 
 	final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
+	
+	final Map<String, RawSqlMeta> rawSqlMetas = new LinkedHashMap<String, RawSqlMeta>();
 	
 	DeployBeanPropertyAssocOne<?> unidirectional;
 
@@ -134,12 +138,6 @@ public class DeployBeanDescriptor<T> {
 	String baseTable;
 
 	/**
-	 * Sql table alias for the base table. Also identifies which properties are
-	 * 'base table' properties.
-	 */
-	String baseTableAlias;
-
-	/**
 	 * Used to provide mechanism to new EntityBean instances. Generated code
 	 * faster than reflection at this stage.
 	 */
@@ -179,6 +177,8 @@ public class DeployBeanDescriptor<T> {
 
 	String name;
 	
+	boolean processedRawSqlExtend;
+	
 	/**
 	 * Construct the BeanDescriptor.
 	 */
@@ -186,11 +186,37 @@ public class DeployBeanDescriptor<T> {
 		this.beanType = beanType;
 	}
 	
+	public Collection<RawSqlMeta> getRawSqlMeta() {
+		if (!processedRawSqlExtend){
+			rawSqlProcessExtend();
+			processedRawSqlExtend = true;
+		}
+		return rawSqlMetas.values();
+	}
+	
+	/**
+	 * Process the "extend" attributes of raw SQL.
+	 * Aka inherit the query and column mapping.
+	 */
+	private void rawSqlProcessExtend() {
+		
+		for (RawSqlMeta rawSqlMeta : rawSqlMetas.values()) {
+			String extend = rawSqlMeta.getExtend();
+			if (extend != null){
+				RawSqlMeta parentQuery = rawSqlMetas.get(extend);
+				if (parentQuery == null) {
+					throw new RuntimeException("parent query ["+extend+"] not found for sql-select "+rawSqlMeta.getName());
+				}
+				rawSqlMeta.extend(parentQuery);
+			}
+		}
+	}
+
+	
 	public DeployBeanTable createDeployBeanTable() {
 		
 		DeployBeanTable beanTable = new DeployBeanTable(getBeanType());
 		beanTable.setBaseTable(baseTable);
-		beanTable.setBaseTableAlias(baseTableAlias);
 		beanTable.setIdProperties(propertiesId());
 		
 		return beanTable;
@@ -245,6 +271,10 @@ public class DeployBeanDescriptor<T> {
 			return defaultQuery.isSqlSelect();
 		}
 		return false;
+	}
+
+	public void add(RawSqlMeta rawSqlMeta) {
+		rawSqlMetas.put(rawSqlMeta.getName(), rawSqlMeta);
 	}
 
 	public void add(DeployNamedUpdate namedUpdate) {
@@ -474,21 +504,6 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setBaseTable(String baseTable) {
 		this.baseTable = baseTable;
-	}
-
-	/**
-	 * Return the base table alias.
-	 */
-	public String getBaseTableAlias() {
-		return baseTableAlias;
-	}
-
-	/**
-	 * Set the base table alias. Set when bean is mapped to multiple tables.
-	 * Used to identify which properties are db write.
-	 */
-	public void setBaseTableAlias(String baseTableAlias) {
-		this.baseTableAlias = baseTableAlias;
 	}
 
 	/**

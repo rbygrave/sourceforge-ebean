@@ -20,7 +20,7 @@ import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
+import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.DefaultExpressionList;
@@ -166,7 +166,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 			this.detail = new OrmQueryDetail();
 			this.attributes = new OrmQueryAttributes();
 			// potentially with where and having clause...
-			DeploySqlSelect sqlSelect = namedQuery.getSqlSelect();
+			RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
 			additionalWhere = sqlSelect.getWhereClause();
 			additionalHaving = sqlSelect.getHavingClause();
 		} else {

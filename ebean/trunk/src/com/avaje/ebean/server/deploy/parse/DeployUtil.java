@@ -28,13 +28,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.server.deploy.DeploySqlSelect;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser;
-import com.avaje.ebean.server.deploy.DeploySqlSelectParser.Meta;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
@@ -71,8 +66,6 @@ public class DeployUtil {
 
 	private final TypeManager typeManager;
 	
-	private final DeploySqlSelectParser sqlSelectParser;
-	
 	private final ValidatorFactoryManager validatorFactoryManager;
 		
 	private final String manyToManyAlias;
@@ -84,7 +77,6 @@ public class DeployUtil {
 		this.dbSpecific = dbSpecific;
 		this.typeManager = typeMgr;
 		this.namingConvention = nc;
-		this.sqlSelectParser = new DeploySqlSelectParser(namingConvention);
 
 		// this alias is used for ManyToMany lazy loading queries
 		this.manyToManyAlias = "zzzzzz";
@@ -109,17 +101,6 @@ public class DeployUtil {
 			String msg = "Error creating a validator on "+prop.getFullBeanName();
 			logger.log(Level.SEVERE, msg, e);
 		}
-	}
-
-	/**
-	 * Parse and return the DeploySqlSelect.
-	 */
-	public DeploySqlSelect parseSqlSelect(DeployBeanDescriptor<?> deployDesc, SqlSelect sqlSelect) {
-		
-		
-		Meta meta = DeploySqlSelectParser.createMeta(deployDesc, sqlSelect);
-		
-		return sqlSelectParser.parse(deployDesc, meta);
 	}
 	
 	public ScalarType setEnumScalarType(Enumerated enumerated, DeployBeanProperty prop) {

@@ -78,10 +78,6 @@ final class PropertyExpression {
 			val = System.getProperty(exp);
 		}
 		
-		if (val == null) {			
-			// now check ebean properties
-			val = GlobalProperties.get(exp, null);
-		}
 		if (val != null) {
 			return val;
 

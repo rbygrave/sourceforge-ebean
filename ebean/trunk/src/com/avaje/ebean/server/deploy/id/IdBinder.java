@@ -64,7 +64,7 @@ public interface IdBinder {
 	/**
 	 * Return the sql for binding the id to. This includes table alias and columns that make up the id.
 	 */
-	public String getBindIdSql();
+	public String getBindIdSql(String baseTableAlias);
 	
 	/**
 	 * Return the id properties in flat form.

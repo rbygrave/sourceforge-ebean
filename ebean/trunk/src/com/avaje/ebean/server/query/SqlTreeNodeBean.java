@@ -28,14 +28,14 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.id.IdBinder;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
+import com.avaje.ebean.server.lib.util.StringHelper;
 
 /**
  * Normal bean included in the query.
@@ -74,16 +74,12 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	
 	final BeanProperty[] properties;
 	
-	final JoinNode node;
-	
 	/**
 	 * Extra where clause added by Where annotation on associated many.
 	 */
 	final String extraWhere;
 	
-	final String tableAlias;
-
-	final BeanPropertyAssocOne<?> nodeBeanProp;
+	final BeanPropertyAssoc<?> nodeBeanProp;
 
 	final TableJoin[] tableJoins;
 
@@ -94,32 +90,39 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	
 	final InheritInfo inheritInfo;
 	
+	final String prefix;
+
+	public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, 
+			SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
+		this(prefix, beanProp, beanProp.getTargetDescriptor(),props, myChildren, withId);
+	}
+	
 	/**
 	 * Create with the appropriate node.
 	 */
-	public SqlTreeNodeBean(JoinNode joinNode, SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
+	public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, BeanDescriptor<?> desc, 
+			SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
 
-		node = joinNode;
-		nodeBeanProp = node.getBeanProp();
-		tableAlias = node.getTableAlias();
-		desc = node.getBeanDescriptor();
-		inheritInfo = desc.getInheritInfo();
-		extraWhere = joinNode.getExtraWhere();
+		this.prefix = prefix;
+		this.nodeBeanProp = beanProp;
+		this.desc = desc;
+		this.inheritInfo = desc.getInheritInfo();
+		this.extraWhere = (beanProp == null) ? null : beanProp.getExtraWhere();
 		
-		idBinder = desc.getIdBinder();
+		this.idBinder = desc.getIdBinder();
 		
 		// the bean has an Id property and we want to use it
-		readId = withId && (desc.propertiesId().length > 0);
+		this.readId = withId && (desc.propertiesId().length > 0);
 		
-		tableJoins = props.getTableJoins();
+		this.tableJoins = props.getTableJoins();
 		
-		partialObject = props.isPartialObject();
-		partialProps = props.getIncludedProperties();
-		partialHash = partialObject ? partialProps.hashCode() : 0;
+		this.partialObject = props.isPartialObject();
+		this.partialProps = props.getIncludedProperties();
+		this.partialHash = partialObject ? partialProps.hashCode() : 0;
 		
-		readOnly = props.isReadOnly();
+		this.readOnly = props.isReadOnly();
 		
-		properties = props.getProps();
+		this.properties = props.getProps();
 		
 		if (myChildren == null) {
 			children = NO_CHILDREN;
@@ -196,7 +199,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		} 
 
 		// only required for profiling
-		ctx.setCurrentJoinNode(node);
+		ctx.setCurrentPrefix(prefix);
 		
 		if (inheritInfo == null){
 			// normal behaviour with no inheritance
@@ -256,7 +259,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			if (ctx.isAutoFetchProfiling()){
 				// collect profile info for this node...
 				// after children so explicit node
-				ctx.profileBean(ebi, null, node);
+				ctx.profileBean(ebi, null, prefix);
 			}
 			
 		}
@@ -288,7 +291,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			} else {
 				// create a proxy for the many (deferred fetching)
 				if (ctx.isAutoFetchProfiling()){
-					manys[i].createReference(localBean, ctx.createAutoFetchNode(manys[i].getName(), node));					
+					manys[i].createReference(localBean, ctx.createAutoFetchNode(manys[i].getName(), prefix));					
 				} else {
 					manys[i].createReference(localBean, null);
 				}
@@ -301,16 +304,16 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 */
 	public void appendSelect(DbSqlContext ctx) {
 		
-		ctx.pushJoinNode(node);
-		ctx.pushTableAlias(tableAlias);
-		
-		if (!node.isRoot()) {
+		ctx.pushJoin(prefix);
+		ctx.pushTableAlias(prefix);
+
+		if (nodeBeanProp != null) {
 			ctx.append(NEW_LINE).append("        ");
 		}
 				
 		if (inheritInfo != null){
 			ctx.append(COMMA);
-			ctx.append(tableAlias);
+			ctx.append(ctx.getTableAlias(prefix));
 			ctx.append(PERIOD);
 			ctx.append(inheritInfo.getDiscriminatorColumn());
 		}
@@ -328,17 +331,19 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		}
 		
 		ctx.popTableAlias();
-		ctx.popJoinNode();
+		ctx.popJoin();
 	}
 
 	private void appendSelectTableJoins(DbSqlContext ctx) {
 
+		String baseAlias = ctx.getTableAlias(prefix);
+		
 		for (int i = 0; i < tableJoins.length; i++) {
 			TableJoin join = tableJoins[i];
 
-			String alias = join.getForeignTableAlias();
+			String alias = baseAlias+i;
 
-			ctx.pushTableAlias(alias);
+			ctx.pushSecondaryTableAlias(alias);
 			join.appendSelect(ctx);
 			ctx.popTableAlias();
 		}
@@ -355,7 +360,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	}
 	
 	
-	public void appendWhere(StringBuilder sb) {
+	public void appendWhere(DbSqlContext ctx) {
 
 		if (inheritInfo != null) {
 			if (inheritInfo.isRoot()) {
@@ -365,24 +370,26 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			} else {
 				// restrict to this type and 
 				// sub types of this type.
-				if (sb.length() > 0){
-					sb.append(" and");
+				if (ctx.length() > 0){
+					ctx.append(" and");
 				} 
-				sb.append(" ").append(tableAlias).append(".");
-				sb.append(inheritInfo.getWhere()).append(" ");
+				ctx.append(" ").append(ctx.getTableAlias(prefix)).append(".");//tableAlias
+				ctx.append(inheritInfo.getWhere()).append(" ");
 			}
 		}
 		if (extraWhere != null){
-			if (sb.length() > 0){
-				sb.append(" and");
+			if (ctx.length() > 0){
+				ctx.append(" and");
 			} 
-			sb.append(" ").append(extraWhere).append(" ");
+			String ta = ctx.getTableAlias(prefix);
+			String ew = StringHelper.replaceString(extraWhere, "${ta}", ta);
+			ctx.append(" ").append(ew).append(" ");
 		}
 		
 		for (int i = 0; i < children.length; i++) {
 			// recursively add to the where clause any
 			// fixed predicates (extraWhere etc)
-			children[i].appendWhere(sb);
+			children[i].appendWhere(ctx);
 		}
 	}
 	
@@ -391,16 +398,18 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 */
 	public void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
 
-		ctx.pushJoinNode(node);
-		ctx.pushTableAlias(node.getTableAlias());
-		
+		ctx.pushJoin(prefix);
+		ctx.pushTableAlias(prefix);
+
 		appendFromBaseTable(ctx, forceOuterJoin);
 		
-		// NB: properties based on secondary tables are not 
-		// included for 'partial' object queries...
-		for (int i = 0, x = tableJoins.length; i < x; i++) {
-		    tableJoins[i].addJoin(forceOuterJoin, node, ctx);
-		}
+//		// NB: properties based on secondary tables are not 
+//		// included for 'partial' object queries...
+//		String baseAlias = ctx.getTableAlias(prefix);
+//		for (int i = 0, x = tableJoins.length; i < x; i++) {
+//			String alias = baseAlias+i;
+//		    tableJoins[i].addJoin(forceOuterJoin, alias, baseAlias, ctx);
+//		}
 		
 		for (int i = 0; i < properties.length; i++) {
 			// usually nothing... except for 1-1 Exported
@@ -412,7 +421,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		}
 		
 		ctx.popTableAlias();
-		ctx.popJoinNode();
+		ctx.popJoin();
 	}
 	
 	/**
@@ -421,16 +430,29 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 */
 	public void appendFromBaseTable(DbSqlContext ctx, boolean forceOuterJoin) {
 		
-        if (node.isManyJoin()) {
-            BeanPropertyAssocMany<?> manyProp = node.getManyProp();
-            if (manyProp.isManyToMany()) {
-            	// add ManyToMany join
-                TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();
-                manyToManyJoin.addJoin(forceOuterJoin, node, ctx);
-            }
-        }
+		boolean manyToMany = false;
+		
+		if (nodeBeanProp instanceof BeanPropertyAssocMany<?>){
+			BeanPropertyAssocMany<?> manyProp = (BeanPropertyAssocMany<?>)nodeBeanProp;
+			if (manyProp.isManyToMany()){
+				
+				manyToMany = true;
+				
+				String alias = ctx.getTableAlias(prefix);
+				String[] split = SplitName.split(prefix);
+				String parentAlias = ctx.getTableAlias(split[0]);
+				String alias2 = alias+"z_";
+				
+				TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();
+				manyToManyJoin.addJoin(forceOuterJoin, parentAlias, alias2, ctx);
+				
+				nodeBeanProp.addJoin(forceOuterJoin, alias2, alias, ctx);
+			}
+		}
         
-        node.addJoin(forceOuterJoin, ctx);
+		if (!manyToMany){
+			nodeBeanProp.addJoin(forceOuterJoin, prefix, ctx);
+		}
 	}
 
     
@@ -438,6 +460,6 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 * Summary description.
 	 */
 	public String toString() {
-		return "BeanItem: " + desc;
+		return "SqlTreeNodeBean: " + desc;
 	}
 }

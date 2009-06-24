@@ -26,7 +26,6 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 
 /**
@@ -87,6 +86,12 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			if (!embedded && !oneToOneExported) {				
 				importedId = createImportedId(this, targetDescriptor, tableJoin);
 			}
+		}
+	}
+	
+	public void addFkey() {
+		if (importedId != null){
+			importedId.addFkeys(name);
 		}
 	}
 
@@ -221,18 +226,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 * cases.
 	 */
 	private abstract class LocalHelp {
-
-		JoinNode getJoinNode(DbSqlContext ctx) {
-			JoinNode parentNode = ctx.peekJoinNode();
-			JoinNode node = parentNode.findChild(name);
-			if (node == null) {
-				String m = "Error with 1-1 exported on " + descriptor;
-				m += "." + name + ". JoinNode not found?";
-				throw new RuntimeException(m);
-			} else {
-				return node;
-			}
-		}
 		
 		abstract Object readSet(DbReadContext ctx, Object bean, boolean assignAble)
 				throws SQLException;
@@ -309,8 +302,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			}
 
 			// check transaction context to see if it already exists
-//			TransactionContextClass classContext = ctx.getClassContext(rowType);
-//			EntityBean existing = classContext.get(id);
 			EntityBean existing = ctx.getPersistenceContext().get(rowType, id);
 
 			if (existing != null) {
@@ -335,7 +326,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				
 				setValue(bean, ref);
 				ctx.getPersistenceContext().set(rowType, id, ref);
-				//classContext.put(id, ref);
 				return ref;
 			}
 		}
@@ -344,8 +334,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
 			if (targetInheritInfo != null){
 				// add join to support the discriminator column
-				JoinNode node = getJoinNode(ctx);
-				node.addJoin(forceOuterJoin, ctx);
+				String relativePrefix = ctx.getRelativePrefix(getName());
+				tableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
 			}
 		}
 
@@ -356,9 +346,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		void appendSelect(DbSqlContext ctx) {
 			
 			if (targetInheritInfo != null){
-				// add discriminator column
-				JoinNode node = getJoinNode(ctx);
-				String tableAlias = node.getTableAlias();
+				// add discriminator column		
+				String relativePrefix = ctx.getRelativePrefix(getName());
+				String tableAlias = ctx.getTableAlias(relativePrefix);
 				ctx.appendColumn(tableAlias, targetInheritInfo.getDiscriminatorColumn());
 			}
 			importedId.sqlAppend(ctx);
@@ -404,13 +394,12 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		 */
 		@Override
 		void appendSelect(DbSqlContext ctx) {
-			
-			JoinNode node = getJoinNode(ctx);
 
 			// set appropriate tableAlias for 
 			// the exported id columns
-			String tableAlias = node.getTableAlias();
-			ctx.pushTableAlias(tableAlias);
+
+			String relativePrefix = ctx.getRelativePrefix(getName());
+			ctx.pushTableAlias(relativePrefix);
 
 			IdBinder idBinder = targetDescriptor.getIdBinder();
 			idBinder.appendSelect(ctx);
@@ -421,9 +410,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		@Override
 		void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
 
-			JoinNode node = getJoinNode(ctx);
-			node.addJoin(forceOuterJoin, ctx);
+			String relativePrefix = ctx.getRelativePrefix(getName());
+			tableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
 		}
-
 	}
 }

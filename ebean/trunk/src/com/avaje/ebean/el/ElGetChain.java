@@ -19,6 +19,9 @@
  */
 package com.avaje.ebean.el;
 
+import com.avaje.ebean.server.deploy.BeanProperty;
+
+
 /**
  * A ElGetValue based on a chain of properties.
  * <p>
@@ -32,15 +35,62 @@ package com.avaje.ebean.el;
  */
 public class ElGetChain implements ElGetValue {
 
+	final String deployProperty;
 	final String expression;
+	final String prefix;
+	final String name;
 
 	final ElGetValue[] chain;
 
 	public ElGetChain(String expression, ElGetValue[] chain) {
 		this.expression = expression;
 		this.chain = chain;
+		
+		int dotPos = expression.lastIndexOf('.');
+		if (dotPos > -1){
+			name = expression.substring(dotPos+1);
+			prefix = expression.substring(0, dotPos);
+			deployProperty = "${"+prefix+"}"+getDbColumn();
+		} else {
+			name = expression;
+			prefix = null;
+			deployProperty = getDbColumn();
+		}
+		
 	}
 
+	/**
+	 * Full ElGetValue support.
+	 */
+	public boolean isDeployOnly() {
+		return false;
+	}
+
+	public String getDeployProperty() {
+		return deployProperty;
+	}
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getDbColumn() {
+		return chain[chain.length-1].getDbColumn();
+	}
+	
+	public BeanProperty getBeanProperty() {
+		return chain[chain.length-1].getBeanProperty();
+	}
+
+	public Object elConvertType(Object value){
+		// just convert using the last one in the chain
+		return chain[chain.length-1].elConvertType(value);
+	}
+	
 	public Object elGetValue(Object bean) {
 
 		for (int i = 0; i < chain.length; i++) {
@@ -52,10 +102,4 @@ public class ElGetChain implements ElGetValue {
 
 		return bean;
 	}
-
-	public Object elConvertType(Object value){
-		// just convert using the last one in the chain
-		return chain[chain.length-1].elConvertType(value);
-	}
-
 }

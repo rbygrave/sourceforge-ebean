@@ -21,8 +21,6 @@ package com.avaje.ebean.server.deploy;
 
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
-import com.avaje.ebean.server.deploy.jointree.JoinTreeFactory;
 import com.avaje.ebean.server.persist.BeanPersister;
 import com.avaje.ebean.server.persist.BeanPersisterFactory;
 import com.avaje.ebean.server.persist.dml.DmlBeanPersisterFactory;
@@ -34,19 +32,15 @@ public class BeanManagerFactory {
 
 	final BeanPersisterFactory peristerFactory;
 	
-	final JoinTreeFactory joinTreeFactory;
-	
 	public BeanManagerFactory(ServerConfig config, DatabasePlatform dbPlatform) {
-		joinTreeFactory = new JoinTreeFactory(config);
 		peristerFactory = new DmlBeanPersisterFactory(dbPlatform);
 	}
 	
 	public <T> BeanManager<T> create(BeanDescriptor<T> desc) {
 		
 		BeanPersister persister = peristerFactory.create(desc);
-		JoinTree joinTree = joinTreeFactory.create(desc);
-		
-		return new BeanManager<T>(desc, joinTree, persister);
+
+		return new BeanManager<T>(desc, persister);
 	}
 
 }

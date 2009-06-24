@@ -108,12 +108,7 @@ public class DeployBeanInfo<T> {
 
 		DeployTableJoin tableJoin = (DeployTableJoin) tableJoinMap.get(key);
 		if (tableJoin == null) {
-			// make sure we get a unique alias to use
-			alias = getAlias(tableName, alias);
-
 			tableJoin = new DeployTableJoin();
-			tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
-			tableJoin.setForeignTableAlias(alias);
 			tableJoin.setTable(tableName);
 			tableJoin.setType(TableJoin.JOIN);
 			descriptor.addTableJoin(tableJoin);
@@ -133,13 +128,8 @@ public class DeployBeanInfo<T> {
 			joinType = TableJoin.LEFT_OUTER;
 		}
 
-		// get a unique alias possibly using the name of the property
-		String alias = getAlias(beanProp.getName(), null);
-
 		DeployTableJoin tableJoin = beanProp.getTableJoin();
 		tableJoin.setType(joinType);
-		tableJoin.setForeignTableAlias(alias);
-		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
 	}
 
 	/**
@@ -147,13 +137,8 @@ public class DeployBeanInfo<T> {
 	 */
 	public void setManyJoinAlias(DeployBeanPropertyAssocMany<?> listProp, DeployTableJoin tableJoin) {
 
-		// get a unique alias possibly using the name of the property
-		String alias = getAlias(listProp.getName(), null);
-
 		// its always going to be an outer join... as perhaps no rows
 		tableJoin.setType(TableJoin.LEFT_OUTER);
-		tableJoin.setForeignTableAlias(alias);
-		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
 	}
 
 	/**
@@ -163,24 +148,9 @@ public class DeployBeanInfo<T> {
 	public void setManyIntersectionAlias(DeployBeanPropertyAssocMany<?> listProp,
 			DeployTableJoin tableJoin) {
 
-		// get a unique alias possibly using the name of the property
-		String alias = getAlias(listProp.getName(), null);
-
 		// its always going to be an outer join... as perhaps no rows
 		tableJoin.setType(TableJoin.LEFT_OUTER);
-		tableJoin.setForeignTableAlias(alias);
-		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
 	}
-
-//	/**
-//	 * Set a the join alias for a TableJoin (Secondary table).
-//	 */
-//	public void setTableJoinAlias(DeployTableJoin tableJoin, String type) {
-//		String alias = getAlias(tableJoin.getTable(), null);
-//		tableJoin.setType(type);
-//		tableJoin.setForeignTableAlias(alias);
-//		tableJoin.setLocalTableAlias(descriptor.getBaseTableAlias());
-//	}
 
 	/**
 	 * Set the base table name and alias.
@@ -188,8 +158,6 @@ public class DeployBeanInfo<T> {
 	public void setTable(String catalog, String schema, String tableName, String alias) {
 		
 		if (tableName != null && tableName.trim().length() > 0) {
-
-			alias = getAlias(tableName, alias);
 
 			tableName = util.convertQuotedIdentifiers(tableName);
 
@@ -201,50 +169,7 @@ public class DeployBeanInfo<T> {
 			}
 			
 			descriptor.setBaseTable(tableName);
-			descriptor.setBaseTableAlias(alias);
 		}
-	}
-
-	private String getAlias(String tableOrProperty, String defaultValue) {
-
-		String alias = getAliasAttempt(tableOrProperty, defaultValue);
-		if (!isKeyword(alias)){
-			return alias;
-		}
-		for (int i = 0; i < 10; i++) {
-			// try to get a alias that is not a keyword
-			alias = getAliasAttempt(tableOrProperty, null);
-			if (!isKeyword(alias)){
-				return alias;
-			}
-		}
-		return "_z_";
-	}
-	
-	/**
-	 * Get a table alias for TableJoin and associated Bean joins.
-	 */
-	private String getAliasAttempt(String tableOrProperty, String defaultValue) {
-
-		if (defaultValue != null && defaultValue.length() > 1) {
-			// if its more that one character it is definitely used...
-			return defaultValue;
-		}
-		if (defaultValue != null && aliasList.remove(defaultValue)) {
-			return defaultValue;
-		}
-
-		String alias = util.getPotentialAlias(tableOrProperty);
-
-		if (!aliasList.remove(alias)) {
-			// just remove the next one
-			alias = aliasList.removeNext();
-		}
-		return alias;
-	}
-	
-	private boolean isKeyword(String tableAlias){
-		return SqlReservedWords.isKeyword(tableAlias);
 	}
 
 }

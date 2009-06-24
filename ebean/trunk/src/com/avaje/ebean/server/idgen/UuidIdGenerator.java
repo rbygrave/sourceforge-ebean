@@ -9,11 +9,6 @@ import com.avaje.ebean.config.dbplatform.IdGenerator;
  */
 public class UuidIdGenerator implements IdGenerator {
 
-    /**
-     * The name of the default UUID generator.
-     */
-    public static final String AUTO_UUID = "auto.uuid";
-
 	/**
 	 * Return UUID from UUID.randomUUID();
 	 */

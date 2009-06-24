@@ -32,7 +32,6 @@ import com.avaje.ebean.server.deploy.id.ImportedIdEmbedded;
 import com.avaje.ebean.server.deploy.id.ImportedIdMultiple;
 import com.avaje.ebean.server.deploy.id.ImportedIdSimple;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
-import com.avaje.ebean.server.lib.util.StringHelper;
 
 /**
  * Abstract base for properties mapped to an associated bean, list, set or map.
@@ -80,8 +79,6 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 	String extraWhere;
 
-	String targetTableAlias;
-
 	boolean saveRecurseSkippable;
 
 	boolean deleteRecurseSkippable;
@@ -119,13 +116,24 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 			cascadeValidate = cascadeInfo.isValidate();
 
-			targetTableAlias = targetDescriptor.getBaseTableAlias();
-			if (extraWhere != null){
-				extraWhere = StringHelper.replaceString(extraWhere, "${ta}", targetTableAlias);
-			}
 		}
 	}
-
+	
+    /**
+	 * Add table join with table alias based on prefix.
+	 */
+    public void addJoin(boolean forceOuterJoin, String prefix, DbSqlContext ctx) {
+    	tableJoin.addJoin(forceOuterJoin, prefix, ctx);
+    }
+    
+    /**
+	 * Add table join with explicit table alias.
+	 */
+    public void addJoin(boolean forceOuterJoin, String a1, String a2, DbSqlContext ctx) {
+    	tableJoin.addJoin(forceOuterJoin, a1, a2, ctx);
+    }
+    	
+    
 	/**
 	 * Return false.
 	 */

@@ -258,7 +258,6 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		init();
 		if (modifyListening) {
 			Set<Entry<K, E>> s = map.entrySet();
-			// FIXME: Could be a bug here...
 			return new ModifySet(this, s);
 		}
 		return map.entrySet();

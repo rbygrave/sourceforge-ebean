@@ -33,8 +33,8 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.ManyType;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.query.CQueryPlan;
+import com.avaje.ebean.server.query.SqlTreeAlias;
 
 /**
  * Wraps the objects involved in executing a Query.
@@ -73,6 +73,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	private boolean backgroundFetching;
 	
+	final SqlTreeAlias sqlTreeAlias;
+	
 	/**
 	 * Create the InternalQueryRequest.
 	 */
@@ -86,6 +88,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;
 		this.query = query;
+		this.sqlTreeAlias = new SqlTreeAlias(beanDescriptor.getBaseTableAlias());
 	}
 	
 	public BeanManager<T> getBeanManager() {
@@ -99,6 +102,13 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return beanDescriptor;
 	}
 	
+	/**
+	 * Return the SQL alias tree.
+	 */
+	public SqlTreeAlias getSqlTreeAlias() {
+		return sqlTreeAlias;
+	}
+
 	/**
 	 * Calculate the query plan hash AFTER any potential AutoFetch tuning.
 	 */
@@ -240,13 +250,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * Return the 'Join Tree' for this request.
-	 */
-	public JoinTree getBeanJoinTree() {
-		return beanManager.getBeanJoinTree();
 	}
 
 	/**

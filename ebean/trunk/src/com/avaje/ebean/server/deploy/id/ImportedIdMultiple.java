@@ -24,6 +24,11 @@ public class ImportedIdMultiple implements ImportedId {
 		this.imported = imported;
 	}
 
+	public void addFkeys(String name) {
+
+		// not supporting addFkeys for ImportedIdMultiple
+	}
+	
 	public String getLogicalName() {
 		return null;
 	}

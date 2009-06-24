@@ -35,10 +35,6 @@ public class BeanEmbeddedMetaFactory {
 	public static BeanEmbeddedMeta create(BeanDescriptorMap owner, DeployBeanPropertyAssocOne<?> prop,
 			BeanDescriptor<?> descriptor) {
 
-		// Use the tableAlias from the owning BeanDescriptor
-		String tableAlias = descriptor.getBaseTableAlias();
-
-
 		// we can get a BeanDescriptor for an Embedded bean
 		// and know that it is NOT recursive, as Embedded beans are
 		// only allow to hold simple scalar types...
@@ -60,7 +56,7 @@ public class BeanEmbeddedMetaFactory {
 				dbColumn = sourceProperties[i].getDbColumn();
 			}
 
-			BeanPropertyOverride overrides = new BeanPropertyOverride(dbColumn, tableAlias);
+			BeanPropertyOverride overrides = new BeanPropertyOverride(dbColumn);
 			embeddedProperties[i] = new BeanProperty(sourceProperties[i], overrides);
 		}
 

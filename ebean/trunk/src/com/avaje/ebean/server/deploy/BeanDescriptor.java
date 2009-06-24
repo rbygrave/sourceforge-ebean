@@ -49,13 +49,13 @@ import com.avaje.ebean.el.ElComparatorCompound;
 import com.avaje.ebean.el.ElComparatorProperty;
 import com.avaje.ebean.el.ElGetChainBuilder;
 import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.el.ElPropertyDeploy;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.IdBinderFactory;
-import com.avaje.ebean.server.deploy.jointree.JoinTree;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyLists;
 import com.avaje.ebean.server.query.CQueryPlan;
@@ -78,6 +78,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	final ConcurrentHashMap<String, ElGetValue> elGetCache = new ConcurrentHashMap<String, ElGetValue>();
 
 	final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
+
+	final ConcurrentHashMap<String, BeanFkeyProperty> fkeyMap = new ConcurrentHashMap<String,BeanFkeyProperty>();
 	
 	/**
 	 * The EbeanServer name. Same as the plugin name.
@@ -162,12 +164,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * statement.
 	 */
 	final boolean sqlSelectBased;
-
-	/**
-	 * Sql table alias for the base table. Also identifies which properties are
-	 * 'base table' properties.
-	 */
-	final String baseTableAlias;
 
 	/**
 	 * Used to provide mechanism to new EntityBean instances. Generated code
@@ -353,6 +349,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 	final String name;
 	
+	final String baseTableAlias;
+	
 	/**
 	 * If true then only changed properties get updated.
 	 */
@@ -368,6 +366,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.owner = owner;
 		this.serverName = owner.getServerName();
 		this.name = deploy.getName();
+		this.baseTableAlias = name.substring(0,1).toLowerCase();
 		this.fullName = deploy.getFullName();
 		this.typeManager = typeManager;
 		this.beanType = deploy.getBeanType();
@@ -400,7 +399,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.extraAttrMap = deploy.getExtraAttributeMap();
 
 		this.baseTable = deploy.getBaseTable();
-		this.baseTableAlias = deploy.getBaseTableAlias();
 		this.sqlSelectBased = deploy.isSqlSelectBased();
 
 		this.beanReflect = deploy.getBeanReflect();
@@ -461,14 +459,10 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	
 	public void setInternalEbean(InternalEbean internalEbean){
 		this.internalEbean = internalEbean;
-//		... could use reflection and make internalEbean final
-//		try {
-//			Field field = BeanDescriptor.class.getDeclaredField("internalEbean");
-//			field.setAccessible(true);
-//			field.set(this, internalEbean);
-//		} catch (Exception e) {
-//			throw new RuntimeException(e);
-//		}
+		for (int i = 0; i < propertiesMany.length; i++) {
+			// used for creating lazy loading lists etc 
+			propertiesMany[i].setInternalEbean(internalEbean);
+		}		
 	}
 	
 	
@@ -485,13 +479,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 */
 	public int compareTo(BeanDescriptor<?> o) {
 		return name.compareTo(o.getName());
-	}
-	
-	/**
-	 * Initialisation after the JoinTree has been built.
-	 */
-	public void initialiseWithJoinTree(JoinTree joinTree) {
-		initialiseNamedQueries(joinTree);
 	}
 
 	/**
@@ -558,12 +545,31 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 				
 			// parse every named update up front into sql dml
 			for (DeployNamedUpdate namedUpdate : namedUpdates.values()) {
-				DeployUpdateParser parser = new DeployUpdateParser(updateDeployMap);
+				DeployUpdateParser parser = new DeployUpdateParser(this);
 				namedUpdate.initialise(parser);
 			}	
 		}
 	}	
 	
+	public void add(BeanFkeyProperty fkey){
+		fkeyMap.put(fkey.getName(), fkey);
+	}
+	
+	public void initialiseFkeys() {
+		for (int i = 0; i < propertiesOneImported.length; i++) {
+			propertiesOneImported[i].addFkey();
+		}
+	}
+	
+	/**
+	 * Return the base table alias.
+	 * This is always the first letter of the bean name.
+	 */
+	public String getBaseTableAlias() {
+		return baseTableAlias;
+	}
+
+
 	public Object nextId() {
 		if (idGenerator != null){
 			return idGenerator.nextId();
@@ -572,29 +578,16 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		}
 	}
 	
+	public DeployPropertyParser createDeployPropertyParser() {
+		return new DeployPropertyParser(this);
+	}
+	
 	/**
 	 * Convert the logical orm update statement into sql by converting the bean properties and bean name to
 	 * database columns and table.
 	 */
 	public String convertOrmUpdateToSql(String ormUpdateStatement) {
-		DeployUpdateParser parser = new DeployUpdateParser(updateDeployMap);
-		return parser.parse(ormUpdateStatement);
-	}
-	
-	/**
-	 * Currently need to initialise SqlSelect named queries if they use imported foreign keys.
-	 * <p>
-	 * Specifically finding the logical foreign key property.
-	 * </p>
-	 */
-	private void initialiseNamedQueries(JoinTree joinTree) {
-		Iterator<DeployNamedQuery> it = namedQueries.values().iterator();
-		while (it.hasNext()) {
-			DeployNamedQuery namedQuery = it.next();
-			if (namedQuery.isSqlSelect()){
-				namedQuery.initialise(this, joinTree);
-			}
-		}
+		return new DeployUpdateParser(this).parse(ormUpdateStatement);
 	}
 
 	/**
@@ -774,16 +767,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * that make up the id.
 	 */
 	public String getBindIdSql() {
-		return idBinder.getBindIdSql();
+		return idBinder.getBindIdSql(baseTableAlias);
 	}
-
-//	public Object getOldValues(EntityBeanIntercept intercept) {
-//		if (intercept.isDirty()){
-//			return intercept.getOldValues();
-//		} else {
-//			return intercept.getOwner();
-//		}
-//	}
 		
 	/**
 	 * Bind the idValue to the preparedStatement.
@@ -812,6 +797,11 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		return namedQueries.get(name);
 	}
 
+	public DeployNamedQuery addNamedQuery(DeployNamedQuery deployNamedQuery) {
+		return namedQueries.put(deployNamedQuery.getName(), deployNamedQuery);
+	}
+
+	
 	/**
 	 * Return a named update.
 	 */
@@ -1075,35 +1065,67 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		}
 		return new ElComparatorProperty<T>(elGetValue, sortProp.isAscending(), nullsHigh);
 	}
-	
+
 	public ElGetValue getElGetValue(String propName) {
+		return getElGetValue(propName, false);
+	}
+	
+	
+	public ElPropertyDeploy getElPropertyDeploy(String propName) {
+		ElPropertyDeploy fk = fkeyMap.get(propName);
+		if (fk != null){
+			return fk;
+		}
+		return getElGetValue(propName, true);
+	}
+	
+	private ElGetValue getElGetValue(String propName, boolean propertyDeploy) {
 		ElGetValue elGetValue = elGetCache.get(propName);
 		if (elGetValue == null){
-			elGetValue = buildElGetValue(propName, null);
+			// need to build it potentially navigating the BeanDescriptors
+			elGetValue = buildElGetValue(propName, null, propertyDeploy);
 			if (elGetValue == null){
-				throw new PersistenceException("No property ["+propName+"] found on "+getFullName());
+				if (propertyDeploy){
+					return null;
+				} else {
+					throw new PersistenceException("No property ["+propName+"] found on "+getFullName());
+				}
 			}
-			elGetCache.put(propName, elGetValue);
+			if (elGetValue instanceof BeanFkeyProperty){
+				fkeyMap.put(propName, (BeanFkeyProperty)elGetValue);
+			} else {
+				elGetCache.put(propName, elGetValue);				
+			}
 		}
 		return elGetValue;
 	}
 	
-	public ElGetValue buildElGetValue(String propName, ElGetChainBuilder chain){
+	private ElGetValue buildElGetValue(String propName, ElGetChainBuilder chain, boolean propertyDeploy){
+		
+		if (propertyDeploy && chain != null){
+			BeanFkeyProperty fk = fkeyMap.get(propName);
+			if (fk != null){
+				return fk.create(chain.getExpression());
+			}
+		}
 		
 		int basePos = propName.indexOf('.');
 		if (basePos > -1) {
-			// embedded property
+			// nested or embedded property
 			String baseName = propName.substring(0, basePos);
 			String remainder = propName.substring(basePos + 1);
-
+			
 			BeanProperty assocProp = _findBeanProperty(baseName);
+			if (assocProp == null){
+				return null;
+			}
 			BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
 			
 			if (chain == null){
 				chain = new ElGetChainBuilder(propName);
 			}
 			chain.add(assocProp);
-			return embDesc.buildElGetValue(remainder, chain);			
+			return embDesc.buildElGetValue(remainder, chain, propertyDeploy);			
 		}
 		
 		BeanProperty property = _findBeanProperty(propName);
@@ -1128,15 +1150,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 			// embedded property
 			String baseName = propName.substring(0, basePos);
 			return _findBeanProperty(baseName);
-
-//			String propertyName = propName.substring(basePos + 1);
-//
-//			BeanProperty prop = _findBeanProperty(baseName);
-//			if (prop != null && prop instanceof BeanPropertyAssoc) {
-//				return ((BeanPropertyAssoc<?>) prop).getTargetDescriptor().findBeanProperty(propertyName);
-//			}
-//
-//			return null;
 		}
 
 		return _findBeanProperty(propName);
@@ -1254,14 +1267,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	public String getBaseTable() {
 		return baseTable;
 	}
-
-	/**
-	 * Return the base table alias.
-	 */
-	public String getBaseTableAlias() {
-		return baseTableAlias;
-	}
-
 	
 	/**
 	 * Return the map of logical property names to database column names as well as the

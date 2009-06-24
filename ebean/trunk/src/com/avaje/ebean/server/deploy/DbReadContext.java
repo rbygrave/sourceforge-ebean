@@ -6,7 +6,6 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.server.core.PersistenceContext;
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.
@@ -19,8 +18,9 @@ public interface DbReadContext {
 	/**
 	 * Set the JoinNode - used by proxy/reference beans for profiling.
 	 */
-	public void setCurrentJoinNode(JoinNode currentJoinNode);
-	
+	public void setCurrentPrefix(String currentPrefix);
+
+		
 	/**
 	 * Return true if we are profiling this query.
 	 */
@@ -29,12 +29,12 @@ public interface DbReadContext {
 	/**
 	 * Create a AutoFetchNode for a given path.
 	 */
-	public ObjectGraphNode createAutoFetchNode(String extraPath, JoinNode joinNode);
+	public ObjectGraphNode createAutoFetchNode(String extraPath, String prefix);
 	
 	/**
 	 * Add autoFetch profiling for a loaded entity bean.
 	 */
-	public void profileBean(EntityBeanIntercept ebi, String extraPath, JoinNode joinNode);
+	public void profileBean(EntityBeanIntercept ebi, String extraPath, String prefix);
 
 	/**
 	 * Add autoFetch profiling for a proxy/reference bean.

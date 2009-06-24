@@ -1,11 +1,12 @@
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.deploy.jointree.JoinNode;
 
 /**
  * Used to provide context during sql construction.
  */
 public interface DbSqlContext {
+	
+	public void pushSecondaryTableAlias(String alias);
 	
 	/**
 	 * Push the current table alias onto the stack.
@@ -50,18 +51,45 @@ public interface DbSqlContext {
 	public void appendFormulaJoin(String sqlFormulaJoin, boolean forceOuterJoin);
 
 	/**
+	 * Return the current content length.
+	 */
+	public int length();
+
+	/**
 	 * Return the current join node.
 	 */
-	public JoinNode peekJoinNode();
+	public String peekJoin();
 	
 	/**
 	 * Push a join node onto the stack.
 	 */
-	public void pushJoinNode(JoinNode currentJoinNode);
+	public void pushJoin(String prefix);
+	
 
 	/**
 	 * Pop a join node off the stack.
 	 */
-	public void popJoinNode();
+	public void popJoin();
+	
+	public String getTableAlias(String prefix);
+	
+	public String getRelativePrefix(String propName);
+	public String getRelativeAlias(String propName);
+	
+//	/**
+//	 * Return the current join node.
+//	 */
+//	public JoinNode peekJoinNode();
+//	
+//	/**
+//	 * Push a join node onto the stack.
+//	 */
+//	public void pushJoinNode(JoinNode currentJoinNode);
+//	
+//
+//	/**
+//	 * Pop a join node off the stack.
+//	 */
+//	public void popJoinNode();
 
 }

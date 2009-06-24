@@ -27,26 +27,18 @@ package com.avaje.ebean.server.deploy;
  */
 public class ExportedProperty {
 
-	private final String intersectionDbColumn;
+//	private final String intersectionDbColumn;
 	
 	private final String foreignDbColumn;
 	
 	private final BeanProperty property;
 
 	private final boolean embedded;
-
-	/**
-	 * Create the ExportedProperty.
-	 */
-	public ExportedProperty(boolean embedded, String foreignDbColumn, BeanProperty property, String intersectionDbColumn) {
+	
+	public ExportedProperty(boolean embedded, String foreignDbColumn, BeanProperty property) {
 		this.embedded = embedded;
 		this.foreignDbColumn = foreignDbColumn;
 		this.property = property;
-		this.intersectionDbColumn = intersectionDbColumn;
-	}
-	
-	public ExportedProperty(boolean embedded, String foreignDbColumn, BeanProperty property) {
-		this(embedded, foreignDbColumn, property, null);
 	}
 
 	/**
@@ -73,13 +65,6 @@ public class ExportedProperty {
 		return property.getValue(bean);
 	}
 	
-//	/**
-//	 * Return the scalar datatype for this property.
-//	 */
-//	public int getDbType() {
-//		return property.getDbType();
-//	}
-	
 	/**
 	 * Return the foreign database column matching this property.
 	 * <p>
@@ -93,11 +78,4 @@ public class ExportedProperty {
 		return foreignDbColumn;
 	}
 
-	/**
-	 * Used for MapBean creation for ManyToMany persistence.
-	 */
-	public String getIntersectionDbColumn() {
-		return intersectionDbColumn;
-	}
-	
 }

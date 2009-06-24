@@ -8,17 +8,13 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.config.NamingConvention;
-import com.avaje.ebean.server.deploy.DeploySqlSelect.ColumnInfo;
-import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 
 /**
  * Parses columnMapping (select clause) mapping columns to bean properties.
  */
-public final class DefaultDeploySqlSelectColumnsParser {
+public final class RawSqlSelectColumnsParser {
 
-	private static Logger logger = Logger.getLogger(DefaultDeploySqlSelectColumnsParser.class.getName());
+	private static Logger logger = Logger.getLogger(RawSqlSelectColumnsParser.class.getName());
 
 	/**
 	 * Description of how the match was made.
@@ -41,26 +37,26 @@ public final class DefaultDeploySqlSelectColumnsParser {
 
 	private final String sqlSelect;
 
-	private final List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
+	private final List<RawSqlColumnInfo> columns = new ArrayList<RawSqlColumnInfo>();
 
-	private final DeployBeanDescriptor<?> deployDesc;
+	private final BeanDescriptor<?> desc;
 
 	private final NamingConvention namingConvention;
 
-	private final DefaultDeploySqlSelectParser parent;
+	private final RawSqlSelectBuilder parent;
 
 	private final boolean debug;
 
-	public DefaultDeploySqlSelectColumnsParser(DefaultDeploySqlSelectParser parent, String sqlSelect) {
+	public RawSqlSelectColumnsParser(RawSqlSelectBuilder parent, String sqlSelect) {
 		this.parent = parent;
-		this.debug = parent.debug;
-		this.namingConvention = parent.namingConvention;
-		this.deployDesc = parent.deployDesc;
+		this.debug = parent.isDebug();
+		this.namingConvention = parent.getNamingConvention();
+		this.desc = parent.getBeanDescriptor();
 		this.sqlSelect = sqlSelect;
 		this.end = sqlSelect.length();
 	}
 
-	public List<ColumnInfo> parse() {
+	public List<RawSqlColumnInfo> parse() {
 		while (pos <= end) {
 			nextColumnInfo();
 		}
@@ -106,7 +102,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 		}
 
 		
-		DeployBeanProperty prop = findProperty(colLabel);
+		BeanProperty prop = findProperty(colLabel);
 		if (prop == null) {
 			if (debug) {
 				String msg = "ColumnMapping ... idx[" + columnIndex
@@ -135,7 +131,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 				logger.fine(msg);
 			}
 
-			ColumnInfo info = new ColumnInfo(colName, colLabel, prop.getName(), prop.isScalar());
+			RawSqlColumnInfo info = new RawSqlColumnInfo(colName, colLabel, prop.getName(), prop.isScalar());
 			columns.add(info);
 			columnIndex++;
 
@@ -152,8 +148,9 @@ public final class DefaultDeploySqlSelectColumnsParser {
 		// trim off first and last character
 		String result = columnLabel.substring(1, columnLabel.length() - 1);
 
-		logger.fine("sql-select trimming quoted identifier from[" + columnLabel + "] to[" + result
-				+ "]");
+		String msg = "sql-select trimming quoted identifier from[" 
+					+ columnLabel + "] to[" + result+ "]";
+		logger.fine(msg);
 
 		return result;
 	}
@@ -161,7 +158,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 	/**
 	 * Find the property to match against the given resultSet column.
 	 */
-	private DeployBeanProperty findProperty(String column) {
+	private BeanProperty findProperty(String column) {
 
 		searchColumn = column;
 		int dotPos = searchColumn.indexOf(".");
@@ -171,15 +168,15 @@ public final class DefaultDeploySqlSelectColumnsParser {
 
 		searchColumn = removeQuotedIdentifierChars(searchColumn);
 
-		DeployBeanProperty matchingProp = deployDesc.getBeanProperty(searchColumn);
+		BeanProperty matchingProp = desc.getBeanProperty(searchColumn);
 		if (matchingProp != null) {
 			matchDescription = "";
 			return matchingProp;
 		}
 
 		// convert columnName using the namingConvention
-		String propertyName = namingConvention.getPropertyFromColumn(deployDesc.getBeanType(), searchColumn);
-		matchingProp = deployDesc.getBeanProperty(propertyName);
+		String propertyName = namingConvention.getPropertyFromColumn(desc.getBeanType(), searchColumn);
+		matchingProp = desc.getBeanProperty(propertyName);
 		if (matchingProp != null) {
 			matchDescription = " ... using naming convention";
 			return matchingProp;
@@ -188,25 +185,25 @@ public final class DefaultDeploySqlSelectColumnsParser {
 		matchDescription = " ... by linear search";
 
 		// search all properties matching against the property db column
-		List<DeployBeanProperty> propertiesBase = deployDesc.propertiesBase();
-		for (int i = 0; i < propertiesBase.size(); i++) {
-			DeployBeanProperty prop = propertiesBase.get(i);
+		BeanProperty[] propertiesBase = desc.propertiesBaseScalar();
+		for (int i = 0; i < propertiesBase.length; i++) {
+			BeanProperty prop = propertiesBase[i];
 			if (isMatch(prop, searchColumn)) {
 				return prop;
 			}
 		}
 
-		List<DeployBeanProperty> propertiesId = deployDesc.propertiesId();
-		for (int i = 0; i < propertiesId.size(); i++) {
-			DeployBeanProperty prop = propertiesId.get(i);
+		BeanProperty[] propertiesId = desc.propertiesId();
+		for (int i = 0; i < propertiesId.length; i++) {
+			BeanProperty prop = propertiesId[i];
 			if (isMatch(prop, searchColumn)) {
 				return prop;
 			}
 		}
 
-		List<DeployBeanPropertyAssocOne<?>> propertiesAssocOne = deployDesc.propertiesAssocOne();
-		for (int i = 0; i < propertiesAssocOne.size(); i++) {
-			DeployBeanProperty prop = propertiesAssocOne.get(i);
+		BeanPropertyAssocOne<?>[] propertiesAssocOne = desc.propertiesOne();
+		for (int i = 0; i < propertiesAssocOne.length; i++) {
+			BeanProperty prop = propertiesAssocOne[i];
 			if (isMatch(prop, searchColumn)) {
 				return prop;
 			}
@@ -215,7 +212,7 @@ public final class DefaultDeploySqlSelectColumnsParser {
 		return null;
 	}
 
-	private boolean isMatch(DeployBeanProperty prop, String columnLabel) {
+	private boolean isMatch(BeanProperty prop, String columnLabel) {
 		if (columnLabel.equalsIgnoreCase(prop.getDbColumn())) {
 			return true;
 		}

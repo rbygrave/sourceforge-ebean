@@ -1,10 +1,9 @@
 package com.avaje.ebean.server.deploy;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
+import com.avaje.ebean.el.ElPropertyDeploy;
 
 /**
  * Converts logical property names to database columns with table alias.
@@ -16,13 +15,12 @@ import com.avaje.ebean.server.deploy.jointree.PropertyDeploy;
 public final class DeployPropertyParser extends DeployParser {
 
 	
-	private final Map<String, PropertyDeploy> propMap;
-
+	private final BeanDescriptor<?> beanDescriptor;
+	
 	private final Set<String> includes = new HashSet<String>();
 
-
-	public DeployPropertyParser(final Map<String, PropertyDeploy> propMap) {
-		this.propMap = propMap;
+	public DeployPropertyParser(BeanDescriptor<?> beanDescriptor) {
+		this.beanDescriptor = beanDescriptor;
 	}
 
 	public Set<String> getIncludes() {
@@ -31,38 +29,22 @@ public final class DeployPropertyParser extends DeployParser {
 
 	public String convertWord() {
 
-		PropertyDeploy propertyDeploy = propMap.get(word);
-
-		if (propertyDeploy == null) {
+		
+		ElPropertyDeploy elGetValue = beanDescriptor.getElPropertyDeploy(word);
+		if (elGetValue == null){
 			return word;
-
-		}
-		String include = propertyDeploy.getInclude();
-
-		// add includes for this property
-		addIncludes(include, include.length());
-
-		return propertyDeploy.getDeploy();
-	}
-
-	/**
-	 * Add 'includes'.
-	 * <p>
-	 * These are used to determine the 'joins' required to support the
-	 * predicates and order by clauses.
-	 * </p>
-	 */
-	private void addIncludes(String logicalWord, int fromIndex) {
-		int lastPeriod = logicalWord.lastIndexOf('.', fromIndex);
-		if (lastPeriod > -1) {
-			String inc = logicalWord.substring(0, lastPeriod);
-			// testing all lower case...
-			// for the includes
-			includes.add(inc.toLowerCase());
-			addIncludes(logicalWord, lastPeriod - 1);
+		} else {
+			String prefix = elGetValue.getPrefix();
+			if (prefix != null){
+				addIncludes(prefix);
+				return "${"+prefix+"}"+elGetValue.getDbColumn();
+			} else {
+				return "${}"+elGetValue.getDbColumn();
+			}
 		}
 	}
 
-	
-
+	private void addIncludes(String prefix) {
+		includes.add(prefix);
+	}
 }

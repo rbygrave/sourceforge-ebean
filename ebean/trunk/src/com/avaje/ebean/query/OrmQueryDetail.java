@@ -95,7 +95,7 @@ public class OrmQueryDetail implements Serializable {
 	 * Matches a join() method of the query.
 	 */
 	public void addFetchJoin(OrmQueryProperties chunk) {
-		String property = chunk.getEntity().toLowerCase();
+		String property = chunk.getEntity();//.toLowerCase();
 		fetchJoins.put(property, chunk);
 		includes.add(property);
 	}
@@ -146,7 +146,7 @@ public class OrmQueryDetail implements Serializable {
 //			}
 			return baseProps;
 		}
-		OrmQueryProperties props = fetchJoins.get(propertyName.toLowerCase());
+		OrmQueryProperties props = fetchJoins.get(propertyName);//.toLowerCase());
 		if (create && props == null) {
 			return addFetchJoin(propertyName, null);
 		} else {
@@ -158,7 +158,7 @@ public class OrmQueryDetail implements Serializable {
 	 * Return true if the property is included.
 	 */
 	public boolean includes(String propertyName) {
-		return includes.contains(propertyName.toLowerCase());
+		return includes.contains(propertyName);//.toLowerCase());
 	}
 
 	/**

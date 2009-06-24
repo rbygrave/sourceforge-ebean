@@ -34,7 +34,7 @@ public interface SqlTreeNode {
 	/**
 	 * Append any where predicates for inheritance.
 	 */
-	public void appendWhere(StringBuilder sb);
+	public void appendWhere(DbSqlContext ctx);
 
 	/**
 	 * Load the appropriate information from the SqlSelectReader.

@@ -42,8 +42,6 @@ public class CQueryPredicates {
 
 	final Object idValue;
 
-//	boolean rowNumberIncluded;
-
 	/**
 	 * Flag set if this is a SqlSelect type query.
 	 */
@@ -293,6 +291,21 @@ public class CQueryPredicates {
 		predicateIncludes = deployParser.getIncludes();
 	}
 
+	/**
+	 * Replace the table alias place holders.
+	 */
+	public void parseTableAlias(SqlTreeAlias alias){
+		if (dbWhere != null){
+			dbWhere = alias.parse(dbWhere);
+		}
+		if (dbHaving != null){
+			dbHaving = alias.parse(dbHaving);
+		}
+		if (dbOrderBy != null){
+			dbOrderBy = alias.parse(dbOrderBy);
+		}
+	}
+	
 	/**
 	 * Used in logging to the transaction log.
 	 */
