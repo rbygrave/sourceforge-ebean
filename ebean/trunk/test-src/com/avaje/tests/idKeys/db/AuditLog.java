@@ -16,6 +16,8 @@ public class AuditLog
 
     private String description;
 
+    private String modifiedDescription;
+
     public Long getId()
     {
         return id;
@@ -34,5 +36,15 @@ public class AuditLog
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public String getModifiedDescription()
+    {
+        return modifiedDescription;
+    }
+
+    public void setModifiedDescription(String modifiedDescription)
+    {
+        this.modifiedDescription = modifiedDescription==null?null:"_" + modifiedDescription + "_";
     }
 }
