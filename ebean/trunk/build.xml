@@ -94,6 +94,10 @@
 
     </target>
 
+    <target name="enhance-test" depends="compile-tests">
+        <ebeanEnhance classSource="${test-bin.dir}" packages="com.avaje.tests.compositeKeys.db.**,com.avaje.tests.idKeys.db.**" transformArgs="debug=1"/>
+    </target>
+
     <target name="zipSource" depends="prepare,jar">
         <zip zipfile="${dist.dir}/${name}-${version}-src.zip" basedir="${src.dir}"/>
     </target>
@@ -170,7 +174,7 @@
         <fileset dir="bin" includes="ebean-ant-*.jar"/>
     </path>
 
-    <target name="test" depends="enhance,compile-tests">
+    <target name="test" depends="enhance,enhance-test">
         <property name="myclasspath" refid="classpath.test"/>
 
         <echo message="Classpath = ${myclasspath}"/>
@@ -178,7 +182,7 @@
         <junit>
             <classpath refid="classpath.test"/>
             <formatter type="brief" usefile="false"/>
-            <batchtest haltonerror="true">
+            <batchtest haltonfailure="false" >
                 <fileset dir="${test-src.dir}">
                     <include name="**/Test*.java" />
                 </fileset>
