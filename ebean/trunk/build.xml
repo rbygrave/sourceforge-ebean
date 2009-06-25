@@ -182,7 +182,7 @@
         <junit>
             <classpath refid="classpath.test"/>
             <formatter type="brief" usefile="false"/>
-            <batchtest haltonfailure="false" >
+            <batchtest haltonfailure="true" >
                 <fileset dir="${test-src.dir}">
                     <include name="**/Test*.java" />
                 </fileset>
