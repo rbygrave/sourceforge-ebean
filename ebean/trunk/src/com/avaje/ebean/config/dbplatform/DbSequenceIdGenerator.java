@@ -4,12 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
-
+/**
+ * Database sequence based IdGenerator.
+ */
 public class DbSequenceIdGenerator implements IdGenerator {
 
 	private static final Logger logger = Logger.getLogger(DbSequenceIdGenerator.class.getName());
@@ -48,21 +51,21 @@ public class DbSequenceIdGenerator implements IdGenerator {
 					rset.close();
 				}
 			} catch (SQLException e){
-				logger.error("Error closing ResultSet", e);
+				logger.log(Level.SEVERE, "Error closing ResultSet", e);
 			}
 			try {
 				if (pstmt != null){
 					pstmt.close();
 				}
 			} catch (SQLException e){
-				logger.error("Error closing PreparedStatement", e);
+				logger.log(Level.SEVERE, "Error closing PreparedStatement", e);
 			}
 			try {
 				if (c != null){
 					c.close();
 				}
 			} catch (SQLException e){
-				logger.error("Error closing Connection", e);
+				logger.log(Level.SEVERE, "Error closing Connection", e);
 			}
 		}
 
