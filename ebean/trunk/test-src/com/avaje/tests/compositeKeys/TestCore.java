@@ -1,7 +1,5 @@
 package com.avaje.tests.compositeKeys;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.expression.Expr;
@@ -11,7 +9,7 @@ import com.avaje.tests.compositeKeys.db.Region;
 import com.avaje.tests.compositeKeys.db.RegionKey;
 import com.avaje.tests.compositeKeys.db.Type;
 import com.avaje.tests.compositeKeys.db.TypeKey;
-import junit.framework.TestCase;
+import com.avaje.tests.lib.EbeanTestCase;
 
 import java.util.List;
 
@@ -22,14 +20,12 @@ import java.util.List;
  * <li>find</li>
  * </ul>
  */
-public class TestCore extends TestCase
+public class TestCore extends EbeanTestCase
 {
     @Override
     protected void setUp() throws Exception
     {
-        EbeanServer server = Ebean.getServer(null);
-
-        Transaction tx = server.beginTransaction();
+        Transaction tx = getServer().beginTransaction();
 
         Type type = new Type();
         TypeKey typeKey = new TypeKey();
@@ -37,7 +33,7 @@ public class TestCore extends TestCase
         typeKey.setType(10);
         type.setKey(typeKey);
         type.setDescription("Type Old-Item - Customer 1");
-        server.save(type);
+        getServer().save(type);
 
         type = new Type();
         typeKey = new TypeKey();
@@ -45,7 +41,7 @@ public class TestCore extends TestCase
         typeKey.setType(10);
         type.setKey(typeKey);
         type.setDescription("Type Old-Item - Customer 2");
-        server.save(type);
+        getServer().save(type);
 
         Region region = new Region();
         RegionKey regionKey = new RegionKey();
@@ -53,7 +49,7 @@ public class TestCore extends TestCase
         regionKey.setType(500);
         region.setKey(regionKey);
         region.setDescription("Region West - Customer 1");
-        server.save(region);
+        getServer().save(region);
 
         region = new Region();
         regionKey = new RegionKey();
@@ -61,7 +57,7 @@ public class TestCore extends TestCase
         regionKey.setType(500);
         region.setKey(regionKey);
         region.setDescription("Region West - Customer 2");
-        server.save(region);
+        getServer().save(region);
 
         Item item = new Item();
         ItemKey itemKey = new ItemKey();
@@ -71,7 +67,7 @@ public class TestCore extends TestCase
         item.setDescription("Fancy Car - Customer 1");
         item.setRegion(500);
         item.setType(10);
-        server.save(item);
+        getServer().save(item);
 
         item = new Item();
         itemKey = new ItemKey();
@@ -81,21 +77,19 @@ public class TestCore extends TestCase
         item.setDescription("Another Fancy Car - Customer 2");
         item.setRegion(500);
         item.setType(10);
-        server.save(item);
+        getServer().save(item);
 
         tx.commit();
     }
 
     public void testFind()
     {
-        EbeanServer server = Ebean.getServer(null);
-
-        List<Item> items = server.find(Item.class).findList();
+        List<Item> items = getServer().find(Item.class).findList();
 
         assertNotNull(items);
         assertEquals(2, items.size());
 
-        Query<Item> qItems = server.find(Item.class);
+        Query<Item> qItems = getServer().find(Item.class);
         qItems.where(Expr.eq("key.customer", Integer.valueOf(1)));
         items = qItems.findList();
 
