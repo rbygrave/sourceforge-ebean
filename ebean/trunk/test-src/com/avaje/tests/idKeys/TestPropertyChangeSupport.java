@@ -90,11 +90,23 @@ public class TestPropertyChangeSupport extends TestCase implements PropertyChang
 
         server.refresh(al);
 
+        assertEquals("GHI", al.getDescription());
+
         assertNotNull(lastPce);
         assertEquals(1, nuofEvents);
         assertEquals("description", lastPce.getPropertyName());
         assertEquals(prevLogDesc, lastPce.getOldValue());
         assertNotNull("GHI", lastPce.getNewValue());
+
+        // check if we fire with the real new value which might be a modified version of what we passed to the set method
+        resetEvent();
+        al.setModifiedDescription("MODIFIED_VALUE");
+
+        assertNotNull(lastPce);
+        assertEquals(1, nuofEvents);
+        assertEquals("modifiedDescription", lastPce.getPropertyName());
+        assertEquals(null, lastPce.getOldValue());
+        assertNotNull("_MODIFIED_VALUE_", lastPce.getNewValue());
     }
 
     private void resetEvent()
