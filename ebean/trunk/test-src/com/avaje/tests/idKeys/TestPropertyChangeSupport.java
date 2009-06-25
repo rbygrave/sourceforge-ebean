@@ -1,11 +1,9 @@
 package com.avaje.tests.idKeys;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.tests.idKeys.db.AuditLog;
-import junit.framework.TestCase;
+import com.avaje.tests.lib.EbeanTestCase;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -17,7 +15,7 @@ import java.sql.SQLException;
 /**
  * Test various aspects of the PropertyChangeSupport
  */
-public class TestPropertyChangeSupport extends TestCase implements PropertyChangeListener
+public class TestPropertyChangeSupport extends EbeanTestCase implements PropertyChangeListener
 {
     private int nuofEvents = 0;
     private PropertyChangeEvent lastPce;
@@ -61,8 +59,7 @@ public class TestPropertyChangeSupport extends TestCase implements PropertyChang
         resetEvent();
 
         // test if we get change notification if EBean assigns an id to the bean
-        EbeanServer server = Ebean.getServer(null);
-        server.save(al);
+        getServer().save(al);
 
         assertNotNull(lastPce);
         assertEquals("id", lastPce.getPropertyName());
@@ -74,7 +71,7 @@ public class TestPropertyChangeSupport extends TestCase implements PropertyChang
         resetEvent();
 
         // simulate external change and test if we get change notification when we refresh the entity
-        Transaction tx = server.beginTransaction();
+        Transaction tx = getServer().beginTransaction();
         PreparedStatement pstm = tx.getConnection().prepareStatement("update audit_log set description = ? where id = ?");
         pstm.setString(1, "GHI");
         pstm.setLong(2, al.getId());
@@ -88,7 +85,7 @@ public class TestPropertyChangeSupport extends TestCase implements PropertyChang
         assertNull(lastPce);
         assertEquals(0, nuofEvents);
 
-        server.refresh(al);
+        getServer().refresh(al);
 
         assertEquals("GHI", al.getDescription());
 
