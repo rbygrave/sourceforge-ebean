@@ -15,22 +15,57 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 	
 	final FkeyPropertyVisitor pv;
 	
+	/**
+	 * The foreignKeyCount for a given table. Used to add _XX suffix.
+	 */
+	int foreignKeyCount;
+	
+	int maxFkeyLength;
+	
 	public AddForeignKeysVisitor(DdlGenContext ctx) {
 		this.ctx = ctx;
 		this.pv = new FkeyPropertyVisitor(this, ctx);
+		this.maxFkeyLength = ctx.getDdlSyntax().getMaxFkeyLength()-3;
 	}
 
-	protected String getForeignKeyName(BeanPropertyAssocOne<?> p) {
-
-		return "fk_"+p.getBeanDescriptor().getBaseTable()+"_"+p.getName();
+	protected void resetForeignKeyCount(){
+		foreignKeyCount = 0;
 	}
 	
-	protected String getIndexName(BeanPropertyAssocOne<?> p) {
+	protected int incrementForeignKeyCount(){
+		return ++foreignKeyCount;
+	}
+	
+	protected String getForeignKeyNameSuffix(int count) {
+		if (count > 9){
+			return "_"+count;
+		} else {
+			return "_0"+count;			
+		}
+	}
+	
+	protected String getForeignKeyName(BeanPropertyAssocOne<?> p, int count) {
 
-		return "ix_"+p.getBeanDescriptor().getBaseTable()+"_"+p.getName();
+		String fkName = "fk_"+p.getBeanDescriptor().getBaseTable()+"_"+p.getName();
+		if (fkName.length() > maxFkeyLength){
+			fkName = fkName.substring(0, maxFkeyLength);
+		}
+		
+		// add _XX suffix to ensure unique foreign key name
+		return fkName+getForeignKeyNameSuffix(count);
+	}
+	
+	protected String getIndexName(BeanPropertyAssocOne<?> p, int count) {
+
+		String indexName = "ix_"+p.getBeanDescriptor().getBaseTable()+"_"+p.getName();
+		if (indexName.length() > maxFkeyLength){
+			indexName = indexName.substring(0, maxFkeyLength);
+		}
+		return indexName+getForeignKeyNameSuffix(count);
 	}
 
 	public void visitBean(BeanDescriptor<?> descriptor) {
+		resetForeignKeyCount();
 	}
 
 	public void visitBeanEnd(BeanDescriptor<?> descriptor) {
@@ -63,6 +98,8 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 		public void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded) {
 			// not interested
 		}
+		
+
 
 		@Override
 		public void visitOneImported(BeanPropertyAssocOne<?> p) {
@@ -76,7 +113,9 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 			
 			TableJoinColumn[] columns = tableJoin.columns();
 			
-			String fkName = parent.getForeignKeyName(p);
+			int foreignKeyCount = parent.incrementForeignKeyCount();
+			
+			String fkName = parent.getForeignKeyName(p, foreignKeyCount);
 			
 			ctx.write("alter table ").write(baseTable).write(" add ");
 			if (fkName != null) {
@@ -113,7 +152,7 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 				//create index idx_fk_o_address_ctry on o_address(country_code);
 				ctx.write("create index ");
 				
-				String idxName = parent.getIndexName(p);
+				String idxName = parent.getIndexName(p, foreignKeyCount);
 				if (idxName != null){
 					ctx.write(idxName);
 				}

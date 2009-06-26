@@ -25,17 +25,24 @@ public class CreateIntersectionTable {
 
 	StringBuilder pkeySb = new StringBuilder();
 
+	int foreignKeyCount;
+	
+	int maxFkeyLength;
+	
 	public CreateIntersectionTable(DdlGenContext ctx, BeanPropertyAssocMany<?> manyProp) {
 		this.ctx = ctx;
 		this.manyProp = manyProp;
 		this.intersectionTableJoin = manyProp.getIntersectionTableJoin();
 		this.tableJoin = manyProp.getTableJoin();
+		this.maxFkeyLength = ctx.getDdlSyntax().getMaxFkeyLength()-3;
 	}
 
 	public void build() {
+		
 		String createTable = buildCreateTable();
 		ctx.addCreateIntersectionTable(createTable);
 
+		foreignKeyCount = 0;
 		buildFkConstraints();
 	}
 
@@ -51,15 +58,39 @@ public class CreateIntersectionTable {
 
 	}
 
+
+	
+	private String getFkNameSuffix() {
+
+		foreignKeyCount++;
+
+		if (foreignKeyCount > 9){
+			return "_"+foreignKeyCount;
+		} else {
+			return "_0"+foreignKeyCount;
+		}
+	}
+	
+	private String getFkNameWithSuffix(String fkName) {
+		if (fkName.length() > maxFkeyLength){
+			fkName = fkName.substring(0, maxFkeyLength);
+		}
+		return fkName+getFkNameSuffix();
+	}
+	
 	private String buildFkConstraints(BeanDescriptor<?> desc, TableJoinColumn[] columns, boolean direction) {
 
+		
 		StringBuilder fkBuf = new StringBuilder();
 
+		String fkName = "fk_"+intersectionTableJoin.getTable()+"_"+desc.getBaseTable();
+		
+		fkName = getFkNameWithSuffix(fkName);
+		
 		fkBuf.append("alter table ");
 		fkBuf.append(intersectionTableJoin.getTable());
-		fkBuf.append(" add constraint fk_").append(intersectionTableJoin.getTable());
-		fkBuf.append("_").append(desc.getBaseTable());
-
+		fkBuf.append(" add constraint ").append(fkName);
+		
 		fkBuf.append(" foreign key (");
 
 		for (int i = 0; i < columns.length; i++) {
