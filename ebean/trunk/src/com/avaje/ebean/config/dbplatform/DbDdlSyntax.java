@@ -9,6 +9,8 @@ public class DbDdlSyntax {
 
 	boolean renderIndexForFkey = true;
 	
+	int maxFkeyLength= 32;
+	
 	int columnNameWidth = 25;
 	
 	String dropTableCascade;
@@ -153,6 +155,14 @@ public class DbDdlSyntax {
 
 	public void setForeignKeySuffix(String foreignKeySuffix) {
 		this.foreignKeySuffix = foreignKeySuffix;
+	}
+
+	public int getMaxFkeyLength() {
+		return maxFkeyLength;
+	}
+
+	public void setMaxFkeyLength(int maxFkeyLength) {
+		this.maxFkeyLength = maxFkeyLength;
 	}
 
 }
