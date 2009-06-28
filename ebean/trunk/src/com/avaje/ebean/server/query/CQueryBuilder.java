@@ -112,7 +112,7 @@ public class CQueryBuilder implements Constants {
 		if (queryPlan != null){
 			// Reuse the query plan so skip generating SqlTree and SQL.
 			// We do prepare and bind the new parameters
-			predicates.prepare(false);
+			predicates.prepare(false, true);
 			return new CQuery<T>(request, predicates, queryPlan);
 		}
 
@@ -122,7 +122,7 @@ public class CQueryBuilder implements Constants {
 		
 		// We need to check these 'includes' for extra joins 
 		// that are not included via select
-		predicates.prepare(true);
+		predicates.prepare(true, true);
 
 		// Build the tree structure that represents the query.
 		SqlTree sqlTree = createSqlTree(request, predicates);

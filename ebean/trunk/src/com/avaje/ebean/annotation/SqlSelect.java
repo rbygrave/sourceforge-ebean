@@ -151,6 +151,11 @@ public @interface SqlSelect {
 	String name() default "default";
 
 	/**
+	 * The tableAlias used when adding where expressions to the query.
+	 */
+	String tableAlias() default "";
+	
+	/**
 	 * The sql select statement.
 	 * <p>
 	 * If this query <em>extends</em> another then this string is appended to

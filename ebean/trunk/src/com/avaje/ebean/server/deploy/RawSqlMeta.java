@@ -11,6 +11,7 @@ import com.avaje.ebean.annotation.SqlSelect;
 public class RawSqlMeta {
 
 	private String name;
+	private String tableAlias;
 	private String extend;
 	private String query;
 	private boolean debug;
@@ -22,6 +23,7 @@ public class RawSqlMeta {
 	public RawSqlMeta(SqlSelect sqlSelect) {
 		this.debug = sqlSelect.debug();
 		this.name = sqlSelect.name();
+		this.tableAlias = toNull(sqlSelect.tableAlias());
 		this.extend = toNull(sqlSelect.extend());
 		this.having = toNull(sqlSelect.having());
 		this.where = toNull(sqlSelect.where());
@@ -47,6 +49,14 @@ public class RawSqlMeta {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void setTableAlias(String tableAlias) {
+		this.tableAlias = tableAlias;
+	}
+
+	public String getTableAlias() {
+		return tableAlias;
 	}
 
 	public String getExtend() {

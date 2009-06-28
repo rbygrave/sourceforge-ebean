@@ -35,8 +35,6 @@ public class RawSqlSelectBuilder {
 
 	private List<RawSqlColumnInfo> selectColumns;
 
-//	private Map<String, PropertyDeploy> deployPropMap;
-
 	private int placeHolderWhere;
 	private int placeHolderAndWhere;
 	private int placeHolderHaving;
@@ -55,10 +53,13 @@ public class RawSqlSelectBuilder {
 	private boolean havingExprAnd;
 	private int havingExprPos = -1;
 
+	private String tableAlias;
+	
 	public RawSqlSelectBuilder(NamingConvention namingConvention, BeanDescriptor<?> desc, RawSqlMeta sqlSelectMeta) {
 
 		this.namingConvention = namingConvention;
 		this.desc = desc;
+		this.tableAlias = sqlSelectMeta.getTableAlias();
 		this.meta = sqlSelectMeta;
 		this.debug = sqlSelectMeta.isDebug();
 		this.sql = sqlSelectMeta.getQuery().trim();
@@ -100,8 +101,6 @@ public class RawSqlSelectBuilder {
 		}
 
 		selectColumns = findSelectColumns(meta.getColumnMapping());
-//		deployPropMap = buildDeployMap();
-
 		whereExprPos = findWhereExprPosition();
 		havingExprPos = findHavingExprPosition();
 
@@ -112,7 +111,7 @@ public class RawSqlSelectBuilder {
 		
 		String orderBySql = findOrderBySql();	
 		
-		RawSqlSelect rawSqlSelect = new RawSqlSelect(desc, selectColumns, preWhereExprSql, 
+		RawSqlSelect rawSqlSelect = new RawSqlSelect(desc, selectColumns, tableAlias, preWhereExprSql, 
 				whereExprAnd, preHavingExprSql, havingExprAnd, orderBySql, meta);
 		
 		return new DeployNamedQuery(rawSqlSelect);

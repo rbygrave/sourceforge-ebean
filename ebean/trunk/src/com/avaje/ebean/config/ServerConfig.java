@@ -30,6 +30,8 @@ public class ServerConfig {
 	 */
 	List<Class<?>> classes = new ArrayList<Class<?>>();
 	
+	List<String> packages = new ArrayList<String>();
+	
 	AutofetchConfig autofetchConfig = new AutofetchConfig();
 	
 	String databasePlatformName;
@@ -41,7 +43,6 @@ public class ServerConfig {
 	
 	boolean debugSql;
 	boolean debugLazyLoad;
-	boolean debugJoinTree;
 
 	ExternalTransactionManager externalTransactionManager;
 
@@ -421,20 +422,6 @@ public class ServerConfig {
 	}
 
 	/**
-	 * Return true to get debug output from the join trees.
-	 */
-	public boolean isDebugJoinTree() {
-		return debugJoinTree;
-	}
-
-	/**
-	 * Set to true if you wish to get debug output from the join trees.
-	 */
-	public void setDebugJoinTree(boolean debugJoinTree) {
-		this.debugJoinTree = debugJoinTree;
-	}
-
-	/**
 	 * Return the debug level for transaction begin, commit and rollback events.
 	 * <p>
 	 * <ul>
@@ -584,8 +571,40 @@ public class ServerConfig {
 		}
 		classes.add(cls);
 	}
-
 	
+	/**
+	 * Add a package to search for entities via class path search.
+	 * <p>
+	 * This is only used if classes have not been explicitly specified.
+	 * </p>
+	 */
+	public void addPackage(String packageName){
+		if (packages == null){
+			packages = new ArrayList<String>();
+		}
+		packages.add(packageName);
+	}
+
+	/**
+	 * Return packages to search for entities via class path search.
+	 * <p>
+	 * This is only used if classes have not been explicitly specified.
+	 * </p>
+	 */
+	public List<String> getPackages() {
+		return packages;
+	}
+
+	/**
+	 * Set packages to search for entities via class path search.
+	 * <p>
+	 * This is only used if classes have not been explicitly specified. 
+	 * </p>
+	 */
+	public void setPackages(List<String> packages) {
+		this.packages = packages;
+	}
+
 	/**
 	 * Set the list of classes (entities, listeners, scalarTypes etc)
 	 * that should be used for this server.
@@ -661,8 +680,6 @@ public class ServerConfig {
 
 		debugSql = p.getBoolean("debug.sql", false);
 		debugLazyLoad = p.getBoolean("debug.lazyload", false);
-		debugJoinTree = p.getBoolean("debug.jointree", false);
-		
 
 		transactionDebugLevel= p.getInt("debug.transaction", 0);
 		transactionLogDirectory = p.get("log.directory", "logs");

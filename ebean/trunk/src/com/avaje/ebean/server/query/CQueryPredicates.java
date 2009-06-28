@@ -88,13 +88,6 @@ public class CQueryPredicates {
 	String havingRawSql;
 
 	String dbHaving;
-	
-	String logicalHaving;
-
-	/**
-	 * The combined where clause (named parameters + expressions)
-	 */
-	String logicalWhere;
 
 	/**
 	 * logicalWhere with property names converted to db columns.
@@ -228,7 +221,7 @@ public class CQueryPredicates {
 	/**
 	 * This combines the sql from named/positioned parameters and expressions.
 	 */
-	public void prepare(boolean buildSql) {
+	public void prepare(boolean buildSql, boolean parseRaw) {
 
 		buildBindWhereRawSql(buildSql);
 		buildBindHavingRawSql(buildSql);
@@ -257,7 +250,7 @@ public class CQueryPredicates {
 		}
 
 		if (buildSql) {
-			parsePropertiesToDbColumns();
+			parsePropertiesToDbColumns(parseRaw);
 		}
 	}
 	
@@ -265,22 +258,15 @@ public class CQueryPredicates {
 	 * Parse/Convert property names to database columns in the where and order
 	 * by clauses etc.
 	 */
-	private void parsePropertiesToDbColumns() {
+	private void parsePropertiesToDbColumns(boolean parseRaw) {
 
 		// property name to column name parser...
 		if (deployParser == null){
 			deployParser = request.getBeanManager().createParser();
 		}
 		
-		logicalWhere = deriveLogicalWhere();
-		if (logicalWhere != null) {
-			dbWhere = deployParser.parse(logicalWhere);
-		}
-		
-		logicalHaving = deriveLogicalHaving();
-		if (logicalHaving != null) {
-			dbHaving = deployParser.parse(logicalHaving);
-		}
+		dbWhere = deriveWhere(parseRaw);		
+		dbHaving = deriveHaving(parseRaw);
 
 		// order by is dependent on the manyProperty (if there is one)
 		logicalOrderBy = deriveOrderByWithMany(request.getManyProperty());
@@ -306,35 +292,43 @@ public class CQueryPredicates {
 		}
 	}
 	
-	/**
-	 * Used in logging to the transaction log.
-	 */
-	public String getLogicalWhere() {
-		return logicalWhere;
+//	/**
+//	 * Used in logging to the transaction log.
+//	 */
+//	public String getDbWhere() {
+//		return dbWhere;
+//	}
+
+	
+	
+	private String parse(boolean parseRaw, String raw, String expr){
+
+		if (expr == null || expr.trim().length() == 0) {
+			return parseRaw ? deployParser.parse(raw) : raw; 
+						
+		} else{
+			if (parseRaw){
+				return deployParser.parse(raw)+" and "+deployParser.parse(expr);
+			} else {
+				return raw +" and "+deployParser.parse(expr);
+			}			
+		} 
 	}
-
-	private String deriveLogicalWhere() {
+	
+	private String deriveWhere(boolean parseRaw) {
 		if (whereRawSql == null || whereRawSql.trim().length() == 0) {
-			return whereExprSql;
-
-		} else if (whereExprSql == null) {
-			return whereRawSql;
-
+			return deployParser.parse(whereExprSql);
 		} else {
-			return whereRawSql + " and "+ whereExprSql;
+			return parse(parseRaw, whereRawSql, whereExprSql);
 		}
 	}
 	
-	private String deriveLogicalHaving() {
+	private String deriveHaving(boolean parseRaw) {
 		if (havingRawSql == null || havingRawSql.trim().length() == 0) {
-			return havingExprSql;
-
-		} else if (havingExprSql == null) {
-			return havingRawSql;
-
+			return deployParser.parse(havingExprSql);
 		} else {
-			return havingRawSql + " and "+ havingExprSql;
-		}
+			return parse(parseRaw, havingRawSql, havingExprSql);
+		} 
 	}
 
 	/**
@@ -490,7 +484,7 @@ public class CQueryPredicates {
 		if (rawSql) {
 			return "";
 		} else {
-			String logPred = getLogicalWhere();
+			String logPred = getDbWhere();
 			if (logPred == null) {
 				return "";
 			} else if (logPred.length() > 400) {

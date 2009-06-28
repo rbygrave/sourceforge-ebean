@@ -42,6 +42,11 @@ public abstract class DeployParser {
 	protected abstract String convertWord();
 
 	public String parse(String source) {
+		
+		if (source == null){
+			return source;
+		}
+		
 		pos = -1;
 		this.source = source;
 		this.sourceLength = source.length();
