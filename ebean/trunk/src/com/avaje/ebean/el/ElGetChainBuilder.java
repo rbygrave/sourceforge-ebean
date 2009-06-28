@@ -38,10 +38,13 @@ public class ElGetChainBuilder {
 
 	final List<ElGetValue> chain = new ArrayList<ElGetValue>();
 
+	final boolean embedded;
+	
 	/**
 	 * Create with the original expression.
 	 */
-	public ElGetChainBuilder(String expression) {
+	public ElGetChainBuilder(boolean embedded, String expression) {
+		this.embedded = embedded;
 		this.expression = expression;
 	}
 
@@ -61,7 +64,7 @@ public class ElGetChainBuilder {
 	 * Build the immutable ElGetChain from the build information.
 	 */
 	public ElGetChain build() {
-		return new ElGetChain(expression, chain.toArray(new ElGetValue[chain.size()]));
+		return new ElGetChain(embedded, expression, chain.toArray(new ElGetValue[chain.size()]));
 	}
 
 }

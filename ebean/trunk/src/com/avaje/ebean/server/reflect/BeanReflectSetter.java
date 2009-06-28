@@ -24,10 +24,10 @@ package com.avaje.ebean.server.reflect;
  */
 public interface BeanReflectSetter {
 
-	/**
-	 * Set the property value of a bean.
-	 */
-	public void set(Object bean, Object value);
+//	/**
+//	 * Set the property value of a bean.
+//	 */
+//	public void set(Object bean, Object value);
 
 	/**
 	 * Set the property value of a bean with interception checks.
