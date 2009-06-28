@@ -50,11 +50,14 @@ public class RawSqlSelect {
 	
 	private boolean withId;
 
+	private final String tableAlias;
+	
 	public RawSqlSelect(BeanDescriptor<?> desc, List<RawSqlColumnInfo> selectColumns,
-			String preWhereExprSql, boolean andWhereExpr, String preHavingExprSql,
+			String tableAlias, String preWhereExprSql, boolean andWhereExpr, String preHavingExprSql,
 			boolean andHavingExpr, String orderBySql, RawSqlMeta meta) {
 
 		this.desc = desc;
+		this.tableAlias = tableAlias;
 		this.selectColumns = selectColumns.toArray(new RawSqlColumnInfo[selectColumns.size()]);
 		this.preHavingExprSql = preHavingExprSql;
 		this.preWhereExprSql = preWhereExprSql;
@@ -112,6 +115,9 @@ public class RawSqlSelect {
 		}
 	}
 
+	public String getTableAlias() {
+		return tableAlias;
+	}
 
 	/**
 	 * Build the SqlTree for this query.

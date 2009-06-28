@@ -94,7 +94,11 @@ public class SqlTreeAlias {
 	 */
 	public String parse(String clause) {
 	
-		clause = clause.replace("${}", rootTableAlias+".");
+		if (rootTableAlias == null){
+			clause = clause.replace("${}", "");
+		} else {
+			clause = clause.replace("${}", rootTableAlias+".");			
+		}
 
 		Iterator<Entry<String, String>> i = aliasMap.entrySet().iterator();
 		while (i.hasNext()) {

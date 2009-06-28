@@ -69,7 +69,7 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 
 		this.clusterManager = createClusterManager();
 		this.jndiDataSourceFactory = new JndiDataSourceLookup();
-		this.bootupClassSearch = new BootupClassPathSearch(null);
+		this.bootupClassSearch = new BootupClassPathSearch(null, null);
 		
 		// register so that we can shutdown any Ebean wide
 		// resources such as clustering
@@ -138,13 +138,21 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 	private BootupClasses getBootupClasses(ServerConfig serverConfig) {
 		
 		List<Class<?>> entityClasses = serverConfig.getClasses();
-		if (entityClasses == null || entityClasses.size() == 0){
-			// just use classes we can find via class path search
-			return bootupClassSearch.getBootupClasses();
+		if (entityClasses != null && entityClasses.size() > 0){
+			// use classes we explicitly added via configuration
+			return new BootupClasses(serverConfig.getClasses());		
 		}
-		
-		// use classes we explicitly added via configuration
-		return new BootupClasses(serverConfig.getClasses());		
+
+		List<String> packages = serverConfig.getPackages();
+		if (packages != null && packages.size() > 0){
+			// filter by package name
+			BootupClassPathSearch search = new BootupClassPathSearch(null, packages);
+			return search.getBootupClasses();
+		}
+
+		// just use classes we can find via class path search
+		return bootupClassSearch.getBootupClasses();
+
 	}
 	
 	/**

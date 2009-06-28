@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.core;
 
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -37,13 +38,16 @@ public class BootupClassPathSearch {
 
 	final ClassLoader classLoader;
 
+	final List<String> packages;
+	
 	BootupClasses bootupClasses;
 
 	/**
 	 * Construct and search for interesting classes.
 	 */
-	public BootupClassPathSearch(ClassLoader classLoader) {
+	public BootupClassPathSearch(ClassLoader classLoader, List<String> packages) {
 		this.classLoader = (classLoader == null) ? getClass().getClassLoader() : classLoader;
+		this.packages = packages;
 	}
 
 	public BootupClasses getBootupClasses() {
@@ -95,11 +99,17 @@ public class BootupClassPathSearch {
 		ClassPathSearchFilter filter = new ClassPathSearchFilter();
 		filter.addDefaultExcludePackages();
 
-		String packages = GlobalProperties.get("ebean.search.packages", null);
-		if (packages != null) {
-			String[] packageList = packages.split(",");
+		String searchPackages = GlobalProperties.get("ebean.search.packages", null);
+		if (searchPackages != null) {
+			String[] packageList = searchPackages.split(",");
 			for (int i = 0; i < packageList.length; i++) {
 				filter.includePackage(packageList[i].trim());
+			}
+		}
+		
+		if (packages != null){
+			for (String packageName : packages) {
+				filter.includePackage(packageName);
 			}
 		}
 
