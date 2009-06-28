@@ -1,6 +1,8 @@
 package com.avaje.ebean.server.ddl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
@@ -23,9 +25,13 @@ public class CreateTableVisitor implements BeanVisitor {
 	final DbDdlSyntax ddl;
 	
 	final int columnNameWidth;
-	
+
+	// avoid writing columns twice, e.g. when used in associations with insertable=false and updateable=false
+	final Set<String> wroteColumns = new HashSet<String>();
+
 	ArrayList<String> checkConstraints = new ArrayList<String>();
 	
+
 	public CreateTableVisitor(DdlGenContext ctx) {
 		this.ctx = ctx;
 		this.ddl = ctx.getDdlSyntax();
@@ -82,6 +88,9 @@ public class CreateTableVisitor implements BeanVisitor {
 	}
 		
 	public void visitBean(BeanDescriptor<?> descriptor) {
+		
+		wroteColumns.clear();
+		 
 		ctx.write("create table ");
 		writeTableName(descriptor);
 		ctx.write(" (").writeNewLine();

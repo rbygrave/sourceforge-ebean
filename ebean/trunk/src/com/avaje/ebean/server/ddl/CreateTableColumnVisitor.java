@@ -68,7 +68,13 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		TableJoinColumn[] columns = p.getTableJoin().columns();
 
 		for (int i = 0; i < columns.length; i++) {
+			
 			String dbCol = columns[i].getLocalDbColumn();
+
+			if (parent.wroteColumns.contains(dbCol)) {
+				continue;
+			}
+			
 			parent.writeColumnName(dbCol, p);
 
 			BeanProperty importedProperty = importedId.findMatchImport(dbCol);
@@ -85,12 +91,17 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 				ctx.write(" not null");
 			}
 			ctx.write(",").writeNewLine();
+			parent.wroteColumns.add(p.getDbColumn());
 		}
 	}
 
 	@Override
 	public void visitScalar(BeanProperty p) {
 
+		if (parent.wroteColumns.contains(p.getDbColumn())) {
+			return;
+		}
+		
 		parent.writeColumnName(p.getDbColumn(), p);
 
 		String columnDefn = ctx.getColumnDefn(p);
@@ -107,7 +118,8 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		parent.writeConstraint(p);
 
 		ctx.write(",").writeNewLine();
-
+		
+		parent.wroteColumns.add(p.getDbColumn());
 	}
 
 	protected void writeIdentity() {
