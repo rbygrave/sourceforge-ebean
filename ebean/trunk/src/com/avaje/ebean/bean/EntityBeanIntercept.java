@@ -501,7 +501,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	 * true if we need to compare the new and old values to see if they have
 	 * changed.
 	 */
-	public boolean preSetterIsModifyCheck(String propertyName) {
+	public boolean preSetterIsModifyCheck() {
 		if (!intercepting){
 			return false;
 		}
@@ -512,23 +512,43 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	}
 
 	/**
+	 * OneToMany and ManyToMany don't have any interception so just check for PropertyChangeSupport.
+	 */
+	public PropertyChangeEvent preSetterMany(boolean interceptField, String propertyName, Object oldValue, Object newValue) {
+				
+		// skip setter interception on many's
+		if (pcs != null){
+			return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
+		} else {
+			return null;
+		}		
+	}
+
+	
+	/**
 	 * Check to see if the values are not equal. If they are not equal then
 	 * create the old values for use with ConcurrencyMode.ALL.
 	 */
-	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, Object oldValue, Object newValue) {
+	public PropertyChangeEvent preSetter(boolean interceptField, String propertyName, Object oldValue, Object newValue) {
+		
+		if (pcs == null && (!interceptField || !preSetterIsModifyCheck())){
+			// skip propertyChangeSupport && creating oldValues when value has changed
+			return null;
+		}
 		
 		if (newValue instanceof BeanCollection<?> || oldValue instanceof BeanCollection<?>){
-			// skip setter interception on many's
-			if (pcs != null){
-				return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
-			} else {
-				return null;
-			}
+			throw new RuntimeException("Should not get this now");
+//			// skip setter interception on many's
+//			if (pcs != null){
+//				return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
+//			} else {
+//				return null;
+//			}
 		}
 		
 		boolean changed = !areEqual(oldValue, newValue);
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (interceptField && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -546,7 +566,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 
@@ -564,7 +584,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -581,7 +601,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -598,7 +618,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -615,7 +635,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -632,7 +652,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -649,7 +669,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -666,7 +686,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -683,7 +703,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = !areEqual(oldValue, newValue);
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		
@@ -700,7 +720,7 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 		
 		boolean changed = !areEqual(oldValue, newValue);
 
-		if (intercept && changed && preSetterIsModifyCheck(propertyName)){
+		if (intercept && changed && preSetterIsModifyCheck()){
 			createOldValues();			
 		}
 		

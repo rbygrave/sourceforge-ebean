@@ -42,15 +42,23 @@ public class ElGetChain implements ElGetValue {
 
 	final ElGetValue[] chain;
 
-	public ElGetChain(String expression, ElGetValue[] chain) {
+	public ElGetChain(boolean embedded, String expression, ElGetValue[] chain) {
 		this.expression = expression;
 		this.chain = chain;
 		
 		int dotPos = expression.lastIndexOf('.');
 		if (dotPos > -1){
 			name = expression.substring(dotPos+1);
-			prefix = expression.substring(0, dotPos);
-			deployProperty = "${"+prefix+"}"+getDbColumn();
+			if (embedded){
+				int embPos = expression.lastIndexOf('.',dotPos-1);
+				
+				prefix = embPos == -1 ? null : expression.substring(0, embPos);
+				deployProperty = "${"+prefix+"}"+getDbColumn();
+				
+			} else {
+				prefix = expression.substring(0, dotPos);
+				deployProperty = "${"+prefix+"}"+getDbColumn();
+			}
 		} else {
 			name = expression;
 			prefix = null;

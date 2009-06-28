@@ -42,6 +42,7 @@ import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
+import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.core.BootupClasses;
@@ -852,15 +853,19 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			} else if (dbIdentity.isSupportsSequence() && (desc.getBaseTable() != null)) {
 				// define the sequence 
 				String seqName = desc.getSequenceName();
-				if (seqName == null){
+				if (seqName == null && dbIdentity.getIdType().equals(IdType.SEQUENCE)){
+					// sequence not explicitly defined ... but it is the default IdType
+					// so we will automatically define a sequence
 					seqName = namingConvention.getSequenceName(desc.getBaseTable());
 				}
-				String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
-				String sql = databasePlatform.getDbIdentity().getSelectSequenceNextValSql(dbSeqNextVal);
-
-				desc.setIdGenerator(new DbSequenceIdGenerator(dataSource, sql));
-				desc.setSequenceNextVal(dbSeqNextVal);
-				desc.setSequenceName(seqName);
+				if (seqName != null){
+					String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
+					String sql = databasePlatform.getDbIdentity().getSelectSequenceNextValSql(dbSeqNextVal);
+	
+					desc.setIdGenerator(new DbSequenceIdGenerator(dataSource, sql));
+					desc.setSequenceNextVal(dbSeqNextVal);
+					desc.setSequenceName(seqName);
+				}
 			}
 			
 			if (desc.getBaseTable() != null){

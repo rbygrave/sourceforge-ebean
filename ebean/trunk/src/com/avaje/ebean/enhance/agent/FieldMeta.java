@@ -38,7 +38,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	final String setMethodName;
 	final String setMethodDesc;
 	final String getNoInterceptMethodName;
-	final String setNoInterceptMethodName;
+//	final String setNoInterceptMethodName;
 
 	final String publicSetterName;
 	final String publicGetterName;
@@ -83,7 +83,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		setMethodDesc = "(" + desc + ")V";
 
 		getNoInterceptMethodName = "_ebean_getni_" + name;
-		setNoInterceptMethodName = "_ebean_setni_" + name;
+//		setNoInterceptMethodName = "_ebean_setni_" + name;
 
 		if (classMeta != null && classMeta.hasScalaInterface()) {
 			// use scala property name
@@ -371,7 +371,8 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 					classMeta.log(" ... addFieldCopy on non-local field ["+fieldName+"] type[" + fieldDesc+"]");
 				}
 				mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), getNoInterceptMethodName, getMethodDesc);
-				mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), setNoInterceptMethodName, setMethodDesc);				
+//				mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), setNoInterceptMethodName, setMethodDesc);				
+				mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), setMethodName, setMethodDesc);				
 			}
 		}
 	}
@@ -444,7 +445,8 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 				if (isLocalField(classMeta)){
 					mv.visitFieldInsn(PUTFIELD, fieldClass, fieldName, fieldDesc);
 				} else {
-					mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), setNoInterceptMethodName, setMethodDesc);
+//					mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), setNoInterceptMethodName, setMethodDesc);
+					mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), setMethodName, setMethodDesc);
 				}
 			}
 		}
@@ -618,7 +620,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		// add non-interception methods... so that we can get access
 		// to private fields on super classes
 		addGetNoIntercept(cv, classMeta);
-		addSetNoIntercept(cv, classMeta);
+//		addSetNoIntercept(cv, classMeta);
 	}
 	
 	/**
@@ -743,7 +745,11 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitMethodInsn(INVOKEVIRTUAL, fieldClass, getMethodName, getMethodDesc);
 		mv.visitVarInsn(iLoadOpcode, 1);
-		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preSetter", "(ZLjava/lang/String;"+preSetterArgTypes+")Ljava/beans/PropertyChangeEvent;");
+		String preSetterMethod = "preSetter";
+		if (isMany()){
+			preSetterMethod = "preSetterMany";
+		} 
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, preSetterMethod, "(ZLjava/lang/String;"+preSetterArgTypes+")Ljava/beans/PropertyChangeEvent;");			
 		mv.visitVarInsn(ASTORE, 1+iPosition);
 		Label l1 = new Label();
 		mv.visitLabel(l1);
@@ -773,46 +779,46 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		mv.visitEnd();
 	}
 	
-	/**
-	 * Add a non-intercepting field set method.
-	 * <p>
-	 * So we can set private fields on super classes.
-	 * </p>
-	 */
-	private void addSetNoIntercept(ClassVisitor cw, ClassMeta classMeta) {
-
-
-		// ALOAD or ILOAD etc
-		int iLoadOpcode = asmType.getOpcode(Opcodes.ILOAD);
-
-		// double and long have a size of 2
-		int iPosition = asmType.getSize();
-
-		if (classMeta.isLog(3)) {
-			classMeta.log(setNoInterceptMethodName+ " " + setMethodDesc  + " opCode:"+ iLoadOpcode + "," + iPosition);
-		}
-
-		MethodVisitor mv = cw.visitMethod(ACC_PROTECTED, setNoInterceptMethodName, setMethodDesc, null, null);
-		mv.visitCode();
-		Label l0 = new Label();
-		
-		
-		mv.visitLabel(l0);
-		mv.visitLineNumber(1, l0);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitVarInsn(iLoadOpcode, 1);// ALOAD or ILOAD
-		
-		mv.visitFieldInsn(PUTFIELD, fieldClass, fieldName, fieldDesc);
-		
-		Label l2 = new Label();
-		mv.visitLabel(l2);
-		mv.visitLineNumber(1, l2);
-		mv.visitInsn(RETURN);
-		Label l3 = new Label();
-		mv.visitLabel(l3);
-		mv.visitLocalVariable("this", "L" + fieldClass + ";", null, l0, l3, 0);
-		mv.visitLocalVariable("_newValue", fieldDesc, null, l0, l3, 1);
-		mv.visitMaxs(4, 2);
-		mv.visitEnd();
-	}
+//	/**
+//	 * Add a non-intercepting field set method.
+//	 * <p>
+//	 * So we can set private fields on super classes.
+//	 * </p>
+//	 */
+//	private void addSetNoIntercept(ClassVisitor cw, ClassMeta classMeta) {
+//
+//
+//		// ALOAD or ILOAD etc
+//		int iLoadOpcode = asmType.getOpcode(Opcodes.ILOAD);
+//
+//		// double and long have a size of 2
+//		int iPosition = asmType.getSize();
+//
+//		if (classMeta.isLog(3)) {
+//			classMeta.log(setNoInterceptMethodName+ " " + setMethodDesc  + " opCode:"+ iLoadOpcode + "," + iPosition);
+//		}
+//
+//		MethodVisitor mv = cw.visitMethod(ACC_PROTECTED, setNoInterceptMethodName, setMethodDesc, null, null);
+//		mv.visitCode();
+//		Label l0 = new Label();
+//		
+//		
+//		mv.visitLabel(l0);
+//		mv.visitLineNumber(1, l0);
+//		mv.visitVarInsn(ALOAD, 0);
+//		mv.visitVarInsn(iLoadOpcode, 1);// ALOAD or ILOAD
+//		
+//		mv.visitFieldInsn(PUTFIELD, fieldClass, fieldName, fieldDesc);
+//		
+//		Label l2 = new Label();
+//		mv.visitLabel(l2);
+//		mv.visitLineNumber(1, l2);
+//		mv.visitInsn(RETURN);
+//		Label l3 = new Label();
+//		mv.visitLabel(l3);
+//		mv.visitLocalVariable("this", "L" + fieldClass + ";", null, l0, l3, 0);
+//		mv.visitLocalVariable("_newValue", fieldDesc, null, l0, l3, 1);
+//		mv.visitMaxs(4, 2);
+//		mv.visitEnd();
+//	}
 }

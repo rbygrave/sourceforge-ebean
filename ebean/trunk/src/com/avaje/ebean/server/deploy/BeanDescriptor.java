@@ -1122,7 +1122,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 			BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
 			
 			if (chain == null){
-				chain = new ElGetChainBuilder(propName);
+				chain = new ElGetChainBuilder(assocProp.isEmbedded(), propName);
 			}
 			chain.add(assocProp);
 			return embDesc.buildElGetValue(remainder, chain, propertyDeploy);			
