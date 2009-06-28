@@ -71,9 +71,24 @@ public class DatabasePlatform {
 	 */
 	protected boolean defaultBatching;
 	
+	protected String name = "generic";
+	
 	public DatabasePlatform() {
 
 	}
+
+	/**
+	 * Return the name of the DatabasePlatform.
+	 * <p>
+	 * "generic" is returned when no specific database platform
+	 * has been set or found.
+	 * </p>
+	 */
+	public String getName() {
+		return name;
+	}
+
+
 
 	/**
 	 * Return the mapping of JDBC to DB types.

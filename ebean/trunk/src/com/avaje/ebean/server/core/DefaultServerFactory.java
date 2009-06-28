@@ -110,6 +110,9 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 		// determine database platform (Oracle etc)
 		setDatabasePlatform(serverConfig);
 		
+		// inform the NamingConvention of the associated DatabasePlaform 
+		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
+		
 		InternalConfiguration c = new InternalConfiguration(clusterManager, serverConfig, bootupClasses);
 		
 		CacheManager serverCache = new BasicCacheManager();

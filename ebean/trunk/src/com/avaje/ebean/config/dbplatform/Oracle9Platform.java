@@ -34,7 +34,7 @@ public class Oracle9Platform extends DatabasePlatform {
 
     public Oracle9Platform() {
         super();
-        
+        this.name = "oracle9";
         this.sqlLimiter = new RowNumberSqlLimiter("");
         
         this.treatEmptyStringsAsNull = true;
