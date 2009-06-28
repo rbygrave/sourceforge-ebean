@@ -1,5 +1,7 @@
 package com.avaje.ebean.config;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+
 /**
  * Naming convention where the database columns and java properties 
  * are the same.
@@ -18,6 +20,11 @@ public class MatchingNamingConvention implements NamingConvention {
 		this(DEFAULT_SEQ_FORMAT);
 	}
 	
+	
+	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
+		
+	}
+
 	/**
 	 * Returns the last part of the class name.
 	 */

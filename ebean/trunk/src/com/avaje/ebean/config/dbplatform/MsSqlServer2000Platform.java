@@ -37,7 +37,7 @@ public class MsSqlServer2000Platform extends DatabasePlatform {
 
     public MsSqlServer2000Platform(){
         super();
-        
+        this.name = "mssqlserver2000";
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
         this.dbIdentity.setSelectLastInsertedIdTemplate("select @@IDENTITY as X");

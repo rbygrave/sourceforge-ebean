@@ -25,7 +25,7 @@ import java.sql.Types;
 
 
 /**
- * Oracle10 plugin.
+ * Database platform for Oracle10 and greater.
  * <p>
  * <ul>
  * <li>supportsGetGeneratedKeys = true</li>
@@ -37,7 +37,7 @@ public class Oracle10Platform extends DatabasePlatform {
 
     public Oracle10Platform() {
         super();
-        
+        this.name = "oracle";
         //this.dbQueryLimiter = new DbQueryLimiterRowNumber("");
         this.sqlLimiter = new RownumSqlLimiter();
 

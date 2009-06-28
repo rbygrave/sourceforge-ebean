@@ -1,5 +1,7 @@
 package com.avaje.ebean.config;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+
 /**
  * Converts between Camel Case and Underscore based names.
  */
@@ -25,6 +27,9 @@ public class UnderscoreNamingConvention implements NamingConvention {
 		this(DEFAULT_SEQ_FORMAT);
 	}
 	
+	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
+		
+	}
 
 	/**
 	 * Returns the last part of the class name.

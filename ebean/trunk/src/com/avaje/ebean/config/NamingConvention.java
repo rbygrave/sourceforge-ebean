@@ -1,5 +1,7 @@
 package com.avaje.ebean.config;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+
 /**
  * Defines the naming convention for converting between logical property names
  * and physical DB column names etc.
@@ -15,6 +17,18 @@ package com.avaje.ebean.config;
  */
 public interface NamingConvention {
 
+	/**
+	 * Set the associated DatabasePlaform.
+	 * <p>
+	 * This is set after the DatabasePlatform has been associated.
+	 * </p>
+	 * <p>
+	 * The purpose of this is to enable NamingConvention to be able to support
+	 * database platform specific configuration.
+	 * </p>
+	 */
+	public void setDatabasePlatform(DatabasePlatform databasePlatform);
+	
 	/**
 	 * Returns the table name for a given Class when the @Table annotation has
 	 * not set the table name.
