@@ -310,7 +310,8 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		 * Set the value to the bean property.
 		 */
 		private void setValue() {
-			property.setValue(bean, value);
+			// support PropertyChangeSupport
+			property.setValueIntercept(bean, value);
 		}
 	}
 }

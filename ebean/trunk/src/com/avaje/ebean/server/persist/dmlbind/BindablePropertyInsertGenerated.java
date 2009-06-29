@@ -50,7 +50,8 @@ public class BindablePropertyInsertGenerated extends BindableProperty {
 		
 		// generated value should be the correct type
 		if (bean != null){
-			prop.setValue(bean, value);
+			// support PropertyChangeSupport
+			prop.setValueIntercept(bean, value);
 		}
         //value = prop.getDefaultValue();
 	    request.bind(value, prop, prop.getName(), bindNull);

@@ -183,7 +183,8 @@ public final class IdBinderMultiple implements IdBinder {
 			value = idProps[i].getScalarType().toBeanType(value);
 			newMap.put(prop.getName(), value);
 			if (bean != null) {
-				prop.setValue(bean, value);
+				// support PropertyChangeSupport
+				prop.setValueIntercept(bean, value);
 			}
 		}
 

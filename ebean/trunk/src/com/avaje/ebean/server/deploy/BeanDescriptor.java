@@ -894,12 +894,12 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		return getBeanProperty(property).getValue(bean);
 	}
 
-	/**
-	 * Set a property value to a bean of this type.
-	 */
-	public void setValue(Object bean, String property, Object value) {
-		getBeanProperty(property).setValue(bean, value);
-	}
+//	/**
+//	 * Set a property value to a bean of this type.
+//	 */
+//	public void setValue(Object bean, String property, Object value) {
+//		getBeanProperty(property).setValue(bean, value);
+//	}
 
 	/**
 	 * Return true if this bean type should use IdGeneration.
