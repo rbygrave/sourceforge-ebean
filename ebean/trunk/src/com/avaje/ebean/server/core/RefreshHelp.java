@@ -21,6 +21,7 @@ package com.avaje.ebean.server.core;
 
 import java.util.Set;
 
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -61,23 +62,27 @@ public class RefreshHelp {
 		// set of properties to exclude from the refresh because it is
 		// not a refresh but rather a lazyLoading event.
 		Set<String> excludes = null;
-				
-		if (ebi != null){
-			if (isLazyLoad){
-				excludes = ebi.getLoadedProps();
-				if (excludes != null){
-					// lazy loading a "Partial Object"... which already
-					// contains some properties and perhaps some oldValues
-					// and these will need to be maintained...
-					originalOldValues = ebi.getOldValues();
-					setOriginalOldValues = originalOldValues != null;					
-				}
-				
-				if (logControl.isDebugLazyLoad()){
-					debug(desc, ebi, id, excludes);
-				}				
+					
+		// turn off intercepting so lazy loading is
+		// not invoked when populating the bean
+		// with PropertyChangeSupport
+		ebi.setIntercepting(false);
+		
+		if (isLazyLoad){
+			excludes = ebi.getLoadedProps();
+			if (excludes != null){
+				// lazy loading a "Partial Object"... which already
+				// contains some properties and perhaps some oldValues
+				// and these will need to be maintained...
+				originalOldValues = ebi.getOldValues();
+				setOriginalOldValues = originalOldValues != null;					
 			}
+			
+			if (logControl.isDebugLazyLoad()){
+				debug(desc, ebi, id, excludes);
+			}				
 		}
+	
 				
 		BeanProperty[] props = desc.propertiesBaseScalar();
 		for (int i = 0; i < props.length; i++) {
@@ -87,7 +92,7 @@ public class RefreshHelp {
 				
 			} else {
 				Object dbVal = prop.getValue(dbBean);
-				prop.setValue(o, dbVal);
+				prop.setValueIntercept(o, dbVal);
 				
 				if (setOriginalOldValues){
 					// maintain original oldValues for partially loaded bean
@@ -104,7 +109,7 @@ public class RefreshHelp {
 				
 			} else {
 				Object dbVal = prop.getValue(dbBean);
-				prop.setValue(o, dbVal);
+				prop.setValueIntercept(o, dbVal);
 				
 				if (setOriginalOldValues){
 					// maintain original oldValues for partially loaded bean
@@ -123,7 +128,7 @@ public class RefreshHelp {
 				
 			} else {
 				Object dbVal = prop.getValue(dbBean);
-				prop.setValue(o, dbVal);
+				prop.setValueIntercept(o, dbVal);
 			}
 		}
 		
@@ -160,25 +165,27 @@ public class RefreshHelp {
 				if (oEmb == null){
 					// original embedded bean was null
 					// so just replace the entire embedded bean
-					prop.setValue(o, dbEmb);
+					prop.setValueIntercept(o, dbEmb);
 					
 				} else {
 					// refresh each property of the original
 					// embedded bean
+					if (oEmb instanceof EntityBean){
+						// turn off interception to stop invoking lazy loading
+						// but allow PropertyChangeSupport
+						((EntityBean) oEmb)._ebean_getIntercept().setIntercepting(false);
+					}
+					
 					BeanProperty[] props = prop.getProperties();
 					for (int j = 0; j < props.length; j++) {
 						Object v = props[j].getValue(dbEmb);
-						props[j].setValue(oEmb, v);
+						props[j].setValueIntercept(oEmb, v);
 					}
 		
-					// No longer needed as the EntityBean
+					// No longer calling setLoaded() on embedded bean
+					// as the EntityBean itself
 					// .. calls setEmbeddedLoaded() on each of
-					// .. its embedded beans itself.
-					
-					//if (oEmb instanceof EntityBean) {
-					//	EntityBean eb = (EntityBean) oEmb;
-					//	eb._ebean_getIntercept().setLoaded();
-					//}
+					// .. its embedded beans itself.					
 				}
 			}
 		}
