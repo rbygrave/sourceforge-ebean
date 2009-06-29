@@ -1,6 +1,7 @@
 package com.avaje.tests.idKeys;
 
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.expression.Expr;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.tests.idKeys.db.AuditLog;
 import com.avaje.tests.lib.EbeanTestCase;
@@ -108,6 +109,56 @@ public class TestPropertyChangeSupport extends EbeanTestCase implements Property
         assertEquals("modifiedDescription", lastPce.getPropertyName());
         assertEquals(null, lastPce.getOldValue());
         assertNotNull("_MODIFIED_VALUE_", lastPce.getNewValue());
+    }
+
+    /**
+     * check if
+     * <ul>
+     * <li>updating a lazy loaded property fires two events</li>
+     * </ul>
+     */
+    public void testPartialLoad() throws SQLException
+    {
+        AuditLog log = new AuditLog();
+        log.setDescription("log");
+
+        getServer().save(log);
+
+        assertNotNull(log.getId());
+
+        resetEvent();
+
+        List<AuditLog> logs = getServer().find(AuditLog.class)
+                .where(Expr.eq("id", log.getId()))
+                .select("id")
+                .findList();
+
+        assertNotNull(logs);
+        assertEquals(1, logs.size());
+
+        AuditLog logLazy = logs.get(0);
+
+        addListener(logLazy, this);
+
+        // this will lazy load and update the property
+        logLazy.setDescription("updated log");
+
+        // which should result in two PCE events
+        assertEquals(2, pces.size());
+
+        // the first for updating the property from null to the value in the database
+        PropertyChangeEvent lazyLoadEvent = pces.get(0);
+
+        assertEquals("description", lazyLoadEvent.getPropertyName());
+        assertNull(lazyLoadEvent.getOldValue());
+        assertEquals("log", lazyLoadEvent.getNewValue());
+
+        // the second for the acutal update of the value
+        PropertyChangeEvent propertyChangeEvent = pces.get(1);
+
+        assertEquals("description", propertyChangeEvent.getPropertyName());
+        assertEquals("log", propertyChangeEvent.getOldValue());
+        assertEquals("updated log", propertyChangeEvent.getNewValue());
     }
 
     private void resetEvent()
