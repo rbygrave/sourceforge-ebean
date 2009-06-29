@@ -11,6 +11,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test various aspects of the PropertyChangeSupport
@@ -18,12 +20,14 @@ import java.sql.SQLException;
 public class TestPropertyChangeSupport extends EbeanTestCase implements PropertyChangeListener
 {
     private int nuofEvents = 0;
+    private List<PropertyChangeEvent> pces = new ArrayList<PropertyChangeEvent>();
     private PropertyChangeEvent lastPce;
 
     public void propertyChange(PropertyChangeEvent evt)
     {
         nuofEvents++;
         lastPce = evt;
+        pces.add(evt);
     }
 
     /**
@@ -110,6 +114,7 @@ public class TestPropertyChangeSupport extends EbeanTestCase implements Property
     {
         lastPce = null;
         nuofEvents = 0;
+        pces.clear();
     }
 
     private static void addListener(AuditLog al, PropertyChangeListener listener)
