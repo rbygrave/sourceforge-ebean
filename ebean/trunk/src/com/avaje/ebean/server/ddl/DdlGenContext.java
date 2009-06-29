@@ -1,3 +1,10 @@
+/**
+ * Imilia Interactive Mobile Applications GmbH
+ * Copyright (c) 2009 - all rights reserved
+ *
+ * Created on: Jun 29, 2009
+ * Created by: emcgreal
+ */
 package com.avaje.ebean.server.ddl;
 
 import java.io.StringWriter;
@@ -6,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.dbplatform.DbTypeMap;
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
@@ -23,51 +31,61 @@ public class DdlGenContext {
 	 * Used to map bean types to DB specific types.
 	 */
 	final DbTypeMap dbTypeMap;
-	
+
 	/**
 	 * Handles DB specific DDL syntax.
 	 */
 	final DbDdlSyntax ddlSyntax;
-	
+
 	/**
 	 * The new line character that is used.
 	 */
 	final String newLine;
-		
+
 	/**
 	 * Last content written (used with removeLast())
 	 */
 	String lastContent;
-	
+
 	Set<String> intersectionTables = new HashSet<String>();
-	
+
 	List<String> intersectionTablesCreateDdl = new ArrayList<String>();
 	List<String> intersectionTablesFkDdl = new ArrayList<String>();
-	
-	public DdlGenContext(DbTypeMap dbTypeMap, DbDdlSyntax ddlSyntax){
+
+	/** The Naming convention used to define FK an IX names */
+	protected final NamingConvention namingConvention;
+
+	/** The global fk count used to keep FK names unique */
+	protected int fkCount;
+
+	/** The ix count. */
+	protected int ixCount;
+
+	public DdlGenContext(DbTypeMap dbTypeMap, DbDdlSyntax ddlSyntax, NamingConvention namingConvention){
 		this.dbTypeMap = dbTypeMap;
 		this.ddlSyntax = ddlSyntax;
 		this.newLine = ddlSyntax.getNewLine();
+		this.namingConvention = namingConvention;
 	}
 
 	public boolean isProcessIntersectionTable(String tableName){
-		
+
 		return intersectionTables.add(tableName);
 	}
-	
+
 	public void addCreateIntersectionTable(String createTableDdl){
 		intersectionTablesCreateDdl.add(createTableDdl);
 	}
-	
+
 	public void addIntersectionTableFk(String intTableFk){
 		intersectionTablesFkDdl.add(intTableFk);
 	}
-	
+
 	public void addIntersectionCreateTables() {
 		for (String intTableCreate : intersectionTablesCreateDdl) {
 			stringWriter.write(newLine);
 			stringWriter.write(intTableCreate);
-		}		
+		}
 	}
 
 	public void addIntersectionFkeys() {
@@ -78,7 +96,7 @@ public class DdlGenContext {
 			stringWriter.write(intTableFk);
 		}
 	}
-	
+
 	/**
 	 * Return the generated content (DDL script).
 	 */
@@ -86,7 +104,7 @@ public class DdlGenContext {
 
 		return stringWriter.toString();
 	}
-	
+
 	/**
 	 * Return the map used to determine the DB specific type
 	 * for a given bean property.
@@ -94,7 +112,7 @@ public class DdlGenContext {
 	public DbTypeMap getDbTypeMap() {
 		return dbTypeMap;
 	}
-	
+
 	/**
 	 * Return object to handle DB specific DDL syntax.
 	 */
@@ -106,7 +124,7 @@ public class DdlGenContext {
 		DbType dbType = getDbType(p);
 		return p.renderDbType(dbType);
 	}
-	
+
 	private DbType getDbType(BeanProperty p) {
 
 		ScalarType scalarType = p.getScalarType();
@@ -119,9 +137,9 @@ public class DdlGenContext {
 	 * Write content to the buffer.
 	 */
 	public DdlGenContext write(String content, int minWidth){
-		
+
 		content = pad(content, minWidth);
-		
+
 		if (lastContent != null){
 			stringWriter.write(lastContent);
 		}
@@ -129,19 +147,19 @@ public class DdlGenContext {
 		return this;
 
 	}
-	
+
 	/**
 	 * Write content to the buffer.
 	 */
 	public DdlGenContext write(String content){
 		return write(content, 0);
 	}
-	
+
 	public DdlGenContext writeNewLine() {
 		flush().write(newLine);
 		return this;
 	}
-	
+
 	/**
 	 * Remove the last content that was written.
 	 */
@@ -153,7 +171,7 @@ public class DdlGenContext {
 		}
 		return this;
 	}
-	
+
 	/**
 	 * Flush the content to the buffer.
 	 */
@@ -164,21 +182,42 @@ public class DdlGenContext {
 		lastContent = null;
 		return this;
 	}
-	
+
 	private String padding(int length){
-		
+
 		StringBuffer sb = new StringBuffer(length);
 		for (int i = 0; i < length; i++) {
 			sb.append(" ");
 		}
 		return sb.toString();
 	}
-	
+
 	public String pad(String content, int minWidth){
 		if (minWidth > 0 && content.length() < minWidth){
 			int padding = minWidth - content.length();
 			return content + padding(padding);
 		}
 		return content;
+	}
+
+	/**
+	 * @return the namingConvention
+	 */
+	public NamingConvention getNamingConvention() {
+		return namingConvention;
+	}
+
+	/**
+	 * @return the incremented fkCount
+	 */
+	public int incrementFkCount() {
+		return ++fkCount;
+	}
+
+	/**
+	 * @return the incremented ixCount
+	 */
+	public int incrementIxCount() {
+		return ++ixCount;
 	}
 }

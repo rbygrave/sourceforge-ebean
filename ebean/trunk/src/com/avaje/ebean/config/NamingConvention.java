@@ -1,6 +1,15 @@
+/**
+ * Imilia Interactive Mobile Applications GmbH
+ * Copyright (c) 2009 - all rights reserved
+ *
+ * Created on: Jun 29, 2009
+ * Created by: emcgreal
+ */
 package com.avaje.ebean.config;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanTable;
 
 /**
  * Defines the naming convention for converting between logical property names
@@ -28,7 +37,7 @@ public interface NamingConvention {
 	 * </p>
 	 */
 	public void setDatabasePlatform(DatabasePlatform databasePlatform);
-	
+
 	/**
 	 * Returns the table name for a given Class when the @Table annotation has
 	 * not set the table name.
@@ -36,12 +45,12 @@ public interface NamingConvention {
 	public String getTableNameFromClass(Class<?> beanClass);
 
 	/**
-	 * Return the column name given the property name. 
+	 * Return the column name given the property name.
 	 */
 	public String getColumnFromProperty(Class<?> beanClass, String beanPropertyName);
 
 	/**
-	 * Return the property name from the column name. 
+	 * Return the property name from the column name.
 	 * <p>
 	 * This is used to help mapping of raw SQL queries onto bean properties.
 	 * </p>
@@ -52,10 +61,40 @@ public interface NamingConvention {
 	/**
 	 * Return the sequence name given the table name (for DB's that use sequences).
 	 * <p>
-	 * Typically you might append "_seq" to the table name as an example. 
+	 * Typically you might append "_seq" to the table name as an example.
 	 * </p>
 	 */
 	public String getSequenceName(String tableName);
 
 
+	/**
+	 * Gets the foreign key name.
+	 *
+	 * @param property the property
+	 * @param fkCount the fk count
+	 *
+	 * @return the foreign key name
+	 */
+	public String getForeignKeyName(BeanPropertyAssocOne<?> property, int fkCount);
+
+
+	/**
+	 * Gets the index name.
+	 *
+	 * @param p the p
+	 * @param ixCount the ix count
+	 *
+	 * @return the index name
+	 */
+	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount);
+
+	/**
+	 * Gets the ManyToMany join table name.
+	 *
+	 * @param lhsTable the lhs table
+	 * @param rhsTable the rhs table
+	 *
+	 * @return the m2m join table name
+	 */
+	public String getM2MJoinTableName(BeanTable lhsTable, BeanTable rhsTable);
 }
