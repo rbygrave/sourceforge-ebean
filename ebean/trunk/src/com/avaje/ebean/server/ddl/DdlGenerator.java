@@ -16,6 +16,7 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.core.InternalEbeanServer;
@@ -26,15 +27,15 @@ import com.avaje.ebean.server.core.InternalEbeanServer;
 public class DdlGenerator {
 
 	final InternalEbeanServer server;
-	
+
 	final DatabasePlatform dbPlatform;
 
 	PrintStream out = System.out;
 
-	int summaryLength = 40;
+	int summaryLength = 80;
 
 	boolean debug = true;
-	
+
 	boolean generateDdl;
 	boolean runDdl;
 
@@ -43,21 +44,24 @@ public class DdlGenerator {
 	String dropFile;
 	String createFile;
 
+	NamingConvention namingConvention;
+
 	public DdlGenerator(InternalEbeanServer server, DatabasePlatform dbPlatform, ServerConfig serverConfig) {
 		this.server = server;
 		this.dbPlatform = dbPlatform;
 		this.generateDdl = serverConfig.isDdlGenerate();
 		this.runDdl = serverConfig.isDdlRun();
+		this.namingConvention = serverConfig.getNamingConvention();
 	}
-	
+
 	/**
-	 * Generate the DDL and then run the DDL based on property settings (ebean.ddl.generate and ebean.ddl.run etc). 
+	 * Generate the DDL and then run the DDL based on property settings (ebean.ddl.generate and ebean.ddl.run etc).
 	 */
 	public void execute() {
 		generateDdl();
 		runDdl();
 	}
-	
+
 	/**
 	 * Generate the DDL drop and create scripts if the properties have been set.
 	 */
@@ -67,12 +71,12 @@ public class DdlGenerator {
 			writeCreate(getCreateFileName());
 		}
 	}
-	
+
 	/**
 	 * Run the DDL drop and DDL create scripts if properties have been set.
 	 */
 	public void runDdl() {
-				
+
 		if (runDdl) {
 			try {
 				if (dropContent == null){
@@ -83,7 +87,7 @@ public class DdlGenerator {
 				}
 				runScript(true, dropContent);
 				runScript(false, createContent);
-				
+
 			} catch (IOException e){
 				String msg = "Error reading drop/create script from file system";
 				throw new RuntimeException(msg, e);
@@ -123,7 +127,7 @@ public class DdlGenerator {
 
 		DropTableVisitor drop = new DropTableVisitor(ctx);
 		VisitorUtil.visit(server, drop);
-		
+
 		DropSequenceVisitor dropSequence = new DropSequenceVisitor(ctx);
 		VisitorUtil.visit(server, dropSequence);
 
@@ -143,7 +147,7 @@ public class DdlGenerator {
 
 		AddForeignKeysVisitor fkeys = new AddForeignKeysVisitor(ctx);
 		VisitorUtil.visit(server, fkeys);
-		
+
 		createContent = ctx.getContent();
 		return createContent;
 	}
@@ -157,7 +161,7 @@ public class DdlGenerator {
 	}
 
 	protected DdlGenContext createContext() {
-		return new DdlGenContext(dbPlatform.getDbTypeMap(), dbPlatform.getDbDdlSyntax());
+		return new DdlGenContext(dbPlatform.getDbTypeMap(), dbPlatform.getDbDdlSyntax(), namingConvention);
 	}
 
 	protected void writeFile(String fileName, String fileContent) throws IOException {
@@ -172,7 +176,7 @@ public class DdlGenerator {
 			fw.close();
 		}
 	}
-	
+
 	protected String readFile(String fileName) throws IOException {
 
 		File f = new File(fileName);
@@ -192,7 +196,7 @@ public class DdlGenerator {
 		} finally {
 			lr.close();
 		}
-		
+
 		return buf.toString();
 	}
 
@@ -207,17 +211,17 @@ public class DdlGenerator {
 		Transaction t = server.createTransaction();
 		try {
 			Connection connection = t.getConnection();
-			
+
 			out.println("runScript");
 			out.flush();
-			
+
 			runStatements(expectErrors, statements, connection);
 
 			out.println("... end of script");
 			out.flush();
 
 			t.commit();
-			
+
 		} catch (Exception e){
 			String msg = "Error runing script";
 			throw new PersistenceException(msg, e);
@@ -249,9 +253,9 @@ public class DdlGenerator {
 			if (stmt.endsWith(";")){
 				stmt = stmt.substring(0, stmt.length()-1);
 			} else if (stmt.endsWith("/")) {
-				stmt = stmt.substring(0, stmt.length()-1);				
+				stmt = stmt.substring(0, stmt.length()-1);
 			}
-			
+
 			if (debug) {
 				out.println("executing "+oneOf+" "+ getSummary(stmt));
 				out.flush();
@@ -266,7 +270,7 @@ public class DdlGenerator {
 				out.flush();
 			} else {
 				String msg = "Error executing " + stmt;
-				throw new RuntimeException(msg, e);				
+				throw new RuntimeException(msg, e);
 			}
 		}
 	}
@@ -289,13 +293,13 @@ public class DdlGenerator {
 				int semiPos = s.indexOf(';');
 				if (semiPos == -1) {
 					sb.append(s);
-				
+
 				} else if (semiPos == s.length()-1) {
 					// semicolon at end of line
 					sb.append(s);
 					statements.add(sb.toString().trim());
 					sb = new StringBuilder();
-					
+
 				} else {
 					// semicolon in middle of line
 					String preSemi = s.substring(0, semiPos);
@@ -303,8 +307,8 @@ public class DdlGenerator {
 					statements.add(sb.toString().trim());
 					sb = new StringBuilder();
 					sb.append(s.substring(semiPos+1));
-					
-				} 
+
+				}
 			}
 
 			return statements;
@@ -312,7 +316,7 @@ public class DdlGenerator {
 			throw new PersistenceException(e);
 		}
 	}
-		
+
 	private String getSummary(String s){
 		if (s.length() > summaryLength){
 			return s.substring(0, summaryLength).trim()+"...";

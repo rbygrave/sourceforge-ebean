@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy.parse;
 
@@ -44,7 +44,7 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 public class AnnotationAssocManys extends AnnotationParser {
 
 	final BeanDescriptorManager factory;
-	
+
 	/**
 	 * Create with the DeployInfo.
 	 */
@@ -107,30 +107,30 @@ public class AnnotationAssocManys extends AnnotationParser {
 		JoinTable joinTable = get(prop, JoinTable.class);
 		if (joinTable != null) {
 			if (prop.isManyToMany()){
-				// expected this 
+				// expected this
 				readJoinTable(joinTable, prop);
-				
+
 			} else {
-				// OneToMany in theory 
+				// OneToMany in theory
 				prop.getTableJoin().addJoinColumn(true, joinTable.joinColumns(), beanTable);
 			}
-		} 
-		
+		}
+
 		if (prop.getMappedBy() != null){
-			// the join is derived by reversing the join information 
-			// from the mapped by property. 
+			// the join is derived by reversing the join information
+			// from the mapped by property.
 			// Refer BeanDescriptorManager.readEntityRelationships()
 			return;
 		}
-		
+
 		if (prop.isManyToMany()){
 			manyToManyDefaultJoins(prop);
 			return;
 		}
-		
-			
+
+
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
-						
+
 			// use naming convention to define join (based on the bean name for this side of relationship)
 			String fkeyPrefix = factory.getNamingConvention()
 								.getColumnFromProperty(descriptor.getBeanType(), descriptor.getName());
@@ -152,7 +152,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 	 * </p>
 	 */
 	private void readJoinTable(JoinTable joinTable, DeployBeanPropertyAssocMany<?> prop) {
-		
+
 		String intTableName = joinTable.name();
 		// set the intersection table
 		DeployTableJoin intJoin = new DeployTableJoin();
@@ -173,7 +173,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 		prop.setIntersectionJoin(intJoin);
 		prop.setInverseJoin(inverseDest);
 	}
-	
+
 	/**
 	 * Define intersection table and foreign key columns for ManyToMany.
 	 * <p>
@@ -182,9 +182,9 @@ public class AnnotationAssocManys extends AnnotationParser {
 	 * </p>
 	 */
     private void manyToManyDefaultJoins(DeployBeanPropertyAssocMany<?> prop) {
-		
+
     	String intTableName = null;
-    	
+
     	DeployTableJoin intJoin = prop.getIntersectionJoin();
     	if (intJoin == null){
     		intJoin = new DeployTableJoin();
@@ -193,7 +193,7 @@ public class AnnotationAssocManys extends AnnotationParser {
     		// intersection table already defined (by @JoinTable)
     		intTableName = intJoin.getTable();
     	}
-    	
+
     	BeanTable localTable = factory.getBeanTable(descriptor.getBeanType());
     	BeanTable otherTable = factory.getBeanTable(prop.getTargetType());
 
@@ -202,16 +202,19 @@ public class AnnotationAssocManys extends AnnotationParser {
 
     	if (intTableName == null){
     		// define intersection table name
-    		intTableName = localTableName+"_"+otherTableName;
+    		intTableName =
+    			factory.getNamingConvention().
+    				getM2MJoinTableName(localTable, otherTable);
+
     		intJoin.setTable(intTableName);
-    		
+
     		// set table alias etc for the join to intersection
     		info.setManyIntersectionAlias(prop, intJoin);
     	}
-    	
+
 		DeployTableJoin destJoin = prop.getTableJoin();
 
-		
+
     	if (intJoin.hasJoinColumns() && destJoin.hasJoinColumns()){
     		// already defined the foreign key columns etc
     		return;
@@ -225,14 +228,14 @@ public class AnnotationAssocManys extends AnnotationParser {
 				intJoin.addJoinColumn(new DeployTableJoinColumn(localIds[i].getDbColumn(), fkCol));
 			}
     	}
-		
+
 		if (!destJoin.hasJoinColumns()){
     		// define inverse foreign key columns
 			BeanProperty[] otherIds = otherTable.getIdProperties();
 			for (int i = 0; i < otherIds.length; i++) {
 				// set the intersection to dest table join columns
 				String fkCol = otherTableName+"_"+otherIds[i].getDbColumn();
-				destJoin.addJoinColumn(new DeployTableJoinColumn(fkCol, otherIds[i].getDbColumn()));			
+				destJoin.addJoinColumn(new DeployTableJoinColumn(fkCol, otherIds[i].getDbColumn()));
 			}
 		}
 
@@ -240,13 +243,13 @@ public class AnnotationAssocManys extends AnnotationParser {
 		DeployTableJoin inverseDest = destJoin.createInverse(intTableName);
 		prop.setInverseJoin(inverseDest);
 	}
-	
-	
-	
+
+
+
     private String errorMsgMissingBeanTable(Class<?> type, String from) {
     	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
     }
-    
+
 	private void readToMany(ManyToMany propAnn, DeployBeanPropertyAssocMany<?> manyProp) {
 
 		manyProp.setMappedBy(propAnn.mappedBy());
@@ -266,8 +269,8 @@ public class AnnotationAssocManys extends AnnotationParser {
         	String msg = errorMsgMissingBeanTable(targetType, manyProp.getFullBeanName());
         	throw new RuntimeException(msg);
 		}
-		
-		manyProp.setManyToMany(true);		
+
+		manyProp.setManyToMany(true);
 		manyProp.setBeanTable(assoc);
 		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
 	}
@@ -280,7 +283,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 		Class<?> targetType = propAnn.targetEntity();
 		if (targetType.equals(void.class)) {
 			// via reflection of generics type
-			targetType = manyProp.getTargetType();			
+			targetType = manyProp.getTargetType();
 		} else {
 			manyProp.setTargetType(targetType);
 		}
@@ -290,7 +293,7 @@ public class AnnotationAssocManys extends AnnotationParser {
         	String msg = errorMsgMissingBeanTable(targetType, manyProp.getFullBeanName());
         	throw new RuntimeException(msg);
 		}
-		
+
 		manyProp.setBeanTable(assoc);
 		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
 	}
