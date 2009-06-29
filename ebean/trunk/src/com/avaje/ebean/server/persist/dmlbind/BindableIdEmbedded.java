@@ -118,7 +118,8 @@ public class BindableIdEmbedded implements BindableId {
 			matches[i].populate(bean, newId);
 		}
 
-		embId.setValue(bean, newId);
+		// support PropertyChangeSupport
+		embId.setValueIntercept(bean, newId);
 		return true;
 	}
 

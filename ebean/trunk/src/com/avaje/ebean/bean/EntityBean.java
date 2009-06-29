@@ -90,7 +90,7 @@ public interface EntityBean {
 	 * @param value
 	 *            the value to set
 	 */
-//	public void _ebean_setField(int fieldIndex, Object entityBean, Object value);
+	public void _ebean_setField(int fieldIndex, Object entityBean, Object value);
 
 	/**
 	 * Set the field value with interception.

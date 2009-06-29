@@ -50,9 +50,8 @@ public class IndexFieldWeaver implements Opcodes {
 		generateGetField(cv, classMeta, fields, false);
 		generateGetField(cv, classMeta, fields, true);
 
-//		generateSetField(cv, classMeta, fields, false);
-//		generateSetField(cv, classMeta, fields, true);
-		generateSetField(cv, classMeta, fields);
+		generateSetField(cv, classMeta, fields, false);
+		generateSetField(cv, classMeta, fields, true);
 
 		generateGetDesc(cv, classMeta, fields);
 
@@ -189,10 +188,8 @@ public class IndexFieldWeaver implements Opcodes {
 	 * dirty for the first time.
 	 * </p>
 	 */
-	private static void generateSetField(ClassVisitor cv, ClassMeta classMeta, List<FieldMeta> fields) {
-		//,boolean intercept) {
+	private static void generateSetField(ClassVisitor cv, ClassMeta classMeta, List<FieldMeta> fields,boolean intercept) {
 
-		boolean intercept = true;
 		
 		String className = classMeta.getClassName();
 

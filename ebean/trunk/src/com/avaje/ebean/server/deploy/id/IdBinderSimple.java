@@ -88,7 +88,8 @@ public final class IdBinderSimple implements IdBinder {
 		}
 		
 		if (bean != null) {
-			idProperty.setValue(bean, idValue);
+			// support PropertyChangeSupport
+			idProperty.setValueIntercept(bean, idValue);
 		}
 
 		return idValue;

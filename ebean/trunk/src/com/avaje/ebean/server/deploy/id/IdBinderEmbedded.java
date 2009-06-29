@@ -142,7 +142,8 @@ public final class IdBinderEmbedded implements IdBinder {
 		
 		// can not cast/convert if it is embedded
 		if (bean != null){
-			embIdProperty.setValue(bean, idValue);
+			// support PropertyChangeSupport
+			embIdProperty.setValueIntercept(bean, idValue);
 		}
 		
 		return idValue;

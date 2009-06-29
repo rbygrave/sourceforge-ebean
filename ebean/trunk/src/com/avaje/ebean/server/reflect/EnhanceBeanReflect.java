@@ -106,9 +106,9 @@ public final class EnhanceBeanReflect implements BeanReflect {
 			this.entityBean = entityBean;
 		}
 
-//		public void set(Object bean, Object value) {
-//			entityBean._ebean_setField(fieldIndex, bean, value);
-//		}
+		public void set(Object bean, Object value) {
+			entityBean._ebean_setField(fieldIndex, bean, value);
+		}
 
 		public void setIntercept(Object bean, Object value) {
 			entityBean._ebean_setFieldIntercept(fieldIndex, bean, value);
