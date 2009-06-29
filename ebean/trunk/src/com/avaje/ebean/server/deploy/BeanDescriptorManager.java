@@ -69,6 +69,8 @@ import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.reflect.EnhanceBeanReflectFactory;
 import com.avaje.ebean.server.type.TypeManager;
+import com.avaje.ebean.server.validate.LengthValidatorFactory;
+import com.avaje.ebean.server.validate.NotNullValidatorFactory;
 import com.avaje.ebean.util.Message;
 
 /**
@@ -886,6 +888,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			setConcurrencyMode(desc);
 		}
 
+		autoAddValidators(desc);
+		
 		// generate the byte code
 		createByteCode(desc);
 	}
@@ -900,69 +904,34 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		setBeanReflect(deploy);
 	}
 
-	//FIXME: autoAddValidators ...
-//	private void setColumnInfo(DeployBeanDescriptor<?> deployDesc, TableInfo tableInfo) {
-//
-//		List<DeployBeanProperty> list = deployDesc.propertiesBase();
-//		for (int i = 0; i < list.size(); i++) {
-//			DeployBeanProperty prop = list.get(i);
-//			if (!prop.isTransient()) {
-//				String dbColumn = prop.getDbColumn();
-//				ColumnInfo info = tableInfo.getColumnInfo(dbColumn);
-//				if (info != null) {
-//					prop.readColumnInfo(info);
-//					if (prop.isNullablePrimitive()){
-//						String msg = "Primitive property "+prop.getFullBeanName()
-//						+" is mapped to a nullable Db Column " + dbColumn + "";
-//						logger.warning(msg);						
-//					}
-//					
-//				} else {
-//					String msg = "Db Column " + dbColumn + " not found ";
-//					msg += "for property " + prop.getFullBeanName();
-//					logger.warning(msg);
-//				} 
-//				if (prop.isDbWrite()) {
-//					autoAddValidators(prop);
-//				}
-//			}
-//		}
-//	}
+	/**
+	 * Add Length and NotNull validators based on Column annotation etc.
+	 */
+	private void autoAddValidators(DeployBeanDescriptor<?> deployDesc) {
 
-//	/**
-//	 * Automatically add Length and NotNull validators based on database meta
-//	 * data.
-//	 */
-//	private void autoAddValidators(DeployBeanProperty prop) {
-//		if (!autoAddValidators) {
-//			return;
-//		}
-//		if (autoAddLengthValidators) {
-//			int dbMaxLength = prop.getDbColumnSize();
-//			if (dbMaxLength > 0 && prop.getPropertyType().equals(String.class)) {
-//				if (dbMaxLength > autoMaxLength) {
-//					if (logger.isLoggable(Level.FINEST)) {
-//						String msg = "Not automatically adding length validator to " + prop.getFullBeanName();
-//						msg += " due to big length " + dbMaxLength + " > max " + autoMaxLength;
-//						logger.finest(msg);
-//					}
-//				} else {
-//					// check if the property already has the LengthValidator
-//					if (!prop.containsValidatorType(LengthValidatorFactory.LengthValidator.class)) {
-//						prop.addValidator(LengthValidatorFactory.create(0, dbMaxLength));
-//					}
-//				}
-//			}
-//		}
-//		if (autoAddNotNullValidators) {
-//			if (!prop.isNullable() && !prop.isId() && !prop.isGenerated()) {
-//				// check if the property already has the NotNullValidator
-//				if (!prop.containsValidatorType(NotNullValidatorFactory.NotNullValidator.class)) {
-//					prop.addValidator(NotNullValidatorFactory.NOT_NULL);
-//				}
-//			}
-//		}
-//	}
+		for (DeployBeanProperty prop : deployDesc.propertiesBase()) {
+			autoAddValidators(prop);			
+		}
+	}
+
+	/**
+	 * Add Length and NotNull validators based on Column annotation etc.
+	 */
+	private void autoAddValidators(DeployBeanProperty prop) {
+
+		if (String.class.equals(prop.getPropertyType()) && prop.getDbLength() > 0) {
+			// check if the property already has the LengthValidator
+			if (!prop.containsValidatorType(LengthValidatorFactory.LengthValidator.class)) {
+				prop.addValidator(LengthValidatorFactory.create(0, prop.getDbLength()));
+			}
+		}
+		if (!prop.isNullable() && !prop.isId() && !prop.isGenerated()) {
+			// check if the property already has the NotNullValidator
+			if (!prop.containsValidatorType(NotNullValidatorFactory.NotNullValidator.class)) {
+				prop.addValidator(NotNullValidatorFactory.NOT_NULL);
+			}
+		}
+	}
 
 	/**
 	 * Set the Scalar Types on all the simple types. This is done AFTER
