@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.el.ElPropertyDeploy;
 
 /**
  * For updates converts logical property names to database columns and bean type to base table.
@@ -65,9 +65,13 @@ public final class DeployUpdateParser extends DeployParser {
 	
 	private String getDeployWord(String expression) {
 	
-		ElGetValue elGetValue = beanDescriptor.getElGetValue(expression);
-		if (elGetValue != null){
-			return elGetValue.getDbColumn();
+		if (expression.equalsIgnoreCase(beanDescriptor.getName())){
+			return beanDescriptor.getBaseTable();
+		}
+
+		ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(expression);
+		if (elProp != null){
+			return elProp.getDbColumn();
 		} else {
 			return null;
 		}
