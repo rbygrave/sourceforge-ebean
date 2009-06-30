@@ -106,13 +106,6 @@ public class DeployBeanDescriptor<T> {
 	 */
 	boolean embedded;
 
-	/**
-	 * Set for beans that don't have a default constructor and are typically
-	 * built using a BeanFinder instead. The Ebean "Meta" beans are examples of
-	 * this.
-	 */
-	boolean defaultConstructor = true;
-
 	String lazyFetchIncludes;
 
 	/**
@@ -372,22 +365,6 @@ public class DeployBeanDescriptor<T> {
 	public void setEmbedded(boolean embedded) {
 		this.embedded = embedded;
 	}
-
-	/**
-	 * Return true if this is a meta entity bean.
-	 */
-	public boolean hasDefaultConstructor() {
-		return defaultConstructor;
-	}
-
-	/**
-	 * Set whether this is a meta entity bean.
-	 */
-	public void setDefaultConstructor(boolean defaultConstructor) {
-		this.defaultConstructor = defaultConstructor;
-	}
-
-	
 	
 	public DeployBeanPropertyAssocOne<?> getUnidirectional() {
 		return unidirectional;
