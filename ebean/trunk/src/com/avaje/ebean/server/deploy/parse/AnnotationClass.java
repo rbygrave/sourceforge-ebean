@@ -25,6 +25,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PersistenceException;
 import javax.persistence.Table;
 
 import com.avaje.ebean.annotation.NamedUpdate;
@@ -168,15 +169,16 @@ public class AnnotationClass extends AnnotationParser {
 		try {
 			defaultConstructor = beanType.getConstructor((Class[]) null);
 			if (defaultConstructor == null) {
-				descriptor.setDefaultConstructor(false);
+				String m = "No default constructor on "+beanType;
+				throw new PersistenceException(m);
 			}
 		} catch (SecurityException e) {
-			// hmmm, not sure about this one...
-			// throw new PersistenceException(e);
-			descriptor.setDefaultConstructor(false);
+			String m = "Error checking for default constructor on "+beanType;
+			throw new PersistenceException(m, e);
 
 		} catch (NoSuchMethodException e) {
-			descriptor.setDefaultConstructor(false);
+			String m = "No default constructor on "+beanType;
+			throw new PersistenceException(m);
 		}
 	}
 

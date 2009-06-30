@@ -130,13 +130,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 	final boolean autoFetchTunable;
 
-	/**
-	 * Set for beans that don't have a default constructor and are typically
-	 * built using a BeanFinder instead. The Ebean "Meta" beans are examples of
-	 * this.
-	 */
-	final boolean defaultConstructor;
-
 	final String lazyFetchIncludes;
 
 	/**
@@ -389,7 +382,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.tableGenerated = deploy.isTableGenerated();
 		this.embedded = deploy.isEmbedded();
 		this.meta = deploy.isMeta();
-		this.defaultConstructor = deploy.hasDefaultConstructor();
 		this.lazyFetchIncludes = deploy.getLazyFetchIncludes();
 		this.concurrencyMode = deploy.getConcurrencyMode();
 		this.updateChangesOnly = deploy.isUpdateChangesOnly();

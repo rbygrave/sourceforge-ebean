@@ -1119,13 +1119,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 */
 	private void setEntityBeanClass(DeployBeanDescriptor<?> desc) {
 
-		if (!desc.hasDefaultConstructor()) {
-			// no default constructor expected so bean must
-			// be created by a BeanFinder (or externally)
-			desc.setFactoryType(null);
-			return;
-		}
-
 		Class<?> beanClass = desc.getBeanType();
 
 		try {
