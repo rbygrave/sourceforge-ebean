@@ -153,7 +153,7 @@ public interface Transaction {
 	 * Example: batch processing executing every 3 rows
 	 * </p>
 	 * 
-	 * <code class="code">
+	 * <pre class="code">
 	 * String data = &quot;This is a simple test of the batch processing&quot;
 	 * 		+ &quot; mode and the transaction execute batch method&quot;;
 	 * 
