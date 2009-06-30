@@ -664,8 +664,8 @@ public final class Ebean {
 	 * annotation for examples.
 	 * </p>
 	 */
-	public static SqlQuery createSqlQuery() {
-		return serverMgr.getPrimaryServer().createSqlQuery();
+	public static SqlQuery createSqlQuery(String sql) {
+		return serverMgr.getPrimaryServer().createSqlQuery(sql);
 	}
 
 	/**
@@ -677,8 +677,8 @@ public final class Ebean {
 	 * @param namedQuery
 	 *            the name of the query
 	 */
-	public static SqlQuery createSqlQuery(String namedQuery) {
-		return serverMgr.getPrimaryServer().createSqlQuery(namedQuery);
+	public static SqlQuery createNamedSqlQuery(String namedQuery) {
+		return serverMgr.getPrimaryServer().createNamedSqlQuery(namedQuery);
 	}
 
 	/**
@@ -693,11 +693,11 @@ public final class Ebean {
 	 * </p>
 	 * <p>
 	 * Where possible it would be expected practice to put the statement in a
-	 * orm xml file (named query) and use {@link #createSqlQuery(String)}.
+	 * orm xml file (named update) and use {@link #createNamedSqlUpdate(String)}.
 	 * </p>
 	 */
-	public static SqlUpdate createSqlUpdate() {
-		return serverMgr.getPrimaryServer().createSqlUpdate();
+	public static SqlUpdate createSqlUpdate(String sql) {
+		return serverMgr.getPrimaryServer().createSqlUpdate(sql);
 	}
 
 	/**
@@ -709,14 +709,14 @@ public final class Ebean {
 	 * 
 	 * <pre class="code">
 	 * // Use a namedQuery 
-	 * UpdateSql update = Ebean.createSqlUpdate(&quot;update.topic.count&quot;);
+	 * UpdateSql update = Ebean.createNamedSqlUpdate(&quot;update.topic.count&quot;);
 	 * update.setParameter(&quot;count&quot;, 1);
 	 * update.setParameter(&quot;topicId&quot;, 50);
 	 * int modifiedCount = update.execute();
 	 * </pre>
 	 */
-	public static SqlUpdate createSqlUpdate(String namedQuery) {
-		return serverMgr.getPrimaryServer().createSqlUpdate(namedQuery);
+	public static SqlUpdate createNamedSqlUpdate(String namedQuery) {
+		return serverMgr.getPrimaryServer().createNamedSqlUpdate(namedQuery);
 	}
 
 	/**

@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.util.BindParams;
 
 public class IntersectionRow {
 
@@ -25,9 +26,8 @@ public class IntersectionRow {
 	public SqlUpdate createInsert(EbeanServer server){
 
 
-		SqlUpdate insert = server.createSqlUpdate();
+		BindParams bindParams = new BindParams();
 		
-
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into ").append(tableName).append(" (");
 		
@@ -41,7 +41,7 @@ public class IntersectionRow {
 			Map.Entry<String, Object> entry = it.next();
 			sb.append(entry.getKey());
 			
-			insert.setParameter(count, entry.getValue());
+			bindParams.setParameter(count, entry.getValue());
 		}
 		
 		sb.append(") values (");
@@ -53,16 +53,13 @@ public class IntersectionRow {
 		}
 		sb.append(")");
 		
-		insert.setSql(sb.toString());
-		
-
-		return insert;
+		return new SqlUpdate(server, sb.toString(), bindParams);
 	}
 
 	public SqlUpdate createDelete(EbeanServer server){
 
 
-		SqlUpdate delete = server.createSqlUpdate();
+		BindParams bindParams = new BindParams();
 		
 
 		StringBuilder sb = new StringBuilder();
@@ -79,13 +76,10 @@ public class IntersectionRow {
 			sb.append(entry.getKey());
 			sb.append(" = ?");
 			
-			delete.setParameter(count, entry.getValue());
+			bindParams.setParameter(count, entry.getValue());
 		}
 		
-		delete.setSql(sb.toString());
-		
-
-		return delete;
+		return new SqlUpdate(server, sb.toString(), bindParams);		
 	}
 
 }
