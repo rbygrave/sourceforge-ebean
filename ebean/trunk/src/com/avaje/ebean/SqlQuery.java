@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Query object for performing native SQL queries that return MapBeans.
+ * Query object for performing native SQL queries that return SqlRow's.
  * <p>
  * Firstly note that you can use your own sql queries with <em>entity beans</em>
  * by using the SqlSelect annotation. This should be your first approach when
@@ -14,24 +14,11 @@ import java.util.Set;
  * </p>
  * <p>
  * If ORM Mapping is too tight and constraining for your problem then SqlQuery
- * and MapBeans could be a good approach. The are generally more suited to more
- * utility type applications and could be described as a fairly relational "bare
- * metal" type approach. If your problem is relational in nature, has very
- * dynamic data requirements where ORM Mapping could be an impediment then
- * SqlQuery and MapBeans could be a good fit (or raw JDBC of course).
+ * could be a good approach. 
  * </p>
  * <p>
- * The SqlQuery is raw sql with tables and columns that returns MapBeans. A
- * MapBean is similar to a LinkedHashMap but with some smarts such as type
- * conversion and 'dirty' checking. You can modify a MapBean and save it back
- * via Ebean.save() and it can automatically use optimistic concurrency checking
- * as well as maintain generated columns such as last updated timestamp and
- * inserted timestamp.
- * </p>
- * <p>
- * You may wish to use SqlQuery and MapBeans when you have a problem that could
- * be better solved by the more dynamic/direct/relational approach (and ORM
- * Mapping is poorly suited).
+ * The returned SqlRow objects are similar to a LinkedHashMap with some type
+ * conversion support added.
  * </p>
  * 
  * <pre class="code">
@@ -40,8 +27,7 @@ import java.util.Set;
  * 
  * String sql = &quot;select id, name from customer where name like :name and status_code = :status&quot;;
  * 
- * SqlQuery sqlQuery = Ebean.createSqlQuery();
- * sqlQuery.setQuery(sql);
+ * SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
  * sqlQuery.setParameter(&quot;name&quot;, &quot;Acme%&quot;);
  * sqlQuery.setParameter(&quot;status&quot;, &quot;ACTIVE&quot;);
  * 
@@ -51,11 +37,6 @@ import java.util.Set;
  * 
  */
 public interface SqlQuery extends Serializable {
-
-	/**
-	 * Set the sql query.
-	 */
-	public SqlQuery setQuery(String sql);
 
 	/**
 	 * Execute the query returning a list.
@@ -82,27 +63,22 @@ public interface SqlQuery extends Serializable {
 	public SqlRow findUnique();
 
 	/**
-	 * Set an ordered bind parameter according to its position. Note that the
-	 * position starts at 1 to be consistent with JDBC PreparedStatement. You
-	 * need to set a parameter value for each ? you have in the query.
+	 * @deprecated use {@link #setParameter(int, Object)}.
 	 */
 	public SqlQuery set(int position, Object value);
 
 	/**
-	 * Set a named bind parameter. Named parameters have a colon to prefix the
-	 * name.
+	 * @deprecated use {@link #setParameter(String, Object)}.
 	 */
 	public SqlQuery set(String name, Object value);
 
 	/**
-	 * @deprecated use {@link #set(int, Object)} or
-	 *             {@link #setParameter(String, Object)}
+	 * @deprecated use {@link #setParameter(int, Object)}.
 	 */
 	public SqlQuery bind(int position, Object value);
 
 	/**
-	 * @deprecated use {@link #set(String, Object)} or
-	 *             {@link #setParameter(String, Object)}.
+	 * @deprecated use {@link #setParameter(String, Object)}.
 	 */
 	public SqlQuery bind(String name, Object value);
 

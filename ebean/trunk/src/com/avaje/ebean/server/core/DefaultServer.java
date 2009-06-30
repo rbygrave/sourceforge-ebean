@@ -884,11 +884,11 @@ public final class DefaultServer implements InternalEbeanServer {
 		return new DefaultOrmUpdate<T>(beanType, this, desc.getBaseTable());
 	}
 
-	public SqlQuery createSqlQuery() {
-		return new DefaultRelationalQuery(this, null);
+	public SqlQuery createSqlQuery(String sql) {
+		return new DefaultRelationalQuery(this, sql);
 	}
 
-	public SqlQuery createSqlQuery(String namedQuery) {
+	public SqlQuery createNamedSqlQuery(String namedQuery) {
 		DNativeQuery nq = beanDescriptorManager.getNativeQuery(namedQuery);
 		if (nq == null) {
 			throw new PersistenceException("SqlQuery " + namedQuery + " not found.");
@@ -896,11 +896,11 @@ public final class DefaultServer implements InternalEbeanServer {
 		return new DefaultRelationalQuery(this, nq.getQuery());
 	}
 
-	public SqlUpdate createSqlUpdate() {
-		return new SqlUpdate(this, null);
+	public SqlUpdate createSqlUpdate(String sql) {
+		return new SqlUpdate(this, sql);
 	}
 
-	public SqlUpdate createSqlUpdate(String namedQuery) {
+	public SqlUpdate createNamedSqlUpdate(String namedQuery) {
 		DNativeQuery nq = beanDescriptorManager.getNativeQuery(namedQuery);
 		if (nq == null) {
 			throw new PersistenceException("SqlUpdate " + namedQuery + " not found.");

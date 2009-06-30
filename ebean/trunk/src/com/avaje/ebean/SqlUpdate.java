@@ -28,15 +28,18 @@ import com.avaje.ebean.util.BindParams;
  * when you want to use Sql DML rather than a ORM bean approach. Refer to the
  * Ebean execute() method.
  * <p>
- * Note that SqlUpdate is designed for general DML sql and CallableSql is
+ * There is also {@link Update} which is similar except should use logical bean and
+ * property names rather than physical table and column names.
+ * </p>
+ * <p>
+ * SqlUpdate is designed for general DML sql and CallableSql is
  * designed for use with stored procedures.
  * </p>
  * 
  * <pre class="code">
  * // String sql = &quot;update f_topic set post_count = :count where id = :topicId&quot;;
  * 
- * SqlUpdate update = new SqlUpdate();
- * update.setSql(sql);
+ * SqlUpdate update = new SqlUpdate(sql);
  * update.setParameter(&quot;count&quot;, 1);
  * update.setParameter(&quot;topicId&quot;, 50);
  * 
@@ -54,7 +57,37 @@ import com.avaje.ebean.util.BindParams;
  * <p>
  * You can sql.setAutoTableMod(false); to stop the automatic table modification
  * </p>
+ * <p>
+ * EXAMPLE: Using JDBC batching with SqlUpdate
+ * </p>
+ * <pre class="code">
  * 
+ * String data = &quot;This is a simple test of the batch processing&quot;
+ * 		+ &quot; mode and the transaction execute batch method&quot;;
+ * 
+ * String[] da = data.split(&quot; &quot;);
+ * 
+ * String sql = &quot;insert into junk (word) values (?)&quot;;
+ * 
+ * SqlUpdate sqlUpdate = Ebean.createSqlUpdate(sql);
+ * 
+ * Transaction t = Ebean.beginTransaction();
+ * t.setBatchMode(true);
+ * t.setBatchSize(3);
+ * try {
+ * 	for (int i = 0; i &lt; da.length; i++) {
+ * 
+ * 		sqlUpdate.setParameter(1, da[i]);
+ * 		sqlUpdate.execute();
+ * 	}
+ * 
+ * 	// NB: commit implicitly flushes the batch 
+ * 	Ebean.commitTransaction();
+ * 
+ * } finally {
+ * 	Ebean.endTransaction();
+ * }
+ * </pre> 
  * @see com.avaje.ebean.CallableSql
  * @see com.avaje.ebean.Ebean#execute(SqlUpdate)
  */
@@ -62,15 +95,17 @@ public final class SqlUpdate implements Serializable {
 
 	static final long serialVersionUID = -6493829438421253102L;
 
+	transient final EbeanServer server;
+
 	/**
 	 * The parameters used to bind to the sql.
 	 */
-	BindParams bindParams = new BindParams();
+	final BindParams bindParams;
 
 	/**
 	 * The sql update or delete statement.
 	 */
-	String sql;
+	final String sql;
 
 	/**
 	 * Some descriptive text that can be put into the transaction log.
@@ -89,34 +124,45 @@ public final class SqlUpdate implements Serializable {
 	 */
 	boolean isAutoTableMod = true;
 
-	transient EbeanServer server;
-
+	/**
+	 * Create with server sql and bindParams object.
+	 * <p>
+	 * Useful if you are building the sql and binding parameters at the
+	 * same time. 
+	 * </p>
+	 */
+	public SqlUpdate(EbeanServer server, String sql, BindParams bindParams) {
+		this.server = server;
+		this.sql = sql;
+		this.bindParams = bindParams;
+	}
+	
 	/**
 	 * Create with a specific server. This means you can use the
 	 * SqlUpdate.execute() method.
 	 */
 	public SqlUpdate(EbeanServer server, String sql) {
-		this.server = server;
-		this.sql = sql;
+		this(server, sql, new BindParams());
 	}
 
 	/**
 	 * Create with some sql.
 	 */
-	public SqlUpdate(String updateSql) {
-		this.sql = updateSql;
-	}
-
-	/**
-	 * Create the SqlUpdate.
-	 */
-	public SqlUpdate() {
-
+	public SqlUpdate(String sql) {
+		this(null, sql, new BindParams());
 	}
 
 	/**
 	 * Execute the update returning the number of rows modified.
-	 * 
+	 * <p>
+	 * After you have executed the SqlUpdate you can bind new variables
+	 * using {@link #setParameter(String, Object)} etc and then execute
+	 * the SqlUpdate again.
+	 * </p>
+	 * <p>
+	 * For JDBC batch processing refer to {@link Transaction#setBatchMode(boolean)}
+	 * and {@link Transaction#setBatchSize(int)}.
+	 * </p>
 	 * @see com.avaje.ebean.Ebean#execute(SqlUpdate)
 	 */
 	public int execute() {
@@ -200,16 +246,7 @@ public final class SqlUpdate implements Serializable {
 	}
 
 	/**
-	 * Set the sql update or delete statement.
-	 */
-	public SqlUpdate setSql(String updateSql) {
-		this.sql = updateSql;
-		return this;
-	}
-
-	/**
-	 * Set a parameter via its index position. The exact same as
-	 * {@link #setParameter(int, Object)}.
+	 * @deprecated Use {@link #setParameter(int, Object)} 
 	 */
 	public SqlUpdate set(int position, Object value) {
 		bindParams.setParameter(position, value);
@@ -217,8 +254,7 @@ public final class SqlUpdate implements Serializable {
 	}
 
 	/**
-	 * @deprecated Use {@link #set(int, Object)} or
-	 *             {@link #setParameter(int, Object)}
+	 * @deprecated Use {@link #setParameter(int, Object)} 
 	 */
 	public SqlUpdate bind(int position, Object value) {
 		bindParams.setParameter(position, value);
@@ -260,8 +296,7 @@ public final class SqlUpdate implements Serializable {
 	}
 
 	/**
-	 * Set a named parameter value. Exactly the same as
-	 * {@link #setParameter(String, Object)}.
+	 * @deprecated Use {@link #setParameter(String, Object)} 
 	 */
 	public SqlUpdate set(String name, Object value) {
 		bindParams.setParameter(name, value);
@@ -269,8 +304,7 @@ public final class SqlUpdate implements Serializable {
 	}
 
 	/**
-	 * @deprecated Use {@link #set(String, Object)} or
-	 *             {@link #setParameter(String, Object)}
+	 * @deprecated Use {@link #setParameter(String, Object)} 
 	 */
 	public SqlUpdate bind(String name, Object value) {
 		bindParams.setParameter(name, value);

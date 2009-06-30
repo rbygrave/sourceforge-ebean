@@ -201,21 +201,21 @@ public interface EbeanServer {
 
 	/**
 	 * Create a sql query for executing native sql query statements (refer
-	 * {@link Ebean#createSqlQuery()}).
+	 * {@link Ebean#createSqlQuery(String)}).
 	 * 
 	 * @see Ebean#createSqlQuery()
 	 */
-	public SqlQuery createSqlQuery();
+	public SqlQuery createSqlQuery(String sql);
 
 	/**
-	 * Create a named sql query (refer {@link Ebean#createSqlQuery(String)}).
+	 * Create a named sql query (refer {@link Ebean#createNamedSqlQuery(String)}).
 	 * <p>
 	 * The query statement will be defined in a deployment orm xml file.
 	 * </p>
 	 * 
-	 * @see Ebean#createSqlQuery(String)
+	 * @see Ebean#createNamedSqlQuery(String)
 	 */
-	public SqlQuery createSqlQuery(String namedQuery);
+	public SqlQuery createNamedSqlQuery(String namedQuery);
 
 	/**
 	 * Create a sql update for executing native dml statements (refer
@@ -223,18 +223,18 @@ public interface EbeanServer {
 	 * 
 	 * @see Ebean#createSqlUpdate()
 	 */
-	public SqlUpdate createSqlUpdate();
+	public SqlUpdate createSqlUpdate(String sql);
 
 	/**
-	 * Create a named sql update (refer {@link Ebean#createSqlUpdate(String)}).
+	 * Create a named sql update (refer {@link Ebean#createNamedSqlUpdate(String)}).
 	 * <p>
 	 * The statement (an Insert Update or Delete statement) will be defined in a
 	 * deployment orm xml file.
 	 * </p>
 	 * 
-	 * @see Ebean#createSqlUpdate(String)
+	 * @see Ebean#createNamedSqlUpdate(String)
 	 */
-	public SqlUpdate createSqlUpdate(String namedQuery);
+	public SqlUpdate createNamedSqlUpdate(String namedQuery);
 
 	/**
 	 * Create a new transaction that is not held in TransactionThreadLocal.
