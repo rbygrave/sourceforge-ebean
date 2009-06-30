@@ -57,9 +57,9 @@ public class ConstructorAdapter extends MethodAdapter implements EnhanceConstant
 					meta.log("... skipping intercept <init> ... handled by other constructor... CONSTRUCTOR:"
 							+ constructorDesc);
 				}
-			} else {
+			} else if (owner.equals(meta.getSuperClassName())){
 				if (meta.isLog(2)) {
-					meta.log("... adding intercept <init> in CONSTRUCTOR:" + constructorDesc + " OWNER:" + owner);
+					meta.log("... adding intercept <init> in CONSTRUCTOR:" + constructorDesc + " OWNER/SUPER:" + owner);
 				}
 
 				if (constructorInitializationDone) {
@@ -67,7 +67,7 @@ public class ConstructorAdapter extends MethodAdapter implements EnhanceConstant
 					// on the safe side.
 					String msg = "Error in Enhancement. Only expecting to add <init> of intercept object"
 							+ " once but it is trying to add it twice for " + meta.getClassName() + " CONSTRUCTOR:"
-							+ constructorDesc;
+							+ constructorDesc+ " OWNER:" + owner;
 					System.err.println(msg);
 
 				} else {
@@ -82,6 +82,10 @@ public class ConstructorAdapter extends MethodAdapter implements EnhanceConstant
 
 					constructorInitializationDone = true;
 				}
+			} else {
+				if (meta.isLog(3)) {
+					meta.log("... skipping intercept <init> ... incorrect type "+owner);
+				}				
 			}
 		}
 	}
