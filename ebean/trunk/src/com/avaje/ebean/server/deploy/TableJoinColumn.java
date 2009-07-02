@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
 /**
@@ -44,24 +45,12 @@ public class TableJoinColumn {
      * Create the pair.
      */
     public TableJoinColumn(DeployTableJoinColumn deploy) {
-    	this.localDbColumn = deploy.getLocalDbColumn();
-    	this.foreignDbColumn = deploy.getForeignDbColumn();
+    	this.localDbColumn = InternString.intern(deploy.getLocalDbColumn());
+    	this.foreignDbColumn = InternString.intern(deploy.getForeignDbColumn());
     	this.insertable = deploy.isInsertable();
     	this.updateable = deploy.isUpdateable();
     }
     
-//    public TableJoinColumn(String localDbColumn, String foreignDbColumn) {
-//    	this.localDbColumn = localDbColumn;
-//    	this.foreignDbColumn = foreignDbColumn;
-//    }
-    
-//    /**
-//     * Create a TableJoinColumn with the local and foreign columns swapped.
-//     */
-//    public TableJoinColumn createInverse() {
-//    	return new TableJoinColumn(foreignDbColumn, localDbColumn);
-//    }
-
     public String toString() {
         return localDbColumn+" = "+foreignDbColumn;
     }

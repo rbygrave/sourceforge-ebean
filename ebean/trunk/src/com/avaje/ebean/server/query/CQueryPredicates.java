@@ -262,7 +262,7 @@ public class CQueryPredicates {
 
 		// property name to column name parser...
 		if (deployParser == null){
-			deployParser = request.getBeanManager().createParser();
+			deployParser = request.getBeanDescriptor().createDeployPropertyParser();
 		}
 		
 		dbWhere = deriveWhere(parseRaw);		

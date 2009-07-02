@@ -47,6 +47,7 @@ import com.avaje.ebean.enhance.subclass.SubClassManager;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.core.ConcurrencyMode;
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.InternalConfiguration;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -144,7 +145,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 */
 	public BeanDescriptorManager(InternalConfiguration config) {
 
-		this.serverName = config.getServerConfig().getName();
+		this.serverName = InternString.intern(config.getServerConfig().getName());
 		this.dataSource = config.getServerConfig().getDataSource();
 		this.databasePlatform = config.getServerConfig().getDatabasePlatform();
 		this.bootupClasses = config.getBootupClasses();

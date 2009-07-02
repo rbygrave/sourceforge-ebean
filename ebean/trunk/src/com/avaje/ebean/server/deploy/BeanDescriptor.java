@@ -47,12 +47,13 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
 import com.avaje.ebean.el.ElComparatorCompound;
 import com.avaje.ebean.el.ElComparatorProperty;
-import com.avaje.ebean.el.ElGetChainBuilder;
-import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.el.ElPropertyChainBuilder;
+import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.el.ElPropertyDeploy;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.ConcurrencyMode;
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.IdBinderFactory;
@@ -75,7 +76,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 	final ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
 
-	final ConcurrentHashMap<String, ElGetValue> elGetCache = new ConcurrentHashMap<String, ElGetValue>();
+	final ConcurrentHashMap<String, ElPropertyValue> elGetCache = new ConcurrentHashMap<String, ElPropertyValue>();
 
 	final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
 
@@ -358,9 +359,9 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 		this.owner = owner;
 		this.serverName = owner.getServerName();
-		this.name = deploy.getName();
-		this.baseTableAlias = name.substring(0,1).toLowerCase();
-		this.fullName = deploy.getFullName();
+		this.name = InternString.intern(deploy.getName());
+		this.baseTableAlias = InternString.intern(name.substring(0,1).toLowerCase());
+		this.fullName = InternString.intern(deploy.getFullName());
 		this.typeManager = typeManager;
 		this.beanType = deploy.getBeanType();
 		this.factoryType = deploy.getFactoryType();
@@ -374,7 +375,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.beanListener = deploy.getBeanListener();
 
 		this.idType = deploy.getIdType();
-		this.idGeneratorName = deploy.getIdGeneratorName();
+		this.idGeneratorName = InternString.intern(deploy.getIdGeneratorName());
 		this.idGenerator = deploy.getIdGenerator();
 		this.sequenceName = deploy.getSequenceName();
 		this.sequenceNextVal = deploy.getSequenceNextVal();
@@ -382,7 +383,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.tableGenerated = deploy.isTableGenerated();
 		this.embedded = deploy.isEmbedded();
 		this.meta = deploy.isMeta();
-		this.lazyFetchIncludes = deploy.getLazyFetchIncludes();
+		this.lazyFetchIncludes = InternString.intern(deploy.getLazyFetchIncludes());
 		this.concurrencyMode = deploy.getConcurrencyMode();
 		this.updateChangesOnly = deploy.isUpdateChangesOnly();
 
@@ -390,7 +391,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 		this.extraAttrMap = deploy.getExtraAttributeMap();
 
-		this.baseTable = deploy.getBaseTable();
+		this.baseTable = InternString.intern(deploy.getBaseTable());
 		this.sqlSelectBased = deploy.isSqlSelectBased();
 
 		this.beanReflect = deploy.getBeanReflect();
@@ -1049,7 +1050,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	
 	private ElComparator<T> createPropertyComparator(Property sortProp){
 
-		ElGetValue elGetValue = getElGetValue(sortProp.getName());
+		ElPropertyValue elGetValue = getElGetValue(sortProp.getName());
 
 		Boolean nullsHigh = sortProp.getNullsHigh();
 		if (nullsHigh == null){
@@ -1058,8 +1059,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		return new ElComparatorProperty<T>(elGetValue, sortProp.isAscending(), nullsHigh);
 	}
 
-	public ElGetValue getElGetValue(String propName) {
-		return getElGetValue(propName, false);
+	public ElPropertyValue getElGetValue(String propName) {
+		return getElPropertyValue(propName, false);
 	}
 	
 	
@@ -1068,11 +1069,11 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		if (fk != null){
 			return fk;
 		}
-		return getElGetValue(propName, true);
+		return getElPropertyValue(propName, true);
 	}
 	
-	private ElGetValue getElGetValue(String propName, boolean propertyDeploy) {
-		ElGetValue elGetValue = elGetCache.get(propName);
+	private ElPropertyValue getElPropertyValue(String propName, boolean propertyDeploy) {
+		ElPropertyValue elGetValue = elGetCache.get(propName);
 		if (elGetValue == null){
 			// need to build it potentially navigating the BeanDescriptors
 			elGetValue = buildElGetValue(propName, null, propertyDeploy);
@@ -1092,7 +1093,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		return elGetValue;
 	}
 	
-	private ElGetValue buildElGetValue(String propName, ElGetChainBuilder chain, boolean propertyDeploy){
+	private ElPropertyValue buildElGetValue(String propName, ElPropertyChainBuilder chain, boolean propertyDeploy){
 		
 		if (propertyDeploy && chain != null){
 			BeanFkeyProperty fk = fkeyMap.get(propName);
@@ -1114,9 +1115,12 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 			BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
 			
 			if (chain == null){
-				chain = new ElGetChainBuilder(assocProp.isEmbedded(), propName);
+				chain = new ElPropertyChainBuilder(assocProp.isEmbedded(), propName);
 			}
 			chain.add(assocProp);
+			if (assocProp.containsMany()){
+				chain.setContainsMany(true);
+			}
 			return embDesc.buildElGetValue(remainder, chain, propertyDeploy);			
 		}
 		

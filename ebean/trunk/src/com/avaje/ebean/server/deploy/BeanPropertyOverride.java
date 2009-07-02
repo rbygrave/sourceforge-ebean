@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.server.core.InternString;
+
 /**
  * Used hold meta data when a bean property is overridden.
  * <p>
@@ -38,9 +40,9 @@ public class BeanPropertyOverride {
 	}
 	
 	public BeanPropertyOverride(String dbColumn, String sqlFormulaSelect, String sqlFormulaJoin) {
-		this.dbColumn = dbColumn;
-		this.sqlFormulaSelect = sqlFormulaSelect;
-		this.sqlFormulaJoin = sqlFormulaJoin;
+		this.dbColumn = InternString.intern(dbColumn);
+		this.sqlFormulaSelect = InternString.intern(sqlFormulaSelect);
+		this.sqlFormulaJoin = InternString.intern(sqlFormulaJoin);
 	}
 
 	public String getDbColumn() {

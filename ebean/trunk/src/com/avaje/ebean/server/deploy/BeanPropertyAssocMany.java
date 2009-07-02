@@ -187,6 +187,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 	
 	/**
+	 * Returns true.
+	 */
+	@Override
+	public boolean containsMany(){
+		return true;
+	}
+
+	/**
 	 * Return the many type.
 	 */
 	public ManyType getManyType() {

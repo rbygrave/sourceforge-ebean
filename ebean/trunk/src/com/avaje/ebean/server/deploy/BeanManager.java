@@ -22,15 +22,7 @@ package com.avaje.ebean.server.deploy;
 import com.avaje.ebean.server.persist.BeanPersister;
 
 /**
- * Holds the BeanDescriptor and its associated BeanPersister and JoinTree.
- * <p>
- * The reason for this BeanManager to hold this information (rather than say
- * BeanDescriptor) is is mostly due to the desire to make the BeanDescriptor
- * immutable.
- * </p>
- * <p>
- * The JoinTree is constructed after the BeanDescriptor.
- * </p>
+ * Holds the BeanDescriptor and its associated BeanPersister.
  */
 public class BeanManager<T> {
 
@@ -38,27 +30,9 @@ public class BeanManager<T> {
 
 	private final BeanDescriptor<T> descriptor;
 
-	private final boolean autoFetchTunable;
-	
 	public BeanManager(BeanDescriptor<T> descriptor, BeanPersister persister) {
 		this.descriptor = descriptor;
 		this.persister = persister;
-		this.autoFetchTunable = descriptor.isAutoFetchTunable();
-	}
-
-
-	/**
-	 * Return true if queries for beans of this type are autoFetch tunable.
-	 */
-	public boolean isAutoFetchTunable() {
-		return autoFetchTunable;
-	}
-	
-	/**
-	 * Create a parser for converting logical property names to deployment names.
-	 */
-	public DeployPropertyParser createParser() {
-		return descriptor.createDeployPropertyParser();
 	}
 
 	/**

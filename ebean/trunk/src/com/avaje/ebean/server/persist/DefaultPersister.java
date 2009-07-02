@@ -166,12 +166,12 @@ public final class DefaultPersister implements Persister {
 		}
 	
 		PersistRequestBean<?> req = createPersistRequest(bean, t, parentBean);
-		if (req.isAlreadySavedVanilla()){
-			return;
-		}
+		//if (req.isAlreadySavedVanilla()){
+		//	return;
+		//}
 		try {
 			req.initTransIfRequired();
-			req.addSavedVanilla();
+			//req.addSavedVanilla();
 			save(req);
 			req.commitTransIfRequired();
 
@@ -632,8 +632,12 @@ public final class DefaultPersister implements Persister {
 			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(request.getBean());
 				if (detailBean != null) {
-					if (prop.isSaveRecurseSkippable(detailBean)) {
+					if (request.isParent(detailBean)) {
+						// skip saving the parent as already saved
+						
+					} else if (prop.isSaveRecurseSkippable(detailBean)) {
 						// we can skip saving this bean
+					
 					} else {
 						ServerTransaction t = request.getTransaction();
 						t.depth(-1);

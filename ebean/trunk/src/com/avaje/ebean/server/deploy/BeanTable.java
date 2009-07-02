@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
@@ -52,8 +53,8 @@ public class BeanTable {
      */
     public BeanTable(DeployBeanTable mutable) {
         this.beanType = mutable.getBeanType();
-        this.baseTable = mutable.getBaseTable();
-        this.baseTableAlias = mutable.getBaseTableAlias();
+        this.baseTable = InternString.intern(mutable.getBaseTable());
+        this.baseTableAlias = InternString.intern(mutable.getBaseTableAlias());
         this.idProperties = mutable.getIdProperties();
     }
     

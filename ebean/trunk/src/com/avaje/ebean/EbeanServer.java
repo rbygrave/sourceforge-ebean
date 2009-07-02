@@ -363,6 +363,11 @@ public interface EbeanServer {
 	public <T> T getReference(Class<T> beanType, Object uid);
 
 	/**
+	 * Return the number of 'top level' or 'root' entities this query should return.
+	 */
+	public <T> int findRowCount(Query<T> query, Transaction transaction);
+	
+	/**
 	 * Execute a query returning a list of beans.
 	 * <p>
 	 * Generally you are able to use {@link Query#findList()} rather than

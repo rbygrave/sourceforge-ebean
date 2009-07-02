@@ -31,7 +31,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.query.OrmQueryProperties;
@@ -556,7 +556,7 @@ public class SqlTreeBuilder {
 		 */
 		private SqlTreeNodeExtraJoin createJoinLeaf(String propertyName) {
 			
-			ElGetValue elGetValue = desc.getElGetValue(propertyName);
+			ElPropertyValue elGetValue = desc.getElGetValue(propertyName);
 
 			if (elGetValue == null){
 				// this can occur for master detail queries

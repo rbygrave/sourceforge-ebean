@@ -18,6 +18,15 @@ public interface IdBinder {
 	public void initialise();
 	
 	/**
+	 * Return the name(s) of the Id property(s).
+	 * Comma delimited if there is more than one.
+	 * <p>
+	 * This can be used to include in a query.
+	 * </p>
+	 */
+	public String getIdProperty();
+
+	/**
 	 * Find a BeanProperty that is mapped to the database column.
 	 */
 	public BeanProperty findBeanProperty(String dbColumnName);

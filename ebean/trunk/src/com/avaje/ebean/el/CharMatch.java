@@ -27,9 +27,9 @@ package com.avaje.ebean.el;
  */
 public final class CharMatch {
 
-	final char[] upperChars;
+	private final char[] upperChars;
 	
-	final int maxLength;
+	private final int maxLength;
 	
 	public CharMatch(String s) {
 		this.upperChars = s.toUpperCase().toCharArray();

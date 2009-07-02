@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanFkeyProperty;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
@@ -18,16 +19,19 @@ import com.avaje.ebean.util.ValueUtil;
  */
 public class ImportedIdSimple implements ImportedId {
 
-	final BeanPropertyAssoc<?> owner;
+	protected final BeanPropertyAssoc<?> owner;
 
-	final String localDbColumn;
+	protected final String localDbColumn;
 
-	final BeanProperty foreignProperty;
+	protected final String logicalName;
+
+	protected final BeanProperty foreignProperty;
 
 	public ImportedIdSimple(BeanPropertyAssoc<?> owner, String localDbColumn, BeanProperty foreignProperty) {
 		this.owner = owner;
-		this.localDbColumn = localDbColumn;
+		this.localDbColumn = InternString.intern(localDbColumn);
 		this.foreignProperty = foreignProperty;
+		this.logicalName = InternString.intern(owner.getName()+"."+foreignProperty.getName());
 	}
 	
 	public void addFkeys(String name) {
@@ -40,7 +44,7 @@ public class ImportedIdSimple implements ImportedId {
 	}
 
 	public String getLogicalName() {
-		return owner.getName()+"."+foreignProperty.getName();
+		return logicalName;
 	}
 
 	public String getDbColumn(){

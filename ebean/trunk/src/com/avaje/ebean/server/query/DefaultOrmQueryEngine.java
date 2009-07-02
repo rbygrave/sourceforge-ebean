@@ -28,8 +28,8 @@ import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 
@@ -57,6 +57,11 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         this.beanDescriptorManager = descMgr;
     }
     
+    public <T> int findRowCount(OrmQueryRequest<T> request){
+    	
+    	return queryEngine.findRowCount(request);
+    }
+
     
     @SuppressWarnings("unchecked")
 	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {

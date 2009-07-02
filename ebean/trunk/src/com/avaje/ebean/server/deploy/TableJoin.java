@@ -22,6 +22,7 @@ package com.avaje.ebean.server.deploy;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
@@ -76,8 +77,8 @@ public final class TableJoin {
     public TableJoin(DeployTableJoin deploy, LinkedHashMap<String,BeanProperty> propMap) {
     	
         this.importedPrimaryKey = deploy.isImportedPrimaryKey();
-        this.table = deploy.getTable();
-        this.type = deploy.getType();
+        this.table = InternString.intern(deploy.getTable());
+        this.type = InternString.intern(deploy.getType());
         this.cascadeInfo = deploy.getCascadeInfo();
         
         DeployTableJoinColumn[] deployCols = deploy.columns();

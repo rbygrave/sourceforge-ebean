@@ -30,6 +30,10 @@ public final class IdBinderEmbedded implements IdBinder {
 		props = embIdProperty.getProperties();
 	}
 	
+	public String getIdProperty() {
+		return embIdProperty.getName();
+	}
+	
 	public BeanProperty findBeanProperty(String dbColumnName){
 		for (int i = 0; i < props.length; i++) {
 			if (dbColumnName.equalsIgnoreCase(props[i].getDbColumn())) {

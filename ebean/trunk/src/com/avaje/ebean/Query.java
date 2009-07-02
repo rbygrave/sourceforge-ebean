@@ -477,7 +477,7 @@ public interface Query<T> extends Serializable {
 	 * @see EbeanServer#findList(Query, Transaction)
 	 */
 	public List<T> findList();
-
+	
 	/**
 	 * Execute the query returning the set of objects.
 	 * <p>
@@ -546,6 +546,14 @@ public interface Query<T> extends Serializable {
 	 * </pre>
 	 */
 	public T findUnique();
+
+	/**
+	 * Return the count of entities this query should return.
+	 * <p>
+	 * This is the number of 'top level' or 'root level' entities.
+	 * </p>
+	 */
+	public int findRowCount();
 
 	/**
 	 * Deprecated: Please use {@link #setParameter(int, Object)} for positioned parameters.

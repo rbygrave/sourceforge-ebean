@@ -36,4 +36,9 @@ public interface OrmQueryEngine {
      */
     public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request);
 
+    /**
+     * Execute the row count query.
+     */
+    public <T> int findRowCount(OrmQueryRequest<T> request);
+
 }

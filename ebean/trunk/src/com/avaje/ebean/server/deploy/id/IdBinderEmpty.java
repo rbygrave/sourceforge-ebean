@@ -12,12 +12,9 @@ import com.avaje.ebean.server.deploy.DbSqlContext;
  */
 public final class IdBinderEmpty implements IdBinder {
 
-	static final String bindIdSql = "";
+	private static final String bindIdSql = "";
 	
-	static final BeanProperty[] properties = new BeanProperty[0];
-	
-	static final Object[] bindValues = new Object[0];
-	
+	private static final BeanProperty[] properties = new BeanProperty[0];
 	
 	public IdBinderEmpty() {
 
@@ -26,6 +23,10 @@ public final class IdBinderEmpty implements IdBinder {
 		
 	}
 	
+	public String getIdProperty() {
+		return null;
+	}
+
 	public BeanProperty findBeanProperty(String dbColumnName) {
 		return null;
 	}

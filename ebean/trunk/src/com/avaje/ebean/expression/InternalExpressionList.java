@@ -2,11 +2,18 @@ package com.avaje.ebean.expression;
 
 import java.util.ArrayList;
 
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+
 /**
  * Internal extension of ExpressionList.
  */
 public interface InternalExpressionList<T> extends ExpressionList<T> {
 
+	/**
+	 * Returns true if the expression list contains a many property.
+	 */
+	public boolean containsMany(BeanDescriptor<T> desc);
+	
 	/**
 	 * Return true if this list is empty.
 	 */

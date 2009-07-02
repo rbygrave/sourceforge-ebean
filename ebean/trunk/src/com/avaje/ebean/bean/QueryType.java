@@ -6,6 +6,11 @@ package com.avaje.ebean.bean;
 public enum QueryType {
 
 	/**
+	 * Find rowCount.
+	 */
+	ROWCOUNT,
+
+	/**
 	 * Find by Id or unique returning a single bean.
 	 */
 	BEAN,

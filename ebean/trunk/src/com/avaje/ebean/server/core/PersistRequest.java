@@ -135,5 +135,5 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 	public boolean isPersistCascade() {
 		return persistCascade;
 	}
-
+	
 }

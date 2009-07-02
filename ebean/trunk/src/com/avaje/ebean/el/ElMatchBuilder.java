@@ -34,11 +34,11 @@ class ElMatchBuilder {
 	 */
 	static class RegularExpr<T> implements ElMatcher<T> {
 		
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		final String value;
 		final Pattern pattern;
 		
-		RegularExpr(ElGetValue elGetValue, String value, int options){
+		RegularExpr(ElPropertyValue elGetValue, String value, int options){
 			this.elGetValue = elGetValue;
 			this.value = value;
 			this.pattern = Pattern.compile(value, options);
@@ -55,10 +55,10 @@ class ElMatchBuilder {
 	 */
 	static abstract class BaseString<T> implements ElMatcher<T> {
 		
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		final String value;
 		
-		public BaseString(ElGetValue elGetValue, String value){
+		public BaseString(ElPropertyValue elGetValue, String value){
 			this.elGetValue = elGetValue;
 			this.value = value;
 		}
@@ -67,7 +67,7 @@ class ElMatchBuilder {
 	}
 	
 	static class Ieq<T> extends BaseString<T> {
-		Ieq(ElGetValue elGetValue, String value) {
+		Ieq(ElPropertyValue elGetValue, String value) {
 			super(elGetValue, value);
 		}
 
@@ -82,10 +82,10 @@ class ElMatchBuilder {
 	 */
 	static class IStartsWith<T> implements ElMatcher<T> {
 
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		final CharMatch charMatch;
 		
-		IStartsWith(ElGetValue elGetValue, String value) {
+		IStartsWith(ElPropertyValue elGetValue, String value) {
 			this.elGetValue = elGetValue;
 			this.charMatch = new CharMatch(value);
 		}
@@ -102,10 +102,10 @@ class ElMatchBuilder {
 	 */
 	static class IEndsWith<T> implements ElMatcher<T> {
 
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		final CharMatch charMatch;
 		
-		IEndsWith(ElGetValue elGetValue, String value) {
+		IEndsWith(ElPropertyValue elGetValue, String value) {
 			this.elGetValue = elGetValue;
 			this.charMatch = new CharMatch(value);
 		}
@@ -118,7 +118,7 @@ class ElMatchBuilder {
 	}
 
 	static class StartsWith<T> extends BaseString<T> {
-		StartsWith(ElGetValue elGetValue, String value) {
+		StartsWith(ElPropertyValue elGetValue, String value) {
 			super(elGetValue, value);
 		}
 
@@ -129,7 +129,7 @@ class ElMatchBuilder {
 	}
 	
 	static class EndsWith<T> extends BaseString<T> {
-		EndsWith(ElGetValue elGetValue, String value) {
+		EndsWith(ElPropertyValue elGetValue, String value) {
 			super(elGetValue, value);
 		}
 
@@ -141,9 +141,9 @@ class ElMatchBuilder {
 	
 	static class IsNull<T> implements ElMatcher<T> {
 		
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		
-		public IsNull(ElGetValue elGetValue){
+		public IsNull(ElPropertyValue elGetValue){
 			this.elGetValue = elGetValue;
 		}
 		
@@ -154,9 +154,9 @@ class ElMatchBuilder {
 
 	static class IsNotNull<T> implements ElMatcher<T> {
 		
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		
-		public IsNotNull(ElGetValue elGetValue){
+		public IsNotNull(ElPropertyValue elGetValue){
 			this.elGetValue = elGetValue;
 		}
 		
@@ -182,10 +182,10 @@ class ElMatchBuilder {
 	static class InSet<T> implements ElMatcher<T> {
 
 		final Set<?> set;
-		final ElGetValue elGetValue;
+		final ElPropertyValue elGetValue;
 		
 		@SuppressWarnings("unchecked")
-		public InSet(Set<?> set, ElGetValue elGetValue){
+		public InSet(Set<?> set, ElPropertyValue elGetValue){
 			this.set = new HashSet(set);
 			this.elGetValue = elGetValue;
 		}

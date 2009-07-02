@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.id.ImportedIdEmbedded;
@@ -88,10 +89,10 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	 */
 	public BeanPropertyAssoc(BeanDescriptorMap owner, BeanDescriptor<?> descriptor, DeployBeanPropertyAssoc<T> deploy) {
 		super(owner, descriptor, deploy);
-		this.extraWhere = deploy.getExtraWhere();
+		this.extraWhere = InternString.intern(deploy.getExtraWhere());
 		this.isOuterJoin = deploy.isOuterJoin();
 		this.beanTable = deploy.getBeanTable();
-		this.mappedBy = deploy.getMappedBy();
+		this.mappedBy = InternString.intern(deploy.getMappedBy());
 
 		this.tableJoin = new TableJoin(deploy.getTableJoin(), null);
 
