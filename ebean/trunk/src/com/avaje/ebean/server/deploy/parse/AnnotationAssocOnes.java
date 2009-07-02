@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy.parse;
 
@@ -50,9 +50,9 @@ import com.avaje.ebean.validation.NotNull;
  * Read the deployment annotations for Associated One beans.
  */
 public class AnnotationAssocOnes extends AnnotationParser {
-    
+
 	final BeanDescriptorManager factory;
-	
+
 	/**
 	 * Create with the deploy Info.
 	 */
@@ -60,24 +60,24 @@ public class AnnotationAssocOnes extends AnnotationParser {
         super(info);
         this.factory = factory;
     }
-    
+
     /**
      * Parse the annotation.
      */
     public void parse() {
-    	
+
     	Iterator<DeployBeanProperty> it = descriptor.propertiesAll();
     	while (it.hasNext()) {
     		DeployBeanProperty prop = it.next();
 			if (prop instanceof DeployBeanPropertyAssocOne){
-				readAssocOne((DeployBeanPropertyAssocOne<?>)prop); 
+				readAssocOne((DeployBeanPropertyAssocOne<?>)prop);
 			}
 		}
     }
 
 
     private void readAssocOne(DeployBeanPropertyAssocOne<?> prop) {
-        
+
         ManyToOne manyToOne = get(prop, ManyToOne.class);
         if (manyToOne != null) {
             readManyToOne(manyToOne, prop);
@@ -102,7 +102,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
         	// Sql based beans...
         	prop.setDbColumn(column.name());
         }
-        
+
         // May as well check for Id. Makes sense to me.
         Id id = get(prop, Id.class);
         if (id != null){
@@ -110,49 +110,51 @@ public class AnnotationAssocOnes extends AnnotationParser {
         	prop.setId(true);
         	prop.setNullable(false);
         }
-        
+
 		Where where = get(prop, Where.class);
 		if (where != null) {
 			// not expecting this to be used on assoc one properties
 			prop.setExtraWhere(where.clause());
 		}
-		
+
 		NotNull notNull = get(prop, NotNull.class);
 		if (notNull != null) {
 			prop.setNullable(false);
 			// overrides optional attribute of ManyToOne etc
 			prop.getTableJoin().setType(TableJoin.JOIN);
 		}
-		
+
 		// check for manually defined joins
 		BeanTable beanTable = prop.getBeanTable();
         JoinColumn joinColumn = get(prop, JoinColumn.class);
         if (joinColumn != null) {
         	prop.getTableJoin().addJoinColumn(false, joinColumn, beanTable);
-        } 
+        }
 
         JoinColumns joinColumns = get(prop, JoinColumns.class);
         if (joinColumns != null) {
         	prop.getTableJoin().addJoinColumn(false, joinColumns.value(), beanTable);
         }
-        
+
         JoinTable joinTable = get(prop, JoinTable.class);
         if (joinTable != null) {
         	prop.getTableJoin().addJoinColumn(false, joinTable.joinColumns(), beanTable);
         }
-	        
+
         info.setBeanJoinAlias(prop, prop.isNullable());
-        
+
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
-			
+
 			if (prop.getMappedBy() != null){
-				// the join is derived by reversing the join information 
-				// from the mapped by property. 
+				// the join is derived by reversing the join information
+				// from the mapped by property.
 				// Refer BeanDescriptorManager.readEntityRelationships()
-				
-			} else {			
+
+			} else {
 				// use naming convention to define join
-				String fkeyPrefix = factory.getNamingConvention().getColumnFromProperty(descriptor.getBeanType(), prop.getName());
+				String fkeyPrefix =
+					factory.getNamingConvention().getColumnFromProperty(prop.getField());
+
 				DeployTableJoinColumn join = beanTable.createJoinColumn(fkeyPrefix);
 				if (join != null){
 					prop.getTableJoin().addJoinColumn(join.reverse());
@@ -160,13 +162,13 @@ public class AnnotationAssocOnes extends AnnotationParser {
 			}
 		}
     }
-    
+
     private String errorMsgMissingBeanTable(Class<?> type, String from) {
     	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
     }
-    
+
     private void readManyToOne(ManyToOne propAnn, DeployBeanProperty prop) {
-        
+
     	DeployBeanPropertyAssocOne<?> beanProp = (DeployBeanPropertyAssocOne<?>) prop;
 
         setCascadeTypes(propAnn.cascade(), beanProp.getCascadeInfo());
@@ -181,14 +183,14 @@ public class AnnotationAssocOnes extends AnnotationParser {
     }
 
     private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne<?> prop) {
-        
+
     	prop.setOneToOne(true);
         prop.setNullable(propAnn.optional());
         prop.setMappedBy(propAnn.mappedBy());
         if (!"".equals(propAnn.mappedBy())){
         	prop.setOneToOneExported(true);
         }
-        
+
         setCascadeTypes(propAnn.cascade(), prop.getCascadeInfo());
 
         BeanTable assoc = factory.getBeanTable(prop.getPropertyType());
@@ -199,21 +201,21 @@ public class AnnotationAssocOnes extends AnnotationParser {
 
         prop.setBeanTable(assoc);
     }
-    
+
     private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
     	prop.setEmbedded(true);
 
     	EmbeddedColumns columns = get(prop, EmbeddedColumns.class);
     	if (columns != null){
-    		    		
+
     		// convert into a Map
     		String propColumns = columns.columns();
     		Map<String,String> propMap = StringHelper.delimitedToMap(propColumns, ",", "=");
-    		
+
     		prop.getDeployEmbedded().putAll(propMap);
     	}
-    	
+
     	AttributeOverrides attrOverrides = get(prop, AttributeOverrides.class);
     	if (attrOverrides != null){
     		HashMap<String,String> propMap = new HashMap<String,String>();
@@ -221,13 +223,13 @@ public class AnnotationAssocOnes extends AnnotationParser {
     		for (int i = 0; i < aoArray.length; i++) {
     			String propName = aoArray[i].name();
     			String columnName = aoArray[i].column().name();
-    			
+
     			propMap.put(propName, columnName);
 			}
-    		
+
     		prop.getDeployEmbedded().putAll(propMap);
     	}
 
     }
-      
+
 }

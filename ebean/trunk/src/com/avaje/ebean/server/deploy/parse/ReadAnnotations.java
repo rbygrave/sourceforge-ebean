@@ -34,7 +34,7 @@ public class ReadAnnotations {
     		new AnnotationClass(info).parse();
     		
     		// Set default table name if not already set via @Table
-	    	info.setDefaultTableName();
+	    	info.setTableName();
 	        
 	        new AnnotationFields(info).parse();
 	       

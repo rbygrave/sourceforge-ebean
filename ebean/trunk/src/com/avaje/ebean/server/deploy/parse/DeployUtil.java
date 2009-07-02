@@ -1,25 +1,26 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy.parse;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,8 +29,9 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.naming.NamingConvention;
+import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
@@ -44,12 +46,7 @@ public class DeployUtil {
 
 	private static final Logger logger = Logger.getLogger(DeployUtil.class.getName());
 
-	/**
-	 * Use a BackTick ` at the beginning and end of table or column names that
-	 * you want to use quoted identifiers for. The backticks get converted to
-	 * the appropriate characters from the ServerPlugin.
-	 */
-	private static final char BACK_TICK = '`';
+
 
 	/**
 	 * Assumes CLOB rather than LONGVARCHAR.
@@ -65,13 +62,13 @@ public class DeployUtil {
 	private final NamingConvention namingConvention;
 
 	private final TypeManager typeManager;
-	
+
 	private final ValidatorFactoryManager validatorFactoryManager;
-		
+
 	private final String manyToManyAlias;
-	
+
 	private final DatabasePlatform dbSpecific;
-	
+
 	public DeployUtil(DatabasePlatform dbSpecific, TypeManager typeMgr, NamingConvention nc) {
 
 		this.dbSpecific = dbSpecific;
@@ -80,17 +77,17 @@ public class DeployUtil {
 
 		// this alias is used for ManyToMany lazy loading queries
 		this.manyToManyAlias = "zzzzzz";
-		
+
 		this.validatorFactoryManager = new ValidatorFactoryManager();
 	}
-	
+
 	/**
 	 * Return the table alias used for ManyToMany joins.
 	 */
 	public String getManyToManyAlias() {
 		return manyToManyAlias;
 	}
-	
+
 	public void createValidator(DeployBeanProperty prop, Annotation ann) {
 		try {
 			Validator validator = validatorFactoryManager.create(ann, prop.getPropertyType());
@@ -102,7 +99,7 @@ public class DeployUtil {
 			logger.log(Level.SEVERE, msg, e);
 		}
 	}
-	
+
 	public ScalarType setEnumScalarType(Enumerated enumerated, DeployBeanProperty prop) {
 
 		Class<?> enumType = prop.getPropertyType();
@@ -118,7 +115,7 @@ public class DeployUtil {
 				EnumType type = enumerated != null? enumerated.value(): null;
 				scalarType = createEnumScalarTypePerSpec(enumType, type, prop.getDbType());
 			}
-			
+
 			typeManager.add(scalarType);
 		}
 		prop.setScalarType(scalarType);
@@ -131,32 +128,33 @@ public class DeployUtil {
 		if (type == null) {
 			// default as per spec is ORDINAL
 			return new ScalarTypeEnumStandard.OrdinalEnum(enumType);
-		
-		} else if (type == EnumType.ORDINAL) {	
+
+		} else if (type == EnumType.ORDINAL) {
 			return new ScalarTypeEnumStandard.OrdinalEnum(enumType);
-		
-		} else {	
+
+		} else {
 			return new ScalarTypeEnumStandard.StringEnum(enumType);
 		}
 	}
-	
 
-	
+
+
 	/**
 	 * Returns the table name for a given Class using the naming convention.
 	 */
-	public String getTableNameFromClass(Class<?> beanType) {
+	public TableName getTableNameFromClass(Class<?> beanType) {
 		return namingConvention.getTableNameFromClass(beanType);
 	}
 
 	/**
 	 * Return the DB column name for a given property name.
 	 */
-	public String getDbColumn(Class<?> beanClass, String propName, String dbColumn) {
-		if (isNullString(dbColumn)) {
-			dbColumn = namingConvention.getColumnFromProperty(beanClass, propName);
+	public String getDbColumn(Field field) {
+		String dbColumn = namingConvention.getColumnFromProperty(field);
+
+		if (dbColumn == null || dbColumn.length() == 0){
+			logger.log(Level.WARNING, "No DB columnf found for field: " + field);
 		}
-		dbColumn = convertQuotedIdentifiers(dbColumn);
 		return dbColumn;
 	}
 
@@ -175,7 +173,7 @@ public class DeployUtil {
 			// this will be an Enum type...
 			return;
 		}
-		
+
 		ScalarType scalarType = getScalarType(property);
 		if (scalarType != null){
 			// set the jdbc type this maps to
@@ -185,24 +183,24 @@ public class DeployUtil {
 	}
 
 	private ScalarType getScalarType(DeployBeanProperty property) {
-		
-		// Note that Temporal types already have dbType 
+
+		// Note that Temporal types already have dbType
 		// set via annotations
 		Class<?> propType = property.getPropertyType();
 		ScalarType scalarType = typeManager.getScalarType(propType, property.getDbType());
 		if (scalarType != null) {
 			return scalarType;
 		}
-		
+
 		String msg = property.getFullBeanName()+" has no ScalarType - type[" + propType.getName() + "]";
 		if (!property.isTransient()){
 			throw new PersistenceException(msg);
-		
+
 		} else {
 			// this is ok...
 			logger.finest("... transient property "+msg);
 			return null;
-		} 
+		}
 	}
 
 	/**
@@ -230,36 +228,6 @@ public class DeployUtil {
 	}
 
 	/**
-	 * Convert backticks to the appropriate open quote and close quote for this
-	 * plugin.
-	 */
-	public String convertQuotedIdentifiers(String dbName) {
-
-		if (dbName.charAt(0) == BACK_TICK) {
-			if (dbName.charAt(dbName.length() - 1) == BACK_TICK) {
-
-				String quotedName = dbSpecific.getOpenQuote();
-				quotedName += dbName.substring(1, dbName.length() - 1);
-				quotedName += dbSpecific.getCloseQuote();
-
-				return quotedName;
-
-			} else {
-				logger.log(Level.SEVERE, "Missing backquote on [" + dbName + "]");
-			}
-		}
-
-		return dbName;
-	}
-
-	private boolean isNullString(String s) {
-		if (s == null || s.trim().length() == 0) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * Get a table alias without any checking with the availability in the
 	 * aliasList.
 	 */
@@ -269,7 +237,7 @@ public class DeployUtil {
 		if (usPos > -1 && usPos < tableOrProperty.length() - 1) {
 			tableOrProperty = tableOrProperty.substring(usPos + 1);
 		}
-		
+
 		// search for the first valid letter
 		for (int i = 0; i < tableOrProperty.length(); i++) {
 			char ch = Character.toLowerCase(tableOrProperty.charAt(i));
@@ -277,7 +245,7 @@ public class DeployUtil {
 				return String.valueOf(ch);
 			}
 		}
-		
+
 		// not expected really
 		return "z";
 	}

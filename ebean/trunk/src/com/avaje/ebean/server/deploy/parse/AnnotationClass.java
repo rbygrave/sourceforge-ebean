@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy.parse;
 
@@ -26,7 +26,6 @@ import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.PersistenceException;
-import javax.persistence.Table;
 
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
@@ -47,30 +46,7 @@ public class AnnotationClass extends AnnotationParser {
 	 * Read the class level deployment annotations.
 	 */
 	public void parse() {
-
 		read(descriptor.getBeanType());
-		
-		if (descriptor.getBaseTable() == null){
-			// search the inheritance hierarchy ...
-			Table table = findInheritedTable(descriptor.getBeanType().getSuperclass());
-			if (table != null){
-				info.setTable(table.catalog(), table.schema(), table.name(), null);
-			}
-		}
-	}
-	
-	/**
-	 * Search the inheritance hierarchy for Table annotation.
-	 */
-	private Table findInheritedTable(Class<?> cls) {
-		if (cls.equals(Object.class)){
-			return null;
-		} 
-		Table table = cls.getAnnotation(Table.class);
-		if (table != null){
-			return table;
-		}
-		return findInheritedTable(cls.getSuperclass());
 	}
 
 	private void read(Class<?> cls) {
@@ -83,19 +59,15 @@ public class AnnotationClass extends AnnotationParser {
 
 			} else {
 				descriptor.setName(entity.name());
-			}			
+			}
 		}
-		
+
 		Embeddable embeddable = cls.getAnnotation(Embeddable.class);
 		if (embeddable != null){
 			descriptor.setEmbedded(true);
 			descriptor.setName("Embeddable:"+getShortName(cls));
 		}
-		
-		Table table = cls.getAnnotation(Table.class);
-		if (table != null){
-			info.setTable(table.catalog(), table.schema(), table.name(), null);
-		}
+
 		UpdateMode updateMode = cls.getAnnotation(UpdateMode.class);
 		if (updateMode != null){
 			descriptor.setUpdateChangesOnly(updateMode.updateChangesOnly());
@@ -109,12 +81,12 @@ public class AnnotationClass extends AnnotationParser {
 		if (namedQuery != null){
 			readNamedQuery(namedQuery);
 		}
-		
+
 		NamedUpdates namedUpdates = cls.getAnnotation(NamedUpdates.class);
 		if (namedUpdates != null){
 			readNamedUpdates(namedUpdates);
 		}
-		
+
 		NamedUpdate namedUpdate = cls.getAnnotation(NamedUpdate.class);
 		if (namedUpdate != null){
 			readNamedUpdate(namedUpdate);

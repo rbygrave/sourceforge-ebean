@@ -13,10 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.dbplatform.DbTypeMap;
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
+import com.avaje.ebean.config.naming.NamingConvention;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.type.ScalarType;
 

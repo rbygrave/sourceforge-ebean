@@ -1,11 +1,25 @@
 /**
- * Imilia Interactive Mobile Applications GmbH
- * Copyright (c) 2009 - all rights reserved
+ * Copyright (C) 2009  Robin Bygrave
  *
- * Created on: Jun 29, 2009
- * Created by: emcgreal
+ * This file is part of Ebean.
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * Ebean is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.config;
+package com.avaje.ebean.config.naming;
+
+import java.lang.reflect.Field;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -35,25 +49,39 @@ public interface NamingConvention {
 	 * The purpose of this is to enable NamingConvention to be able to support
 	 * database platform specific configuration.
 	 * </p>
+	 *
+	 * @param databasePlatform the database platform
 	 */
 	public void setDatabasePlatform(DatabasePlatform databasePlatform);
 
 	/**
-	 * Returns the table name for a given Class when the @Table annotation has
-	 * not set the table name.
+	 * Returns the table name for a given Class.
+	 *
+	 * @param beanClass the bean class
+	 *
+	 * @return the table name from class
 	 */
-	public String getTableNameFromClass(Class<?> beanClass);
+	public TableName getTableNameFromClass(Class<?> beanClass);
 
 	/**
 	 * Return the column name given the property name.
+	 *
+	 * @param field the field
+	 *
+	 * @return the column from property
 	 */
-	public String getColumnFromProperty(Class<?> beanClass, String beanPropertyName);
+	public String getColumnFromProperty(Field field);
 
 	/**
 	 * Return the property name from the column name.
 	 * <p>
 	 * This is used to help mapping of raw SQL queries onto bean properties.
 	 * </p>
+	 *
+	 * @param beanClass the bean class
+	 * @param dbColumnName the db column name
+	 *
+	 * @return the property from column
 	 */
 	public String getPropertyFromColumn(Class<?> beanClass, String dbColumnName);
 
@@ -63,6 +91,10 @@ public interface NamingConvention {
 	 * <p>
 	 * Typically you might append "_seq" to the table name as an example.
 	 * </p>
+	 *
+	 * @param tableName the table name
+	 *
+	 * @return the sequence name
 	 */
 	public String getSequenceName(String tableName);
 
