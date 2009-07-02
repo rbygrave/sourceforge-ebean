@@ -33,40 +33,49 @@ import com.avaje.ebean.server.deploy.BeanProperty;
  * no further processing of the chain occurs.
  * </p>
  */
-public class ElGetChain implements ElGetValue {
+public class ElPropertyChain implements ElPropertyValue {
 
-	final String deployProperty;
-	final String expression;
-	final String prefix;
-	final String name;
+	private final String prefix;
 
-	final ElGetValue[] chain;
+	private final String placeHolder;
+	
+	private final String name;
 
-	public ElGetChain(boolean embedded, String expression, ElGetValue[] chain) {
-		this.expression = expression;
+	private final boolean containsMany;
+	
+	private final ElPropertyValue[] chain;
+
+	public ElPropertyChain(boolean containsMany, boolean embedded, String expression, ElPropertyValue[] chain) {
+		
+		this.containsMany = containsMany;
 		this.chain = chain;
 		
 		int dotPos = expression.lastIndexOf('.');
 		if (dotPos > -1){
 			name = expression.substring(dotPos+1);
 			if (embedded){
-				int embPos = expression.lastIndexOf('.',dotPos-1);
-				
+				int embPos = expression.lastIndexOf('.',dotPos-1);				
 				prefix = embPos == -1 ? null : expression.substring(0, embPos);
-				deployProperty = "${"+prefix+"}"+getDbColumn();
 				
 			} else {
 				prefix = expression.substring(0, dotPos);
-				deployProperty = "${"+prefix+"}"+getDbColumn();
 			}
 		} else {
-			name = expression;
 			prefix = null;
-			deployProperty = getDbColumn();
-		}
-		
+			name = expression;
+		}		
+		placeHolder = calcPlaceHolder(prefix,getDbColumn());
+
 	}
 
+	private String calcPlaceHolder(String prefix, String dbColumn){
+		if (prefix != null){
+			return "${"+prefix+"}"+dbColumn;
+		} else {
+			return ROOT_ELPREFIX+dbColumn;
+		}
+	}
+	
 	/**
 	 * Full ElGetValue support.
 	 */
@@ -74,16 +83,21 @@ public class ElGetChain implements ElGetValue {
 		return false;
 	}
 
-	public String getDeployProperty() {
-		return deployProperty;
+	
+	public boolean containsMany() {
+		return containsMany;
 	}
 
-	public String getPrefix() {
+	public String getElPrefix() {
 		return prefix;
 	}
 
 	public String getName() {
 		return name;
+	}
+	
+	public String getElPlaceholder() {
+		return placeHolder;
 	}
 
 	public String getDbColumn() {

@@ -929,14 +929,14 @@ public final class DefaultServer implements InternalEbeanServer {
 	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
 		OrmQuery<T> query = (OrmQuery<T>) q;
-		BeanManager<T> mgr = beanDescriptorManager.getBeanManager(query.getBeanType());
+		BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(query.getBeanType());
 
-		if (mgr.isAutoFetchTunable() && !query.isSqlSelect()) {
+		if (desc.isAutoFetchTunable() && !query.isSqlSelect()) {
 			// its a tunable query
 			autoFetchManager.tuneQuery(query);
 		}
 		ServerTransaction serverTrans = (ServerTransaction)t;
-		OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, mgr, serverTrans);
+		OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);
 		// the query hash after an AutoFetch tuning
 		request.calculateQueryPlanHash();
 		return request;
@@ -1012,6 +1012,23 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		} catch (RuntimeException ex) {
 			//String stackTrace = throwablePrinter.print(ex);
+			request.rollbackTransIfRequired();
+			throw ex;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> int findRowCount(Query<T> query, Transaction t){
+		
+		OrmQueryRequest request = createQueryRequest(query, t);
+		try {
+			request.initTransIfRequired();
+			int rowCount = request.findRowCount();
+			request.endTransIfRequired();
+
+			return rowCount;
+			
+		} catch (RuntimeException ex) {
 			request.rollbackTransIfRequired();
 			throw ex;
 		}

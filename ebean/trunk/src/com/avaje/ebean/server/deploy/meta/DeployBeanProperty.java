@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
@@ -275,7 +276,7 @@ public class DeployBeanProperty {
 		if (dbColumnDefn == null || dbColumnDefn.trim().length() == 0){
 			this.dbColumnDefn = null;
 		} else {
-			this.dbColumnDefn = dbColumnDefn;			
+			this.dbColumnDefn = InternString.intern(dbColumnDefn);			
 		}
 	}
 
@@ -400,7 +401,7 @@ public class DeployBeanProperty {
 	 * Set the name of the property.
 	 */
 	public void setName(String name) {
-		this.name = name;
+		this.name = InternString.intern(name);
 	}
 
 	/**
@@ -514,7 +515,7 @@ public class DeployBeanProperty {
 	 * Set the database column name this is mapped to.
 	 */
 	public void setDbColumn(String dbColumn) {
-		this.dbColumn = dbColumn;
+		this.dbColumn = InternString.intern(dbColumn);
 	}
 
 	/**

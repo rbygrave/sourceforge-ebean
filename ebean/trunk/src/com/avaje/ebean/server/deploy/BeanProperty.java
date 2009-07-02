@@ -33,7 +33,8 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.dbplatform.DbType;
-import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.el.ElPropertyValue;
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.lib.util.StringHelper;
@@ -47,7 +48,7 @@ import com.avaje.ebean.util.ValueUtil;
  * Description of a property of a bean. Includes its deployment information such
  * as database column mapping information.
  */
-public class BeanProperty implements ElGetValue {
+public class BeanProperty implements ElPropertyValue {
 
 
 	/**
@@ -153,6 +154,8 @@ public class BeanProperty implements ElGetValue {
 	 */
 	final String dbColumn;
 
+	final String elPlaceHolder;
+	
 	/**
 	 * Select part of a SQL Formula used to populate this property.
 	 */
@@ -241,7 +244,7 @@ public class BeanProperty implements ElGetValue {
 			DeployBeanProperty deploy) {
 		
 		this.descriptor = descriptor;
-		this.name = deploy.getName();
+		this.name = InternString.intern(deploy.getName());
 		this.dbRead = deploy.isDbRead();
 		this.dbInsertable = deploy.isDbInsertable();
 		this.dbUpdatable = deploy.isDbUpdateable();
@@ -251,8 +254,8 @@ public class BeanProperty implements ElGetValue {
 		this.unique = deploy.isUnique();
 		this.dbLength = deploy.getDbLength();
 		this.dbScale = deploy.getDbScale();
-		this.dbColumnDefn = deploy.getDbColumnDefn();
-		this.dbConstraintExpression = deploy.getDbConstraintExpression();
+		this.dbColumnDefn = InternString.intern(deploy.getDbColumnDefn());
+		this.dbConstraintExpression = InternString.intern(deploy.getDbConstraintExpression());
 		
 		this.inherited = false;// deploy.isInherited();
 		this.owningType = deploy.getOwningType();
@@ -267,9 +270,9 @@ public class BeanProperty implements ElGetValue {
 		this.getter = deploy.getGetter();
 		this.setter = deploy.getSetter();
 
-		this.dbColumn = deploy.getDbColumn();
-		this.sqlFormulaJoin = deploy.getSqlFormulaJoin();
-		this.sqlFormulaSelect = deploy.getSqlFormulaSelect();
+		this.dbColumn = InternString.intern(deploy.getDbColumn());
+		this.sqlFormulaJoin = InternString.intern(deploy.getSqlFormulaJoin());
+		this.sqlFormulaSelect = InternString.intern(deploy.getSqlFormulaSelect());
 		this.formula = sqlFormulaSelect != null;
 
 		this.extraAttributeMap = deploy.getExtraAttributeMap();
@@ -281,6 +284,8 @@ public class BeanProperty implements ElGetValue {
 		this.field = deploy.getField();
 		this.validators = deploy.getValidators();
 		this.hasLocalValidators = (validators.length > 0);
+		
+		this.elPlaceHolder = InternString.intern(ElPropertyValue.ROOT_ELPREFIX+dbColumn);
 	}
 
 	/**
@@ -293,11 +298,11 @@ public class BeanProperty implements ElGetValue {
 	public BeanProperty(BeanProperty source, BeanPropertyOverride override) {
 
 		this.descriptor = source.descriptor;
-		this.name = source.getName();
+		this.name = InternString.intern(source.getName());
 
-		this.dbColumn = override.getDbColumn();
-		this.sqlFormulaJoin = override.getSqlFormulaJoin();
-		this.sqlFormulaSelect = override.getSqlFormulaSelect();
+		this.dbColumn = InternString.intern(override.getDbColumn());
+		this.sqlFormulaJoin = InternString.intern(override.getSqlFormulaJoin());
+		this.sqlFormulaSelect = InternString.intern(override.getSqlFormulaSelect());
 		this.formula = sqlFormulaSelect != null;
 
 		this.isTransient = source.isTransient();
@@ -309,8 +314,8 @@ public class BeanProperty implements ElGetValue {
 		this.unique = source.isUnique();
 		this.dbLength = source.getDbLength();
 		this.dbScale = source.getDbScale();
-		this.dbColumnDefn = source.getDbColumnDefn();
-		this.dbConstraintExpression = source.getDbConstraintExpression();
+		this.dbColumnDefn = InternString.intern(source.getDbColumnDefn());
+		this.dbConstraintExpression = InternString.intern(source.getDbConstraintExpression());
 		
 		this.inherited = source.isInherited();
 		this.owningType = source.owningType;
@@ -333,6 +338,8 @@ public class BeanProperty implements ElGetValue {
 		this.field = source.getField();
 		this.validators = source.getValidators();
 		this.hasLocalValidators = validators.length > 0;
+		
+		this.elPlaceHolder = source.getElPlaceholder();
 	}
 
 	/**
@@ -678,7 +685,16 @@ public class BeanProperty implements ElGetValue {
 		return false;
 	}
 
-	public String getPrefix() {
+	public boolean containsMany(){
+		return false;
+	}
+
+	
+	public String getElPlaceholder() {
+		return elPlaceHolder;
+	}
+
+	public String getElPrefix() {
 		return null;
 	}
 	

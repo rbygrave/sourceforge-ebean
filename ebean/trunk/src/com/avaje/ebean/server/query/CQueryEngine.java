@@ -48,7 +48,7 @@ public class CQueryEngine {
 	private final MLogControl logControl;
 
 	public CQueryEngine(DatabasePlatform dbPlatform, MLogControl logControl, Binder binder) {
-		
+
 		this.logControl = logControl;
 		this.queryBuilder = new CQueryBuilder(dbPlatform, binder);
 		this.threadPool = ThreadPoolManager.getThreadPool("BGFetch");
@@ -57,8 +57,39 @@ public class CQueryEngine {
 	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {
 		return queryBuilder.buildQuery(request);
 	}
-	
-	
+
+	/**
+	 * Build and execute the row count query.
+	 */
+	public <T> int findRowCount(OrmQueryRequest<T> request) {
+
+
+		CQueryRowCount rcQuery = queryBuilder.buildRowCountQuery(request);
+		try {
+
+			String sql = rcQuery.getGeneratedSql();
+			sql = sql.replace(Constants.NEW_LINE, ' ');
+
+			if (logControl.isDebugGeneratedSql()) {
+				System.out.println(sql);
+			}
+			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SQL) {
+				request.getTransaction().log(sql);
+			}
+
+			int rowCount = rcQuery.findRowCount();
+
+			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SUMMARY) {
+				request.getTransaction().log(rcQuery.getSummary());
+			}
+
+			return rowCount;
+
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		}
+	}
+
 	/**
 	 * Find a list/map/set of beans.
 	 */
@@ -70,7 +101,7 @@ public class CQueryEngine {
 		CQuery<T> cquery = queryBuilder.buildQuery(request);
 		try {
 
-			if (logControl.isDebugGeneratedSql()){
+			if (logControl.isDebugGeneratedSql()) {
 				logSqlToConsole(cquery);
 			}
 			if (logControl.getQueryManyLevel() >= LogControl.LOG_SQL) {
@@ -94,7 +125,7 @@ public class CQueryEngine {
 			if (logControl.getQueryManyLevel() >= LogControl.LOG_SUMMARY) {
 				logFindManySummary(cquery);
 			}
-			
+
 			return beanCollection;
 
 		} catch (SQLException e) {
@@ -120,16 +151,16 @@ public class CQueryEngine {
 
 		T bean = null;
 
-		CQuery<T> cquery = queryBuilder.buildQuery(request);		
-		
+		CQuery<T> cquery = queryBuilder.buildQuery(request);
+
 		try {
 			if (logControl.isDebugGeneratedSql()) {
 				logSqlToConsole(cquery);
 			}
-			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SQL){
+			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SQL) {
 				logSql(cquery);
 			}
-			
+
 			cquery.prepareBindExecuteQuery();
 
 			if (cquery.readBean()) {
@@ -139,7 +170,7 @@ public class CQueryEngine {
 			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SUMMARY) {
 				logFindSummary(cquery);
 			}
-			
+
 			return bean;
 
 		} catch (SQLException e) {
@@ -168,7 +199,7 @@ public class CQueryEngine {
 
 		System.out.println(sb.toString());
 	}
-	
+
 	/**
 	 * Log the generated SQL to the transaction log.
 	 */
@@ -183,13 +214,13 @@ public class CQueryEngine {
 	 * Log the FindById summary to the transaction log.
 	 */
 	private void logFindSummary(CQuery<?> q) {
-			
+
 		StringBuilder msg = new StringBuilder(200);
 		msg.append("FindById");
 		msg.append(" exeMicros[").append("" + q.getQueryExecutionTimeMicros()).append("]");
 		msg.append(" rows[").append(q.getLoadedRowDetail());
 		msg.append("]");
-		
+
 		String beanType = q.getBeanType();
 		msg.append(" type[").append(beanType).append("]");
 		msg.append(" bind[").append(q.getBindLog()).append("]");
@@ -210,7 +241,7 @@ public class CQueryEngine {
 		String beanType = q.getBeanType();
 		msg.append(beanType).append("]");
 		msg.append(" name[").append(q.getName()).append("]");
-		
+
 		msg.append(" predicates[").append(q.getLogWhereSql()).append("]");
 		msg.append(" bind[").append(q.getBindLog()).append("]");
 

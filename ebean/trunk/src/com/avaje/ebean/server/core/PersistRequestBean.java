@@ -138,6 +138,10 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 		}
     }
 
+	public boolean isParent(Object o){
+		return o == parentBean;
+	}
+	
     /**
      * If this in a vanilla bean add it to the saved set.
      * <p>

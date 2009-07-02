@@ -9,12 +9,14 @@ import java.util.Set;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.el.ElPropertyDeploy;
 import com.avaje.ebean.expression.Expr;
 import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.ExpressionRequest;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.expression.Junction;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Default implementation of ExpressionList.
@@ -43,6 +45,34 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 		return copy;
 	}
 	
+	/**
+	 * Return true if one of the expressions is related to a Many property.
+	 */
+	public boolean containsMany(BeanDescriptor<T> desc){
+		
+		for (int i = 0; i < list.size(); i++) {
+			
+			String propertyName = list.get(i).getPropertyName();
+			ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
+			if (elProp != null && elProp.containsMany()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+//	/**
+//	 * Remove expressions related to any Many properties.
+//	 */
+//	public void removeMany(ModifyQuery modifyQuery){
+//		for (int i = list.size()-1; i >= 0; i--) {
+//			Expression expression = list.get(i);
+//			if (modifyQuery.removeMany(expression)){
+//				list.remove(i);
+//			}
+//		}
+//	}
+
 	public Query<T> query() {
 		return query;
 	}

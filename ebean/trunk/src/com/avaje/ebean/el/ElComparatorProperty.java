@@ -26,13 +26,13 @@ import java.util.Comparator;
  */
 public final class ElComparatorProperty<T> implements Comparator<T>, ElComparator<T> {
 
-	private final ElGetValue elGetValue;
+	private final ElPropertyValue elGetValue;
 	
 	private final int nullOrder;
 	
 	private final int asc;
 	
-	public ElComparatorProperty(ElGetValue elGetValue, boolean ascending, boolean nullsHigh) {
+	public ElComparatorProperty(ElPropertyValue elGetValue, boolean ascending, boolean nullsHigh) {
 		this.elGetValue = elGetValue;
 		this.asc = ascending ? 1 : -1;
 		this.nullOrder = asc * (nullsHigh ? 1 : -1);

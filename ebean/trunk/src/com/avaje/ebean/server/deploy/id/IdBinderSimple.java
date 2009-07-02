@@ -3,6 +3,7 @@ package com.avaje.ebean.server.deploy.id;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
@@ -13,15 +14,15 @@ import com.avaje.ebean.server.type.ScalarType;
  */
 public final class IdBinderSimple implements IdBinder {
 
-	final BeanProperty idProperty;
+	private final BeanProperty idProperty;
 	
-	final String bindIdSql;
+	private final String bindIdSql;
 	
-	final BeanProperty[] properties;
+	private final BeanProperty[] properties;
 	
-	final Class<?> expectedType;
+	private final Class<?> expectedType;
 	
-	final ScalarType scalarType;
+	private final ScalarType scalarType;
 	
 	public IdBinderSimple(BeanProperty idProperty) {
 		this.idProperty = idProperty;
@@ -29,11 +30,15 @@ public final class IdBinderSimple implements IdBinder {
 		this.expectedType = idProperty.getPropertyType();
 		this.properties = new BeanProperty[1];
 		properties[0] = idProperty;
-		bindIdSql = idProperty.getDbColumn()+" = ? ";
+		bindIdSql = InternString.intern(idProperty.getDbColumn()+" = ? ");
 	}
 	
 	public void initialise(){
 		// do nothing
+	}
+	
+	public String getIdProperty() {
+		return idProperty.getName();
 	}
 
 	public BeanProperty findBeanProperty(String dbColumnName) {

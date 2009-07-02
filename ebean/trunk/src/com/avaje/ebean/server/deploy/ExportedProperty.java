@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.server.core.InternString;
+
 /**
  * The Exported foreign key and property.
  * <p>
@@ -27,8 +29,6 @@ package com.avaje.ebean.server.deploy;
  */
 public class ExportedProperty {
 
-//	private final String intersectionDbColumn;
-	
 	private final String foreignDbColumn;
 	
 	private final BeanProperty property;
@@ -37,7 +37,7 @@ public class ExportedProperty {
 	
 	public ExportedProperty(boolean embedded, String foreignDbColumn, BeanProperty property) {
 		this.embedded = embedded;
-		this.foreignDbColumn = foreignDbColumn;
+		this.foreignDbColumn = InternString.intern(foreignDbColumn);
 		this.property = property;
 	}
 

@@ -30,7 +30,6 @@ import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.cache.Cache;
 import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.query.CQueryPlan;
@@ -41,10 +40,6 @@ import com.avaje.ebean.server.query.SqlTreeAlias;
  */
 public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRequest<T> {
 	
-	/**
-	 * The associated BeanDescriptor.
-	 */
-	private final BeanManager<T> beanManager;
 
 	private final BeanDescriptor<T> beanDescriptor;
 	
@@ -79,22 +74,19 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Create the InternalQueryRequest.
 	 */
 	public OrmQueryRequest(InternalEbeanServer server, OrmQueryEngine queryEngine, OrmQuery<T> query,
-			BeanManager<T> mgr, ServerTransaction t) {
+			BeanDescriptor<T> desc, ServerTransaction t) {
 
 		super(server, t);
 		
-		this.beanManager = mgr;
-		this.beanDescriptor = mgr.getBeanDescriptor();
+		this.beanDescriptor = desc;
+		query.setBeanDescriptor(desc);
+		
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;
 		this.query = query;
 		this.sqlTreeAlias = new SqlTreeAlias(beanDescriptor.getBaseTableAlias());
 	}
 	
-	public BeanManager<T> getBeanManager() {
-		return beanManager;
-	}
-
 	/**
 	 * Return the BeanDescriptor for the associated bean.
 	 */
@@ -216,6 +208,11 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	public Object findId() {
 		manyType = ManyType.FIND_ONE;
 		return queryEngine.findId(this);
+	}
+
+	public int findRowCount() {
+		manyType = ManyType.FIND_ROWCOUNT;
+		return queryEngine.findRowCount(this);
 	}
 
 	/**

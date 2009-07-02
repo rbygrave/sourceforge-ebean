@@ -40,7 +40,9 @@ public final class ManyType implements Serializable {
     public static final char SET_CODE = 's';
     
     public static final char ONE_CODE = 'o';
-    
+
+    public static final char ROWCOUNT = 'r';
+
     /**
      * A generic Map type with no specific type.
      */
@@ -61,6 +63,8 @@ public final class ManyType implements Serializable {
 	 * Introduced to help identify subQuery (manyType == null).
      */
     public static final ManyType FIND_ONE = new ManyType(ONE_CODE, "One", QueryType.BEAN);
+
+    public static final ManyType FIND_ROWCOUNT = new ManyType(ROWCOUNT, "RowCount", QueryType.ROWCOUNT);
 
     /**
      * Return a ManyType for the given class. Determines the generic type

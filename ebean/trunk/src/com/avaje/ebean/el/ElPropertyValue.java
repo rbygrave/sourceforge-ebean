@@ -22,21 +22,17 @@ package com.avaje.ebean.el;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
 /**
- * The expression language getter method.
+ * The expression language object that can get values.
+ * <p>
+ * This can be used for local sorting and filtering.
+ * </p>
  */
-public interface ElGetValue extends ElPropertyDeploy {
-
-	public boolean isDeployOnly();
+public interface ElPropertyValue extends ElPropertyDeploy {
 	
-	public String getPrefix();
-
-	public String getName();
-		
-	public String getDbColumn();
-	
+	/**
+	 * Return the underlying bean property.
+	 */
 	public BeanProperty getBeanProperty();
-	
-	public String getDeployProperty();
 	
 	/**
 	 * Return the value from a given entity bean.

@@ -12,6 +12,7 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.util.BindParams;
 
@@ -20,6 +21,21 @@ import com.avaje.ebean.util.BindParams;
  */
 public interface OrmQuery<T> extends Query<T> {
 
+	/**
+	 * Set the BeanDescriptor for the root type of this query.
+	 */
+	public void setBeanDescriptor(BeanDescriptor<T> desc);
+	
+	/**
+	 * Return true if the where expressions contains a many.
+	 */
+	public boolean isManyInWhere();
+
+	/**
+	 * Set the query to select the id property only.
+	 */
+	public void setSelectId();
+		
 	/**
 	 * Return the TransactionContext.
 	 * <p>

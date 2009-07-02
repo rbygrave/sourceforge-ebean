@@ -26,6 +26,7 @@ import java.util.HashMap;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.parse.DeployInheritInfo;
 import com.avaje.ebean.server.query.SqlTreeProperties;
@@ -60,10 +61,10 @@ public class InheritInfo {
 		
 		this.parent = parent;
 		this.type = deploy.getType();
-		this.discriminatorColumn = deploy.getDiscriminatorColumn(parent);
+		this.discriminatorColumn = InternString.intern(deploy.getDiscriminatorColumn(parent));
 		this.discriminatorValue = deploy.getDiscriminatorValue();
 		this.discriminatorType = deploy.getDiscriminatorType(parent);
-		this.where = deploy.getWhere();
+		this.where = InternString.intern(deploy.getWhere());
 		
 		if (r == null) {
 			// this is a root node

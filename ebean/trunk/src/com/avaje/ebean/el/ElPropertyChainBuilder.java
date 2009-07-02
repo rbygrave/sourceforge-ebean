@@ -23,29 +23,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility object used to build a ElGetChain.
+ * Utility object used to build a ElPropertyChain.
  * <p>
- * Builds a ElGetChain based on a chain of properties with dot separators.
+ * Builds a ElPropertyChain based on a chain of properties with dot separators.
  * </p>
  * <p>
  * This can navigate an object graph based on dot notation such as
  * order.customer.name.
  * </p>
  */
-public class ElGetChainBuilder {
+public class ElPropertyChainBuilder {
 
-	final String expression;
+	private final String expression;
 
-	final List<ElGetValue> chain = new ArrayList<ElGetValue>();
+	private final List<ElPropertyValue> chain = new ArrayList<ElPropertyValue>();
 
-	final boolean embedded;
+	private final boolean embedded;
+	
+	private boolean containsMany;
 	
 	/**
 	 * Create with the original expression.
 	 */
-	public ElGetChainBuilder(boolean embedded, String expression) {
+	public ElPropertyChainBuilder(boolean embedded, String expression) {
 		this.embedded = embedded;
 		this.expression = expression;
+	}
+
+	public boolean isContainsMany() {
+		return containsMany;
+	}
+
+	public void setContainsMany(boolean containsMany) {
+		this.containsMany = containsMany;
 	}
 
 	public String getExpression() {
@@ -55,7 +65,7 @@ public class ElGetChainBuilder {
 	/**
 	 * Add a ElGetValue element to the chain.
 	 */
-	public ElGetChainBuilder add(ElGetValue element) {
+	public ElPropertyChainBuilder add(ElPropertyValue element) {
 		chain.add(element);
 		return this;
 	}
@@ -63,8 +73,8 @@ public class ElGetChainBuilder {
 	/**
 	 * Build the immutable ElGetChain from the build information.
 	 */
-	public ElGetChain build() {
-		return new ElGetChain(embedded, expression, chain.toArray(new ElGetValue[chain.size()]));
+	public ElPropertyChain build() {
+		return new ElPropertyChain(containsMany, embedded, expression, chain.toArray(new ElPropertyValue[chain.size()]));
 	}
 
 }

@@ -28,23 +28,19 @@ public final class DeployPropertyParser extends DeployParser {
 	}
 
 	public String convertWord() {
-
 		
-		ElPropertyDeploy elGetValue = beanDescriptor.getElPropertyDeploy(word);
-		if (elGetValue == null){
+		ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(word);
+		if (elProp == null){
 			return word;
 		} else {
-			String prefix = elGetValue.getPrefix();
-			if (prefix != null){
-				addIncludes(prefix);
-				return "${"+prefix+"}"+elGetValue.getDbColumn();
-			} else {
-				return "${}"+elGetValue.getDbColumn();
-			}
+			addIncludes(elProp.getElPrefix());
+			return elProp.getElPlaceholder();
 		}
 	}
 
 	private void addIncludes(String prefix) {
-		includes.add(prefix);
+		if (prefix != null){
+			includes.add(prefix);
+		}
 	}
 }

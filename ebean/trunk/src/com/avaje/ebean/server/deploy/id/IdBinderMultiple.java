@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
@@ -21,15 +22,31 @@ import com.avaje.ebean.server.lib.util.MapFromString;
  */
 public final class IdBinderMultiple implements IdBinder {
 
-	final BeanProperty[] idProps;
+	private final BeanProperty[] idProps;
 
+	private final String idProperties;
+	
 	public IdBinderMultiple(BeanProperty[] idProps) {
 		this.idProps = idProps;
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < idProps.length; i++) {
+			if (i > 0){
+				sb.append(",");
+			}
+			sb.append(idProps[i].getName());
+		}
+		idProperties = InternString.intern(sb.toString());
 	}
 	
 	public void initialise(){
 		// do nothing
 	}
+	
+	public String getIdProperty() {
+		return idProperties;
+	}
+
 	
 	public BeanProperty findBeanProperty(String dbColumnName) {
 		

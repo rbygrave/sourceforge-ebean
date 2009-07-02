@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.el.ElGetValue;
+import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -53,7 +53,7 @@ public class StatisticsNodeUsage implements Serializable {
 							
 			BeanDescriptor<?> desc = rootDesc;
 			if (path != null){
-				ElGetValue elGetValue = rootDesc.getElGetValue(path);
+				ElPropertyValue elGetValue = rootDesc.getElGetValue(path);
 				if (elGetValue == null){
 					desc = null;
 					logger.warning("Can't find join for path["+path+"] for "+rootDesc.getName());

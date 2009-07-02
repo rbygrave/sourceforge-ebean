@@ -19,6 +19,7 @@ import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.deploy.TableJoin;
@@ -32,117 +33,119 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 
 	private static final long serialVersionUID = 6838006264714672460L;
 
-	final Class<T> beanType;
+	private final Class<T> beanType;
 	
-	transient final EbeanServer server;
+	private transient final EbeanServer server;
 	
 	/**
 	 * Used to add beans to the PersistanceContext prior to query.
 	 */
-	transient ArrayList<EntityBean> contextAdditions;
+	private transient ArrayList<EntityBean> contextAdditions;
 	
-	transient QueryListener<T> queryListener;
+	private transient QueryListener<T> queryListener;
 
 	/**
 	 * For lazy loading of ManyToMany we need to add a join to the intersection
 	 * table. This is that join to the intersection table.
 	 */
-	transient TableJoin includeTableJoin;
+	private transient TableJoin includeTableJoin;
 
-	transient AutoFetchManager autoFetchManager;
+	private transient AutoFetchManager autoFetchManager;
 
+	private transient BeanDescriptor<T> beanDescriptor;
+	
 	/**
 	 * The name of the query.
 	 */
-	String name;
+	private String name;
 	
 	/**
 	 * Holds query in structured form.
 	 */
-	OrmQueryDetail detail;
+	private OrmQueryDetail detail;
 
-	OrmQueryAttributes attributes;
+	private OrmQueryAttributes attributes;
 
-	String generatedSql;
+	private String generatedSql;
 
 	/**
 	 * Query language version of the query.
 	 */
-	String query;
+	private String query;
 
-	String additionalWhere;
+	private String additionalWhere;
 
-	String additionalHaving;
+	private String additionalHaving;
 
 	/**
 	 * Set to true if you want a DISTINCT query.
 	 */
-	boolean distinct;
+	private boolean distinct;
 
 	/**
 	 * The rows after which the fetch continues in a bg thread.
 	 */
-	int backgroundFetchAfter;
+	private int backgroundFetchAfter;
 
 	/**
 	 * Used to increase the initial capacity of the list set or map being
 	 * fetched. Useful if fetching a large amount of data into a Map or Set to
 	 * reduce rehashing.
 	 */
-	int initialCapacity;
+	private int initialCapacity;
 
-	int timeout = -1;
+	private int timeout = -1;
 	
 	/**
 	 * The property used to get the key value for a Map.
 	 */
-	String mapKey;
+	private String mapKey;
 
 	/**
 	 * Used for find by id type query.
 	 */
-	Object id;
+	private Object id;
 
 	/**
 	 * Bind parameters when using the query language.
 	 */
-	BindParams bindParams;
+	private BindParams bindParams;
 
-	DefaultExpressionList<T> whereExpressions;
+	private DefaultExpressionList<T> whereExpressions;
 
-	DefaultExpressionList<T> havingExpressions;
+	private DefaultExpressionList<T> havingExpressions;
 
-	boolean usageProfiling = true;
+	private boolean usageProfiling = true;
 
-	boolean useCache;
+	private boolean useCache;
 
-	boolean sqlSelect;
+	private boolean sqlSelect;
 
 	/**
 	 * Allow for explicit on off or null for default.
 	 */
-	Boolean autoFetch;
+	private Boolean autoFetch;
 	
 	/**
 	 * Set to true if this query has been tuned by autoFetch.
 	 */
-	boolean autoFetchTuned;
+	private boolean autoFetchTuned;
 	
 	/**
 	 * The node of the bean or collection that fired lazy loading. Not null if
 	 * profiling is on and this query is for lazy loading. Used to hook back a
 	 * lazy loading query to the "original" query point.
 	 */
-	ObjectGraphNode parentNode;
+	private ObjectGraphNode parentNode;
 
-	ObjectGraphOrigin objectGraphOrigin;
+	private ObjectGraphOrigin objectGraphOrigin;
 
 	/**
 	 * Hash of final query after AutoFetch tuning.
 	 */
-	int queryPlanHash;
+	private int queryPlanHash;
 	
-	PersistenceContext persistenceContext;
+	private PersistenceContext persistenceContext;
 
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server) {
 		this.beanType = beanType;
@@ -174,7 +177,36 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 			setQuery(namedQuery.getQuery());
 		}
 	}
+	
+	/**
+	 * Set the BeanDescriptor for the root type of this query.
+	 */
+	public void setBeanDescriptor(BeanDescriptor<T> beanDescriptor) {
+		this.beanDescriptor = beanDescriptor;
+	}
+	
+	/**
+	 * Return true if the where expressions contains a many property.
+	 */
+	public boolean isManyInWhere() {
+		
+    	if (whereExpressions != null){
+    		return whereExpressions.containsMany(beanDescriptor);
+    	} else {
+    		return false;
+    	}
+	}
 
+	/**
+	 * Set the select clause to select the Id property.
+	 */
+	public void setSelectId() {
+		// clear select and fetch joins..
+		detail.clear();
+		
+		select(beanDescriptor.getIdBinder().getIdProperty());
+	}
+	
 	public DefaultOrmQuery<T> copy() {
 		// Not including these in the copy:
 		// ArrayList<EntityBean> contextAdditions;
@@ -489,6 +521,15 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	public DefaultOrmQuery<T> join(String property, String columns) {
 		detail.addFetchJoin(property, columns);
 		return this;
+	}
+	
+	
+	public int findRowCount(){
+		
+		// create a copy
+		DefaultOrmQuery<T> copy = copy();
+		
+		return server.findRowCount(copy, null);
 	}
 
 	public List<T> findList() {

@@ -99,6 +99,17 @@ public class OrmQueryDetail implements Serializable {
 		fetchJoins.put(property, chunk);
 		includes.add(property);
 	}
+	
+	/**
+	 * Remove all joins and properties.
+	 * <p>
+	 * Typically for the row count query.
+	 * </p>
+	 */
+	public void clear() {
+		includes.clear();
+		fetchJoins.clear();		
+	}
 
 	/**
 	 * Matches the join() method of a query.

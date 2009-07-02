@@ -42,7 +42,7 @@ public class CQueryBuilder implements Constants {
 	private final String tableAliasPlaceHolder;
 	private final String columnAliasPrefix;
 	
-	private final SqlLimiter dbQueryLimiter;
+	private final SqlLimiter sqlLimiter;
 	
 	private final RawSqlSelectClauseBuilder rawSqlBuilder;
 	
@@ -57,7 +57,7 @@ public class CQueryBuilder implements Constants {
 		this.columnAliasPrefix = GlobalProperties.get("ebean.columnAliasPrefix", "c");
 		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(dbPlatform, binder);
 
-		this.dbQueryLimiter = dbPlatform.getSqlLimiter();
+		this.sqlLimiter = dbPlatform.getSqlLimiter();
 	}
 
 	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
@@ -93,6 +93,40 @@ public class CQueryBuilder implements Constants {
 		}
 		return orderBy;
 	}
+
+	/**
+	 * Build the row count query.
+	 */
+	public <T> CQueryRowCount buildRowCountQuery(OrmQueryRequest<T> request) {
+
+    	OrmQuery<T> query = request.getQuery();
+
+    	boolean hasMany = query.isManyInWhere();
+    	
+    	query.setSelectId();
+    	    	
+    	String sqlSelect = "select count(*)";
+    	if (hasMany){
+    		// need to count distinct id's ...
+        	query.setDistinct(true);
+    		sqlSelect = null;
+    	}
+    	
+		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
+		predicates.prepare(true, true);
+
+		SqlTree sqlTree = createSqlTree(request, predicates);
+
+		SqlLimitResponse s = buildSql(sqlSelect, request, predicates, sqlTree);
+
+		String sql = s.getSql();
+		
+		if (hasMany){
+			sql = "select count(*) from ( "+sql+")";			
+		}
+		
+		return new CQueryRowCount(request, predicates, sql);
+	}
 	
 	/**
 	 * Return the SQL Select statement as a String. Converts logical property
@@ -127,7 +161,7 @@ public class CQueryBuilder implements Constants {
 		// Build the tree structure that represents the query.
 		SqlTree sqlTree = createSqlTree(request, predicates);
 		
-		SqlLimitResponse s = buildSql(request, predicates, sqlTree);
+		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
 
 		queryPlan = new CQueryPlan(request, s.getSql(), sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
 		
@@ -154,27 +188,33 @@ public class CQueryBuilder implements Constants {
 
         return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, request, predicates).build();
     }
-	
-	private SqlLimitResponse buildSql(OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
+
+		
+	private SqlLimitResponse buildSql(String selectClause, OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
 		OrmQuery<?> query = request.getQuery();
 		BeanPropertyAssocMany<?> manyProp = select.getManyProperty();
+
+		boolean useSqlLimiter = false;
 		
-		String dbOrderBy = predicates.getDbOrderBy();
-
-
-		boolean useSqlLimiter = (query.getMaxRows() > 0 || query.getFirstRow() > 0 && manyProp != null);
-
 		StringBuilder sb = new StringBuilder(500);
 
-		if (!useSqlLimiter){
-			sb.append("select ");
-			if (query.isDistinct()) {
-				sb.append("distinct ");
-			}
-		}
+		if (selectClause != null){
+			sb.append(selectClause);
+			
+		} else {
 
-		sb.append(select.getSelectSql());
+			useSqlLimiter = (query.getMaxRows() > 0 || query.getFirstRow() > 0 && manyProp != null);
+	
+			if (!useSqlLimiter){
+				sb.append("select ");
+				if (query.isDistinct()) {
+					sb.append("distinct ");
+				}
+			}
+	
+			sb.append(select.getSelectSql());
+		}
 
 		sb.append(" ").append(NEW_LINE);
 		sb.append("from ");
@@ -217,21 +257,16 @@ public class CQueryBuilder implements Constants {
 			}
 		}
 
+		String dbOrderBy = predicates.getDbOrderBy();
 		if (dbOrderBy != null) {
 			sb.append(" ").append(NEW_LINE);
 			sb.append("order by ").append(dbOrderBy);
 		}
 
-//		String genSql = sb.toString();
-//		if (manyProp == null) {
-//			// finish wrapping ROW_NUMBER() or LIMIT clause
-//			genSql = wrapSql(query, genSql);
-//		}
-
 		if (useSqlLimiter){
 			// use LIMIT/OFFSET, ROW_NUMBER() or rownum type SQL query limitation
 			SqlLimitRequest r = new OrmQueryLimitRequest(sb.toString(), dbOrderBy, query);
-			return dbQueryLimiter.limit(r);
+			return sqlLimiter.limit(r);
 			
 		} else {
 
@@ -240,83 +275,5 @@ public class CQueryBuilder implements Constants {
 		
 	}
 
-//	/**
-//	 * Wrap the sql to implement firstRow maxRows limits. Use the standard
-//	 * ROW_NUMBER() function or MySQL/Postgres LIMIT OFFSET clause.
-//	 */
-//	protected String wrapSql(OrmQuery<?> f, String sql) {
-//		if (!f.hasMaxRowsOrFirstRow()){
-//			return sql;
-//		}
-//		switch (resultSetLimit) {
-//		case RowNumber:
-//			return wrapRowNumberLimit(f, sql);
-//		case LimitOffset:
-//			return wrapLimitOffset(f, sql);
-//		case JdbcRowNavigation:
-//			return sql;
-//
-//		default:
-//			return sql;
-//		}
-//	}
-//
-//	/**
-//	 * Wrap the select statement to use firstRows maxRows limit features.
-//	 */
-//	protected String wrapRowNumberLimit(OrmQuery<?> f, String sql) {
-//
-//		int firstRow = f.getFirstRow();
-//
-//		int lastRow = f.getMaxRows();
-//		if (lastRow > 0) {
-//			lastRow = lastRow + firstRow + maxOffset;
-//		}
-//
-//		StringBuilder sb = new StringBuilder(512);
-//		sb.append("select * from (").append(NEW_LINE);
-//		sb.append(sql);
-//		sb.append(NEW_LINE).append(") ");
-//		sb.append(rowNumberWindowAlias);
-//		sb.append(" where ");
-//		if (firstRow > 0) {
-//			sb.append(" rn > ").append(firstRow);
-//			if (lastRow > 0) {
-//				sb.append(" and ");
-//			}
-//		}
-//		if (lastRow > 0) {
-//			sb.append(" rn <= ").append(lastRow);
-//		}
-//
-//		return sb.toString();
-//	}
-//
-//	/**
-//	 * Wrap the sql with LIMIT OFFSET keywords. Used by MySql and Postgres.
-//	 */
-//	protected String wrapLimitOffset(OrmQuery<?> f, String sql) {
-//
-//		int firstRow = f.getFirstRow();
-//		int lastRow = f.getMaxRows();
-//		if (lastRow > 0) {
-//			lastRow = lastRow + firstRow + maxOffset;
-//		}
-//
-//		StringBuilder sb = new StringBuilder(512);
-//		sb.append(sql);
-//		sb.append(" ").append(NEW_LINE).append(LIMIT).append(" ");
-//		if (lastRow > 0) {
-//			sb.append(lastRow);
-//			if (firstRow > 0) {
-//				sb.append(" ").append(OFFSET).append(" ");
-//			}
-//		}
-//		if (firstRow > 0) {
-//			sb.append(firstRow);
-//		}
-//
-//		return sb.toString();
-//	}
 
 }
