@@ -1,26 +1,28 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy.parse;
 
 import java.util.HashMap;
 
+import com.avaje.ebean.config.naming.NamingConvention;
+import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
@@ -35,7 +37,7 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
  * </p>
  */
 public class DeployBeanInfo<T> {
-	
+
 	TableAliasList aliasList = new TableAliasList();
 
 	/**
@@ -55,11 +57,11 @@ public class DeployBeanInfo<T> {
 		this.util = util;
 		this.descriptor = descriptor;
 	}
-	
+
 	public String toString() {
 		return ""+descriptor;
 	}
-	
+
 	/**
 	 * Return the BeanDescriptor currently being processed.
 	 */
@@ -74,26 +76,26 @@ public class DeployBeanInfo<T> {
 		return util;
 	}
 
-	private String tableNameFromClass(Class<?> beanType) {
+	private TableName tableNameFromClass(Class<?> beanType) {
 		return util.getTableNameFromClass(beanType);
 	}
 
 	/**
-	 * Set the default table name if it has not already been set.
+	 * Set the table name if it has not already been set.
 	 * <p>
-	 * This will use the NamingConvention but JPA spec defaults this to the
-	 * class name.
+	 * This will use the NamingConvention as provided in the ServerConfig
+	 * The default is to take the class name as defined by JPA spec
 	 * </p>
+	 * @see NamingConvention
 	 */
-	public void setDefaultTableName() {
+	public void setTableName() {
 
 		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
 			String baseTable = descriptor.getBaseTable();
 			if (baseTable == null) {
 				// default the tableName using NamingConvention.
 				// JPA Spec defines this as the class name
-				String tableName = tableNameFromClass(descriptor.getBeanType());
-				setTable("", "", tableName, null);
+				setTable(tableNameFromClass(descriptor.getBeanType()), null);
 			}
 		}
 	}
@@ -155,21 +157,10 @@ public class DeployBeanInfo<T> {
 	/**
 	 * Set the base table name and alias.
 	 */
-	public void setTable(String catalog, String schema, String tableName, String alias) {
-		
-		if (tableName != null && tableName.trim().length() > 0) {
+	public void setTable(TableName tableName, String alias) {
 
-			tableName = util.convertQuotedIdentifiers(tableName);
-
-			if (schema != null && schema.length() > 0){
-				tableName = schema+"."+tableName;
-			}
-			if (catalog != null && catalog.length() > 0){
-				tableName = catalog+"."+tableName;
-			}
-			
-			descriptor.setBaseTable(tableName);
+		if (tableName != null && tableName.isValid()) {
+			descriptor.setBaseTable(tableName.getQualifiedName());
 		}
 	}
-
 }

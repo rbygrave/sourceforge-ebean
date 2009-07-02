@@ -16,9 +16,9 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.naming.NamingConvention;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 
 /**

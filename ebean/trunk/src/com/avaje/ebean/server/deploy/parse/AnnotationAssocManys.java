@@ -133,7 +133,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 			// use naming convention to define join (based on the bean name for this side of relationship)
 			String fkeyPrefix = factory.getNamingConvention()
-								.getColumnFromProperty(descriptor.getBeanType(), descriptor.getName());
+								.getColumnFromProperty(prop.getField());
 
 			// Use the owning bean table to define the join
 			BeanTable owningBeanTable = factory.getBeanTable(descriptor.getBeanType());

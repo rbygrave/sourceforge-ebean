@@ -33,9 +33,9 @@ import javax.sql.DataSource;
 
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.DataSourceConfig;
-import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DatabasePlatformFactory;
+import com.avaje.ebean.config.naming.UnderscoreNamingConvention;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.BasicCacheManager;
 import com.avaje.ebean.server.cache.CacheManager;

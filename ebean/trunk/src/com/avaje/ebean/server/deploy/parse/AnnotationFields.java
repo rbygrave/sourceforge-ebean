@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy.parse;
 
@@ -60,7 +60,7 @@ import com.avaje.ebean.validation.ValidatorMeta;
 public class AnnotationFields extends AnnotationParser {
 
 	GeneratedPropertyFactory generatedPropFactory = new GeneratedPropertyFactory();
-	
+
 	public AnnotationFields(DeployBeanInfo<?> info) {
 		super(info);
 	}
@@ -121,7 +121,7 @@ public class AnnotationFields extends AnnotationParser {
 		if (gen != null) {
 			readGenValue(gen, prop);
 		}
-		
+
 		Id id = (Id) get(prop, Id.class);
 		if (id != null) {
 			readId(id, prop);
@@ -149,23 +149,23 @@ public class AnnotationFields extends AnnotationParser {
 			prop.setVersionColumn(true);
 			generatedPropFactory.setVersion(prop);
 		}
-		
+
 		CreatedTimestamp ct = get(prop, CreatedTimestamp.class);
 		if (ct != null) {
 			generatedPropFactory.setInsertTimestamp(prop);
 		}
-		
+
 		UpdatedTimestamp ut = get(prop, UpdatedTimestamp.class);
 		if (ut != null) {
 			generatedPropFactory.setUpdateTimestamp(prop);
 		}
-		
+
 		NotNull notNull = get(prop, NotNull.class);
 		if (notNull != null) {
 			// explicitly specify a version column
 			prop.setNullable(false);
 		}
-		
+
 		Length length = get(prop, Length.class);
 		if (length != null) {
 			if (length.max() < Integer.MAX_VALUE){
@@ -176,10 +176,10 @@ public class AnnotationFields extends AnnotationParser {
 	}
 
 	private void readId(Id id, DeployBeanProperty prop) {
-		
+
 		prop.setId(true);
 		prop.setNullable(false);
-		
+
 		if (prop.getPropertyType().equals(UUID.class)){
 			// An Id of type UUID
 			if (descriptor.getIdGeneratorName() == null){
@@ -194,14 +194,14 @@ public class AnnotationFields extends AnnotationParser {
 	private void readGenValue(GeneratedValue gen, DeployBeanProperty prop) {
 
 		String genName = gen.generator();
-		
+
 		SequenceGenerator sequenceGenerator = find(prop, SequenceGenerator.class);
 		if (sequenceGenerator != null) {
 			if (sequenceGenerator.name().equals(genName)) {
 				genName = sequenceGenerator.sequenceName();
 			}
 		}
-		
+
 		GenerationType strategy = gen.strategy();
 
 		if (strategy == GenerationType.IDENTITY) {
@@ -217,7 +217,7 @@ public class AnnotationFields extends AnnotationParser {
 			if (prop.getPropertyType().equals(UUID.class)){
 				descriptor.setIdGeneratorName(UuidIdGenerator.AUTO_UUID);
 				descriptor.setIdType(IdType.GENERATOR);
-				
+
 			} else {
 				// use DatabasePlatform defaults
 			}
@@ -253,7 +253,7 @@ public class AnnotationFields extends AnnotationParser {
 			prop.setDbLength(columnAnn.precision());
 		} else if (columnAnn.length() != 255){
 			// set default 255 on DbTypeMap
-			prop.setDbLength(columnAnn.length());			
+			prop.setDbLength(columnAnn.length());
 		}
 		prop.setDbScale(columnAnn.scale());
 		prop.setDbColumnDefn(columnAnn.columnDefinition());
@@ -270,7 +270,7 @@ public class AnnotationFields extends AnnotationParser {
 	}
 
 	private void setDbColumn(DeployBeanProperty prop, String dbColumn) {
-		dbColumn = util.getDbColumn(descriptor.getBeanType(), prop.getName(), dbColumn);
+		dbColumn = util.getDbColumn(prop.getField());
 
 		prop.setDbColumn(dbColumn);
 	}
@@ -303,9 +303,9 @@ public class AnnotationFields extends AnnotationParser {
 			for (int i = 0; i < patternsArray.length; i++) {
 				util.createValidator(prop, patternsArray[i]);
 			}
-		
+
 		} else {
-		
+
 			ValidatorMeta meta = type.getAnnotation(ValidatorMeta.class);
 			if (meta != null) {
 				util.createValidator(prop, ann);
