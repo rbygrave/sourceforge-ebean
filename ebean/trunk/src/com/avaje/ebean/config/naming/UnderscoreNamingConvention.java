@@ -56,8 +56,17 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
 	 * @return the table name from class
 	 */
 	public TableName getTableNameFromClass(Class<?> beanClass) {
-		return new TableName(getCatalog(), getSchema(),
-			toUnderscoreFromCamel(beanClass.getSimpleName()));
+		// Try annotation first
+		TableName tableName = getTableNameFromAnnotation(beanClass);
+
+		if (tableName == null){
+			// Get the underscore name
+			tableName = new TableName(getCatalog(),
+							getSchema(),
+							toUnderscoreFromCamel(beanClass.getSimpleName()));
+		}
+
+		return tableName;
 	}
 
 	/**
