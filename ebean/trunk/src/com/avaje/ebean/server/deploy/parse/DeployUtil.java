@@ -29,7 +29,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.naming.NamingConvention;
 import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -67,11 +66,8 @@ public class DeployUtil {
 
 	private final String manyToManyAlias;
 
-	private final DatabasePlatform dbSpecific;
+	public DeployUtil(TypeManager typeMgr, NamingConvention nc) {
 
-	public DeployUtil(DatabasePlatform dbSpecific, TypeManager typeMgr, NamingConvention nc) {
-
-		this.dbSpecific = dbSpecific;
 		this.typeManager = typeMgr;
 		this.namingConvention = nc;
 
