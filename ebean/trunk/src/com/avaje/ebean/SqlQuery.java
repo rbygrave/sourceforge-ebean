@@ -63,26 +63,6 @@ public interface SqlQuery extends Serializable {
 	public SqlRow findUnique();
 
 	/**
-	 * @deprecated use {@link #setParameter(int, Object)}.
-	 */
-	public SqlQuery set(int position, Object value);
-
-	/**
-	 * @deprecated use {@link #setParameter(String, Object)}.
-	 */
-	public SqlQuery set(String name, Object value);
-
-	/**
-	 * @deprecated use {@link #setParameter(int, Object)}.
-	 */
-	public SqlQuery bind(int position, Object value);
-
-	/**
-	 * @deprecated use {@link #setParameter(String, Object)}.
-	 */
-	public SqlQuery bind(String name, Object value);
-
-	/**
 	 * The same as bind for named parameters.
 	 */
 	public SqlQuery setParameter(String name, Object value);
@@ -119,11 +99,6 @@ public interface SqlQuery extends Serializable {
 	 * Set the index after which fetching continues in a background thread.
 	 */
 	public SqlQuery setBackgroundFetchAfter(int backgroundFetchAfter);
-
-	/**
-	 * Set the initial capacity of List Set or Map collections.
-	 */
-	public SqlQuery setInitialCapacity(int initialCapacity);
 
 	/**
 	 * Set the column to use to determine the keys for a Map.

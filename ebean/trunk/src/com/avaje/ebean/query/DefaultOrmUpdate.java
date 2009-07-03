@@ -33,39 +33,39 @@ public final class DefaultOrmUpdate<T> implements OrmUpdate<T>, Serializable {
 	private static final long serialVersionUID = -8791423602246515438L;
 
 
-	transient final EbeanServer server;
+	private transient final EbeanServer server;
 	
-	final Class<?> beanType;
+	private final Class<?> beanType;
 	
 	/**
 	 * The name of the update.
 	 */
-	final String name;
+	private final String name;
 
 	/**
 	 * The parameters used to bind to the sql.
 	 */
-	final BindParams bindParams = new BindParams();
+	private final BindParams bindParams = new BindParams();
 
 	/**
 	 * The sql update or delete statement.
 	 */
-	String updateStatement;
+	private String updateStatement;
 
 	/**
 	 * Automatically detect the table being modified by this sql. This will
 	 * register this information so that eBean invalidates cached objects if
 	 * required.
 	 */
-	boolean notifyCache = true;
+	private boolean notifyCache = true;
 
-	int timeout;
+	private int timeout;
 	
-	String generatedSql;
+	private String generatedSql;
 	
-	final String baseTable;
+	private final String baseTable;
 	
-	OrmUpdateType type;
+	private OrmUpdateType type;
 	
 	/**
 	 * Create with a specific server. This means you can use the

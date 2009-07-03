@@ -23,8 +23,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.RelationalQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -39,72 +37,58 @@ import com.avaje.ebean.server.util.BeanCollectionParams;
  * Helps adding the bean to the underlying set list or map.
  * </p>
  */
-public class BeanCollectionWrapper {
+public final class BeanCollectionWrapper {
 
 	/**
 	 * Flag set if this builds a Map rather than a Collection.
 	 */
-	boolean isMap = false;
-
-	/**
-	 * The number of rows added.
-	 */
-	int rowCount = 0;
+	private final boolean isMap;
 
 	/**
 	 * The type.
 	 */
-	ManyType manyType;
+	private final ManyType manyType;
 
 	/**
 	 * A property name used as key for a Map.
 	 */
-	String mapKey;
+	private final String mapKey;
 
 	/**
 	 * The actual BeanCollection.
 	 */
-	BeanCollection<?> beanColl;
+	private final BeanCollection<?> beanCollection;
 
 	/**
 	 * Collection type of BeanCollection.
 	 */
-	Collection<Object> collection;
+	private final Collection<Object> collection;
 
 	/**
 	 * Map type of BeanCollection.
 	 */
-	Map<Object,Object> map;
+	private final Map<Object,Object> map;
 
 	/**
 	 * The associated BeanDescriptor.
 	 */
-	BeanDescriptor<?> desc;
+	private final BeanDescriptor<?> desc;
 
 	/**
-	 * The find this collection is for.
+	 * The number of rows added.
 	 */
-	OrmQuery<?> find;
-
-	/**
-	 * Params used to create the Collection.
-	 */
-	BeanCollectionParams buildParams;
-
+	private int rowCount;
+	
 	public BeanCollectionWrapper(RelationalQueryRequest request) {
 
-		RelationalQuery q = request.getQuery();
+		this.desc = null;
 		this.manyType = request.getManyType();
-		//this.find = request.getQuery();
-		this.mapKey = q.getMapKey();
-
-		// Note that modifyListening is always false. This is because it only
-		// relates
-		// to ManyToMany collections. Which can only be fetched as a reference
-		// or as
-		// find.setIncludes() and can not be fetched against in their own right.
-		this.buildParams = new BeanCollectionParams(manyType, q.getInitialCapacity(), false);
-		init();
+		this.mapKey = request.getQuery().getMapKey();
+		this.isMap = manyType.isMap();
+		
+		this.beanCollection = createBeanCollection(manyType);
+		this.collection = getCollection(isMap);
+		this.map = getMap(isMap);
 	}
 	
 	/**
@@ -112,17 +96,14 @@ public class BeanCollectionWrapper {
 	 */
 	public BeanCollectionWrapper(OrmQueryRequest<?> request) {
 
+		this.desc = request.getBeanDescriptor();
 		this.manyType = request.getManyType();
-		this.find = request.getQuery();
-		this.mapKey = find.getMapKey();
-
-		// Note that modifyListening is always false. This is because it only
-		// relates
-		// to ManyToMany collections. Which can only be fetched as a reference
-		// or as
-		// find.setIncludes() and can not be fetched against in their own right.
-		this.buildParams = new BeanCollectionParams(manyType, find.getInitialCapacity(), false);
-		init();
+		this.mapKey = request.getQuery().getMapKey();
+		this.isMap = manyType.isMap();
+		
+		this.beanCollection = createBeanCollection(manyType);
+		this.collection = getCollection(isMap);
+		this.map = getMap(isMap);
 	}
 
 	/**
@@ -134,53 +115,40 @@ public class BeanCollectionWrapper {
 	 * </p>
 	 */
 	public BeanCollectionWrapper(BeanPropertyAssocMany<?> manyProp) {
+		
 		this.manyType = manyProp.getManyType();
 		this.mapKey = manyProp.getMapKey();
 		this.desc = manyProp.getTargetDescriptor();
+		this.isMap = manyType.isMap();
 		
-		this.buildParams = new BeanCollectionParams(manyType);
-
-		init();
+		this.beanCollection = createBeanCollection(manyType);
+		this.collection = getCollection(isMap);
+		this.map = getMap(isMap);
 	}
 
-
-	
-	/**
-	 * Initialise the underlying beanCollection.
-	 */
 	@SuppressWarnings("unchecked")
-	protected void init() {
-		beanColl = createBeanCollection();
-
-		isMap = manyType.isMap();
-		if (isMap) {
-			map = (Map) beanColl;
-		} else {
-			collection = (Collection) beanColl;
-		}
+	private Map<Object,Object> getMap(boolean isMap) {
+		return isMap ? (Map)beanCollection : null;
 	}
 
-	/**
-	 * Set the BeanDescriptor for the type of beans being added to this
-	 * collection. This is used to determine the key value for adding beans to a
-	 * Map.
-	 */
-	public void setBeanDescriptor(BeanDescriptor<?> desc) {
-		this.desc = desc;
+	@SuppressWarnings("unchecked")
+	private Collection<Object> getCollection(boolean isMap) {
+		return isMap ? null : (Collection<Object>)beanCollection ;
 	}
 
 	/**
 	 * Return the underlying BeanCollection.
 	 */
 	public BeanCollection<?> getBeanCollection() {
-		return beanColl;
+		return beanCollection;
 	}
 
 	/**
 	 * Create a BeanCollection of the correct type.
 	 */
-	public BeanCollection<?> createBeanCollection() {
-		return BeanCollectionFactory.create(buildParams);
+	private BeanCollection<?> createBeanCollection(ManyType manyType) {
+		BeanCollectionParams p = new BeanCollectionParams(manyType);
+		return BeanCollectionFactory.create(p);
 	}
 
 	/**
@@ -201,7 +169,7 @@ public class BeanCollectionWrapper {
 	 * Add the bean to the collection held in this wrapper.
 	 */
 	public void add(Object bean) {
-		add(bean, beanColl);
+		add(bean, beanCollection);
 	}
 
 	/**

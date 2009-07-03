@@ -82,15 +82,12 @@ public class BeanCollectionFactory {
 	private BeanMap createMap(BeanCollectionParams params) {
         
         Boolean ordered = params.getOrdered();
-        int initCap = params.getInitialCapacity();
-        if (initCap < 1){
-            initCap = defaultMapInitialCapacity;
-        }
+
         Map m = null;
         if (ordered == null || ordered) {
-            m = new LinkedHashMap(initCap);
+            m = new LinkedHashMap(defaultMapInitialCapacity);
         } else {
-            m = new HashMap(initCap);
+            m = new HashMap(defaultMapInitialCapacity);
         }
 
         return new BeanMap(m);       
@@ -99,16 +96,13 @@ public class BeanCollectionFactory {
     @SuppressWarnings("unchecked")
 	private BeanSet createSet(BeanCollectionParams params) {
         Boolean ordered = params.getOrdered();
-        int initCap = params.getInitialCapacity();
-        if (initCap < 1){
-            initCap = defaultSetInitialCapacity;
-        }
+      
         Set s = null;
         if (ordered == null || ordered) {
-            s = new LinkedHashSet(initCap);
+            s = new LinkedHashSet(defaultSetInitialCapacity);
 
         } else {
-            s = new HashSet(initCap);
+            s = new HashSet(defaultSetInitialCapacity);
         }
 
         return new BeanSet(s);
@@ -116,11 +110,8 @@ public class BeanCollectionFactory {
 
     @SuppressWarnings("unchecked")
 	private BeanList createList(BeanCollectionParams params) {
-        int initCap = params.getInitialCapacity();
-        if (initCap < 1){
-            initCap = defaultListInitialCapacity;
-        }
-        List l = new ArrayList(initCap);
+        
+        List l = new ArrayList(defaultListInitialCapacity);
 
         return new BeanList(l);
     }

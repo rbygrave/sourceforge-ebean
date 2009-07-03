@@ -22,7 +22,6 @@ package com.avaje.ebean;
 import java.io.Serializable;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.util.BindParams;
@@ -107,32 +106,27 @@ import com.avaje.ebean.util.BindParams.Param;
  */
 public class CallableSql implements Serializable {
 
-	static final long serialVersionUID = 8984272253185424701L;
+	private static final long serialVersionUID = 8984272253185424701L;
 
 	/**
 	 * The callable sql.
 	 */
-	String sql;
+	private String sql;
 
 	/**
 	 * To display in the transaction log to help identify the procedure.
 	 */
-	String label;
+	private String label;
 
-	int timeout;
+	private int timeout;
 	
-	/**
-	 * The parameters to be bound and read later.
-	 */
-	ArrayList<Object> paramList = new ArrayList<Object>();
-
 	/**
 	 * Holds the table modification information. On commit this information is
 	 * used to manage the cache etc.
 	 */
-	TransactionEvent transactionEvent = new TransactionEvent();
+	private TransactionEvent transactionEvent = new TransactionEvent();
 
-	BindParams bindParameters = new BindParams();
+	private BindParams bindParameters = new BindParams();
 
 	/**
 	 * Create with callable sql.

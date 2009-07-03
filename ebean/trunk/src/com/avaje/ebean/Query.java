@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.annotation.Formula;
+import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.expression.Expr;
 import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
@@ -21,9 +23,8 @@ import com.avaje.ebean.expression.ExpressionList;
  *   .join(&quot;details&quot;)
  *   .where()
  *     .like(&quot;customer.name&quot;,&quot;rob%&quot;)
- *     .gt(&quot;orderDate&quot;,lastWeek);
- * 
- *   .orderBy(&quot;customer.id, id desc&quot;);
+ *     .gt(&quot;orderDate&quot;,lastWeek)
+ *   .orderBy(&quot;customer.id, id desc&quot;)
  *   .setMaxRows(50);
  *   
  * List&lt;Order&gt; orderList = query.findList();
@@ -76,9 +77,9 @@ import com.avaje.ebean.expression.ExpressionList;
  * ...
  * </pre>
  * 
- * <h3>AutoFetch</h3>
+ * <h3>Autofetch</h3>
  * <p>
- * In version 0.9.7 Ebean has built in support for "AutoFetch". This is a
+ * Ebean has built in support for "Autofetch". This is a
  * mechanism where a query can be automatically tuned based on profiling
  * information that is collected.
  * </p>
@@ -88,7 +89,7 @@ import com.avaje.ebean.expression.ExpressionList;
  * more.
  * </p>
  * <p>
- * It is expected that AutoFetch will be the default approach for many queries
+ * It is expected that Autofetch will be the default approach for many queries
  * in a system. It is possibly not as useful where the result of a query is sent
  * to a remote client or where there is some requirement for "Read Consistency"
  * guarantees.
@@ -96,7 +97,7 @@ import com.avaje.ebean.expression.ExpressionList;
  * 
  * <h3>Query Language</h3>
  * <p>
- * Ebean (since version 0.9.4) includes its own query language. The intention is
+ * Ebean includes its own query language. The intention is
  * for future versions of Ebean to <em>additionally</em> support the query
  * language of JPA (JPAQL) - hence the query language uses "FIND" rather than
  * "SELECT".
@@ -320,13 +321,16 @@ import com.avaje.ebean.expression.ExpressionList;
  * Once you hit the limits of this language such as wanting aggregate functions
  * (sum, average, min etc) or recursive queries etc you use SQL. Ebean's goal is
  * to make it as easy as possible to use your own SQL to populate entity beans.
- * Refer to the SqlSelect annotation.
+ * Refer to the {@link SqlSelect} annotation.
  * </p>
  * <p>
- * Note that with 0.9.7 Ebean supports a reasonable approach to deriving some
- * aggregate data via the Formula annotation. Please have a look at the
+ * Ebean supports a reasonable approach to deriving some
+ * aggregate data via the {@link Formula} annotation. Please have a look at the
  * documentation for that and note there is some ongoing work in this area.
  * </p>
+ * 
+ * @see SqlSelect
+ * @see Formula
  * 
  * @param <T>
  *            the type of Entity bean this query will fetch.
