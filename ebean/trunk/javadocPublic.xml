@@ -7,7 +7,7 @@
         	noindex="false" nonavbar="false" notree="false" 
         	overview="D:\dev\workspace\ebean\src\com\avaje\ebean\overview.html"
     		stylesheetfile="D:\dev\workspace\ebean\src\com\avaje\ebean\stylesheet.css"
-        	packagenames="com.avaje.ebean.io,com.avaje.ebean.annotation,com.avaje.ebean,com.avaje.ebean.bean,com.avaje.ebean.expression,com.avaje.ebean.validation,com.avaje.ebean.control,com.avaje.ebean.meta" 
+        	packagenames="com.avaje.ebean.io,com.avaje.ebean.annotation,com.avaje.ebean,com.avaje.ebean.bean,com.avaje.ebean.expression,com.avaje.ebean.validation,com.avaje.ebean.control,com.avaje.ebean.meta,com.avaje.ebean.config,com.avaje.ebean.config.naming,com.avaje.ebean.config.dbplatform" 
         	source="1.5" sourcepath="src" splitindex="true" use="true" version="true"/>
     </target>
 </project>
