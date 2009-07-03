@@ -73,7 +73,7 @@ public class AnnotationFields extends AnnotationParser {
 		Iterator<DeployBeanProperty> it = descriptor.propertiesAll();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssoc) {
+			if (prop instanceof DeployBeanPropertyAssoc<?>) {
 
 			} else {
 				readField(prop);

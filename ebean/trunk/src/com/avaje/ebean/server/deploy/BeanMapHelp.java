@@ -104,7 +104,7 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 			// the currentMap is null? Not really expecting this...
 			many.setValue(parentBean, newBeanMap);
 
-		} else if (current instanceof BeanMap) {
+		} else if (current instanceof BeanMap<?,?>) {
 			// normally this case, replace just the underlying list
 			BeanMap<?, ?> currentBeanMap = (BeanMap<?, ?>) current;
 			currentBeanMap.setActualMap(newBeanMap.getActualMap());

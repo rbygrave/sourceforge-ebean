@@ -643,7 +643,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			throw new PersistenceException(m);
 		}
 
-		if (!(mappedProp instanceof DeployBeanPropertyAssocOne)) {
+		if (!(mappedProp instanceof DeployBeanPropertyAssocOne<?>)) {
 			String m = "Error on " + prop.getFullBeanName();
 			m += ". mappedBy property [" + targetDesc+"."+mappedBy + "]is not a OneToOne?";
 			throw new PersistenceException(m);
@@ -699,7 +699,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			throw new PersistenceException(m);
 		}
 
-		if (!(mappedProp instanceof DeployBeanPropertyAssocOne)) {
+		if (!(mappedProp instanceof DeployBeanPropertyAssocOne<?>)) {
 			String m = "Error on " + prop.getFullBeanName();
 			m += ". mappedBy property [" + mappedBy + "]is not a ManyToOne?";
 			m += "in [" + targetDesc + "]";
@@ -739,7 +739,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			throw new PersistenceException(m);
 		}
 
-		if (!(mappedProp instanceof DeployBeanPropertyAssocMany)) {
+		if (!(mappedProp instanceof DeployBeanPropertyAssocMany<?>)) {
 			String m = "Error on " + prop.getFullBeanName();
 			m += ". mappedBy property [" +targetDesc+"."+mappedBy + "] is not a ManyToMany?" ;
 			throw new PersistenceException(m);
@@ -949,7 +949,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		Iterator<DeployBeanProperty> it = deployDesc.propertiesAll();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssoc) {
+			if (prop instanceof DeployBeanPropertyAssoc<?>) {
 
 			} else {
 				deployUtil.setScalarType(prop);

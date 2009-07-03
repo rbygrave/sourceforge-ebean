@@ -158,7 +158,7 @@ public class BindParamsParser {
 
                 // check if inValue is a Collection type...
                 Object inValue = param.getInValue();
-                if (inValue != null && inValue instanceof Collection){
+                if (inValue != null && inValue instanceof Collection<?>){
                 	// Chop up Collection parameter into a number 
                 	// of individual parameters and add each one individually
                     Collection<?> collection = (Collection<?>)inValue;
