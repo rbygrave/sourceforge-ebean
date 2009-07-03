@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
+import javax.persistence.Table;
+
 import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
 
@@ -45,16 +47,36 @@ public class AnnotationBeanTable {
      * Parse the annotations.
      */
     public void parse() {
+    	
+    	// default the TableName using NamingConvention.
 		TableName tableName = util.getTableNameFromClass(beanTable.getBeanType());
-        if (tableName != null && tableName.getName().trim().length() > 0) {
+		
+		// read and apply Table annotation settings if present
+		applyTableAnnotation(tableName, beanTable.getBeanType());
 
-            String table = tableName.getQualifiedName();
-
-        	// the first alias set so will be good
-            String alias = util.getPotentialAlias(table);
-
-            beanTable.setBaseTable(tableName.getQualifiedName());
-            beanTable.setBaseTableAlias(alias);
-        }
+		beanTable.setBaseTable(tableName.getQualifiedName());
     }
+    
+    public static void applyTableAnnotation(TableName tableName, Class<?> beanType) {
+
+    	Table tableAnnotaton = findTable(beanType);
+		if (tableAnnotaton != null){
+			// override with Table annotation settings
+			tableName.apply(tableAnnotaton);
+		}
+    }
+    
+    /**
+	 * Search the inheritance hierarchy for Table annotation.
+	 */
+	private static Table findTable(Class<?> cls) {
+		if (cls.equals(Object.class)){
+			return null;
+		} 
+		Table table = cls.getAnnotation(Table.class);
+		if (table != null){
+			return table;
+		}
+		return findTable(cls.getSuperclass());
+	}
 }

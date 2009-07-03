@@ -55,7 +55,7 @@ public class AnnotationClass extends AnnotationParser {
 		if (entity != null){
 			checkDefaultConstructor();
 			if (entity.name().equals("")) {
-				descriptor.setName(getShortName(cls));
+				descriptor.setName(cls.getSimpleName());
 
 			} else {
 				descriptor.setName(entity.name());
@@ -65,7 +65,7 @@ public class AnnotationClass extends AnnotationParser {
 		Embeddable embeddable = cls.getAnnotation(Embeddable.class);
 		if (embeddable != null){
 			descriptor.setEmbedded(true);
-			descriptor.setName("Embeddable:"+getShortName(cls));
+			descriptor.setName("Embeddable:"+cls.getSimpleName());
 		}
 
 		UpdateMode updateMode = cls.getAnnotation(UpdateMode.class);
@@ -91,15 +91,6 @@ public class AnnotationClass extends AnnotationParser {
 		if (namedUpdate != null){
 			readNamedUpdate(namedUpdate);
 		}
-	}
-
-	private String getShortName(Class<?> cls) {
-		String defaultShortName = cls.getName();
-		int dp = defaultShortName.lastIndexOf('.');
-		if (dp > -1) {
-			defaultShortName = defaultShortName.substring(dp + 1);
-		}
-		return defaultShortName;
 	}
 
 	private void readNamedQueries(NamedQueries namedQueries) {

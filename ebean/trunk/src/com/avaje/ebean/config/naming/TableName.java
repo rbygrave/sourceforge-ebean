@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.config.naming;
 
+import javax.persistence.Table;
+
 /**
  * The Class TableName is a simple container for catalog, schema and table name
  *
@@ -27,24 +29,41 @@ package com.avaje.ebean.config.naming;
 public final class TableName{
 
 	/** The catalog. */
-	private final String catalog;
+	private String catalog;
 
 	/** The schema. */
-	private final String schema;
+	private String schema;
 
 	/** The name. */
-	private final String name;
+	private String name;
 
 	/**
-	 * @param catalog
-	 * @param schema
-	 * @param name
+	 * Construct with the default settings from the NamingConvention.
 	 */
 	public TableName(String catalog, String schema, String name) {
 		super();
 		this.catalog = catalog != null ? catalog.trim() : null;
 		this.schema = schema != null ? schema.trim() : null;
 		this.name = name != null ? name.trim() : null;
+	}
+	
+	/**
+	 * Apply settings from the Table annotation.
+	 */
+	public void apply(Table table){
+		if (notEmpty(table.catalog())){
+			this.catalog = table.catalog();
+		}
+		if (notEmpty(table.schema())){
+			this.schema = table.schema();
+		}
+		if (notEmpty(table.name())){
+			this.name = table.name();
+		}
+	}
+	
+	private boolean notEmpty(String s){
+		return s != null && s.length() > 0;
 	}
 
 	/**

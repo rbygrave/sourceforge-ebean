@@ -42,11 +42,6 @@ public class BeanTable {
      */
     private final String baseTable;
 
-    /**
-     * The sql alias used for the base table.
-     */
-    private final String baseTableAlias;
-
     private final BeanProperty[] idProperties;
     /**
      * Create the BeanTable.
@@ -54,7 +49,6 @@ public class BeanTable {
     public BeanTable(DeployBeanTable mutable) {
         this.beanType = mutable.getBeanType();
         this.baseTable = InternString.intern(mutable.getBaseTable());
-        this.baseTableAlias = InternString.intern(mutable.getBaseTableAlias());
         this.idProperties = mutable.getIdProperties();
     }
     
@@ -69,13 +63,6 @@ public class BeanTable {
      */
     public String getBaseTable() {
         return baseTable;
-    }
-
-    /**
-     * Return the sql table alias this will use.
-     */
-    public String getBaseTableAlias() {
-        return baseTableAlias;
     }
     
     /**
