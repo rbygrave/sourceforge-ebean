@@ -42,11 +42,6 @@ public class DeployBeanTable {
      */
     String baseTable;
 
-    /**
-     * The sql alias used for the base table.
-     */
-    String baseTableAlias;
-
     List<DeployBeanProperty> idProperties;
     
     /**
@@ -71,20 +66,6 @@ public class DeployBeanTable {
     public void setBaseTable(String baseTable) {
         this.baseTable = baseTable;
     }
-
-    /**
-     * Return the sql table alias this will use.
-     */
-    public String getBaseTableAlias() {
-        return baseTableAlias;
-    }
-
-    /**
-     * Set the sql table alias this will use.
-     */
-    public void setBaseTableAlias(String baseTableAlias) {
-        this.baseTableAlias = baseTableAlias;
-    }
     
     /**
      * Return the id properties.
@@ -99,7 +80,6 @@ public class DeployBeanTable {
 
     /**
      * Set the Id properties.
-     * @param idProperties
      */
 	public void setIdProperties(List<DeployBeanProperty> idProperties) {
 		this.idProperties = idProperties;

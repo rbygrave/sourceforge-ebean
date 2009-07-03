@@ -223,26 +223,4 @@ public class DeployUtil {
 		return false;
 	}
 
-	/**
-	 * Get a table alias without any checking with the availability in the
-	 * aliasList.
-	 */
-	public String getPotentialAlias(String tableOrProperty) {
-
-		int usPos = tableOrProperty.lastIndexOf("_");
-		if (usPos > -1 && usPos < tableOrProperty.length() - 1) {
-			tableOrProperty = tableOrProperty.substring(usPos + 1);
-		}
-
-		// search for the first valid letter
-		for (int i = 0; i < tableOrProperty.length(); i++) {
-			char ch = Character.toLowerCase(tableOrProperty.charAt(i));
-			if (Character.isLetter(ch)){
-				return String.valueOf(ch);
-			}
-		}
-
-		// not expected really
-		return "z";
-	}
 }

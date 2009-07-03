@@ -76,10 +76,6 @@ public class DeployBeanInfo<T> {
 		return util;
 	}
 
-	private TableName tableNameFromClass(Class<?> beanType) {
-		return util.getTableNameFromClass(beanType);
-	}
-
 	/**
 	 * Set the table name if it has not already been set.
 	 * <p>
@@ -91,15 +87,18 @@ public class DeployBeanInfo<T> {
 	public void setTableName() {
 
 		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
-			String baseTable = descriptor.getBaseTable();
-			if (baseTable == null) {
-				// default the tableName using NamingConvention.
-				// JPA Spec defines this as the class name
-				setTable(tableNameFromClass(descriptor.getBeanType()));
-			}
+
+			// default the TableName using NamingConvention.
+			TableName tableName = util.getTableNameFromClass(descriptor.getBeanType());
+			
+			// read and apply Table annotation settings if present
+			AnnotationBeanTable.applyTableAnnotation(tableName, descriptor.getBeanType());
+
+            descriptor.setBaseTable(tableName.getQualifiedName());
 		}
 	}
 
+	
 	/**
 	 * Appropriate TableJoin for a property mapped to a secondary table.
 	 */
@@ -154,13 +153,4 @@ public class DeployBeanInfo<T> {
 		tableJoin.setType(TableJoin.LEFT_OUTER);
 	}
 
-	/**
-	 * Set the base table name and alias.
-	 */
-	private void setTable(TableName tableName) {
-
-		if (tableName != null && tableName.isValid()) {
-			descriptor.setBaseTable(tableName.getQualifiedName());
-		}
-	}
 }
