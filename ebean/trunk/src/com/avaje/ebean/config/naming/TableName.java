@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2006  Authors
  *
  * This file is part of Ebean.
  *
@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.config.naming;
 
-import javax.persistence.Table;
 
 /**
  * The Class TableName is a simple container for catalog, schema and table name
@@ -48,21 +47,20 @@ public final class TableName{
 	}
 	
 	/**
-	 * Apply settings from the Table annotation.
+	 * Apply the catalog and schema from the NamingConvention if they
+	 * have not already been defined.
 	 */
-	public void apply(Table table){
-		if (notEmpty(table.catalog())){
-			this.catalog = table.catalog();
+	public TableName apply(String catalog, String schema){
+		if (isEmpty(this.catalog) && !isEmpty(catalog)) {
+			this.catalog = catalog;
 		}
-		if (notEmpty(table.schema())){
-			this.schema = table.schema();
+		if (isEmpty(this.schema) && !isEmpty(schema)) {
+			this.schema = schema;
 		}
-		if (notEmpty(table.name())){
-			this.name = table.name();
-		}
+		return this;
 	}
 	
-	private boolean notEmpty(String s){
+	private boolean isEmpty(String s){
 		return s != null && s.length() > 0;
 	}
 
@@ -100,7 +98,7 @@ public final class TableName{
 	 * @return the qualified name
 	 */
 	public String getQualifiedName(){
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		// Add catalog
 		if (catalog != null){

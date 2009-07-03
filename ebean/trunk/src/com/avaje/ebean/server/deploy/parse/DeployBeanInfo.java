@@ -38,17 +38,15 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
  */
 public class DeployBeanInfo<T> {
 
-	TableAliasList aliasList = new TableAliasList();
-
 	/**
 	 * Holds TableJoins. These can be created in annotations but overridden in
 	 * deployment xml file.
 	 */
-	HashMap<String,DeployTableJoin> tableJoinMap = new HashMap<String, DeployTableJoin>();
+	private final HashMap<String,DeployTableJoin> tableJoinMap = new HashMap<String, DeployTableJoin>();
 
-	DeployUtil util;
+	private final DeployUtil util;
 
-	DeployBeanDescriptor<T> descriptor;
+	private final DeployBeanDescriptor<T> descriptor;
 
 	/**
 	 * Create with a DeployUtil and BeanDescriptor.
@@ -91,9 +89,6 @@ public class DeployBeanInfo<T> {
 			// default the TableName using NamingConvention.
 			TableName tableName = util.getTableNameFromClass(descriptor.getBeanType());
 			
-			// read and apply Table annotation settings if present
-			AnnotationBeanTable.applyTableAnnotation(tableName, descriptor.getBeanType());
-
             descriptor.setBaseTable(tableName.getQualifiedName());
 		}
 	}
