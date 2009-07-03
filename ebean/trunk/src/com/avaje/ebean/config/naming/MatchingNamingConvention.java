@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009  Robin Bygrave
+ * Copyright (C) 2009  Authors
  *
  * This file is part of Ebean.
  *
@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
  * name of the class will be take as the table name and the name of a property
  * will be taken as the name of the column.
  * </p>
+ * @author emcgreal
  */
 public class MatchingNamingConvention extends AbstractNamingConvention {
 
@@ -47,9 +48,7 @@ public class MatchingNamingConvention extends AbstractNamingConvention {
 		super(sequenceFormat);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.naming.DefaultNamingConvention#getColumnFromProperty(java.lang.reflect.Field)
-	 */
+
 	public String getColumnFromProperty(Field field) {
 		String name = getColumnFromAnnotation(field);
 
@@ -59,22 +58,23 @@ public class MatchingNamingConvention extends AbstractNamingConvention {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.naming.DefaultNamingConvention#getTableNameFromClass(java.lang.Class)
-	 */
+
 	public TableName getTableNameFromClass(Class<?> beanClass) {
+
 		TableName tableName = getTableNameFromAnnotation(beanClass);
 
 		if (tableName == null){
-			tableName = new TableName(getCatalog(), getSchema(), beanClass.getSimpleName());
+			// use the NamingConvention
+			return new TableName(getCatalog(), getSchema(), beanClass.getSimpleName());
+		
+		} else {
+			// apply catalog and schema from NamingConvention if required
+			return tableName.apply(getCatalog(), getSchema());
 		}
 
-		return tableName;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.naming.NamingConvention#getPropertyFromColumn(java.lang.Class, java.lang.String)
-	 */
+	
 	public String getPropertyFromColumn(Class<?> beanClass, String dbColumnName) {
 		return dbColumnName;
 	}

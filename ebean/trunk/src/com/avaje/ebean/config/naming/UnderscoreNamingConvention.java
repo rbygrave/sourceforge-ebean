@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009  Robin Bygrave
+ * Copyright (C) 2009  Authors
  *
  * This file is part of Ebean.
  *
@@ -23,6 +23,9 @@ import java.lang.reflect.Field;
 
 /**
  * Converts between Camel Case and Underscore based names.
+ * 
+ * @author emcgreal
+ * @author rbygrave 
  */
 public class UnderscoreNamingConvention extends AbstractNamingConvention {
 
@@ -56,17 +59,18 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
 	 * @return the table name from class
 	 */
 	public TableName getTableNameFromClass(Class<?> beanClass) {
+		
 		// Try annotation first
 		TableName tableName = getTableNameFromAnnotation(beanClass);
 
 		if (tableName == null){
 			// Get the underscore name
-			tableName = new TableName(getCatalog(),
+			return new TableName(getCatalog(),
 							getSchema(),
 							toUnderscoreFromCamel(beanClass.getSimpleName()));
+		} else {
+			return tableName.apply(getCatalog(), getSchema());
 		}
-
-		return tableName;
 	}
 
 	/**

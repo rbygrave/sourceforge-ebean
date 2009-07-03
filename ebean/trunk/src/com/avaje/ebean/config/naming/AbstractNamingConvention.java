@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009  Robin Bygrave
+ * Copyright (C) 2009  Authors
  *
  * This file is part of Ebean.
  *
@@ -175,20 +175,29 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	 * @return the table name from annotation
 	 */
 	public TableName getTableNameFromAnnotation(Class<?> beanClass) {
+		
 		final Table t = findTableAnnotation(beanClass);
 
-		// Take the annotation if defied
+		// Take the annotation if defined
 		if (t != null){
 			if (!isNullString(t.name())){
 				// Note: empty catalog and schema are converted to null
 				// Only need to convert quoted identifiers from annotations
-				return new TableName(databasePlatform.convertQuotedIdentifiers(t.catalog()),
-					databasePlatform.convertQuotedIdentifiers(t.schema()),
-					databasePlatform.convertQuotedIdentifiers(t.name()));
+				return new TableName(quoteIdentifiers(t.catalog()),
+					quoteIdentifiers(t.schema()),
+					quoteIdentifiers(t.name()));
 			}
 		}
 
 		return null;	// No annotation
+	}
+	
+	/**
+	 * Replace back ticks (if they are used) with database platform specific
+	 * quoted identifiers.
+	 */
+	protected String quoteIdentifiers(String s) {
+		return databasePlatform.convertQuotedIdentifiers(s);
 	}
 
 	/**
