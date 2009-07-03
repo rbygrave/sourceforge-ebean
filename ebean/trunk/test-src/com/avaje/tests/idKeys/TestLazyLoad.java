@@ -1,11 +1,10 @@
 package com.avaje.tests.idKeys;
 
-import com.avaje.ebean.expression.Expr;
-import com.avaje.tests.idKeys.db.AuditLog;
-import com.avaje.tests.lib.EbeanTestCase;
-
 import java.sql.SQLException;
 import java.util.List;
+
+import com.avaje.tests.idKeys.db.AuditLog;
+import com.avaje.tests.lib.EbeanTestCase;
 
 /**
  * Test lazy loading
@@ -26,8 +25,8 @@ public class TestLazyLoad extends EbeanTestCase
         assertNotNull(log.getId());
 
         List<AuditLog> logs = getServer().find(AuditLog.class)
-                .where(Expr.eq("id", log.getId()))
                 .select("id")
+                .where().eq("id", log.getId())
                 .findList();
 
         assertNotNull(logs);
@@ -35,6 +34,7 @@ public class TestLazyLoad extends EbeanTestCase
 
         AuditLog logLazy = logs.get(0);
 
-        assertEquals(log.getDescription(), logLazy.getDescription());
+        String description = logLazy.getDescription();
+        assertEquals(log.getDescription(), description);
     }
 }
