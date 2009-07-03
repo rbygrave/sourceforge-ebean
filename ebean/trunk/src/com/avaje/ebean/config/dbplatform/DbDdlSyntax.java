@@ -9,7 +9,7 @@ public class DbDdlSyntax {
 
 	boolean renderIndexForFkey = true;
 	
-	int maxFkeyLength= 32;
+	int maxConstraintNameLength= 32;
 	
 	int columnNameWidth = 25;
 	
@@ -94,7 +94,7 @@ public class DbDdlSyntax {
 	}
 
 	/**
-	 * Get the DB specific command to disable referential integrity
+	 * Return the DB specific command to disable referential integrity
 	 */
 	public String getDisableReferentialIntegrity() {
 		return disableReferentialIntegrity;
@@ -108,7 +108,7 @@ public class DbDdlSyntax {
 	}
 
 	/**
-	 * Get the DB specific command to enable referential integrity
+	 * Return the DB specific command to enable referential integrity
 	 */
 	public String getEnableReferentialIntegrity() {
 		return enableReferentialIntegrity;
@@ -149,20 +149,32 @@ public class DbDdlSyntax {
 		this.dropTableCascade = dropTableCascade;
 	}
 
+	/**
+	 * Return the foreign key suffix.
+	 */
 	public String getForeignKeySuffix() {
 		return foreignKeySuffix;
 	}
 
+	/**
+	 * Set the foreign key suffix.
+	 */
 	public void setForeignKeySuffix(String foreignKeySuffix) {
 		this.foreignKeySuffix = foreignKeySuffix;
 	}
 
-	public int getMaxFkeyLength() {
-		return maxFkeyLength;
+	/**
+	 * Return the maximum length that constraint names can be for this database.
+	 */
+	public int getMaxConstraintNameLength() {
+		return maxConstraintNameLength;
 	}
 
-	public void setMaxFkeyLength(int maxFkeyLength) {
-		this.maxFkeyLength = maxFkeyLength;
+	/**
+	 * Set the maximum length that constraint names can be for this database.
+	 */
+	public void setMaxConstraintNameLength(int maxFkeyLength) {
+		this.maxConstraintNameLength = maxFkeyLength;
 	}
 
 }

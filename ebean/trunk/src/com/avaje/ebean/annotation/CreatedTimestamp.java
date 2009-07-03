@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
  * back to get the inserted timestamp if you want to used it.
  * </p>
  * <pre class="code">
- *  @Column(insertable=false, updateable=false)
+ *  &amp;Column(insertable=false, updateable=false)
  *  Timestamp cretimestamp;
  * </pre>
  */

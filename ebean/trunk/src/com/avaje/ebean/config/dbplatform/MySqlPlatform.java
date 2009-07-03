@@ -25,7 +25,7 @@ import java.sql.Types;
 
 
 /**
- * MySQL specific plugin.
+ * MySQL specific platform.
  * <p>
  * <ul>
  * <li>supportsGetGeneratedKeys = true</li>

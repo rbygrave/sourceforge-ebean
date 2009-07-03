@@ -22,10 +22,8 @@ package com.avaje.ebean.config.dbplatform;
 import java.sql.Types;
 
 
-
-
 /**
- * Database platform for Oracle10 and greater.
+ * Oracle10 and greater specific platform.
  * <p>
  * <ul>
  * <li>supportsGetGeneratedKeys = true</li>

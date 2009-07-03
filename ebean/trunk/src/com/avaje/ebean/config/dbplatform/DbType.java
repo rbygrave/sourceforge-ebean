@@ -11,27 +11,35 @@ public class DbType {
 	/**
 	 * The data type name (VARCHAR, INTEGER ...)
 	 */
-	String name;
+	private final String name;
 
 	/**
 	 * The default length or precision.
 	 */
-	int defaultLength;
+	private final int defaultLength;
 
 	/**
 	 * The default scale (decimal).
 	 */
-	int defaultScale;
+	private final int defaultScale;
 
+	/**
+	 * Construct with no length or scale.
+	 */
 	public DbType(String name) {
-		this.name = name;
+		this(name, 0, 0);
 	}
 
+	/**
+	 * Construct with a given length.
+	 */
 	public DbType(String name, int defaultLength) {
-		this.name = name;
-		this.defaultLength = defaultLength;
+		this(name,defaultLength,0);
 	}
 
+	/**
+	 * Construct for Decimal with precision and scale.
+	 */
 	public DbType(String name, int defaultPrecision, int defaultScale) {
 		this.name = name;
 		this.defaultLength = defaultPrecision;
