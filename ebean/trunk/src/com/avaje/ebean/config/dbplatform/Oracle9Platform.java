@@ -22,10 +22,8 @@ package com.avaje.ebean.config.dbplatform;
 import java.sql.Types;
 
 
-
-
 /**
- * Oracle9 specific plugin.
+ * Oracle9 specific platform.
  * <p>
  * No support for getGeneratedKeys.
  * </p>

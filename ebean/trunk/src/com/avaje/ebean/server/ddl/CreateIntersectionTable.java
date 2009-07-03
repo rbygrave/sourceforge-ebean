@@ -34,7 +34,7 @@ public class CreateIntersectionTable {
 		this.manyProp = manyProp;
 		this.intersectionTableJoin = manyProp.getIntersectionTableJoin();
 		this.tableJoin = manyProp.getTableJoin();
-		this.maxFkeyLength = ctx.getDdlSyntax().getMaxFkeyLength()-3;
+		this.maxFkeyLength = ctx.getDdlSyntax().getMaxConstraintNameLength()-3;
 	}
 
 	public void build() {

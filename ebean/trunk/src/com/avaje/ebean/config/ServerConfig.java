@@ -703,7 +703,7 @@ public class ServerConfig {
 	 * automatically via searching the class path.
 	 * </p>
 	 * <p>
-	 * Alternatively the classes can contain added via {@link #addEntity(Class)}.
+	 * Alternatively the classes can contain added via {@link #addClass(Class)}.
 	 * </p>
 	 *
 	 * @param cls the entity type (or other type) that should be registered by
@@ -763,7 +763,7 @@ public class ServerConfig {
 	 * automatically via searching the class path.
 	 * </p>
 	 * <p>
-	 * Alternatively the classes can contain added via {@link #addEntity(Class)}.
+	 * Alternatively the classes can contain added via {@link #addClass(Class)}.
 	 * </p>
 	 *
 	 * @param classes the classes

@@ -1,9 +1,16 @@
 package com.avaje.ebean.config.dbplatform;
 
-
+/**
+ * The request object for the query that can have sql limiting 
+ * applied to it (such as a LIMIT OFFSET clause).
+ * 
+ * @author rob
+ */
 public interface SqlLimitRequest {
 
-	
+	/**
+	 * Return true if the query uses distinct.
+	 */
 	public boolean isDistinct();
 	
 	/**
@@ -16,8 +23,14 @@ public interface SqlLimitRequest {
 	 */
 	public int getMaxRows();
 	
+	/**
+	 * Return the sql query.
+	 */
 	public String getDbSql();
-	
+
+	/**
+	 * Return the orderBy clause of the sql query.
+	 */
 	public String getDbOrderBy();
 	
 }

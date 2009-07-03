@@ -23,7 +23,7 @@ import java.sql.Types;
 
 
 /**
- * Postgres v8.3 plugin.
+ * Postgres v8.3 specific platform.
  * <p>
  * No support for getGeneratedKeys.
  * </p>

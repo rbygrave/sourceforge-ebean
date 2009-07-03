@@ -273,7 +273,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	 */
 	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
 		this.databasePlatform = databasePlatform;
-		maxFkeyLength =  databasePlatform.getDbDdlSyntax().getMaxFkeyLength();
+		maxFkeyLength =  databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
 
 		logger.info("Setting maxFkeyLength to: " + maxFkeyLength);
 	}

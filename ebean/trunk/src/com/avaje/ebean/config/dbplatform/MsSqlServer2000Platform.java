@@ -23,7 +23,7 @@ import java.sql.Types;
 
 
 /**
- * Microsoft SQL Server 2000 plugin.
+ * Microsoft SQL Server 2000 specific platform.
  * <p>
  * <ul>
  * <li>supportsGetGeneratedKeys = false</li>

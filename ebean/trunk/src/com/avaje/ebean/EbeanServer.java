@@ -27,41 +27,56 @@ import java.util.Set;
 import javax.persistence.OptimisticLockException;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.control.ServerControl;
 
 /**
  * Provides the API for fetching and saving beans to a particular DataSource.
  * <p>
- * Much of the EbeanServer API matches the methods on Ebean and developers using
- * a single database will mostly use Ebean instead due to convenience.
+ * <b>Registration with the Ebean Singleton:</b><br/> When a EbeanServer is
+ * constructed it can be registered with the Ebean singleton (see
+ * {@link ServerConfig#setRegister(boolean)}). The Ebean singleton is
+ * essentially a map of EbeanServer's that have been registered with it. The
+ * EbeanServer can then be retrieved later via {@link Ebean#getServer(String)}.
  * </p>
  * <p>
+ * <b>The 'default' EbeanServer</b><br/> One EbeanServer can be designated as
+ * the 'default' or 'primary' EbeanServer (see
+ * {@link ServerConfig#setDefaultServer(boolean)}. Many methods on Ebean such as
+ * {@link Ebean#find(Class)} etc are actually just a convenient way to call
+ * methods on the 'default/primary' EbeanServer. This is handy for applications
+ * that use a single DataSource.
+ * <p>
  * There is one EbeanServer per Database (javax.sql.DataSource). One EbeanServer
- * is referred to as the <em>'default'</em> server and that is the one that
- * Ebean methods use.
+ * is referred to as the <em>'default'</em> server and that is the one that Ebean methods such
+ * as {@link Ebean#find(Class)} use.
+ * </p>
+ * <p>
+ * <b>Constructing a EbeanServer</b><br/> EbeanServer's are constructed by the
+ * EbeanServerFactory. They can be created programmatically via
+ * {@link EbeanServerFactory#create(ServerConfig)} or they can be automatically
+ * constructed on demand using configuration information in the ebean.properties
+ * file.
  * </p>
  * <p>
  * Example: Get a EbeanServer
  * </p>
  * 
- * <pre class="code">
- * // Get access to the Human Resources EbeanServer/Database
+ * <pre class="code"> // Get access to the Human Resources EbeanServer/Database
  * EbeanServer hrServer = Ebean.getServer(&quot;HR&quot;);
- *                                                               
- *                                                         
- * // fetch contact 3 from the HR database
- * Contact contact = hrServer.find(Contact.class, new Integer(3));
- *                                                               
- * contact.setStatus(&quot;INACTIVE&quot;);
- * ...
- *                                                               
- * // save the contact back to the HR database
- * hrServer.save(contact);                                                          
- * </pre>
+ * 
+ * 
+ * // fetch contact 3 from the HR database Contact contact =
+ * hrServer.find(Contact.class, new Integer(3));
+ * 
+ * contact.setStatus(&quot;INACTIVE&quot;); ...
+ * 
+ * // save the contact back to the HR database hrServer.save(contact); </pre>
  * 
  * <p>
- * EbeanServer provides additional control over the Transactions compared to
- * Ebean.
+ * <b>EbeanServer has more API than Ebean</b><br/> EbeanServer provides
+ * additional API compared with Ebean. For example it provides more control over
+ * the use of Transactions that is not available in the Ebean API.
  * </p>
  * <p>
  * <em>External Transactions:</em> If you wanted to use transactions created
@@ -74,7 +89,9 @@ import com.avaje.ebean.control.ServerControl;
  * method. Example: a single thread requires more than one transaction.
  * </p>
  * 
- * @see com.avaje.ebean.Ebean
+ * @see Ebean
+ * @see EbeanServerFactory
+ * @see ServerConfig
  */
 public interface EbeanServer {
 
@@ -85,13 +102,11 @@ public interface EbeanServer {
 	public ServerControl getServerControl();
 
 	/**
-	 * Return the name. This is typically the same as the DataSource name. The
-	 * 'Primary Server' returns a null for its name.
-	 * 
-	 * @see Ebean#getServer(String)
+	 * Return the name. This is used with {@link Ebean#getServer(String)} to get
+	 * a EbeanServer that was registered with the Ebean singleton.
 	 */
 	public String getName();
-	
+
 	/**
 	 * Return a map of the differences between two objects of the same type.
 	 * <p>
@@ -146,32 +161,33 @@ public interface EbeanServer {
 	public <T> Query<T> createQuery(Class<T> beanType, String namedQuery);
 
 	/**
-	 * Create a query for an entity bean (refer {@link Ebean#createQuery(Class)}).
+	 * Create a query for an entity bean (refer {@link Ebean#createQuery(Class)}
+	 * ).
 	 * 
 	 * @see Ebean#createQuery(Class)
 	 */
 	public <T> Query<T> createQuery(Class<T> beanType);
 
 	/**
-	 * Create a query for a type of entity bean (the same as {@link EbeanServer#createQuery(Class)}).
+	 * Create a query for a type of entity bean (the same as
+	 * {@link EbeanServer#createQuery(Class)}).
 	 */
 	public <T> Query<T> find(Class<T> beanType);
 
 	/**
 	 * Return the next unique identity value for a given bean type.
 	 * <p>
-	 * This will only work when a IdGenerator is on the bean such as 
-	 * for beans that use a DB sequence or UUID.
+	 * This will only work when a IdGenerator is on the bean such as for beans
+	 * that use a DB sequence or UUID.
 	 * </p>
 	 * <p>
-	 * For DB's supporting getGeneratedKeys and sequences such 
-	 * as Oracle10 you do not need to use this method generally.
-	 * It is made available for more complex cases where it is useful 
-	 * to get an ID prior to some processing.  
+	 * For DB's supporting getGeneratedKeys and sequences such as Oracle10 you
+	 * do not need to use this method generally. It is made available for more
+	 * complex cases where it is useful to get an ID prior to some processing.
 	 * </p>
 	 */
 	public Object nextId(Class<?> beanType);
-	
+
 	/**
 	 * Create a filter for filtering lists of entity beans.
 	 */
@@ -182,11 +198,13 @@ public interface EbeanServer {
 	 * 
 	 * @see Ebean#sort(List, String)
 	 * 
-	 * @param list the list of entity beans
-	 * @param sortByClause the properties to sort the list by
+	 * @param list
+	 *            the list of entity beans
+	 * @param sortByClause
+	 *            the properties to sort the list by
 	 */
 	public <T> void sort(List<T> list, String sortByClause);
-	
+
 	/**
 	 * Create a named update for an entity bean (refer
 	 * {@link Ebean#createUpdate(Class, String)}).
@@ -203,12 +221,13 @@ public interface EbeanServer {
 	 * Create a sql query for executing native sql query statements (refer
 	 * {@link Ebean#createSqlQuery(String)}).
 	 * 
-	 * @see Ebean#createSqlQuery()
+	 * @see Ebean#createSqlQuery(String)
 	 */
 	public SqlQuery createSqlQuery(String sql);
 
 	/**
-	 * Create a named sql query (refer {@link Ebean#createNamedSqlQuery(String)}).
+	 * Create a named sql query (refer {@link Ebean#createNamedSqlQuery(String)}
+	 * ).
 	 * <p>
 	 * The query statement will be defined in a deployment orm xml file.
 	 * </p>
@@ -219,14 +238,15 @@ public interface EbeanServer {
 
 	/**
 	 * Create a sql update for executing native dml statements (refer
-	 * {@link Ebean#createSqlUpdate()}).
+	 * {@link Ebean#createSqlUpdate(String)}).
 	 * 
-	 * @see Ebean#createSqlUpdate()
+	 * @see Ebean#createSqlUpdate(String)
 	 */
 	public SqlUpdate createSqlUpdate(String sql);
 
 	/**
-	 * Create a named sql update (refer {@link Ebean#createNamedSqlUpdate(String)}).
+	 * Create a named sql update (refer
+	 * {@link Ebean#createNamedSqlUpdate(String)}).
 	 * <p>
 	 * The statement (an Insert Update or Delete statement) will be defined in a
 	 * deployment orm xml file.
@@ -271,7 +291,7 @@ public interface EbeanServer {
 	 * transaction in scope.
 	 */
 	public Transaction currentTransaction();
-	
+
 	/**
 	 * Commit the current transaction.
 	 * 
@@ -296,19 +316,13 @@ public interface EbeanServer {
 	 * <p>
 	 * Code example:
 	 * 
-	 * <pre class="code">
-	 * Ebean.startTransaction();
-	 * try {
-	 * 	// do some fetching and or persisting
+	 * <pre class="code"> Ebean.startTransaction(); try { // do some fetching
+	 * and or persisting
 	 * 
-	 * 	// commit at the end
-	 * 	Ebean.commitTransaction();
+	 * // commit at the end Ebean.commitTransaction();
 	 * 
-	 * } finally {
-	 * 	// if commit didn't occur then rollback the transaction
-	 * 	Ebean.endTransaction();
-	 * }
-	 * </pre>
+	 * } finally { // if commit didn't occur then rollback the transaction
+	 * Ebean.endTransaction(); } </pre>
 	 * 
 	 * </p>
 	 * 
@@ -363,10 +377,11 @@ public interface EbeanServer {
 	public <T> T getReference(Class<T> beanType, Object uid);
 
 	/**
-	 * Return the number of 'top level' or 'root' entities this query should return.
+	 * Return the number of 'top level' or 'root' entities this query should
+	 * return.
 	 */
 	public <T> int findRowCount(Query<T> query, Transaction transaction);
-	
+
 	/**
 	 * Execute a query returning a list of beans.
 	 * <p>
@@ -648,8 +663,8 @@ public interface EbeanServer {
 	/**
 	 * Execute a TxRunnable in a Transaction with the default scope.
 	 * <p>
-	 * The default scope runs with REQUIRED and by default will rollback
-	 * on any exception (checked or runtime).
+	 * The default scope runs with REQUIRED and by default will rollback on any
+	 * exception (checked or runtime).
 	 * </p>
 	 */
 	public void execute(TxRunnable r);
@@ -666,8 +681,8 @@ public interface EbeanServer {
 	/**
 	 * Execute a TxCallable in a Transaction with the default scope.
 	 * <p>
-	 * The default scope runs with REQUIRED and by default will rollback
-	 * on any exception (checked or runtime).
+	 * The default scope runs with REQUIRED and by default will rollback on any
+	 * exception (checked or runtime).
 	 * </p>
 	 */
 	public <T> T execute(TxCallable<T> c);

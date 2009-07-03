@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public class DbTypeMap {
 
-	Map<Integer, DbType> typeMap = new HashMap<Integer, DbType>();
+	private final Map<Integer, DbType> typeMap = new HashMap<Integer, DbType>();
 
 	public DbTypeMap() {
 		loadDefaults();

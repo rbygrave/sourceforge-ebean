@@ -25,7 +25,7 @@ import java.sql.Types;
 
 
 /**
- * Microsoft SQL Server 2005 plugin.
+ * Microsoft SQL Server 2005 specific platform.
  * <p>
  * <ul>
  * <li>supportsGetGeneratedKeys = true</li>

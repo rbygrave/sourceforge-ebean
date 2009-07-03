@@ -22,7 +22,7 @@ package com.avaje.ebean.config.dbplatform;
 
 
 /**
- * H2 specific plugin.
+ * H2 specific platform.
  * <p>
  * <ul>
  * <li>supportsGetGeneratedKeys = true</li>

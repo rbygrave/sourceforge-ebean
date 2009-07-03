@@ -17,10 +17,13 @@ public class DbSequenceIdGenerator implements IdGenerator {
 
 	private static final Logger logger = Logger.getLogger(DbSequenceIdGenerator.class.getName());
 	
-	final String sql;
+	private final String sql;
 	
-	final DataSource dataSource;
+	private final DataSource dataSource;
 	
+	/**
+	 * Construct given a dataSource and sql to return the next sequence value.
+	 */
 	public DbSequenceIdGenerator(DataSource dataSource, String sql) {
 		this.dataSource = dataSource;
 		this.sql = sql;
