@@ -16,42 +16,32 @@ public class DefaultRelationalQuery implements RelationalQuery {
 
 	private static final long serialVersionUID = -1098305779779591068L;
 
-	transient EbeanServer server;
+	private transient EbeanServer server;
 
-    transient SqlQueryListener queryListener;
+	private transient SqlQueryListener queryListener;
 
-	/**
-	 * Sql Query statement.
-	 */
-	String query;
+	private String query;
 		
-	int firstRow;
+	private int firstRow;
 	
-	int maxRows;
+	private int maxRows;
 
-	int timeout;
+	private int timeout;
 	
     /**
 	 * The rows after which the fetch continues in a bg thread.
 	 */
-	int backgroundFetchAfter;
-
-	/**
-	 * Used to increase the initial capacity of the list set or map being
-	 * fetched. Useful if fetching a large amount of data into a Map or Set to
-	 * reduce rehashing.
-	 */
-	int initialCapacity;
+	private int backgroundFetchAfter;
 
 	/**
 	 * The property used to get the key value for a Map.
 	 */
-	String mapKey;
+	private String mapKey;
 	    
     /**
      * Bind parameters when using the query language.
      */
-    BindParams bindParams = new BindParams();
+	private BindParams bindParams = new BindParams();
     
 	/**
 	 * Additional supply a query detail object.
@@ -92,22 +82,6 @@ public class DefaultRelationalQuery implements RelationalQuery {
         return this;
     }
     
-    public DefaultRelationalQuery set(int position, Object value) {
-        return setParameter(position, value);
-    }
-    
-    public DefaultRelationalQuery set(String name, Object value) {
-    	 return setParameter(name, value);
-    }
-    
-    public DefaultRelationalQuery bind(int position, Object value) {
-    	 return setParameter(position, value);
-    }
-    
-    public DefaultRelationalQuery bind(String name, Object value) {
-    	 return setParameter(name, value);
-    }
-
     /**
      * Return the findListener is one has been set.
      */
@@ -167,18 +141,9 @@ public class DefaultRelationalQuery implements RelationalQuery {
 		this.backgroundFetchAfter = backgroundFetchAfter;
 		return this;
 	}
-
-	public int getInitialCapacity() {
-		return initialCapacity;
-	}
 	
 	public int getTimeout() {
 		return timeout;
-	}
-
-	public DefaultRelationalQuery setInitialCapacity(int initialCapacity) {
-		this.initialCapacity = initialCapacity;
-		return this;
 	}
 	
 	public DefaultRelationalQuery setTimeout(int secs) {

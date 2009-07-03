@@ -26,9 +26,7 @@ import com.avaje.ebean.server.deploy.ManyType;
  */
 public class BeanCollectionParams {
 
-	Boolean ordered;
-
-	private final int initialCapacity;
+	private Boolean ordered;
 
 	private final ManyType manyType;
 
@@ -37,22 +35,6 @@ public class BeanCollectionParams {
 	 */
 	public BeanCollectionParams(ManyType manyType) {
 		this.manyType = manyType;
-		this.initialCapacity = -1;
-	}
-
-	/**
-	 * Construct with an explicit initialCapacity.
-	 */
-	public BeanCollectionParams(ManyType manyType, int initialCapacity, boolean modifyListening) {
-		this.manyType = manyType;
-		this.initialCapacity = initialCapacity;
-	}
-
-	/**
-	 * Return the initial capacity for the object.
-	 */
-	public int getInitialCapacity() {
-		return initialCapacity;
 	}
 
 	/**

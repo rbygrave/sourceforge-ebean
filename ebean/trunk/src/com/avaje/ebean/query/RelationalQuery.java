@@ -40,11 +40,6 @@ public interface RelationalQuery extends SqlQuery {
 	public int getBackgroundFetchAfter();
 	
 	/**
-	 * Return the initial capacity.
-	 */
-	public int getInitialCapacity();
-	
-	/**
 	 * Return the key property for maps.
 	 */
 	public String getMapKey();
