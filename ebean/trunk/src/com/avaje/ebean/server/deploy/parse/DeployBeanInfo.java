@@ -95,7 +95,7 @@ public class DeployBeanInfo<T> {
 			if (baseTable == null) {
 				// default the tableName using NamingConvention.
 				// JPA Spec defines this as the class name
-				setTable(tableNameFromClass(descriptor.getBeanType()), null);
+				setTable(tableNameFromClass(descriptor.getBeanType()));
 			}
 		}
 	}
@@ -157,7 +157,7 @@ public class DeployBeanInfo<T> {
 	/**
 	 * Set the base table name and alias.
 	 */
-	public void setTable(TableName tableName, String alias) {
+	private void setTable(TableName tableName) {
 
 		if (tableName != null && tableName.isValid()) {
 			descriptor.setBaseTable(tableName.getQualifiedName());
