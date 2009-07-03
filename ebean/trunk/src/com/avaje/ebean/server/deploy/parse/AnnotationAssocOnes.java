@@ -69,7 +69,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
     	Iterator<DeployBeanProperty> it = descriptor.propertiesAll();
     	while (it.hasNext()) {
     		DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssocOne){
+			if (prop instanceof DeployBeanPropertyAssocOne<?>){
 				readAssocOne((DeployBeanPropertyAssocOne<?>)prop);
 			}
 		}

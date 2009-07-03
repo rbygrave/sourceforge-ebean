@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,32 +50,28 @@ public class SqlTreeBuilder {
 
 	private static final Logger logger = Logger.getLogger(SqlTreeBuilder.class.getName());
 
-	final OrmQuery<?> query;
+	private final OrmQuery<?> query;
 
-	final OrmQueryDetail queryDetail;
+	private final OrmQueryDetail queryDetail;
 
-	final SqlTree clause = new SqlTree();
+	private final SqlTree clause = new SqlTree();
 
-	final String tableAliasPlaceHolder;
-	
-	final String columnAliasPrefix;
-	
-	final StringBuilder summary = new StringBuilder();
+	private final StringBuilder summary = new StringBuilder();
 
-	final CQueryPredicates predicates;
+	private final CQueryPredicates predicates;
 
-	final boolean subQuery;
+	private final boolean subQuery;
 	
 	/**
 	 * Property if resultSet contains master and detail rows.
 	 */
-	BeanPropertyAssocMany<?> manyProperty;
+	private BeanPropertyAssocMany<?> manyProperty;
 
-	OrmQueryRequest<?> request;
+	private final OrmQueryRequest<?> request;
 	
-	SqlTreeAlias alias;
+	private final SqlTreeAlias alias;
 	
-	DefaultDbSqlContext ctx;
+	private final DefaultDbSqlContext ctx;
 	
 	/**
 	 * The predicates are used to determine if 'extra' joins are required to
@@ -90,8 +85,6 @@ public class SqlTreeBuilder {
 		this.subQuery = request.isSubQuery();
         this.query = request.getQuery();
     	
-		this.tableAliasPlaceHolder = tableAliasPlaceHolder;
-		this.columnAliasPrefix = columnAliasPrefix;
 		this.queryDetail = query.getDetail();
 		this.predicates = predicates;
 
@@ -279,7 +272,7 @@ public class SqlTreeBuilder {
 		if (p == null) {
 			logger.log(Level.SEVERE, "property [" + propName + "]not found on " + desc + " for query - excluding it.");
 			
-		} else if (p instanceof BeanPropertyAssoc) {
+		} else if (p instanceof BeanPropertyAssoc<?>) {
 			int pos = propName.indexOf(".");
 			if (pos > -1) {
 				String name = propName.substring(pos + 1);
@@ -335,7 +328,7 @@ public class SqlTreeBuilder {
 				// do not bother to include id for normal queries as the 
 				// id is always added (except for subQueries)
 
-			} else if (p instanceof BeanPropertyAssoc) {
+			} else if (p instanceof BeanPropertyAssoc<?>) {
 				// need to check if this property should be
 				// excluded. This occurs when this property is
 				// included as a bean join. With a bean join 
@@ -415,7 +408,7 @@ public class SqlTreeBuilder {
 	/**
 	 * Return true if this many node should be included in the query.
 	 */
-	private boolean isIncludeMany(String propName, BeanPropertyAssocMany<?> manyProp) {//BeanDescriptor<?> desc) {
+	private boolean isIncludeMany(String propName, BeanPropertyAssocMany<?> manyProp) {
 		
 		if (queryDetail.isFetchJoinsEmpty()) {
 			return false;
@@ -478,34 +471,25 @@ public class SqlTreeBuilder {
 	 */
 	private static class IncludesDistiller {
 
-		final Set<String> selectIncludes;
-		final Set<String> predicateIncludes;
+		private final Set<String> selectIncludes;
+		private final Set<String> predicateIncludes;
 
 		/**
 		 * Contains the 'root' extra joins. We only return the roots back.
 		 */
-		final Map<String, SqlTreeNodeExtraJoin> joinRegister = new HashMap<String, SqlTreeNodeExtraJoin>();
+		private final Map<String, SqlTreeNodeExtraJoin> joinRegister = new HashMap<String, SqlTreeNodeExtraJoin>();
 
 		/**
 		 * Register of all the extra join nodes.
 		 */
-		final Map<String, SqlTreeNodeExtraJoin> rootRegister = new HashMap<String, SqlTreeNodeExtraJoin>();
+		private final Map<String, SqlTreeNodeExtraJoin> rootRegister = new HashMap<String, SqlTreeNodeExtraJoin>();
 
-		final BeanDescriptor<?> desc;
+		private final BeanDescriptor<?> desc;
 		
-		IncludesDistiller(BeanDescriptor<?> desc, Set<String> selectIncludes, Set<String> predicateIncludes) {
+		private IncludesDistiller(BeanDescriptor<?> desc, Set<String> selectIncludes, Set<String> predicateIncludes) {
 			this.desc = desc;
 			this.selectIncludes = selectIncludes;
 			this.predicateIncludes = predicateIncludes;
-		}
-		
-		public Set<String> getIncludesOrdered() {
-			
-			TreeSet<String> total = new TreeSet<String>();
-			total.addAll(selectIncludes);
-			total.addAll(predicateIncludes);
-			
-			return total;
 		}
 
 		/**
@@ -516,7 +500,7 @@ public class SqlTreeBuilder {
 		 * from a join to a 'many' down through the rest of its tree.
 		 * </p>
 		 */
-		Collection<SqlTreeNodeExtraJoin> getExtraJoinRootNodes() {
+		private Collection<SqlTreeNodeExtraJoin> getExtraJoinRootNodes() {
 
 			String[] extras = findExtras();
 			if (extras.length == 0) {

@@ -182,7 +182,7 @@ public final class IdBinderMultiple implements IdBinder {
 
 		// allow Map or String for concatenated id
 		Map<?,?> mapVal = null;
-		if (idValue instanceof Map) {
+		if (idValue instanceof Map<?,?>) {
 			mapVal = (Map<?,?>) idValue;
 		} else {
 			mapVal = MapFromString.parse(idValue.toString());

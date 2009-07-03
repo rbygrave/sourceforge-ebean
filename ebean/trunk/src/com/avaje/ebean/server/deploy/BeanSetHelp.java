@@ -89,7 +89,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 			// the currentList is null?  Not really expecting this...
 			many.setValue(parentBean,newBeanSet);
 			
-		} else if (current instanceof BeanSet) {
+		} else if (current instanceof BeanSet<?>) {
 			// normally this case, replace just the underlying list
 			BeanSet<?> currentBeanSet = (BeanSet<?>)current;
 			currentBeanSet.setActualSet(newBeanSet.getActualSet());

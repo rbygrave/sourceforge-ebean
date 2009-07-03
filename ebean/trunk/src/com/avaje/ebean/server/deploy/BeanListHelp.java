@@ -80,7 +80,7 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 			// the currentList is null?  Not really expecting this...
 			many.setValue(parentBean,newBeanList);
 			
-		} else if (currentList instanceof BeanList) {
+		} else if (currentList instanceof BeanList<?>) {
 			// normally this case, replace just the underlying list
 			BeanList<?> currentBeanList = (BeanList<?>)currentList;
 			currentBeanList.setActualList(newBeanList.getActualList());

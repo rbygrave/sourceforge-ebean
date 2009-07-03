@@ -124,10 +124,10 @@ public class DeployBeanPropertyLists {
 			local.add(prop);
 		}
 		
-		if (prop instanceof BeanPropertyAssocMany) {
+		if (prop instanceof BeanPropertyAssocMany<?>) {
 			manys.add(prop);
 			
-		} else if (prop instanceof BeanPropertyAssocOne) {
+		} else if (prop instanceof BeanPropertyAssocOne<?>) {
 			if (prop.isEmbedded()) {
 				embedded.add(prop);
 			} else {

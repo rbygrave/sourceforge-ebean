@@ -472,9 +472,9 @@ public final class DefaultPersister implements Persister {
 		if (insertedParent){
 			// if the parent was inserted then everything in the 
 			// list/set/map is treated as an intersection addition  
-			if (value instanceof Map){
+			if (value instanceof Map<?,?>){
 				additions = ((Map<?,?>)value).values();
-			} else if (value instanceof Collection) {
+			} else if (value instanceof Collection<?>) {
 				additions = (Collection<?>)value;
 			} else {
 				String msg = "Unhandled ManyToMany type "+value.getClass().getName()+" for "+prop.getFullBeanName();
@@ -483,12 +483,12 @@ public final class DefaultPersister implements Persister {
 		} else {
 			// parent bean was updated so expecting a BeanCollection 
 			// that listens for additions/deletions 
-			if (value instanceof BeanCollection == false) {
+			if (value instanceof BeanCollection<?> == false) {
 				// empty collection or map is OK
-				if (value instanceof Collection && ((Collection<?>)value).isEmpty()){
+				if (value instanceof Collection<?> && ((Collection<?>)value).isEmpty()){
 					return;
 				}
-				if (value instanceof Map && ((Map<?,?>)value).isEmpty()){
+				if (value instanceof Map<?,?> && ((Map<?,?>)value).isEmpty()){
 					return;
 				}
 				
@@ -716,7 +716,7 @@ public final class DefaultPersister implements Persister {
 		if (o == null) {
 			return null;
 		}
-		if (o instanceof BeanCollection) {
+		if (o instanceof BeanCollection<?>) {
 			BeanCollection<?> bc = (BeanCollection<?>) o;
 			if (!bc.isPopulated()) {
 				return null;
@@ -724,11 +724,11 @@ public final class DefaultPersister implements Persister {
 			return bc.getActualDetails();
 		}
 
-		if (o instanceof Map) {
+		if (o instanceof Map<?,?>) {
 			// yes, we want the entrySet (to set the keys)
 			return ((Map<?, ?>) o).entrySet().iterator();
 
-		} else if (o instanceof Collection) {
+		} else if (o instanceof Collection<?>) {
 			return ((Collection<?>) o).iterator();
 
 		}

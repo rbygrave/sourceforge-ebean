@@ -714,7 +714,7 @@ public class DeployBeanDescriptor<T> {
 		Iterator<DeployBeanProperty> it = propMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssocOne) {
+			if (prop instanceof DeployBeanPropertyAssocOne<?>) {
 				if (!prop.isEmbedded()) {
 					list.add((DeployBeanPropertyAssocOne<?>) prop);
 				}
@@ -735,7 +735,7 @@ public class DeployBeanDescriptor<T> {
 		Iterator<DeployBeanProperty> it = propMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssocMany) {
+			if (prop instanceof DeployBeanPropertyAssocMany<?>) {
 				list.add((DeployBeanPropertyAssocMany<?>) prop);
 			}
 		}
@@ -756,7 +756,7 @@ public class DeployBeanDescriptor<T> {
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
 
-			if (prop instanceof DeployBeanPropertyAssoc) {
+			if (prop instanceof DeployBeanPropertyAssoc<?>) {
 
 			} else {
 				if (!prop.isId() && prop.isVersionColumn()) {
@@ -779,7 +779,7 @@ public class DeployBeanDescriptor<T> {
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
 
-			if (prop instanceof DeployBeanPropertyAssoc) {
+			if (prop instanceof DeployBeanPropertyAssoc<?>) {
 
 			} else {
 				if (!prop.isId()) {
