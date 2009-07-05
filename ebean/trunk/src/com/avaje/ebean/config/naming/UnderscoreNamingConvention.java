@@ -69,7 +69,7 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
 							getSchema(),
 							toUnderscoreFromCamel(beanClass.getSimpleName()));
 		} else {
-			return tableName.apply(getCatalog(), getSchema());
+			return tableName;
 		}
 	}
 

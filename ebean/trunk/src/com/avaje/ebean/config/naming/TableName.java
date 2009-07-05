@@ -45,24 +45,6 @@ public final class TableName{
 		this.schema = schema != null ? schema.trim() : null;
 		this.name = name != null ? name.trim() : null;
 	}
-	
-	/**
-	 * Apply the catalog and schema from the NamingConvention if they
-	 * have not already been defined.
-	 */
-	public TableName apply(String catalog, String schema){
-		if (isEmpty(this.catalog) && !isEmpty(catalog)) {
-			this.catalog = catalog;
-		}
-		if (isEmpty(this.schema) && !isEmpty(schema)) {
-			this.schema = schema;
-		}
-		return this;
-	}
-	
-	private boolean isEmpty(String s){
-		return s != null && s.length() > 0;
-	}
 
 	/**
 	 * Gets the catalog.
