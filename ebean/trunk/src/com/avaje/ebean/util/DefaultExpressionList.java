@@ -104,6 +104,18 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public T findUnique() {
 		return query.findUnique();
 	}
+
+	public Query<T> select(String fetchProperties){
+		return query.select(fetchProperties);
+	}
+
+	public Query<T> join(String assocProperties){
+		return query.join(assocProperties);
+	}
+
+	public Query<T> join(String assocProperty, String assocProperties){
+		return query.join(assocProperty, assocProperties);
+	}
 	
 	public Query<T> setFirstRow(int firstRow){
 		return query.setFirstRow(firstRow);

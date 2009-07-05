@@ -387,7 +387,7 @@ public interface Query<T> extends Serializable {
 
 	/**
 	 * Explicitly set a comma delimited list of the properties to fetch on the
-	 * 'main' entity bean. This defaults to '*' which means all properties.
+	 * 'main' entity bean (aka partial object). Note that '*' means all properties.
 	 * 
 	 * <pre class="code">
 	 * Query&lt;Customer&gt; query = Ebean.createQuery(Customer.class);
@@ -407,7 +407,7 @@ public interface Query<T> extends Serializable {
 
 	/**
 	 * Specify a property (associated bean) to join and <em>fetch</em> with
-	 * its specific properties to include.
+	 * its specific properties to include (aka partial object).
 	 * <p>
 	 * Note that you do <em>NOT</em> need to specify a join just for the
 	 * purposes of a where clause (predicate) or order by clause. Ebean will
