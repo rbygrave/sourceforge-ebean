@@ -68,8 +68,7 @@ public class MatchingNamingConvention extends AbstractNamingConvention {
 			return new TableName(getCatalog(), getSchema(), beanClass.getSimpleName());
 		
 		} else {
-			// apply catalog and schema from NamingConvention if required
-			return tableName.apply(getCatalog(), getSchema());
+			return tableName;
 		}
 
 	}
