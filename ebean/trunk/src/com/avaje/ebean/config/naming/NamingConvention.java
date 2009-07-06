@@ -54,12 +54,17 @@ public interface NamingConvention {
 
 	/**
 	 * Returns the table name for a given Class.
+	 * <p>
+	 * This method is always called and should take into account @Table
+	 * annotations etc. This means you can choose to override the settings
+	 * defined by @Table if you wish.
+	 * </p>
 	 *
 	 * @param beanClass the bean class
 	 *
-	 * @return the table name from class
+	 * @return the table name for the entity class
 	 */
-	public TableName getTableNameFromClass(Class<?> beanClass);
+	public TableName getTableName(Class<?> beanClass);
 
 	/**
 	 * Return the column name given the property name.

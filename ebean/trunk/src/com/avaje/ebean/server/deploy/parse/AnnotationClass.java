@@ -59,7 +59,7 @@ public class AnnotationClass extends AnnotationParser {
 		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
 
 			// default the TableName using NamingConvention.
-			TableName tableName = getTableName(descriptor.getBeanType());
+			TableName tableName = namingConvention.getTableName(descriptor.getBeanType());
 			
             descriptor.setBaseTable(tableName.getQualifiedName());
 		}
