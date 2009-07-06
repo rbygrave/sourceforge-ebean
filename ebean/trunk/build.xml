@@ -10,6 +10,7 @@
     <property name="lib.dir" value="lib"/>
     <property name="src.dir" value="src"/>
     <property name="doc.dir" value="doc"/>
+    <property name="ide.bin.dir" value="bin"/>
     <property name="bin.dir" value="build/bin"/>
     <property name="dist.dir" value="dist"/>
     <property name="base.dir" value="."/>
@@ -26,7 +27,7 @@
     <!-- Enhance the built in @Entity beans                                  -->
     <!-- =================================================================== -->
 
-    <taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask" classpath="${bin.dir}"/>
+    <taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask" classpath="${ide.bin.dir}"/>
 
     <target name="enhance" depends="compile">
         <ebeanEnhance classSource="${bin.dir}" packages="com.avaje.ebean.meta.**" transformArgs="debug=1"/>
