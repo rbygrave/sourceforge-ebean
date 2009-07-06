@@ -4,11 +4,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import javax.persistence.Table;
-
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.naming.NamingConvention;
-import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 
 /**
@@ -77,61 +74,5 @@ public abstract class AnnotationBase {
 		return a;
 	}
 	
-	/**
-	 * Returns the table name for a given entity bean.
-	 * <p>
-	 * This first checks for the @Table annotation and if not present
-	 * uses the naming convention to define the table name.
-	 * </p>
-	 */
-	public TableName getTableName(Class<?> beanClass) {
-
-		TableName tableName = getTableNameFromAnnotation(beanClass);
-		if (tableName == null){
-			tableName = namingConvention.getTableNameFromClass(beanClass);
-		}
-		return tableName;
-	}
 	
-	/**
-	 * Gets the table name from annotation.
-	 */
-	private TableName getTableNameFromAnnotation(Class<?> beanClass) {
-		
-		final Table t = findTableAnnotation(beanClass);
-
-		// Take the annotation if defined
-		if (t != null && !isEmpty(t.name())){
-			// Note: empty catalog and schema are converted to null
-			// Only need to convert quoted identifiers from annotations
-			return new TableName(quoteIdentifiers(t.catalog()),
-				quoteIdentifiers(t.schema()),
-				quoteIdentifiers(t.name()));
-		}
-
-		// No annotation
-		return null;	
-	}
-	
-	/**
-	 * Search recursively for an @Table in the class hierarchy.
-	 */
-	private Table findTableAnnotation(Class<?> cls) {
-		if (cls.equals(Object.class)){
-			return null;
-		}
-		Table table = cls.getAnnotation(Table.class);
-		if (table != null){
-			return table;
-		}
-		return findTableAnnotation(cls.getSuperclass());
-	}
-	
-	/**
-	 * Replace back ticks (if they are used) with database platform specific
-	 * quoted identifiers.
-	 */
-	private String quoteIdentifiers(String s) {
-		return databasePlatform.convertQuotedIdentifiers(s);
-	}
 }

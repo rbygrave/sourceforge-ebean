@@ -43,7 +43,7 @@ public class AnnotationBeanTable extends AnnotationBase {
      */
     public void parse() {
     	
-		TableName tableName = getTableName(beanTable.getBeanType());
+		TableName tableName = namingConvention.getTableName(beanTable.getBeanType());
 
 		beanTable.setBaseTable(tableName.getQualifiedName());
     }
