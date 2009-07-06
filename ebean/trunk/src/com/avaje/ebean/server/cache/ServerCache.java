@@ -17,36 +17,48 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.transaction;
+package com.avaje.ebean.server.cache;
 
 /**
- * Performs post commit processing (using a background thread).
+ * Represents a "L2" server side cache (aka not persistence context).
  * <p>
- * This includes Cluster notification, Lucene notification and BeanListener
- * notification.
+ * This is used to cache beans or query results (bean collections).
  * </p>
  */
-public class PostCommitNotify implements Runnable {
-
-	private final TransactionManager manager;
-
-	private final TransactionEvent event;
+public interface ServerCache {
 
 	/**
-	 * Create for a TransactionManager and event.
+	 * Return the configuration options for this cache.
 	 */
-	public PostCommitNotify(TransactionManager manager, TransactionEvent event) {
-		this.manager = manager;
-		this.event = event;
-	}
-
+	public ServerCacheOptions getOptions();
+	
 	/**
-	 * Run the processing.
+	 * Update the configuration options for this cache.
 	 */
-	public void run() {
-		manager.notifyCluster(event);
-		//manager.notifyLucene(event);
-		manager.notifyBeanListeners(event);
-	}
-
+	public void setOptions(ServerCacheOptions options);
+	
+	/**
+	 * Return the value given the key.
+	 */
+	public Object get(Object id);
+	
+	/**
+	 * Put the value in the cache with a given id.
+	 */
+	public Object put(Object id, Object value);
+	
+	/**
+	 * Remove a entry from the cache given its id.
+	 */
+	public Object remove(Object id);
+	
+	/**
+	 * Clear all entries from the cache.
+	 */
+	public void clear();
+	
+	/**
+	 * Return the number of entries in the cache.
+	 */
+	public int size();
 }

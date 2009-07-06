@@ -25,7 +25,6 @@ import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.PersistenceContext;
@@ -43,17 +42,14 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
      */
     private final CQueryEngine queryEngine;
     
-	private final CacheManager serverCache;
-
     private final BeanDescriptorManager beanDescriptorManager;
     
     /**
      * Create the Finder.
      */
-    public DefaultOrmQueryEngine(BeanDescriptorManager descMgr, CQueryEngine queryEngine, CacheManager serverCache) {
+    public DefaultOrmQueryEngine(BeanDescriptorManager descMgr, CQueryEngine queryEngine) {
    
         this.queryEngine = queryEngine;
-        this.serverCache = serverCache;
         this.beanDescriptorManager = descMgr;
     }
     
@@ -63,14 +59,19 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     }
 
     
-    @SuppressWarnings("unchecked")
 	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 
-    	BeanCollection<T> result = (BeanCollection<T>)request.getFromCache(serverCache);
-    	if (result != null){
-    		return result;
-    	}
+    	BeanCollection<T> result = null;
+    	
+        OrmQuery<T> query = request.getQuery();
 
+        if (query.isUseCache()){
+        	result = request.getFromQueryCache();
+        	if (result != null){
+        		return result;
+        	}
+        }
+ 
         ServerTransaction t = request.getTransaction();
         
         // before we perform a query, we need to flush any
@@ -78,7 +79,6 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         // The query may read data affected by those requests.
         t.batchFlush();
         
-        OrmQuery<T> query = request.getQuery();
         ArrayList<EntityBean> adds = query.getContextAdditions();
         if (adds != null){
             PersistenceContext pc = t.getPersistenceContext();
@@ -99,7 +99,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         }
 
         if (query.isUseCache()){
-        	request.putToCacheMany(result);
+        	request.putToQueryCache(result);
         }
         
         return result;
@@ -109,13 +109,19 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     /**
      * Find a single bean using its unique id.
      */
-	@SuppressWarnings("unchecked")
 	public <T> T findId(OrmQueryRequest<T> request) {
         
-    	T result = (T)request.getFromCache(serverCache);
-    	if (result != null){
-    		return result;
-    	}
+		T result = null;
+		
+		OrmQuery<T> query = request.getQuery();
+		
+		boolean useBeanCache = query.isUseCache() && query.getId() != null; 
+		if (useBeanCache){
+			result = request.getFromBeanCache();
+			if (result != null){
+				return result;
+			}
+		}
         
         ServerTransaction t = request.getTransaction();
         
@@ -125,8 +131,6 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             // The query may read data affected by those requests.
         	t.batchFlush();
         }
-
-        OrmQuery<T> query = request.getQuery();
 
         ArrayList<EntityBean> adds = query.getContextAdditions();
         if (adds != null){
@@ -146,8 +150,8 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.find(request);
         }
         
-        if (query.isUseCache()){
-        	request.putToCacheMany(result);
+        if (useBeanCache){
+        	request.getBeanDescriptor().cachePut(result);
         }
         
         return result;

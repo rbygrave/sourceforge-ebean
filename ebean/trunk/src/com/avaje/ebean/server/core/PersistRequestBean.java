@@ -29,6 +29,7 @@ import javax.persistence.OptimisticLockException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.ValidationException;
 import com.avaje.ebean.bean.BeanPersistController;
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.BeanPersistRequest;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -39,7 +40,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.persist.PersistExecute;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
-import com.avaje.ebean.server.transaction.RemoteListenerPayload;
+import com.avaje.ebean.server.transaction.RemoteBeanPersist;
 import com.avaje.ebean.server.transaction.TransactionEvent;
 import com.avaje.ebean.util.Message;
 
@@ -48,63 +49,67 @@ import com.avaje.ebean.util.Message;
  */
 public final class PersistRequestBean<T> extends PersistRequest implements BeanPersistRequest<T> {
 	
-	final BeanManager<T> beanManager;
+	private final BeanManager<T> beanManager;
 
-	final BeanDescriptor<T> beanDescriptor;
+	private final BeanDescriptor<T> beanDescriptor;
+	
+	private final BeanPersistListener<T> beanPersistListener;
 	
 	/**
 	 * For per post insert update delete control.
 	 */
-	final BeanPersistController<T> controller;
+	private final BeanPersistController<T> controller;
 	
 	/**
 	 * The associated intercept.
 	 */
-	final EntityBeanIntercept intercept;
+	private final EntityBeanIntercept intercept;
 	
 	/**
 	 * The parent bean for unidirectional save.
 	 */
-	final Object parentBean;
+	private final Object parentBean;
 
-	final boolean isDirty;
+	private final boolean isDirty;
 	
 	/**
 	 * True if this is a vanilla bean.
 	 */
-	final boolean vanilla;
+	private final boolean vanilla;
 	
 	/**
 	 * The bean being persisted.
 	 */
-	final T bean;
+	private final T bean;
 
 	/**
 	 * Old values used for concurrency checking.
 	 */
-	T oldValues;
+	private T oldValues;
 
 
 	/**
 	 * The concurrency mode used for update or delete.
 	 */
-	ConcurrencyMode concurrencyMode;
+	private ConcurrencyMode concurrencyMode;
 
-	final Set<String> loadedProps;
+	private final Set<String> loadedProps;
 	
 	/**
 	 * The unique id used for logging summary.
 	 */
-	Object idValue;
+	private Object idValue;
 	
-	Set<String> changedProps;
-	
+	private Set<String> changedProps;
+
+	private boolean notifyCache;
+
     @SuppressWarnings("unchecked")
 	public PersistRequestBean(InternalEbeanServer server, T bean, Object parentBean, BeanManager<T> mgr, ServerTransaction t, PersistExecute persistExecute) {
        super(server, t, persistExecute);
 		this.beanManager = mgr;
 		this.beanDescriptor = mgr.getBeanDescriptor();
-		
+		this.beanPersistListener = beanDescriptor.getBeanPersistListener();
 		this.bean = bean;
 		this.parentBean = parentBean;
 
@@ -138,46 +143,93 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 		}
     }
 
+    public boolean isNotify() {
+    	return notifyCache || isNotifyPersistListener();
+    }
+    
+    public boolean isNotifyCache() {
+    	return notifyCache;
+    }
+
+    public boolean isNotifyPersistListener() {
+    	return beanPersistListener != null;
+    }
+
+	public void notifyCache() {
+		if (notifyCache){
+			beanDescriptor.cacheRemove(bean);
+		}
+	}
+	
+	public RemoteBeanPersist notifyLocalPersistListener() {
+		if (isLocalNotifyPersistListener()){
+			return createRemoteBeanPersist();
+		} else {
+			return null;
+		}
+	}
+	
+	private boolean isLocalNotifyPersistListener() {
+		if (beanPersistListener == null){
+			return false;
+			
+		} else {
+			switch (type) {
+			case INSERT:
+				return beanPersistListener.inserted(bean);
+			
+			case UPDATE:
+				return beanPersistListener.updated(bean, getUpdatedProperties());
+				
+			case DELETE:
+				return beanPersistListener.deleted(bean);
+
+			default:
+				return false;
+			}
+		}
+	}
+	
 	public boolean isParent(Object o){
 		return o == parentBean;
 	}
 	
-    /**
-     * If this in a vanilla bean add it to the saved set.
-     * <p>
-     * This is because we don't know when vanilla beans are dirty
-     * so we keep track of the ones we have saved to avoid an 
-     * infinite loop when cascade.PERSIST is on both sides of a
-     * bi-directional relationship.
-     * </p>
-     */
-    public void addSavedVanilla() {
-    	if (vanilla){
-    		transaction.savedVanilla(bean);
-    	}
-    }
-    
-    /**
-     * Return true if this is an already saved vanilla bean.
-     * <p>
-     * We know when EntityBean's are dirty but we don't for 
-     * vanilla beans. So we track which ones we have saved. 
-     * </p>
-     * <p>
-     * This is to stop infinite loop when a bi-directional 
-     * relationship is cascade.PERSIST on both sides.
-     * </p>
-     */
-    public boolean isAlreadySavedVanilla() {
-		
-		if (transaction != null 
-			&& !(bean instanceof EntityBean) 
-			&& transaction.isAlreadySavedVanilla(bean)){
-			return true;	
-		} else {
-			return false;
-		}
-	}
+//    /**
+//     * If this in a vanilla bean add it to the saved set.
+//     * <p>
+//     * This is because we don't know when vanilla beans are dirty
+//     * so we keep track of the ones we have saved to avoid an 
+//     * infinite loop when cascade.PERSIST is on both sides of a
+//     * bi-directional relationship.
+//     * </p>
+//     */
+//    public void addSavedVanilla() {
+//    	if (vanilla){
+//    		transaction.savedVanilla(bean);
+//    	}
+//    }
+//    
+//    /**
+//     * Return true if this is an already saved vanilla bean.
+//     * <p>
+//     * We know when EntityBean's are dirty but we don't for 
+//     * vanilla beans. So we track which ones we have saved. 
+//     * </p>
+//     * <p>
+//     * This is to stop infinite loop when a bi-directional 
+//     * relationship is cascade.PERSIST on both sides.
+//     * </p>
+//     */
+//    public boolean isAlreadySavedVanilla() {
+//		
+//		if (transaction != null 
+//			&& !(bean instanceof EntityBean) 
+//			&& transaction.isAlreadySavedVanilla(bean)){
+//			return true;	
+//		} else {
+//			return false;
+//		}
+//	}
     
 	/**
 	 * Set the type of this request. One of INSERT, UPDATE, DELETE, UPDATESQL or
@@ -190,6 +242,9 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 			if (oldValues == null) {
 				oldValues = bean;
 			}
+    		if (beanDescriptor.isCaching()){
+    			notifyCache = true;
+    		}
 		}
 	}
 	
@@ -524,9 +579,8 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 		}
 	}
 	
-	public RemoteListenerPayload createRemoteListenerPayload() {
+	private RemoteBeanPersist createRemoteBeanPersist() {
 		
-		Serializable sid = (Serializable)idValue;
-		return new RemoteListenerPayload(beanDescriptor.getFullName(), type, sid);
+		return new RemoteBeanPersist(beanDescriptor.getFullName(), type, (Serializable)idValue);
 	}
 }

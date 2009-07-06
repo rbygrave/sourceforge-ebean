@@ -61,7 +61,7 @@ import com.avaje.ebean.query.DefaultOrmUpdate;
 import com.avaje.ebean.query.DefaultRelationalQuery;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.cache.CacheManager;
+import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
@@ -79,8 +79,8 @@ import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
-import com.avaje.ebean.server.transaction.RemoteListenerEvent;
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 import com.avaje.ebean.util.Message;
@@ -97,17 +97,10 @@ public final class DefaultServer implements InternalEbeanServer {
 	 */
 	private static final InvalidValue[] EMPTY_INVALID_VALUES = new InvalidValue[0];
 
-
-	/**
-	 * The name, null for the 'primary' server.
-	 */
 	private final String serverName;
 
 	private final ServerControl serverControl;
 
-	/**
-	 * Manages the transaction.
-	 */
 	private final TransactionManager transactionManager;
 
 	private final TransactionScopeManager transactionScopeManager;
@@ -127,10 +120,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	private final RelationalQueryEngine relationalQueryEngine;
 
-	/**
-	 * The cache implementation.
-	 */
-	private final CacheManager serverCache;
+	private final ServerCacheManager serverCache;
 
 	private final BeanDescriptorManager beanDescriptorManager;
 
@@ -153,7 +143,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	/**
 	 * Create the DefaultServer.
 	 */
-	public DefaultServer(InternalConfiguration config, CacheManager serverCache) {
+	public DefaultServer(InternalConfiguration config, ServerCacheManager serverCache) {
 		
 		this.serverCache = serverCache;
 		this.serverName = config.getServerConfig().getName();
@@ -169,7 +159,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		this.transactionScopeManager = config.getTransactionScopeManager();
 
 		this.persister = config.createPersister(this);
-		this.queryEngine = config.createOrmQueryEngine(serverCache);
+		this.queryEngine = config.createOrmQueryEngine();
 		this.relationalQueryEngine = config.createRelationalQueryEngine();
 
 		autoFetchManager = config.createAutoFetchManager(this);
@@ -242,7 +232,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		return cqueryEngine;
 	}
 
-	public CacheManager getServerCache() {
+	public ServerCacheManager getServerCache() {
 		return serverCache;
 	}
 
@@ -427,12 +417,12 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * server. It needs to maintain its cache and lucene indexes appropriately.
 	 * </p>
 	 */
-	public void externalModification(TransactionEvent event) {
+	public void externalModification(TransactionEventTable tableEvent) {
 		ServerTransaction t = transactionScopeManager.get();
 		if (t != null) {
-			t.getEvent().add(event);
+			t.getEvent().add(tableEvent);
 		} else {
-			transactionManager.externalModification(event);
+			transactionManager.externalModification(tableEvent);
 		}
 	}
 
@@ -441,16 +431,10 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * Invalidate the cache etc as required.
 	 */
 	public void externalModification(String tableName, boolean inserts, boolean updates, boolean deletes) {
-		TransactionEvent evt = new TransactionEvent();
-		if (inserts) {
-			evt.addInsert(tableName);
-		}
-		if (updates) {
-			evt.addUpdate(tableName);
-		}
-		if (deletes) {
-			evt.addDelete(tableName);
-		}
+		
+		TransactionEventTable evt = new TransactionEventTable();
+		evt.add(tableName, inserts, updates, deletes);
+		
 		externalModification(evt);
 	}
 
@@ -1285,8 +1269,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * BeanListeners of inserts updates and deletes that occurred remotely (on
 	 * another server in the cluster).
 	 */
-	public void remoteListenerEvent(RemoteListenerEvent event) {
-		transactionManager.remoteListenerEvent(event);
+	public void remoteTransactionEvent(RemoteTransactionEvent event) {
+		transactionManager.remoteTransactionEvent(event);
 	}
 
 	/**

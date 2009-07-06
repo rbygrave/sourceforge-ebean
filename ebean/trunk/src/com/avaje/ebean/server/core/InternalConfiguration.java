@@ -8,7 +8,7 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
-import com.avaje.ebean.server.cache.CacheManager;
+import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.DeployOrmXml;
 import com.avaje.ebean.server.deploy.parse.DeployCreateProperties;
@@ -34,43 +34,48 @@ public class InternalConfiguration {
 
 	private static final Logger logger = Logger.getLogger(InternalConfiguration.class.getName());
 	
-	final ServerConfig serverConfig;
+	private final ServerConfig serverConfig;
 
-	final BootupClasses bootupClasses;
+	private final BootupClasses bootupClasses;
 
-	final SubClassManager subClassManager;
+	private final SubClassManager subClassManager;
 
-	final DeployInherit deployInherit;
+	private final DeployInherit deployInherit;
 
-	final ResourceManager resourceManager;
+	private final ResourceManager resourceManager;
 
-	final DeployOrmXml deployOrmXml;
+	private final DeployOrmXml deployOrmXml;
 	
-	final TypeManager typeManager;
+	private final TypeManager typeManager;
 	
-	final Binder binder;
+	private final Binder binder;
 	
-	final DeployCreateProperties deployCreateProperties;
+	private final DeployCreateProperties deployCreateProperties;
 	
-	final DeployUtil deployUtil;
+	private final DeployUtil deployUtil;
 	
-	final BeanDescriptorManager beanDescriptorManager;
+	private final BeanDescriptorManager beanDescriptorManager;
 	
-	final MLogControl logControl;
+	private final MLogControl logControl;
 	
-	final RefreshHelp refreshHelp;
-	final DebugLazyLoad debugLazyLoad;
+	private final RefreshHelp refreshHelp;
 	
-	final TransactionManager transactionManager;
-	final TransactionScopeManager transactionScopeManager;
+	private final DebugLazyLoad debugLazyLoad;
 	
-	final CQueryEngine cQueryEngine;
+	private final TransactionManager transactionManager;
 	
-	final ClusterManager clusterManager;
+	private final TransactionScopeManager transactionScopeManager;
+	
+	private final CQueryEngine cQueryEngine;
+	
+	private final ClusterManager clusterManager;
 		
-	public InternalConfiguration(ClusterManager clusterManager, ServerConfig serverConfig, BootupClasses bootupClasses) {
+	private final ServerCacheManager cacheManager;
+	
+	public InternalConfiguration(ClusterManager clusterManager, ServerCacheManager cacheManager, ServerConfig serverConfig, BootupClasses bootupClasses) {
 		
 		this.clusterManager = clusterManager;
+		this.cacheManager = cacheManager;
 		this.serverConfig = serverConfig;
 		this.bootupClasses = bootupClasses;
 		
@@ -84,7 +89,7 @@ public class InternalConfiguration {
 		this.deployInherit = new DeployInherit(bootupClasses);		
 		
 		this.deployCreateProperties = new DeployCreateProperties(typeManager);
-		this.deployUtil = new DeployUtil(typeManager, serverConfig.getNamingConvention());
+		this.deployUtil = new DeployUtil(typeManager, serverConfig.getNamingConvention(), serverConfig.getDatabasePlatform());
 
 		
 		this.beanDescriptorManager = new BeanDescriptorManager(this);
@@ -119,14 +124,18 @@ public class InternalConfiguration {
 		return new DefaultRelationalQueryEngine(logControl, binder);
 	}
 	
-	public OrmQueryEngine createOrmQueryEngine(CacheManager serverCache) {
-		return new DefaultOrmQueryEngine(beanDescriptorManager,  cQueryEngine, serverCache);
+	public OrmQueryEngine createOrmQueryEngine() {
+		return new DefaultOrmQueryEngine(beanDescriptorManager,  cQueryEngine);
 	}
 	
 	public Persister createPersister(InternalEbeanServer server) {
 		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager);
 	}
-	
+
+	public ServerCacheManager getCacheManager() {
+		return cacheManager;
+	}
+
 	public BootupClasses getBootupClasses() {
 		return bootupClasses;
 	}

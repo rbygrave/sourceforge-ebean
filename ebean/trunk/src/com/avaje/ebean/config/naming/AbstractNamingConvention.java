@@ -20,11 +20,7 @@
 
 package com.avaje.ebean.config.naming;
 
-import java.lang.reflect.Field;
 import java.util.logging.Logger;
-
-import javax.persistence.Column;
-import javax.persistence.Table;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -55,8 +51,8 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	/** The database platform. */
 	protected DatabasePlatform databasePlatform;
 
-	/** The max fkey length. */
-	protected int maxFkeyLength;
+	/** The max length of constraint names. */
+	protected int maxConstraintNameLength;
 
 
 	// Constructors -------------------------------------------------
@@ -76,12 +72,16 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		this(DEFAULT_SEQ_FORMAT);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.NamingConvention#getForeignKeyName(com.avaje.ebean.server.deploy.BeanPropertyAssocOne)
-	 */
+	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
+		this.databasePlatform = databasePlatform;
+		this.maxConstraintNameLength = databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
+		
+		logger.finer("Using maxConstraintNameLength of "+maxConstraintNameLength);
+	}
+	
 	public String getForeignKeyName(BeanPropertyAssocOne<?> p, int fkCount) {
-		final StringBuffer buffer = new StringBuffer();
+		
+		StringBuilder buffer = new StringBuilder();
 		buffer.append("fk_");
 		buffer.append(p.getBeanDescriptor().getBaseTable());
 		buffer.append("_");
@@ -92,12 +92,9 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		return buffer.toString();
 	}
 
-
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.NamingConvention#getIndexName(com.avaje.ebean.server.deploy.BeanPropertyAssocOne)
-	 */
 	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount){
-		final StringBuffer buffer = new StringBuffer();
+		
+		StringBuilder buffer = new StringBuilder();
 		buffer.append("ix_");
 		buffer.append(p.getBeanDescriptor().getBaseTable());
 		buffer.append("_");
@@ -108,18 +105,17 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		return buffer.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.naming.NamingConvention#getM2MJoinTableName(com.avaje.ebean.server.deploy.BeanTable, com.avaje.ebean.server.deploy.BeanTable)
-	 */
+
 	public String getM2MJoinTableName(BeanTable lhsTable, BeanTable rhsTable){
-		StringBuffer buffer = new StringBuffer();
+		
+		StringBuilder buffer = new StringBuilder();
 		buffer.append(lhsTable.getBaseTable());
 		buffer.append("_");
 		buffer.append(rhsTable.getBaseTable());
 
-		// FIXME - maxFKeyLength is used as the max table name length.
-		if (buffer.length() > maxFkeyLength){
-			buffer.setLength(maxFkeyLength);
+		// maxConstraintNameLength is used as the max table name length.
+		if (buffer.length() > maxConstraintNameLength){
+			buffer.setLength(maxConstraintNameLength);
 		}
 
 		return buffer.toString();
@@ -132,96 +128,19 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	 * @param buffer the buffer
 	 * @param count the count
 	 */
-	protected void addSuffix(StringBuffer buffer, int count){
+	protected void addSuffix(StringBuilder buffer, int count){
 		final String suffixNr = Integer.toString(count);
 		final int suffixLen = suffixNr.length()+ 1;
 
-		if (buffer.length() + suffixLen > maxFkeyLength){
-			buffer.setLength(maxFkeyLength-suffixLen);
+		if (buffer.length() + suffixLen > maxConstraintNameLength){
+			buffer.setLength(maxConstraintNameLength-suffixLen);
 		}
 		buffer.append("_");
 		buffer.append(suffixNr);
 	}
 
-	// Names from annotations ---------------------------------------
-	/**
-	 * Gets the column from annotation.
-	 *
-	 * @param field the field
-	 *
-	 * @return the column from annotation
-	 */
-	protected String getColumnFromAnnotation(Field field){
-		final Column c = field.getAnnotation(Column.class);
-
-		// Check for annotation @Column(name="xyz")
-		if (c != null){
-			final String columnName = c.name();
-
-			if (!isNullString(columnName)){
-				// Only need to convert quoted identifiers from annotations
-				return databasePlatform.convertQuotedIdentifiers(columnName);
-			}
-		}
-
-		return null;	// No annotation
-	}
-
-	/**
-	 * Gets the table name from annotation.
-	 *
-	 * @param beanClass the bean class
-	 *
-	 * @return the table name from annotation
-	 */
-	public TableName getTableNameFromAnnotation(Class<?> beanClass) {
-		
-		final Table t = findTableAnnotation(beanClass);
-
-		// Take the annotation if defined
-		if (t != null){
-			if (!isNullString(t.name())){
-				// Note: empty catalog and schema are converted to null
-				// Only need to convert quoted identifiers from annotations
-				return new TableName(quoteIdentifiers(t.catalog()),
-					quoteIdentifiers(t.schema()),
-					quoteIdentifiers(t.name()));
-			}
-		}
-
-		return null;	// No annotation
-	}
-	
-	/**
-	 * Replace back ticks (if they are used) with database platform specific
-	 * quoted identifiers.
-	 */
-	protected String quoteIdentifiers(String s) {
-		return databasePlatform.convertQuotedIdentifiers(s);
-	}
-
-	/**
-	 * Search for an @Table in the class hierarchy.
-	 *
-	 * @param cls - initial class to search
-	 *
-	 * @return the table
-	 */
-	private Table findTableAnnotation(Class<?> cls) {
-		if (cls.equals(Object.class)){
-			return null;
-		}
-		Table table = cls.getAnnotation(Table.class);
-		if (table != null){
-			return table;
-		}
-		return findTableAnnotation(cls.getSuperclass());
-	}
 
 	// Sequences ----------------------------------------------------
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.naming.NamingConvention#getSequenceName(java.lang.String)
-	 */
 	public String getSequenceName(String tableName) {
 		return sequenceFormat.replace("{table}", tableName);
 	}
@@ -229,9 +148,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 	// Getter and setters -------------------------------------------
 	/**
-	 * Gets the catalog.
-	 *
-	 * @return the catalog
+	 * Return the catalog.
 	 */
 	public String getCatalog() {
 		return catalog;
@@ -240,8 +157,6 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 	/**
 	 * Sets the catalog.
-	 *
-	 * @param catalog the catalog to set
 	 */
 	public void setCatalog(String catalog) {
 		this.catalog = catalog;
@@ -249,9 +164,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 
 	/**
-	 * Gets the schema.
-	 *
-	 * @return the schema
+	 * Return the schema.
 	 */
 	public String getSchema() {
 		return schema;
@@ -260,8 +173,6 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 	/**
 	 * Sets the schema.
-	 *
-	 * @param schema the schema to set
 	 */
 	public void setSchema(String schema) {
 		this.schema = schema;
@@ -269,45 +180,10 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 
 	/**
-	 * Gets the sequence format.
-	 *
-	 * @return the sequenceFormat
+	 * Returns the sequence format.
 	 */
 	public String getSequenceFormat() {
 		return sequenceFormat;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.config.NamingConvention#setDatabasePlatform(com.avaje.ebean.config.dbplatform.DatabasePlatform)
-	 */
-	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
-		this.databasePlatform = databasePlatform;
-		maxFkeyLength =  databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
-
-		logger.info("Setting maxFkeyLength to: " + maxFkeyLength);
-	}
-
-	/**
-	 * Gets the database platform.
-	 *
-	 * @return the databasePlatform
-	 */
-	public DatabasePlatform getDatabasePlatform() {
-		return databasePlatform;
-	}
-
-	// Utility methods ----------------------------------------------
-	/**
-	 * Checks string is null or empty .
-	 *
-	 * @param s the s
-	 *
-	 * @return true, if is null string
-	 */
-	protected boolean isNullString(String s) {
-		if (s == null || s.trim().length() == 0) {
-			return true;
-		}
-		return false;
-	}
 }

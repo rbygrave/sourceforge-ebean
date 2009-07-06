@@ -21,19 +21,22 @@ package com.avaje.ebean.server.cache;
 
 
 
+
 /**
  * The cache service for server side caching of beans and lookups.
  */
-public interface CacheManager {
+public interface ServerCacheManager {
+
+	public boolean isBeanCaching(Class<?> beanType);
 
 	/**
 	 * Return the cache for beans of a particular type.
 	 */
-	public Cache getBeanCache(Class<?> beanType);
+	public ServerCache getBeanCache(Class<?> beanType);
 
 	/**
 	 * Return the cache for query results of a particular type of bean.
 	 */
-	public Cache getQueryCache(Class<?> beanType);
+	public ServerCache getQueryCache(Class<?> beanType);
 
 }

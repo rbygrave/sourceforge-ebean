@@ -31,14 +31,18 @@ import javax.management.MBeanServerFactory;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.DataSourceConfig;
+import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DatabasePlatformFactory;
 import com.avaje.ebean.config.naming.UnderscoreNamingConvention;
 import com.avaje.ebean.net.Constants;
-import com.avaje.ebean.server.cache.BasicCacheManager;
-import com.avaje.ebean.server.cache.CacheManager;
+import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
+import com.avaje.ebean.server.cache.ServerCacheFactory;
+import com.avaje.ebean.server.cache.ServerCacheManager;
+import com.avaje.ebean.server.cache.DefaultServerCacheManager;
+import com.avaje.ebean.server.cache.ServerCacheOptions;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
@@ -49,20 +53,16 @@ import com.avaje.ebean.server.net.CommandProcessor;
 
 /**
  * Default Server side implementation of ServerFactory.
- * <p>
- * If ebean.datasource.factory=jndi then ebean will use JNDI lookup to find the
- * DataSource.
- * </p>
  */
 public class DefaultServerFactory implements ServerFactory, Constants {
 
 	private static final Logger logger = Logger.getLogger(DefaultServerFactory.class.getName());
 
-	final ClusterManager clusterManager;
+	private final ClusterManager clusterManager;
 
-	final JndiDataSourceLookup jndiDataSourceFactory;
+	private final JndiDataSourceLookup jndiDataSourceFactory;
 
-	final BootupClassPathSearch bootupClassSearch;	
+	private final BootupClassPathSearch bootupClassSearch;	
 
 	
 	public DefaultServerFactory() {
@@ -112,11 +112,12 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 		
 		// inform the NamingConvention of the associated DatabasePlaform 
 		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
+
+		ServerCacheManager cacheManager  = getCacheManager(serverConfig);
+
+		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, serverConfig, bootupClasses);
 		
-		InternalConfiguration c = new InternalConfiguration(clusterManager, serverConfig, bootupClasses);
-		
-		CacheManager serverCache = new BasicCacheManager();
-		DefaultServer server = new DefaultServer(c, serverCache);
+		DefaultServer server = new DefaultServer(c, cacheManager);
 		
 		MBeanServer mbeanServer;
 		ArrayList<?> list = MBeanServerFactory.findMBeanServer(null);
@@ -135,6 +136,41 @@ public class DefaultServerFactory implements ServerFactory, Constants {
 		return server;
 	}
 
+	/**
+	 * Create and return the CacheManager.
+	 */
+	private ServerCacheManager getCacheManager(ServerConfig serverConfig) {
+		
+		//TODO: External configuration of ServerCacheFactory + options.
+		
+		ServerCacheOptions beanOptions = null;//serverConfig.getDefaultBeanCacheOptions();
+		if (beanOptions == null){
+			// these settings are for a cache per bean type
+			beanOptions = new ServerCacheOptions();
+			beanOptions.setMaxSize(GlobalProperties.getInt("cache.maxSize", 1000));
+			beanOptions.setMaxIdleTime(GlobalProperties.getInt("cache.maxIdleTime", 1000*60*10));//10 minutes
+			beanOptions.setMaxTimeToLive(GlobalProperties.getInt("cache.maxTimeToLive", 1000*60*60*6));//6 hrs
+			//beanOptions.setTrimFrequency(GlobalProperties.getInt("cache.trimFrequency", 1000*60));//1 minute
+		}
+		
+		ServerCacheOptions queryOptions = null;//serverConfig.getDefaultQueryCacheOptions();
+		if (queryOptions == null) {
+			// these settings are for a cache per bean type
+			queryOptions = new ServerCacheOptions();
+			queryOptions.setMaxSize(GlobalProperties.getInt("querycache.maxSize", 100));
+			queryOptions.setMaxIdleTime(GlobalProperties.getInt("querycache.maxIdleTime", 1000*60*10));//10 minutes
+			queryOptions.setMaxTimeToLive(GlobalProperties.getInt("querycache.maxTimeToLive", 1000*60*60*6));//6 hrs
+			//queryOptions.setTrimFrequency(GlobalProperties.getInt("querycache.trimFrequency", 1000*60));//1 minute
+		}
+		
+		ServerCacheFactory cacheFactory = null;//serverConfig.getServerCacheFactory();
+		if (cacheFactory == null) {
+			cacheFactory = new DefaultServerCacheFactory();
+		}
+		
+		return new DefaultServerCacheManager(cacheFactory, beanOptions, queryOptions);
+	}
+	
 	/**
 	 * Get the classes (entities, scalarTypes, Listeners etc).
 	 */

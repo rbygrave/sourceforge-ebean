@@ -29,13 +29,8 @@ public class ReadAnnotations {
 
     public void readInitial(DeployBeanInfo<?> info){
 
-    	try {
-    		
+    	try { 		
     		new AnnotationClass(info).parse();
-    		
-    		// Set default table name if not already set via @Table
-	    	info.setTableName();
-	        
 	        new AnnotationFields(info).parse();
 	       
     	} catch (RuntimeException e){
@@ -44,6 +39,7 @@ public class ReadAnnotations {
     	}
     }
     
+
     /**
      * Read and process the associated relationship annotations.
      * <p>

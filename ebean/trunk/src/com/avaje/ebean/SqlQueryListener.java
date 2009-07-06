@@ -4,7 +4,7 @@ package com.avaje.ebean;
  * Provides a mechanism for processing a SqlQuery one SqlRow at a time.
  * <p>
  * This is useful when the query will return a large number of results and you
- * want to process the beans one at a time rather than whole all of the beans in
+ * want to process the beans one at a time rather than have all of the beans in
  * memory at once.
  * </p>
  * <pre class="code">

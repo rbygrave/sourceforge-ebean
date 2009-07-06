@@ -19,31 +19,27 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import javax.persistence.CascadeType;
 
 import com.avaje.ebean.server.deploy.BeanCascadeInfo;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 
 /**
  * Base class for reading deployment annotations.
  */
-public abstract class AnnotationParser {
+public abstract class AnnotationParser extends AnnotationBase {
 
-    final DeployBeanInfo<?> info;
+	protected final DeployBeanInfo<?> info;
     
-    final DeployBeanDescriptor<?> descriptor;
-    
-    final DeployUtil util;
+    protected final DeployBeanDescriptor<?> descriptor;
+        
+    protected final Class<?> beanType;
     
     public AnnotationParser(DeployBeanInfo<?> info){
+    	super(info.getUtil());
         this.info = info;
-        descriptor = info.getDescriptor();
-        util = info.getUtil();
+        this.beanType = info.getDescriptor().getBeanType();
+        this.descriptor = info.getDescriptor();
     }
     
     /**
@@ -59,39 +55,4 @@ public abstract class AnnotationParser {
             cascadeInfo.setTypes(cascadeTypes);
         }
     }
-    
-    /**
-     * Return the annotation for the property.
-     * <p>
-     * Looks first at the field and then at the getter method.
-     * </p>
-     */
-	protected <T extends Annotation> T get(DeployBeanProperty prop, Class<T> annClass) {
-        T a = null;
-        Field field = prop.getField();
-        if (field != null){
-        	a = field.getAnnotation(annClass);
-        }
-        if (a == null) {
-            Method m = prop.getReadMethod();
-            if (m != null) {
-                a = m.getAnnotation(annClass);
-            }
-        }
-        return a;
-    }
-    
-    /**
-	 * Return the annotation for the property.
-	 * <p>
-	 * Looks first at the field and then at the getter method. then at class level.
-	 * </p>
-	 */
-	protected <T extends Annotation> T find(DeployBeanProperty prop, Class<T> annClass) {
-		T a = get(prop, annClass);
-		if (a == null) {
-			a = prop.getOwningType().getAnnotation(annClass);
-		}
-		return a;
-	}
 }

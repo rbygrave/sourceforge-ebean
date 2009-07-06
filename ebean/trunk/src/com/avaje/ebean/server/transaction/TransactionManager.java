@@ -21,6 +21,7 @@ package com.avaje.ebean.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,17 +29,16 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.ebean.server.net.CmdRemoteListenerEvent;
-import com.avaje.ebean.server.net.CmdServerTransactionEvent;
-import com.avaje.ebean.server.net.Headers;
+import com.avaje.ebean.server.transaction.TransactionEventTable.TableIUD;
 
 /**
  * Manages transactions.
@@ -72,11 +72,8 @@ public class TransactionManager implements Constants {
 		COMMIT
 	}
 	
-	/**
-	 * Holds Table state.
-	 */
-	private final TableStateManager tableState = new TableStateManager();
-
+	private final BeanDescriptorManager beanDescriptorManager;
+	
 	/**
 	 * The logger.
 	 */
@@ -116,13 +113,6 @@ public class TransactionManager implements Constants {
 	 * Background threading of post commit processing.
 	 */
 	private final ThreadPool threadPool;
-
-	/**
-	 * Helper object to perform BeanListener notification.
-	 */
-	private final ListenerNotify listenerNotify;
-
-	//private final PluginProperties properties;
 			
 	private final boolean logCommitEvent;
 	
@@ -136,12 +126,14 @@ public class TransactionManager implements Constants {
 	 * Id's for transaction logging.
 	 */
 	private long transactionCounter = 1000;
-	
+
 	/**
 	 * Create the TransactionManager
 	 */
-	public TransactionManager(ClusterManager clusterManager, ServerConfig config, BeanDescriptorManager descMgr) {
+	public TransactionManager(ClusterManager clusterManager, ServerConfig config, 
+			BeanDescriptorManager descMgr) {
 		
+		this.beanDescriptorManager = descMgr;
 		this.clusterManager = clusterManager;
 		this.serverName = config.getName();
 		
@@ -151,7 +143,6 @@ public class TransactionManager implements Constants {
 			threadPool.setMinSize(1);
 		}
 		
-		this.listenerNotify = new ListenerNotify(this, descMgr);
 		this.dataSource = config.getDataSource();
 		
 		this.debugLevel = config.getTransactionDebugLevel();	
@@ -232,10 +223,6 @@ public class TransactionManager implements Constants {
 		return dataSource;
 	}
 	
-	public TableStateManager getTableStateManager() {
-		return tableState;
-	}
-
 	/**
 	 * Defines the type of behaviour to use when closing a transaction that was used to query data only.
 	 */
@@ -357,15 +344,6 @@ public class TransactionManager implements Constants {
 	}
 
 	/**
-	 * Return the state of a given table. TableState is used to simplify
-	 * invalidating cached objects.
-	 */
-	public TableState getTableState(String tableName) {
-		return tableState.getTableState(tableName);
-	}
-
-
-	/**
 	 * Process a local rolled back transaction.
 	 */
 	public void notifyOfRollback(ServerTransaction transaction, Throwable cause) {
@@ -453,19 +431,14 @@ public class TransactionManager implements Constants {
 			}
 	
 			TransactionEvent event = transaction.getEvent();
-			if (!event.hasModifications()) {
-				// ignore as it has no modifications
-				if (debugLevel >= 2){
-					logger.info("Transaction ["+transaction.getId()+"] commit with no changes");
-				}
-				return;
-			}
+			
+			// notify cache with bean changes returning any table events
+			TransactionEventTable tableEvents = event.notifyCache();
+			processTableEvents(tableEvents);
+			
 	
-			// maintain table state information for cache invalidation
-			tableState.process(event);
-	
-			// cluster and Lucene indexing
-			postProcess(event);
+			// cluster and text indexing
+			localCommitBackgroundProcess(event);
 			
 			if (logCommitEvent || debugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] commit: "+event.toString());
@@ -479,101 +452,75 @@ public class TransactionManager implements Constants {
 	/**
 	 * Process a Transaction that comes from another framework or local code.
 	 * <p>
-	 * Developers should use this method to inform the framework of commit
-	 * events. The framework can then manage the cache, lucene indexes and
-	 * inform other servers in the cluster.
-	 * </p>
-	 * <p>
-	 * This method is also called when a remote cluster commit occurs.
+	 * For cases where raw SQL/JDBC or other frameworks are used this can
+	 * invalidate the appropriate parts of the cache.
 	 * </p>
 	 */
-	public void externalModification(TransactionEvent event) {
-		if (event.isInvalidateAll()) {
-			// bypass normal table state modification
-			tableState.setAllTablesModifiedNow();
-		} else {
-			tableState.process(event);
+	public void externalModification(TransactionEventTable tableEvents) {
+		
+		// invalidate parts of local cache 
+		processTableEvents(tableEvents);
+		
+		TransactionEvent event = new TransactionEvent();
+		event.add(tableEvents);
+		
+		// send to cluster
+		localCommitBackgroundProcess(event);
+	}
+	
+	/**
+	 * Notify local BeanPersistListeners etc of events from another server in the cluster.
+	 */
+	public void remoteTransactionEvent(RemoteTransactionEvent remoteEvent) {
+
+		List<RemoteBeanPersist> list = remoteEvent.getBeanPersistList();
+		if (list != null){
+			for (int i = 0; i < list.size(); i++) {
+				remoteBeanPersist(list.get(i));
+			}
 		}
-		postProcess(event);
+		
+		processTableEvents(remoteEvent.getTableEvents());
+	}
+	
+	/**
+	 * Send a remote bean persist event to the local bean persist listeners.
+	 */
+	private void remoteBeanPersist(RemoteBeanPersist remoteBeanPersist) {
+
+		BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(remoteBeanPersist.getBeanType());
+		if (desc == null){
+			String msg = "Could not find BeanDescriptor for "+remoteBeanPersist.getBeanType();
+			msg += "? Missing out remoteNotify of "+remoteBeanPersist;
+			logger.severe(msg);
+		} else {
+			remoteBeanPersist.notifyListener(desc);			
+		}
 	}
 
+	
 	/**
-	 * Another server in the cluster sent this event so that we can inform local
-	 * BeanListeners of inserts updates and deletes that occurred remotely (on
-	 * another server in the cluster).
+	 * Run some of the post commit processing in a background thread. This can
+	 * be relatively expensive/long running and includes notifying the cluster
+	 * and BeanPersitListeners.
 	 */
-	public void remoteListenerEvent(RemoteListenerEvent event) {
-		listenerNotify.remoteNotify(event);
-	}
+	private void localCommitBackgroundProcess(TransactionEvent event) {
 
-	/**
-	 * Run Post commit Processing. Clustering, Lucene and BeanListener
-	 * notification.
-	 */
-	private void postProcess(TransactionEvent event) {
-
-		PostCommitNotify postCommit = new PostCommitNotify(this, event);
+		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, event);
 		threadPool.assign(postCommit, true);
 	}
 
-//	/**
-//	 * Notify LuceneManager of the changes so that it can update its indexes
-//	 * appropriately.
-//	 */
-//	protected void notifyLucene(TransactionEvent event) {
-//		if (!event.isInvalidateAll()) {
-//			if (finder != null){
-//				finder.notifyCommit(event);
-//			}
-//		}
-//	}
-
 	/**
-	 * Send TransactionEvent information across the cluster to maintain cache
-	 * and lucene indexes appropriately. Aka invalidate cached elements and
-	 * notify Lucene of the changes.
+	 * Table events are where SQL or external tools are used. In this case
+	 * the cache is notified based on the table name (rather than bean type).
 	 */
-	protected void notifyCluster(TransactionEvent event) {
-
-		if (event.isLocal() && clusterManager.isClusteringOn()) {
-			Headers h = new Headers();
-			h.setProcesorId(PROCESS_KEY);
-			h.set(SERVER_NAME_KEY, serverName);
-
-			CmdServerTransactionEvent cmd = new CmdServerTransactionEvent(event);
-			clusterManager.broadcast(h, cmd);
+	private void processTableEvents(TransactionEventTable tableEvents) {
+		
+		if (tableEvents != null && !tableEvents.isEmpty()){
+			// notify cache with table based changes
+			for (TableIUD tableIUD : tableEvents.values()) {
+				beanDescriptorManager.cacheNotify(tableIUD);
+			}
 		}
 	}
-
-	/**
-	 * notify BeanListeners of local transaction event.
-	 */
-	protected void notifyBeanListeners(TransactionEvent event) {
-
-		TransactionEventBeans eventBeans = event.getEventBeans();
-		if (eventBeans != null) {
-			listenerNotify.localNotify(eventBeans);
-		}
-	}
-
-	/**
-	 * Send RemoteListenerEvent to all the servers in the cluster.
-	 * <p>
-	 * This is used to notify BeanListeners on the other servers of the insert
-	 * update and delete events.
-	 * </p>
-	 */
-	protected void notifyCluster(RemoteListenerEvent event) {
-
-		if (clusterManager.isClusteringOn()) {
-			Headers h = new Headers();
-			h.setProcesorId(PROCESS_KEY);
-			h.set(SERVER_NAME_KEY, serverName);
-
-			CmdRemoteListenerEvent cmd = new CmdRemoteListenerEvent(event);
-
-			clusterManager.broadcast(h, cmd);
-		}
-	}
-
 }

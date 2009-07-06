@@ -25,10 +25,10 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.QueryType;
+import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.server.cache.Cache;
-import com.avaje.ebean.server.cache.CacheManager;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.ManyType;
@@ -54,8 +54,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	private boolean createdTransaction;
 
 	private ManyType manyType;
-
-	private Cache beanQueryCache;
 
 	private Integer cacheKey;
 
@@ -305,33 +303,38 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return manyType;
 	}
 
-	/**
-	 * Try to get the query result from cache.
-	 */
-	public Object getFromCache(CacheManager serverCache) {
-
-		if (query.isUseCache()) {
-			beanQueryCache = serverCache.getQueryCache(beanDescriptor.getBeanType());
-
-			if (manyType == null) {
-				// the query plan and bind values must be the same
-				cacheKey = Integer.valueOf(query.queryHash());
-
-			} else {
-				// additionally the return type (List/Set/Map) must be the same
-				cacheKey = Integer.valueOf(31 * query.queryHash() + manyType.hashCode());
-			}
-
-			return beanQueryCache.get(cacheKey);
+	
+	@SuppressWarnings("unchecked")
+	public T getFromBeanCache() {
+		
+		Object id = query.getId();
+		
+		Object cachedBean = beanDescriptor.cacheGet(id);
+		if (cachedBean != null){
+			return (T)((EntityBean)cachedBean)._ebean_createCopy();
+		} else {
+			return null;
 		}
-		return null;
+	}
+	
+	/**
+	 * Try to get the query result from the query cache.
+	 */
+	public BeanCollection<T> getFromQueryCache() {
+		
+		if (manyType == null) {
+			// the query plan and bind values must be the same
+			cacheKey = Integer.valueOf(query.queryHash());
+
+		} else {
+			// additionally the return type (List/Set/Map) must be the same
+			cacheKey = Integer.valueOf(31 * query.queryHash() + manyType.hashCode());
+		}
+
+		return beanDescriptor.queryCacheGet(cacheKey);
 	}
 
-	public void putToCacheOne(Object queryResult) {
-		beanQueryCache.put(cacheKey, queryResult);
-	}
-
-	public void putToCacheMany(Object queryResult) {
-		beanQueryCache.put(cacheKey, queryResult);
+	public void putToQueryCache(BeanCollection<T> queryResult) {
+		beanDescriptor.queryCachePut(cacheKey, queryResult);
 	}
 }

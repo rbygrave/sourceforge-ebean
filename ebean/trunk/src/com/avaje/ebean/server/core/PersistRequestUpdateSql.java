@@ -33,17 +33,17 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 		SQL_UPDATE, SQL_DELETE, SQL_INSERT, SQL_UNKNOWN
 	};
 
-	SqlUpdate updateSql;
+	private final SqlUpdate updateSql;
 
-	int rowCount;
+	private int rowCount;
 
-	String bindLog;
+	private String bindLog;
 
-	SqlType sqlType;
+	private SqlType sqlType;
 
-	String tableName;
+	private String tableName;
 
-	String description;
+	private String description;
 
 	/**
 	 * Create.
@@ -131,14 +131,15 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 			// this is used to invalidate cached objects etc
 			switch (sqlType) {
 			case SQL_INSERT:
-				transaction.getEvent().addInsert(tableName);
+				transaction.getEvent().add(tableName, true, false, false);
 				break;
 			case SQL_UPDATE:
-				transaction.getEvent().addUpdate(tableName);
+				transaction.getEvent().add(tableName, false, true, false);
 				break;
 			case SQL_DELETE:
-				transaction.getEvent().addDelete(tableName);
+				transaction.getEvent().add(tableName, false, false, true);
 				break;
+								
 			default:
 				break;
 			}

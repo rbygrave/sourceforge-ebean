@@ -30,6 +30,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
 import com.avaje.ebean.annotation.UpdateMode;
+import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 
@@ -47,8 +48,23 @@ public class AnnotationClass extends AnnotationParser {
 	 */
 	public void parse() {
 		read(descriptor.getBeanType());
+		setTableName();
 	}
 
+	/**
+	 * Set the table name if it has not already been set.
+	 */
+	private void setTableName() {
+		
+		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
+
+			// default the TableName using NamingConvention.
+			TableName tableName = getTableName(descriptor.getBeanType());
+			
+            descriptor.setBaseTable(tableName.getQualifiedName());
+		}
+	}
+	
 	private void read(Class<?> cls) {
 
 		Entity entity = cls.getAnnotation(Entity.class);

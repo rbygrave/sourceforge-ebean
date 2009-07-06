@@ -29,15 +29,12 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
  * and the unique id properties.
  * </p>
  */
-public class AnnotationBeanTable {
+public class AnnotationBeanTable extends AnnotationBase {
 
-	private final DeployBeanTable beanTable;
-
-	private final DeployUtil util;
-
+	final DeployBeanTable beanTable;
 
     public AnnotationBeanTable(DeployUtil util, DeployBeanTable beanTable){
-    	this.util = util;
+    	super(util);
         this.beanTable = beanTable;
     }
 
@@ -46,8 +43,7 @@ public class AnnotationBeanTable {
      */
     public void parse() {
     	
-    	// default the TableName using NamingConvention.
-		TableName tableName = util.getTableNameFromClass(beanTable.getBeanType());
+		TableName tableName = getTableName(beanTable.getBeanType());
 
 		beanTable.setBaseTable(tableName.getQualifiedName());
     }

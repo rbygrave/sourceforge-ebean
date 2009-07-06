@@ -32,19 +32,13 @@ import com.avaje.ebean.server.persist.PersistExecute;
  */
 public final class PersistRequestOrmUpdate extends PersistRequest {
 
+	private final BeanDescriptor<?> beanDescriptor;
 	
-	/**
-	 * The associated BeanDescriptor.
-	 */
-	final BeanManager<?> beanManager;
+	private OrmUpdate<?> ormUpdate;
 
-	final BeanDescriptor<?> beanDescriptor;
-	
-	OrmUpdate<?> ormUpdate;
+	private int rowCount;
 
-	int rowCount;
-
-	String bindLog;
+	private String bindLog;
 
 	/**
 	 * Create.
@@ -53,7 +47,6 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 			ServerTransaction t, PersistExecute persistExecute) {
 		
 		super(server, t, persistExecute);
-		this.beanManager = mgr;
 		this.beanDescriptor = mgr.getBeanDescriptor();
 		this.ormUpdate = ormUpdate;
 	}
@@ -135,13 +128,13 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 			// this is used to invalidate cached objects etc
 			switch (ormUpdateType) {
 			case INSERT:
-				transaction.getEvent().addInsert(tableName);
+				transaction.getEvent().add(tableName, true, false, false);
 				break;
 			case UPDATE:
-				transaction.getEvent().addUpdate(tableName);
+				transaction.getEvent().add(tableName, false, true, false);
 				break;
 			case DELETE:
-				transaction.getEvent().addDelete(tableName);
+				transaction.getEvent().add(tableName, false, false, true);
 				break;
 			default:
 				break;

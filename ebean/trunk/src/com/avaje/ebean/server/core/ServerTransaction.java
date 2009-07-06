@@ -33,19 +33,19 @@ import com.avaje.ebean.server.transaction.TransactionEvent;
  */
 public interface ServerTransaction extends Transaction {
 
-	/**
-	 * Return true if this is a vanilla bean that has already been saved.
-	 */
-	public boolean isAlreadySavedVanilla(Object vanillaBean);
-	
-	/**
-	 * If this is a vanilla bean add it to the saved list.
-	 * <p>
-	 * This is to handle bi-directional relationships where
-	 * both sides have cascade.PERSIST.
-	 * </p>
-	 */
-	public void savedVanilla(Object vanillaBean);
+//	/**
+//	 * Return true if this is a vanilla bean that has already been saved.
+//	 */
+//	public boolean isAlreadySavedVanilla(Object vanillaBean);
+//	
+//	/**
+//	 * If this is a vanilla bean add it to the saved list.
+//	 * <p>
+//	 * This is to handle bi-directional relationships where
+//	 * both sides have cascade.PERSIST.
+//	 * </p>
+//	 */
+//	public void savedVanilla(Object vanillaBean);
 	
     /**
      * Returns a String used to identify the transaction. This id is used for

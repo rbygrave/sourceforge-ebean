@@ -17,32 +17,43 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.deploy;
+package com.avaje.ebean.annotation;
 
-import com.avaje.ebean.server.cache.ServerCacheManager;
-
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Provides a method to find a BeanDescriptor.
+ * Specify cache options for a given bean.
  * <p>
- * Used during deployment of to resolve relationships between beans.
+ * These are hints to the cache implementation. Depending on the cache
+ * implementation these options may or may not be used.
  * </p>
  */
-public interface BeanDescriptorMap {
+@Target( { ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Cache {
 
 	/**
-	 * Return the name of the server/database.
+	 * Specify the maximum size the cache should get.
 	 */
-	public String getServerName();
+	int maxSize() default 0;
 
 	/**
-	 * Return the Cache Manager.
+	 * Specify the maximum a entry can stay in the cache without being accessed.
+	 * <p>
+	 * This time is specified in milliseconds.
+	 * </p>
 	 */
-	public ServerCacheManager getCacheManager();
-	
-	/**
-	 * Return the BeanDescriptor for a given class.
-	 */
-	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
+	long maxIdleTime() default 0;
 
-}
+	/**
+	 * Specify the maximum time an entry can stay in the cache.
+	 * <p>
+	 * This time is specified in milliseconds.
+	 * </p>
+	 */
+	long maxTimeToLive() default 0;
+
+};

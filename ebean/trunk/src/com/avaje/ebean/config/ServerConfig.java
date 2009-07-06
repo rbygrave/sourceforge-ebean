@@ -110,11 +110,9 @@ public class ServerConfig {
 
 	/** The update changes only. */
 	private boolean updateChangesOnly = true;
-
+	
 	/**
 	 * Return the name of the EbeanServer.
-	 *
-	 * @return the name
 	 */
 	public String getName() {
 		return name;
@@ -122,8 +120,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the name of the EbeanServer.
-	 *
-	 * @param name the name
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -136,8 +132,6 @@ public class ServerConfig {
 	 * <p>
 	 * By default this is set to true.
 	 * </p>
-	 *
-	 * @return true, if checks if is register
 	 */
 	public boolean isRegister() {
 		return register;
@@ -149,8 +143,6 @@ public class ServerConfig {
 	 * <p>
 	 * By default this is set to true.
 	 * </p>
-	 *
-	 * @param register the register
 	 */
 	public void setRegister(boolean register) {
 		this.register = register;
@@ -163,8 +155,6 @@ public class ServerConfig {
 	 * This is only used when {@link #setRegister(boolean)} is also
 	 * true.
 	 * </p>
-	 *
-	 * @return true, if checks if is default server
 	 */
 	public boolean isDefaultServer() {
 		return defaultServer;
@@ -177,8 +167,6 @@ public class ServerConfig {
 	 * This is only used when {@link #setRegister(boolean)} is also
 	 * true.
 	 * </p>
-	 *
-	 * @param defaultServer the default server
 	 */
 	public void setDefaultServer(boolean defaultServer) {
 		this.defaultServer = defaultServer;
@@ -186,8 +174,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the external transaction manager.
-	 *
-	 * @return the external transaction manager
 	 */
 	public ExternalTransactionManager getExternalTransactionManager() {
 		return externalTransactionManager;
@@ -195,8 +181,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the external transaction manager.
-	 *
-	 * @param externalTransactionManager the external transaction manager
 	 */
 	public void setExternalTransactionManager(ExternalTransactionManager externalTransactionManager) {
 		this.externalTransactionManager = externalTransactionManager;
@@ -204,8 +188,6 @@ public class ServerConfig {
 
 	/**
 	 * Return true if a bean should be validated when it is saved.
-	 *
-	 * @return true, if checks if is validate on save
 	 */
 	public boolean isValidateOnSave() {
 		return validateOnSave;
@@ -213,8 +195,6 @@ public class ServerConfig {
 
 	/**
 	 * Set whether validation should run when a bean is saved.
-	 *
-	 * @param validateOnSave the validate on save
 	 */
 	public void setValidateOnSave(boolean validateOnSave) {
 		this.validateOnSave = validateOnSave;
@@ -222,8 +202,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the log level used for "subclassing" enhancement.
-	 *
-	 * @return the enhance log level
 	 */
 	public int getEnhanceLogLevel() {
 		return enhanceLogLevel;
@@ -231,8 +209,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the log level used for "subclassing" enhancement.
-	 *
-	 * @param enhanceLogLevel the enhance log level
 	 */
 	public void setEnhanceLogLevel(int enhanceLogLevel) {
 		this.enhanceLogLevel = enhanceLogLevel;
@@ -243,8 +219,6 @@ public class ServerConfig {
 	 * <p>
 	 * If none has been set the default UnderscoreNamingConvention is used.
 	 * </p>
-	 *
-	 * @return the naming convention
 	 */
 	public NamingConvention getNamingConvention() {
 		return namingConvention;
@@ -255,8 +229,6 @@ public class ServerConfig {
 	 * <p>
 	 * If none is set the default UnderscoreNamingConvention is used.
 	 * </p>
-	 *
-	 * @param namingConvention the naming convention
 	 */
 	public void setNamingConvention(NamingConvention namingConvention) {
 		this.namingConvention = namingConvention;
@@ -264,8 +236,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the configuration for the Autofetch feature.
-	 *
-	 * @return the autofetch config
 	 */
 	public AutofetchConfig getAutofetchConfig() {
 		return autofetchConfig;
@@ -273,8 +243,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the configuration for the Autofetch feature.
-	 *
-	 * @param autofetchConfig the autofetch config
 	 */
 	public void setAutofetchConfig(AutofetchConfig autofetchConfig) {
 		this.autofetchConfig = autofetchConfig;
@@ -282,8 +250,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the DataSource.
-	 *
-	 * @return the data source
 	 */
 	public DataSource getDataSource() {
 		return dataSource;
@@ -291,8 +257,6 @@ public class ServerConfig {
 
 	/**
 	 * Set a DataSource.
-	 *
-	 * @param dataSource the data source
 	 */
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
@@ -301,8 +265,6 @@ public class ServerConfig {
 	/**
 	 * Return the configuration to build a DataSource using
 	 * Ebean's own DataSource implementation.
-	 *
-	 * @return the data source config
 	 */
 	public DataSourceConfig getDataSourceConfig() {
 		return dataSourceConfig;
@@ -311,8 +273,6 @@ public class ServerConfig {
 	/**
 	 * Set the configuration required to build a DataSource using
 	 * Ebean's own DataSource implementation.
-	 *
-	 * @param dataSourceConfig the data source config
 	 */
 	public void setDataSourceConfig(DataSourceConfig dataSourceConfig) {
 		this.dataSourceConfig = dataSourceConfig;
@@ -320,8 +280,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the JNDI name of the DataSource to use.
-	 *
-	 * @return the data source jndi name
 	 */
 	public String getDataSourceJndiName() {
 		return dataSourceJndiName;
@@ -334,8 +292,6 @@ public class ServerConfig {
 	 * lookup the DataSource. This prefix is not used if
 	 * dataSourceJndiName starts with "java:".
 	 * </p>
-	 *
-	 * @param dataSourceJndiName the data source jndi name
 	 */
 	public void setDataSourceJndiName(String dataSourceJndiName) {
 		this.dataSourceJndiName = dataSourceJndiName;
@@ -349,8 +305,6 @@ public class ServerConfig {
 	 * <p>
 	 * The value returned is either a Integer or a String (e.g. "1", or "T").
 	 * </p>
-	 *
-	 * @return the database boolean true
 	 */
 	public String getDatabaseBooleanTrue() {
 		return databaseBooleanTrue;
@@ -364,8 +318,6 @@ public class ServerConfig {
 	 * <p>
 	 * The value set is either a Integer or a String (e.g. "1", or "T").
 	 * </p>
-	 *
-	 * @param databaseTrue the database true
 	 */
 	public void setDatabaseBooleanTrue(String databaseTrue) {
 		this.databaseBooleanTrue = databaseTrue;
@@ -379,8 +331,6 @@ public class ServerConfig {
 	 * <p>
 	 * The value returned is either a Integer or a String (e.g. "0", or "F").
 	 * </p>
-	 *
-	 * @return the database boolean false
 	 */
 	public String getDatabaseBooleanFalse() {
 		return databaseBooleanFalse;
@@ -394,8 +344,6 @@ public class ServerConfig {
 	 * <p>
 	 * The value set is either a Integer or a String (e.g. "0", or "F").
 	 * </p>
-	 *
-	 * @param databaseFalse the database false
 	 */
 	public void setDatabaseBooleanFalse(String databaseFalse) {
 		this.databaseBooleanFalse = databaseFalse;
@@ -407,8 +355,6 @@ public class ServerConfig {
 	 * If null then the platform is determined automatically
 	 * via the JDBC driver information.
 	 * </p>
-	 *
-	 * @return the database platform name
 	 */
 	public String getDatabasePlatformName() {
 		return databasePlatformName;
@@ -420,8 +366,6 @@ public class ServerConfig {
 	 * If none is set then the platform is determined automatically
 	 * via the JDBC driver information.
 	 * </p>
-	 *
-	 * @param databasePlatformName the database platform name
 	 */
 	public void setDatabasePlatformName(String databasePlatformName) {
 		this.databasePlatformName = databasePlatformName;
@@ -429,8 +373,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the database platform to use for this server.
-	 *
-	 * @return the database platform
 	 */
 	public DatabasePlatform getDatabasePlatform() {
 		return databasePlatform;
@@ -443,8 +385,6 @@ public class ServerConfig {
 	 * databasePlatformName or automatically via the JDBC driver
 	 * information.
 	 * </p>
-	 *
-	 * @param databasePlatform the database platform
 	 */
 	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
 		this.databasePlatform = databasePlatform;
@@ -452,8 +392,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the amount of transaction logging.
-	 *
-	 * @return the transaction logging
 	 */
 	public TransactionLogging getTransactionLogging() {
 		return transactionLogging;
@@ -461,8 +399,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the amount (None, Explict, All) of transaction logging.
-	 *
-	 * @param logging the logging
 	 */
 	public void setTransactionLogging(TransactionLogging logging) {
 		this.transactionLogging = logging;
@@ -470,8 +406,6 @@ public class ServerConfig {
 
 	/**
 	 * Return how transactions should share log files.
-	 *
-	 * @return the transaction log sharing
 	 */
 	public TransactionLogSharing getTransactionLogSharing() {
 		if (externalTransactionManager != null){
@@ -485,8 +419,6 @@ public class ServerConfig {
 
 	/**
 	 * Set how the transaction should share log files.
-	 *
-	 * @param logSharing the log sharing
 	 */
 	public void setTransactionLogSharing(TransactionLogSharing logSharing) {
 		this.transactionLogSharing = logSharing;
@@ -498,8 +430,6 @@ public class ServerConfig {
 	 * To get the SQL and bind variables for insert update delete statements
 	 * you should use transaction logging.
 	 * </p>
-	 *
-	 * @return true, if checks if is debug sql
 	 */
 	public boolean isDebugSql() {
 		return debugSql;
@@ -511,8 +441,6 @@ public class ServerConfig {
 	 * To get the SQL and bind variables for insert update delete statements
 	 * you should use transaction logging.
 	 * </p>
-	 *
-	 * @param debugSql the debug sql
 	 */
 	public void setDebugSql(boolean debugSql) {
 		this.debugSql = debugSql;
@@ -520,8 +448,6 @@ public class ServerConfig {
 
 	/**
 	 * Return true if there is debug logging on lazy loading events.
-	 *
-	 * @return true, if checks if is debug lazy load
 	 */
 	public boolean isDebugLazyLoad() {
 		return debugLazyLoad;
@@ -529,8 +455,6 @@ public class ServerConfig {
 
 	/**
 	 * Set to true to get debug logging on lazy loading events.
-	 *
-	 * @param debugLazyLoad the debug lazy load
 	 */
 	public void setDebugLazyLoad(boolean debugLazyLoad) {
 		this.debugLazyLoad = debugLazyLoad;
@@ -568,8 +492,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the directory where transaction logs go.
-	 *
-	 * @return the transaction log directory
 	 */
 	public String getTransactionLogDirectory() {
 		return transactionLogDirectory;
@@ -578,8 +500,6 @@ public class ServerConfig {
 	/**
 	 * Return the transaction log directory substituting any expressions
 	 * such as ${catalina.base} etc.
-	 *
-	 * @return the transaction log directory with eval
 	 */
 	public String getTransactionLogDirectoryWithEval() {
 		return PropertyExpression.eval(transactionLogDirectory);
@@ -604,8 +524,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the logging level on Insert Update and Delete statements.
-	 *
-	 * @return the insert update delete log level
 	 */
 	public StatementLogLevel getInsertUpdateDeleteLogLevel() {
 		return insertUpdateDeleteLogLevel;
@@ -613,8 +531,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the logging level on Insert Update and Delete statements.
-	 *
-	 * @param iudLoglevel the iud loglevel
 	 */
 	public void setInsertUpdateDeleteLogLevel(StatementLogLevel iudLoglevel) {
 		this.insertUpdateDeleteLogLevel = iudLoglevel;
@@ -622,8 +538,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the logging level on Find by Id (or find unique) statements.
-	 *
-	 * @return the find id log level
 	 */
 	public StatementLogLevel getFindIdLogLevel() {
 		return findIdLogLevel;
@@ -631,8 +545,6 @@ public class ServerConfig {
 
 	/**
 	 * set the logging level on Find by Id (or find unique) statements.
-	 *
-	 * @param findIdLogLevel the find id log level
 	 */
 	public void setFindIdLogLevel(StatementLogLevel findIdLogLevel) {
 		this.findIdLogLevel = findIdLogLevel;
@@ -640,8 +552,6 @@ public class ServerConfig {
 
 	/**
 	 * Return the logging level on FindMany statements.
-	 *
-	 * @return the find many log level
 	 */
 	public StatementLogLevel getFindManyLogLevel() {
 		return findManyLogLevel;
@@ -649,8 +559,6 @@ public class ServerConfig {
 
 	/**
 	 * Set the logging level on FindMany statements.
-	 *
-	 * @param findManyLogLevel the find many log level
 	 */
 	public void setFindManyLogLevel(StatementLogLevel findManyLogLevel) {
 		this.findManyLogLevel = findManyLogLevel;
@@ -658,8 +566,6 @@ public class ServerConfig {
 
 	/**
 	 * Set to true to run the DDL generation on startup.
-	 *
-	 * @param ddlGenerate the ddl generate
 	 */
 	public void setDdlGenerate(boolean ddlGenerate) {
 		this.ddlGenerate = ddlGenerate;
@@ -667,8 +573,6 @@ public class ServerConfig {
 
 	/**
 	 * Set to true to run the generated DDL on startup.
-	 *
-	 * @param ddlRun the ddl run
 	 */
 	public void setDdlRun(boolean ddlRun) {
 		this.ddlRun = ddlRun;
@@ -676,8 +580,6 @@ public class ServerConfig {
 
 	/**
 	 * Return true if the DDL should be generated.
-	 *
-	 * @return true, if checks if is ddl generate
 	 */
 	public boolean isDdlGenerate() {
 		return ddlGenerate;
@@ -685,8 +587,6 @@ public class ServerConfig {
 
 	/**
 	 * Return true if the DDL should be run.
-	 *
-	 * @return true, if checks if is ddl run
 	 */
 	public boolean isDdlRun() {
 		return ddlRun;
@@ -721,8 +621,6 @@ public class ServerConfig {
 	 * <p>
 	 * This is only used if classes have not been explicitly specified.
 	 * </p>
-	 *
-	 * @param packageName the package name
 	 */
 	public void addPackage(String packageName){
 		if (packages == null){
@@ -736,8 +634,6 @@ public class ServerConfig {
 	 * <p>
 	 * This is only used if classes have not been explicitly specified.
 	 * </p>
-	 *
-	 * @return the packages
 	 */
 	public List<String> getPackages() {
 		return packages;
@@ -748,8 +644,6 @@ public class ServerConfig {
 	 * <p>
 	 * This is only used if classes have not been explicitly specified.
 	 * </p>
-	 *
-	 * @param packages the packages
 	 */
 	public void setPackages(List<String> packages) {
 		this.packages = packages;
@@ -765,8 +659,6 @@ public class ServerConfig {
 	 * <p>
 	 * Alternatively the classes can contain added via {@link #addClass(Class)}.
 	 * </p>
-	 *
-	 * @param classes the classes
 	 */
 	public void setClasses(List<Class<?>> classes) {
 		this.classes = classes;
@@ -775,8 +667,6 @@ public class ServerConfig {
 	/**
 	 * Return the classes registered for this server.
 	 * Typically this includes entities and perhaps listeners.
-	 *
-	 * @return the classes
 	 */
 	public List<Class<?>> getClasses() {
 		return classes;
@@ -784,8 +674,6 @@ public class ServerConfig {
 
 	/**
 	 * Return true to only update changed properties.
-	 *
-	 * @return true, if checks if is update changes only
 	 */
 	public boolean isUpdateChangesOnly() {
 		return updateChangesOnly;
@@ -793,17 +681,13 @@ public class ServerConfig {
 
 	/**
 	 * Set to true to only update changed properties.
-	 *
-	 * @param updateChangesOnly the update changes only
 	 */
 	public void setUpdateChangesOnly(boolean updateChangesOnly) {
 		this.updateChangesOnly = updateChangesOnly;
 	}
 
 	/**
-	 * Gets the resource directory.
-	 *
-	 * @return the resource directory
+	 * Returns the resource directory.
 	 */
 	public String getResourceDirectory() {
 		return resourceDirectory;
@@ -811,8 +695,6 @@ public class ServerConfig {
 
 	/**
 	 * Sets the resource directory.
-	 *
-	 * @param resourceDirectory the new resource directory
 	 */
 	public void setResourceDirectory(String resourceDirectory) {
 		this.resourceDirectory = resourceDirectory;
@@ -828,8 +710,6 @@ public class ServerConfig {
 
 	/**
 	 * Load the configuration settings from the properties file.
-	 *
-	 * @param p the p
 	 */
 	private void loadSettings(ConfigPropertyMap p){
 

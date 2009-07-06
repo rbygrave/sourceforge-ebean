@@ -45,6 +45,7 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.config.naming.NamingConvention;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
+import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
@@ -69,6 +70,7 @@ import com.avaje.ebean.server.reflect.BeanReflectFactory;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.reflect.EnhanceBeanReflectFactory;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.LengthValidatorFactory;
 import com.avaje.ebean.server.validate.NotNullValidatorFactory;
@@ -130,6 +132,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private final Map<String, BeanManager<?>> beanManagerMap = new HashMap<String, BeanManager<?>>();
 
+	private final Map<String, List<BeanDescriptor<?>>> tableToDescMap = new HashMap<String, List<BeanDescriptor<?>>>();
+
 	private List<BeanDescriptor<?>> immutableDescriptorList;
 	
 	private final DbIdentity dbIdentity;
@@ -140,12 +144,15 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	
 	private final UuidIdGenerator uuidIdGenerator = new UuidIdGenerator();
 	
+	private final ServerCacheManager cacheManager;
+	
 	/**
 	 * Create for a given database dbConfig.
 	 */
 	public BeanDescriptorManager(InternalConfiguration config) {
 
 		this.serverName = InternString.intern(config.getServerConfig().getName());
+		this.cacheManager = config.getCacheManager();
 		this.dataSource = config.getServerConfig().getDataSource();
 		this.databasePlatform = config.getServerConfig().getDatabasePlatform();
 		this.bootupClasses = config.getBootupClasses();
@@ -179,8 +186,21 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		return (BeanDescriptor<T>)descMap.get(className);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T> BeanDescriptor<T> getBeanDescriptor(String entityClassName) {
+		
+		// remove $$EntityBean stuff
+		entityClassName = SubClassUtil.getSuperClassName(entityClassName);
+		return (BeanDescriptor<T>)descMap.get(entityClassName);
+	}
+	
 	public String getServerName() {
 		return serverName;
+	}
+
+	
+	public ServerCacheManager getCacheManager() {
+		return cacheManager;
 	}
 
 	public NamingConvention getNamingConvention() {
@@ -213,10 +233,51 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		initialiseAll();
 		readForeignKeys();
 
+		readTableToDescriptor();
+		
 		logStatus();
 
 		deplyInfoMap.clear();
 		deplyInfoMap = null;
+	}
+	
+	/**
+	 * For SQL based modifications we need to invalidate appropriate
+	 * parts of the cache.
+	 */
+	public void cacheNotify(TransactionEventTable.TableIUD tableIUD){
+		
+		List<BeanDescriptor<?>> list = tableToDescMap.get(tableIUD.getTable());
+		if (list != null){
+			for (int i = 0; i < list.size(); i++) {
+				list.get(i).cacheNotify(tableIUD);
+			}
+		}
+	}
+	
+	/**
+	 * Build a map of table names to BeanDescriptors.
+	 * <p>
+	 * This is generally used to maintain caches from table names.
+	 * </p>
+	 */
+	private void readTableToDescriptor() {
+	
+		for (BeanDescriptor<?> desc: descMap.values()) {
+			String baseTable = desc.getBaseTable();
+			if (baseTable == null){
+				
+			} else {
+				baseTable = baseTable.toUpperCase();
+			
+				List<BeanDescriptor<?>> list = tableToDescMap.get(baseTable);
+				if (list == null){
+					list = new ArrayList<BeanDescriptor<?>>(1);
+					tableToDescMap.put(baseTable, list);
+				} 
+				list.add(desc);
+			}
+		}
 	}
 	
 	private void readForeignKeys() {
@@ -614,7 +675,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		unidirectional.setBeanTable(beanTable);
 		unidirectional.setName(beanTable.getBaseTable());
 
-		info.setBeanJoinAlias(unidirectional, true);
+		info.setBeanJoinType(unidirectional, true);
 
 		// define the TableJoin
 		DeployTableJoin oneToManyJoin = oneToMany.getTableJoin();
@@ -792,7 +853,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		}
 		BeanPersistListener<T> beanListener = persistListenerManager.getListener(beanType);
 		if (beanListener != null) {
-			descriptor.setBeanListener(beanListener);
+			descriptor.setBeanPersistListener(beanListener);
 			logger.fine("BeanListener on[" + descriptor.getFullName() + "] " + beanListener.getClass().getName());
 		}
 	}

@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.config.naming;
 
-import java.lang.reflect.Field;
-
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.BeanTable;
@@ -66,11 +64,9 @@ public interface NamingConvention {
 	/**
 	 * Return the column name given the property name.
 	 *
-	 * @param field the field
-	 *
 	 * @return the column from property
 	 */
-	public String getColumnFromProperty(Field field);
+	public String getColumnFromProperty(Class<?> beanClass, String propertyName);
 
 	/**
 	 * Return the property name from the column name.
@@ -111,22 +107,22 @@ public interface NamingConvention {
 
 
 	/**
-	 * Gets the index name.
+	 * Returns the index name for a given associated one property.
 	 *
-	 * @param p the p
-	 * @param ixCount the ix count
+	 * @param p the associated bean property
+	 * @param ixCount A unique count for the index
 	 *
 	 * @return the index name
 	 */
 	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount);
 
 	/**
-	 * Gets the ManyToMany join table name.
+	 * Returns the ManyToMany join(intersection) table name.
 	 *
-	 * @param lhsTable the lhs table
-	 * @param rhsTable the rhs table
+	 * @param lhsTable the left hand side bean table
+	 * @param rhsTable the right hand side bean table
 	 *
-	 * @return the m2m join table name
+	 * @return the many to many join(intersection) table name
 	 */
 	public String getM2MJoinTableName(BeanTable lhsTable, BeanTable rhsTable);
 }
