@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.config.naming;
 
-import java.lang.reflect.Field;
 
 /**
  * Converts between Camel Case and Underscore based names.
@@ -59,36 +58,20 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
 	 * @return the table name from class
 	 */
 	public TableName getTableNameFromClass(Class<?> beanClass) {
-		
-		// Try annotation first
-		TableName tableName = getTableNameFromAnnotation(beanClass);
 
-		if (tableName == null){
-			// Get the underscore name
-			return new TableName(getCatalog(),
-							getSchema(),
-							toUnderscoreFromCamel(beanClass.getSimpleName()));
-		} else {
-			return tableName;
-		}
+		return new TableName(getCatalog(),
+			getSchema(),
+			toUnderscoreFromCamel(beanClass.getSimpleName()));
 	}
 
 	/**
 	 * Converts Camel case property name to underscore based column name.
 	 *
-	 * @param field the field
-	 *
 	 * @return the column from property
 	 */
-	public String getColumnFromProperty(Field field) {
-		// Get annotation
-		String columnName = getColumnFromAnnotation(field);
-
-		if (columnName == null){
-			// no annotation - convert the field name to an underscored name
-			columnName = toUnderscoreFromCamel(field.getName());;
-		}
-		return columnName;
+	public String getColumnFromProperty(Class<?> beanClass, String propertyName) {//Field field) {
+		
+		return toUnderscoreFromCamel(propertyName);
 	}
 
 	/**
@@ -104,36 +87,31 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
 	}
 
 	/**
-	 * Checks if is force upper case.
-	 *
-	 * @return the forceUpperCase
+	 * Return true if the result will be upper case.
+	 * <p>
+	 * False if it will be lower case.
+	 * </p>
 	 */
 	public boolean isForceUpperCase() {
 		return forceUpperCase;
 	}
 
 	/**
-	 * Sets the force upper case.
-	 *
-	 * @param forceUpperCase the forceUpperCase to set
+	 * Set to true to make the result upper case.
 	 */
 	public void setForceUpperCase(boolean forceUpperCase) {
 		this.forceUpperCase = forceUpperCase;
 	}
 
 	/**
-	 * Checks if is digits compressed.
-	 *
-	 * @return the digitsCompressed
+	 * Returns true if digits are compressed.
 	 */
 	public boolean isDigitsCompressed() {
 		return digitsCompressed;
 	}
 
 	/**
-	 * Sets the digits compressed.
-	 *
-	 * @param digitsCompressed the digitsCompressed to set
+	 * Sets to true for digits to be compressed (without a leading underscore).
 	 */
 	public void setDigitsCompressed(boolean digitsCompressed) {
 		this.digitsCompressed = digitsCompressed;
@@ -142,11 +120,7 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
 
 
     /**
-     * To underscore from camel.
-     *
-     * @param camelCase the camel case
-     *
-     * @return the string
+     * Convert and return the string to underscore from camel case.
      */
     protected String toUnderscoreFromCamel(String camelCase){
 

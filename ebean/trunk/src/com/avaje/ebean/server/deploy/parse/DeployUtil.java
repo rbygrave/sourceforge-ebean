@@ -20,7 +20,6 @@
 package com.avaje.ebean.server.deploy.parse;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,8 +28,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.naming.NamingConvention;
-import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
@@ -66,16 +65,33 @@ public class DeployUtil {
 
 	private final String manyToManyAlias;
 
-	public DeployUtil(TypeManager typeMgr, NamingConvention nc) {
+	private final DatabasePlatform dbPlatform;
+	
+	public DeployUtil(TypeManager typeMgr, NamingConvention nc, DatabasePlatform dbPlatform) {
 
 		this.typeManager = typeMgr;
 		this.namingConvention = nc;
+		this.dbPlatform = dbPlatform;
 
 		// this alias is used for ManyToMany lazy loading queries
 		this.manyToManyAlias = "zzzzzz";
 
 		this.validatorFactoryManager = new ValidatorFactoryManager();
 	}
+
+	
+	
+	public DatabasePlatform getDbPlatform() {
+		return dbPlatform;
+	}
+
+
+
+	public NamingConvention getNamingConvention() {
+		return namingConvention;
+	}
+
+
 
 	/**
 	 * Return the table alias used for ManyToMany joins.
@@ -133,27 +149,6 @@ public class DeployUtil {
 		}
 	}
 
-
-
-	/**
-	 * Returns the table name for a given Class using the naming convention.
-	 */
-	public TableName getTableNameFromClass(Class<?> beanType) {
-		return namingConvention.getTableNameFromClass(beanType);
-	}
-
-	/**
-	 * Return the DB column name for a given property name.
-	 */
-	public String getDbColumn(Field field) {
-		String dbColumn = namingConvention.getColumnFromProperty(field);
-
-		if (dbColumn == null || dbColumn.length() == 0){
-			logger.log(Level.WARNING, "No DB columnf found for field: " + field);
-		}
-		return dbColumn;
-	}
-
 	/**
 	 * Find the ScalarType for this property.
 	 * <p>
@@ -162,7 +157,6 @@ public class DeployUtil {
 	 * </p>
 	 */
 	public void setScalarType(DeployBeanProperty property) {
-
 
 		if (property.getScalarType() != null){
 			// already has a ScalarType assigned.

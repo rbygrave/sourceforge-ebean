@@ -21,7 +21,9 @@ package com.avaje.ebean.server.transaction;
 
 import java.io.Serializable;
 
+import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Wraps the information representing a Inserted Updated or Deleted Bean.
@@ -36,7 +38,7 @@ import com.avaje.ebean.server.core.PersistRequest;
  * size of data sent around the network.
  * </p>
  */
-public class RemoteListenerPayload implements Serializable {
+public class RemoteBeanPersist implements Serializable {
 
 	static final long serialVersionUID = 8389469180931531408L;
 
@@ -48,7 +50,7 @@ public class RemoteListenerPayload implements Serializable {
 	/**
 	 * The bean class name.
 	 */
-	private final String typeDescription;
+	private final String beanType;
 
 	/**
 	 * The payload. Perhaps just the Id property.
@@ -58,8 +60,8 @@ public class RemoteListenerPayload implements Serializable {
 	/**
 	 * Create the payload.
 	 */
-	public RemoteListenerPayload(String typeDescription, PersistRequest.Type type, Serializable id) {
-		this.typeDescription = typeDescription;
+	public RemoteBeanPersist(String beanType, PersistRequest.Type type, Serializable id) {
+		this.beanType = beanType;
 		this.type = type;
 		this.id = id;
 	}
@@ -74,8 +76,8 @@ public class RemoteListenerPayload implements Serializable {
 	/**
 	 * The bean class name.
 	 */
-	public String getTypeDescription() {
-		return typeDescription;
+	public String getBeanType() {
+		return beanType;
 	}
 
 	/**
@@ -84,5 +86,32 @@ public class RemoteListenerPayload implements Serializable {
 	 */
 	public Serializable getId() {
 		return id;
+	}
+	
+	/**
+	 * Notify the local BeanPersistListener of this event that came from another
+	 * server in the cluster.
+	 */
+	public void notifyListener(BeanDescriptor<?> desc) {
+		
+		BeanPersistListener<?> listener = desc.getBeanPersistListener();
+		if (listener != null){
+			switch (type) {
+			case INSERT:
+				listener.remoteInsert(id);
+				break;
+	
+			case UPDATE:
+				listener.remoteUpdate(id);
+				break;
+	
+			case DELETE:
+				listener.remoteDelete(id);
+				break;
+	
+			default:
+				break;
+			}
+		}
 	}
 }

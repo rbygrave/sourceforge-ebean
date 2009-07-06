@@ -42,16 +42,19 @@ import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
 import com.avaje.ebean.el.ElComparatorCompound;
 import com.avaje.ebean.el.ElComparatorProperty;
 import com.avaje.ebean.el.ElPropertyChainBuilder;
-import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.el.ElPropertyDeploy;
+import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
+import com.avaje.ebean.server.cache.ServerCache;
+import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.ReferenceOptions;
@@ -61,6 +64,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyLists;
 import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.reflect.BeanReflect;
+import com.avaje.ebean.server.transaction.TransactionEventTable.TableIUD;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
 import com.avaje.ebean.util.SortByClause;
@@ -74,225 +78,226 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
-	final ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
+	private final ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
 
-	final ConcurrentHashMap<String, ElPropertyValue> elGetCache = new ConcurrentHashMap<String, ElPropertyValue>();
+	private final ConcurrentHashMap<String, ElPropertyValue> elGetCache = new ConcurrentHashMap<String, ElPropertyValue>();
 
-	final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
+	private final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
 
-	final ConcurrentHashMap<String, BeanFkeyProperty> fkeyMap = new ConcurrentHashMap<String,BeanFkeyProperty>();
+	private final ConcurrentHashMap<String, BeanFkeyProperty> fkeyMap = new ConcurrentHashMap<String,BeanFkeyProperty>();
 	
 	/**
 	 * The EbeanServer name. Same as the plugin name.
 	 */
-	final String serverName;
+	private final String serverName;
 
 	/**
 	 * Type of Identity generation strategy used.
 	 */
-	final IdType idType;
+	private final IdType idType;
 
-	final IdGenerator idGenerator;
+	private final IdGenerator idGenerator;
 	
 	/**
 	 * The name of an IdGenerator (optional).
 	 */
-	final String idGeneratorName;
+	private final String idGeneratorName;
 
 	/**
-	 * The database sequence nextval (optional).
+	 * The database sequence next value (optional).
 	 */
-	final String sequenceNextVal;
+	private final String sequenceNextVal;
 
 	/**
 	 * The database sequence name (optional).
 	 */
-	final String sequenceName;
+	private final String sequenceName;
 
 	/**
 	 * SQL used to return last inserted id.
 	 * Used for Identity columns where getGeneratedKeys is not supported.
 	 */
-	final String selectLastInsertedId;
+	private final String selectLastInsertedId;
+	
 	/**
 	 * True if this is Table based for TableBeans.
 	 */
-	final boolean tableGenerated;
+	private final boolean tableGenerated;
 
 	/**
 	 * True if this is an Embedded bean.
 	 */
-	final boolean embedded;
+	private final boolean embedded;
 
 	/**
 	 * True if this is a Meta bean.
 	 */
-	final boolean meta;
+	private final boolean meta;
 
-	final boolean autoFetchTunable;
+	private final boolean autoFetchTunable;
 
-	final String lazyFetchIncludes;
+	private final String lazyFetchIncludes;
 
 	/**
 	 * The concurrency mode for beans of this type.
 	 */
-	final ConcurrencyMode concurrencyMode;
+	private final ConcurrencyMode concurrencyMode;
 
 	/**
 	 * The tables this bean is dependent on.
 	 */
-	final String[] dependantTables;
+	private final String[] dependantTables;
 
 	/**
 	 * Extra deployment attributes.
 	 */
-	final Map<String, String> extraAttrMap;
+	private final Map<String, String> extraAttrMap;
 
 	/**
 	 * The base database table.
 	 */
-	final String baseTable;
+	private final String baseTable;
 
 	/**
 	 * True if based on a table (or view) false if based on a raw sql select
 	 * statement.
 	 */
-	final boolean sqlSelectBased;
+	private final boolean sqlSelectBased;
 
 	/**
 	 * Used to provide mechanism to new EntityBean instances. Generated code
 	 * faster than reflection at this stage.
 	 */
-	final BeanReflect beanReflect;
+	private final BeanReflect beanReflect;
 
 	/**
 	 * Map of BeanProperty Linked so as to preserve order.
 	 */
-	final LinkedHashMap<String, BeanProperty> propMap;
+	private final LinkedHashMap<String, BeanProperty> propMap;
 
 	/**
 	 * The type of bean this describes.
 	 */
-	final Class<T> beanType;
+	private final Class<T> beanType;
 
 	/**
 	 * This is not sent to a remote client.
 	 */
-	final BeanDescriptorMap owner;
+	private final BeanDescriptorMap owner;
 
 	/**
 	 * The EntityBean type used to create new EntityBeans.
 	 */
-	final Class<?> factoryType;
+	private final Class<?> factoryType;
 
 	/**
 	 * Intercept pre post on insert,update,delete and postLoad(). Server side
 	 * only.
 	 */
-	final BeanPersistController<T> beanController;
+	private final BeanPersistController<T> beanController;
 
 	/**
 	 * If set overrides the find implementation. Server side only.
 	 */
-	final BeanFinder<T> beanFinder;
+	private final BeanFinder<T> beanFinder;
 
 	/**
 	 * Listens for post commit insert update and delete events.
 	 */
-	final BeanPersistListener<T> beanListener;
+	private final BeanPersistListener<T> beanPersistListener;
 
 	/**
 	 * The table joins for this bean.
 	 */
-	final TableJoin[] derivedTableJoins;
+	private final TableJoin[] derivedTableJoins;
 
 	/**
 	 * Inheritance information. Server side only.
 	 */
-	final InheritInfo inheritInfo;
+	private final InheritInfo inheritInfo;
 
 	/**
 	 * Derived list of properties that make up the unique id.
 	 */
-	final BeanProperty[] propertiesId;
+	private final BeanProperty[] propertiesId;
 
 	/**
 	 * Derived list of properties that are used for version concurrency
 	 * checking.
 	 */
-	final BeanProperty[] propertiesVersion;
+	private final BeanProperty[] propertiesVersion;
 
 	/**
 	 * Properties local to this type (not from a super type).
 	 */
-	final BeanProperty[] propertiesLocal;
+	private final BeanProperty[] propertiesLocal;
 
-	final BeanPropertyAssocOne<?> unidirectional;
+	private final BeanPropertyAssocOne<?> unidirectional;
 
 	/**
 	 * A hashcode of all the many property names.
 	 * This is used to efficiently create sets of 
 	 * loaded property names (for partial objects).
 	 */
-	final int namesOfManyPropsHash;
+	private final int namesOfManyPropsHash;
 	
 	/**
 	 * The set of names of the many properties.
 	 */
-	final Set<String> namesOfManyProps;
+	private final Set<String> namesOfManyProps;
 	
 	/**
 	 * list of properties that are Lists/Sets/Maps (Derived).
 	 */
-	final BeanPropertyAssocMany<?>[] propertiesMany;
-	final BeanPropertyAssocMany<?>[] propertiesManySave;
-	final BeanPropertyAssocMany<?>[] propertiesManyDelete;
+	private final BeanPropertyAssocMany<?>[] propertiesMany;
+	private final BeanPropertyAssocMany<?>[] propertiesManySave;
+	private final BeanPropertyAssocMany<?>[] propertiesManyDelete;
 
 	/**
 	 * list of properties that are associated beans and not embedded (Derived).
 	 */
-	final BeanPropertyAssocOne<?>[] propertiesOne;
+	private final BeanPropertyAssocOne<?>[] propertiesOne;
 
-	final BeanPropertyAssocOne<?>[] propertiesOneImported;
-	final BeanPropertyAssocOne<?>[] propertiesOneImportedSave;
-	final BeanPropertyAssocOne<?>[] propertiesOneImportedDelete;
+	private final BeanPropertyAssocOne<?>[] propertiesOneImported;
+	private final BeanPropertyAssocOne<?>[] propertiesOneImportedSave;
+	private final BeanPropertyAssocOne<?>[] propertiesOneImportedDelete;
 
-	final BeanPropertyAssocOne<?>[] propertiesOneExported;
-	final BeanPropertyAssocOne<?>[] propertiesOneExportedSave;
-	final BeanPropertyAssocOne<?>[] propertiesOneExportedDelete;
+	private final BeanPropertyAssocOne<?>[] propertiesOneExported;
+	private final BeanPropertyAssocOne<?>[] propertiesOneExportedSave;
+	private final BeanPropertyAssocOne<?>[] propertiesOneExportedDelete;
 
 	/**
 	 * list of properties that are embedded beans.
 	 */
-	final BeanPropertyAssocOne<?>[] propertiesEmbedded;
+	private final BeanPropertyAssocOne<?>[] propertiesEmbedded;
 
 	/**
 	 * List of the scalar properties excluding id and secondary table properties.
 	 */
-	final BeanProperty[] propertiesBaseScalar;
+	private final BeanProperty[] propertiesBaseScalar;
 
-	final BeanProperty[] propertiesTransient;
+	private final BeanProperty[] propertiesTransient;
 
 	/**
 	 * Set to true if the bean has version properties or an embedded bean has
 	 * version properties.
 	 */
-	final BeanProperty propertyFirstVersion;
+	private final BeanProperty propertyFirstVersion;
 
 	/**
 	 * Set when the Id property is a single non-embedded property. Can make life
 	 * simpler for this case.
 	 */
-	final BeanProperty propertySingleId;
+	private final BeanProperty propertySingleId;
 
 	/**
 	 * The bean class name or the table name for MapBeans.
 	 */
-	final String fullName;
+	private final String fullName;
 
-	final Map<String, DeployNamedQuery> namedQueries;
+	private final Map<String, DeployNamedQuery> namedQueries;
 
-	final Map<String, DeployNamedUpdate> namedUpdates;
+	private final Map<String, DeployNamedUpdate> namedUpdates;
 
 	/**
 	 * Logical to physical deployment mapping for use with updates.
@@ -300,64 +305,71 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * Maps bean properties to db columns and the bean name to base table.
 	 * </p>
 	 */
-	Map<String,String> updateDeployMap;
+	private Map<String,String> updateDeployMap;
 
 	/**
 	 * Has local validation rules.
 	 */
-	final boolean hasLocalValidation;
+	private final boolean hasLocalValidation;
 
 	/**
 	 * Has local or recursive validation rules.
 	 */
-	final boolean hasCascadeValidation;
+	private final boolean hasCascadeValidation;
 
 	/**
 	 * Properties with local validation rules.
 	 */
-	final BeanProperty[] propertiesValidationLocal;
+	private final BeanProperty[] propertiesValidationLocal;
 
 	/**
 	 * Properties with local or cascade validation rules.
 	 */
-	final BeanProperty[] propertiesValidationCascade;
+	private final BeanProperty[] propertiesValidationCascade;
 
-	final Validator[] beanValidators;
+	private final Validator[] beanValidators;
 
 	/**
 	 * Flag used to determine if saves can be skipped.
 	 */
-	final boolean saveRecurseSkippable;
+	private final boolean saveRecurseSkippable;
 
 	/**
 	 * Flag used to determine if deletes can be skipped.
 	 */
-	final boolean deleteRecurseSkippable;
+	private final boolean deleteRecurseSkippable;
 
 	/**
 	 * Make the TypeManager available for helping SqlSelect.
 	 */
-	final TypeManager typeManager;
+	private final TypeManager typeManager;
 
-	final IdBinder idBinder;
+	private final IdBinder idBinder;
 
-	final String name;
+	private final String name;
 	
-	final String baseTableAlias;
+	private final String baseTableAlias;
 	
 	/**
 	 * If true then only changed properties get updated.
 	 */
-	final boolean updateChangesOnly;
+	private final boolean updateChangesOnly;
 	
-	InternalEbean internalEbean;
+	private final ServerCacheManager cacheManager;
 	
+	private InternalEbean internalEbean;
+	
+	private ServerCache beanCache;
+
+	private ServerCache queryCache;
+
 	/**
 	 * Construct the BeanDescriptor.
 	 */
 	public BeanDescriptor(BeanDescriptorMap owner, TypeManager typeManager, DeployBeanDescriptor<T> deploy) {
 
 		this.owner = owner;
+		this.cacheManager = owner.getCacheManager();
 		this.serverName = owner.getServerName();
 		this.name = InternString.intern(deploy.getName());
 		this.baseTableAlias = InternString.intern(name.substring(0,1).toLowerCase());
@@ -372,7 +384,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 
 		this.beanFinder = deploy.getBeanFinder();
 		this.beanController = deploy.getBeanController();
-		this.beanListener = deploy.getBeanListener();
+		this.beanPersistListener = deploy.getBeanPersistListener();
 
 		this.idType = deploy.getIdType();
 		this.idGeneratorName = InternString.intern(deploy.getIdGeneratorName());
@@ -449,7 +461,9 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		this.idBinder = IdBinderFactory.createIdBinder(propertiesId);
 	}
 
-	
+	/**
+	 * Set the server. Primarily so that the Many's can lazy load.
+	 */
 	public void setInternalEbean(InternalEbean internalEbean){
 		this.internalEbean = internalEbean;
 		for (int i = 0; i < propertiesMany.length; i++) {
@@ -458,14 +472,12 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		}		
 	}
 	
-	
 	/**
 	 * Return the EbeanServer instance that owns this BeanDescriptor.
 	 */
 	public InternalEbean getInternalEbean() {
 		return internalEbean;
 	}
-
 
 	/**
 	 * Compare using the name of the BeanDescriptor.
@@ -544,6 +556,10 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		}
 	}	
 	
+	/**
+	 * Add objects to ElPropertyDeploy etc. These are used so that 
+	 * expressions on foreign keys don't require an extra join.
+	 */
 	public void add(BeanFkeyProperty fkey){
 		fkeyMap.put(fkey.getName(), fkey);
 	}
@@ -552,6 +568,106 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 		for (int i = 0; i < propertiesOneImported.length; i++) {
 			propertiesOneImported[i].addFkey();
 		}
+	}
+
+	/**
+	 * Return true if there is currently query caching for this type of bean.
+	 */
+	public boolean isQueryCaching() {
+		return queryCache != null;
+	}
+	
+	/**
+	 * Return true if there is currently bean caching for this type of bean.
+	 */
+	public boolean isCaching() {
+		return beanCache != null;
+	}
+	
+	/**
+	 * Invalidate parts of cache due to SqlUpdate or
+	 * external modification etc.
+	 */
+	public void cacheNotify(TableIUD tableIUD){
+		// inserts don't invalidate the bean cache
+		if (tableIUD.isUpdateOrDelete()){
+			cacheClear();
+		}
+		// any change invalidates the query cache
+		queryCacheClear();
+	}
+	
+	/**
+	 * Clear the query cache.
+	 */
+	public void queryCacheClear() {
+		if (queryCache != null){
+			queryCache.clear();
+		}
+	}
+
+	/**
+	 * Get a query result from the query cache.
+	 */
+	@SuppressWarnings("unchecked")
+	public BeanCollection<T> queryCacheGet(Object id) {
+		if (queryCache == null){
+			return null;
+		} else {
+			return (BeanCollection<T>)queryCache.get(id);
+		}
+	}
+	
+	/**
+	 * Put a query result into the query cache.
+	 */
+	public void queryCachePut(Object id, BeanCollection<T> query) {
+		if (queryCache == null){
+			queryCache = cacheManager.getQueryCache(beanType);
+		}
+		queryCache.put(id, query);
+	}
+	
+	/**
+	 * Clear the bean cache.
+	 */
+	public void cacheClear() {
+		if (beanCache != null){
+			beanCache.clear();
+		}
+	}
+	
+	/**
+	 * Put a bean into the bean cache.
+	 */
+	@SuppressWarnings("unchecked")
+	public T cachePut(T bean){
+		if (beanCache == null){
+			beanCache = cacheManager.getBeanCache(beanType);
+		}
+		Object id = getId(bean);
+		return (T)beanCache.put(id, bean);
+	}
+	
+	/**
+	 * Return a bean from the bean cache.
+	 */
+	@SuppressWarnings("unchecked")
+	public T cacheGet(Object id){
+		if (beanCache == null){
+			return null;
+		} else {
+			return (T)beanCache.get(id);
+		}
+	}
+	
+	/**
+	 * Remove a bean from the cache given its Id.
+	 */
+	public void cacheRemove(Object id){
+		if (beanCache != null){
+			beanCache.remove(id);
+		} 
 	}
 	
 	/**
@@ -1205,7 +1321,7 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 * </p>
 	 */
 	public boolean isMeta() {
-		return embedded;
+		return meta;
 	}
 	
 	/**
@@ -1226,8 +1342,8 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	/**
 	 * Return the beanListener.
 	 */
-	public BeanPersistListener<T> getBeanListener() {
-		return beanListener;
+	public BeanPersistListener<T> getBeanPersistListener() {
+		return beanPersistListener;
 	}
 
 	/**

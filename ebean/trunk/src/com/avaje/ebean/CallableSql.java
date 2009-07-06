@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.BindParams.Param;
 
@@ -124,7 +124,7 @@ public class CallableSql implements Serializable {
 	 * Holds the table modification information. On commit this information is
 	 * used to manage the cache etc.
 	 */
-	private TransactionEvent transactionEvent = new TransactionEvent();
+	private TransactionEventTable transactionEvent = new TransactionEventTable();
 
 	private BindParams bindParameters = new BindParams();
 
@@ -296,7 +296,7 @@ public class CallableSql implements Serializable {
 	 * information for this CallableSql. This information is merged into the
 	 * transaction after the transaction is commited.
 	 */
-	final TransactionEvent getTransactionEvent() {
+	final TransactionEventTable getTransactionEventTable() {
 		return transactionEvent;
 	}
 

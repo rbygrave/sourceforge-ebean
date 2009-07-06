@@ -29,14 +29,14 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.bean.ScopeTrans;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.cache.CacheManager;
+import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
-import com.avaje.ebean.server.transaction.RemoteListenerEvent;
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 
 /**
  * Service Provider extension to EbeanServer.
@@ -58,7 +58,7 @@ public interface InternalEbeanServer extends InternalEbean {
 	/**
 	 * Return the server cache.
 	 */
-	public CacheManager getServerCache();
+	public ServerCacheManager getServerCache();
 
 	/**
 	 * Clear the query execution statistics.
@@ -89,8 +89,8 @@ public interface InternalEbeanServer extends InternalEbean {
 	 * appropriately.
 	 * </p>
 	 */
-	public void externalModification(TransactionEvent event);
-	
+	public void externalModification(TransactionEventTable event);
+
 	/**
 	 * Create a ServerTransaction.
 	 * <p>
@@ -118,7 +118,7 @@ public interface InternalEbeanServer extends InternalEbean {
 	 * An event from another server in the cluster used to notify local
 	 * BeanListeners of remote inserts updates and deletes.
 	 */
-	public void remoteListenerEvent(RemoteListenerEvent event);
+	public void remoteTransactionEvent(RemoteTransactionEvent event);
 
 	/**
 	 * Create a query request object.

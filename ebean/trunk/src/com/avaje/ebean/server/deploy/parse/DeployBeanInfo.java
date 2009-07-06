@@ -21,26 +21,18 @@ package com.avaje.ebean.server.deploy.parse;
 
 import java.util.HashMap;
 
-import com.avaje.ebean.config.naming.NamingConvention;
-import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
-import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 
 /**
  * Wraps information about a bean during deployment parsing.
- * <p>
- * This is passed around while all the deployment information is being collected
- * from annotations, xml and database meta data (foreign keys etc).
- * </p>
  */
 public class DeployBeanInfo<T> {
 
 	/**
-	 * Holds TableJoins. These can be created in annotations but overridden in
-	 * deployment xml file.
+	 * Holds TableJoins for secondary table properties.
 	 */
 	private final HashMap<String,DeployTableJoin> tableJoinMap = new HashMap<String, DeployTableJoin>();
 
@@ -73,34 +65,13 @@ public class DeployBeanInfo<T> {
 	public DeployUtil getUtil() {
 		return util;
 	}
-
-	/**
-	 * Set the table name if it has not already been set.
-	 * <p>
-	 * This will use the NamingConvention as provided in the ServerConfig
-	 * The default is to take the class name as defined by JPA spec
-	 * </p>
-	 * @see NamingConvention
-	 */
-	public void setTableName() {
-
-		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
-
-			// default the TableName using NamingConvention.
-			TableName tableName = util.getTableNameFromClass(descriptor.getBeanType());
-			
-            descriptor.setBaseTable(tableName.getQualifiedName());
-		}
-	}
-
 	
 	/**
 	 * Appropriate TableJoin for a property mapped to a secondary table.
 	 */
-	public DeployTableJoin getTableJoin(String tableName, String alias) {
+	public DeployTableJoin getTableJoin(String tableName) {
 
-		// this is ok even if alias is null which is normal
-		String key = tableName.toLowerCase() + "." + alias;
+		String key = tableName.toLowerCase();
 
 		DeployTableJoin tableJoin = (DeployTableJoin) tableJoinMap.get(key);
 		if (tableJoin == null) {
@@ -117,7 +88,7 @@ public class DeployBeanInfo<T> {
 	/**
 	 * Set a the join alias for a assoc one property.
 	 */
-	public void setBeanJoinAlias(DeployBeanPropertyAssocOne<?> beanProp, boolean outerJoin) {
+	public void setBeanJoinType(DeployBeanPropertyAssocOne<?> beanProp, boolean outerJoin) {
 
 		String joinType = TableJoin.JOIN;
 		if (outerJoin){// && util.isUseOneToOneOptional()) {
@@ -126,26 +97,6 @@ public class DeployBeanInfo<T> {
 
 		DeployTableJoin tableJoin = beanProp.getTableJoin();
 		tableJoin.setType(joinType);
-	}
-
-	/**
-	 * Set a the join alias for a assoc many property.
-	 */
-	public void setManyJoinAlias(DeployBeanPropertyAssocMany<?> listProp, DeployTableJoin tableJoin) {
-
-		// its always going to be an outer join... as perhaps no rows
-		tableJoin.setType(TableJoin.LEFT_OUTER);
-	}
-
-	/**
-	 * ManyToMany only, create an alias for the source to intersection table
-	 * join.
-	 */
-	public void setManyIntersectionAlias(DeployBeanPropertyAssocMany<?> listProp,
-			DeployTableJoin tableJoin) {
-
-		// its always going to be an outer join... as perhaps no rows
-		tableJoin.setType(TableJoin.LEFT_OUTER);
 	}
 
 }

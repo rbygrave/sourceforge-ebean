@@ -33,6 +33,7 @@ import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanTable;
+import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
@@ -131,9 +132,10 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
 
-			// use naming convention to define join (based on the bean name for this side of relationship)
+			// use naming convention to define join (based on the bean name for this side of relationship)			
+			// A unidirectional OneToMany or OneToMany with no mappedBy property
 			String fkeyPrefix = factory.getNamingConvention()
-								.getColumnFromProperty(prop.getField());
+								.getColumnFromProperty(descriptor.getBeanType(), descriptor.getName());
 
 			// Use the owning bean table to define the join
 			BeanTable owningBeanTable = factory.getBeanTable(descriptor.getBeanType());
@@ -165,8 +167,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 		DeployTableJoin destJoin = prop.getTableJoin();
 		destJoin.addJoinColumn(false, joinTable.inverseJoinColumns(), prop.getBeanTable());
 
-		// set table alias etc for the join to intersection
-		info.setManyIntersectionAlias(prop, intJoin);
+		intJoin.setType(TableJoin.LEFT_OUTER);
 
 		// reverse join from dest back to intersection
 		DeployTableJoin inverseDest = destJoin.createInverse(intTableName);
@@ -207,9 +208,7 @@ public class AnnotationAssocManys extends AnnotationParser {
     				getM2MJoinTableName(localTable, otherTable);
 
     		intJoin.setTable(intTableName);
-
-    		// set table alias etc for the join to intersection
-    		info.setManyIntersectionAlias(prop, intJoin);
+    		intJoin.setType(TableJoin.LEFT_OUTER);
     	}
 
 		DeployTableJoin destJoin = prop.getTableJoin();
@@ -272,7 +271,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 		manyProp.setManyToMany(true);
 		manyProp.setBeanTable(assoc);
-		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
+		manyProp.getTableJoin().setType(TableJoin.LEFT_OUTER);
 	}
 
 	private void readToOne(OneToMany propAnn, DeployBeanPropertyAssocMany<?> manyProp) {
@@ -295,7 +294,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 		}
 
 		manyProp.setBeanTable(assoc);
-		info.setManyJoinAlias(manyProp, manyProp.getTableJoin());
+		manyProp.getTableJoin().setType(TableJoin.LEFT_OUTER);
 	}
 
 }

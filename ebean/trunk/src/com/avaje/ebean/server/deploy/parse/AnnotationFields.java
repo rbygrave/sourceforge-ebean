@@ -111,10 +111,12 @@ public class AnnotationFields extends AnnotationParser {
 		Column column = get(prop, Column.class);
 		if (column != null) {
 			readColumn(column, prop);
-
-		} else {
-			// set column name using Naming Convention
-			setDbColumn(prop, null);
+		} 
+		if (prop.getDbColumn() == null){
+			// No @Column annotation or @Column.name() not set
+			// Use the NamingConvention to set the DB column name
+			String dbColumn = namingConvention.getColumnFromProperty(beanType, prop.getName());
+			prop.setDbColumn(dbColumn);
 		}
 
 		GeneratedValue gen = get(prop, GeneratedValue.class);
@@ -243,7 +245,10 @@ public class AnnotationFields extends AnnotationParser {
 
 	private void readColumn(Column columnAnn, DeployBeanProperty prop) {
 
-		setDbColumn(prop, columnAnn.name());
+		if (!isEmpty(columnAnn.name())){
+			String dbColumn = databasePlatform.convertQuotedIdentifiers(columnAnn.name());
+			prop.setDbColumn(dbColumn);
+		}
 
 		prop.setDbInsertable(columnAnn.insertable());
 		prop.setDbUpdateable(columnAnn.updatable());
@@ -264,16 +269,12 @@ public class AnnotationFields extends AnnotationParser {
 			// its a base table property...
 		} else {
 			// its on a secondary table...
-			DeployTableJoin tableJoin = info.getTableJoin(tableName, null);
+			DeployTableJoin tableJoin = info.getTableJoin(tableName);
 			tableJoin.addProperty(prop);
 		}
 	}
 
-	private void setDbColumn(DeployBeanProperty prop, String dbColumn) {
-		dbColumn = util.getDbColumn(prop.getField());
 
-		prop.setDbColumn(dbColumn);
-	}
 
 	private void readValidations(DeployBeanProperty prop) {
 

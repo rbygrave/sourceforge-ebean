@@ -20,7 +20,7 @@
 package com.avaje.ebean;
 
 import com.avaje.ebean.server.core.ProtectedMethodAPI;
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.util.BindParams;
 
 /**
@@ -46,8 +46,8 @@ class ProtectedMethodImpl implements ProtectedMethodAPI {
     /**
      * Return the TransactionEvent for a CallableSql.
      */
-    public TransactionEvent getTransactionEvent(CallableSql callSql) {
-        return callSql.getTransactionEvent();
+    public TransactionEventTable getTransactionEventTable(CallableSql callSql) {
+        return callSql.getTransactionEventTable();
     }
     
 }

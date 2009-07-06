@@ -48,5 +48,11 @@ public class TransactionEventBeans {
 
 		requests.add(request);
 	}
+	
+	public void notifyCache() {
+		for (int i = 0; i < requests.size(); i++) {
+			requests.get(i).notifyCache();
+		}
+	}
 
 }

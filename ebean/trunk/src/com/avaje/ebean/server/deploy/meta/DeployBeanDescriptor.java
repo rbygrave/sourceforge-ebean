@@ -156,7 +156,7 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Listens for post commit insert update and delete events.
 	 */
-	BeanPersistListener<T> beanListener;
+	BeanPersistListener<T> beanPersistListener;
 
 	/**
 	 * The table joins for this bean. Server side only.
@@ -416,15 +416,15 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Return the beanListener.
 	 */
-	public BeanPersistListener<T> getBeanListener() {
-		return beanListener;
+	public BeanPersistListener<T> getBeanPersistListener() {
+		return beanPersistListener;
 	}
 
 	/**
 	 * Set the beanListener.
 	 */
-	public void setBeanListener(BeanPersistListener<T> beanListener) {
-		this.beanListener = beanListener;
+	public void setBeanPersistListener(BeanPersistListener<T> beanListener) {
+		this.beanPersistListener = beanListener;
 	}
 
 	/**

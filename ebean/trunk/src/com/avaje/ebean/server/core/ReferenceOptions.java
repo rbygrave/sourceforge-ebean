@@ -5,11 +5,11 @@ package com.avaje.ebean.server.core;
  */
 public class ReferenceOptions {
 
-	boolean readOnly;
+	private boolean readOnly;
 	
-	boolean cache;
+	private boolean cache;
 
-	boolean noCache;
+	private boolean noCache;
 	
 	/**
 	 * Return true if the cache should be used otherwise false.

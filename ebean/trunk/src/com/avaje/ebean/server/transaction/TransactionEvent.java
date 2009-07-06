@@ -20,14 +20,8 @@
 package com.avaje.ebean.server.transaction;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.PersistRequest.Type;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Holds information for a transaction. There is one TransactionEvent instance
@@ -39,34 +33,33 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
  */
 public class TransactionEvent implements Serializable {
 
-	static final long serialVersionUID = 7230903304106097120L;
+	private static final long serialVersionUID = 7230903304106097120L;
 
 	/**
 	 * Flag indicating this is a local transaction (not from another server in
 	 * the cluster).
 	 */
-	transient boolean local;
+	private transient boolean local;
 
 	/**
 	 * Lists of beans for BeanListener notification. Not sent across cluster in
 	 * this form.
 	 */
-	transient TransactionEventBeans eventBeans;
+	private transient TransactionEventBeans eventBeans;
 
-	/**
-	 * A Map of the TableModInfo objects. Keyed by tableName.
-	 */
-	HashMap<String, TableModInfo> tabModMap = new HashMap<String, TableModInfo>();
 
-	boolean invalidateAll;
-
+	private TransactionEventTable eventTables;
+	
+	private boolean invalidateAll;
+	
+	
 	/**
 	 * Create the TransactionEvent, one per Transaction.
 	 */
 	public TransactionEvent() {
 		this.local = true;
 	}
-
+	
 	/**
 	 * Set this to true to invalidate all table dependent cached objects.
 	 */
@@ -97,171 +90,51 @@ public class TransactionEvent implements Serializable {
 		return eventBeans;
 	}
 
-	/**
-	 * Returns true if this transaction contained modifications. If false then
-	 * it could have been used for fetches only.
-	 */
-	public boolean hasModifications() {
-		return invalidateAll || !tabModMap.isEmpty();
+	public TransactionEventTable getEventTables() {
+		return eventTables;
 	}
 
+	public void add(String tableName, boolean inserts, boolean updates, boolean deletes){
+		if (eventTables == null){
+			eventTables = new TransactionEventTable();
+		}
+		eventTables.add(tableName, inserts, updates, deletes);		
+	}
+	
+	public void add(TransactionEventTable table){
+		if (eventTables == null){
+			eventTables = new TransactionEventTable();
+		}
+		eventTables.add(table);
+	}
+	
 	/**
 	 * Add a inserted updated or deleted bean to the event.
-	 * 
-	 * @param request
-	 *            the bean being persisted
-	 * @param type
-	 *            Insert, Update or Delete as per PersistType
 	 */
 	public void add(PersistRequestBean<?> request) {
 
-		BeanDescriptor<?> desc = request.getBeanDescriptor();
-		if (desc.getBeanListener() != null) {
-			// a BeanListener is interested
+		if (request.isNotify()){
+			// either a BeanListener or Cache is interested
 			if (eventBeans == null) {
 				eventBeans = new TransactionEventBeans();
 			}
 			eventBeans.add(request);
 		}
-		String table = desc.getBaseTable();
-		Type type = request.getType();
-		switch (type) {
-		case INSERT:
-			addInsert(table);
-			break;
-
-		case UPDATE:
-			addUpdate(table);
-			break;
-
-		case DELETE:
-			addDelete(table);
-			break;
-
-		default:
-			break;
-		}
 	}
 
 	/**
-	 * Used when external code makes database modifications. These modifications
-	 * need to be noted by ebean framework to invalidate the appropriate cached
-	 * objects.
+	 * Notify the cache of bean changes.
 	 * <p>
-	 * It doesn't really matter what the actual insert update or delete counts
-	 * are. It only really matters if they are greater than 0.
+	 * This returns the TransactionEventTable so that if any 
+	 * general table changes can also be used to invalidate 
+	 * parts of the cache.
 	 * </p>
-	 * 
-	 * @param tableName
-	 *            the table that was modified (case insensitive)
-	 * @param inserts
-	 *            the number of rows inserted
-	 * @param updates
-	 *            the number of rows updated
-	 * @param deletes
-	 *            the number of rows deleted
 	 */
-	public void add(String tableName, int inserts, int updates, int deletes) {
-
-		if (inserts < 0 || updates < 0 || deletes < 0) {
-			throw new PersistenceException("A negative row count was entered?");
+	public TransactionEventTable notifyCache(){
+		if (eventBeans != null){
+			eventBeans.notifyCache();
 		}
-
-		TableModInfo tableMod = getTableModInfo(tableName);
-		if (inserts > 0) {
-			tableMod.incrementInsert(inserts);
-		}
-		if (updates > 0) {
-			tableMod.incrementUpdate(updates);
-		}
-		if (updates > 0) {
-			tableMod.incrementDelete(deletes);
-		}
-	}
-
-	public void add(String tableName, boolean inserts, boolean updates, boolean deletes) {
-
-		TableModInfo tableMod = getTableModInfo(tableName);
-		if (inserts) {
-			tableMod.incrementInsert(1);
-		}
-		if (updates) {
-			tableMod.incrementUpdate(1);
-		}
-		if (deletes) {
-			tableMod.incrementDelete(1);
-		}
-	}
-
-	public void add(TransactionEvent event) {
-		Iterator<TableModInfo> it = event.tableModInfoIterator();
-		while (it.hasNext()) {
-			TableModInfo info = (TableModInfo) it.next();
-			add(info);
-		}
-	}
-
-	protected void add(TableModInfo info) {
-
-		TableModInfo modInfo = getTableModInfo(info.getTableName());
-		modInfo.add(info);
-	}
-
-	/**
-	 * Add a insert event for a table.
-	 * 
-	 * @param table
-	 *            the name of the table inserted into
-	 */
-	public void addInsert(String table) {
-
-		getTableModInfo(table).incrementInsert(1);
-	}
-
-	/**
-	 * Add a update event for a table.
-	 * 
-	 * @param table
-	 *            the name of the table updated
-	 */
-	public void addUpdate(String table) {
-
-		getTableModInfo(table).incrementUpdate(1);
-	}
-
-	/**
-	 * Add a delete event for a table.
-	 * 
-	 * @param table
-	 *            the name of the table deleted from
-	 */
-	public void addDelete(String table) {
-
-		getTableModInfo(table).incrementDelete(1);
-	}
-
-	private TableModInfo getTableModInfo(String tableName) {
-
-		// uppercase to remove deployment case issues
-		tableName = tableName.toUpperCase();
-
-		TableModInfo modInfo = (TableModInfo) tabModMap.get(tableName);
-		if (modInfo == null) {
-			modInfo = new TableModInfo(tableName);
-			tabModMap.put(tableName, modInfo);
-		}
-		return modInfo;
-	}
-
-	/**
-	 * Return an Iterator of TableModInfo.
-	 */
-	public Iterator<TableModInfo> tableModInfoIterator() {
-		return tabModMap.values().iterator();
-	}
-
-	public String toString() {
-		return tabModMap.toString();
+		return eventTables;
 	}
 
 }

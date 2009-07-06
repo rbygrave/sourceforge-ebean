@@ -17,29 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.net;
-
-import com.avaje.ebean.net.Command;
-import com.avaje.ebean.net.CommandContext;
+package com.avaje.ebean.server.cache;
 
 /**
- * Only allows CmdServerTransactionEvent and CmdRemoteListenerEvent to execute.
+ * Defines method for constructing caches for beans and queries.
  */
-public class ClusterCommandSecurity implements CommandSecurity {
+public interface ServerCacheFactory {
 
 	/**
-	 * Only allow CmdServerTransactionEvent and CmdRemoteListenerEvent.
+	 * Create the cache for the given type with options.
 	 */
-    public boolean allow(CommandContext ctx, Command cmd) {
-        if (cmd instanceof CmdRemoteTransactionEvent){
-            return true;
-        }
-        if (cmd instanceof CmdRemoteTransactionEvent){
-            return true;
-        }
-        return false;
-    }
-
-    
-    
+	public ServerCache createCache(Class<?> beanType, ServerCacheOptions cacheOptions);
+	
 }

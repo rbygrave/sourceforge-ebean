@@ -25,7 +25,7 @@ import java.util.List;
 
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.server.persist.PersistExecute;
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.BindParams.Param;
 
@@ -34,15 +34,15 @@ import com.avaje.ebean.util.BindParams.Param;
  */
 public final class PersistRequestCallableSql extends PersistRequest {
 
-	CallableSql callableSql;
+	private final CallableSql callableSql;
 
-	int rowCount;
+	private int rowCount;
 
-	String bindLog;
+	private String bindLog;
 
-	CallableStatement cstmt;
+	private CallableStatement cstmt;
 
-	BindParams bindParam;
+	private BindParams bindParam;
 
 	/**
 	 * Create.
@@ -116,11 +116,11 @@ public final class PersistRequestCallableSql extends PersistRequest {
 		}
 
 		// register table modifications with the transaction event
-		TransactionEvent cEvent = ProtectedMethod
-				.getTransactionEvent(callableSql);
-		if (cEvent != null && cEvent.hasModifications()) {
-			TransactionEvent transEvent = transaction.getEvent();
-			transEvent.add(cEvent);
+		TransactionEventTable tableEvents = ProtectedMethod
+				.getTransactionEventTable(callableSql);
+		
+		if (tableEvents != null && !tableEvents.isEmpty()) {
+			transaction.getEvent().add(tableEvents);
 		}
 
 	}

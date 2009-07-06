@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.config.naming;
 
-import java.lang.reflect.Field;
 
 /**
  * The Class MatchingNamingConvention uses the JPA naming strategy
@@ -49,28 +48,14 @@ public class MatchingNamingConvention extends AbstractNamingConvention {
 	}
 
 
-	public String getColumnFromProperty(Field field) {
-		String name = getColumnFromAnnotation(field);
-
-		if (name == null){
-			name = field.getName();
-		}
-		return name;
+	public String getColumnFromProperty(Class<?> beanClass, String propertyName){//Field field) {
+		return propertyName;
 	}
 
 
 	public TableName getTableNameFromClass(Class<?> beanClass) {
 
-		TableName tableName = getTableNameFromAnnotation(beanClass);
-
-		if (tableName == null){
-			// use the NamingConvention
-			return new TableName(getCatalog(), getSchema(), beanClass.getSimpleName());
-		
-		} else {
-			return tableName;
-		}
-
+		return new TableName(getCatalog(), getSchema(), beanClass.getSimpleName());
 	}
 
 	

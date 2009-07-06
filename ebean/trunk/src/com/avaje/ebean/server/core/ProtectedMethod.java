@@ -21,7 +21,7 @@ package com.avaje.ebean.server.core;
 
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.server.transaction.TransactionEvent;
+import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.util.BindParams;
 
 /**
@@ -55,8 +55,8 @@ public class ProtectedMethod {
     /**
      * Return the TransactionEvent for a CallableSql.
      */
-    public static TransactionEvent getTransactionEvent(CallableSql callSql){
-        return pa.getTransactionEvent(callSql);
+    public static TransactionEventTable getTransactionEventTable(CallableSql callSql){
+        return pa.getTransactionEventTable(callSql);
     }
         
 }

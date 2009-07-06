@@ -97,7 +97,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
         	prop.setNullable(false);
         }
         Column column = get(prop, Column.class);
-        if (column != null){
+        if (column != null && !isEmpty(column.name())){
         	// have this in for AssocOnes used on
         	// Sql based beans...
         	prop.setDbColumn(column.name());
@@ -141,7 +141,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
         	prop.getTableJoin().addJoinColumn(false, joinTable.joinColumns(), beanTable);
         }
 
-        info.setBeanJoinAlias(prop, prop.isNullable());
+        info.setBeanJoinType(prop, prop.isNullable());
 
 		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
 
@@ -151,10 +151,15 @@ public class AnnotationAssocOnes extends AnnotationParser {
 				// Refer BeanDescriptorManager.readEntityRelationships()
 
 			} else {
-				// use naming convention to define join
-				String fkeyPrefix =
-					factory.getNamingConvention().getColumnFromProperty(prop.getField());
-
+				// use naming convention to define join.
+				// not expecting a dbColumn to be defined but check anyway.
+				String fkeyPrefix = prop.getDbColumn();
+				if (fkeyPrefix == null){
+					// the common case. Define a decent foreign key column 
+					fkeyPrefix = factory.getNamingConvention()
+							.getColumnFromProperty(beanType, prop.getName());
+				}
+				
 				DeployTableJoinColumn join = beanTable.createJoinColumn(fkeyPrefix);
 				if (join != null){
 					prop.getTableJoin().addJoinColumn(join.reverse());

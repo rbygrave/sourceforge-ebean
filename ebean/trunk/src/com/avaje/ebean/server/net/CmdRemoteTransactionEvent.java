@@ -22,7 +22,7 @@ package com.avaje.ebean.server.net;
 import com.avaje.ebean.net.Command;
 import com.avaje.ebean.net.CommandContext;
 import com.avaje.ebean.server.core.InternalEbeanServer;
-import com.avaje.ebean.server.transaction.RemoteListenerEvent;
+import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 
 /**
  * Cmd to send RemoteListenerEvent across the cluster.
@@ -30,16 +30,16 @@ import com.avaje.ebean.server.transaction.RemoteListenerEvent;
  * Used to notify remote BeanListeners.
  * </p>
  */
-public final class CmdRemoteListenerEvent extends Command {
+public final class CmdRemoteTransactionEvent extends Command {
 
 	static final long serialVersionUID = -4576307772838335394L;
 	
-    RemoteListenerEvent event;
+    RemoteTransactionEvent event;
     
     /**
      * Create with a RemoteListenerEvent.
      */
-    public CmdRemoteListenerEvent(RemoteListenerEvent event){
+    public CmdRemoteTransactionEvent(RemoteTransactionEvent event){
         super(null);
         this.event = event;
     }
@@ -49,7 +49,7 @@ public final class CmdRemoteListenerEvent extends Command {
      */
     public void execute(CommandContext context) {
         InternalEbeanServer server = context.getServer();
-        server.remoteListenerEvent(event);
+        server.remoteTransactionEvent(event);
         
         event = null;
     }
