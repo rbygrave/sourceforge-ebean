@@ -22,6 +22,7 @@ package com.avaje.ebean.config.naming;
 
 import java.util.logging.Logger;
 
+import javax.persistence.Inheritance;
 import javax.persistence.Table;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
@@ -157,6 +158,15 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 		TableName tableName = getTableNameFromAnnotation(beanClass);
 		if (tableName == null) {
+			
+			Class<?> supCls = beanClass.getSuperclass();
+			Inheritance inheritance = supCls.getAnnotation(Inheritance.class);
+			if (inheritance != null) {
+				// get the table as per inherited class in case their
+				// is not a table annotation in the inheritance hierarchy
+				return getTableName(supCls);
+			}
+			
 			tableName = getTableNameByConvention(beanClass);
 		}
 		return tableName;

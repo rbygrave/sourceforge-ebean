@@ -1113,6 +1113,11 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 * </p>
 	 */
 	private void setBeanReflect(DeployBeanDescriptor<?> desc) {
+		
+		if (desc.isAbstract()){
+			return;
+		}
+		
 		Class<?> beanType = desc.getBeanType();
 		Class<?> factType = desc.getFactoryType();
 
@@ -1182,7 +1187,23 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	private void setEntityBeanClass(DeployBeanDescriptor<?> desc) {
 
 		Class<?> beanClass = desc.getBeanType();
-
+		
+		if (desc.isAbstract()) {
+			
+			boolean enhancedAbstract = false;
+			Class<?>[] interfaces = beanClass.getInterfaces();
+			for (int i = 0; i < interfaces.length; i++) {
+				if (interfaces[i].equals(EntityBean.class)) {
+					enhancedAbstract = true;
+				}
+			}
+			if (enhancedAbstract){
+				checkEnhanced(desc, beanClass);
+			} else {
+				checkSubclass(desc, beanClass);
+			}
+			return;
+		}
 		try {
 			Object testBean = beanClass.newInstance();
 			
@@ -1201,24 +1222,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 					throw new PersistenceException("Old Ebean v1.0 enhancement detected in Ebean v1.1 - please do a clean enhancement.", e);
 				}
 				
-				// the bean already implements EntityBean
-				checkInheritedClasses(true, beanClass);
-
-				desc.setFactoryType(beanClass);
-				if (!beanClass.getName().startsWith("com.avaje.ebean.meta")) {
-					enhancedClassCount++;
-				}
-
-			} else {
-				checkInheritedClasses(false, beanClass);
-				desc.checkReadAndWriteMethods();
+				checkEnhanced(desc, beanClass);
 				
-				subclassClassCount++;
-
-				Class<?> subClass = subClassManager.resolve(beanClass.getName());
-				desc.setFactoryType(subClass);
-
-				subclassedEntities.add(desc.getName());
+			} else {
+				checkSubclass(desc, beanClass);
 			}
 
 		} catch (PersistenceException ex){
@@ -1229,6 +1236,29 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		}
 	}
 
+	private void checkEnhanced(DeployBeanDescriptor<?> desc, Class<?> beanClass) {
+		// the bean already implements EntityBean
+		checkInheritedClasses(true, beanClass);
+
+		desc.setFactoryType(beanClass);
+		if (!beanClass.getName().startsWith("com.avaje.ebean.meta")) {
+			enhancedClassCount++;
+		}
+	}
+	
+	private void checkSubclass(DeployBeanDescriptor<?> desc, Class<?> beanClass) {
+		
+		checkInheritedClasses(false, beanClass);
+		desc.checkReadAndWriteMethods();
+		
+		subclassClassCount++;
+
+		Class<?> subClass = subClassManager.resolve(beanClass.getName());
+		desc.setFactoryType(subClass);
+
+		subclassedEntities.add(desc.getName());
+	}
+	
 	/**
 	 * Check that the inherited classes are the same as the entity bean (aka all enhanced
 	 * or all dynamically subclassed).

@@ -20,7 +20,12 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 		this.pv = new FkeyPropertyVisitor(this, ctx);
 	}
 
-	public void visitBean(BeanDescriptor<?> descriptor) {
+	public boolean visitBean(BeanDescriptor<?> descriptor) {
+		if (!descriptor.isInheritanceRoot()){
+			// ignore/skip if not a top level BeanDescriptor
+			return false;
+		}
+		return true;
 	}
 
 	public void visitBeanEnd(BeanDescriptor<?> descriptor) {

@@ -45,21 +45,22 @@ public class VisitorUtil {
 	 */
 	public static void visitBean(BeanDescriptor<?> desc, BeanVisitor visitor) {
 
-		visitor.visitBean(desc);
+		if (visitor.visitBean(desc)) {
 
-		Iterator<BeanProperty> it = desc.propertiesAll();
-		while (it.hasNext()) {
-			BeanProperty p = it.next();
-
-			if (!p.isTransient()){
-				PropertyVisitor pv = visitor.visitProperty(p);
-				if (pv != null){
-					visit(p, pv);
+			Iterator<BeanProperty> it = desc.propertiesAll();
+			while (it.hasNext()) {
+				BeanProperty p = it.next();
+	
+				if (!p.isTransient()){
+					PropertyVisitor pv = visitor.visitProperty(p);
+					if (pv != null){
+						visit(p, pv);
+					}
 				}
 			}
+	
+			visitor.visitBeanEnd(desc);
 		}
-
-		visitor.visitBeanEnd(desc);
 	}
 
 	/**

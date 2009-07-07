@@ -37,6 +37,8 @@ public class DeployInheritInfo {
 	 */
 	private static final String JPA_DEFAULT_DISCRIM_COLUMN = "dtype";
 	
+	int discriminatorLength;
+	
 	int discriminatorType;
 	
     Object discriminatorValue;
@@ -142,6 +144,17 @@ public class DeployInheritInfo {
         this.discriminatorColumn = discriminatorColumn;
     }
 
+    public int getDiscriminatorLength(InheritInfo parent) {
+    	if (discriminatorLength == 0){
+    		if (parent == null){
+    			discriminatorLength = 10;
+    		} else {
+    			discriminatorLength = parent.getDiscriminatorLength();
+    		}
+    	} 
+		return discriminatorLength;    	
+    }
+    
     /**
      * Return the sql type of the discriminator value.
      */
@@ -161,6 +174,20 @@ public class DeployInheritInfo {
      */
 	public void setDiscriminatorType(int discriminatorType) {
 		this.discriminatorType = discriminatorType;
+	}
+	
+	/**
+	 * Return the length of the discriminator column.
+	 */
+	public int getDiscriminatorLength() {
+		return discriminatorLength;
+	}
+
+	/**
+	 * Set the length of the discriminator column.
+	 */
+	public void setDiscriminatorLength(int discriminatorLength) {
+		this.discriminatorLength = discriminatorLength;
 	}
 
 	/**

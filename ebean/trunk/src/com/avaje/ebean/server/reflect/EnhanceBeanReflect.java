@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.reflect;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import javax.persistence.PersistenceException;
@@ -26,9 +27,13 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	public EnhanceBeanReflect(Class<?> clazz) {
 		try {
 			this.clazz = clazz;
-			this.entityBean = (EntityBean) clazz.newInstance();
-			constructor = defaultConstructor(clazz);
-
+			if (Modifier.isAbstract(clazz.getModifiers())) {
+				this.entityBean = null;
+				this.constructor = null;
+			} else {
+				this.entityBean = (EntityBean) clazz.newInstance();
+				this.constructor = defaultConstructor(clazz);
+			}
 		} catch (InstantiationException e) {
 			throw new PersistenceException(e);
 		} catch (IllegalAccessException e) {
@@ -58,6 +63,9 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	}
 
 	private int getFieldIndex(String fieldName) {
+		if (entityBean == null){
+			throw new RuntimeException("Trying to get fieldName on abstract class "+clazz);
+		}
 		String[] fields = entityBean._ebean_getFieldNames();
 		for (int i = 0; i < fields.length; i++) {
 			if (fieldName.equals(fields[i])) {

@@ -6,9 +6,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
+import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.InheritInfo;
+import com.avaje.ebean.server.deploy.InheritInfoVisitor;
 import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
 
 /**
@@ -60,7 +63,8 @@ public class CreateTableVisitor implements BeanVisitor {
 	protected void writeColumnName(String columnName, BeanProperty p) {
 		
 		if (SqlReservedWords.isKeyword(columnName)) {
-			logger.warning("Column name ["+columnName+"] is a suspected SQL reserved word for property "+p.getFullBeanName());
+			String propName = p == null ? "(Unknown)" : p.getFullBeanName();
+			logger.warning("Column name ["+columnName+"] is a suspected SQL reserved word for property "+propName);
 		}
 
 		ctx.write("  ").write(columnName, columnNameWidth).write(" ");
@@ -87,17 +91,57 @@ public class CreateTableVisitor implements BeanVisitor {
 		}
 	}
 		
-	public void visitBean(BeanDescriptor<?> descriptor) {
+	public boolean visitBean(BeanDescriptor<?> descriptor) {
 		
 		wroteColumns.clear();
+		
+		if (!descriptor.isInheritanceRoot()){
+			return false;
+		}
 		 
 		ctx.write("create table ");
 		writeTableName(descriptor);
 		ctx.write(" (").writeNewLine();
+		
+		InheritInfo inheritInfo = descriptor.getInheritInfo();
+		if (inheritInfo != null && inheritInfo.isRoot()){
+			String discColumn = inheritInfo.getDiscriminatorColumn();
+			int discType = inheritInfo.getDiscriminatorType();
+			int discLength = inheritInfo.getDiscriminatorLength();
+			DbType dbType = ctx.getDbTypeMap().get(discType);
+			String discDbType = dbType.renderType(discLength, 0);
+			
+			writeColumnName(discColumn, null);
+			ctx.write(discDbType);
+			ctx.write(" not null,");
+			ctx.writeNewLine();
+			
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Helper used to visit all the inheritInfo/BeanDescriptor in
+	 * the inheritance hierarchy (to add their 'local' properties).
+	 */
+	class InheritChildVisitor implements InheritInfoVisitor {
+
+		public void visit(InheritInfo inheritInfo) {
+			BeanProperty[] propertiesLocal = inheritInfo.getBeanDescriptor().propertiesLocal();
+			VisitorUtil.visit(propertiesLocal, pv);			
+		}
 	}
 	
 	public void visitBeanEnd(BeanDescriptor<?> descriptor) {
 
+		InheritInfo inheritInfo = descriptor.getInheritInfo();
+		if (inheritInfo != null && inheritInfo.isRoot()){
+			// add all properties on the children objects
+			InheritChildVisitor childVisitor = new InheritChildVisitor();
+			inheritInfo.visitChildren(childVisitor);
+		}
+		
 		if (checkConstraints.size() > 0){
 			for (String checkConstraint : checkConstraints) {
 				ctx.write("  ").write(checkConstraint).write(",").writeNewLine();

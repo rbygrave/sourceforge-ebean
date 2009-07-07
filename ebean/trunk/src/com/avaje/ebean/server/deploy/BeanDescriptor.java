@@ -571,6 +571,14 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	}
 
 	/**
+	 * Return true if this object is the root level object in its
+	 * entity inheritance.
+	 */
+	public boolean isInheritanceRoot() {
+		return inheritInfo == null || inheritInfo.isRoot();
+	}
+	
+	/**
 	 * Return true if there is currently query caching for this type of bean.
 	 */
 	public boolean isQueryCaching() {
