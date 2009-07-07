@@ -161,6 +161,7 @@ public class DeployInherit {
 			} else {
 				info.setDiscriminatorType(Types.VARCHAR);
 			}
+			info.setDiscriminatorLength(da.length());
 		}
 
 		DiscriminatorValue dv = (DiscriminatorValue) cls.getAnnotation(DiscriminatorValue.class);

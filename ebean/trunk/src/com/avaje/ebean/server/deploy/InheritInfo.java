@@ -43,6 +43,8 @@ public class InheritInfo {
 
 	final int discriminatorType;
 
+	final int discriminatorLength;
+
 	final String where;
 
 	final Class<?> type;
@@ -64,6 +66,7 @@ public class InheritInfo {
 		this.discriminatorColumn = InternString.intern(deploy.getDiscriminatorColumn(parent));
 		this.discriminatorValue = deploy.getDiscriminatorValue();
 		this.discriminatorType = deploy.getDiscriminatorType(parent);
+		this.discriminatorLength = deploy.getDiscriminatorLength(parent);
 		this.where = InternString.intern(deploy.getWhere());
 		
 		if (r == null) {
@@ -77,6 +80,18 @@ public class InheritInfo {
 			// register with the root node...
 			discMap = null;
 			root.registerWithRoot(this);
+		}
+	}
+	
+	/**
+	 * Visit all the children in the inheritance tree.
+	 */
+	public void visitChildren(InheritInfoVisitor visitor) {
+		
+		for (int i = 0; i < children.size(); i++) {
+			InheritInfo child = children.get(i);
+			visitor.visit(child);
+			child.visitChildren(visitor);
 		}
 	}
 	
@@ -224,6 +239,14 @@ public class InheritInfo {
 	 */
 	public int getDiscriminatorType() {
 		return discriminatorType;
+	}
+	
+	
+	/**
+	 * Return the length of the discriminator column.
+	 */
+	public int getDiscriminatorLength() {
+		return discriminatorLength;
 	}
 
 	/**

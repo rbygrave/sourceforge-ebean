@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.deploy.meta;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -177,6 +178,14 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public DeployBeanDescriptor(Class<T> beanType) {
 		this.beanType = beanType;
+	}
+	
+	/**
+	 * Return true if this beanType is an abstract class.
+	 */
+	public boolean isAbstract() {
+		
+		return Modifier.isAbstract(beanType.getModifiers());
 	}
 	
 	public Collection<RawSqlMeta> getRawSqlMeta() {

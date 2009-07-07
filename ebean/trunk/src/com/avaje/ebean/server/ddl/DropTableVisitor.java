@@ -33,10 +33,17 @@ public class DropTableVisitor implements BeanVisitor {
 		ctx.write(";").writeNewLine().writeNewLine();
 	}
 	
-	public void visitBean(BeanDescriptor<?> descriptor) {
+	public boolean visitBean(BeanDescriptor<?> descriptor) {
+		
+		if (!descriptor.isInheritanceRoot()){
+			return false;
+		}
+
 		writeDropTable(descriptor);
 		
 		dropIntersectionTables(descriptor);
+		
+		return true;
 	}
 
 	private void dropIntersectionTables(BeanDescriptor<?> descriptor) {

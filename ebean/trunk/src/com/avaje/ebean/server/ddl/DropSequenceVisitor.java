@@ -18,13 +18,17 @@ public class DropSequenceVisitor implements BeanVisitor {
 		this.ddlSyntax = ctx.getDdlSyntax();
 	}
 	
-	public void visitBean(BeanDescriptor<?> descriptor) {
+	public boolean visitBean(BeanDescriptor<?> descriptor) {
 		
+		if (!descriptor.isInheritanceRoot()){
+			return false;
+		}
 		if (descriptor.getSequenceName() != null) {
 			ctx.write("drop sequence ");
 			ctx.write(descriptor.getSequenceName());			
 			ctx.write(";").writeNewLine().writeNewLine();
 		}
+		return true;
 	}
 
 	

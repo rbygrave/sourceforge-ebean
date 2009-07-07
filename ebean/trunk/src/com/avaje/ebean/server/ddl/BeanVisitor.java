@@ -15,9 +15,10 @@ public interface BeanVisitor {
 	public void visitBegin();
 
 	/**
-	 * Visit a BeanDescriptor.
+	 * Visit a BeanDescriptor and return true to continue visiting the bean
+	 * (return false to skip visiting this bean).
 	 */
-	public void visitBean(BeanDescriptor<?> descriptor);
+	public boolean visitBean(BeanDescriptor<?> descriptor);
 
 	/**
 	 * Visit a property potentially return a specific PropertyVisitor.
