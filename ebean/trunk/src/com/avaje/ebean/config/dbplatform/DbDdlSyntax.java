@@ -1,6 +1,7 @@
 package com.avaje.ebean.config.dbplatform;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 
 /**
  * Used to support DB specific syntax for DDL generation.
@@ -177,4 +178,46 @@ public class DbDdlSyntax {
 		this.maxConstraintNameLength = maxFkeyLength;
 	}
 
+	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount){
+		
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("ix_");
+		buffer.append(p.getBeanDescriptor().getBaseTable());
+		buffer.append("_");
+		buffer.append(p.getName());
+
+		addSuffix(buffer, ixCount);
+
+		return buffer.toString();
+	}
+	
+	public String getForeignKeyName(BeanPropertyAssocOne<?> p, int fkCount) {
+		
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("fk_");
+		buffer.append(p.getBeanDescriptor().getBaseTable());
+		buffer.append("_");
+		buffer.append(p.getName());
+
+		addSuffix(buffer, fkCount);
+
+		return buffer.toString();
+	}
+	
+	/**
+	 * Adds the suffix.
+	 *
+	 * @param buffer the buffer
+	 * @param count the count
+	 */
+	protected void addSuffix(StringBuilder buffer, int count){
+		final String suffixNr = Integer.toString(count);
+		final int suffixLen = suffixNr.length()+ 1;
+
+		if (buffer.length() + suffixLen > maxConstraintNameLength){
+			buffer.setLength(maxConstraintNameLength-suffixLen);
+		}
+		buffer.append("_");
+		buffer.append(suffixNr);
+	}
 }

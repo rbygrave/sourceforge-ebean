@@ -21,11 +21,11 @@ package com.avaje.ebean.config.naming;
 
 
 /**
- * The Class TableName is a simple container for catalog, schema and table name
- *
+ * TableName holds catalog, schema and table name.
+ * 
  * @author emcgreal
  */
-public final class TableName{
+public final class TableName {
 
 	/** The catalog. */
 	private String catalog;
@@ -37,7 +37,10 @@ public final class TableName{
 	private String name;
 
 	/**
-	 * Construct with the default settings from the NamingConvention.
+	 * Construct with the given catalog schema and table name.
+	 * <p>
+	 * Note the catalog and schema can be null.
+	 * </p>
 	 */
 	public TableName(String catalog, String schema, String name) {
 		super();
@@ -47,8 +50,40 @@ public final class TableName{
 	}
 
 	/**
+	 * Construct splitting the qualifiedTableName potentially into catalog,
+	 * schema and name.
+	 * <p>
+	 * The qualifiedTableName can take the form of catalog.schema.tableName
+	 * and is split on the '.' period character. The catalog and schema are optional. 
+	 * </p>
+	 * 
+	 * @param qualifiedTableName
+	 *            the fully qualified table name using '.' between schema and
+	 *            table name etc (with catalog and schema optional).
+	 */
+	public TableName(String qualifiedTableName) {
+		String[] split = qualifiedTableName.split("\\.");
+		int len = split.length;
+		if (split.length > 3) {
+			String m = "Error splitting " + qualifiedTableName + ". Expecting at most 2 '.' characters";
+			throw new RuntimeException(m);
+		}
+		if (len == 3) {
+			this.catalog = split[0];
+		}
+		if (len >= 2) {
+			this.schema = split[len-2];
+		}
+		this.name = split[len-1];
+	}
+
+	public String toString() {
+		return getQualifiedName();
+	}
+
+	/**
 	 * Gets the catalog.
-	 *
+	 * 
 	 * @return the catalog
 	 */
 	public String getCatalog() {
@@ -57,7 +92,7 @@ public final class TableName{
 
 	/**
 	 * Gets the schema.
-	 *
+	 * 
 	 * @return the schema
 	 */
 	public String getSchema() {
@@ -66,36 +101,39 @@ public final class TableName{
 
 	/**
 	 * Gets the name.
-	 *
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
 
-
 	/**
-	 * Gets the qualified name as catalog.schema.name
-	 *
+	 * Returns the qualified name in the form catalog.schema.name.
+	 * <p>
+	 * Catalog and schema are optional.
+	 * </p>
+	 * 
 	 * @return the qualified name
 	 */
-	public String getQualifiedName(){
+	public String getQualifiedName() {
+		
 		StringBuilder buffer = new StringBuilder();
 
 		// Add catalog
-		if (catalog != null){
+		if (catalog != null) {
 			buffer.append(catalog);
 		}
 
 		// Add schema
-		if (schema != null){
-			if (buffer.length() > 0){
+		if (schema != null) {
+			if (buffer.length() > 0) {
 				buffer.append(".");
 			}
 			buffer.append(schema);
 		}
 
-		if (buffer.length() > 0){
+		if (buffer.length() > 0) {
 			buffer.append(".");
 		}
 		buffer.append(name);
@@ -105,10 +143,10 @@ public final class TableName{
 
 	/**
 	 * Checks if is table name is valid i.e. it has at least a name.
-	 *
+	 * 
 	 * @return true, if is valid
 	 */
-	public boolean isValid(){
+	public boolean isValid() {
 		return name != null && name.length() > 0;
 	}
 }

@@ -25,12 +25,10 @@ import java.util.logging.Logger;
 import javax.persistence.Table;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.BeanTable;
 
 /**
- * The Class AbstractNamingConvention.
- *
+ * Provides some base implementation for NamingConventions.
+ * 
  * @author emcgreal
  */
 public abstract class AbstractNamingConvention implements NamingConvention {
@@ -48,20 +46,23 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	private String schema;
 
 	/** The sequence format. */
-	final String sequenceFormat;
+	private String sequenceFormat;
 
 	/** The database platform. */
 	protected DatabasePlatform databasePlatform;
 
 	/** The max length of constraint names. */
 	protected int maxConstraintNameLength;
-
+	
+	/** Used to trim off extra prefix for M2M. */
+	protected int rhsPrefixLength = 3;
 
 	// Constructors -------------------------------------------------
 	/**
 	 * Instantiates a new default naming convention.
-	 *
-	 * @param sequenceFormat the sequence format
+	 * 
+	 * @param sequenceFormat
+	 *            the sequence format
 	 */
 	public AbstractNamingConvention(String sequenceFormat) {
 		this.sequenceFormat = sequenceFormat;
@@ -77,76 +78,14 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
 		this.databasePlatform = databasePlatform;
 		this.maxConstraintNameLength = databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
-		
-		logger.finer("Using maxConstraintNameLength of "+maxConstraintNameLength);
+
+		logger.finer("Using maxConstraintNameLength of " + maxConstraintNameLength);
 	}
-	
-	public String getForeignKeyName(BeanPropertyAssocOne<?> p, int fkCount) {
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("fk_");
-		buffer.append(p.getBeanDescriptor().getBaseTable());
-		buffer.append("_");
-		buffer.append(p.getName());
-
-		addSuffix(buffer, fkCount);
-
-		return buffer.toString();
-	}
-
-	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount){
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("ix_");
-		buffer.append(p.getBeanDescriptor().getBaseTable());
-		buffer.append("_");
-		buffer.append(p.getName());
-
-		addSuffix(buffer, ixCount);
-
-		return buffer.toString();
-	}
-
-
-	public String getM2MJoinTableName(BeanTable lhsTable, BeanTable rhsTable){
-		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(lhsTable.getBaseTable());
-		buffer.append("_");
-		buffer.append(rhsTable.getBaseTable());
-
-		// maxConstraintNameLength is used as the max table name length.
-		if (buffer.length() > maxConstraintNameLength){
-			buffer.setLength(maxConstraintNameLength);
-		}
-
-		return buffer.toString();
-	}
-
-
-	/**
-	 * Adds the suffix.
-	 *
-	 * @param buffer the buffer
-	 * @param count the count
-	 */
-	protected void addSuffix(StringBuilder buffer, int count){
-		final String suffixNr = Integer.toString(count);
-		final int suffixLen = suffixNr.length()+ 1;
-
-		if (buffer.length() + suffixLen > maxConstraintNameLength){
-			buffer.setLength(maxConstraintNameLength-suffixLen);
-		}
-		buffer.append("_");
-		buffer.append(suffixNr);
-	}
-
 
 	// Sequences ----------------------------------------------------
 	public String getSequenceName(String tableName) {
 		return sequenceFormat.replace("{table}", tableName);
 	}
-
 
 	// Getter and setters -------------------------------------------
 	/**
@@ -156,14 +95,12 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		return catalog;
 	}
 
-
 	/**
 	 * Sets the catalog.
 	 */
 	public void setCatalog(String catalog) {
 		this.catalog = catalog;
 	}
-
 
 	/**
 	 * Return the schema.
@@ -172,14 +109,12 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		return schema;
 	}
 
-
 	/**
 	 * Sets the schema.
 	 */
 	public void setSchema(String schema) {
 		this.schema = schema;
 	}
-
 
 	/**
 	 * Returns the sequence format.
@@ -188,58 +123,102 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		return sequenceFormat;
 	}
 
+	/**
+	 * Set the sequence format used to generate the sequence name.
+	 * <p>
+	 * The format should include "{table}". When generating the sequence name
+	 * {table} is replaced with the actual table name.
+	 * </p>
+	 * 
+	 * @param sequenceFormat
+	 *            string containing "{table}" which is replaced with the actual
+	 *            table name to generate the sequence name.
+	 */
+	public void setSequenceFormat(String sequenceFormat) {
+		this.sequenceFormat = sequenceFormat;
+	}
+
+	/**
+	 * Return the tableName using the naming convention (rather than deployed
+	 * @Table annotation).
+	 */
 	protected abstract TableName getTableNameByConvention(Class<?> beanClass);
-	
+
 	/**
 	 * Returns the table name for a given entity bean.
 	 * <p>
-	 * This first checks for the @Table annotation and if not present
-	 * uses the naming convention to define the table name.
+	 * This first checks for the @Table annotation and if not present uses the
+	 * naming convention to define the table name.
 	 * </p>
+	 * @see #getTableNameFromAnnotation(Class)
+	 * @see #getTableNameByConvention(Class)
 	 */
 	public TableName getTableName(Class<?> beanClass) {
 
 		TableName tableName = getTableNameFromAnnotation(beanClass);
-		if (tableName == null){
+		if (tableName == null) {
 			tableName = getTableNameByConvention(beanClass);
 		}
 		return tableName;
 	}
-	
+
+	public TableName getM2MJoinTableName(TableName lhsTable, TableName rhsTable) {
+
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(lhsTable.getName());
+		buffer.append("_");
+		
+		String rhsTableName = rhsTable.getName();
+		if (rhsTableName.indexOf('_') < rhsPrefixLength){
+			// trim off a xx_ prefix if there is one
+			rhsTableName = rhsTableName.substring(rhsTableName.indexOf('_')+1);
+		}
+		buffer.append(rhsTableName);
+
+		int maxConstraintNameLength = 54;//databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
+
+		// maxConstraintNameLength is used as the max table name length.
+		if (buffer.length() > maxConstraintNameLength) {
+			buffer.setLength(maxConstraintNameLength);
+		}
+
+		return new TableName(lhsTable.getCatalog(), lhsTable.getSchema(), buffer.toString());
+	}
+
 	/**
 	 * Gets the table name from annotation.
 	 */
 	protected TableName getTableNameFromAnnotation(Class<?> beanClass) {
-		
+
 		final Table t = findTableAnnotation(beanClass);
 
 		// Take the annotation if defined
-		if (t != null && !isEmpty(t.name())){
+		if (t != null && !isEmpty(t.name())) {
 			// Note: empty catalog and schema are converted to null
 			// Only need to convert quoted identifiers from annotations
 			return new TableName(quoteIdentifiers(t.catalog()),
-				quoteIdentifiers(t.schema()),
-				quoteIdentifiers(t.name()));
+					quoteIdentifiers(t.schema()),
+					quoteIdentifiers(t.name()));
 		}
 
 		// No annotation
-		return null;	
+		return null;
 	}
-	
+
 	/**
 	 * Search recursively for an @Table in the class hierarchy.
 	 */
 	protected Table findTableAnnotation(Class<?> cls) {
-		if (cls.equals(Object.class)){
+		if (cls.equals(Object.class)) {
 			return null;
 		}
 		Table table = cls.getAnnotation(Table.class);
-		if (table != null){
+		if (table != null) {
 			return table;
 		}
 		return findTableAnnotation(cls.getSuperclass());
 	}
-	
+
 	/**
 	 * Replace back ticks (if they are used) with database platform specific
 	 * quoted identifiers.
@@ -247,7 +226,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	protected String quoteIdentifiers(String s) {
 		return databasePlatform.convertQuotedIdentifiers(s);
 	}
-	
+
 	/**
 	 * Checks string is null or empty .
 	 */
