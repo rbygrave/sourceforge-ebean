@@ -21,9 +21,11 @@ package com.avaje.ebean.config.naming;
 
 
 /**
- * The Class MatchingNamingConvention uses the JPA naming strategy
+ * The JPA naming convention where column names match property names 
+ * and table names match entity names.
  *
- * <p>The JPA specification states that the in the case of no annotations the
+ * <p>
+ * The JPA specification states that the in the case of no annotations the
  * name of the class will be take as the table name and the name of a property
  * will be taken as the name of the column.
  * </p>
@@ -32,14 +34,14 @@ package com.avaje.ebean.config.naming;
 public class MatchingNamingConvention extends AbstractNamingConvention {
 
 	/**
-	 * Instantiates a new matching naming convention.
+	 * Create with a sequence format of "{table}_seq".
 	 */
 	public MatchingNamingConvention() {
 		super();
 	}
 
 	/**
-	 * Instantiates a new matching naming convention.
+	 * Instantiates with a specific format for DB sequences.
 	 *
 	 * @param sequenceFormat the sequence format
 	 */

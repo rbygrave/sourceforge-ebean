@@ -20,12 +20,10 @@
 package com.avaje.ebean.config.naming;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.BeanTable;
 
 /**
- * Defines the naming convention for converting between logical property names
- * and physical DB column names etc.
+ * Defines the naming convention for converting between logical property names/entity 
+ * names and physical DB column names/table names.
  * <p>
  * The main goal of the naming convention is to reduce the amount of
  * configuration required in the mapping (especially when mapping between column
@@ -67,9 +65,19 @@ public interface NamingConvention {
 	public TableName getTableName(Class<?> beanClass);
 
 	/**
+	 * Returns the ManyToMany join table name (aka the intersection table).
+	 *
+	 * @param lhsTable the left hand side bean table
+	 * @param rhsTable the right hand side bean table
+	 *
+	 * @return the many to many join table name
+	 */
+	public TableName getM2MJoinTableName(TableName lhsTable, TableName rhsTable);
+	
+	/**
 	 * Return the column name given the property name.
 	 *
-	 * @return the column from property
+	 * @return the column name for a given property
 	 */
 	public String getColumnFromProperty(Class<?> beanClass, String propertyName);
 
@@ -82,7 +90,7 @@ public interface NamingConvention {
 	 * @param beanClass the bean class
 	 * @param dbColumnName the db column name
 	 *
-	 * @return the property from column
+	 * @return the property name from the column name
 	 */
 	public String getPropertyFromColumn(Class<?> beanClass, String dbColumnName);
 
@@ -99,35 +107,4 @@ public interface NamingConvention {
 	 */
 	public String getSequenceName(String tableName);
 
-
-	/**
-	 * Gets the foreign key name.
-	 *
-	 * @param property the property
-	 * @param fkCount the fk count
-	 *
-	 * @return the foreign key name
-	 */
-	public String getForeignKeyName(BeanPropertyAssocOne<?> property, int fkCount);
-
-
-	/**
-	 * Returns the index name for a given associated one property.
-	 *
-	 * @param p the associated bean property
-	 * @param ixCount A unique count for the index
-	 *
-	 * @return the index name
-	 */
-	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount);
-
-	/**
-	 * Returns the ManyToMany join(intersection) table name.
-	 *
-	 * @param lhsTable the left hand side bean table
-	 * @param rhsTable the right hand side bean table
-	 *
-	 * @return the many to many join(intersection) table name
-	 */
-	public String getM2MJoinTableName(BeanTable lhsTable, BeanTable rhsTable);
 }

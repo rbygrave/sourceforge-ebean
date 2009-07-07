@@ -21,7 +21,8 @@ package com.avaje.ebean.config.naming;
 
 
 /**
- * Converts between Camel Case and Underscore based names.
+ * Converts between Camel Case and Underscore based names for both table and
+ * column names (and is the default naming convention in Ebean).
  * 
  * @author emcgreal
  * @author rbygrave 

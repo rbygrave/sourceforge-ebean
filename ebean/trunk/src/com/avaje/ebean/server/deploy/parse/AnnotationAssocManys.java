@@ -30,6 +30,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
 import com.avaje.ebean.annotation.Where;
+import com.avaje.ebean.config.naming.TableName;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanTable;
@@ -203,9 +204,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 
     	if (intTableName == null){
     		// define intersection table name
-    		intTableName =
-    			factory.getNamingConvention().
-    				getM2MJoinTableName(localTable, otherTable);
+    		intTableName = getM2MJoinTableName(localTable, otherTable);
 
     		intJoin.setTable(intTableName);
     		intJoin.setType(TableJoin.LEFT_OUTER);
@@ -297,4 +296,14 @@ public class AnnotationAssocManys extends AnnotationParser {
 		manyProp.getTableJoin().setType(TableJoin.LEFT_OUTER);
 	}
 
+	
+	private String getM2MJoinTableName(BeanTable lhsTable, BeanTable rhsTable){
+		
+		TableName lhs = new TableName(lhsTable.getBaseTable());
+		TableName rhs = new TableName(rhsTable.getBaseTable());
+		
+		TableName joinTable = namingConvention.getM2MJoinTableName(lhs, rhs);
+		
+		return joinTable.getQualifiedName();
+	}
 }
