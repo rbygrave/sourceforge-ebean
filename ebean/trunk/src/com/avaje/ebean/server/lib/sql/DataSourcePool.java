@@ -184,7 +184,7 @@ public class DataSourcePool implements DataSource {
 	 * thought to be busy but have not been used for some time. Each time a
 	 * connection is used it sets it's lastUsedTime.
 	 */
-	private int leakTimeMinutes;
+	private long leakTimeMinutes;
 
 	/**
 	 * Create the pool.
@@ -617,7 +617,7 @@ public class DataSourcePool implements DataSource {
 	 * closed and put back into the pool.
 	 * </p>
 	 */
-	public void closeBusyConnections(int leakTimeMinutes) {
+	public void closeBusyConnections(long leakTimeMinutes) {
 
 		synchronized (freeList) {
 
@@ -1052,7 +1052,7 @@ public class DataSourcePool implements DataSource {
 	 * connection.
 	 * </p>
 	 */
-	public void setLeakTimeMinutes(int leakTimeMinutes) {
+	public void setLeakTimeMinutes(long leakTimeMinutes) {
 		this.leakTimeMinutes = leakTimeMinutes;
 	}
 
@@ -1060,7 +1060,7 @@ public class DataSourcePool implements DataSource {
 	 * Return the number of minutes after which a busy connection could be considered 
 	 * leaked from the connection pool.
 	 */
-	public int getLeakTimeMinutes() {
+	public long getLeakTimeMinutes() {
 		return leakTimeMinutes;
 	}
 

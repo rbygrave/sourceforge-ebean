@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.io.Serializable;
 
@@ -35,17 +35,17 @@ public final class ObjectGraphNode implements Serializable {
 	/**
 	 * Identifies the origin.
 	 */
-	final ObjectGraphOrigin originQueryPoint;
+	private final ObjectGraphOrigin originQueryPoint;
 	
 	/**
 	 * The relative bean index.
 	 */
-	final String beanIndex;
+	private final String beanIndex;
 	
 	/**
 	 * The path relative to the root.
 	 */
-	final String path;
+	private final String path;
 	
 	/**
 	 * Create at a sub level.

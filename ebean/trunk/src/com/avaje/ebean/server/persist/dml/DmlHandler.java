@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.common.EntityBeanIntercept;
 import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;

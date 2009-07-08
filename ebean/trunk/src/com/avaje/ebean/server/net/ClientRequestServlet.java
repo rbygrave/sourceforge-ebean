@@ -38,9 +38,7 @@ public class ClientRequestServlet extends HttpServlet {
     
     private static final Logger logger = Logger.getLogger(ClientRequestServlet.class.getName());
     
-    CommandProcessor processor;
-
-    //boolean embedMethodInfo = false;
+    private transient CommandProcessor processor;
     
     /**
      * Create the servlet.

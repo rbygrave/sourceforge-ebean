@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.common.EntityBean;
 
 /**
  * A BeanReflect implementation based on the enhancement that creates EntityBean

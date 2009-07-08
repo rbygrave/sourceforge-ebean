@@ -11,13 +11,13 @@ public class StatisticsQuery implements Serializable {
 	
 	private static final long serialVersionUID = -1133958958072778811L;
 
-	final String path;
+	private final String path;
 	
-	int exeCount;
+	private int exeCount;
 	
-	int totalBeanLoaded;
+	private int totalBeanLoaded;
 	
-	int totalMicros;
+	private int totalMicros;
 	
 	public StatisticsQuery(String path){
 		this.path = path;

@@ -17,11 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import com.avaje.ebean.TxScope;
 import com.avaje.ebean.enhance.asm.Opcodes;
@@ -33,47 +32,45 @@ import com.avaje.ebean.server.transaction.TransactionScopeManager;
  */
 public class ScopeTrans implements Thread.UncaughtExceptionHandler {
 
-	static final Logger logger = Logger.getLogger(ScopeTrans.class.getName());
-	
-	final TransactionScopeManager scopeMgr;
+	private final TransactionScopeManager scopeMgr;
 
 	/**
 	 * The suspended transaction (can be null).
 	 */
-	final ServerTransaction suspendedTransaction;
+	private final ServerTransaction suspendedTransaction;
 	/**
 	 * The transaction in scope (can be null).
 	 */
-	final ServerTransaction transaction;
+	private final ServerTransaction transaction;
 
 	/**
 	 * If true by default rollback on Checked exceptions.
 	 */
-	final boolean rollbackOnChecked;
+	private final boolean rollbackOnChecked;
 
 	/**
 	 * True if the transaction was created and hence should be committed
 	 * on finally if it hasn't already been rolled back.
 	 */
-	final boolean created;
+	private final boolean created;
 
 	/**
 	 * Explicit set of Exceptions that DO NOT cause a rollback to occur.
 	 */
-	final ArrayList<Class<? extends Throwable>> noRollbackFor;
+	private final ArrayList<Class<? extends Throwable>> noRollbackFor;
 
 	/**
 	 * Explicit set of Exceptions that DO cause a rollback to occur.
 	 */
-	final ArrayList<Class<? extends Throwable>> rollbackFor;
+	private final ArrayList<Class<? extends Throwable>> rollbackFor;
 
 
-	final UncaughtExceptionHandler originalUncaughtHandler;
+	private final UncaughtExceptionHandler originalUncaughtHandler;
 
 	/**
 	 * Flag set when a rollback has occurred.
 	 */
-	boolean rolledBack;
+	private boolean rolledBack;
 	
 	
 	public ScopeTrans(boolean rollbackOnChecked, boolean created, ServerTransaction transaction, TxScope txScope,

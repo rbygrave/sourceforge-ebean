@@ -99,7 +99,7 @@ public class IgnoreClassHelper {
 	 */
 	public boolean isIgnoreClass(String className) {
 		// the special entity beans supplied by Ebean SHOULD be processed
-		if (className.startsWith("com/avaje/ebean/meta/")) {
+		if (className.startsWith(EnhanceConstants.EBEAN_META_PREFIX)) {
 			return false;
 		}
 
@@ -113,7 +113,7 @@ public class IgnoreClassHelper {
 		// process (they won't contain entity beans etc).
 
 		// the rest of Ebean should be ignored
-		if (className.startsWith("com/avaje/ebean/") || className.startsWith("com/avaje/lib/")) {
+		if (className.startsWith(EnhanceConstants.EBEAN_PREFIX)) {
 			return true;
 		}
 		// ignore the JDK classes ...

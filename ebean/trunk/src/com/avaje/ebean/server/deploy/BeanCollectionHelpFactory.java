@@ -1,5 +1,6 @@
 package com.avaje.ebean.server.deploy;
 
+import com.avaje.ebean.Query;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 
 
@@ -13,27 +14,28 @@ public class BeanCollectionHelpFactory {
 	 */
 	public static <T> BeanCollectionHelp<T> create(BeanPropertyAssocMany<T> manyProperty) {
 
-		ManyType manyType = manyProperty.getManyType();
-		
-		if (manyType.equals(ManyType.LIST)){
+		Query.Type manyType = manyProperty.getManyType();
+		switch (manyType) {
+		case LIST:
 			return new BeanListHelp<T>(manyProperty);
-		
-		} else if (manyType.equals(ManyType.SET)) {
+		case SET:
 			return new BeanSetHelp<T>(manyProperty);
-		
-		} else {
+		case MAP:
 			return new BeanMapHelp<T>(manyProperty);
+		default:
+			throw new RuntimeException("Invalid type "+manyType);
 		}
+		
 	}
 		
 	public static <T> BeanCollectionHelp<T> create(OrmQueryRequest<T> request) {
 
-		ManyType manyType = request.getManyType();
+		Query.Type manyType = request.getQuery().getType();
 		
-		if (manyType.equals(ManyType.LIST)){
+		if (manyType.equals(Query.Type.LIST)){
 			return new BeanListHelp<T>();
 		
-		} else if (manyType.equals(ManyType.SET)) {
+		} else if (manyType.equals(Query.Type.SET)) {
 			return new BeanSetHelp<T>();
 		
 		} else {

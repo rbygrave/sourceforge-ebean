@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import com.avaje.ebean.bean.InternalEbean;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.common.InternalEbean;
+import com.avaje.ebean.common.ObjectGraphNode;
 import com.avaje.ebean.io.SerializeControl;
 
 /**
@@ -36,43 +36,43 @@ import com.avaje.ebean.io.SerializeControl;
  */
 public final class BeanList<E> implements List<E>, BeanCollection<E> {
 
-	static final long serialVersionUID = 7594954368722184476L;
+	private static final long serialVersionUID = 7594954368722184476L;
 
 	/**
 	 * The EbeanServer this is associated with. (used for lazy fetch).
 	 */
-	transient InternalEbean internalEbean;
+	private transient InternalEbean internalEbean;
 	
 
-	final transient ObjectGraphNode profilePoint;
+	private final transient ObjectGraphNode profilePoint;
 	
 	/**
 	 * The owning bean (used for lazy fetch).
 	 */
-	final Object ownerBean;
+	private final Object ownerBean;
 
 	/**
 	 * The name of this property in the owning bean (used for lazy fetch).
 	 */
-	final String propertyName;
+	private final String propertyName;
 	
 	/**
 	 * The underlying List implementation.
 	 */
-	List<E> list;
+	private List<E> list;
 
 	/**
 	 * Can be false when a background thread is used to continue the fetch the
 	 * rows. It will set this to true when it is finished. If no background
 	 * thread is used then this should already be true.
 	 */
-	boolean finishedFetch = true;
+	private boolean finishedFetch = true;
 
 	/**
 	 * Flag set to true if rows are limited by firstRow maxRows and more rows
 	 * exist. For use by client to enable 'next' for paging.
 	 */
-	boolean hasMoreRows;
+	private boolean hasMoreRows;
 	
 	/**
 	 * Specify the underlying List implementation.

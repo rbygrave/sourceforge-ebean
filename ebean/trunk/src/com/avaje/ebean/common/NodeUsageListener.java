@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2008  Robin Bygrave
+ * Copyright (C) 2006  Robin Bygrave
  * 
  * This file is part of Ebean.
  * 
@@ -17,11 +17,19 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 /**
- * Marker interface for classes enhanced to support Transactional methods.
+ * Collects the profile information.
  */
-public interface EnhancedTransactional {
+public interface NodeUsageListener {
 
+	/**
+	 * Collect node usage "profiling" information.
+	 * <p>
+	 * This is the properties that are used for a given bean in the object
+	 * graph. This information is used by autoFetch to tune queries.
+	 * </p>
+	 */
+	public void collectNodeUsage(NodeUsageCollector collector);
 }

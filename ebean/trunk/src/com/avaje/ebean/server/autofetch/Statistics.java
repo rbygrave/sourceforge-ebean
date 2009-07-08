@@ -7,9 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.NodeUsageCollector;
+import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.QueryStats;
@@ -21,15 +21,15 @@ public class Statistics implements Serializable {
 
 	private static final long serialVersionUID = -5586783791097230766L;
 
-	final ObjectGraphOrigin origin;
+	private final ObjectGraphOrigin origin;
 
-	int counter;
+	private int counter;
 	
-	Map<String, StatisticsQuery> queryStatsMap = new LinkedHashMap<String, StatisticsQuery>();
+	private Map<String, StatisticsQuery> queryStatsMap = new LinkedHashMap<String, StatisticsQuery>();
 
-	Map<String, StatisticsNodeUsage> nodeUsageMap = new LinkedHashMap<String, StatisticsNodeUsage>();
+	private Map<String, StatisticsNodeUsage> nodeUsageMap = new LinkedHashMap<String, StatisticsNodeUsage>();
 
-	final String monitor = new String();
+	private final String monitor = new String();
 
 	public Statistics(ObjectGraphOrigin origin) {
 		this.origin = origin;

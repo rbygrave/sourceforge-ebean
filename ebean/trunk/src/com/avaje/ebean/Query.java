@@ -338,6 +338,42 @@ import com.avaje.ebean.expression.ExpressionList;
 public interface Query<T> extends Serializable {
 
 	/**
+	 * The type of query result.
+	 */
+	public enum Type {
+
+		/**
+		 * Find rowCount.
+		 */
+		ROWCOUNT,
+
+		/**
+		 * Find by Id or unique returning a single bean.
+		 */
+		BEAN,
+		
+		/**
+		 * Find returning a List.
+		 */
+		LIST,
+		
+		/**
+		 * Find returning a Set.
+		 */
+		SET,
+		
+		/**
+		 * Find returning a Map.
+		 */
+		MAP
+	}
+	
+	/**
+	 * Return the type of query (List, Set, Map, Bean, rowCount etc).
+	 */
+	public Type getType();
+	
+	/**
 	 * Returns true if this query was tuned by autoFetch.
 	 */
 	public boolean isAutofetchTuned();

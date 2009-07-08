@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.Query;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.collection.BeanList;
 import com.avaje.ebean.collection.BeanMap;
 import com.avaje.ebean.collection.BeanSet;
-import com.avaje.ebean.server.deploy.ManyType;
 
 /**
  * Creates the BeanCollections.
@@ -46,9 +46,9 @@ public class BeanCollectionFactory {
 		private static BeanCollectionFactory me = new BeanCollectionFactory();
 	}
 	
-    private final int defaultListInitialCapacity = 20;
-    private final int defaultSetInitialCapacity = 32;
-    private final int defaultMapInitialCapacity = 32;
+    private static final int defaultListInitialCapacity = 20;
+    private static final int defaultSetInitialCapacity = 32;
+    private static final int defaultMapInitialCapacity = 32;
 
     private BeanCollectionFactory() {
 
@@ -64,18 +64,19 @@ public class BeanCollectionFactory {
     
     private BeanCollection<?> createMany(BeanCollectionParams params) {
 
-        ManyType manyType = params.getManyType();
+        Query.Type manyType = params.getManyType();
+        switch (manyType) {
+		case MAP:
+			return createMap(params);
+		case LIST:
+			return createList(params);
+		case SET:
+			return createSet(params);
+			
+		default:
+			 throw new RuntimeException("Invalid Arg " + manyType);
+		}
         
-        if (manyType.isMap()) {
-            return createMap(params);
-        }
-        if (manyType.isList()) {
-            return createList(params);
-        }
-        if (manyType.isSet()) {
-            return createSet(params);
-        }
-        throw new RuntimeException("Invalid Arg " + manyType);
     }
 
     @SuppressWarnings("unchecked")

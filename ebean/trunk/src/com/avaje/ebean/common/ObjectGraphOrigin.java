@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.io.Serializable;
 
@@ -38,13 +38,13 @@ public final class ObjectGraphOrigin implements Serializable {
 	/**
 	 * The Original query hash (prior to autofetch tuning).
 	 */
-	final int queryPlanHash;
+	private final int queryPlanHash;
 
-	final CallStack callStack;
+	private final CallStack callStack;
 
-	final String key;
+	private final String key;
 
-	final String beanType;
+	private final String beanType;
 
 	public ObjectGraphOrigin(int queryPlanHash, CallStack callStack, String beanType) {
 		this.queryPlanHash = queryPlanHash;

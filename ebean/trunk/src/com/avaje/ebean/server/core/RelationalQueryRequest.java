@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.query.RelationalQuery;
-import com.avaje.ebean.server.deploy.ManyType;
 
 /**
  * Wraps the objects involved in executing a SqlQuery.
@@ -45,7 +45,7 @@ public final class RelationalQueryRequest {
 
 	private boolean createdTransaction;
 
-	private ManyType manyType;
+	private Query.Type queryType;
 
 	/**
 	 * Create the BeanFindRequest.
@@ -96,19 +96,19 @@ public final class RelationalQueryRequest {
 
 	@SuppressWarnings("unchecked")
 	public List<SqlRow> findList() {
-		manyType = ManyType.LIST;
+		queryType = Query.Type.LIST;
 		return (List<SqlRow>) queryEngine.findMany(this);
 	}
 
 	@SuppressWarnings("unchecked")
 	public Set<SqlRow> findSet() {
-		manyType = ManyType.SET;
+		queryType = Query.Type.SET;
 		return (Set<SqlRow>) queryEngine.findMany(this);
 	}
 
 	@SuppressWarnings("unchecked")
 	public Map<?, SqlRow> findMap() {
-		manyType = ManyType.MAP;
+		queryType = Query.Type.MAP;
 		return (Map<?, SqlRow>) queryEngine.findMany(this);
 	}
 
@@ -122,8 +122,8 @@ public final class RelationalQueryRequest {
 	/**
 	 * Return the type (List, Set or Map) that this fetch returns.
 	 */
-	public ManyType getManyType() {
-		return manyType;
+	public Query.Type getQueryType() {
+		return queryType;
 	}
 
 	public EbeanServer getEbeanServer() {

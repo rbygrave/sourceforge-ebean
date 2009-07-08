@@ -40,12 +40,12 @@ class ModifyHolder<E> implements Serializable {
 	/**
 	 * Deletions list for manyToMany persistence.
 	 */
-	Set<E> modifyDeletions = new LinkedHashSet<E>();
+	private Set<E> modifyDeletions = new LinkedHashSet<E>();
 
 	/**
 	 * Additions list for manyToMany persistence.
 	 */
-	Set<E> modifyAdditions = new LinkedHashSet<E>();
+	private Set<E> modifyAdditions = new LinkedHashSet<E>();
 
 	void reset() {
 		modifyDeletions = new LinkedHashSet<E>();

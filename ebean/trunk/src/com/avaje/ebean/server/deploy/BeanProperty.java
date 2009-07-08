@@ -31,7 +31,7 @@ import java.util.Map;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.server.core.InternString;

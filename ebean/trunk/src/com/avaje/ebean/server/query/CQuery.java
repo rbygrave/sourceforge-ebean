@@ -29,13 +29,14 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.EntityBeanIntercept;
+import com.avaje.ebean.common.NodeUsageCollector;
+import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
@@ -46,7 +47,6 @@ import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DbReadContext;
-import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 
 /**
@@ -291,7 +291,7 @@ public class CQuery<T> implements DbReadContext {
 		if (request.isFindById()) {
 			return null;
 		} else {
-			ManyType manyType = request.getManyType();
+			Query.Type manyType = request.getQuery().getType();
 			if (manyType == null){
 				// subQuery compiled for InQueryExpression
 				return null;

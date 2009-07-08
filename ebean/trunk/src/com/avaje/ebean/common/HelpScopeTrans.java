@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -27,7 +27,7 @@ import com.avaje.ebean.server.core.InternalEbeanServer;
 /**
  * Helper object to make AOP generated code simpler.
  */
-public class InternalServer {
+public class HelpScopeTrans {
 
 	/**
 	 * Create a ScopeTrans for a given methods TxScope.

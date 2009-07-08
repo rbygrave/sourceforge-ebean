@@ -1,7 +1,9 @@
 package com.avaje.ebean.server.cache;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -21,6 +23,8 @@ public class DefaultServerCache implements ServerCache {
 
 	private static final Logger logger = Logger.getLogger(DefaultServerCache.class.getName());
 
+	private static final CacheEntryComparator comparator = new CacheEntryComparator();
+	
 	private final ConcurrentHashMap<Object, CacheEntry> map = new ConcurrentHashMap<Object, CacheEntry>();
 
 	private final Object monitor = new Object();
@@ -248,7 +252,7 @@ public class DefaultServerCache implements ServerCache {
 
 				if (trimmedByLRU > 0) {
 					// sort into last access time ascending
-					Collections.sort(activeList);
+					Collections.sort(activeList, comparator);
 					for (int i = maxSize; i < activeList.size(); i++) {
 						// remove if still in the cache
 						map.remove(activeList.get(i).getKey());
@@ -270,9 +274,22 @@ public class DefaultServerCache implements ServerCache {
 	}
 
 	/**
+	 * Comparator for sorting by last access time.
+	 */
+	private static class CacheEntryComparator implements Comparator<CacheEntry>, Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		public int compare(CacheEntry o1, CacheEntry o2) {
+			
+			return o1.getLastAccessLong().compareTo(o2.getLastAccessLong());
+		}
+	}
+	
+	/**
 	 * Wraps the values to additionally hold createTime and lastAccessTime.
 	 */
-	private class CacheEntry implements Comparable<CacheEntry> {
+	private static class CacheEntry {
 
 		private final Object key;
 		private final Object value;
@@ -284,10 +301,6 @@ public class DefaultServerCache implements ServerCache {
 			this.value = value;
 			this.createTime = System.currentTimeMillis();
 			this.lastAccessTime = Long.valueOf(createTime);
-		}
-
-		public int compareTo(CacheEntry o) {
-			return lastAccessTime.compareTo(o.getLastAccessLong());
 		}
 
 		public Object getKey() {

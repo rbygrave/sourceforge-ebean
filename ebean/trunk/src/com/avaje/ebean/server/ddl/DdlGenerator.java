@@ -26,25 +26,23 @@ import com.avaje.ebean.server.core.InternalEbeanServer;
  */
 public class DdlGenerator {
 
-	final InternalEbeanServer server;
+	private final InternalEbeanServer server;
 
-	final DatabasePlatform dbPlatform;
+	private final DatabasePlatform dbPlatform;
 
-	PrintStream out = System.out;
+	private PrintStream out = System.out;
 
-	int summaryLength = 80;
+	private int summaryLength = 80;
 
-	boolean debug = true;
+	private boolean debug = true;
 
-	boolean generateDdl;
-	boolean runDdl;
+	private boolean generateDdl;
+	private boolean runDdl;
 
-	String dropContent;
-	String createContent;
-	String dropFile;
-	String createFile;
+	private String dropContent;
+	private String createContent;
 
-	NamingConvention namingConvention;
+	private NamingConvention namingConvention;
 
 	public DdlGenerator(InternalEbeanServer server, DatabasePlatform dbPlatform, ServerConfig serverConfig) {
 		this.server = server;

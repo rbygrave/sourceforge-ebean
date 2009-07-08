@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.core.DefaultBeanState;

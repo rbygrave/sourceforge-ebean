@@ -103,7 +103,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 			}			
 		}
 
-		if (classMeta.isLog(6)) {
+		if (classMeta != null && classMeta.isLog(6)) {
 			classMeta.log(" ... public getter [" + publicGetterName+"]");
 			classMeta.log(" ... public setter [" + publicSetterName+"]");
 		}
@@ -283,7 +283,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	 */
 	public boolean isEmbedded() {
 		return annotations.contains("Ljavax/persistence/Embedded;")
-				|| annotations.contains("Lcom/avaje/ebean/annotation/EmbeddedColumns;");
+				|| annotations.contains(L_EmbeddedColumns);
 	}
 
 	/**
@@ -462,10 +462,10 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 				// setter required for propertyChangeListener
 				addPublicSetMethod(cv, classMeta, checkExisting);
 				
-			} else if (isMany()){
-				// setter required for propertyChangeListener
-				addPublicGetMethod(cv, classMeta, checkExisting);				
-				addPublicSetMethod(cv, classMeta, checkExisting);
+//			} else if (isMany()){
+//				// setter required for propertyChangeListener
+//				addPublicGetMethod(cv, classMeta, checkExisting);				
+//				addPublicSetMethod(cv, classMeta, checkExisting);
 				
 			} else {
 				addPublicGetMethod(cv, classMeta, checkExisting);				

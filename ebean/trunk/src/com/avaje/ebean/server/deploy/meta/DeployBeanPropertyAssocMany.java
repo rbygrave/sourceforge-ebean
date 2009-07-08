@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.deploy.meta;
 
-import com.avaje.ebean.server.deploy.ManyType;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.server.deploy.TableJoin;
 
 /**
@@ -54,12 +54,12 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	/**
 	 * The type of the many, set, list or map.
 	 */
-	ManyType manyType;
+	Query.Type manyType;
 
 	/**
 	 * Create this property.
 	 */
-	public DeployBeanPropertyAssocMany(DeployBeanDescriptor<?> desc, Class<T> targetType, ManyType manyType) {
+	public DeployBeanPropertyAssocMany(DeployBeanDescriptor<?> desc, Class<T> targetType, Query.Type manyType) {
 		super(desc, targetType);
 		this.manyType = manyType;
 	}
@@ -79,7 +79,7 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	/**
 	 * Return the many type.
 	 */
-	public ManyType getManyType() {
+	public Query.Type getManyType() {
 		return manyType;
 	}
 

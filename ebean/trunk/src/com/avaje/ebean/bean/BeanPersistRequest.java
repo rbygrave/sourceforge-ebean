@@ -4,7 +4,6 @@ import java.util.Set;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Holds the information available for a bean persist (insert, update or delete).
@@ -18,11 +17,6 @@ public interface BeanPersistRequest<T> {
 	 * Return the server processing the request.
 	 */
 	public EbeanServer getEbeanServer();
-
-	/**
-	 * Return the BeanDescriptor for the associated bean.
-	 */
-	public BeanDescriptor<T> getBeanDescriptor();
 
 	/**
 	 * Return the Transaction associated with this request.

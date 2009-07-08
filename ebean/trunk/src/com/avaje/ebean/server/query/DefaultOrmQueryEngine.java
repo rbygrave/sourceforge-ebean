@@ -22,8 +22,8 @@ package com.avaje.ebean.server.query;
 import java.util.ArrayList;
 
 import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
@@ -98,7 +98,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.findMany(request);
         }
 
-        if (query.isUseCache()){
+        if (query.isUseCache() && !result.isEmpty()){
         	request.putToQueryCache(result);
         }
         
@@ -150,7 +150,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.find(request);
         }
         
-        if (useBeanCache){
+        if (useBeanCache && result != null){
         	request.getBeanDescriptor().cachePut(result);
         }
         

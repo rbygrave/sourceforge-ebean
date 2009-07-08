@@ -23,15 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.Query;
+import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.QueryType;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.query.SqlTreeAlias;
 
@@ -53,7 +53,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
 	private boolean createdTransaction;
 
-	private ManyType manyType;
+//	private ManyType manyType;
 
 	private Integer cacheKey;
 
@@ -190,26 +190,29 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Return true if this is a find by id (rather than List Set or Map).
 	 */
 	public boolean isFindById() {
-		return manyType == ManyType.FIND_ONE;
+		return query.getType() == Type.BEAN;
+//		return manyType == ManyType.FIND_ONE;
 	}
 
 	/**
 	 * Return true if this is a subquery (as part of InQueryExpression).
 	 */
 	public boolean isSubQuery() {
-		return manyType == null;
+		return query.getType() == null;
 	}
 	
 	/**
 	 * Execute the query as findById.
 	 */
 	public Object findId() {
-		manyType = ManyType.FIND_ONE;
+		query.setType(Query.Type.BEAN);
+//		manyType = ManyType.FIND_ONE;
 		return queryEngine.findId(this);
 	}
 
 	public int findRowCount() {
-		manyType = ManyType.FIND_ROWCOUNT;
+		query.setType(Query.Type.ROWCOUNT);
+//		manyType = ManyType.FIND_ROWCOUNT;
 		return queryEngine.findRowCount(this);
 	}
 
@@ -217,7 +220,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Execute the query as findList.
 	 */
 	public List<?> findList() {
-		manyType = ManyType.LIST;
+		query.setType(Query.Type.LIST);
+//		manyType = ManyType.LIST;
 		return (List<?>) queryEngine.findMany(this);
 	}
 
@@ -225,7 +229,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Execute the query as findSet.
 	 */
 	public Set<?> findSet() {
-		manyType = ManyType.SET;
+		query.setType(Query.Type.SET);
+//		manyType = ManyType.SET;
 		return (Set<?>) queryEngine.findMany(this);
 	}
 
@@ -233,19 +238,23 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Execute the query as findMap.
 	 */
 	public Map<?, ?> findMap() {
-		manyType = ManyType.MAP;
+		query.setType(Query.Type.MAP);
+//		manyType = ManyType.MAP;
 		return (Map<?, ?>) queryEngine.findMany(this);
 	}
 	
 	
-
-	public QueryType getQueryType() {
-		if (manyType != null){
-			return manyType.getQueryType();
-		} else {
-			return null;
-		}
+	public Query.Type getQueryType() {
+		return query.getType();
 	}
+
+//	public QueryType getQueryType() {
+//		if (manyType != null){
+//			return manyType.getQueryType();
+//		} else {
+//			return null;
+//		}
+//	}
 
 	/**
 	 * Return a bean specific finder if one has been set.
@@ -296,12 +305,12 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		beanDescriptor.putQueryPlan(queryPlanHash, queryPlan);
 	}
 
-	/**
-	 * Return the type (List, Set or Map) that this fetch returns.
-	 */
-	public ManyType getManyType() {
-		return manyType;
-	}
+//	/**
+//	 * Return the type (List, Set or Map) that this fetch returns.
+//	 */
+//	public ManyType getManyType() {
+//		return manyType;
+//	}
 
 	
 	@SuppressWarnings("unchecked")
@@ -322,13 +331,13 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public BeanCollection<T> getFromQueryCache() {
 		
-		if (manyType == null) {
+		if (query.getType() == null) {
 			// the query plan and bind values must be the same
 			cacheKey = Integer.valueOf(query.queryHash());
 
 		} else {
 			// additionally the return type (List/Set/Map) must be the same
-			cacheKey = Integer.valueOf(31 * query.queryHash() + manyType.hashCode());
+			cacheKey = Integer.valueOf(31 * query.queryHash() + query.getType().hashCode());
 		}
 
 		return beanDescriptor.queryCacheGet(cacheKey);
