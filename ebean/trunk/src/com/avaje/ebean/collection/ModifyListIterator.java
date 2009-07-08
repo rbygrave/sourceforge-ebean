@@ -35,7 +35,7 @@ class ModifyListIterator<E> implements ListIterator<E> {
 
 	private final ListIterator<E> it;
 
-	E last;
+	private E last;
 
 	/**
 	 * Create with an Owner that is notified of any additions or deletions.

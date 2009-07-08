@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.CallStack;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.PersistenceContext;
@@ -21,6 +21,11 @@ import com.avaje.ebean.util.BindParams;
  */
 public interface OrmQuery<T> extends Query<T> {
 
+	/**
+	 * Set the query type (List, Set etc).
+	 */
+	public void setType(Type type);
+	
 	/**
 	 * Set the BeanDescriptor for the root type of this query.
 	 */

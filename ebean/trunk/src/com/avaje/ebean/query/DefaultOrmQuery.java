@@ -10,10 +10,10 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.CallStack;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
@@ -58,6 +58,8 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 * The name of the query.
 	 */
 	private String name;
+	
+	private Type type;
 	
 	/**
 	 * Holds query in structured form.
@@ -145,7 +147,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	 */
 	private int queryPlanHash;
 	
-	private PersistenceContext persistenceContext;
+	private transient PersistenceContext persistenceContext;
 
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server) {
 		this.beanType = beanType;
@@ -254,6 +256,15 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		return copy;
 	}
 	
+
+	public Type getType() {
+		return type;
+	}
+	
+	public void setType(Type type) {
+		this.type = type;
+	}
+
 	/**
 	 * Return the TransactionContext.
 	 * <p>

@@ -387,7 +387,7 @@ public class ClassMeta {
 		return new MethodReader(mv, methodMeta);
 	}
 
-	private final class MethodReader extends EmptyVisitor {
+	private static final class MethodReader extends EmptyVisitor {
 		final MethodVisitor mv;
 		final MethodMeta methodMeta;
 

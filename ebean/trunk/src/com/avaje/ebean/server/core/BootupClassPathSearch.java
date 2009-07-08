@@ -34,13 +34,13 @@ public class BootupClassPathSearch {
 
 	private static final Logger logger = Logger.getLogger(BootupClassPathSearch.class.getName());
 
-	final String monitor = new String();
+	private final Object monitor = new Object();
 
-	final ClassLoader classLoader;
+	private final ClassLoader classLoader;
 
-	final List<String> packages;
+	private final List<String> packages;
 	
-	BootupClasses bootupClasses;
+	private BootupClasses bootupClasses;
 
 	/**
 	 * Construct and search for interesting classes.

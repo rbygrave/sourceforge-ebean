@@ -332,7 +332,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
         } else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
             mv.visitIntInsn(Opcodes.SIPUSH, value);
         } else {
-            mv.visitLdcInsn(new Integer(value));
+            mv.visitLdcInsn(Integer.valueOf(value));
         }
     }
 
@@ -345,7 +345,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
         if (value == 0L || value == 1L) {
             mv.visitInsn(Opcodes.LCONST_0 + (int) value);
         } else {
-            mv.visitLdcInsn(new Long(value));
+            mv.visitLdcInsn(Long.valueOf(value));
         }
     }
 

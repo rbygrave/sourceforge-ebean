@@ -52,7 +52,17 @@ public interface BeanCollection<E> extends Cloneable, Serializable {
 	 * Returns the underlying List Set or Map object.
 	 */
 	public Object getActualCollection();
+	
+	/**
+	 * Return the number of elements in the List Set or Map.
+	 */
+	public int size();
 
+	/**
+	 * Return true if the List Set or Map is empty.
+	 */
+	public boolean isEmpty();
+	
 	/**
 	 * Returns the underlying details as an iterator.
 	 * <p>

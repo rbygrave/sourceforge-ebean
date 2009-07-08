@@ -26,9 +26,6 @@ public class DeployUpdateMapFactory {
 		Map<String,String> deployMap = new HashMap<String,String>();
 		
 		String shortName = descriptor.getName();
-		if (shortName == null){
-			System.out.println("asdasd");
-		}
 		String beanName = shortName.toLowerCase();
 		deployMap.put(beanName, descriptor.getBaseTable());
 		

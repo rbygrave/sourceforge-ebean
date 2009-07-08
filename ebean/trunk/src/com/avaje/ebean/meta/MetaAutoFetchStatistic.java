@@ -1,6 +1,7 @@
 package com.avaje.ebean.meta;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 
 /**
  * Statistics collected by AutoFetch profiling.
@@ -20,31 +21,31 @@ public class MetaAutoFetchStatistic implements Serializable {
 	private static final long serialVersionUID = -6640406753257176804L;
 
 	@Id
-	String id;
+	private String id;
 	
-	ObjectGraphOrigin origin;
+	private ObjectGraphOrigin origin;
 
-	int origQueryPlanHash;
+	private int origQueryPlanHash;
 	
-	String beanType;
+	private String beanType;
 	
-	int counter;
-	
-	@Transient
-	List<QueryStats> queryStats;
+	private int counter;
 	
 	@Transient
-	List<NodeUsageStats> nodeUsageStats;
+	private List<QueryStats> queryStats;
+	
+	@Transient
+	private List<NodeUsageStats> nodeUsageStats;
 	
 	public MetaAutoFetchStatistic() {
 	}
 	
 	public MetaAutoFetchStatistic(ObjectGraphOrigin origin, int counter, List<QueryStats> queryStats, List<NodeUsageStats> nodeUsageStats) {
-		this();
+		
 		this.origin = origin;
 		this.origQueryPlanHash = origin == null ? 0 : origin.getQueryPlanHash();
 		this.beanType = origin == null ? null : origin.getBeanType();
-		this.id = origin.getKey();
+		this.id = origin == null ? null : origin.getKey();
 		this.counter = counter;
 		this.queryStats = queryStats;
 		this.nodeUsageStats = nodeUsageStats;
@@ -224,7 +225,7 @@ public class MetaAutoFetchStatistic implements Serializable {
 		}
 		
 		public String toString() {
-			return "path[" + path + "] load[" + loadCount + "] used[" + usedCount + "] props"+ usedProperties;
+			return "path[" + path + "] load[" + loadCount + "] used[" + usedCount + "] props"+ Arrays.toString(usedProperties);
 		}
 	}
 }

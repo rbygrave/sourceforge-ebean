@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.util;
 
-import com.avaje.ebean.server.deploy.ManyType;
+import com.avaje.ebean.Query;
 
 /**
  * Parameters used to create the specific Map Set or List object.
@@ -28,12 +28,12 @@ public class BeanCollectionParams {
 
 	private Boolean ordered;
 
-	private final ManyType manyType;
+	private final Query.Type manyType;
 
 	/**
 	 * Construct without a specific capacity.
 	 */
-	public BeanCollectionParams(ManyType manyType) {
+	public BeanCollectionParams(Query.Type manyType) {
 		this.manyType = manyType;
 	}
 
@@ -57,7 +57,7 @@ public class BeanCollectionParams {
 	/**
 	 * Return the type Map Set or List.
 	 */
-	public ManyType getManyType() {
+	public Query.Type getManyType() {
 		return manyType;
 	}
 

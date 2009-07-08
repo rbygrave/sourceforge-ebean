@@ -19,9 +19,6 @@ public class MainTransform {
 		String pkg = "app/data/test";
 
 		if (args.length > 0) {
-			if (args[0].equalsIgnoreCase("help")) {
-
-			}
 			inDir = args[0];
 		}
 		if (args.length > 1) {

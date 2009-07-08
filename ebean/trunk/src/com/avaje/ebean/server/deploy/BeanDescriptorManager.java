@@ -19,8 +19,10 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,8 +38,8 @@ import javax.sql.DataSource;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.InternalEbean;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
@@ -83,6 +85,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptorManager.class.getName());
 
+	private static final BeanDescComparator beanDescComparator = new BeanDescComparator();
+	
 	private final ReadAnnotations readAnnotations = new ReadAnnotations();
 
 	private final TransientProperties transientProperties;
@@ -227,7 +231,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		readRawSqlQueries();
 				
 		List<BeanDescriptor<?>> list = new ArrayList<BeanDescriptor<?>>(descMap.values());
-		Collections.sort(list);
+		Collections.sort(list, beanDescComparator);
 		immutableDescriptorList = Collections.unmodifiableList(list);
 
 		initialiseAll();
@@ -1284,5 +1288,17 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		// recursively continue up the inheritance hierarchy
 		checkInheritedClasses(ensureEnhanced, superclass);
 	}
-	
+
+	/**
+	 * Comparator to sort the BeanDescriptors by name.
+	 */
+	private static final class BeanDescComparator implements Comparator<BeanDescriptor<?>>, Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		public int compare(BeanDescriptor<?> o1, BeanDescriptor<?> o2) {
+			
+			return o1.getName().compareTo(o2.getName());
+		}
+	}
 }

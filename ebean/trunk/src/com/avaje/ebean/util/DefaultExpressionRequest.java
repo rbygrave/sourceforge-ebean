@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.avaje.ebean.expression.ExpressionRequest;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 public class DefaultExpressionRequest implements ExpressionRequest {
 
@@ -15,6 +16,10 @@ public class DefaultExpressionRequest implements ExpressionRequest {
 	
 	public DefaultExpressionRequest(OrmQueryRequest<?> queryRequest) {
 		this.queryRequest = queryRequest;
+	}
+	
+	public BeanDescriptor<?> getBeanDescriptor(){
+		return queryRequest.getBeanDescriptor();
 	}
 	
 	public OrmQueryRequest<?> getQueryRequest() {

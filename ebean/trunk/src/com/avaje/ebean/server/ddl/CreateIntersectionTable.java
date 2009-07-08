@@ -13,21 +13,21 @@ import com.avaje.ebean.server.deploy.TableJoinColumn;
  */
 public class CreateIntersectionTable {
 
-	final DdlGenContext ctx;
+	private static final String NEW_LINE = "\n";
 
-	final BeanPropertyAssocMany<?> manyProp;
-	final TableJoin intersectionTableJoin;
-	final TableJoin tableJoin;
+	private final DdlGenContext ctx;
 
-	final String NEW_LINE = "\n";
+	private final BeanPropertyAssocMany<?> manyProp;
+	private final TableJoin intersectionTableJoin;
+	private final TableJoin tableJoin;
 
-	StringBuilder sb = new StringBuilder();
+	private StringBuilder sb = new StringBuilder();
 
-	StringBuilder pkeySb = new StringBuilder();
+	private StringBuilder pkeySb = new StringBuilder();
 
-	int foreignKeyCount;
+	private int foreignKeyCount;
 	
-	int maxFkeyLength;
+	private int maxFkeyLength;
 	
 	public CreateIntersectionTable(DdlGenContext ctx, BeanPropertyAssocMany<?> manyProp) {
 		this.ctx = ctx;

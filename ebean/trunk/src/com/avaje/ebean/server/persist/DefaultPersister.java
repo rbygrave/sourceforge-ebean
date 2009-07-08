@@ -28,12 +28,13 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.EntityBeanIntercept;
 import com.avaje.ebean.query.OrmUpdate;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.core.PersistRequest;
@@ -407,7 +408,7 @@ public final class DefaultPersister implements Persister {
 			// if a map, then we get the key value and
 			// set it to the appropriate property on the
 			// detail bean before we save it
-			boolean isMap = prop.getManyType().isMap();
+			boolean isMap = Query.Type.MAP.equals(prop.getManyType());
 			Object mapKeyValue = null;
 			boolean saveSkippable = prop.isSaveRecurseSkippable();
 			boolean skipSavingThisBean = false;

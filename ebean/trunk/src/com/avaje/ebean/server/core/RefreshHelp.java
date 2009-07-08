@@ -21,8 +21,8 @@ package com.avaje.ebean.server.core;
 
 import java.util.Set;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.EntityBeanIntercept;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -132,17 +132,14 @@ public class RefreshHelp {
 			}
 		}
 		
-		if (ebi != null){
-			// the refreshed/lazy loaded bean is always fully
-			// populated so set loadedProps to null
-			ebi.setLoadedProps(null);
-			
-			if (!isLazyLoad){
-				// refresh will reset the loaded status
-				ebi.setLoaded();
-			}
-		}
+		// the refreshed/lazy loaded bean is always fully
+		// populated so set loadedProps to null
+		ebi.setLoadedProps(null);
 		
+		if (!isLazyLoad){
+			// refresh will reset the loaded status
+			ebi.setLoaded();
+		}		
 	}
 
 	/**

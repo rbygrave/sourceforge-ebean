@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.io.Serializable;
 
@@ -39,9 +39,9 @@ public final class CallStack implements Serializable {
 
 	private static final long serialVersionUID = -8590644046907438579L;
 
-	final int hash;
+	private final int hash;
 
-	final StackTraceElement[] callStack;
+	private final StackTraceElement[] callStack;
 
 	public CallStack(StackTraceElement[] callStack) {
 		this.callStack = callStack;

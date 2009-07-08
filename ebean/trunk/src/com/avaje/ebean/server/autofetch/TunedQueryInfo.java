@@ -2,7 +2,7 @@ package com.avaje.ebean.server.autofetch;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
@@ -15,35 +15,35 @@ public class TunedQueryInfo implements Serializable {
 
 	private static final long serialVersionUID = 7381493228797997282L;
 
-	final ObjectGraphOrigin origin;
+	private final ObjectGraphOrigin origin;
 
 	/**
 	 * The tuned query details with joins and properties.
 	 */
-	OrmQueryDetail tunedDetail;
+	private OrmQueryDetail tunedDetail;
 
 	/**
 	 * The number of times profiling has been collected for this query point.
 	 */
-	int profileCount;
+	private int profileCount;
 	
-	Long lastTuneTime = Long.valueOf(0);
+	private Long lastTuneTime = Long.valueOf(0);
 
-	final String rateMonitor = new String();
+	private final String rateMonitor = new String();
 
-	final String countMonitor = new String();
+	private final String countMonitor = new String();
 
 	/**
 	 * The number of queries tuned by this object.
 	 * Could use AtomicInteger perhaps.
 	 */
-	transient int tunedCount;
+	private transient int tunedCount;
 
-	transient int rateTotal;
+	private transient int rateTotal;
 
-	transient int rateHits;
+	private transient int rateHits;
 
-	transient double lastRate;
+	private transient double lastRate;
 
 	public TunedQueryInfo(ObjectGraphOrigin queryPoint, OrmQueryDetail tunedDetail, int profileCount) {
 		this.origin = queryPoint;
@@ -97,7 +97,7 @@ public class TunedQueryInfo implements Serializable {
 	public void setTunedDetail(OrmQueryDetail tunedDetail) {
 		// assignment is atomic
 		this.tunedDetail = tunedDetail;
-		this.lastTuneTime = new Long(System.currentTimeMillis());
+		this.lastTuneTime = Long.valueOf(System.currentTimeMillis());
 	}
 
 	/**

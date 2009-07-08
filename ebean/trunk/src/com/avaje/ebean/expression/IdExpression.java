@@ -1,6 +1,7 @@
 package com.avaje.ebean.expression;
 
 import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.util.DefaultExpressionRequest;
 
 
 /**
@@ -25,7 +26,8 @@ class IdExpression implements Expression {
 		
 		// 'flatten' EmbeddedId and multiple Id cases
 		// into an array of the underlying scalar field values
-		Object[] bindIdValues = request.getQueryRequest().getBeanDescriptor().getBindIdValues(value);
+		DefaultExpressionRequest r = (DefaultExpressionRequest)request;
+		Object[] bindIdValues = r.getBeanDescriptor().getBindIdValues(value);
 		for (int i = 0; i < bindIdValues.length; i++) {
 			request.addBindValue(bindIdValues[i]);
 		}	
@@ -33,7 +35,8 @@ class IdExpression implements Expression {
 
 	public void addSql(ExpressionRequest request) {
 		
-		String idSql = request.getQueryRequest().getBeanDescriptor().getBindIdSql();
+		DefaultExpressionRequest r = (DefaultExpressionRequest)request;
+		String idSql = r.getBeanDescriptor().getBindIdSql();
 		
 		request.append(idSql).append(" ");
 	}

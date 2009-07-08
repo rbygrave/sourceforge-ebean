@@ -2,6 +2,9 @@ package com.avaje.ebean.enhance.agent;
 
 import java.util.ArrayList;
 
+import com.avaje.ebean.TxScope;
+import com.avaje.ebean.common.HelpScopeTrans;
+import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.enhance.asm.AnnotationVisitor;
 import com.avaje.ebean.enhance.asm.MethodVisitor;
 import com.avaje.ebean.enhance.asm.Type;
@@ -16,20 +19,20 @@ import com.avaje.ebean.enhance.asm.commons.MethodAdviceAdapter;
  * rollback or not.
  * </p>
  */
-public class ScopeTransAdapter extends MethodAdviceAdapter {
+public class ScopeTransAdapter extends MethodAdviceAdapter implements EnhanceConstants {
 
-	static final Type txScopeType = Type.getType("Lcom/avaje/ebean/TxScope;");
-	static final Type scopeTransType = Type.getType("Lcom/avaje/ebean/bean/ScopeTrans;");
-	static final Type internalServerType = Type.getType("Lcom/avaje/ebean/bean/InternalServer;");
+	private static final Type txScopeType = Type.getType(TxScope.class);
+	private static final Type scopeTransType = Type.getType(ScopeTrans.class);
+	private static final Type helpScopeTrans = Type.getType(HelpScopeTrans.class);
 
-	final AnnotationInfo annotationInfo;
+	private final AnnotationInfo annotationInfo;
 
-	final ClassAdapterTransactional owner;
+	private final ClassAdapterTransactional owner;
 	
-	boolean transactional;
+	private boolean transactional;
 
-	int posTxScope;
-	int posScopeTrans;
+	private int posTxScope;
+	private int posScopeTrans;
 	
 	public ScopeTransAdapter(ClassAdapterTransactional owner, final MethodVisitor mv, final int access, final String name, final String desc) {
 		super(mv, access, name, desc);
@@ -71,8 +74,8 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		
 		mv.visitVarInsn(ALOAD, posTxScope);
 		mv.visitLdcInsn(txType.toString());
-		mv.visitMethodInsn(INVOKESTATIC, "com/avaje/ebean/TxType", "valueOf", "(Ljava/lang/String;)Lcom/avaje/ebean/TxType;");
-		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/TxScope", "setType", "(Lcom/avaje/ebean/TxType;)Lcom/avaje/ebean/TxScope;");
+		mv.visitMethodInsn(INVOKESTATIC, C_TXTYPE, "valueOf", "(Ljava/lang/String;)L"+C_TXTYPE+";");
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_TXSCOPE, "setType", "(L"+C_TXSCOPE+";)L"+C_TXSCOPE+";");
 		mv.visitInsn(POP);
 	}
 	
@@ -80,8 +83,8 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		
 		mv.visitVarInsn(ALOAD, posTxScope);
 		mv.visitLdcInsn(txIsolation.toString());
-		mv.visitMethodInsn(INVOKESTATIC, "com/avaje/ebean/TxIsolation", "valueOf", "(Ljava/lang/String;)Lcom/avaje/ebean/TxIsolation;");
-		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/TxScope", "setIsolation", "(Lcom/avaje/ebean/TxIsolation;)Lcom/avaje/ebean/TxScope;");
+		mv.visitMethodInsn(INVOKESTATIC, C_TXISOLATION, "valueOf", "(Ljava/lang/String;)L"+C_TXISOLATION+";");
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_TXSCOPE, "setIsolation", "(L"+C_TXISOLATION+";)L"+C_TXSCOPE+";");
 		mv.visitInsn(POP);
 	}
 	
@@ -89,7 +92,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		
 		mv.visitVarInsn(ALOAD, posTxScope);
 		mv.visitLdcInsn(serverName.toString());
-		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/TxScope", "setServerName", "(Ljava/lang/String;)Lcom/avaje/ebean/TxScope;");
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_TXSCOPE, "setServerName", "(Ljava/lang/String;)L"+C_TXSCOPE+";");
 		mv.visitInsn(POP);
 	}
 	
@@ -102,7 +105,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		} else {
 			mv.visitInsn(ICONST_0);
 		}
-		mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/TxScope", "setReadOnly", "(Z)Lcom/avaje/ebean/TxScope;");
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_TXSCOPE, "setReadOnly", "(Z)L"+C_TXSCOPE+";");
 	}
 	
 	/**
@@ -118,7 +121,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 			
 			mv.visitVarInsn(ALOAD, posTxScope);
 			mv.visitLdcInsn(throwType);
-			mv.visitMethodInsn(INVOKEVIRTUAL, txScopeType.getInternalName(), "setNoRollbackFor", "(Ljava/lang/Class;)Lcom/avaje/ebean/TxScope;");
+			mv.visitMethodInsn(INVOKEVIRTUAL, txScopeType.getInternalName(), "setNoRollbackFor", "(Ljava/lang/Class;)L"+C_TXSCOPE+";");
 			mv.visitInsn(POP);
 		}
 	}
@@ -136,7 +139,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 			
 			mv.visitVarInsn(ALOAD, posTxScope);
 			mv.visitLdcInsn(throwType);
-			mv.visitMethodInsn(INVOKEVIRTUAL, txScopeType.getInternalName(), "setRollbackFor", "(Ljava/lang/Class;)Lcom/avaje/ebean/TxScope;");
+			mv.visitMethodInsn(INVOKEVIRTUAL, txScopeType.getInternalName(), "setRollbackFor", "(Ljava/lang/Class;)L"+C_TXSCOPE+";");
 			mv.visitInsn(POP);
 		}
 	}
@@ -190,7 +193,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		}
 
 		mv.visitVarInsn(ALOAD, posTxScope);
-		mv.visitMethodInsn(INVOKESTATIC, internalServerType.getInternalName(), "createScopeTrans", "("
+		mv.visitMethodInsn(INVOKESTATIC, helpScopeTrans.getInternalName(), "createScopeTrans", "("
 				+ txScopeType.getDescriptor() + ")" + scopeTransType.getDescriptor());
 		mv.visitVarInsn(ASTORE, posScopeTrans);
 	}
@@ -219,7 +222,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 		visitIntInsn(SIPUSH, opcode);
 		loadLocal(posScopeTrans);
 
-		visitMethodInsn(INVOKESTATIC, internalServerType.getInternalName(), "onExitScopeTrans", "(Ljava/lang/Object;I"
+		visitMethodInsn(INVOKESTATIC, helpScopeTrans.getInternalName(), "onExitScopeTrans", "(Ljava/lang/Object;I"
 				+ scopeTransType.getDescriptor() + ")V");
 	}
 
@@ -233,9 +236,9 @@ public class ScopeTransAdapter extends MethodAdviceAdapter {
 //	 txScope.setReadonly(false);
 //
 //	 
-//	 ScopeTrans t = InternalServer.createScopeTrans(txScope);
+//	 ScopeTrans t = HelpScopeTransEnhance.createScopeTrans(txScope);
 //	 //ScopeTrans t = new ScopeTrans();
 //	 System.out.println("stuff...");
-//	 InternalServer.onExitScopeTrans(returnOrThrowable, opCode, t);
+//	 HelpScopeTransEnhance.onExitScopeTrans(returnOrThrowable, opCode, t);
 //	 }
 }

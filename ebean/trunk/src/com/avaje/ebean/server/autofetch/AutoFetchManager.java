@@ -22,10 +22,10 @@ package com.avaje.ebean.server.autofetch;
 import java.util.Iterator;
 
 import com.avaje.ebean.Query;
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.NodeUsageListener;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.CallStack;
+import com.avaje.ebean.common.NodeUsageListener;
+import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.query.OrmQuery;

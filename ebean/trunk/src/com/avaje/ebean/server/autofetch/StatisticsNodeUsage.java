@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.common.NodeUsageCollector;
 import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.query.OrmQueryDetail;
@@ -25,15 +25,15 @@ public class StatisticsNodeUsage implements Serializable {
 
 	private final String monitor = new String();
 	
-	final String path;
+	private final String path;
 	
-	int loadCount;
+	private int loadCount;
 	
-	int usedCount;
+	private int usedCount;
 	
-	Set<String> aggregateUsed = new LinkedHashSet<String>();
+	private Set<String> aggregateUsed = new LinkedHashSet<String>();
 
-	Set<String> unusedBeanIndex = new LinkedHashSet<String>();
+	private Set<String> unusedBeanIndex = new LinkedHashSet<String>();
 
 	public StatisticsNodeUsage(String path) {
 		this.path = path;

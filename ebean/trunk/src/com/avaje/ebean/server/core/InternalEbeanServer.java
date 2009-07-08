@@ -26,13 +26,12 @@ import javax.management.MBeanServer;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
-import com.avaje.ebean.bean.InternalEbean;
-import com.avaje.ebean.bean.ScopeTrans;
+import com.avaje.ebean.common.InternalEbean;
+import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
@@ -74,11 +73,6 @@ public interface InternalEbeanServer extends InternalEbean {
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
 	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> type);
-
-	/**
-	 * Return the BeanManager for a given type of bean.
-	 */
-	public <T> BeanManager<T> getBeanManager(Class<T> type);
 
 	/**
 	 * Process committed changes from another framework.

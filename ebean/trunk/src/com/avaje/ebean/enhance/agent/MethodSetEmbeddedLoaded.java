@@ -45,10 +45,10 @@ public class MethodSetEmbeddedLoaded implements Opcodes, EnhanceConstants {
 				mv.visitLabel(l0);
 				mv.visitLineNumber(0, l0);
 				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, "Lcom/avaje/ebean/bean/EntityBeanIntercept;");
+				mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, L_INTERCEPT);
 				mv.visitVarInsn(ALOAD, 0);
 				fieldMeta.appendSwitchGet(mv, classMeta, false);
-				mv.visitMethodInsn(INVOKEVIRTUAL, "com/avaje/ebean/bean/EntityBeanIntercept", "setEmbeddedLoaded", "(Ljava/lang/Object;)V");
+				mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "setEmbeddedLoaded", "(Ljava/lang/Object;)V");
 			}
 		}
 		

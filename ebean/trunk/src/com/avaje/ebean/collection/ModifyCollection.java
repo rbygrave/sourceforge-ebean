@@ -32,9 +32,9 @@ import java.util.Iterator;
  */
 class ModifyCollection<E> implements Collection<E> {
 
-	final BeanCollection<E> owner;
+	protected final BeanCollection<E> owner;
 
-	final Collection<E> c;
+	protected final Collection<E> c;
 
 	/**
 	 * Create with an Owner and the underlying collection this wraps.

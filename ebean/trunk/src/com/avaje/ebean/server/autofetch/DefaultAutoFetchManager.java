@@ -13,10 +13,10 @@ import java.util.logging.Level;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.bean.CallStack;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.common.CallStack;
+import com.avaje.ebean.common.NodeUsageCollector;
+import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.common.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
@@ -24,7 +24,6 @@ import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanManager;
 
 /**
  * The manager of all the usage/query statistics as well as the tuned fetch
@@ -38,50 +37,50 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 	private final String statisticsMonitor = new String();
 
-	final String fileName;
+	private final String fileName;
 
 	/**
 	 * Map of the usage and query statistics gathered.
 	 */
-	Map<String, Statistics> statisticsMap = new ConcurrentHashMap<String, Statistics>();
+	private Map<String, Statistics> statisticsMap = new ConcurrentHashMap<String, Statistics>();
 
 	/**
 	 * Map of the tuned query details per profile query point.
 	 */
-	Map<String, TunedQueryInfo> tunedQueryInfoMap = new ConcurrentHashMap<String, TunedQueryInfo>();
+	private Map<String, TunedQueryInfo> tunedQueryInfoMap = new ConcurrentHashMap<String, TunedQueryInfo>();
 
-	transient long defaultGarbageCollectionWait = 100;
+	private transient long defaultGarbageCollectionWait = 100;
 
 	/**
 	 * Left without synchronized for now.
 	 */
-	transient int tunedQueryCount;
+	private transient int tunedQueryCount;
 	
 	/**
 	 * Converted from a 0-100 int to a double. Effectively a percentage rate at
 	 * which to collect profiling information.
 	 */
-	transient double profilingRate = 0.1d;
+	private transient double profilingRate = 0.1d;
 
-	transient int profilingBase = 10;
+	private transient int profilingBase = 10;
 
-	transient int profilingMin = 1;
+	private transient int profilingMin = 1;
 
-	transient boolean profiling;
+	private transient boolean profiling;
 
-	transient boolean queryTuning;
+	private transient boolean queryTuning;
 
-	transient AutofetchMode mode;
+	private transient AutofetchMode mode;
 
 	/**
 	 * Server that owns this Profile Listener.
 	 */
-	transient InternalEbeanServer server;
+	private transient InternalEbeanServer server;
 
 	/**
 	 * The logger.
 	 */
-	transient DefaultAutoFetchManagerLogging logging;
+	private transient DefaultAutoFetchManagerLogging logging;
 
 	public DefaultAutoFetchManager(String fileName) {
 		this.fileName = fileName;
@@ -331,13 +330,11 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 				try {
 
 					Class<?> beanClass = Class.forName(beanType);
-					BeanManager<?> beanMgr = server.getBeanManager(beanClass);
-					if (beanMgr == null){
+					BeanDescriptor<?> beanDescriptor = server.getBeanDescriptor(beanClass);
+					if (beanDescriptor == null){
 						// previously was an entity but not longer
 						
 					} else {
-						BeanDescriptor<?> beanDescriptor = beanMgr.getBeanDescriptor();
-	
 						// Determine the fetch plan from the latest statistics.
 						// Use this to compare with current "tuned fetch plan".
 						OrmQueryDetail newFetchDetail = queryPointStatistics.buildTunedFetch(beanDescriptor);
@@ -372,7 +369,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 					String msg = e.toString()+" updating autoFetch tuned query for " + beanType
 						+". It isLikely this bean has been renamed or moved";
 					logging.logError(Level.INFO, msg, null);
-					statisticsMap.remove(queryPointStatistics);
+					statisticsMap.remove(queryPointStatistics.getOrigin().getKey());
 				}
 			}
 
@@ -529,9 +526,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		}
 	}
 
-	static final int MAX_STACK_SIZE = 20;
-
-	static final int IGNORE_LEADING_ELEMENTS = 6;
+	private static final int IGNORE_LEADING_ELEMENTS = 6;
 
 	/**
 	 * Create a CallStack object.

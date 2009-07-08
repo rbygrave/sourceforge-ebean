@@ -39,10 +39,10 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.common.EntityBeanIntercept;
+import com.avaje.ebean.common.InternalEbean;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
@@ -74,7 +74,7 @@ import com.avaje.ebean.util.SortByClause.Property;
 /**
  * Describes Beans including their deployment information.
  */
-public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
+public class BeanDescriptor<T> {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
 
@@ -477,13 +477,6 @@ public class BeanDescriptor<T> implements Comparable<BeanDescriptor<?>> {
 	 */
 	public InternalEbean getInternalEbean() {
 		return internalEbean;
-	}
-
-	/**
-	 * Compare using the name of the BeanDescriptor.
-	 */
-	public int compareTo(BeanDescriptor<?> o) {
-		return name.compareTo(o.getName());
 	}
 
 	/**

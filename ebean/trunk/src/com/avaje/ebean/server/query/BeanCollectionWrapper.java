@@ -22,12 +22,12 @@ package com.avaje.ebean.server.query;
 import java.util.Collection;
 import java.util.Map;
 
+import com.avaje.ebean.Query;
 import com.avaje.ebean.collection.BeanCollection;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.ManyType;
 import com.avaje.ebean.server.util.BeanCollectionFactory;
 import com.avaje.ebean.server.util.BeanCollectionParams;
 
@@ -47,7 +47,7 @@ public final class BeanCollectionWrapper {
 	/**
 	 * The type.
 	 */
-	private final ManyType manyType;
+	private final Query.Type manyType;
 
 	/**
 	 * A property name used as key for a Map.
@@ -82,9 +82,9 @@ public final class BeanCollectionWrapper {
 	public BeanCollectionWrapper(RelationalQueryRequest request) {
 
 		this.desc = null;
-		this.manyType = request.getManyType();
+		this.manyType = request.getQueryType();
 		this.mapKey = request.getQuery().getMapKey();
-		this.isMap = manyType.isMap();
+		this.isMap = Query.Type.MAP.equals(manyType);
 		
 		this.beanCollection = createBeanCollection(manyType);
 		this.collection = getCollection(isMap);
@@ -97,9 +97,9 @@ public final class BeanCollectionWrapper {
 	public BeanCollectionWrapper(OrmQueryRequest<?> request) {
 
 		this.desc = request.getBeanDescriptor();
-		this.manyType = request.getManyType();
+		this.manyType = request.getQueryType();
 		this.mapKey = request.getQuery().getMapKey();
-		this.isMap = manyType.isMap();
+		this.isMap = Query.Type.MAP.equals(manyType);
 		
 		this.beanCollection = createBeanCollection(manyType);
 		this.collection = getCollection(isMap);
@@ -119,7 +119,7 @@ public final class BeanCollectionWrapper {
 		this.manyType = manyProp.getManyType();
 		this.mapKey = manyProp.getMapKey();
 		this.desc = manyProp.getTargetDescriptor();
-		this.isMap = manyType.isMap();
+		this.isMap = Query.Type.MAP.equals(manyType);
 		
 		this.beanCollection = createBeanCollection(manyType);
 		this.collection = getCollection(isMap);
@@ -146,7 +146,7 @@ public final class BeanCollectionWrapper {
 	/**
 	 * Create a BeanCollection of the correct type.
 	 */
-	private BeanCollection<?> createBeanCollection(ManyType manyType) {
+	private BeanCollection<?> createBeanCollection(Query.Type manyType) {
 		BeanCollectionParams p = new BeanCollectionParams(manyType);
 		return BeanCollectionFactory.create(p);
 	}

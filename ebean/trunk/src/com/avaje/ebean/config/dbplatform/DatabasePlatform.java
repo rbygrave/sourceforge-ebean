@@ -23,15 +23,13 @@ import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.deploy.parse.DeployUtil;
-
 /**
  * Database platform specific settings.
  */
 public class DatabasePlatform {
 
 	/** The Constant logger. */
-	private static final Logger logger = Logger.getLogger(DeployUtil.class.getName());
+	private static final Logger logger = Logger.getLogger(DatabasePlatform.class.getName());
 
 	/** The open quote used by quoted identifiers. */
 	protected String openQuote = "\"";

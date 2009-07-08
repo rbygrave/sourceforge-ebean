@@ -21,7 +21,7 @@ package com.avaje.ebean.server.transaction;
 
 import java.util.HashMap;
 
-import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.core.PersistenceContext;
 

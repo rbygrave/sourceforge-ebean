@@ -26,7 +26,7 @@ import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
 
-import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.control.ServerControl;
 

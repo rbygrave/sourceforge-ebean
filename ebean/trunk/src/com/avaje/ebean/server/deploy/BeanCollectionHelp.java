@@ -6,9 +6,9 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.bean.InternalEbean;
-import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.InternalEbean;
+import com.avaje.ebean.common.ObjectGraphNode;
 
 /**
  * Helper functions for performing tasks on Lists Sets or Maps.

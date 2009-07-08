@@ -30,7 +30,8 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.deploy.ManyType;
+import com.avaje.ebean.Query;
+import com.avaje.ebean.server.deploy.DetermineQueryType;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
@@ -253,15 +254,16 @@ public class DeployCreateProperties {
         DeployBeanProperty prop = null;
 
         Class<?> propertyType = field.getType();
-        ManyType manyType = ManyType.getManyType(propertyType);
+        Query.Type queryType = DetermineQueryType.getQueryType(propertyType);
+       // ManyType manyType = ManyType.getManyType(propertyType);
 
-        if (manyType != null) {
+        if (queryType != null) {
             // List, Set or Map based object
         	Class<?> targetType = determineTargetType(field);
         	if (targetType == null){
         		logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
         	}
-            prop = new DeployBeanPropertyAssocMany(desc, targetType, manyType);
+            prop = new DeployBeanPropertyAssocMany(desc, targetType, queryType);
 
         } else if (propertyType.isEnum() || propertyType.isPrimitive()){
             prop = new DeployBeanProperty(desc, propertyType);

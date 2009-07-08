@@ -1,4 +1,4 @@
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 /**
  * The type of query result.

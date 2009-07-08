@@ -17,9 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 
 /**
  * Bean that is aware of EntityBeanIntercept.
@@ -30,7 +31,7 @@ import java.beans.PropertyChangeListener;
  * general application consumption.
  * </p>
  */
-public interface EntityBean {
+public interface EntityBean extends Serializable {
 
 	/**
 	 * Return the enhancement marker value.

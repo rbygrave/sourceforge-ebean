@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -40,12 +40,16 @@ import com.avaje.ebean.io.SerializeControl;
  * and oldValues generation for concurrency checking.
  * </p>
  */
-public class EntityBeanIntercept implements Cloneable, Serializable {
+public class EntityBeanIntercept implements Serializable {
 
 	private static final long serialVersionUID = -3664031775464862645L;
 	
-	transient NodeUsageCollector nodeUsageCollector;
+	private transient NodeUsageCollector nodeUsageCollector;
 
+	private transient InternalEbean internalEbean;
+
+	private transient PropertyChangeSupport pcs;
+	
 	/**
 	 * The actual entity bean that 'owns' this intercept.
 	 */
@@ -83,17 +87,9 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	 * Used when a bean is partially filled.
 	 */
 	private Set<String> loadedProps;
-
-//	/**
-//	 * The EbeanServer this bean came from.
-//	 */
-//	protected String serverName;
-
-	private InternalEbean internalEbean;
 	
 	private String lazyLoadProperty;
 
-	transient private PropertyChangeSupport pcs;
 	
 	/**
 	 * Create a intercept with a given entity.
@@ -163,20 +159,6 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	public void setNodeUsageCollector(NodeUsageCollector usageCollector) {
 		this.nodeUsageCollector = usageCollector;
 	}
-
-//	/**
-//	 * Return the name of the associated EbeanServer.
-//	 */
-//	public String getServerName() {
-//		return serverName;
-//	}
-//
-//	/**
-//	 * Set the name of the associated EbeanServer.
-//	 */
-//	public void setServerName(String serverName) {
-//		this.serverName = serverName;
-//	}
 	
 	public void setInternalEbean(InternalEbean internalEbean) {
 		this.internalEbean = internalEbean;
@@ -367,14 +349,20 @@ public class EntityBeanIntercept implements Cloneable, Serializable {
 	 */
 	protected void loadBean(String loadProperty) {
 
+		if (internalEbean == null){
+			String msg = "Lazy loading but InternalEbean is null?"
+				+" The InternalEbean needs to be set after deserialization"
+				+" to support lazy loading.";
+			throw new PersistenceException(msg);
+		}
+		
 		lazyLoadProperty = loadProperty;
 
 		if (nodeUsageCollector != null){
 			nodeUsageCollector.setLoadProperty(lazyLoadProperty);
 		}
 
-		//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
-		internalEbean.lazyLoadBean(owner, nodeUsageCollector);
+		internalEbean.lazyLoadBean(owner, nodeUsageCollector);			
 
 		// the refresh always loads all properties
 		loadedProps = null;

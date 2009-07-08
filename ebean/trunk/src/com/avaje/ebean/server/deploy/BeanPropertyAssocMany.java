@@ -29,9 +29,9 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.bean.InternalEbean;
-import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.common.InternalEbean;
+import com.avaje.ebean.common.ObjectGraphNode;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -83,7 +83,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	/**
 	 * The type of the many, set, list or map.
 	 */
-	final ManyType manyType;
+	final Query.Type manyType;
 
 	final String serverName;
 	
@@ -197,7 +197,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	/**
 	 * Return the many type.
 	 */
-	public ManyType getManyType() {
+	public Query.Type getManyType() {
 		return manyType;
 	}
 

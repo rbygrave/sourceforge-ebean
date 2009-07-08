@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.avaje.ebean.bean.BeanQueryRequest;
+import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
@@ -214,7 +215,8 @@ public class ExampleExpression implements Expression {
 
 		ArrayList<Expression> list = new ArrayList<Expression>();
 
-		BeanDescriptor<?> beanDescriptor = request.getBeanDescriptor();
+		OrmQueryRequest<?> r = (OrmQueryRequest<?>)request;
+		BeanDescriptor<?> beanDescriptor = r.getBeanDescriptor();
 
 		Iterator<BeanProperty> propIter = beanDescriptor.propertiesAll();
 

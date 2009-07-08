@@ -17,12 +17,10 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.common;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
-
-import com.avaje.ebean.server.autofetch.AutoFetchManager;
 
 /**
  * Collects profile information for a bean (or reference/proxy bean) at a
@@ -40,38 +38,38 @@ public final class NodeUsageCollector {
 	/**
 	 * The point in the object graph for a specific query and call stack point.
 	 */
-	final ObjectGraphNode node;
+	private final ObjectGraphNode node;
 	
 	/**
 	 * true if bean false if reference.
 	 */
-	final boolean bean;
+	private final boolean bean;
 
 	/**
 	 * Weak to allow garbage collection.
 	 */
-	final WeakReference<AutoFetchManager> managerRef;
+	private final WeakReference<NodeUsageListener> managerRef;
 
 	/**
 	 * The properties used at this profile point.
 	 */
-	final HashSet<String> used = new HashSet<String>();
+	private final HashSet<String> used = new HashSet<String>();
 
 	/**
 	 * set to true if the bean is modified (setter called)
 	 */
-	boolean modified;
+	private boolean modified;
 
 	/**
 	 * The property that cause a reference to lazy load.
 	 */
-	String loadProperty;
+	private String loadProperty;
 
-	public NodeUsageCollector(boolean bean, ObjectGraphNode node, AutoFetchManager manager) {
+	public NodeUsageCollector(boolean bean, ObjectGraphNode node, NodeUsageListener manager) {
 		this.node = node;
 		this.bean = bean;
 		// weak to allow garbage collection.
-		this.managerRef = new WeakReference<AutoFetchManager>(manager);
+		this.managerRef = new WeakReference<NodeUsageListener>(manager);
 	}
 
 	/**
@@ -99,7 +97,7 @@ public final class NodeUsageCollector {
 	 * Publish the usage info to the manager.
 	 */
 	private void publishUsageInfo() {
-		AutoFetchManager manager = managerRef.get();
+		NodeUsageListener manager = managerRef.get();
 		if (manager != null) {
 			manager.collectNodeUsage(this);
 		}
