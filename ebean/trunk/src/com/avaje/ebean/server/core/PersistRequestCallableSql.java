@@ -24,10 +24,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.BindParams.Param;
 import com.avaje.ebean.server.persist.PersistExecute;
 import com.avaje.ebean.server.transaction.TransactionEventTable;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.BindParams.Param;
 
 /**
  * Persist request specifically for CallableSql.

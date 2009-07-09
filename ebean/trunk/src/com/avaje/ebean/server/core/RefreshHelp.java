@@ -21,13 +21,13 @@ package com.avaje.ebean.server.core;
 
 import java.util.Set;
 
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
-import com.avaje.ebean.server.jmx.MLogControlMBean;
+import com.avaje.ebean.server.jmx.MAdminLoggingMBean;
 import com.avaje.ebean.server.lib.util.StringHelper;
 
 /**
@@ -44,9 +44,9 @@ public class RefreshHelp {
 	 */
 	private final DebugLazyLoad debugLazyLoad;
 	
-	private final MLogControlMBean logControl;
+	private final MAdminLoggingMBean logControl;
 	
-	public RefreshHelp(MLogControlMBean logControl, boolean debugLazyLoad){
+	public RefreshHelp(MAdminLoggingMBean logControl, boolean debugLazyLoad){
 		this.logControl = logControl;
 		this.debugLazyLoad = new DebugLazyLoad(debugLazyLoad);
 	}

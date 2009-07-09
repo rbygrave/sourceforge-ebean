@@ -19,9 +19,9 @@
  */
 package com.avaje.ebean;
 
+import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.server.core.ProtectedMethodAPI;
 import com.avaje.ebean.server.transaction.TransactionEventTable;
-import com.avaje.ebean.util.BindParams;
 
 /**
  * Implements the public API protection.

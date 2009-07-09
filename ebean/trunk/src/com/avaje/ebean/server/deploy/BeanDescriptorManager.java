@@ -38,13 +38,14 @@ import javax.sql.DataSource;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.InternalEbean;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
-import com.avaje.ebean.config.naming.NamingConvention;
 import com.avaje.ebean.enhance.subclass.SubClassManager;
 import com.avaje.ebean.enhance.subclass.SubClassUtil;
 import com.avaje.ebean.server.cache.ServerCacheManager;
@@ -76,7 +77,6 @@ import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.LengthValidatorFactory;
 import com.avaje.ebean.server.validate.NotNullValidatorFactory;
-import com.avaje.ebean.util.Message;
 
 /**
  * Creates BeanDescriptors.

@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 
 /**
  * Statistics collected by AutoFetch profiling.

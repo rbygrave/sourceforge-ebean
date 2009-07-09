@@ -14,7 +14,7 @@ import com.avaje.ebean.server.deploy.DeployOrmXml;
 import com.avaje.ebean.server.deploy.parse.DeployCreateProperties;
 import com.avaje.ebean.server.deploy.parse.DeployInherit;
 import com.avaje.ebean.server.deploy.parse.DeployUtil;
-import com.avaje.ebean.server.jmx.MLogControl;
+import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.persist.DefaultPersister;
@@ -56,7 +56,7 @@ public class InternalConfiguration {
 	
 	private final BeanDescriptorManager beanDescriptorManager;
 	
-	private final MLogControl logControl;
+	private final MAdminLogging logControl;
 	
 	private final RefreshHelp refreshHelp;
 	
@@ -95,13 +95,14 @@ public class InternalConfiguration {
 		this.beanDescriptorManager = new BeanDescriptorManager(this);
 		beanDescriptorManager.deploy();
 		
-		this.logControl = new MLogControl(serverConfig);
-		this.refreshHelp = new RefreshHelp(logControl, serverConfig.isDebugLazyLoad());
 		this.debugLazyLoad = new DebugLazyLoad(serverConfig.isDebugLazyLoad());
 		
-		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder);
-
 		this.transactionManager = new TransactionManager(clusterManager, serverConfig, beanDescriptorManager);
+
+		this.logControl = new MAdminLogging(serverConfig, transactionManager);
+		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder);
+		this.refreshHelp = new RefreshHelp(logControl, serverConfig.isDebugLazyLoad());
+
 		
 		ExternalTransactionManager externalTransactionManager = serverConfig.getExternalTransactionManager();
 		if (externalTransactionManager != null){
@@ -184,7 +185,7 @@ public class InternalConfiguration {
 		return deployUtil;
 	}
 
-	public MLogControl getLogControl() {
+	public MAdminLogging getLogControl() {
 		return logControl;
 	}
 

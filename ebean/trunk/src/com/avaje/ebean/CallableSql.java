@@ -23,9 +23,9 @@ import java.io.Serializable;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.BindParams.Param;
 import com.avaje.ebean.server.transaction.TransactionEventTable;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.BindParams.Param;
 
 /**
  * For making calls to stored procedures. Refer to the Ebean execute() method.

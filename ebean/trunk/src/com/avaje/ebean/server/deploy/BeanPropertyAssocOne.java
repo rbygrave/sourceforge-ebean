@@ -22,7 +22,7 @@ package com.avaje.ebean.server.deploy;
 import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;

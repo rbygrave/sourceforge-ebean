@@ -27,7 +27,7 @@ import java.sql.Types;
 
 import org.joda.time.LocalDateTime;
 
-import com.avaje.ebean.util.BasicTypeConverter;
+import com.avaje.ebean.bean.BasicTypeConverter;
 
 /**
  * ScalarType for Joda LocalDateTime. This maps to a JDBC Timestamp.

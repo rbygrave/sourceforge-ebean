@@ -4,8 +4,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Set;
 
 import com.avaje.ebean.BeanState;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 
 /**
  * Default implementation of BeanState.

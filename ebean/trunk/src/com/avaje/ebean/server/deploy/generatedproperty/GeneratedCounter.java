@@ -19,8 +19,8 @@
  */
 package com.avaje.ebean.server.deploy.generatedproperty;
 
+import com.avaje.ebean.bean.BasicTypeConverter;
 import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.util.BasicTypeConverter;
 
 
 

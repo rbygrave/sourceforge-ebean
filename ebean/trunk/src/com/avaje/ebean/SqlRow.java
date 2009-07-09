@@ -29,7 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.util.BasicTypeConverter;
+import com.avaje.ebean.bean.BasicTypeConverter;
 
 /**
  * Used to return raw SQL query results.

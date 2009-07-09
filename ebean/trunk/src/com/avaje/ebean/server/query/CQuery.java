@@ -31,12 +31,12 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
-import com.avaje.ebean.common.NodeUsageCollector;
-import com.avaje.ebean.common.ObjectGraphNode;
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;

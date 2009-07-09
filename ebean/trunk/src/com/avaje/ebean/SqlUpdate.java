@@ -21,7 +21,7 @@ package com.avaje.ebean;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.util.BindParams;
+import com.avaje.ebean.bean.BindParams;
 
 /**
  * A SQL Update Delete or Insert statement that can be executed. For the times

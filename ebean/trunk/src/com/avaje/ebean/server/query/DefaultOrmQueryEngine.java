@@ -21,9 +21,9 @@ package com.avaje.ebean.server.query;
 
 import java.util.ArrayList;
 
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;

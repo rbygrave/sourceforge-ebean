@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.common.NodeUsageCollector;
+import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.query.OrmQueryDetail;

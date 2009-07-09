@@ -36,13 +36,13 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
-import com.avaje.ebean.common.InternalEbean;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.InternalEbean;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
@@ -838,7 +838,8 @@ public class BeanDescriptor<T> {
 				if (errList == null) {
 					errList = new ArrayList<InvalidValue>();
 				}
-				errList.add(new InvalidValue(beanValidators[i], getFullName(), null, bean));
+				Validator v = beanValidators[i];
+				errList.add(new InvalidValue(v.getKey(), v.getAttributes(), getFullName(), null, bean));
 			}
 		}
 

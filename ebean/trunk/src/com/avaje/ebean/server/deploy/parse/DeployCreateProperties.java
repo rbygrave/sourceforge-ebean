@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.server.deploy.DetermineQueryType;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -38,7 +39,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.util.Message;
 
 /**
  * Create the properties for a bean.

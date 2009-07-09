@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.util.BindParams;
+import com.avaje.ebean.bean.BindParams;
 
 public class IntersectionRow {
 

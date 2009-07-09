@@ -149,7 +149,7 @@ public class CreateTableVisitor implements BeanVisitor {
 			checkConstraints = new ArrayList<String>();
 		}
 		
-		String pkName = ddl.getPrimaryKeyName(descriptor);
+		String pkName = ddl.getPrimaryKeyName(descriptor.getBaseTable());
 
 		ctx.write("  constraint ").write(pkName).write(" primary key (");
 		

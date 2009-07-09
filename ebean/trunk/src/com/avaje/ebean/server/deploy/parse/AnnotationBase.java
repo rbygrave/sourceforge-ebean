@@ -4,8 +4,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.config.naming.NamingConvention;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 
 /**

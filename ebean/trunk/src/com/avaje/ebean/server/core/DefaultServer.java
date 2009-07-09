@@ -32,6 +32,9 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.AdminAutofetch;
+import com.avaje.ebean.AdminLogging;
+import com.avaje.ebean.BeanState;
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.Filter;
 import com.avaje.ebean.InvalidValue;
@@ -47,14 +50,13 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.TxType;
 import com.avaje.ebean.Update;
 import com.avaje.ebean.ValuePair;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
-import com.avaje.ebean.common.NodeUsageCollector;
-import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.control.AutoFetchControl;
-import com.avaje.ebean.control.ServerControl;
 import com.avaje.ebean.el.ElFilter;
 import com.avaje.ebean.query.DefaultOrmQuery;
 import com.avaje.ebean.query.DefaultOrmUpdate;
@@ -72,9 +74,7 @@ import com.avaje.ebean.server.deploy.DNativeQuery;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.jmx.MAutoFetchControl;
-import com.avaje.ebean.server.jmx.MLogControl;
-import com.avaje.ebean.server.jmx.MServerControl;
+import com.avaje.ebean.server.jmx.MAdminAutofetch;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
@@ -83,7 +83,6 @@ import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
-import com.avaje.ebean.util.Message;
 
 /**
  * The default server side implementation of EbeanServer.
@@ -99,8 +98,11 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	private final String serverName;
 
-	private final ServerControl serverControl;
-
+	//	private final MLogControl logControl;
+	private final AdminLogging adminLogging;
+	private final AdminAutofetch adminAutofetch;
+//	private final AutoFetchControl autoFetchControl;
+	
 	private final TransactionManager transactionManager;
 
 	private final TransactionScopeManager transactionScopeManager;
@@ -126,10 +128,6 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	private final DiffHelp diffHelp = new DiffHelp();
 
-	private final MLogControl logControl;
-
-	private final AutoFetchControl autoFetchControl;
-
 	private final RefreshHelp refreshHelp;
 
 	private final AutoFetchManager autoFetchManager;
@@ -148,7 +146,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		this.serverCache = serverCache;
 		this.serverName = config.getServerConfig().getName();
 		this.cqueryEngine = config.getCQueryEngine();
-		this.logControl = config.getLogControl();
+		this.adminLogging = config.getLogControl();
 		this.refreshHelp = config.getRefreshHelp();
 		this.debugLazyHelper = config.getDebugLazyLoad();
 		this.beanDescriptorManager = config.getBeanDescriptorManager();
@@ -163,9 +161,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		this.relationalQueryEngine = config.createRelationalQueryEngine();
 
 		autoFetchManager = config.createAutoFetchManager(this);
-		autoFetchControl = new MAutoFetchControl(autoFetchManager);
-
-		serverControl = new MServerControl(logControl, autoFetchControl);
+		adminAutofetch = new MAdminAutofetch(autoFetchManager);
 
 		this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
 		ShutdownManager.register(new Shutdown());
@@ -175,10 +171,16 @@ public final class DefaultServer implements InternalEbeanServer {
 	public DdlGenerator getDdlGenerator() {
 		return ddlGenerator;
 	}
-
-	public ServerControl getServerControl() {
-		return serverControl;
+	
+	public AdminLogging getAdminLogging() {
+		return adminLogging;
 	}
+
+
+	public AdminAutofetch getAdminAutofetch() {
+		return adminAutofetch;
+	}
+
 
 	public AutoFetchManager getAutoFetchManager() {
 		return autoFetchManager;
@@ -189,8 +191,8 @@ public final class DefaultServer implements InternalEbeanServer {
 		String mbeanName = "Ebean:server=" + serverName;
 
 		try {
-			mbeanServer.registerMBean(logControl, new ObjectName(mbeanName + ",function=Logging"));
-			mbeanServer.registerMBean(autoFetchControl, new ObjectName(mbeanName + ",key=AutoFetch"));
+			mbeanServer.registerMBean(adminLogging, new ObjectName(mbeanName + ",function=Logging"));
+			mbeanServer.registerMBean(adminAutofetch, new ObjectName(mbeanName + ",key=AutoFetch"));
 
 		} catch (InstanceAlreadyExistsException e){
 			String msg = "Error registering the JMX beans for Ebean server ["+serverName
@@ -219,6 +221,16 @@ public final class DefaultServer implements InternalEbeanServer {
 		return serverName;
 	}
 
+	public BeanState getBeanState(Object bean){
+		if (bean instanceof EntityBean) {
+			return new DefaultBeanState((EntityBean) bean);
+		}
+		// if using "subclassing" (not enhancement) this will
+		// return null for 'vanilla' instances (not subclassed)
+		return null;
+		// throw new PersistenceException("The bean is not an EntityBean");
+	}
+	
 	/**
 	 * Compile a query.
 	 */
@@ -258,7 +270,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		refreshManyInternal(parentBean, propertyName, null, profileNode);
 
-		if (profileNode != null || logControl.isDebugLazyLoad()) {
+		if (profileNode != null || adminLogging.isDebugLazyLoad()) {
 
 			Class<?> cls = parentBean.getClass();
 			BeanDescriptor<?> desc = getBeanDescriptor(cls);
@@ -266,7 +278,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 			StackTraceElement cause = debugLazyHelper.getStackTraceElement(cls);
 
-			if (logControl.isDebugLazyLoad()) {
+			if (adminLogging.isDebugLazyLoad()) {
 				String msg = "debug.lazyLoad " + many.getManyType() + " [" + desc + "][" + propertyName + "]";
 				if (cause != null) {
 					msg += " at: " + cause;

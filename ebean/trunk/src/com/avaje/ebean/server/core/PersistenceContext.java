@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.core;
 
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 
 /**
  * TransactionContext for internal use.

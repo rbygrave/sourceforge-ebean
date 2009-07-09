@@ -10,10 +10,11 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.common.CallStack;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.ObjectGraphNode;
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.CallStack;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.Expression;
 import com.avaje.ebean.expression.ExpressionList;
 import com.avaje.ebean.expression.InternalExpressionList;
@@ -23,7 +24,6 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.DefaultExpressionList;
 
 /**

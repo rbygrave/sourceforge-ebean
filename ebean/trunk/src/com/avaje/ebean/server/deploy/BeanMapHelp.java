@@ -8,10 +8,10 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.collection.BeanMap;
-import com.avaje.ebean.common.InternalEbean;
-import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.common.BeanMap;
 
 /**
  * Helper specifically for dealing with Maps.

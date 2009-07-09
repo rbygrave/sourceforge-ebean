@@ -27,11 +27,11 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
 
 /**
  * Handles the execution of CallableSql requests.

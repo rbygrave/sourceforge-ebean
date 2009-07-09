@@ -7,7 +7,7 @@ import java.util.Set;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.SqlRow;
-import com.avaje.ebean.util.BindParams;
+import com.avaje.ebean.bean.BindParams;
 
 /**
  * Default implementation of SQuery - SQL Query.

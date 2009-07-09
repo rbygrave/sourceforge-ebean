@@ -74,7 +74,8 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 			TableJoinColumn[] columns = tableJoin.columns();
 
 
-			String fkName = ctx.getDdlSyntax().getForeignKeyName(p, ctx.incrementFkCount());
+			String tableName = p.getBeanDescriptor().getBaseTable();
+			String fkName = ctx.getDdlSyntax().getForeignKeyName(tableName, p.getName(), ctx.incrementFkCount());
 	
 			ctx.write("alter table ").write(baseTable).write(" add ");
 			if (fkName != null) {
@@ -111,7 +112,7 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 				//create index idx_fk_o_address_ctry on o_address(country_code);
 				ctx.write("create index ");
 
-				String idxName = ctx.getDdlSyntax().getIndexName(p, ctx.incrementIxCount());
+				String idxName = ctx.getDdlSyntax().getIndexName(tableName, p.getName(), ctx.incrementIxCount());
 				if (idxName != null){
 					ctx.write(idxName);
 				}

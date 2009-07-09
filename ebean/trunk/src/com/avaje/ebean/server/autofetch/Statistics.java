@@ -7,9 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.avaje.ebean.common.NodeUsageCollector;
-import com.avaje.ebean.common.ObjectGraphNode;
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.QueryStats;

@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
-import com.avaje.ebean.config.naming.TableName;
+import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
 
 /**

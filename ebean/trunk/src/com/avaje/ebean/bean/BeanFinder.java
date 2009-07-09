@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.bean;
 
-import com.avaje.ebean.collection.BeanCollection;
 
 
 /**

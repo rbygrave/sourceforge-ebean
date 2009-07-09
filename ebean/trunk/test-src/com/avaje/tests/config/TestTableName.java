@@ -3,7 +3,7 @@ package com.avaje.tests.config;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import com.avaje.ebean.config.naming.TableName;
+import com.avaje.ebean.config.TableName;
 
 public class TestTableName extends TestCase {
 
@@ -24,12 +24,13 @@ public class TestTableName extends TestCase {
 		Assert.assertEquals("b", t.getSchema());
 		Assert.assertEquals("c", t.getCatalog());
 		
-		try {
-			t = new TableName("d.c.b.a");
-			Assert.assertTrue(false);
-		} catch (RuntimeException e){
-			Assert.assertTrue(true);
-		}
+//		try {
+//			TableName t2 = new TableName("d.c.b.a");
+//			Assert.assertNotNull(t2);
+//			Assert.assertTrue(false);
+//		} catch (RuntimeException e){
+//			Assert.assertTrue(true);
+//		}
 		
 		
 //		TableName lhs = new TableName("test.oe_order");

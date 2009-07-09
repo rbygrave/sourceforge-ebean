@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
@@ -41,7 +42,6 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.util.Message;
 
 /**
  * Factory for SqlSelectClause.

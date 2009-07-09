@@ -5,10 +5,10 @@ import java.util.Iterator;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.collection.BeanList;
+import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;

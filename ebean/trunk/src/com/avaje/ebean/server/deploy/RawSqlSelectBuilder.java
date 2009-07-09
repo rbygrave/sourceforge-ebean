@@ -2,7 +2,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.List;
 
-import com.avaje.ebean.config.naming.NamingConvention;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.query.SimpleTextParser;
 
 /**

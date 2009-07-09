@@ -31,7 +31,7 @@ import java.util.Map;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.server.core.InternString;
@@ -516,7 +516,8 @@ public class BeanProperty implements ElPropertyValue {
 				if (list == null) {
 					list = new ArrayList<InvalidValue>();
 				}
-				list.add(new InvalidValue(validators[i], descriptor.getFullName(), name, value));
+				Validator v = validators[i];
+				list.add(new InvalidValue(v.getKey(), v.getAttributes(), descriptor.getFullName(), name, value));
 			}
 		}
 

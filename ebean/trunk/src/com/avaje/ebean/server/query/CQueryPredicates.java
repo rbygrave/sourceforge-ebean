@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.BindParams.OrderedList;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
@@ -15,9 +17,7 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
 import com.avaje.ebean.util.DefaultExpressionRequest;
-import com.avaje.ebean.util.BindParams.OrderedList;
 
 /**
  * Compile Query Predicates.

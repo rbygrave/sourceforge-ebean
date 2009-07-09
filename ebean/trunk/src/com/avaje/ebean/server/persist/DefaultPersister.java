@@ -32,9 +32,10 @@ import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.query.OrmUpdate;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.core.PersistRequest;
@@ -51,8 +52,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.IntersectionRow;
-import com.avaje.ebean.server.jmx.MLogControl;
-import com.avaje.ebean.util.Message;
+import com.avaje.ebean.server.jmx.MAdminLogging;
 
 /**
  * Persister implementation using DML.
@@ -85,7 +85,7 @@ public final class DefaultPersister implements Persister {
 
 	private final BeanDescriptorManager beanDescriptorManager;
 	
-	public DefaultPersister(InternalEbeanServer server, boolean validate, MLogControl logControl, Binder binder, BeanDescriptorManager descMgr) {
+	public DefaultPersister(InternalEbeanServer server, boolean validate, MAdminLogging logControl, Binder binder, BeanDescriptorManager descMgr) {
 
 		this.server = server;
 		this.beanDescriptorManager = descMgr;

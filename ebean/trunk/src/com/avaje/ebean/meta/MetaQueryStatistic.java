@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Entity;
 
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 
 /**
  * Query execution statistics Meta data.

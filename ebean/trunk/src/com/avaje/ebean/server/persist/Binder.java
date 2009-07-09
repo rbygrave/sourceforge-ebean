@@ -33,10 +33,10 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.Message;
 
 /**
  * Binds bean values to a PreparedStatement.

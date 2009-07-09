@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.core;
 
-import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.bean.BeanCollection;
 
 /**
  * The Object Relational query execution API.

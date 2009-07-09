@@ -5,7 +5,7 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 
 /**
  * "Tuned fetch" information used by AutoFetch.
