@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.common;
+package com.avaje.ebean.enhance.agent;
 
 /**
  * Marker interface for classes enhanced to support Transactional methods.
