@@ -2,9 +2,6 @@ package com.avaje.ebean.enhance.agent;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.TxScope;
-import com.avaje.ebean.common.HelpScopeTrans;
-import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.enhance.asm.AnnotationVisitor;
 import com.avaje.ebean.enhance.asm.MethodVisitor;
 import com.avaje.ebean.enhance.asm.Type;
@@ -21,9 +18,10 @@ import com.avaje.ebean.enhance.asm.commons.MethodAdviceAdapter;
  */
 public class ScopeTransAdapter extends MethodAdviceAdapter implements EnhanceConstants {
 
-	private static final Type txScopeType = Type.getType(TxScope.class);
-	private static final Type scopeTransType = Type.getType(ScopeTrans.class);
-	private static final Type helpScopeTrans = Type.getType(HelpScopeTrans.class);
+
+	private static final Type txScopeType = Type.getType("Lcom/avaje/ebean/TxScope;");
+	private static final Type scopeTransType = Type.getType("Lcom/avaje/ebean/common/ScopeTrans;");
+	private static final Type helpScopeTrans = Type.getType("Lcom/avaje/ebean/common/HelpScopeTrans;");
 
 	private final AnnotationInfo annotationInfo;
 
