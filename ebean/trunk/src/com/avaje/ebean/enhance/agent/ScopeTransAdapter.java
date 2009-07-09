@@ -19,9 +19,9 @@ import com.avaje.ebean.enhance.asm.commons.MethodAdviceAdapter;
 public class ScopeTransAdapter extends MethodAdviceAdapter implements EnhanceConstants {
 
 
-	private static final Type txScopeType = Type.getType("Lcom/avaje/ebean/TxScope;");
-	private static final Type scopeTransType = Type.getType("Lcom/avaje/ebean/common/ScopeTrans;");
-	private static final Type helpScopeTrans = Type.getType("Lcom/avaje/ebean/common/HelpScopeTrans;");
+	private static final Type txScopeType = Type.getType("L"+C_TXSCOPE+";");
+	private static final Type scopeTransType = Type.getType(L_SCOPETRANS);
+	private static final Type helpScopeTrans = Type.getType(L_HELPSCOPETRANS);
 
 	private final AnnotationInfo annotationInfo;
 

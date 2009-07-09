@@ -283,7 +283,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	 */
 	public boolean isEmbedded() {
 		return annotations.contains("Ljavax/persistence/Embedded;")
-				|| annotations.contains(L_EmbeddedColumns);
+				|| annotations.contains(L_EMBEDDEDCOLUMNS);
 	}
 
 	/**
