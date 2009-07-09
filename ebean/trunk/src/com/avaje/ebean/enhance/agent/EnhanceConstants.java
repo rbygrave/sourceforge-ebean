@@ -49,10 +49,16 @@ public interface EnhanceConstants {
 
     public static final String L_INTERCEPT = "Lcom/avaje/ebean/bean/EntityBeanIntercept;";
 
-    public static final String L_EmbeddedColumns = "Lcom/avaje/ebean/annotation/EmbeddedColumns;";
+    public static final String L_EMBEDDEDCOLUMNS = "Lcom/avaje/ebean/annotation/EmbeddedColumns;";
 
+    public static final String L_SCOPETRANS = "Lcom/avaje/ebean/common/ScopeTrans;";
+    
+    public static final String L_HELPSCOPETRANS ="Lcom/avaje/ebean/common/HelpScopeTrans;";
+    
     public static final String C_TXTYPE = "com/avaje/ebean/TxType";
+    
     public static final String C_TXSCOPE = "com/avaje/ebean/TxScope";
+    
     public static final String C_TXISOLATION = "com/avaje/ebean/TxIsolation";
     
     public static final String EBEAN_META_PREFIX = "com/avaje/ebean/meta/";
