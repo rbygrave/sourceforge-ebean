@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.Query;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.collection.BeanList;
-import com.avaje.ebean.collection.BeanMap;
-import com.avaje.ebean.collection.BeanSet;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.common.BeanList;
+import com.avaje.ebean.common.BeanMap;
+import com.avaje.ebean.common.BeanSet;
 
 /**
  * Creates the BeanCollections.

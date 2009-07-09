@@ -22,8 +22,8 @@ package com.avaje.ebean.query;
 import java.io.Serializable;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
-import com.avaje.ebean.util.BindParams;
 
 /**
  * Default implementation of OrmUpdate.

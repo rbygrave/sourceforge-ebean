@@ -24,9 +24,9 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.TxType;
 import com.avaje.ebean.annotation.EmbeddedColumns;
 import com.avaje.ebean.annotation.Transactional;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.EnhancedTransactional;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
 import com.avaje.ebean.enhance.asm.Type;
 
 /**

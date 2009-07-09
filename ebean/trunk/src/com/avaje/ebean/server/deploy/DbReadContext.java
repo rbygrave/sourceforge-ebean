@@ -2,9 +2,9 @@ package com.avaje.ebean.server.deploy;
 
 import java.sql.ResultSet;
 
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
-import com.avaje.ebean.common.ObjectGraphNode;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.server.core.PersistenceContext;
 
 /**

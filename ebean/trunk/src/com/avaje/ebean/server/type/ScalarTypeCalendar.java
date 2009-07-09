@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 
-import com.avaje.ebean.util.BasicTypeConverter;
+import com.avaje.ebean.bean.BasicTypeConverter;
 
 /**
  * ScalarType for java.util.Calendar.

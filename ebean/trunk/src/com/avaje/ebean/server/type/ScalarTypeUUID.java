@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.UUID;
 
-import com.avaje.ebean.util.BasicTypeConverter;
+import com.avaje.ebean.bean.BasicTypeConverter;
 
 /**
  * ScalarType for java.util.UUID which converts to and from a VARCHAR database column.

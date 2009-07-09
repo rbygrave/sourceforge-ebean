@@ -30,7 +30,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
 import com.avaje.ebean.annotation.UpdateMode;
-import com.avaje.ebean.config.naming.TableName;
+import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 

@@ -2,7 +2,7 @@ package com.avaje.ebean.server.query;
 
 import java.util.List;
 
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;

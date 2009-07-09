@@ -26,9 +26,8 @@ import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
 
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.control.ServerControl;
 
 /**
  * Provides the API for fetching and saving beans to a particular DataSource.
@@ -99,13 +98,22 @@ public interface EbeanServer {
 	 * Return ServerControl which provides runtime access to control the logging
 	 * and profiling etc.
 	 */
-	public ServerControl getServerControl();
+//	public ServerControl getServerControl();
+
+	public AdminLogging getAdminLogging();
+	public AdminAutofetch getAdminAutofetch();
 
 	/**
 	 * Return the name. This is used with {@link Ebean#getServer(String)} to get
 	 * a EbeanServer that was registered with the Ebean singleton.
 	 */
 	public String getName();
+
+	/**
+	 * Return the BeanState for a given entity bean. <p> This will return null
+	 * if the bean is not an enhanced (or subclassed) entity bean. </p>
+	 */
+	public BeanState getBeanState(Object bean);
 
 	/**
 	 * Return a map of the differences between two objects of the same type.

@@ -21,8 +21,8 @@ package com.avaje.ebean.server.core;
 
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.server.transaction.TransactionEventTable;
-import com.avaje.ebean.util.BindParams;
 
 /**
  * Methods on Public objects that we want to hide from the public API.

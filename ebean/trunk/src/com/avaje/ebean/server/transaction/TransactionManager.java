@@ -29,6 +29,8 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
+import com.avaje.ebean.AdminLogging.TxLogLevel;
+import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.net.Constants;
@@ -157,6 +159,35 @@ public class TransactionManager implements Constants {
 
 		this.onQueryOnly = getOnQueryOnly(value, dataSource);
 	}
+	
+	/**
+	 * Return the logging level for transactions.
+	 */
+	public TxLogLevel getTransactionLogLevel(){
+		return transLogger.getLogLevel();
+	}
+	
+	/**
+	 * Set the log level for transactions.
+	 */
+	public void setTransactionLogLevel(TxLogLevel txLogLevel){
+		transLogger.setLogLevel(txLogLevel);
+	}
+
+	/**
+	 * Return the log sharing mode.
+	 */
+	public TxLogSharing getTransactionLogSharing(){
+		return transLogger.getLogSharing();
+	}
+	
+	/**
+	 * Set the log sharing mode.
+	 */
+	public void setTransactionLogSharing(TxLogSharing txLogSharing){
+		transLogger.setLogSharing(txLogSharing);
+	}
+	
 	
 	/**
 	 * Return the behaviour to use when a query only transaction is committed.

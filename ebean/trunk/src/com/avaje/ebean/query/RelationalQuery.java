@@ -2,7 +2,7 @@ package com.avaje.ebean.query;
 
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlQueryListener;
-import com.avaje.ebean.util.BindParams;
+import com.avaje.ebean.bean.BindParams;
 
 /**
  * SQL query - Internal extension to SqlQuery.

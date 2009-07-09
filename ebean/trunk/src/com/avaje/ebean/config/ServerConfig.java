@@ -12,8 +12,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.avaje.ebean.AdminLogging.StmtLogLevel;
+import com.avaje.ebean.AdminLogging.TxLogSharing;
+import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.config.naming.NamingConvention;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -75,19 +77,19 @@ public class ServerConfig {
 	private String transactionLogDirectory;
 
 	/** The transaction logging. */
-	private TransactionLogging transactionLogging = TransactionLogging.ALL;
+	private TxLogLevel transactionLogging = TxLogLevel.ALL;
 
 	/** The transaction log sharing. */
-	private TransactionLogSharing transactionLogSharing = TransactionLogSharing.EXPLICIT;
+	private TxLogSharing transactionLogSharing = TxLogSharing.EXPLICIT;
 
 	/** The insert update delete log level. */
-	private StatementLogLevel insertUpdateDeleteLogLevel = StatementLogLevel.SQL;
+	private StmtLogLevel iudLogLevel = StmtLogLevel.SQL;
 
 	/** The find id log level. */
-	private StatementLogLevel findIdLogLevel = StatementLogLevel.SQL;
+	private StmtLogLevel queryLogLevel = StmtLogLevel.SQL;
 
 	/** The find many log level. */
-	private StatementLogLevel findManyLogLevel = StatementLogLevel.SQL;
+	private StmtLogLevel sqlQueryLogLevel = StmtLogLevel.SQL;
 
 
 	/** The data source. */
@@ -393,26 +395,26 @@ public class ServerConfig {
 	/**
 	 * Return the amount of transaction logging.
 	 */
-	public TransactionLogging getTransactionLogging() {
+	public TxLogLevel getTransactionLogging() {
 		return transactionLogging;
 	}
 
 	/**
 	 * Set the amount (None, Explict, All) of transaction logging.
 	 */
-	public void setTransactionLogging(TransactionLogging logging) {
+	public void setTransactionLogging(TxLogLevel logging) {
 		this.transactionLogging = logging;
 	}
 
 	/**
 	 * Return how transactions should share log files.
 	 */
-	public TransactionLogSharing getTransactionLogSharing() {
+	public TxLogSharing getTransactionLogSharing() {
 		if (externalTransactionManager != null){
 			// with external transaction managers we need to share a
 			// single transaction log file as we don't get notified
 			// of commit/rollback events
-			return TransactionLogSharing.ALL;
+			return TxLogSharing.ALL;
 		}
 		return transactionLogSharing;
 	}
@@ -420,7 +422,7 @@ public class ServerConfig {
 	/**
 	 * Set how the transaction should share log files.
 	 */
-	public void setTransactionLogSharing(TransactionLogSharing logSharing) {
+	public void setTransactionLogSharing(TxLogSharing logSharing) {
 		this.transactionLogSharing = logSharing;
 	}
 
@@ -525,43 +527,43 @@ public class ServerConfig {
 	/**
 	 * Return the logging level on Insert Update and Delete statements.
 	 */
-	public StatementLogLevel getInsertUpdateDeleteLogLevel() {
-		return insertUpdateDeleteLogLevel;
+	public StmtLogLevel getIudLogLevel() {
+		return iudLogLevel;
 	}
 
 	/**
 	 * Set the logging level on Insert Update and Delete statements.
 	 */
-	public void setInsertUpdateDeleteLogLevel(StatementLogLevel iudLoglevel) {
-		this.insertUpdateDeleteLogLevel = iudLoglevel;
+	public void setIudLogLevel(StmtLogLevel iudLoglevel) {
+		this.iudLogLevel = iudLoglevel;
 	}
 
 	/**
 	 * Return the logging level on Find by Id (or find unique) statements.
 	 */
-	public StatementLogLevel getFindIdLogLevel() {
-		return findIdLogLevel;
+	public StmtLogLevel getQueryLogLevel() {
+		return queryLogLevel;
 	}
 
 	/**
 	 * set the logging level on Find by Id (or find unique) statements.
 	 */
-	public void setFindIdLogLevel(StatementLogLevel findIdLogLevel) {
-		this.findIdLogLevel = findIdLogLevel;
+	public void setQueryLogLevel(StmtLogLevel queryLogLevel) {
+		this.queryLogLevel = queryLogLevel;
 	}
 
 	/**
 	 * Return the logging level on FindMany statements.
 	 */
-	public StatementLogLevel getFindManyLogLevel() {
-		return findManyLogLevel;
+	public StmtLogLevel getSqlQueryLogLevel() {
+		return sqlQueryLogLevel;
 	}
 
 	/**
 	 * Set the logging level on FindMany statements.
 	 */
-	public void setFindManyLogLevel(StatementLogLevel findManyLogLevel) {
-		this.findManyLogLevel = findManyLogLevel;
+	public void setSqlQueryLogLevel(StmtLogLevel sqlQueryLogLevel) {
+		this.sqlQueryLogLevel = sqlQueryLogLevel;
 	}
 
 	/**
@@ -725,8 +727,8 @@ public class ServerConfig {
 		ddlGenerate = p.getBoolean("ddl.generate", false);
 		ddlRun = p.getBoolean("ddl.run", false);
 
-		transactionLogging = p.getEnum(TransactionLogging.class, "logging", TransactionLogging.ALL);//"log.level"
-		transactionLogSharing = p.getEnum(TransactionLogSharing.class, "logsharing", TransactionLogSharing.EXPLICIT);//"log.sharing"
+		transactionLogging = p.getEnum(TxLogLevel.class, "logging", TxLogLevel.ALL);//"log.level"
+		transactionLogSharing = p.getEnum(TxLogSharing.class, "logsharing", TxLogSharing.EXPLICIT);//"log.sharing"
 
 		debugSql = p.getBoolean("debug.sql", false);
 		debugLazyLoad = p.getBoolean("debug.lazyload", false);
@@ -735,9 +737,9 @@ public class ServerConfig {
 		transactionLogDirectory = p.get("log.directory", "logs");
 
 
-		insertUpdateDeleteLogLevel = p.getEnum(StatementLogLevel.class, "logging.iud", StatementLogLevel.SQL);
-		findIdLogLevel = p.getEnum(StatementLogLevel.class, "logging.findId", StatementLogLevel.SQL);
-		findManyLogLevel = p.getEnum(StatementLogLevel.class, "logging.findMany", StatementLogLevel.SQL);
+		iudLogLevel = p.getEnum(StmtLogLevel.class, "logging.iud", StmtLogLevel.SQL);
+		sqlQueryLogLevel = p.getEnum(StmtLogLevel.class, "logging.sqlquery", StmtLogLevel.SQL);
+		queryLogLevel = p.getEnum(StmtLogLevel.class, "logging.query", StmtLogLevel.SQL);
 
 		classes = getClasses(p);
 	}

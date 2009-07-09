@@ -24,10 +24,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.AdminLogging.TxLogSharing;
+import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.config.TransactionLogSharing;
-import com.avaje.ebean.config.TransactionLogging;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
 import com.avaje.ebean.server.transaction.log.LogTime;
@@ -72,19 +72,19 @@ public class TransactionLogManager {
 
 	private final String[] logSep = { "", "_" };
 
-	final Map<String, TransactionLogger> loggerMap = new ConcurrentHashMap<String, TransactionLogger>(200);
+	private final Map<String, TransactionLogger> loggerMap = new ConcurrentHashMap<String, TransactionLogger>(200);
 
-	final String sharedLogFileName;
+	private final String sharedLogFileName;
 
-	final String baseDir;
+	private final String baseDir;
 	
-	final String serverName;
+	private final String serverName;
 
-	TransactionLogging logLevel;
+	private TxLogLevel logLevel;
 
-	TransactionLogSharing logSharing;
+	private TxLogSharing logSharing;
 
-	final TransactionLogger sharedLogger;
+	private final TransactionLogger sharedLogger;
 
 
 	/**
@@ -109,7 +109,7 @@ public class TransactionLogManager {
 		}
 		this.baseDir = dir;
 
-		if (logLevel == TransactionLogging.NONE){
+		if (logLevel == TxLogLevel.NONE){
 			String m = "Transaction logging is OFF  ... ebean.log.level=0";
 			logger.info(m);
 		} else {
@@ -132,8 +132,22 @@ public class TransactionLogManager {
 	/**
 	 * Set the logging level.
 	 */
-	public void setLogLevel(TransactionLogging logLevel) {
+	public void setLogLevel(TxLogLevel logLevel) {
 		this.logLevel = logLevel;
+	}
+
+	/**
+	 * Return the log level.
+	 */
+	public TxLogLevel getLogLevel() {
+		return logLevel;
+	}
+
+	/**
+	 * Return the log sharing mode.
+	 */
+	public TxLogSharing getLogSharing() {
+		return logSharing;
 	}
 
 	/**
@@ -145,7 +159,7 @@ public class TransactionLogManager {
 	 * log.
 	 * </p>
 	 */
-	public void setLogSharing(TransactionLogSharing logSharing) {
+	public void setLogSharing(TxLogSharing logSharing) {
 		this.logSharing = logSharing;
 	}
 
@@ -201,10 +215,10 @@ public class TransactionLogManager {
 	 */
 	private TransactionLogger getLogger(ServerTransaction t) {
 		
-		if (logSharing == TransactionLogSharing.ALL) {
+		if (logSharing == TxLogSharing.ALL) {
 			return sharedLogger;
 		}
-		if (logSharing == TransactionLogSharing.EXPLICIT && !t.isExplicit()) {
+		if (logSharing == TxLogSharing.EXPLICIT && !t.isExplicit()) {
 			return sharedLogger;
 		}
 

@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.common.EntityBean;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.parse.DeployInheritInfo;

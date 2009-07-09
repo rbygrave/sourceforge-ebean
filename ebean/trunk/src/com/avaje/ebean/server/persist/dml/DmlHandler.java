@@ -27,11 +27,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.common.EntityBeanIntercept;
-import com.avaje.ebean.control.LogControl;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.BatchPostExecute;
 import com.avaje.ebean.server.persist.BatchedPstmt;
 import com.avaje.ebean.server.persist.BatchedPstmtHolder;
@@ -84,7 +84,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		
 		transaction = persistRequest.getTransaction();
 		logLevel = persistRequest.getLogLevel();
-		if (logLevel >= LogControl.LOG_BIND) {
+		if (logLevel >= MAdminLogging.BIND) {
 			loggingBind = true;
 			bindLog = new StringBuilder();
 		} else {
@@ -139,7 +139,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Log the bind information to the transaction log.
 	 */
 	protected void logBinding() {
-		if (logLevel >= LogControl.LOG_BIND) {
+		if (logLevel >= MAdminLogging.BIND) {
 			if (transaction.isLoggingOn()) {
 				transaction.log(bindLog.toString());
 			}
@@ -150,7 +150,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Log the sql to the transaction log.
 	 */
 	protected void logSql(String sql) {
-		if (logLevel >= LogControl.LOG_SQL) {
+		if (logLevel >= MAdminLogging.SQL) {
 			if (transaction.isLoggingOn()) {
 				transaction.log(sql);
 			}

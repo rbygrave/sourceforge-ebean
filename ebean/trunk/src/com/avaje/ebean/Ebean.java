@@ -29,10 +29,8 @@ import java.util.logging.Logger;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.common.EntityBean;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.server.core.DefaultBeanState;
 import com.avaje.ebean.server.core.ProtectedMethod;
 
 /**
@@ -113,7 +111,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "2.0.0-beta";
+	private static final String EBVERSION = "2.0.0-beta2";
 
 	static {
 		ProtectedMethodImpl pa = new ProtectedMethodImpl();
@@ -991,12 +989,6 @@ public final class Ebean {
 	 * if the bean is not an enhanced (or subclassed) entity bean. </p>
 	 */
 	public static BeanState getBeanState(Object bean) {
-		if (bean instanceof EntityBean) {
-			return new DefaultBeanState((EntityBean) bean);
-		}
-		// if using "subclassing" (not enhancement) this will
-		// return null for 'vanilla' instances (not subclassed)
-		return null;
-		// throw new PersistenceException("The bean is not an EntityBean");
+		return serverMgr.getPrimaryServer().getBeanState(bean);
 	}
 }

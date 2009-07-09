@@ -13,10 +13,10 @@ import java.util.logging.Level;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.common.CallStack;
-import com.avaje.ebean.common.NodeUsageCollector;
-import com.avaje.ebean.common.ObjectGraphNode;
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.CallStack;
+import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;

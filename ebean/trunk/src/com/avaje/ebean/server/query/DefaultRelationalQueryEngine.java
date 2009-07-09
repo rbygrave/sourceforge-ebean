@@ -32,18 +32,17 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.SqlRow;
-import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.query.RelationalQuery;
 import com.avaje.ebean.server.core.RelationalQueryEngine;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.core.ServerTransaction;
-import com.avaje.ebean.server.jmx.MLogControl;
+import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
-import com.avaje.ebean.util.Message;
 
 /**
  * Perform native sql fetches.
@@ -56,9 +55,9 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
 	private final Binder binder;
 
-	private final MLogControl logControl;
+	private final MAdminLogging logControl;
 
-	public DefaultRelationalQueryEngine(MLogControl logControl, Binder binder) {
+	public DefaultRelationalQueryEngine(MAdminLogging logControl, Binder binder) {
 		this.binder = binder;
 		this.logControl = logControl;
 		this.defaultMaxRows = GlobalProperties.getInt("nativesql.defaultmaxrows",100000);
@@ -100,7 +99,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				bindLog = binder.bind(bindParams, 0, pstmt);
 			}
 
-			if (logControl.getSqlQueryLevel() >= LogControl.LOG_SQL) {
+			if (logControl.isLogSqlQuery(MAdminLogging.SQL)) {
 				String sOut = sql.replace(Constants.NEW_LINE, ' ');
 				sOut = sOut.replace(Constants.CARRIAGE_RETURN, ' ');
 				t.log(sOut);
@@ -167,7 +166,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				beanColl.setFinishedFetch(true);
 			}
 
-			if (logControl.getSqlQueryLevel() >= LogControl.LOG_SUMMARY) {
+			if (logControl.isLogSqlQuery(MAdminLogging.SUMMARY)) {
 
 				long exeTime = System.currentTimeMillis() - startTime;
 

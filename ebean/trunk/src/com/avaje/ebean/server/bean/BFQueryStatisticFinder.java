@@ -6,10 +6,10 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.collection.BeanCollection;
-import com.avaje.ebean.collection.BeanList;
+import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanDescriptor;

@@ -23,15 +23,14 @@ import java.sql.SQLException;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.control.LogControl;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.jmx.MLogControl;
+import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
 import com.avaje.ebean.server.persist.Binder;
-import com.avaje.ebean.util.Message;
 
 /**
  * Handles the Object Relational fetching.
@@ -45,9 +44,9 @@ public class CQueryEngine {
 
 	private final CQueryBuilder queryBuilder;
 
-	private final MLogControl logControl;
+	private final MAdminLogging logControl;
 
-	public CQueryEngine(DatabasePlatform dbPlatform, MLogControl logControl, Binder binder) {
+	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, Binder binder) {
 
 		this.logControl = logControl;
 		this.queryBuilder = new CQueryBuilder(dbPlatform, binder);
@@ -73,13 +72,13 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				System.out.println(sql);
 			}
-			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SQL) {
+			if (logControl.isLogQuery(MAdminLogging.SQL)) {
 				request.getTransaction().log(sql);
 			}
 
 			int rowCount = rcQuery.findRowCount();
 
-			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SUMMARY) {
+			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				request.getTransaction().log(rcQuery.getSummary());
 			}
 
@@ -104,7 +103,7 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				logSqlToConsole(cquery);
 			}
-			if (logControl.getQueryManyLevel() >= LogControl.LOG_SQL) {
+			if (logControl.isLogQuery(MAdminLogging.SQL)) {
 				logSql(cquery);
 			}
 
@@ -122,7 +121,7 @@ public class CQueryEngine {
 				threadPool.assign(fetch, true);
 			}
 
-			if (logControl.getQueryManyLevel() >= LogControl.LOG_SUMMARY) {
+			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				logFindManySummary(cquery);
 			}
 
@@ -157,7 +156,7 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				logSqlToConsole(cquery);
 			}
-			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SQL) {
+			if (logControl.isLogQuery(MAdminLogging.SQL)) {
 				logSql(cquery);
 			}
 
@@ -167,7 +166,7 @@ public class CQueryEngine {
 				bean = cquery.getLoadedBean();
 			}
 
-			if (logControl.getQueryByIdLevel() >= LogControl.LOG_SUMMARY) {
+			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				logFindSummary(cquery);
 			}
 

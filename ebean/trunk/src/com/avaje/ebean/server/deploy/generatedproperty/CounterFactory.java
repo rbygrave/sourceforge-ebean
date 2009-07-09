@@ -26,7 +26,6 @@ import java.sql.Types;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebean.util.DataTypes;
 
 /**
  * Creates "Counter" GeneratedProperty for various types of number.
@@ -76,7 +75,7 @@ public class CounterFactory {
 			return Types.REAL;
 		}
 		if (propType.equals(BigInteger.class)){
-			return DataTypes.MATH_BIGINTEGER;
+			return Types.BIGINT;
 		}
 		String msg = "Can not support Counter for type "+propType.getName();
 		throw new PersistenceException(msg);

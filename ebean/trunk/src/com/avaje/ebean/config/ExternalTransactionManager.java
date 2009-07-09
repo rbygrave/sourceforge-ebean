@@ -1,6 +1,5 @@
 package com.avaje.ebean.config;
 
-import com.avaje.ebean.server.transaction.TransactionManager;
 
 /**
  * Provides awareness of externally managed transactions.
@@ -9,8 +8,11 @@ public interface ExternalTransactionManager {
 
 	/**
 	 * Set the transaction manager.
+	 * <p>
+	 * This will change when SPI is published but will do for now. 
+	 * </p>
 	 */
-	public void setTransactionManager(TransactionManager transactionManager);
+	public void setTransactionManager(Object transactionManager);
 
 	/**
 	 * Return the current transaction or null if there is none.

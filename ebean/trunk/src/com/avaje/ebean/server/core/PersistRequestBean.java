@@ -31,18 +31,18 @@ import com.avaje.ebean.ValidationException;
 import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.BeanPersistRequest;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.EntityBeanIntercept;
-import com.avaje.ebean.control.LogControl;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.persist.PersistExecute;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 import com.avaje.ebean.server.transaction.RemoteBeanPersist;
 import com.avaje.ebean.server.transaction.TransactionEvent;
-import com.avaje.ebean.util.Message;
 
 /**
  * PersistRequest for insert update or delete of a bean.
@@ -441,7 +441,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
         addEvent();
 
         if (transaction.isLoggingOn()) {
-        	if (logLevel >= LogControl.LOG_SUMMARY){
+        	if (logLevel >= MAdminLogging.SUMMARY){
         		logSummary();
         	}
         }

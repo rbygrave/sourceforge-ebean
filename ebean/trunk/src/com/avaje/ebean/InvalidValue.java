@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.server.validate.Validator;
-
 /**
  * Invalid value returned from validation rules.
  * <p>
@@ -57,19 +55,19 @@ public class InvalidValue implements Serializable {
 
 	private static final Object[] EMPTY = new Object[0];
 
-	final String beanType;
+	private final String beanType;
 
-	final String propertyName;
+	private final String propertyName;
 
-	final String validatorKey;
+	private final String validatorKey;
 
-	final Object value;
+	private final Object value;
 
-	final InvalidValue[] children;
+	private final InvalidValue[] children;
 
-	final Object[] validatorAttributes;
+	private final Object[] validatorAttributes;
 
-	String message;
+	private String message;
 
 	public InvalidValue(String validatorKey, String beanType, Object bean, InvalidValue[] children) {
 		this.validatorKey = validatorKey;
@@ -80,9 +78,9 @@ public class InvalidValue implements Serializable {
 		this.children = children;
 	}
 
-	public InvalidValue(Validator validator, String beanType, String propertyName, Object value) {
-		this.validatorKey = validator.getKey();
-		this.validatorAttributes = validator.getAttributes();
+	public InvalidValue(String validatorKey, Object[] validatorAttributes, String beanType, String propertyName, Object value) {
+		this.validatorKey = validatorKey;
+		this.validatorAttributes = validatorAttributes;
 		this.beanType = beanType;
 		this.propertyName = propertyName;
 		this.value = value;

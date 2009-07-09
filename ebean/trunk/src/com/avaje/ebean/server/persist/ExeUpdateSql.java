@@ -27,12 +27,12 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.ProtectedMethod;
 import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql.SqlType;
 import com.avaje.ebean.server.util.BindParamsParser;
-import com.avaje.ebean.util.BindParams;
 
 /**
  * Executes the UpdateSql requests.

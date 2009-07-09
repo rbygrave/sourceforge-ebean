@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.common.CallStack;
-import com.avaje.ebean.common.EntityBean;
-import com.avaje.ebean.common.ObjectGraphNode;
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.bean.CallStack;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.expression.InternalExpressionList;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.TableJoin;
-import com.avaje.ebean.util.BindParams;
 
 /**
  * Object Relational query - Internal extension to Query object.

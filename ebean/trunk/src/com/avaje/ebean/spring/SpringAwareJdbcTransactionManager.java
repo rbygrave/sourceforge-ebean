@@ -60,8 +60,8 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
 	}
 
 	
-	public void setTransactionManager(TransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
+	public void setTransactionManager(Object txnMgr) {
+		this.transactionManager = (TransactionManager)txnMgr;
 		this.dataSource = transactionManager.getDataSource();
 		this.serverName = transactionManager.getServerName();
 	}

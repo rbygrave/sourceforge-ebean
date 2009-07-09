@@ -28,7 +28,7 @@ import java.sql.Types;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalTime;
 
-import com.avaje.ebean.util.BasicTypeConverter;
+import com.avaje.ebean.bean.BasicTypeConverter;
 
 /**
  * ScalarType for Joda LocalTime. This maps to a JDBC Time.

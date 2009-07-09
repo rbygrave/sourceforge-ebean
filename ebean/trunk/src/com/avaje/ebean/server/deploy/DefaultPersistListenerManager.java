@@ -25,7 +25,6 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanPersistListener;
-import com.avaje.ebean.util.ParamTypeUtil;
 
 /**
  * Default implementation for BeanFinderFactory.

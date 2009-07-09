@@ -1,39 +1,37 @@
 package com.avaje.ebean.config.dbplatform;
 
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 
 /**
  * Used to support DB specific syntax for DDL generation.
  */
 public class DbDdlSyntax {
 
-	boolean renderIndexForFkey = true;
+	private boolean renderIndexForFkey = true;
 	
-	int maxConstraintNameLength= 32;
+	private int maxConstraintNameLength= 32;
 	
-	int columnNameWidth = 25;
+	private int columnNameWidth = 25;
 	
-	String dropTableCascade;
+	private String dropTableCascade;
 	
-	String newLine = "\r\n";
+	private String newLine = "\r\n";
 	
-	String identity = "auto_increment";
+	private String identity = "auto_increment";
 	
-	String pkPrefix = "pk_";
+	private String pkPrefix = "pk_";
 	
-	String disableReferentialIntegrity;
-	String enableReferentialIntegrity;
+	private String disableReferentialIntegrity;
+	private String enableReferentialIntegrity;
 	
-	String foreignKeySuffix;
+	private String foreignKeySuffix;
 	
 	/**
 	 * Return the primary key name for a given bean descriptor.
 	 */
-	public String getPrimaryKeyName(BeanDescriptor<?> descriptor) {
+	public String getPrimaryKeyName(String tableName) {
 		
 		if (pkPrefix != null){
-			return pkPrefix + descriptor.getBaseTable();
+			return pkPrefix + tableName;
 		}
 		return null;
 	}
@@ -178,26 +176,26 @@ public class DbDdlSyntax {
 		this.maxConstraintNameLength = maxFkeyLength;
 	}
 
-	public String getIndexName(BeanPropertyAssocOne<?> p, int ixCount){
+	public String getIndexName(String table, String propName, int ixCount){
 		
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("ix_");
-		buffer.append(p.getBeanDescriptor().getBaseTable());
+		buffer.append(table);
 		buffer.append("_");
-		buffer.append(p.getName());
+		buffer.append(propName);
 
 		addSuffix(buffer, ixCount);
 
 		return buffer.toString();
 	}
 	
-	public String getForeignKeyName(BeanPropertyAssocOne<?> p, int fkCount) {
+	public String getForeignKeyName(String table, String propName, int fkCount) {
 		
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("fk_");
-		buffer.append(p.getBeanDescriptor().getBaseTable());
+		buffer.append(table);
 		buffer.append("_");
-		buffer.append(p.getName());
+		buffer.append(propName);
 
 		addSuffix(buffer, fkCount);
 

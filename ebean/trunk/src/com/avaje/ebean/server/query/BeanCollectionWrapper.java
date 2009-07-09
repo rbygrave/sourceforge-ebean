@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.avaje.ebean.Query;
-import com.avaje.ebean.collection.BeanCollection;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;

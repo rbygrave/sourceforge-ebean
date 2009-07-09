@@ -27,8 +27,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebean.util.BasicTypeConverter;
-import com.avaje.ebean.util.Message;
+import com.avaje.ebean.bean.BasicTypeConverter;
+import com.avaje.ebean.bean.Message;
 
 /**
  * ScalarType for String.

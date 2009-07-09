@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.config.naming.NamingConvention;
+import com.avaje.ebean.config.NamingConvention;
 
 /**
  * Parses columnMapping (select clause) mapping columns to bean properties.

@@ -30,7 +30,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
 import com.avaje.ebean.annotation.Where;
-import com.avaje.ebean.config.naming.TableName;
+import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanTable;

@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.util.Message;
 
 /**
  * Create a DatabasePlatform from the configuration.

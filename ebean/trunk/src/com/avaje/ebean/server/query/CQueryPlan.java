@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.query;
 
-import com.avaje.ebean.common.ObjectGraphOrigin;
+import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 
