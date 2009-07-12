@@ -467,9 +467,10 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * bean is typically an instance of a dynamically generated class.
 	 * </p>
 	 */
-	public EntityBean createEntityBean(Class<?> type) {
-		BeanDescriptor<?> desc = getBeanDescriptor(type);
-		return desc.createEntityBean();
+	@SuppressWarnings("unchecked")
+	public <T> T createEntityBean(Class<T> type) {
+		BeanDescriptor<T> desc = getBeanDescriptor(type);
+		return (T)desc.createEntityBean();
 	}
 
 	/**
