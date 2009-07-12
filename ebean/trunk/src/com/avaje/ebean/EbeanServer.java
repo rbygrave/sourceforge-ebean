@@ -26,7 +26,6 @@ import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.ServerConfig;
 
 /**
@@ -149,13 +148,18 @@ public interface EbeanServer {
 	public InvalidValue[] validate(Object bean, String propertyName, Object value);
 
 	/**
-	 * Create a new empty EntityBean for a given type.
+	 * Create a new instance of T that is an EntityBean (for subclassing).
 	 * <p>
-	 * Available if a developer wishes to simulate an update with full
-	 * concurrency checking. Otherwise this method is generally not required.
+	 * Note that if you are using enhancement (rather than subclassing) then you
+	 * do not need to use this method and just new up a bean.
+	 * </p>
+	 * <p>
+	 * Potentially useful when using subclassing and you wish to
+	 * programmatically load a entity bean . Otherwise this method is generally
+	 * not required.
 	 * </p>
 	 */
-	public EntityBean createEntityBean(Class<?> type);
+	public <T> T createEntityBean(Class<T> type);
 
 	/**
 	 * Create a named query for an entity bean (refer

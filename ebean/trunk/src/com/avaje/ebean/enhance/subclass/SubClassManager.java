@@ -39,16 +39,16 @@ import com.avaje.ebean.enhance.agent.EnhanceConstants;
  */
 public class SubClassManager implements EnhanceConstants {
 
-	final ConcurrentHashMap<String,Class<?>> clzMap;
+	private final ConcurrentHashMap<String,Class<?>> clzMap;
 
-	final SubClassFactory subclassFactory;
+	private final SubClassFactory subclassFactory;
 
-	final String serverName;
+	private final String serverName;
 
 	/**
 	 * The log level for debugging subclass generation/enhancement.
 	 */
-	final int logLevel;
+	private final int logLevel;
 	
 	/**
 	 * Construct with the ClassLoader used to load Ebean.class.
@@ -86,19 +86,15 @@ public class SubClassManager implements EnhanceConstants {
 	 */
 	public Class<?> resolve(String name) {
 
-		String superName = SubClassUtil.getSuperClassName(name);
-
-		Class<?> clz = (Class<?>) clzMap.get(superName);
-		if (clz == null) {
-			synchronized (this) {
-				clz = (Class<?>) clzMap.get(superName);
-				if (clz == null) {
-					clz = createClass(superName);
-					clzMap.put(superName, clz);
-				}
+		synchronized (this) {
+			String superName = SubClassUtil.getSuperClassName(name);	
+			Class<?> clz = (Class<?>) clzMap.get(superName);
+			if (clz == null) {
+				clz = createClass(superName);
+				clzMap.put(superName, clz);
 			}
+			return clz;
 		}
-		return clz;
 	}
 
 	private Class<?> createClass(String name) {
