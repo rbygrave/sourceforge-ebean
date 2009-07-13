@@ -19,64 +19,39 @@
  */
 package com.avaje.ebean.server.deploy;
 
-import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.PersistenceException;
-
-import com.avaje.ebean.event.BeanPersistAdapter;
 import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.server.core.BootupClasses;
+import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 
 /**
  * Default implementation for creating BeanControllers.
  */
-public class DefaultPersistControllerManager implements PersistControllerManager {
+public class DefaultPersistControllerManager {
  
-    HashMap<Class<?>,BeanPersistController<?>> registerFor = new HashMap<Class<?>,BeanPersistController<?>>();
+    private final List<BeanPersistController> list;
     
-    public int createControllers(List<Class<?>> controllerList){
+    public DefaultPersistControllerManager(BootupClasses bootupClasses){
     	
-    	for (Class<?> cls : controllerList) {
-			Class<?> entityType = getEntityClass(cls);
-    		try {
-	    		BeanPersistController<?> controller = (BeanPersistController<?>)cls.newInstance();
-    			registerFor.put(entityType, controller);	    		
-	        } catch (Exception ex){
-	            throw new PersistenceException(ex);
-	        }
-		}
-    	
-    	return registerFor.size();
+    	list = bootupClasses.getBeanPersistControllers();
     }
 	
     public int getRegisterCount() {
-		return registerFor.size();
+		return list.size();
 	}
 	
     /**
      * Return the BeanPersistController for a given entity type.
      */
-    @SuppressWarnings("unchecked")
-	public <T> BeanPersistController<T> getController(Class<T> entityType){
-    	return (BeanPersistController<T>)registerFor.get(entityType);
+	public void addPersistControllers(DeployBeanDescriptor<?> deployDesc){
+		
+		for (int i = 0; i < list.size(); i++) {
+			BeanPersistController c = list.get(i);
+			if (c.isRegisterFor(deployDesc.getBeanType())){
+				deployDesc.addPersistController(c);
+			}
+		}		
     }
     
-	/**
-	 * Find the entity class given the controller class.
-	 * <p>
-	 * This uses reflection to find the generics parameter type. 
-	 * </p>
-	 */	
-    private Class<?> getEntityClass(Class<?> controller){
-    	
-		Class<?> cls = ParamTypeUtil.findParamType(controller, BeanPersistController.class);
-		if (cls == null){
-			cls = ParamTypeUtil.findParamType(controller, BeanPersistAdapter.class);
-		}
-		if (cls == null){
-			String msg = "Could not determine the entity class (generics parameter type) from "+controller+" using reflection.";
-			throw new PersistenceException(msg);
-		}
-		return cls;
-    }
 }

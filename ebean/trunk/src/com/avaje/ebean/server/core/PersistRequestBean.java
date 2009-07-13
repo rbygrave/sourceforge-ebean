@@ -60,7 +60,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	/**
 	 * For per post insert update delete control.
 	 */
-	private final BeanPersistController<T> controller;
+	private final BeanPersistController controller;
 	
 	/**
 	 * The associated intercept.
@@ -318,7 +318,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	 * Return the controller if there is one associated with this type of bean.
 	 * This returns null if there is no controller associated.
 	 */
-	public BeanPersistController<T> getBeanController() {
+	public BeanPersistController getBeanController() {
 		return controller;
 	}
 	/**

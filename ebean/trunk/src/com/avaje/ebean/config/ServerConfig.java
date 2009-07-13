@@ -16,6 +16,7 @@ import com.avaje.ebean.AdminLogging.StmtLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.event.BeanPersistController;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -112,6 +113,8 @@ public class ServerConfig {
 
 	/** The update changes only. */
 	private boolean updateChangesOnly = true;
+	
+	private List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
 	
 	/**
 	 * Return the name of the EbeanServer.
@@ -700,6 +703,27 @@ public class ServerConfig {
 	 */
 	public void setResourceDirectory(String resourceDirectory) {
 		this.resourceDirectory = resourceDirectory;
+	}
+
+	/**
+	 * Register a BeanPersistController instance.
+	 */
+	public void add(BeanPersistController beanPersistController){
+		persistControllers.add(beanPersistController);
+	}
+	
+	/**
+	 * Return the BeanPersistController instances.
+	 */
+	public List<BeanPersistController> getPersistControllers() {
+		return persistControllers;
+	}
+
+	/**
+	 * Register all the BeanPersistController instances.
+	 */
+	public void setPersistControllers(List<BeanPersistController> persistControllers) {
+		this.persistControllers = persistControllers;
 	}
 
 	/**

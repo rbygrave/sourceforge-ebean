@@ -88,7 +88,7 @@ public final class DefaultPersistExecute implements PersistExecute {
     	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
-    	BeanPersistController<T> controller = request.getBeanController();
+    	BeanPersistController controller = request.getBeanController();
 		if (controller == null || controller.preInsert(request)) {
 
 			persister.insert(request);
@@ -107,7 +107,7 @@ public final class DefaultPersistExecute implements PersistExecute {
     	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
-    	BeanPersistController<T> controller = request.getBeanController();
+    	BeanPersistController controller = request.getBeanController();
 		if (controller == null || controller.preUpdate(request)) {
 			
 			persister.update(request);
@@ -127,7 +127,7 @@ public final class DefaultPersistExecute implements PersistExecute {
     	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
-    	BeanPersistController<T> controller = request.getBeanController();
+    	BeanPersistController controller = request.getBeanController();
 		if (controller == null || controller.preDelete(request)) {
 			
 			persister.delete(request);

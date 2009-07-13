@@ -29,51 +29,51 @@ import java.util.Set;
  * or can be added programmatically via ServerConfiguration.addEntity().
  * </p>
  */
-public abstract class BeanPersistAdapter<T> implements BeanPersistController<T> {
+public abstract class BeanPersistAdapter implements BeanPersistController {
 
 	/**
      * Returns true indicating normal processing should continue.
      */
-    public boolean preDelete(BeanPersistRequest<T> request) {
+    public boolean preDelete(BeanPersistRequest<?> request) {
         return true;
     }
 
     /**
      * Returns true indicating normal processing should continue.
      */
-    public boolean preInsert(BeanPersistRequest<T> request) {
+    public boolean preInsert(BeanPersistRequest<?> request) {
         return true;
     }
 
     /**
      * Returns true indicating normal processing should continue.
      */
-    public boolean preUpdate(BeanPersistRequest<T> request) {
+    public boolean preUpdate(BeanPersistRequest<?> request) {
         return true;
     }
 
     /**
      * Does nothing by default.
      */
-    public void postDelete(BeanPersistRequest<T> request) {
+    public void postDelete(BeanPersistRequest<?> request) {
     }
 
     /**
      * Does nothing by default.
      */
-    public void postInsert(BeanPersistRequest<T> request) {
+    public void postInsert(BeanPersistRequest<?> request) {
     }
 
     /**
      * Does nothing by default.
      */
-    public void postUpdate(BeanPersistRequest<T> request) {
+    public void postUpdate(BeanPersistRequest<?> request) {
     }
 
     /**
      * Does nothing by default.
      */
-    public void postLoad(T bean, Set<String> includedProperties){
+    public void postLoad(Object bean, Set<String> includedProperties){
 	}
 
     
