@@ -172,11 +172,23 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 		
 		return new DefaultServerCacheManager(cacheFactory, beanOptions, queryOptions);
 	}
-	
+
 	/**
-	 * Get the classes (entities, scalarTypes, Listeners etc).
+	 * Get the entities, scalarTypes, Listeners etc combining the
+	 * class registered ones with the already created instances.
 	 */
 	private BootupClasses getBootupClasses(ServerConfig serverConfig) {
+		
+		BootupClasses bootupClasses = getBootupClasses1(serverConfig);
+		bootupClasses.addBeanControllers(serverConfig.getPersistControllers());
+		
+		return bootupClasses;
+	}
+	
+	/**
+	 * Get the class based entities, scalarTypes, Listeners etc.
+	 */
+	private BootupClasses getBootupClasses1(ServerConfig serverConfig) {
 		
 		List<Class<?>> entityClasses = serverConfig.getClasses();
 		if (entityClasses != null && entityClasses.size() > 0){
@@ -192,8 +204,7 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 		}
 
 		// just use classes we can find via class path search
-		return bootupClassSearch.getBootupClasses();
-
+		return bootupClassSearch.getBootupClasses().createCopy();
 	}
 	
 	/**

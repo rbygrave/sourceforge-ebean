@@ -23,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
@@ -40,6 +42,8 @@ import com.avaje.ebean.server.util.ClassPathSearchMatcher;
  */
 public class BootupClasses implements ClassPathSearchMatcher {
 
+	private static final Logger logger = Logger.getLogger(BootupClasses.class.getName());
+	
 	ArrayList<Class<?>> embeddableList = new ArrayList<Class<?>>();
 
 	ArrayList<Class<?>> entityList = new ArrayList<Class<?>>();
@@ -52,6 +56,8 @@ public class BootupClasses implements ClassPathSearchMatcher {
 
 	ArrayList<Class<?>> beanListenerList = new ArrayList<Class<?>>();
 
+	List<BeanPersistController> beanControllerInstances = new ArrayList<BeanPersistController>();
+	
 	public BootupClasses(){
 	}
 	
@@ -84,6 +90,31 @@ public class BootupClasses implements ClassPathSearchMatcher {
 		return new BootupClasses(this);
 	}
 	
+	/**
+	 * Add BeanPersistController instances.
+	 */
+	public void addBeanControllers(List<BeanPersistController> beanControllerInstances) {
+		if (beanControllerInstances != null){
+			this.beanControllerInstances.addAll(beanControllerInstances);
+		}
+	}
+	
+	public List<BeanPersistController> getBeanPersistControllers() {
+		// add class registered BeanPersistController to the
+		// already created instances
+		for (Class<?> cls: beanControllerList) {
+			try {
+				BeanPersistController newInstance = (BeanPersistController)cls.newInstance();
+				beanControllerInstances.add(newInstance);
+			} catch (Exception e){
+				String msg = "Error creating BeanPersistController "+cls;
+				logger.log(Level.SEVERE, msg, e);
+			}
+		}
+		
+		return beanControllerInstances;
+	}
+
 	/**
 	 * Return the list of Embeddable classes.
 	 */

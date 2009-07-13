@@ -37,6 +37,7 @@ import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
+import com.avaje.ebean.server.deploy.ChainedBeanPersistController;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
@@ -147,7 +148,7 @@ public class DeployBeanDescriptor<T> {
 	 * Intercept pre post on insert,update,delete and postLoad(). Server side
 	 * only.
 	 */
-	BeanPersistController<T> controller;
+	List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
 
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -454,15 +455,21 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Return the Controller.
 	 */
-	public BeanPersistController<T> getBeanController() {
-		return controller;
+	public BeanPersistController getBeanController() {
+		if (persistControllers.size() == 0){
+			return null;
+		} else if (persistControllers.size() == 1) {
+			return persistControllers.get(0);
+		} else {
+			return new ChainedBeanPersistController(persistControllers);			
+		}
 	}
 
 	/**
 	 * Set the Controller.
 	 */
-	public void setBeanController(BeanPersistController<T> controller) {
-		this.controller = controller;
+	public void addPersistController(BeanPersistController controller) {
+		persistControllers.add(controller);
 	}
 
 	/**

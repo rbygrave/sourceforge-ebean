@@ -57,8 +57,12 @@ import java.util.Set;
  * or can be added programmatically via ServerConfiguration.addEntity().
  * </p>
  */
-public interface BeanPersistController<T> {
+public interface BeanPersistController {
 
+	public int getExecutionOrder();
+	
+	public boolean isRegisterFor(Class<?> cls);
+	
 	/**
 	 * Prior to the insert perform some action. Return true if you want the
 	 * default functionality to continue.
@@ -67,7 +71,7 @@ public interface BeanPersistController<T> {
 	 * do not want the default insert to be performed.
 	 * </p>
 	 */
-	public boolean preInsert(BeanPersistRequest<T> request);
+	public boolean preInsert(BeanPersistRequest<?> request);
 
 	/**
 	 * Prior to the update perform some action. Return true if you want the
@@ -77,7 +81,7 @@ public interface BeanPersistController<T> {
 	 * do not want the default update to be performed.
 	 * </p>
 	 */
-	public boolean preUpdate(BeanPersistRequest<T> request);
+	public boolean preUpdate(BeanPersistRequest<?> request);
 
 	/**
 	 * Prior to the delete perform some action. Return true if you want the
@@ -87,27 +91,27 @@ public interface BeanPersistController<T> {
 	 * do not want the default delete to be performed.
 	 * </p>
 	 */
-	public boolean preDelete(BeanPersistRequest<T> request);
+	public boolean preDelete(BeanPersistRequest<?> request);
 
 	/**
 	 * Called after the insert was performed.
 	 */
-	public void postInsert(BeanPersistRequest<T> request);
+	public void postInsert(BeanPersistRequest<?> request);
 
 	/**
 	 * Called after the update was performed.
 	 */
-	public void postUpdate(BeanPersistRequest<T> request);
+	public void postUpdate(BeanPersistRequest<?> request);
 
 	/**
 	 * Called after the delete was performed.
 	 */
-	public void postDelete(BeanPersistRequest<T> request);
+	public void postDelete(BeanPersistRequest<?> request);
 
 	/**
 	 * Called after every each bean is fetched and loaded from the database. You
 	 * can override this to derive some information to set to the bean.
 	 */
-	public void postLoad(T bean, Set<String> includedProperties);
+	public void postLoad(Object bean, Set<String> includedProperties);
 
 }

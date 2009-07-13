@@ -194,7 +194,7 @@ public class BeanDescriptor<T> {
 	 * Intercept pre post on insert,update,delete and postLoad(). Server side
 	 * only.
 	 */
-	private final BeanPersistController<T> beanController;
+	private final BeanPersistController beanController;
 
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -1359,7 +1359,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * Return the Controller.
 	 */
-	public BeanPersistController<T> getBeanController() {
+	public BeanPersistController getBeanController() {
 		return beanController;
 	}
 

@@ -44,7 +44,6 @@ import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
-import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.server.cache.ServerCacheManager;
@@ -102,7 +101,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private final TypeManager typeManager;
 
-	private final PersistControllerManager persistControllerManager;
+	private final DefaultPersistControllerManager persistControllerManager;
 
 	private final BeanFinderManager beanFinderManager;
 
@@ -173,7 +172,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		
 		this.updateChangesOnly = config.getServerConfig().isUpdateChangesOnly();
 
-		this.persistControllerManager = new DefaultPersistControllerManager();
+		this.persistControllerManager = new DefaultPersistControllerManager(bootupClasses);
 		this.beanFinderManager = new DefaultBeanFinderManager();
 		this.persistListenerManager = new DefaultPersistListenerManager();
 
@@ -372,11 +371,11 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 */
 	private void createListeners() {
 
-		int cc = persistControllerManager.createControllers(bootupClasses.getBeanControllers());
+		int cc = persistControllerManager.getRegisterCount();
 		int fc = beanFinderManager.createBeanFinders(bootupClasses.getBeanFinders());
 		int lc = persistListenerManager.createListeners(bootupClasses.getBeanListeners());
 
-		logger.fine("BeanControllers[" + cc + "] BeanFinders[" + fc + "] BeanListeners[" + lc + "] ");
+		logger.fine("BeanPersistControllers[" + cc + "] BeanFinders[" + fc + "] BeanPersistListeners[" + lc + "] ");
 	}
 
 	/**
@@ -844,12 +843,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		Class<T> beanType = descriptor.getBeanType();
 
-		BeanPersistController<T> controller = persistControllerManager.getController(beanType);
-		if (controller != null) {
-			descriptor.setBeanController(controller);
-			logger.fine("BeanController on[" + descriptor.getFullName() + "] " + controller.getClass().getName());
-
-		}
+		persistControllerManager.addPersistControllers(descriptor);
+		
 		BeanFinder<T> beanFinder = beanFinderManager.getBeanFinder(beanType);
 		if (beanFinder != null) {
 			descriptor.setBeanFinder(beanFinder);
