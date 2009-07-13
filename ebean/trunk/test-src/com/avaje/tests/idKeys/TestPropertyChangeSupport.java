@@ -1,11 +1,5 @@
 package com.avaje.tests.idKeys;
 
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.expression.Expr;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.tests.idKeys.db.AuditLog;
-import com.avaje.tests.lib.EbeanTestCase;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -14,6 +8,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.avaje.ebean.Transaction;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.tests.idKeys.db.AuditLog;
+import com.avaje.tests.lib.EbeanTestCase;
 
 /**
  * Test various aspects of the PropertyChangeSupport
@@ -129,7 +128,7 @@ public class TestPropertyChangeSupport extends EbeanTestCase implements Property
         resetEvent();
 
         List<AuditLog> logs = getServer().find(AuditLog.class)
-                .where(Expr.eq("id", log.getId()))
+                .where().eq("id", log.getId())
                 .select("id")
                 .findList();
 
