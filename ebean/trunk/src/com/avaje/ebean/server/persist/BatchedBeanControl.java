@@ -22,9 +22,9 @@ package com.avaje.ebean.server.persist;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.ServerTransaction;
 
 /**
  * Holds all the batched beans.

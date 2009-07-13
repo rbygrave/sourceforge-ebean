@@ -22,7 +22,7 @@ package com.avaje.ebean.common;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.TxScope;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServer;
 
 /**
  * Helper object to make AOP generated code simpler.

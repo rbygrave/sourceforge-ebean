@@ -21,8 +21,8 @@ package com.avaje.ebean.server.type;
 
 import java.sql.Types;
 
-import com.avaje.ebean.bean.BasicTypeConverter;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.server.core.BasicTypeConverter;
 
 /**
  * Helper to create some default ScalarType objects for Booleans,

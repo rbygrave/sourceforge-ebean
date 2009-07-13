@@ -26,8 +26,8 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.internal.InternalEbeanServerFactory;
 import com.avaje.ebean.server.core.DefaultServerFactory;
-import com.avaje.ebean.server.core.ServerFactory;
 
 /**
  * Creates EbeanServer instances.
@@ -54,7 +54,7 @@ public class EbeanServerFactory {
 
 	private static final Logger logger = Logger.getLogger(EbeanServerFactory.class.getName());
 
-	private static ServerFactory serverFactory = createServerFactory();
+	private static InternalEbeanServerFactory serverFactory = createServerFactory();
 
 	/**
 	 * Create using ebean.properties to configure the server.
@@ -87,7 +87,7 @@ public class EbeanServerFactory {
 		return server;
 	}
 
-	private static ServerFactory createServerFactory() {
+	private static InternalEbeanServerFactory createServerFactory() {
 
 		String implClassName = GlobalProperties.get("ebean.serverfactory", null);
 
@@ -112,7 +112,7 @@ public class EbeanServerFactory {
 			try {
 				// use a client side implementation?
 				Class<?> cz = Class.forName(implClassName);
-				return (ServerFactory) cz.newInstance();
+				return (InternalEbeanServerFactory) cz.newInstance();
 			} catch (Exception ex) {
 				throw new RuntimeException(ex);
 			}

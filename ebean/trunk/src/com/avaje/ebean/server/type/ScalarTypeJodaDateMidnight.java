@@ -27,7 +27,7 @@ import java.sql.Types;
 
 import org.joda.time.DateMidnight;
 
-import com.avaje.ebean.bean.BasicTypeConverter;
+import com.avaje.ebean.server.core.BasicTypeConverter;
 
 /**
  * ScalarType for Joda DateMidnight. This maps to a JDBC Date.

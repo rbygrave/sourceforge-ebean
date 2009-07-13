@@ -33,13 +33,13 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.RelationalQuery;
 import com.avaje.ebean.server.core.RelationalQueryEngine;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.util.BindParamsParser;
@@ -234,7 +234,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 		// it will be pretty common to have 12 or more entries so
 		// to reduce rehashing I am trying to estimate a good
 		// initial capacity for the MapBean to use.
-		SqlRow bean = new SqlRow(initialCapacity, 0.75f);
+		SqlRow bean = new DefaultSqlRow(initialCapacity, 0.75f);
 		
 		int index = 0;
 

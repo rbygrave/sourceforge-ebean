@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 import com.avaje.ebean.TxScope;
 import com.avaje.ebean.enhance.asm.Opcodes;
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 
 /**

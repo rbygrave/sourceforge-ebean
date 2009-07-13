@@ -26,11 +26,10 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.InternalCallableSql;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
-import com.avaje.ebean.server.core.ProtectedMethod;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.util.BindParamsParser;
 
 /**
@@ -94,12 +93,12 @@ public class ExeCallableSql {
 	
     private CallableStatement bindStmt(PersistRequestCallableSql request, boolean batchThisRequest) throws SQLException {
         
-    	CallableSql callableSql = request.getCallableSql();
+    	InternalCallableSql callableSql = request.getCallableSql();
     	ServerTransaction t = request.getTransaction();
     	
     	String sql = callableSql.getSql();
     	
-    	BindParams bindParams = ProtectedMethod.getBindParams(callableSql);
+    	BindParams bindParams = callableSql.getBindParams();
         
     	// process named parameters if required
     	sql = BindParamsParser.parse(bindParams, sql);

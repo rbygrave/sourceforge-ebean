@@ -2,7 +2,6 @@ package com.avaje.ebean.server.query;
 
 import java.util.List;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
@@ -25,7 +24,7 @@ public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 
 	
 	@Override
-	protected void postLoad(DbReadContext cquery, EntityBean loadedBean, Object id) {
+	protected void postLoad(DbReadContext cquery, Object loadedBean, Object id) {
 		
 		// set the current bean with id...
 		cquery.setLoadedBean(loadedBean, id);

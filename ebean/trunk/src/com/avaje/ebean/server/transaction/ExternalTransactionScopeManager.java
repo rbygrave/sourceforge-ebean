@@ -20,7 +20,7 @@
 package com.avaje.ebean.server.transaction;
 
 import com.avaje.ebean.config.ExternalTransactionManager;
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 
 /**
  * A TransactionScopeManager aware of external transaction managers.

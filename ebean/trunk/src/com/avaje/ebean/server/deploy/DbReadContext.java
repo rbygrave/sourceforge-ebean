@@ -2,10 +2,9 @@ package com.avaje.ebean.server.deploy;
 
 import java.sql.ResultSet;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.internal.PersistenceContext;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.
@@ -65,10 +64,10 @@ public interface DbReadContext {
 	/**
 	 * Set back the bean that has just been loaded with its id.
 	 */
-	public void setLoadedBean(EntityBean loadedBean, Object id);
+	public void setLoadedBean(Object loadedBean, Object id);
 
 	/**
 	 * Set back the 'detail' bean that has just been loaded.
 	 */
-	public void setLoadedManyBean(EntityBean loadedBean);
+	public void setLoadedManyBean(Object loadedBean);
 }

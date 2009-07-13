@@ -28,9 +28,9 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**

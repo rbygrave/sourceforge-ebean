@@ -20,9 +20,9 @@
 package com.avaje.ebean.server.net;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.net.CommandContext;
 import com.avaje.ebean.net.Constants;
-import com.avaje.ebean.server.core.InternalEbeanServer;
 
 /**
  * No session support for Cluster event processing.

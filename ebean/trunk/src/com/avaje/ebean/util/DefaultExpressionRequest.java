@@ -2,11 +2,11 @@ package com.avaje.ebean.util;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.expression.ExpressionRequest;
+import com.avaje.ebean.internal.InternalExpressionRequest;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
-public class DefaultExpressionRequest implements ExpressionRequest {
+public class DefaultExpressionRequest implements InternalExpressionRequest {
 
 	final OrmQueryRequest<?> queryRequest;
 	
@@ -27,7 +27,7 @@ public class DefaultExpressionRequest implements ExpressionRequest {
 	}
 
 
-	public ExpressionRequest append(String sql) {
+	public InternalExpressionRequest append(String sql) {
 		sb.append(sql);
 		return this;
 	}

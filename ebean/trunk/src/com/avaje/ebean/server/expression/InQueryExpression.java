@@ -1,0 +1,92 @@
+package com.avaje.ebean.server.expression;
+
+import java.util.List;
+
+import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalExpression;
+import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.server.query.CQuery;
+
+/**
+ * In expression using a sub query.
+ * 
+ * @authors Mario and Rob
+ */
+class InQueryExpression implements InternalExpression {
+
+	private static final long serialVersionUID = 666990277309851644L;
+
+	private final String propertyName;
+
+	private final OrmQuery<?> subQuery;
+
+	private transient CQuery<?> compiledSubQuery;
+
+	public InQueryExpression(String propertyName, OrmQuery<?> subQuery) {
+		this.propertyName = propertyName;
+		this.subQuery = subQuery;
+	}
+
+	public String getPropertyName() {
+		return propertyName;
+	}
+
+	public int queryAutoFetchHash() {
+		int hc = InQueryExpression.class.getName().hashCode();
+		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + subQuery.queryAutofetchHash();
+		return hc;
+	}
+
+	public int queryPlanHash(BeanQueryRequest<?> request) {
+
+		// queryPlanHash executes prior to addSql() or addBindValues()
+		// ... so compiledQuery will exist
+		compiledSubQuery = compileSubQuery(request);
+
+		int hc = InQueryExpression.class.getName().hashCode();
+		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + subQuery.queryPlanHash(request);
+		return hc;
+	}
+
+	/**
+	 * Compile/build the sub query.
+	 */
+	private CQuery<?> compileSubQuery(BeanQueryRequest<?> queryRequest) {
+
+		InternalEbeanServer ebeanServer = (InternalEbeanServer) queryRequest.getEbeanServer();
+		return ebeanServer.compileQuery(subQuery, queryRequest.getTransaction());
+	}
+
+	public int queryBindHash() {
+		return subQuery.queryBindHash();
+	}
+
+	public void addSql(InternalExpressionRequest request) {
+
+		String subSelect = compiledSubQuery.getGeneratedSql();
+		subSelect = subSelect.replace('\n', ' ');
+		
+		request.append(" (");
+		request.append(propertyName);
+		request.append(") in (");
+		request.append(subSelect);
+		request.append(") ");
+	}
+
+	public void addBindValues(InternalExpressionRequest request) {
+
+		List<Object> bindParams = compiledSubQuery.getPredicates().getWhereExprBindValues();
+
+		if (bindParams == null) {
+			return;
+		}
+
+		for (int i = 0; i < bindParams.size(); i++) {
+			request.addBindValue(bindParams.get(i));
+		}
+	}
+}

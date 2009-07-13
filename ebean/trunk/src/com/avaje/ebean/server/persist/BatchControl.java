@@ -24,9 +24,9 @@ import java.util.Arrays;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.ServerTransaction;
 
 /**
  * Controls the batch ordering of persist requests.

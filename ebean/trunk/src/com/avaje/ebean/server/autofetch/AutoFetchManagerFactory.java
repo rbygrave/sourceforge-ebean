@@ -10,7 +10,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.server.resource.ResourceManager;
 
 public class AutoFetchManagerFactory {

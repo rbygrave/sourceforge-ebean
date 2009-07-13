@@ -7,7 +7,8 @@ import java.util.Map.Entry;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.server.core.DefaultSqlUpdate;
 
 public class IntersectionRow {
 
@@ -53,7 +54,7 @@ public class IntersectionRow {
 		}
 		sb.append(")");
 		
-		return new SqlUpdate(server, sb.toString(), bindParams);
+		return new DefaultSqlUpdate(server, sb.toString(), bindParams);
 	}
 
 	public SqlUpdate createDelete(EbeanServer server){
@@ -79,7 +80,7 @@ public class IntersectionRow {
 			bindParams.setParameter(count, entry.getValue());
 		}
 		
-		return new SqlUpdate(server, sb.toString(), bindParams);		
+		return new DefaultSqlUpdate(server, sb.toString(), bindParams);		
 	}
 
 }

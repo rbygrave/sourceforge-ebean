@@ -37,9 +37,6 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanPersistController;
-import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.InternalEbean;
@@ -51,6 +48,10 @@ import com.avaje.ebean.el.ElComparatorProperty;
 import com.avaje.ebean.el.ElPropertyChainBuilder;
 import com.avaje.ebean.el.ElPropertyDeploy;
 import com.avaje.ebean.el.ElPropertyValue;
+import com.avaje.ebean.event.BeanFinder;
+import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.cache.ServerCache;
@@ -64,7 +65,6 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyLists;
 import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.reflect.BeanReflect;
-import com.avaje.ebean.server.transaction.TransactionEventTable.TableIUD;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
 import com.avaje.ebean.util.SortByClause;
@@ -951,7 +951,8 @@ public class BeanDescriptor<T> {
 	/**
 	 * Create a reference bean based on the id.
 	 */
-	public EntityBean createReference(Object id, Object parent, ReferenceOptions options) {
+	@SuppressWarnings("unchecked")
+	public T createReference(Object id, Object parent, ReferenceOptions options) {
 
 		try {
 
@@ -972,7 +973,7 @@ public class BeanDescriptor<T> {
 
 			ebi.setReference();
 
-			return eb;
+			return (T)eb;
 
 		} catch (Exception ex) {
 			throw new PersistenceException(ex);

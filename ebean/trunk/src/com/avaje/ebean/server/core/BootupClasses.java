@@ -28,9 +28,9 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanPersistController;
-import com.avaje.ebean.bean.BeanPersistListener;
+import com.avaje.ebean.event.BeanFinder;
+import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.util.ClassPathSearchMatcher;
 

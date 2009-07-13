@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.avaje.ebean.internal.TransactionEventTable;
+
 /**
  * Holds information for a transaction that is sent around the cluster.
  * <p>

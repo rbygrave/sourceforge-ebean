@@ -32,16 +32,15 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.core.PersistenceContext;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
 import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -67,26 +66,26 @@ public class CQuery<T> implements DbReadContext {
 
 	private static final int GLOBAL_ROW_LIMIT = 1000000;
 
-	int rsetIndex;
+	private int rsetIndex;
 
 	/**
 	 * The resultSet rows read.
 	 */
-	int rowCount;
+	private int rowCount;
 
 	/**
 	 * The number of master EntityBeans loaded.
 	 */
-	int loadedBeanCount;
+	private int loadedBeanCount;
 
 	/**
 	 * Flag set when no more rows are in the resultSet.
 	 */
-	boolean noMoreRows;
+	private boolean noMoreRows;
 	/**
 	 * Id of loaded 'master' bean.
 	 */
-	Object loadedBeanId;
+	private Object loadedBeanId;
 	/**
 	 * Flag set when 'master' bean changed.
 	 */
@@ -94,144 +93,144 @@ public class CQuery<T> implements DbReadContext {
 	/**
 	 * The 'master' bean just loaded.
 	 */
-	EntityBean loadedBean;
+	private Object loadedBean;
 
 	/**
 	 * Holds the previous loaded bean.
 	 */
-	EntityBean prevLoadedBean;
+	private Object prevLoadedBean;
 
 	/**
 	 * The detail bean just loaded.
 	 */
-	EntityBean loadedManyBean;
+	Object loadedManyBean;
 
 	/**
 	 * The previous 'detail' collection remembered so that for manyToMany we can
 	 * turn on the modify listening.
 	 */
-	BeanCollection<?> prevDetailCollection;
+	private BeanCollection<?> prevDetailCollection;
 
 	/**
 	 * The current 'detail' collection being populated.
 	 */
-	BeanCollection<?> currentDetailCollection;
+	private BeanCollection<?> currentDetailCollection;
 
 	/**
 	 * The 'master' collection being populated.
 	 */
-	final BeanCollection<T> collection;
+	private final BeanCollection<T> collection;
 	/**
 	 * The help for the 'master' collection.
 	 */
-	final BeanCollectionHelp<T> help;
+	private final BeanCollectionHelp<T> help;
 
 	/**
 	 * The overall find request wrapper object.
 	 */
-	final OrmQueryRequest<T> request;
+	private final OrmQueryRequest<T> request;
 
-	final BeanDescriptor<T> desc;
+	private final BeanDescriptor<T> desc;
 
-	final OrmQuery<T> query;
+	private final OrmQuery<T> query;
 
-	final QueryListener<T> queryListener;
+	private final QueryListener<T> queryListener;
 
-	String currentPrefix;
+	private String currentPrefix;
 	
-	/**
-	 * When building a BeanMap result.
-	 */
-	final String mapKey;
+//	/**
+//	 * When building a BeanMap result.
+//	 */
+//	private final String mapKey;
 
 	/**
 	 * Flag set true when reading 'master' and 'detail' beans.
 	 */
-	final boolean manyIncluded;
+	private final boolean manyIncluded;
 
 	/**
 	 * Where clause predicates.
 	 */
-	final CQueryPredicates predicates;
+	private final CQueryPredicates predicates;
 
 	/**
 	 * Object handling the SELECT generation and reading.
 	 */
-	final SqlTree selectClause;
+	private final SqlTree selectClause;
 
-	final boolean rawSql;
+	private final boolean rawSql;
 
 	/**
 	 * The final sql that is generated.
 	 */
-	final String sql;
+	private final String sql;
 
 	/**
 	 * Where clause to show in logs when using an existing query plan.
 	 */
-	final String logWhereSql;
+	private final String logWhereSql;
 
 	/**
 	 * Set to true if the row number column is included in the sql.
 	 */
-	final boolean rowNumberIncluded;
+	private final boolean rowNumberIncluded;
 
 	/**
 	 * Tree that knows how to build the master and detail beans from the
 	 * resultSet.
 	 */
-	final SqlTreeNode rootNode;
+	private final SqlTreeNode rootNode;
 
 	/**
 	 * For master detail query.
 	 */
-	final BeanPropertyAssocMany<?> manyProperty;
+	private final BeanPropertyAssocMany<?> manyProperty;
 
-	final int backgroundFetchAfter;
+	private final int backgroundFetchAfter;
 
-	final int maxRowsLimit;
+	private final int maxRowsLimit;
 
 	/**
 	 * Flag set when max rows hit.
 	 */
-	boolean hasHitMaxRows;
+	private boolean hasHitMaxRows;
 
 	/**
 	 * Flag set when backgroundFetchAfter limit is hit.
 	 */
-	boolean hasHitBackgroundFetchAfter;
+	private boolean hasHitBackgroundFetchAfter;
 
-	final PersistenceContext persistenceContext;
+	private final PersistenceContext persistenceContext;
 
 	/**
 	 * The resultSet that is read and converted to objects.
 	 */
-	ResultSet rset;
+	private ResultSet rset;
 
 	/**
 	 * The statement used to create the resultSet.
 	 */
-	PreparedStatement pstmt;
+	private PreparedStatement pstmt;
 
-	String bindLog;
+	private String bindLog;
 
-	final CQueryPlan queryPlan;
+	private final CQueryPlan queryPlan;
 
 	/**
 	 * A double check to make sure the beans are being loaded in the correct
 	 * order. This is not necessary so could be removed at some point.
 	 */
-	HashSet<Object> loadBeanOrderCheck;
+	private HashSet<Object> loadBeanOrderCheck;
 
-	long startNano;
+	private long startNano;
 	
-	final boolean autoFetchProfiling;
+	private final boolean autoFetchProfiling;
 	
-	final ObjectGraphNode autoFetchParentNode;
+	private final ObjectGraphNode autoFetchParentNode;
 	
-	final AutoFetchManager autoFetchManager;
+	private final AutoFetchManager autoFetchManager;
 	
-	final ObjectGraphOrigin autoFetchOriginQueryPoint;
+	private final ObjectGraphOrigin autoFetchOriginQueryPoint;
 	
 	/**
 	 * Create the Sql select based on the request.
@@ -268,7 +267,7 @@ public class CQuery<T> implements DbReadContext {
 		this.desc = request.getBeanDescriptor();
 		this.predicates = predicates;
 
-		mapKey = query.getMapKey();
+//		mapKey = query.getMapKey();
 		queryListener = query.getListener();
 		if (queryListener == null) {
 			// normal, use the one from the transaction
@@ -361,7 +360,7 @@ public class CQuery<T> implements DbReadContext {
 		return persistenceContext;
 	}
 	
-	public void setLoadedBean(EntityBean bean, Object id) {
+	public void setLoadedBean(Object bean, Object id) {
 		if (id != null && id.equals(loadedBeanId)) {
 			// master/detail loading with master bean
 			// unchanged. NB Using id to avoid any issue
@@ -384,7 +383,7 @@ public class CQuery<T> implements DbReadContext {
 		}
 	}
 
-	public void setLoadedManyBean(EntityBean manyValue) {
+	public void setLoadedManyBean(Object manyValue) {
 		this.loadedManyBean = manyValue;
 	}
 

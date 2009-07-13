@@ -4,15 +4,15 @@ import java.util.ArrayList;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.expression.InternalExpressionList;
+import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.InternalExpressionList;
+import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.TableJoin;
 

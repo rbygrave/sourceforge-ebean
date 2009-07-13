@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.transaction;
 
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 
 /**
  * Used by EbeanMgr to store its Transactions in a ThreadLocal.

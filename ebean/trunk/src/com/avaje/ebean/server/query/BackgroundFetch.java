@@ -22,7 +22,7 @@ package com.avaje.ebean.server.query;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 
 /**
  * Continue the fetch using a Background thread. The client knows when this has

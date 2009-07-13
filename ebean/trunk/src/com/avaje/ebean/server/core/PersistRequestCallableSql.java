@@ -24,17 +24,20 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.bean.BindParams;
-import com.avaje.ebean.bean.BindParams.Param;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.InternalCallableSql;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.TransactionEventTable;
+import com.avaje.ebean.internal.BindParams.Param;
 import com.avaje.ebean.server.persist.PersistExecute;
-import com.avaje.ebean.server.transaction.TransactionEventTable;
 
 /**
  * Persist request specifically for CallableSql.
  */
 public final class PersistRequestCallableSql extends PersistRequest {
 
-	private final CallableSql callableSql;
+	private final InternalCallableSql callableSql;
 
 	private int rowCount;
 
@@ -52,7 +55,7 @@ public final class PersistRequestCallableSql extends PersistRequest {
 		
 		super(server, t, persistExecute);
 		this.type = PersistRequest.Type.CALLABLESQL;
-		this.callableSql = cs;
+		this.callableSql = (InternalCallableSql)cs;
 	}
 	
 	@Override
@@ -68,7 +71,7 @@ public final class PersistRequestCallableSql extends PersistRequest {
 	/**
 	 * Return the CallableSql.
 	 */
-	public CallableSql getCallableSql() {
+	public InternalCallableSql getCallableSql() {
 		return callableSql;
 	}
 
@@ -116,8 +119,7 @@ public final class PersistRequestCallableSql extends PersistRequest {
 		}
 
 		// register table modifications with the transaction event
-		TransactionEventTable tableEvents = ProtectedMethod
-				.getTransactionEventTable(callableSql);
+		TransactionEventTable tableEvents = callableSql.getTransactionEventTable();
 		
 		if (tableEvents != null && !tableEvents.isEmpty()) {
 			transaction.getEvent().add(tableEvents);

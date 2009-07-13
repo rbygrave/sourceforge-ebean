@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
@@ -302,7 +302,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			}
 
 			// check transaction context to see if it already exists
-			EntityBean existing = ctx.getPersistenceContext().get(rowType, id);
+			Object existing = ctx.getPersistenceContext().get(rowType, id);
 
 			if (existing != null) {
 				setValue(bean, existing);
@@ -311,7 +311,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			} else {
 				// create a lazy loading reference/proxy 
 				Object parent = null;
-				EntityBean ref;
+				Object ref;
 				if (targetInheritInfo != null){
 					// for inheritance heirarchy create the 
 					// correct type for this row...
@@ -321,11 +321,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				}
 				if (ctx.isAutoFetchProfiling()){
 					// add profiling to this reference bean
-					ctx.profileReference(ref._ebean_getIntercept(), getName());
+					ctx.profileReference(((EntityBean)ref)._ebean_getIntercept(), getName());
 				}
 				
 				setValue(bean, ref);
-				ctx.getPersistenceContext().set(rowType, id, ref);
+				ctx.getPersistenceContext().set(id, ref);
 				return ref;
 			}
 		}
@@ -374,7 +374,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			}
 
 			PersistenceContext persistCtx = ctx.getPersistenceContext();
-			EntityBean existing = persistCtx.get(targetType, id);
+			Object existing = persistCtx.get(targetType, id);
 
 			if (existing != null) {
 				setValue(bean, existing);
@@ -382,9 +382,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 			} else {
 				Object parent = null;
-				EntityBean ref = targetDescriptor.createReference(id, parent, null);
+				Object ref = targetDescriptor.createReference(id, parent, null);
 				setValue(bean, ref);
-				persistCtx.set(targetType, id, ref);
+				persistCtx.set(id, ref);
 				return ref;
 			}
 		}

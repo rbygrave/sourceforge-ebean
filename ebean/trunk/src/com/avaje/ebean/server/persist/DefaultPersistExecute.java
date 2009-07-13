@@ -19,13 +19,13 @@
  */
 package com.avaje.ebean.server.persist;
 
-import com.avaje.ebean.bean.BeanPersistController;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 

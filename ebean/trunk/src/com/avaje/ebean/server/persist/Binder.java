@@ -33,8 +33,8 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.internal.BindParams;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 

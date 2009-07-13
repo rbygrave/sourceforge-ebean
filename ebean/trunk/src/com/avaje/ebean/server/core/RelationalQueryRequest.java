@@ -28,6 +28,8 @@ import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.RelationalQuery;
 
 /**

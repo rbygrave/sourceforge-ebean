@@ -2,10 +2,11 @@ package com.avaje.ebean.server.core;
 
 import java.util.logging.Logger;
 
+import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.enhance.subclass.SubClassManager;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
 import com.avaje.ebean.server.cache.ServerCacheManager;
@@ -14,6 +15,7 @@ import com.avaje.ebean.server.deploy.DeployOrmXml;
 import com.avaje.ebean.server.deploy.parse.DeployCreateProperties;
 import com.avaje.ebean.server.deploy.parse.DeployInherit;
 import com.avaje.ebean.server.deploy.parse.DeployUtil;
+import com.avaje.ebean.server.expression.DefaultExpressionFactory;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.persist.Binder;
@@ -23,6 +25,7 @@ import com.avaje.ebean.server.query.DefaultOrmQueryEngine;
 import com.avaje.ebean.server.query.DefaultRelationalQueryEngine;
 import com.avaje.ebean.server.resource.ResourceManager;
 import com.avaje.ebean.server.resource.ResourceManagerFactory;
+import com.avaje.ebean.server.subclass.SubClassManager;
 import com.avaje.ebean.server.transaction.DefaultTransactionScopeManager;
 import com.avaje.ebean.server.transaction.ExternalTransactionScopeManager;
 import com.avaje.ebean.server.transaction.TransactionManager;
@@ -72,12 +75,15 @@ public class InternalConfiguration {
 		
 	private final ServerCacheManager cacheManager;
 	
+	private final ExpressionFactory expressionFactory;
+	
 	public InternalConfiguration(ClusterManager clusterManager, ServerCacheManager cacheManager, ServerConfig serverConfig, BootupClasses bootupClasses) {
 		
 		this.clusterManager = clusterManager;
 		this.cacheManager = cacheManager;
 		this.serverConfig = serverConfig;
 		this.bootupClasses = bootupClasses;
+		this.expressionFactory = new DefaultExpressionFactory();
 		
 		this.subClassManager = new SubClassManager(serverConfig);
 		
@@ -147,6 +153,10 @@ public class InternalConfiguration {
 	
 	public ServerConfig getServerConfig() {
 		return serverConfig;
+	}
+	
+	public ExpressionFactory getExpressionFactory() {
+		return expressionFactory;
 	}
 
 	public TypeManager getTypeManager() {

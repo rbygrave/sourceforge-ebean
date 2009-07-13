@@ -22,13 +22,13 @@ package com.avaje.ebean.server.query;
 import java.util.ArrayList;
 
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.BeanFinder;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.event.BeanFinder;
+import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.core.PersistenceContext;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 

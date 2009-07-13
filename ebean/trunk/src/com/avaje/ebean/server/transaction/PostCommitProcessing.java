@@ -21,6 +21,9 @@ package com.avaje.ebean.server.transaction;
 
 import java.util.ArrayList;
 
+import com.avaje.ebean.internal.TransactionEvent;
+import com.avaje.ebean.internal.TransactionEventBeans;
+import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;

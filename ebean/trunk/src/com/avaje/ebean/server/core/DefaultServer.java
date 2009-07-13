@@ -36,6 +36,7 @@ import com.avaje.ebean.AdminAutofetch;
 import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Filter;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
@@ -58,6 +59,10 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.el.ElFilter;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.query.DefaultOrmQuery;
 import com.avaje.ebean.query.DefaultOrmUpdate;
 import com.avaje.ebean.query.DefaultRelationalQuery;
@@ -80,7 +85,6 @@ import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
-import com.avaje.ebean.server.transaction.TransactionEventTable;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 
@@ -98,10 +102,8 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	private final String serverName;
 
-	//	private final MLogControl logControl;
 	private final AdminLogging adminLogging;
 	private final AdminAutofetch adminAutofetch;
-//	private final AutoFetchControl autoFetchControl;
 	
 	private final TransactionManager transactionManager;
 
@@ -138,6 +140,8 @@ public final class DefaultServer implements InternalEbeanServer {
 	 
 	private final DdlGenerator ddlGenerator;
 	
+	private final ExpressionFactory expressionFactory;
+	
 	/**
 	 * Create the DefaultServer.
 	 */
@@ -146,6 +150,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		this.serverCache = serverCache;
 		this.serverName = config.getServerConfig().getName();
 		this.cqueryEngine = config.getCQueryEngine();
+		this.expressionFactory = config.getExpressionFactory();
 		this.adminLogging = config.getLogControl();
 		this.refreshHelp = config.getRefreshHelp();
 		this.debugLazyHelper = config.getDebugLazyLoad();
@@ -168,6 +173,10 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	
+	public ExpressionFactory getExpressionFactory() {
+		return expressionFactory;
+	}
+
 	public DdlGenerator getDdlGenerator() {
 		return ddlGenerator;
 	}
@@ -488,7 +497,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			throw new NullPointerException("The id is null");
 		}
 
-		EntityBean ref = null;
+		Object ref = null;
 		PersistenceContext ctx = null;
 
 		ServerTransaction t = transactionScopeManager.get();
@@ -522,17 +531,17 @@ public final class DefaultServer implements InternalEbeanServer {
 
 				// just select the id properties and
 				// the discriminator column (auto added)
-				Query query = createQuery(type);
+				Query<T> query = createQuery(type);
 				query.select(idNames).setId(id);
 
-				ref = (EntityBean) query.findUnique();
+				ref = query.findUnique();
 
 			} else {
 				ref = desc.createReference(id, null, null);
 			}
 
 			if (ctx != null) {
-				ctx.set(type, id, ref);
+				ctx.set(id, ref);
 			}
 		}
 		return (T) ref;
@@ -894,15 +903,20 @@ public final class DefaultServer implements InternalEbeanServer {
 	}
 
 	public SqlUpdate createSqlUpdate(String sql) {
-		return new SqlUpdate(this, sql);
+		return new DefaultSqlUpdate(this, sql);
 	}
 
+	public CallableSql createCallableSql(String sql) {
+		return new DefaultCallableSql(this, sql);
+	}
+
+	
 	public SqlUpdate createNamedSqlUpdate(String namedQuery) {
 		DNativeQuery nq = beanDescriptorManager.getNativeQuery(namedQuery);
 		if (nq == null) {
 			throw new PersistenceException("SqlUpdate " + namedQuery + " not found.");
 		}
-		return new SqlUpdate(this, nq.getQuery());
+		return new DefaultSqlUpdate(this, nq.getQuery());
 	}
 
 	public <T> T find(Class<T> beanType, Object uid) {

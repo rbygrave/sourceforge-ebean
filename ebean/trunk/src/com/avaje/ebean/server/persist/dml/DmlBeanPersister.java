@@ -25,9 +25,9 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.persist.BeanPersister;
 
 /**

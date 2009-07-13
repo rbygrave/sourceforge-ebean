@@ -21,7 +21,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.List;
 
-import com.avaje.ebean.bean.BeanPersistController;
+import com.avaje.ebean.event.BeanPersistController;
 
 /**
  * Factory for controlling the construction of BeanPersistControllers.

@@ -28,8 +28,8 @@ import java.util.logging.Level;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.persist.DmlUtil;
 

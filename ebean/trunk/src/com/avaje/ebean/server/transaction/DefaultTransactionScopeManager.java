@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.transaction;
 
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 
 /**
  * Manages the transaction scoping using a Ebean thread local.

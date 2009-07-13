@@ -37,6 +37,8 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DatabasePlatformFactory;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServerFactory;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebean.server.cache.ServerCacheFactory;
@@ -54,7 +56,7 @@ import com.avaje.ebean.server.net.CommandProcessor;
 /**
  * Default Server side implementation of ServerFactory.
  */
-public class DefaultServerFactory implements ServerFactory, Constants {
+public class DefaultServerFactory implements InternalEbeanServerFactory, Constants {
 
 	private static final Logger logger = Logger.getLogger(DefaultServerFactory.class.getName());
 
