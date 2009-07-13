@@ -115,7 +115,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 		this.bean = bean;
 		this.parentBean = parentBean;
 
-		controller = beanDescriptor.getBeanController();
+		controller = beanDescriptor.getPersistController();
 		concurrencyMode = beanDescriptor.getConcurrencyMode();
 
 		if (bean instanceof EntityBean) {

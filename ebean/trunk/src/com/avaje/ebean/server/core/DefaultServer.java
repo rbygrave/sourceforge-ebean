@@ -59,6 +59,7 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.el.ElFilter;
+import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.internal.ServerTransaction;
@@ -1281,6 +1282,20 @@ public final class DefaultServer implements InternalEbeanServer {
 	 */
 	public List<BeanDescriptor<?>> getBeanDescriptors() {
 		return beanDescriptorManager.getBeanDescriptorList();
+	}
+	
+	public void register(BeanPersistController c) {
+		List<BeanDescriptor<?>> list = beanDescriptorManager.getBeanDescriptorList();
+		for (int i = 0; i < list.size(); i++) {
+			list.get(i).register(c);
+		}
+	}
+	
+	public void deregister(BeanPersistController c) {
+		List<BeanDescriptor<?>> list = beanDescriptorManager.getBeanDescriptorList();
+		for (int i = 0; i < list.size(); i++) {
+			list.get(i).deregister(c);
+		}
 	}
 	
 	/**

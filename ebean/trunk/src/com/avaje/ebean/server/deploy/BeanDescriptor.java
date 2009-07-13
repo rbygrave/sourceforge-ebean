@@ -194,7 +194,7 @@ public class BeanDescriptor<T> {
 	 * Intercept pre post on insert,update,delete and postLoad(). Server side
 	 * only.
 	 */
-	private final BeanPersistController beanController;
+	private volatile BeanPersistController persistController;
 
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -383,7 +383,7 @@ public class BeanDescriptor<T> {
 		this.inheritInfo = deploy.getInheritInfo();
 
 		this.beanFinder = deploy.getBeanFinder();
-		this.beanController = deploy.getBeanController();
+		this.persistController = deploy.getBeanController();
 		this.beanPersistListener = deploy.getBeanPersistListener();
 
 		this.idType = deploy.getIdType();
@@ -716,8 +716,9 @@ public class BeanDescriptor<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public void postLoad(Object bean, Set<String> includedProperties){
-		if (beanController != null){
-			beanController.postLoad((T)bean, includedProperties);
+		BeanPersistController c = persistController;
+		if (c != null){
+			c.postLoad((T)bean, includedProperties);
 		}
 	}
 	
@@ -1357,10 +1358,52 @@ public class BeanDescriptor<T> {
 	}
 
 	/**
+	 * De-register the BeanPersistController.
+	 */
+	public void deregister(BeanPersistController controller){
+		// volatile read...
+		BeanPersistController c = persistController;
+		if (c == null){
+			// nothing to deregister
+		} else {
+			if (c instanceof ChainedBeanPersistController){
+				// remove it from the existing chain
+				persistController = ((ChainedBeanPersistController)c).deregister(controller);
+			} else if (c == controller){
+				persistController = null;
+			}
+		}
+	}
+	
+	/**
+	 * Register the new BeanPersistController.
+	 */
+	public void register(BeanPersistController newController){
+		
+		if (!newController.isRegisterFor(beanType)){
+			// skip
+		} else {
+			// volatile read...
+			BeanPersistController c = persistController;
+			if (c == null){
+				persistController = newController;
+			} else {
+				if (c instanceof ChainedBeanPersistController){
+					// add it to the existing chain
+					persistController = ((ChainedBeanPersistController)c).register(newController);
+				} else {
+					// build new chain of the 2  
+					persistController = new ChainedBeanPersistController(c, newController);
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Return the Controller.
 	 */
-	public BeanPersistController getBeanController() {
-		return beanController;
+	public BeanPersistController getPersistController() {
+		return persistController;
 	}
 
 	/**
