@@ -21,7 +21,7 @@ import com.avaje.ebean.enhance.asm.ClassWriter;
  */
 public class Transformer implements ClassFileTransformer {
 
-	public static void premain(java.lang.String agentArgs, Instrumentation inst) {
+	public static void premain(String agentArgs, Instrumentation inst) {
 
 		Transformer t = new Transformer("", agentArgs);
 		inst.addTransformer(t);
@@ -31,14 +31,14 @@ public class Transformer implements ClassFileTransformer {
 		}
 	}
 
-	static final int CLASS_WRITER_COMPUTEFLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
+	private static final int CLASS_WRITER_COMPUTEFLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
 
 	
-	final EnhanceContext enhanceContext;
+	private final EnhanceContext enhanceContext;
 
-	boolean performDetect;
-	boolean transformTransactional;
-	boolean transformEntityBeans;
+	private boolean performDetect;
+	private boolean transformTransactional;
+	private boolean transformEntityBeans;
 	
 	public Transformer(String extraClassPath, String agentArgs) {
 		this(parseClassPaths(extraClassPath), agentArgs);
@@ -46,9 +46,9 @@ public class Transformer implements ClassFileTransformer {
 	
 	public Transformer(URL[] extraClassPath, String agentArgs) {
 		this.enhanceContext = new EnhanceContext(extraClassPath, agentArgs);
-		performDetect = enhanceContext.getPropertyBoolean("detect", true);
-		transformTransactional = enhanceContext.getPropertyBoolean("transactional", true);
-		transformEntityBeans = enhanceContext.getPropertyBoolean("entity", true);
+		this.performDetect = enhanceContext.getPropertyBoolean("detect", true);
+		this.transformTransactional = enhanceContext.getPropertyBoolean("transactional", true);
+		this.transformEntityBeans = enhanceContext.getPropertyBoolean("entity", true);
 	}
 	
 	/**
@@ -80,11 +80,13 @@ public class Transformer implements ClassFileTransformer {
 			ClassAdapterDetectEnhancement detect = null;
 			
 			if (performDetect){
+				enhanceContext.log(5, "performing detection on "+className);
 				detect = detect(loader, classfileBuffer);
 			}
 			
 			if (detect == null){
 				// default only looks entity beans to enhance
+				enhanceContext.log(1, "no detection so enhancing entity "+className);
 				return entityEnhancement(loader, classfileBuffer);
 			} 
 			
@@ -94,7 +96,8 @@ public class Transformer implements ClassFileTransformer {
 					detect.log(1, "already enhanced entity");
 					
 				} else {
-					// perform entity transform
+					// 
+					detect.log(2, "performing entity transform");
 					return entityEnhancement(loader, classfileBuffer);
 				}
 			}
@@ -105,7 +108,7 @@ public class Transformer implements ClassFileTransformer {
 					detect.log(1, "already enhanced transactional");
 
 				} else {
-					// perform transformation...
+					detect.log(2, "performing transactional transform");
 					return transactionalEnhancement(loader, classfileBuffer);
 				}
 			}

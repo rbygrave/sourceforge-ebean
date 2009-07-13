@@ -6,6 +6,7 @@ import java.util.HashSet;
 import com.avaje.ebean.enhance.asm.AnnotationVisitor;
 import com.avaje.ebean.enhance.asm.ClassAdapter;
 import com.avaje.ebean.enhance.asm.EmptyVisitor;
+import com.avaje.ebean.enhance.asm.FieldVisitor;
 import com.avaje.ebean.enhance.asm.MethodAdapter;
 import com.avaje.ebean.enhance.asm.MethodVisitor;
 import com.avaje.ebean.enhance.asm.Opcodes;
@@ -16,23 +17,25 @@ import com.avaje.ebean.enhance.asm.Opcodes;
  */
 public class ClassAdapterDetectEnhancement extends ClassAdapter {
 
-	final ClassLoader classLoader;
+	private final ClassLoader classLoader;
 	
-	final EnhanceContext enhanceContext;
+	private final EnhanceContext enhanceContext;
 
-	final HashSet<String> classAnnotation = new HashSet<String>();
+	private final HashSet<String> classAnnotation = new HashSet<String>();
 
-	final ArrayList<DetectMethod> methods = new ArrayList<DetectMethod>();
+	private final ArrayList<DetectMethod> methods = new ArrayList<DetectMethod>();
 
-	String className;
+	private String className;
 
-	boolean entity;
+	private boolean entity;
 
-	boolean enhancedEntity;
+	private boolean entityInterface;
 
-	boolean transactional;
+	private boolean entityField;
+
+	private boolean transactional;
 	
-	boolean enhancedTransactional;
+	private boolean enhancedTransactional;
 
 	public ClassAdapterDetectEnhancement(ClassLoader classLoader, EnhanceContext context) {
 		super(new EmptyVisitor());
@@ -47,7 +50,7 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 	public String getStatus() {
 		String s = "class: " + className;
 		if (isEntity()) {
-			s += " entity:true  enhanced:" + enhancedEntity;
+			s += " entity:true  enhanced:" + entityField;
 			s = "*" + s;
 
 		} else if (isTransactional()) {
@@ -75,7 +78,7 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 	}
 
 	public boolean isEnhancedEntity() {
-		return enhancedEntity;
+		return entityField;
 	}
 
 	public boolean isEnhancedTransactional() {
@@ -124,7 +127,7 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 		for (int i = 0; i < interfaces.length; i++) {
 
 			if (interfaces[i].equals(EnhanceConstants.C_ENTITYBEAN)) {
-				enhancedEntity = true;
+				entityInterface = true;
 				entity = true;
 
 			} else if (interfaces[i].equals(EnhanceConstants.C_ENHANCEDTRANSACTIONAL)) {
@@ -140,9 +143,12 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 					}
 				}
 			}
-
 		}
 
+		if (isLog(2)){
+			log("interfaces:  entityInterface["+entityInterface+"] transactional["+enhancedTransactional+"]");					
+		}
+		
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
@@ -151,13 +157,22 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 	 */
 	@Override
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+		if (isLog(8)){
+			log("visitAnnotation "+desc);					
+		}
 		classAnnotation.add(desc);
 		if (isEntityAnnotation(desc)){
 			// entity, embeddable or mappedSuperclass
+			if (isLog(5)){
+				log("found entity annotation "+desc);					
+			}	
 			entity = true;
 			
 		} else if (desc.equals(EnhanceConstants.AVAJE_TRANSACTIONAL_ANNOTATION)) {
 			// class level Transactional annotation
+			if (isLog(5)){
+				log("found transactional annotation "+desc);					
+			}	
 			transactional = true;
 		}
 
@@ -183,12 +198,56 @@ public class ClassAdapterDetectEnhancement extends ClassAdapter {
 	}
 	
 	/**
+	 * Return true if this is the enhancement marker field.
+	 * <p>
+	 * The existence of this field is used to confirm that the class has been
+	 * enhanced (rather than solely relying on the EntityBean interface). 
+	 * <p>
+	 */
+	private boolean isEbeanFieldMarker(String name, String desc, String signature) {
+		
+		if (name.equals(MarkerField._EBEAN_MARKER)){
+			if (!desc.equals("Ljava/lang/String;")){
+				String m = "Error: _EBEAN_MARKER field of wrong type? "+desc;
+				log(m);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	
+	public FieldVisitor visitField(int access, String name, String desc, String signature,
+			Object value) {
+
+		if (isLog(8)){
+			log("visitField "+name+" "+value);					
+		}	
+		
+		if ((access & Opcodes.ACC_STATIC) != 0) {
+			// static field...
+			if (isEbeanFieldMarker(name, desc, signature)){
+				entityField = true;
+				if (isLog(1)){
+					log("Found ebean marker field "+name+" "+value);					
+				}				
+			}
+		}
+
+		return super.visitField(access, name, desc, signature, value);
+	}
+	
+	/**
 	 * Visit the methods specifically looking for method level transactional
 	 * annotations.
 	 */
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
+		if (isLog(9)){
+			log("visitMethod "+name+" "+desc);					
+		}	
+		
 		MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 		DetectMethod dmv = new DetectMethod(mv);
 
