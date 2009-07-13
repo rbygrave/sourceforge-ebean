@@ -15,7 +15,7 @@ public final class SqlTreeNodeManyRoot extends SqlTreeNodeBean {
 	}
 
     @Override
-	protected void postLoad(DbReadContext cquery, EntityBean loadedBean, Object id) {
+	protected void postLoad(DbReadContext cquery, Object loadedBean, Object id) {
     
     	// put the localBean into the manyValue so that it
     	// is added to the collection/map

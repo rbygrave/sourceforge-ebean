@@ -21,8 +21,8 @@ package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.ServerTransaction;
 
 /**
  * Delete bean handler.

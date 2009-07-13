@@ -24,7 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebean.bean.BasicTypeConverter;
+import com.avaje.ebean.server.core.BasicTypeConverter;
 
 /**
  * ScalarType for String where empty strings are treated as nulls.

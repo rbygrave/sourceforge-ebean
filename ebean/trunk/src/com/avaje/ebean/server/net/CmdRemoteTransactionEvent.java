@@ -19,9 +19,9 @@
  */
 package com.avaje.ebean.server.net;
 
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.net.Command;
 import com.avaje.ebean.net.CommandContext;
-import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 
 /**

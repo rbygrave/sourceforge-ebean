@@ -109,6 +109,11 @@ public interface EbeanServer {
 	public String getName();
 
 	/**
+	 * Return the ExpressionFactory for this server.
+	 */
+	public ExpressionFactory getExpressionFactory();
+	
+	/**
 	 * Return the BeanState for a given entity bean. <p> This will return null
 	 * if the bean is not an enhanced (or subclassed) entity bean. </p>
 	 */
@@ -255,6 +260,11 @@ public interface EbeanServer {
 	 * @see Ebean#createSqlUpdate(String)
 	 */
 	public SqlUpdate createSqlUpdate(String sql);
+
+	/**
+	 * Create a CallableSql to execute a given stored procedure. 
+	 */
+	public CallableSql createCallableSql(String callableSql);
 
 	/**
 	 * Create a named sql update (refer

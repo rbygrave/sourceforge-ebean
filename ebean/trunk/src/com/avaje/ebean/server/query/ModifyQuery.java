@@ -6,8 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.avaje.ebean.Expression;
 import com.avaje.ebean.el.ElPropertyDeploy;
-import com.avaje.ebean.expression.Expression;
+import com.avaje.ebean.internal.InternalExpression;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
@@ -29,7 +30,7 @@ public class ModifyQuery {
 		this.desc = desc;
 	}
 
-	public boolean containsMany(Expression expression) {
+	public boolean containsMany(InternalExpression expression) {
 		String propertyName = expression.getPropertyName();
 		ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 		return elProp.containsMany();		
@@ -39,7 +40,7 @@ public class ModifyQuery {
 	 * Return true if this expression should be removed from the where
 	 * expression list.
 	 */
-	public boolean removeMany(Expression expression) {
+	public boolean removeMany(InternalExpression expression) {
 		String propertyName = expression.getPropertyName();
 		ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 		if (elProp.containsMany()) {

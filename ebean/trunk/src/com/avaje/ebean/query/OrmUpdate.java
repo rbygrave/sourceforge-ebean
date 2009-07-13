@@ -1,7 +1,7 @@
 package com.avaje.ebean.query;
 
 import com.avaje.ebean.Update;
-import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.internal.BindParams;
 
 /**
  * Internal extension to the Update interface.

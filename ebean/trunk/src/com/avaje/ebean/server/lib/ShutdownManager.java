@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.server.core.ServerFactory;
+import com.avaje.ebean.internal.InternalEbeanServerFactory;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
 
@@ -41,7 +41,7 @@ public final class ShutdownManager {
 
 	static boolean stopping;
 
-	static ServerFactory serverFactory;
+	static InternalEbeanServerFactory serverFactory;
 	
 	static final ShutdownHook shutdownHook = new ShutdownHook();
 
@@ -59,7 +59,7 @@ public final class ShutdownManager {
 	private ShutdownManager() {
 	}
 
-	public static void registerServerFactory(ServerFactory factory){
+	public static void registerServerFactory(InternalEbeanServerFactory factory){
 		serverFactory = factory;
 	}
 	/**

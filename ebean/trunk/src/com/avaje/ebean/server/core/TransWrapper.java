@@ -1,5 +1,7 @@
 package com.avaje.ebean.server.core;
 
+import com.avaje.ebean.internal.ServerTransaction;
+
 /**
  * Used to temporarily wrap a thread local based transaction.
  * <p>

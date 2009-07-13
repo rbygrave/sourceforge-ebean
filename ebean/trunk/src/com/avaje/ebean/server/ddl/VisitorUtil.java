@@ -3,7 +3,7 @@ package com.avaje.ebean.server.ddl;
 import java.util.Iterator;
 import java.util.List;
 
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;

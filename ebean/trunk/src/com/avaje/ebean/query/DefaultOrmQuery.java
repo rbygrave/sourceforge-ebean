@@ -8,18 +8,19 @@ import java.util.Set;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.Expression;
+import com.avaje.ebean.ExpressionFactory;
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.BeanQueryRequest;
-import com.avaje.ebean.bean.BindParams;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.expression.Expression;
-import com.avaje.ebean.expression.ExpressionList;
-import com.avaje.ebean.expression.InternalExpressionList;
+import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.InternalExpressionList;
+import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.RawSqlSelect;
@@ -36,6 +37,8 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	private final Class<T> beanType;
 	
 	private transient final EbeanServer server;
+	
+	private transient final ExpressionFactory expressionFactory;
 	
 	/**
 	 * Used to add beans to the PersistanceContext prior to query.
@@ -152,6 +155,7 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server) {
 		this.beanType = beanType;
 		this.server = server;
+		this.expressionFactory = server.getExpressionFactory();
 		this.detail = new OrmQueryDetail();
 		this.attributes = new OrmQueryAttributes();
 		this.name = "";
@@ -165,8 +169,9 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 
 		this.beanType = beanType;
 		this.server = server;
-		name = namedQuery.getName();
-		sqlSelect = namedQuery.isSqlSelect();
+		this.expressionFactory = server.getExpressionFactory();
+		this.name = namedQuery.getName();
+		this.sqlSelect = namedQuery.isSqlSelect();
 		if (sqlSelect) {
 			this.detail = new OrmQueryDetail();
 			this.attributes = new OrmQueryAttributes();
@@ -187,6 +192,10 @@ public final class DefaultOrmQuery<T> implements OrmQuery<T> {
 		this.beanDescriptor = beanDescriptor;
 	}
 	
+	public ExpressionFactory getExpressionFactory() {
+		return expressionFactory;
+	}
+
 	/**
 	 * Return true if the where expressions contains a many property.
 	 */

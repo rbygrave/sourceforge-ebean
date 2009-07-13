@@ -28,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.BatchPostExecute;

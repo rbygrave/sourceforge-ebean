@@ -22,8 +22,8 @@ package com.avaje.ebean.server.net;
 import javax.servlet.http.HttpSession;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.net.CommandContext;
-import com.avaje.ebean.server.core.InternalEbeanServer;
 
 /**
  * Uses HttpSession to store the CommandContext.

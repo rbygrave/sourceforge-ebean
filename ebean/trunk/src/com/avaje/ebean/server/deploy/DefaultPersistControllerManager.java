@@ -24,8 +24,8 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BeanPersistAdapter;
-import com.avaje.ebean.bean.BeanPersistController;
+import com.avaje.ebean.event.BeanPersistAdapter;
+import com.avaje.ebean.event.BeanPersistController;
 
 /**
  * Default implementation for creating BeanControllers.

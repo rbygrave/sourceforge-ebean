@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.BeanFinder;
-import com.avaje.ebean.bean.BeanPersistController;
-import com.avaje.ebean.bean.BeanPersistListener;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
+import com.avaje.ebean.event.BeanFinder;
+import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;

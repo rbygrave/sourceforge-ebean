@@ -1,31 +1,7 @@
-/**
- * Copyright (C) 2006  Robin Bygrave
- * 
- * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
- */
 package com.avaje.ebean;
 
-import java.io.Serializable;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
-
-import com.avaje.ebean.bean.BindParams;
-import com.avaje.ebean.bean.BindParams.Param;
-import com.avaje.ebean.server.transaction.TransactionEventTable;
 
 /**
  * For making calls to stored procedures. Refer to the Ebean execute() method.
@@ -62,11 +38,7 @@ import com.avaje.ebean.server.transaction.TransactionEventTable;
  * <pre class="code">
  * String sql = &quot;{call sp_insert_order(?,?)}&quot;;
  * 
- * CallableSql cs = new CallableSql();
- * cs.setSql(sql);
- * 
- * // the label appears in the transaction log
- * cs.setLabel(&quot;Silly Example&quot;);
+ * CallableSql cs = Ebean.createCallableSql(sql);
  * 
  * // Inform Ebean this stored procedure inserts into the
  * // oe_order table and inserts + updates the oe_order_detail table.
@@ -104,72 +76,27 @@ import com.avaje.ebean.server.transaction.TransactionEventTable;
  * @see com.avaje.ebean.SqlUpdate
  * @see com.avaje.ebean.Ebean#execute(CallableSql)
  */
-public class CallableSql implements Serializable {
-
-	private static final long serialVersionUID = 8984272253185424701L;
-
-	/**
-	 * The callable sql.
-	 */
-	private String sql;
-
-	/**
-	 * To display in the transaction log to help identify the procedure.
-	 */
-	private String label;
-
-	private int timeout;
-	
-	/**
-	 * Holds the table modification information. On commit this information is
-	 * used to manage the cache etc.
-	 */
-	private TransactionEventTable transactionEvent = new TransactionEventTable();
-
-	private BindParams bindParameters = new BindParams();
-
-	/**
-	 * Create with callable sql.
-	 */
-	public CallableSql(String sql) {
-		this.sql = sql;
-	}
-
-	/**
-	 * Create the CallableSql.
-	 */
-	public CallableSql() {
-
-	}
+public interface CallableSql {
 
 	/**
 	 * Return the label that is put into the transaction log.
 	 */
-	public final String getLabel() {
-		return label;
-	}
-	
+	public String getLabel();
+
 	/**
 	 * Set the label that is put in the transaction log.
 	 */
-	public final CallableSql setLabel(String label) {
-		this.label = label;
-		return this;
-	}
-	
+	public CallableSql setLabel(String label);
+
 	/**
 	 * Return the statement execution timeout.
 	 */
-	public final int getTimeout() {
-		return timeout;
-	}
+	public int getTimeout();
 
 	/**
 	 * Return the callable sql.
 	 */
-	public final String getSql() {
-		return sql;
-	}
+	public String getSql();
 
 	/**
 	 * Set the statement execution timeout. Zero implies unlimited time.
@@ -177,18 +104,12 @@ public class CallableSql implements Serializable {
 	 * This is set to the underlying CallableStatement.
 	 * </p>
 	 */
-	public final CallableSql setTimeout(int secs) {
-		this.timeout = secs;
-		return this;
-	}
-	
+	public CallableSql setTimeout(int secs);
+
 	/**
 	 * Set the callable sql.
 	 */
-	public final CallableSql setSql(String sql) {
-		this.sql = sql;
-		return this;
-	}
+	public CallableSql setSql(String sql);
 
 	/**
 	 * Bind a parameter that is bound as a IN parameter.
@@ -206,10 +127,7 @@ public class CallableSql implements Serializable {
 	 * @param value
 	 *            the value of the parameter.
 	 */
-	public final CallableSql bind(int position, Object value) {
-		bindParameters.setParameter(position, value);
-		return this;
-	}
+	public CallableSql bind(int position, Object value);
 
 	/**
 	 * Bind a positioned parameter (same as bind method).
@@ -219,10 +137,7 @@ public class CallableSql implements Serializable {
 	 * @param value
 	 *            the value of the parameter.
 	 */
-	public final CallableSql setParameter(int position, Object value) {
-		bindParameters.setParameter(position, value);
-		return this;
-	}
+	public CallableSql setParameter(int position, Object value);
 
 	/**
 	 * Register an OUT parameter.
@@ -240,10 +155,7 @@ public class CallableSql implements Serializable {
 	 * @param type
 	 *            the jdbc type of the OUT parameter that will be read.
 	 */
-	public final CallableSql registerOut(int position, int type) {
-		bindParameters.registerOut(position, type);
-		return this;
-	}
+	public CallableSql registerOut(int position, int type);
 
 	/**
 	 * Return an OUT parameter value.
@@ -256,20 +168,15 @@ public class CallableSql implements Serializable {
 	 * in batch mode you effectively can't use this method.
 	 * </p>
 	 */
-	public final Object getObject(int position) {
-		Param p = bindParameters.getParameter(position);
-		return p.getOutValue();
-	}
-	
+	public Object getObject(int position);
+
 	/**
 	 * 
 	 * You can extend this object and override this method for more advanced
 	 * stored procedure calls. This would be the case when ResultSets are
 	 * returned etc.
 	 */
-	public boolean executeOverride(CallableStatement cstmt) throws SQLException {
-		return false;
-	}
+	public boolean executeOverride(CallableStatement cstmt) throws SQLException;
 
 	/**
 	 * Add table modification information to the TransactionEvent.
@@ -284,24 +191,6 @@ public class CallableSql implements Serializable {
 	 * or delete.
 	 * </p>
 	 */
-	public final CallableSql addModification(String tableName, boolean inserts, boolean updates,
-			boolean deletes) {
-
-		transactionEvent.add(tableName, inserts, updates, deletes);
-		return this;
-	}
-
-	/**
-	 * Return the TransactionEvent which holds the table modification
-	 * information for this CallableSql. This information is merged into the
-	 * transaction after the transaction is commited.
-	 */
-	final TransactionEventTable getTransactionEventTable() {
-		return transactionEvent;
-	}
-
-	final BindParams getBindParams() {
-		return bindParameters;
-	}
+	public CallableSql addModification(String tableName, boolean inserts, boolean updates, boolean deletes);
 
 }

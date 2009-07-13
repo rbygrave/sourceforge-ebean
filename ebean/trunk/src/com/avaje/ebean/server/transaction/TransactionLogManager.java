@@ -28,7 +28,7 @@ import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
 import com.avaje.ebean.server.transaction.log.LogTime;
 import com.avaje.ebean.server.transaction.log.TransactionLogger;

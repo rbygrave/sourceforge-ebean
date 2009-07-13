@@ -21,7 +21,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.List;
 
-import com.avaje.ebean.bean.BeanPersistListener;
+import com.avaje.ebean.event.BeanPersistListener;
 
 /**
  * Factory for controlling the construction of BeanListener.

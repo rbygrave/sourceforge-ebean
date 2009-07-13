@@ -21,7 +21,7 @@ package com.avaje.ebean.server.transaction;
 
 import java.io.Serializable;
 
-import com.avaje.ebean.bean.BeanPersistListener;
+import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 

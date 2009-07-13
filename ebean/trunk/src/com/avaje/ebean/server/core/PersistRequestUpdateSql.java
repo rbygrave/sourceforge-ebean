@@ -22,6 +22,9 @@ package com.avaje.ebean.server.core;
 import java.sql.SQLException;
 
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalSqlUpdate;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.persist.PersistExecute;
 
 /**
@@ -33,7 +36,7 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 		SQL_UPDATE, SQL_DELETE, SQL_INSERT, SQL_UNKNOWN
 	};
 
-	private final SqlUpdate updateSql;
+	private final InternalSqlUpdate updateSql;
 
 	private int rowCount;
 
@@ -52,7 +55,7 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 			ServerTransaction t, PersistExecute persistExecute) {
 		super(server, t, persistExecute);
 		this.type = Type.UPDATESQL;
-		this.updateSql = updateSql;
+		this.updateSql = (InternalSqlUpdate)updateSql;
 	}
 
 	@Override
@@ -68,7 +71,7 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 	/**
 	 * Return the UpdateSql.
 	 */
-	public SqlUpdate getUpdateSql() {
+	public InternalSqlUpdate getUpdateSql() {
 		return updateSql;
 	}
 

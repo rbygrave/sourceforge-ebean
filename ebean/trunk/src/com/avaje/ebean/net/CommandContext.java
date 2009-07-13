@@ -22,7 +22,7 @@ package com.avaje.ebean.net;
 import java.util.HashMap;
 
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.server.net.CommandProcessor;
 
 /**

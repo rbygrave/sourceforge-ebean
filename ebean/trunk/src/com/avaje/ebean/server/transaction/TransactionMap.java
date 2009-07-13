@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.server.core.ServerTransaction;
+import com.avaje.ebean.internal.ServerTransaction;
 
 
 /**

@@ -31,7 +31,6 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.server.core.ProtectedMethod;
 
 /**
  * This Ebean object is effectively a singleton that holds a map of registered
@@ -114,9 +113,6 @@ public final class Ebean {
 	private static final String EBVERSION = "2.0.0-beta2";
 
 	static {
-		ProtectedMethodImpl pa = new ProtectedMethodImpl();
-		ProtectedMethod.setPublicAccess(pa);
-
 		String version = System.getProperty("java.version");
 		logger.info("Ebean Version[" + EBVERSION + "] Java Version[" + version + "]");
 	}
@@ -260,6 +256,13 @@ public final class Ebean {
 		return serverMgr.get(name);
 	}
 
+	/**
+	 * Return the ExpressionFactory from the default server.
+	 */
+	public static ExpressionFactory getExpressionFactory() {
+		return serverMgr.getPrimaryServer().getExpressionFactory();
+	}
+	
 	/**
 	 * Register the server with this Ebean singleton. Specify if the registered
 	 * server is the primary/default server.

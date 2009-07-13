@@ -19,11 +19,11 @@
  */
 package com.avaje.ebean.server.persist;
 
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
-import com.avaje.ebean.server.core.ServerTransaction;
 
 /**
  * The actual execution of persist requests.

@@ -24,9 +24,9 @@ import java.util.Iterator;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BindParams;
-import com.avaje.ebean.bean.BindParams.OrderedList;
-import com.avaje.ebean.bean.BindParams.Param;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.BindParams.OrderedList;
+import com.avaje.ebean.internal.BindParams.Param;
 
 /**
  * Parses the BindParams if they are using named parameters.

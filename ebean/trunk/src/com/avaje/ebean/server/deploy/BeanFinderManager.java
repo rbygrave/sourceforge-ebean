@@ -21,7 +21,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.List;
 
-import com.avaje.ebean.bean.BeanFinder;
+import com.avaje.ebean.event.BeanFinder;
 
 /**
  * Factory for controlling the construction of BeanFinders.

@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.core;
 
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.persist.BatchPostExecute;
 import com.avaje.ebean.server.persist.PersistExecute;

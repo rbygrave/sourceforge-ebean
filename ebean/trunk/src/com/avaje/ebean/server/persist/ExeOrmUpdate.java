@@ -26,10 +26,10 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.BindParams;
+import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.OrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.util.BindParamsParser;
 

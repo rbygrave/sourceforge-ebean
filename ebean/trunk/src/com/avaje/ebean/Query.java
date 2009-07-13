@@ -7,9 +7,6 @@ import java.util.Set;
 
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.expression.Expr;
-import com.avaje.ebean.expression.Expression;
-import com.avaje.ebean.expression.ExpressionList;
 
 /**
  * Object relational query for finding a List, Set, Map or single entity bean.
@@ -372,6 +369,11 @@ public interface Query<T> extends Serializable {
 	 * Return the type of query (List, Set, Map, Bean, rowCount etc).
 	 */
 	public Type getType();
+	
+	/**
+	 * Return the ExpressionFactory used by this query.
+	 */
+	public ExpressionFactory getExpressionFactory();
 	
 	/**
 	 * Returns true if this query was tuned by autoFetch.

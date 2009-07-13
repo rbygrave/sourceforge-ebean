@@ -2,7 +2,6 @@ package com.avaje.ebean.server.validate;
 
 import java.lang.annotation.Annotation;
 
-import com.avaje.ebean.bean.EmailValidation;
 
 /**
  * Creates a Email validator.

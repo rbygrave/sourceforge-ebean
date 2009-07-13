@@ -22,6 +22,8 @@ package com.avaje.ebean.server.core;
 import java.sql.Connection;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.ServerTransaction;
 
 /**
  * Base class for find and persist requests.

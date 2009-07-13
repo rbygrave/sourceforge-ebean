@@ -33,14 +33,16 @@ import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.TransactionEvent;
+import com.avaje.ebean.internal.TransactionEventTable;
+import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
 import com.avaje.ebean.net.Constants;
-import com.avaje.ebean.server.core.ServerTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.thread.ThreadPool;
 import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
-import com.avaje.ebean.server.transaction.TransactionEventTable.TableIUD;
 
 /**
  * Manages transactions.

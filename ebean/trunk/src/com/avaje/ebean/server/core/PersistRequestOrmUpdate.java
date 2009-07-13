@@ -21,6 +21,8 @@ package com.avaje.ebean.server.core;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.ServerTransaction;
 import com.avaje.ebean.query.OrmUpdate;
 import com.avaje.ebean.query.OrmUpdate.OrmUpdateType;
 import com.avaje.ebean.server.deploy.BeanDescriptor;

@@ -6,16 +6,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.Expression;
+import com.avaje.ebean.ExpressionFactory;
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.Junction;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.bean.BeanQueryRequest;
 import com.avaje.ebean.el.ElPropertyDeploy;
-import com.avaje.ebean.expression.Expr;
-import com.avaje.ebean.expression.Expression;
-import com.avaje.ebean.expression.ExpressionList;
-import com.avaje.ebean.expression.ExpressionRequest;
-import com.avaje.ebean.expression.InternalExpressionList;
-import com.avaje.ebean.expression.Junction;
+import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.internal.InternalExpression;
+import com.avaje.ebean.internal.InternalExpressionList;
+import com.avaje.ebean.internal.InternalExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
@@ -25,14 +26,30 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 
 	private static final long serialVersionUID = -6992345500247035947L;
 
-	final ArrayList<Expression> list = new ArrayList<Expression>();
+	private final ArrayList<InternalExpression> list = new ArrayList<InternalExpression>();
 	
-	final Query<T> query;
+	private final Query<T> query;
 	
+	private transient ExpressionFactory expr;
+
 	public DefaultExpressionList(Query<T> query) {
 		this.query = query;
+		this.expr = query.getExpressionFactory();
 	}
 	
+	
+	/**
+	 * Set the ExpressionFactory.
+	 * <p>
+	 * After deserialisation so that it can be further modified.
+	 * </p>
+	 */
+	public void setExpressionFactory(ExpressionFactory expr) {
+		this.expr = expr;
+	}
+
+
+
 	/**
 	 * Return a copy of the expression list.
 	 * <p>
@@ -146,7 +163,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	}
 	
 	public DefaultExpressionList<T> add(Expression expr) {
-		list.add(expr);
+		list.add((InternalExpression)expr);
 		return this;
 	}
 	
@@ -154,10 +171,10 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 		return list.isEmpty();
 	}
 
-	public String buildSql(ExpressionRequest request) {
+	public String buildSql(InternalExpressionRequest request) {
 		
 		for (int i = 0, size=list.size(); i < size; i++) {
-			Expression expression = list.get(i);
+			InternalExpression expression = list.get(i);
 			if (i > 0){
 				request.append(" and ");
 			}
@@ -167,10 +184,10 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	}
 	
 
-	public ArrayList<Object> buildBindValues(ExpressionRequest request) {
+	public ArrayList<Object> buildBindValues(InternalExpressionRequest request) {
 	
 		for (int i = 0, size=list.size(); i < size; i++) {
-			Expression expression = list.get(i);
+			InternalExpression expression = list.get(i);
 			expression.addBindValues(request);
 		}
 		return request.getBindValues();
@@ -182,7 +199,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public int queryAutoFetchHash() {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
-			Expression expression = list.get(i);
+			InternalExpression expression = list.get(i);
 			hash = hash*31 + expression.queryAutoFetchHash();
 		}
 		return hash;
@@ -194,7 +211,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public int queryPlanHash(BeanQueryRequest<?> request) {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
-			Expression expression = list.get(i);
+			InternalExpression expression = list.get(i);
 			hash = hash*31 + expression.queryPlanHash(request);
 		}
 		return hash;
@@ -206,176 +223,176 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public int queryBindHash() {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
-			Expression expression = list.get(i);
+			InternalExpression expression = list.get(i);
 			hash = hash*31 + expression.queryBindHash();
 		}
 		return hash;
 	}
 	
 	public ExpressionList<T> eq(String propertyName, Object value) {
-		add(Expr.eq(propertyName, value));
+		add(expr.eq(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> ieq(String propertyName, String value) {
-		add(Expr.ieq(propertyName, value));
+		add(expr.ieq(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> ne(String propertyName, Object value) {
-		add(Expr.ne(propertyName, value));
+		add(expr.ne(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> allEq(Map<String, Object> propertyMap) {
-		add(Expr.allEq(propertyMap));
+		add(expr.allEq(propertyMap));
 		return this;
 	}
 
 	public ExpressionList<T> and(Expression expOne, Expression expTwo) {
-		add(Expr.and(expOne, expTwo));
+		add(expr.and(expOne, expTwo));
 		return this;
 	}
 
 	public ExpressionList<T> between(String propertyName, Object value1, Object value2) {
-		add(Expr.between(propertyName, value1, value2));
+		add(expr.between(propertyName, value1, value2));
 		return this;
 	}
 
 	public Junction conjunction() {
-		Junction conjunction = Expr.conjunction();
+		Junction conjunction = expr.conjunction();
 		add(conjunction);
 		return conjunction;
 	}
 
 	public ExpressionList<T> contains(String propertyName, String value) {
-		add(Expr.contains(propertyName, value));
+		add(expr.contains(propertyName, value));
 		return this;
 	}
 
 	public Junction disjunction() {
-		Junction disjunction = Expr.disjunction();
+		Junction disjunction = expr.disjunction();
 		add(disjunction);
 		return disjunction;
 	}
 
 	public ExpressionList<T> endsWith(String propertyName, String value) {
-		add(Expr.endsWith(propertyName, value));
+		add(expr.endsWith(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> ge(String propertyName, Object value) {
-		add(Expr.ge(propertyName, value));
+		add(expr.ge(propertyName, value));
 		return this;
 	}
 		
 	public ExpressionList<T> gt(String propertyName, Object value) {
-		add(Expr.gt(propertyName, value));
+		add(expr.gt(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> icontains(String propertyName, String value) {
-		add(Expr.icontains(propertyName, value));
+		add(expr.icontains(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> idEq(Object value) {
-		add(Expr.idEq(value));
+		add(expr.idEq(value));
 		return this;
 	}
 
 	public ExpressionList<T> iendsWith(String propertyName, String value) {
-		add(Expr.iendsWith(propertyName, value));
+		add(expr.iendsWith(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> ilike(String propertyName, String value) {
-		add(Expr.ilike(propertyName, value));
+		add(expr.ilike(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> in(String propertyName, Query<?> subQuery){
-		add(Expr.in(propertyName, subQuery));
+		add(expr.in(propertyName, subQuery));
 		return this;	
 	}
 	
 	public ExpressionList<T> in(String propertyName, Collection<?> values) {
-		add(Expr.in(propertyName, values));
+		add(expr.in(propertyName, values));
 		return this;
 	}
 
 	public ExpressionList<T> in(String propertyName, Object[] values) {
-		add(Expr.in(propertyName, values));
+		add(expr.in(propertyName, values));
 		return this;
 	}
 
 	public ExpressionList<T> isNotNull(String propertyName) {
-		add(Expr.isNotNull(propertyName));
+		add(expr.isNotNull(propertyName));
 		return this;
 	}
 
 	public ExpressionList<T> isNull(String propertyName) {
-		add(Expr.isNull(propertyName));
+		add(expr.isNull(propertyName));
 		return this;
 	}
 
 	public ExpressionList<T> istartsWith(String propertyName, String value) {
-		add(Expr.istartsWith(propertyName, value));
+		add(expr.istartsWith(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> le(String propertyName, Object value) {
-		add(Expr.le(propertyName, value));
+		add(expr.le(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> exampleLike(Object example) {
-		add(Expr.exampleLike(example));
+		add(expr.exampleLike(example));
 		return this;
 	}
 
 	public ExpressionList<T> iexampleLike(Object example) {
-		add(Expr.iexampleLike(example));
+		add(expr.iexampleLike(example));
 		return this;
 	}
 
 	public ExpressionList<T> like(String propertyName, String value) {
-		add(Expr.like(propertyName, value));
+		add(expr.like(propertyName, value));
 		return this;
 	}
 		
 	public ExpressionList<T> lt(String propertyName, Object value) {
-		add(Expr.lt(propertyName, value));
+		add(expr.lt(propertyName, value));
 		return this;
 	}
 
 	public ExpressionList<T> not(Expression exp) {
-		add(Expr.not(exp));
+		add(expr.not(exp));
 		return this;
 	}
 
 	public ExpressionList<T> or(Expression expOne, Expression expTwo) {
-		add(Expr.or(expOne, expTwo));
+		add(expr.or(expOne, expTwo));
 		return this;
 	}
 
 	public ExpressionList<T> raw(String raw, Object value) {
-		add(Expr.raw(raw, value));
+		add(expr.raw(raw, value));
 		return this;
 	}
 
 	public ExpressionList<T> raw(String raw, Object[] values) {
-		add(Expr.raw(raw, values));
+		add(expr.raw(raw, values));
 		return this;
 	}
 
 	public ExpressionList<T> raw(String raw) {
-		add(Expr.raw(raw));
+		add(expr.raw(raw));
 		return this;
 	}
 
 	public ExpressionList<T> startsWith(String propertyName, String value) {
-		add(Expr.startsWith(propertyName, value));
+		add(expr.startsWith(propertyName, value));
 		return this;
 	}
 	

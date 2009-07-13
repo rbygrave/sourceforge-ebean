@@ -20,9 +20,9 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.server.core.InternalEbeanServer;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**

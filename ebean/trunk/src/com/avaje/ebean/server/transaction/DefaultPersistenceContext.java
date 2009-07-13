@@ -21,9 +21,8 @@ package com.avaje.ebean.server.transaction;
 
 import java.util.HashMap;
 
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.enhance.subclass.SubClassUtil;
-import com.avaje.ebean.server.core.PersistenceContext;
+import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.server.subclass.SubClassUtil;
 
 /**
  * Default implementation of PersistenceContext.
@@ -65,7 +64,7 @@ public final class DefaultPersistenceContext implements PersistenceContext {
      * already loaded into the PersistanceContext.
      * </p>
      */
-    public boolean add(EntityBean entityBean, Object id, boolean forceReplace) {
+    public boolean add(Object id, Object entityBean, boolean forceReplace) {
 
     	ClassContext classMap = getClassContext(entityBean.getClass());
         if (forceReplace || !classMap.containsKey(id)) {
@@ -79,14 +78,14 @@ public final class DefaultPersistenceContext implements PersistenceContext {
     /**
      * Set an object into the PersistanceContext.
      */
-    public void set(Class<?> beanType, Object id, EntityBean bean) {
-    	getClassContext(beanType).put(id, bean);
+    public void set(Object id, Object bean) {
+    	getClassContext(bean.getClass()).put(id, bean);
     }
 
     /**
      * Return an object given its type and unique id.
      */
-    public EntityBean get(Class<?> beanType, Object id) {
+    public Object get(Class<?> beanType, Object id) {
 
     	return getClassContext(beanType).get(id);
     }
@@ -128,12 +127,12 @@ public final class DefaultPersistenceContext implements PersistenceContext {
 
     private static class ClassContext {
     	
-    	HashMap<Object,EntityBean> map = new HashMap<Object, EntityBean>();
+    	HashMap<Object,Object> map = new HashMap<Object, Object>();
         
-    	public EntityBean get(Object id){
+    	public Object get(Object id){
     		return map.get(id);
     	}
-    	public void put(Object id, EntityBean b){
+    	public void put(Object id, Object b){
     		map.put(id, b);
     	}
     	public boolean containsKey(Object id){
@@ -142,7 +141,7 @@ public final class DefaultPersistenceContext implements PersistenceContext {
     	public void clear(){
     		map.clear();
     	}
-    	public EntityBean remove(Object id){
+    	public Object remove(Object id){
     		return map.remove(id);
     	}
     }

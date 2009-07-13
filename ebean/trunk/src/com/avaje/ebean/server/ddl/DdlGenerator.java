@@ -19,7 +19,7 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.server.core.InternalEbeanServer;
+import com.avaje.ebean.internal.InternalEbeanServer;
 
 /**
  * Controls the generation of DDL and potentially runs the resulting scripts.

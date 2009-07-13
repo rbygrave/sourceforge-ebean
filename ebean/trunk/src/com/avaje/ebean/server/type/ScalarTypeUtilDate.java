@@ -26,7 +26,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 
-import com.avaje.ebean.bean.BasicTypeConverter;
+import com.avaje.ebean.server.core.BasicTypeConverter;
 
 /**
  * ScalarType for java.util.Date.
