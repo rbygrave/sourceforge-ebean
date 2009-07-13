@@ -33,23 +33,26 @@ import java.util.Set;
  * transaction you should use this transaction via methods on EbeanServer.
  * </p>
  * 
- * <pre><code>
+ * <pre class="code">
+ * 
  *        Object extaBeanToSave = ...;
  *        Transaction t = request.getTransaction();
  *        EbeanServer server = request.getEbeanServer();
  *        server.save(extraBeanToSave, t);
- * </code></pre>
+ * 
+ * </pre>
  * 
  * <p>
- * It is worth noting that BeanPersistListener is different in three main ways from
- * BeanPersistController postXXX methods.
+ * It is worth noting that BeanPersistListener is different in three main ways
+ * from BeanPersistController postXXX methods.
  * <ul>
- * <li>BeanPersistListener only sees successfully committed events. BeanController pre
- * and post methods occur before the commit or a rollback and will see events
- * that are later rolled back</li>
+ * <li>BeanPersistListener only sees successfully committed events.
+ * BeanController pre and post methods occur before the commit or a rollback and
+ * will see events that are later rolled back</li>
  * <li>BeanPersistListener runs in a background thread and will not effect the
  * response time of the actual persist where as BeanController code will</li>
- * <li>BeanPersistListener can be notified of events from other servers in a cluster.</li>
+ * <li>BeanPersistListener can be notified of events from other servers in a
+ * cluster.</li>
  * </ul>
  * </p>
  * <p>
@@ -59,10 +62,24 @@ import java.util.Set;
  */
 public interface BeanPersistController {
 
+	/**
+	 * When there are multiple BeanPersistController's for a given entity type
+	 * this controls the order in which they are executed.
+	 * <p>
+	 * Lowest values are executed first.
+	 * </p>
+	 * 
+	 * @return an int used to control the order BeanPersistController's are
+	 *         executed
+	 */
 	public int getExecutionOrder();
-	
+
+	/**
+	 * Return true if this BeanPersistController should be registered for events
+	 * on this entity type.
+	 */
 	public boolean isRegisterFor(Class<?> cls);
-	
+
 	/**
 	 * Prior to the insert perform some action. Return true if you want the
 	 * default functionality to continue.

@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.persistence.OptimisticLockException;
 
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.event.BeanPersistController;
 
 /**
  * Provides the API for fetching and saving beans to a particular DataSource.
@@ -708,5 +709,15 @@ public interface EbeanServer {
 	 * </p>
 	 */
 	public <T> T execute(TxCallable<T> c);
+
+	/**
+	 * Register the BeanPersistController.
+	 */
+	public void register(BeanPersistController c);
+
+	/**
+	 * De-register the BeanPersistController.
+	 */
+	public void deregister(BeanPersistController c);
 
 }

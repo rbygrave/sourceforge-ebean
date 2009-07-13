@@ -16,10 +16,32 @@ public class ChainedBeanPersistController implements BeanPersistController {
 	private final List<BeanPersistController> list;
 	private final BeanPersistController[] chain;
 	
+	/**
+	 * Construct adding 2 BeanPersistController's.
+	 */
+	public ChainedBeanPersistController(BeanPersistController c1, BeanPersistController c2) {
+		this(addList(c1, c2));
+	}
+	
+	/**
+	 * Helper method used to create a list from 2 BeanPersistController's.
+	 */
+	private static List<BeanPersistController> addList(BeanPersistController c1, BeanPersistController c2) {
+		ArrayList<BeanPersistController> addList = new ArrayList<BeanPersistController>(2);
+		addList.add(c1);
+		addList.add(c2);
+		return addList;
+	}
+	
+	/**
+	 * Construct given the list of BeanPersistController's.
+	 * @param list
+	 */
 	public ChainedBeanPersistController(List<BeanPersistController> list) {
 		this.list = list;
-		this.chain = list.toArray(new BeanPersistController[list.size()]);
-		Arrays.sort(chain, SORTER);
+		BeanPersistController[] c = list.toArray(new BeanPersistController[list.size()]);
+		Arrays.sort(c, SORTER);
+		this.chain = c;
 	}
 	
 	/**
