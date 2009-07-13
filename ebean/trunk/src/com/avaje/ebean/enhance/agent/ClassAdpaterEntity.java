@@ -1,7 +1,5 @@
 package com.avaje.ebean.enhance.agent;
 
-import java.util.logging.Logger;
-
 import com.avaje.ebean.enhance.asm.AnnotationVisitor;
 import com.avaje.ebean.enhance.asm.ClassAdapter;
 import com.avaje.ebean.enhance.asm.ClassVisitor;
@@ -19,16 +17,14 @@ import com.avaje.ebean.enhance.asm.Opcodes;
  * </p>
  */
 public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants {
-
-	static final Logger logger = Logger.getLogger(ClassAdpaterEntity.class.getName());
 		
-	final EnhanceContext enhanceContext;
+	private final EnhanceContext enhanceContext;
 	
-	final ClassLoader classLoader;
+	private final ClassLoader classLoader;
 	
-	final ClassMeta classMeta;
+	private final ClassMeta classMeta;
 
-	boolean firstMethod = true;
+	private boolean firstMethod = true;
 
 	public ClassAdpaterEntity(ClassVisitor cv, ClassLoader classLoader, EnhanceContext context) {
 		super(cv);
@@ -114,7 +110,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 	private boolean isEbeanFieldMarker(String name, String desc, String signature) {
 		
 		if (name.equals(MarkerField._EBEAN_MARKER)){
-			if (desc.equals("Ljava/lang/String;")){
+			if (!desc.equals("Ljava/lang/String;")){
 				String m = "Error: _EBEAN_MARKER field of wrong type? "+desc;
 				classMeta.log(m);
 			}
