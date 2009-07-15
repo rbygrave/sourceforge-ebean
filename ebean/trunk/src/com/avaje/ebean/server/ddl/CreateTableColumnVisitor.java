@@ -67,10 +67,21 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
 		TableJoinColumn[] columns = p.getTableJoin().columns();
 
+		StringBuilder constraintExpr = new StringBuilder();
+		constraintExpr.append("constraint uq_")
+			.append(p.getBeanDescriptor().getBaseTable())
+			.append("_"+columns[0].getLocalDbColumn())
+			.append(" unique (");
+		
 		for (int i = 0; i < columns.length; i++) {
 			
 			String dbCol = columns[i].getLocalDbColumn();
 
+			if (i > 0){
+				constraintExpr.append(", ");
+			}
+			constraintExpr.append(dbCol);
+			
 			if (parent.wroteColumns.contains(dbCol)) {
 				continue;
 			}
@@ -93,6 +104,12 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 			ctx.write(",").writeNewLine();
 			parent.wroteColumns.add(p.getDbColumn());
 		}
+		constraintExpr.append(")");
+		
+		if (p.isOneToOne()){
+			parent.writeConstraint( constraintExpr.toString());
+		}
+		
 	}
 
 	@Override
