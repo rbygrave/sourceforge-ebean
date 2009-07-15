@@ -6,8 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -18,13 +16,10 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.launching.JavaRuntime;
 
 import com.avaje.ebean.enhance.agent.Transformer;
 import com.avaje.eclipse.buildplugin.BuildPluginActivator;
@@ -33,94 +28,59 @@ public final class EnhanceBuilder extends IncrementalProjectBuilder {
 
 	public static final String BUILDER_ID = "com.avaje.eclipse.buildplugin.enhanceBuilder";
 
-	private String getPath(IClasspathEntry entry){
-		
-		switch (entry.getContentKind()) {
-		case IClasspathEntry.CPE_CONTAINER:
-			System.out.println("Container: "+entry);
-			return null;
-
-		case IClasspathEntry.CPE_LIBRARY:
-			System.out.println("CPE_LIBRARY: "+entry);
-			return null;
-
-		case IClasspathEntry.CPE_PROJECT:
-			System.out.println("CPE_PROJECT: "+entry);
-			return null;
-
-		case IClasspathEntry.CPE_SOURCE:
-			System.out.println("CPE_SOURCE: "+entry);
-			IPath p = entry.getOutputLocation();
-			return p.toString();
-			
-		case IClasspathEntry.CPE_VARIABLE:
-			System.out.println("CPE_VARIABLE: "+entry);
-			return null;
-
-		default:
-			return null;
-		}
-	}
-	
-	private List<String> getPaths(IClasspathEntry[] resolvedClasspath) {
-		
-		List<String> list = new ArrayList<String>();
-		
-		for (int i = 0; i < resolvedClasspath.length; i++) {
-			String cp = getPath(resolvedClasspath[i]);
-			if (cp != null){
-				list.add(cp);
-			}
-		}
-		
-		return list;
-	}
-	
 	@SuppressWarnings("unchecked")
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
 		
 		IProject project = getProject();
 		IJavaProject javaProject = JavaCore.create(project);
-		IClasspathEntry[] resolvedClasspath = javaProject.getResolvedClasspath(true);
 		
-		List<String> cp = getPaths(resolvedClasspath);
+		String[] ideClassPath = JavaRuntime.computeDefaultRuntimeClassPath(javaProject);
+		if (ideClassPath == null){
+			BuildPluginActivator.logError("No classPath from JavaRuntime.computeDefaultRuntimeClassPath(javaProject)", null);
+			return null;
+		}
 		
+		StringBuilder cp = new StringBuilder();
+		for (int i = 0; i < ideClassPath.length; i++) {
+			cp.append(ideClassPath[i]).append(";");
+		}
+		
+		String classPath = cp.toString();
+		
+		if (BuildPluginActivator.getDebugLevel() >= 2){
+			BuildPluginActivator.logInfo("... classpath: "+classPath);
+		}
+				
 		if (kind == FULL_BUILD) {
-			fullBuild(javaProject, monitor, cp);
+			fullBuild(classPath, monitor);
 		} else {
 			IResourceDelta delta = getDelta(project);
 			if (delta == null) {
-				fullBuild(javaProject, monitor, cp);
+				fullBuild(classPath, monitor);
 			} else {
-				incrementalBuild(javaProject, delta, monitor, cp);
+				incrementalBuild(classPath, delta, monitor);
 			}
 		}
 		return null;
 	}
 
-	private void fullBuild(IJavaProject javaProject, final IProgressMonitor monitor, List<String> cp)
+	private void fullBuild(String classPath, final IProgressMonitor monitor)
 			throws CoreException {
 		try {
-			getProject().accept(new ResourceVisitor(javaProject, monitor, cp));
+			getProject().accept(new ResourceVisitor(classPath, monitor));
 		} catch (CoreException e) {
 			BuildPluginActivator.logError("Error with fullBuild", e);
 		}
 	}
 
-	private void incrementalBuild(IJavaProject javaProject, IResourceDelta delta,
-			IProgressMonitor monitor, List<String> cp) throws CoreException {
+	private void incrementalBuild(String classPath, IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
 		
-		delta.accept(new DeltaVisitor(javaProject, monitor, cp));
+		delta.accept(new DeltaVisitor(classPath, monitor));
 	}
+
 	
-	private String getClassBinDirectory(IFile file, String className){
-		String rawLocation = file.getRawLocation().toString();
-		int len = rawLocation.length() - className.length() - ".class".length();
-		return rawLocation.substring(0, len);
-	}
-	
-	private void checkResource(IJavaProject project, IResource resource, IProgressMonitor monitor, List<String> cp) {
+	private void checkResource(String classPath, IResource resource, IProgressMonitor monitor) {
 		
 		if (resource instanceof IFile && resource.getName().endsWith(".class")) {
 			IFile file = (IFile) resource;
@@ -137,18 +97,13 @@ public final class EnhanceBuilder extends IncrementalProjectBuilder {
 				String className = DetermineClass.getClassName(classBytes);
 				
 				if (pluginDebug >= 2){
-					BuildPluginActivator.logInfo("... processing class: "+className, null);
+					BuildPluginActivator.logInfo("... processing class: "+className);
 				}
 
-				IType type = project.findType(className);
-				IClassFile classFile = type.getClassFile();
-				byte[] classbytes = classFile.getBytes();
-				
-				System.out.println("Got bytes "+classbytes.length+" = "+classBytes.length);
-				
 				// use this to find other class files for inheritance purposes
-				String classBinDirectory = getClassBinDirectory(file, className);
-				Transformer et = new Transformer(classBinDirectory, "debug="+enhanceDebug);
+				//String classBinDirectory = getClassBinDirectory(file, className);
+				
+				Transformer et = new Transformer(classPath, "debug="+enhanceDebug);
 
 				PrintStream transformLog = null;
 				if (enhanceDebug > 0){
@@ -203,25 +158,23 @@ public final class EnhanceBuilder extends IncrementalProjectBuilder {
 	private class DeltaVisitor implements IResourceDeltaVisitor {
 		
 		private final IProgressMonitor monitor;
-		private final List<String> cp;
-		private final IJavaProject javaProject;
+		private final String classPath;
 		
-		private DeltaVisitor(IJavaProject javaProject, IProgressMonitor monitor, List<String> cp) {
-			this.javaProject = javaProject;
+		private DeltaVisitor(String classPath, IProgressMonitor monitor) {
+			this.classPath = classPath;
 			this.monitor = monitor;
-			this.cp = cp;
 		}
 
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			IResource resource = delta.getResource();
 			switch (delta.getKind()) {
 			case IResourceDelta.ADDED:
-				checkResource(javaProject, resource, monitor, cp);
+				checkResource(classPath, resource, monitor);
 				break;
 			case IResourceDelta.REMOVED:
 				break;
 			case IResourceDelta.CHANGED:
-				checkResource(javaProject, resource, monitor, cp);
+				checkResource(classPath, resource, monitor);
 				break;
 			}
 			//return true to continue visiting children.
@@ -232,15 +185,13 @@ public final class EnhanceBuilder extends IncrementalProjectBuilder {
 	private class ResourceVisitor implements IResourceVisitor {
 		
 		private final IProgressMonitor monitor;
-		private final List<String> cp;
-		private final IJavaProject javaProject;
-		private ResourceVisitor(IJavaProject javaProject, final IProgressMonitor monitor, List<String> cp) {
-			this.javaProject = javaProject;
+		private final String classPath;
+		private ResourceVisitor(String classPath, final IProgressMonitor monitor) {
+			this.classPath = classPath;
 			this.monitor = monitor;
-			this.cp = cp;
 		}
 		public boolean visit(IResource resource) {
-			checkResource(javaProject, resource, monitor, cp);
+			checkResource(classPath, resource, monitor);
 			return true;
 		}
 	}
