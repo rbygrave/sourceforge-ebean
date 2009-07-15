@@ -1,5 +1,6 @@
 package com.avaje.ebean.enhance.agent;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -23,31 +24,31 @@ public class ClassMetaReader {
 
 	private static Logger logger = Logger.getLogger(ClassMetaReader.class.getName());
 
-	Map<String, ClassMeta> cache = new HashMap<String, ClassMeta>();
+	private Map<String, ClassMeta> cache = new HashMap<String, ClassMeta>();
 
-	final EnhanceContext enhanceContext;
+	private final EnhanceContext enhanceContext;
 
-	final URL[] urls;
+	private final URL[] urls;
 
 	public ClassMetaReader(EnhanceContext enhanceContext, URL[] urls) {
 		this.urls = urls == null ? new URL[0] : urls;
 		this.enhanceContext = enhanceContext;
 	}
 
-	public ClassMeta get(boolean readAnnotations, String name, ClassLoader classLoader) throws ClassNotFoundException {
-		return getWithCache(readAnnotations, name, classLoader);
+	public ClassMeta get(boolean readMethodAnnotations, String name, ClassLoader classLoader) throws ClassNotFoundException {
+		return getWithCache(readMethodAnnotations, name, classLoader);
 	}
 
-	private ClassMeta getWithCache(boolean readAnnotations, String name, ClassLoader classLoader)
+	private ClassMeta getWithCache(boolean readMethodAnnotations, String name, ClassLoader classLoader)
 			throws ClassNotFoundException {
 		
 		synchronized (cache) {
 			ClassMeta meta = cache.get(name);
 			if (meta == null) {
-				meta = readFromResource(readAnnotations, name, classLoader);
+				meta = readFromResource(readMethodAnnotations, name, classLoader);
 				if (meta != null) {
 					if (meta.isCheckSuperClassForEntity()) {
-						ClassMeta superMeta = getWithCache(readAnnotations, meta.getSuperClassName(), classLoader);
+						ClassMeta superMeta = getWithCache(readMethodAnnotations, meta.getSuperClassName(), classLoader);
 						if (superMeta != null && superMeta.isEntity()) {
 							meta.setSuperMeta(superMeta);
 						}
@@ -59,7 +60,7 @@ public class ClassMetaReader {
 		}
 	}
 
-	private ClassMeta readFromResource(boolean readAnnotations, String className, ClassLoader classLoader)
+	private ClassMeta readFromResource(boolean readMethodAnnotations, String className, ClassLoader classLoader)
 			throws ClassNotFoundException {
 
 		String resource = className.replace('.', '/') + ".class";
@@ -78,18 +79,18 @@ public class ClassMetaReader {
 			byte[] classBytes = InputStreamTransform.readBytes(is);
 
 			ClassReader cr = new ClassReader(classBytes);
-			ClassMetaReaderVisitor ca = new ClassMetaReaderVisitor(readAnnotations, enhanceContext);
+			ClassMetaReaderVisitor ca = new ClassMetaReaderVisitor(readMethodAnnotations, enhanceContext);
 
 			cr.accept(ca, 0);
 
 			return ca.getClassMeta();
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Extra ClassPath URLS: " + Arrays.toString(urls));
 
-			String msg = "Error trying to read the class info for " + resource;
+			String msg = "Error trying to read the class info for " + resource+" URLS:"+Arrays.toString(urls);
 			logger.log(Level.SEVERE, msg, e);
-			return null;
+			throw new RuntimeException(msg, e);
 		}
 
 	}

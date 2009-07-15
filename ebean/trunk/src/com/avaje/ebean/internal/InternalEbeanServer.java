@@ -26,7 +26,7 @@ import javax.management.MBeanServer;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.cache.ServerCacheManager;
@@ -40,7 +40,7 @@ import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 /**
  * Service Provider extension to EbeanServer.
  */
-public interface InternalEbeanServer extends InternalEbean {
+public interface InternalEbeanServer extends LazyLoadEbeanServer {
 	
 	/**
 	 * Return the DDL generator.

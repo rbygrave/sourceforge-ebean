@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 import javax.persistence.JoinColumn;
 
-import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.deploy.BeanCascadeInfo;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.TableJoin;

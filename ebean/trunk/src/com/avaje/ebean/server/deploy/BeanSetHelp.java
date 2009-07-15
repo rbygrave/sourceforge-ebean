@@ -9,7 +9,7 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.common.BeanSet;
 
@@ -20,7 +20,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	
 	final BeanPropertyAssocMany<T> many;
 	final BeanDescriptor<T> targetDescriptor;
-	InternalEbean internalEbean;
+	LazyLoadEbeanServer internalEbean;
 	
 	/**
 	 * When attached to a specific many property.
@@ -38,7 +38,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		this.targetDescriptor = null;
 	}
 	
-	public void setInternalEbean(InternalEbean internalEbean){
+	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
 		this.internalEbean = internalEbean;
 	}
 	

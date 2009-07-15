@@ -39,7 +39,7 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.el.ElComparator;
@@ -197,14 +197,14 @@ public class BeanDescriptor<T> {
 	private volatile BeanPersistController persistController;
 
 	/**
+	 * Listens for post commit insert update and delete events.
+	 */
+	private volatile BeanPersistListener<T> persistListener;
+
+	/**
 	 * If set overrides the find implementation. Server side only.
 	 */
 	private final BeanFinder<T> beanFinder;
-
-	/**
-	 * Listens for post commit insert update and delete events.
-	 */
-	private final BeanPersistListener<T> beanPersistListener;
 
 	/**
 	 * The table joins for this bean.
@@ -357,7 +357,7 @@ public class BeanDescriptor<T> {
 	
 	private final ServerCacheManager cacheManager;
 	
-	private InternalEbean internalEbean;
+	private LazyLoadEbeanServer internalEbean;
 	
 	private ServerCache beanCache;
 
@@ -383,8 +383,8 @@ public class BeanDescriptor<T> {
 		this.inheritInfo = deploy.getInheritInfo();
 
 		this.beanFinder = deploy.getBeanFinder();
-		this.persistController = deploy.getBeanController();
-		this.beanPersistListener = deploy.getBeanPersistListener();
+		this.persistController = deploy.getPersistController();
+		this.persistListener = deploy.getPersistListener();
 
 		this.idType = deploy.getIdType();
 		this.idGeneratorName = InternString.intern(deploy.getIdGeneratorName());
@@ -464,7 +464,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * Set the server. Primarily so that the Many's can lazy load.
 	 */
-	public void setInternalEbean(InternalEbean internalEbean){
+	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
 		this.internalEbean = internalEbean;
 		for (int i = 0; i < propertiesMany.length; i++) {
 			// used for creating lazy loading lists etc 
@@ -475,7 +475,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * Return the EbeanServer instance that owns this BeanDescriptor.
 	 */
-	public InternalEbean getInternalEbean() {
+	public LazyLoadEbeanServer getInternalEbean() {
 		return internalEbean;
 	}
 
@@ -1346,8 +1346,8 @@ public class BeanDescriptor<T> {
 	/**
 	 * Return the beanListener.
 	 */
-	public BeanPersistListener<T> getBeanPersistListener() {
-		return beanPersistListener;
+	public BeanPersistListener<T> getPersistListener() {
+		return persistListener;
 	}
 
 	/**
@@ -1357,6 +1357,26 @@ public class BeanDescriptor<T> {
 		return beanFinder;
 	}
 
+	/**
+	 * De-register the BeanPersistListener.
+	 */
+	@SuppressWarnings("unchecked")
+	public void deregister(BeanPersistListener<?> listener){
+		// volatile read...
+		BeanPersistListener<T> currListener = persistListener;
+		if (currListener == null){
+			// nothing to deregister
+		} else {
+			BeanPersistListener<T> deregListener = (BeanPersistListener<T>)listener;
+			if (currListener instanceof ChainedBeanPersistListener<?>){
+				// remove it from the existing chain
+				persistListener = ((ChainedBeanPersistListener<T>)currListener).deregister(deregListener);
+			} else if (currListener.equals(deregListener)){
+				persistListener = null;
+			}
+		}
+	}
+	
 	/**
 	 * De-register the BeanPersistController.
 	 */
@@ -1369,8 +1389,36 @@ public class BeanDescriptor<T> {
 			if (c instanceof ChainedBeanPersistController){
 				// remove it from the existing chain
 				persistController = ((ChainedBeanPersistController)c).deregister(controller);
-			} else if (c == controller){
+			} else if (c.equals(controller)){
 				persistController = null;
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * Register the new BeanPersistController.
+	 */
+	@SuppressWarnings("unchecked")
+	public void register(BeanPersistListener<?> newPersistListener){
+		
+		if (!PersistListenerManager.isRegisterFor(beanType, newPersistListener)){
+			// skip
+		} else {
+			BeanPersistListener<T> newListener = (BeanPersistListener<T>)newPersistListener;
+			// volatile read...
+			BeanPersistListener<T> currListener = persistListener;
+			if (currListener == null){
+				persistListener = newListener;
+			} else {
+				if (currListener instanceof ChainedBeanPersistListener<?>){
+					// add it to the existing chain
+					persistListener = ((ChainedBeanPersistListener<T>)currListener).register(newListener);
+				} else {
+					// build new chain of the 2  
+					persistListener = new ChainedBeanPersistListener<T>(currListener, newListener);
+				}
 			}
 		}
 	}

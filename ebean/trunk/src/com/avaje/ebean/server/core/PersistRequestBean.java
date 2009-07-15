@@ -30,7 +30,6 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.ValidationException;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanPersistRequest;
@@ -111,7 +110,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
        super(server, t, persistExecute);
 		this.beanManager = mgr;
 		this.beanDescriptor = mgr.getBeanDescriptor();
-		this.beanPersistListener = beanDescriptor.getBeanPersistListener();
+		this.beanPersistListener = beanDescriptor.getPersistListener();
 		this.bean = bean;
 		this.parentBean = parentBean;
 

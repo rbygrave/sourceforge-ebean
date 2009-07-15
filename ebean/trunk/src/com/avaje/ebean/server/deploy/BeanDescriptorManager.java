@@ -36,21 +36,20 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.InternalEbean;
-import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
-import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.InternalConfiguration;
+import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
@@ -101,7 +100,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private final TypeManager typeManager;
 
-	private final DefaultPersistControllerManager persistControllerManager;
+	private final PersistControllerManager persistControllerManager;
 
 	private final BeanFinderManager beanFinderManager;
 
@@ -172,9 +171,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		
 		this.updateChangesOnly = config.getServerConfig().isUpdateChangesOnly();
 
-		this.persistControllerManager = new DefaultPersistControllerManager(bootupClasses);
+		this.persistControllerManager = new PersistControllerManager(bootupClasses);
+		this.persistListenerManager = new PersistListenerManager(bootupClasses);
 		this.beanFinderManager = new DefaultBeanFinderManager();
-		this.persistListenerManager = new DefaultPersistListenerManager();
 
 		this.reflectFactory = createReflectionFactory();
 		this.transientProperties = new TransientProperties();
@@ -213,7 +212,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	/**
 	 * Set the internal EbeanServer instance to all BeanDescriptors.
 	 */
-	public void setInternalEbean(InternalEbean internalEbean) {
+	public void setInternalEbean(LazyLoadEbeanServer internalEbean) {
 		for (BeanDescriptor<?> desc: immutableDescriptorList) {
 			desc.setInternalEbean(internalEbean);
 		}
@@ -372,8 +371,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	private void createListeners() {
 
 		int cc = persistControllerManager.getRegisterCount();
+		int lc = persistListenerManager.getRegisterCount();
 		int fc = beanFinderManager.createBeanFinders(bootupClasses.getBeanFinders());
-		int lc = persistListenerManager.createListeners(bootupClasses.getBeanListeners());
 
 		logger.fine("BeanPersistControllers[" + cc + "] BeanFinders[" + fc + "] BeanPersistListeners[" + lc + "] ");
 	}
@@ -844,16 +843,12 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		Class<T> beanType = descriptor.getBeanType();
 
 		persistControllerManager.addPersistControllers(descriptor);
+		persistListenerManager.addPersistListeners(descriptor);		
 		
 		BeanFinder<T> beanFinder = beanFinderManager.getBeanFinder(beanType);
 		if (beanFinder != null) {
 			descriptor.setBeanFinder(beanFinder);
 			logger.fine("BeanFinder on[" + descriptor.getFullName() + "] " + beanFinder.getClass().getName());
-		}
-		BeanPersistListener<T> beanListener = persistListenerManager.getListener(beanType);
-		if (beanListener != null) {
-			descriptor.setBeanPersistListener(beanListener);
-			logger.fine("BeanListener on[" + descriptor.getFullName() + "] " + beanListener.getClass().getName());
 		}
 	}
 

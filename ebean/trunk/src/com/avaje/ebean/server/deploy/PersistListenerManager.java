@@ -20,26 +20,66 @@
 package com.avaje.ebean.server.deploy;
 
 import java.util.List;
+import java.util.logging.Logger;
+
+import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.server.core.BootupClasses;
+import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 
 /**
- * Factory for controlling the construction of BeanListener.
+ * Manages the assignment/registration of BeanPersistListener with their
+ * respective DeployBeanDescriptor's.
  */
-public interface PersistListenerManager {
+public class PersistListenerManager {
+
+	private static final Logger logger = Logger.getLogger(PersistListenerManager.class.getName());
+
+	private final List<BeanPersistListener<?>> list;
+
+	public PersistListenerManager(BootupClasses bootupClasses) {
+		list = bootupClasses.getBeanPersistListeners();
+	}
+
+	public int getRegisterCount() {
+		return list.size();
+	}
 
 	/**
-	 * Return the number of beans with a registered listener.
+	 * Return the BeanPersistController for a given entity type.
 	 */
-	public int getRegisterCount();
+	@SuppressWarnings("unchecked")
+	public <T> void addPersistListeners(DeployBeanDescriptor<T> deployDesc) {
+
+		for (int i = 0; i < list.size(); i++) {
+			BeanPersistListener<?> c = list.get(i);
+			if (isRegisterFor(deployDesc.getBeanType(), c)) {
+				logger.fine("BeanPersistListener on[" + deployDesc.getFullName() + "] " + c.getClass().getName());
+				deployDesc.addPersistListener((BeanPersistListener<T>) c);
+			}
+		}
+	}
+
+	public static boolean isRegisterFor(Class<?> beanType, BeanPersistListener<?> c) {
+		Class<?> listenerEntity = getEntityClass(c.getClass());
+		return beanType.equals(listenerEntity);
+	}
 	
 	/**
-     * Create the appropriate BeanPersistListeners.
-     */
-    public int createListeners(List<Class<?>> listenerClassList);
-    
-    /**
-     * Return the BeanListener for a given entity type.
-     */
-    public <T> BeanPersistListener<T> getListener(Class<T> entityType);
+	 * Find the entity class given the controller class.
+	 * <p>
+	 * This uses reflection to find the generics parameter type.
+	 * </p>
+	 */
+	private static Class<?> getEntityClass(Class<?> controller) {
+
+		Class<?> cls = ParamTypeUtil.findParamType(controller, BeanPersistListener.class);
+		if (cls == null) {
+			String msg = "Could not determine the entity class (generics parameter type) from " + controller
+					+ " using reflection.";
+			throw new PersistenceException(msg);
+		}
+		return cls;
+	}
 }

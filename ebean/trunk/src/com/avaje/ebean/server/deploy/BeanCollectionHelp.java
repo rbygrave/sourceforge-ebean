@@ -7,7 +7,7 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 
 /**
@@ -18,7 +18,7 @@ public interface BeanCollectionHelp<T> {
 	/**
 	 * Set the EbeanServer that owns the configuration.
 	 */
-	public void setInternalEbean(InternalEbean internalEbean);
+	public void setInternalEbean(LazyLoadEbeanServer internalEbean);
 	
 	public BeanCollection<T> createEmpty();
 

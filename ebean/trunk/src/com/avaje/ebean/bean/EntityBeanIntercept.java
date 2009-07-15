@@ -44,7 +44,7 @@ public class EntityBeanIntercept implements Serializable {
 	
 	private transient NodeUsageCollector nodeUsageCollector;
 
-	private transient InternalEbean internalEbean;
+	private transient LazyLoadEbeanServer internalEbean;
 
 	private transient PropertyChangeSupport pcs;
 	
@@ -158,7 +158,7 @@ public class EntityBeanIntercept implements Serializable {
 		this.nodeUsageCollector = usageCollector;
 	}
 	
-	public void setInternalEbean(InternalEbean internalEbean) {
+	public void setInternalEbean(LazyLoadEbeanServer internalEbean) {
 		this.internalEbean = internalEbean;
 	}
 

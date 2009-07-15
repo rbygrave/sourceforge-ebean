@@ -27,7 +27,7 @@ public class SortByClause {
 	public static final String DESC = "desc";
 	
 	
-	List<Property> properties = new ArrayList<Property>();
+	private List<Property> properties = new ArrayList<Property>();
 	
 	/**
 	 * Return the number of properties in the clause.
@@ -57,11 +57,11 @@ public class SortByClause {
 		
 		private static final long serialVersionUID = 7588760362420690963L;
 
-		final String name;
+		private final String name;
 		
-		final boolean ascending;
+		private final boolean ascending;
 		
-		final Boolean nullsHigh;
+		private final Boolean nullsHigh;
 
 		public Property(String name, boolean ascending, Boolean nullsHigh) {
 			this.name = name;

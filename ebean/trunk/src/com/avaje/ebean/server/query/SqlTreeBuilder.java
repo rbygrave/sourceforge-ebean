@@ -30,11 +30,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.query.OrmQueryProperties;
+import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;

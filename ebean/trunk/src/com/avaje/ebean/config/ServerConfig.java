@@ -13,10 +13,11 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.AdminLogging.StmtLogLevel;
-import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
+import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.event.BeanPersistListener;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -115,6 +116,7 @@ public class ServerConfig {
 	private boolean updateChangesOnly = true;
 	
 	private List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
+	private List<BeanPersistListener<?>> persistListeners = new ArrayList<BeanPersistListener<?>>();
 	
 	/**
 	 * Return the name of the EbeanServer.
@@ -707,6 +709,10 @@ public class ServerConfig {
 
 	/**
 	 * Register a BeanPersistController instance.
+	 * <p>
+	 * Note alternatively you can use {@link #setPersistControllers(List)} to 
+	 * set all the BeanPersistController instances.
+	 * </p>
 	 */
 	public void add(BeanPersistController beanPersistController){
 		persistControllers.add(beanPersistController);
@@ -721,9 +727,42 @@ public class ServerConfig {
 
 	/**
 	 * Register all the BeanPersistController instances.
+	 * <p>
+	 * Note alternatively you can use {@link #add(BeanPersistController))} to 
+	 * add BeanPersistController instances one at a time.
+	 * </p>
 	 */
 	public void setPersistControllers(List<BeanPersistController> persistControllers) {
 		this.persistControllers = persistControllers;
+	}
+
+	/**
+	 * Register a BeanPersistListener instance.
+	 * <p>
+	 * Note alternatively you can use {@link #setPersistListeners(List)} to 
+	 * set all the BeanPersistListener instances.
+	 * </p>
+	 */
+	public void add(BeanPersistListener<?> beanPersistListener){
+		persistListeners.add(beanPersistListener);
+	}
+	
+	/**
+	 * Return the BeanPersistListener instances.
+	 */
+	public List<BeanPersistListener<?>> getPersistListeners() {
+		return persistListeners;
+	}
+
+	/**
+	 * Register all the BeanPersistListener instances.
+	 * <p>
+	 * Note alternatively you can use {@link #add(BeanPersistListener))} to 
+	 * add BeanPersistListener instances one at a time.
+	 * </p>
+	 */
+	public void setPersistListeners(List<BeanPersistListener<?>> persistListeners) {
+		this.persistListeners = persistListeners;
 	}
 
 	/**

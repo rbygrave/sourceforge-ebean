@@ -53,7 +53,6 @@ import com.avaje.ebean.Update;
 import com.avaje.ebean.ValuePair;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.common.ScopeTrans;

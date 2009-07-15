@@ -41,9 +41,9 @@ import com.avaje.ebean.internal.InternalEbeanServer;
 import com.avaje.ebean.internal.InternalEbeanServerFactory;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
+import com.avaje.ebean.server.cache.DefaultServerCacheManager;
 import com.avaje.ebean.server.cache.ServerCacheFactory;
 import com.avaje.ebean.server.cache.ServerCacheManager;
-import com.avaje.ebean.server.cache.DefaultServerCacheManager;
 import com.avaje.ebean.server.cache.ServerCacheOptions;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
@@ -180,7 +180,7 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 	private BootupClasses getBootupClasses(ServerConfig serverConfig) {
 		
 		BootupClasses bootupClasses = getBootupClasses1(serverConfig);
-		bootupClasses.addBeanControllers(serverConfig.getPersistControllers());
+		bootupClasses.addPersistControllers(serverConfig.getPersistControllers());
 		
 		return bootupClasses;
 	}
@@ -235,6 +235,7 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 		if (dbPlatform == null) {
 			DatabasePlatform db = factory.create(config);
 			config.setDatabasePlatform(db);
+			logger.info("DatabasePlatform "+config.getName()+" "+db.getName());
 		}
 	}
 	
