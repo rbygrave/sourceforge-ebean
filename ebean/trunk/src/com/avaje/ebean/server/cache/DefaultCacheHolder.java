@@ -3,8 +3,6 @@ package com.avaje.ebean.server.cache;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.avaje.ebean.annotation.Cache;
-
 /**
  * Manages the construction of caches.
  */
@@ -78,13 +76,13 @@ public class DefaultCacheHolder {
 	private ServerCacheOptions getCacheOptions(Class<?> beanType) {
 		
 		// read the deployment annotation
-		Cache cache = beanType.getAnnotation(Cache.class);
-		
-		if (cache == null){
+//		Cache cache = beanType.getAnnotation(Cache.class);
+//		
+//		if (cache == null){
 			return defaultOptions.copy();
-		}
+//		}
 		
-		return new ServerCacheOptions(defaultOptions, cache);
+//		return new ServerCacheOptions(defaultOptions, cache);
 	}
 	
 }
