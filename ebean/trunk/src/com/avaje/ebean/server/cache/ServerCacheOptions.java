@@ -39,11 +39,20 @@ public class ServerCacheOptions {
 	/**
 	 * Create merging default options with the deployment specified ones.
 	 */
-	public ServerCacheOptions(ServerCacheOptions d, com.avaje.ebean.annotation.Cache c){
-		this.maxSize = c.maxSize() != 0 ? c.maxSize() : d.getMaxSize();
-		this.maxIdleTime = c.maxIdleTime() != 0 ? c.maxIdleTime() : d.getMaxIdleTime();
-		this.maxTimeToLive = c.maxTimeToLive() != 0 ? c.maxTimeToLive() : d.getMaxIdleTime();
+	public ServerCacheOptions(ServerCacheOptions d){
+		this.maxSize = d.getMaxSize();
+		this.maxIdleTime = d.getMaxIdleTime();
+		this.maxTimeToLive = d.getMaxIdleTime();
 	}
+	
+//	/**
+//	 * Create merging default options with the deployment specified ones.
+//	 */
+//	public ServerCacheOptions(ServerCacheOptions d, com.avaje.ebean.annotation.Cache c){
+//		this.maxSize = c.maxSize() != 0 ? c.maxSize() : d.getMaxSize();
+//		this.maxIdleTime = c.maxIdleTime() != 0 ? c.maxIdleTime() : d.getMaxIdleTime();
+//		this.maxTimeToLive = c.maxTimeToLive() != 0 ? c.maxTimeToLive() : d.getMaxIdleTime();
+//	}
 	
 	/**
 	 * Return a copy of this object.

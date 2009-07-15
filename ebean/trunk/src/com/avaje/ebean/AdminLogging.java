@@ -87,7 +87,7 @@ public interface AdminLogging {
 	}
 
 	/**
-	 * Set the transaction logging.
+	 * Set the transaction logging level.
 	 */
 	public void setTransactionLogLevel(TxLogLevel txLogLevel);
 	
@@ -107,17 +107,17 @@ public interface AdminLogging {
 	public TxLogSharing getTransactionLogSharing();
 		
 	/**
-	 * The current log level for native sql queries.
+	 * Return the current log level for queries.
 	 */
 	public StmtLogLevel getQueryLevel();
 
 	/**
-	 * Set the log level for native sql queries.
+	 * Set the log level for queries.
 	 */
 	public void setQueryLevel(StmtLogLevel sqlQueryLevel);
 
 	/**
-	 * The current log level for native sql queries.
+	 * Return the current log level for native sql queries.
 	 */
 	public StmtLogLevel getSqlQueryLevel();
 
@@ -127,17 +127,17 @@ public interface AdminLogging {
 	public void setSqlQueryLevel(StmtLogLevel sqlQueryLevel);
 
 	/**
-	 * The current log level for bean update.
+	 * The current log level for inserts updates and deletes.
 	 */
 	public StmtLogLevel getIudLevel();
 
 	/**
-	 * Set the log level for bean update.
+	 * Set the log level for inserts updates and deletes.
 	 */
 	public void setIudLevel(StmtLogLevel updateLevel);
 
 	/**
-	 * If true Log generated sql to the console.
+	 * Returns true if generated sql is logged to the console.
 	 */
 	public boolean isDebugGeneratedSql();
 
