@@ -36,7 +36,8 @@ public class Oracle10Platform extends DatabasePlatform {
     public Oracle10Platform() {
         super();
         this.name = "oracle";
-        //this.dbQueryLimiter = new DbQueryLimiterRowNumber("");
+        this.heartbeatSql = "select 'x' from dual";
+        
         this.sqlLimiter = new RownumSqlLimiter();
 
         // use Sequence as default IdType

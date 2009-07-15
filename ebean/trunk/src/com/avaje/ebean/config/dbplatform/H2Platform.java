@@ -36,6 +36,8 @@ public class H2Platform extends DatabasePlatform {
     public H2Platform(){
         super();
         this.name = "h2";
+        this.heartbeatSql = "select 1";
+
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         this.dbIdentity.setIdType(IdType.IDENTITY);
         
