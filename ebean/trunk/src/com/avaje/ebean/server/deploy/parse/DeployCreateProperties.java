@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
-import com.avaje.ebean.bean.Message;
+import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.deploy.DetermineQueryType;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;

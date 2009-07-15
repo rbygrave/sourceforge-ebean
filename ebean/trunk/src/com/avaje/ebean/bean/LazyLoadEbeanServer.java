@@ -24,7 +24,7 @@ import com.avaje.ebean.EbeanServer;
 /**
  * API for Client and Server implementations of EbeanServer.
  */
-public interface InternalEbean extends EbeanServer {
+public interface LazyLoadEbeanServer extends EbeanServer {
 
 	/**
 	 * For BeanCollections to call for lazy loading themselves.

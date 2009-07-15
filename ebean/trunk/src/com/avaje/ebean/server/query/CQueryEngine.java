@@ -24,8 +24,8 @@ import java.sql.SQLException;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.lib.thread.ThreadPool;

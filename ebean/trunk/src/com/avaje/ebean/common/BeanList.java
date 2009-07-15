@@ -28,7 +28,7 @@ import java.util.ListIterator;
 import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
 
@@ -42,7 +42,7 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	/**
 	 * The EbeanServer this is associated with. (used for lazy fetch).
 	 */
-	private transient InternalEbean internalEbean;
+	private transient LazyLoadEbeanServer internalEbean;
 	
 
 	private final transient ObjectGraphNode profilePoint;
@@ -95,7 +95,7 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	/**
 	 * Used to create deferred fetch proxy.
 	 */	
-	public BeanList(InternalEbean internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+	public BeanList(LazyLoadEbeanServer internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
 		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;

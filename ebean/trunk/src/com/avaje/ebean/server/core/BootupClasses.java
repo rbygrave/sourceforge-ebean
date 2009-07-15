@@ -56,7 +56,8 @@ public class BootupClasses implements ClassPathSearchMatcher {
 
 	ArrayList<Class<?>> beanListenerList = new ArrayList<Class<?>>();
 
-	List<BeanPersistController> beanControllerInstances = new ArrayList<BeanPersistController>();
+	List<BeanPersistController> persistControllerInstances = new ArrayList<BeanPersistController>();
+	List<BeanPersistListener<?>> persistListenerInstances = new ArrayList<BeanPersistListener<?>>();
 	
 	public BootupClasses(){
 	}
@@ -93,10 +94,32 @@ public class BootupClasses implements ClassPathSearchMatcher {
 	/**
 	 * Add BeanPersistController instances.
 	 */
-	public void addBeanControllers(List<BeanPersistController> beanControllerInstances) {
+	public void addPersistControllers(List<BeanPersistController> beanControllerInstances) {
 		if (beanControllerInstances != null){
-			this.beanControllerInstances.addAll(beanControllerInstances);
+			this.persistControllerInstances.addAll(beanControllerInstances);
 		}
+	}
+	
+	public void addPersistListeners(List<BeanPersistListener<?>> listenerInstances) {
+		if (listenerInstances != null){
+			this.persistListenerInstances.addAll(listenerInstances);
+		}
+	}
+	
+	public List<BeanPersistListener<?>> getBeanPersistListeners() {
+		// add class registered BeanPersistController to the
+		// already created instances
+		for (Class<?> cls: beanListenerList) {
+			try {
+				BeanPersistListener<?> newInstance = (BeanPersistListener<?>)cls.newInstance();
+				persistListenerInstances.add(newInstance);
+			} catch (Exception e){
+				String msg = "Error creating BeanPersistController "+cls;
+				logger.log(Level.SEVERE, msg, e);
+			}
+		}
+		
+		return persistListenerInstances;
 	}
 	
 	public List<BeanPersistController> getBeanPersistControllers() {
@@ -105,14 +128,14 @@ public class BootupClasses implements ClassPathSearchMatcher {
 		for (Class<?> cls: beanControllerList) {
 			try {
 				BeanPersistController newInstance = (BeanPersistController)cls.newInstance();
-				beanControllerInstances.add(newInstance);
+				persistControllerInstances.add(newInstance);
 			} catch (Exception e){
 				String msg = "Error creating BeanPersistController "+cls;
 				logger.log(Level.SEVERE, msg, e);
 			}
 		}
 		
-		return beanControllerInstances;
+		return persistControllerInstances;
 	}
 
 	/**

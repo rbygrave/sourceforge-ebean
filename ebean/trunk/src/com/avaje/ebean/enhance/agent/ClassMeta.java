@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,59 +21,74 @@ import com.avaje.ebean.enhance.asm.MethodVisitor;
  */
 public class ClassMeta {
 
-	static final Logger logger = Logger.getLogger(ClassMeta.class.getName());
+	private static final Logger logger = Logger.getLogger(ClassMeta.class.getName());
 
-	static final String OBJECT_CLASS = Object.class.getName().replace('.', '/');
+	private static final String OBJECT_CLASS = Object.class.getName().replace('.', '/');
 	
-	final PrintStream logout;
+	private final PrintStream logout;
 
-	final int logLevel;
+	private final int logLevel;
 
-	final boolean subclassing;
+	private final boolean subclassing;
 
-	String className;
+	private String className;
 
-	String superClassName;
+	private String superClassName;
 
-	ClassMeta superMeta;
+	private ClassMeta superMeta;
 
 	/**
 	 * Set to true if the class implements th GroovyObject interface.
 	 */
-	boolean hasGroovyInterface;
+	private boolean hasGroovyInterface;
 
 	/**
 	 * Set to true if the class implements the ScalaObject interface.
 	 */
-	boolean hasScalaInterface;
+	private boolean hasScalaInterface;
 
 	/**
 	 * Set to true if the class already implements the EntityBean interface.
 	 */
-	boolean hasEntityBeanInterface;
+	private boolean hasEntityBeanInterface;
 	
-	boolean alreadyEnhanced;
+	private boolean alreadyEnhanced;
 
-	boolean hasEqualsOrHashcode;
+	private boolean hasEqualsOrHashcode;
 
-	boolean hasDefaultConstructor;
+	private boolean hasDefaultConstructor;
 
-	HashSet<String> existingMethods = new HashSet<String>();
+	private HashSet<String> existingMethods = new HashSet<String>();
 
-	HashSet<String> existingSuperMethods = new HashSet<String>();
+	private HashSet<String> existingSuperMethods = new HashSet<String>();
 
-	LinkedHashMap<String, FieldMeta> fields = new LinkedHashMap<String, FieldMeta>();
+	private LinkedHashMap<String, FieldMeta> fields = new LinkedHashMap<String, FieldMeta>();
 
-	HashSet<String> classAnnotation = new HashSet<String>();
+	private HashSet<String> classAnnotation = new HashSet<String>();
 
-	AnnotationInfo classAnnotationInfo = new AnnotationInfo(null);
+	private AnnotationInfo annotationInfo = new AnnotationInfo(null);
 
-	ArrayList<MethodMeta> methodMetaList = new ArrayList<MethodMeta>();
+	private ArrayList<MethodMeta> methodMetaList = new ArrayList<MethodMeta>();
 
 	public ClassMeta(boolean subclassing, int logLevel, PrintStream logout) {
 		this.subclassing = subclassing;
 		this.logLevel = logLevel;
 		this.logout = logout;
+	}
+
+	/**
+	 * Return the class level annotations.
+	 */
+	public Set<String> getClassAnnotations() {
+		return classAnnotation;
+	}
+	
+	/**
+	 * Return the AnnotationInfo collected on methods. 
+	 * Used to determine Transactional method enhancement.
+	 */
+	public AnnotationInfo getAnnotationInfo() {
+		return annotationInfo;
 	}
 
 	/**
@@ -91,7 +107,8 @@ public class ClassMeta {
 							+ methodDesc;
 					
 					logger.log(Level.SEVERE, msg);
-
+					log(msg);
+					
 				} else {
 					annotationInfo = meta.getAnnotationInfo();
 					if (isLog(9)){
@@ -381,7 +398,7 @@ public class ClassMeta {
 
 	public MethodVisitor createMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
 
-		MethodMeta methodMeta = new MethodMeta(classAnnotationInfo, access, name, desc);
+		MethodMeta methodMeta = new MethodMeta(annotationInfo, access, name, desc);
 		methodMetaList.add(methodMeta);
 
 		return new MethodReader(mv, methodMeta);

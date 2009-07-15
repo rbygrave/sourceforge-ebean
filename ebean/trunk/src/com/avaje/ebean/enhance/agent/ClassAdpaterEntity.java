@@ -81,6 +81,10 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		
 		if (!superName.equals("java/lang/Object")){
 			// read information about superClasses... 
+			if (classMeta.isLog(7)){
+				classMeta.log("read information about superClasses "+superName
+					+" to see if it is entity/embedded/mappedSuperclass");
+			}
 			ClassMeta superMeta = enhanceContext.getSuperMeta(superName, classLoader);
 			if (superMeta != null && superMeta.isEntity()){
 				// the superClass is an entity/embedded/mappedSuperclass...
@@ -88,6 +92,14 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 				if (classMeta.isLog(1)){
 					classMeta.log("entity extends "+superMeta.getDescription());
 				}
+			} else {
+				if (classMeta.isLog(7)){
+					if (superMeta == null){
+						classMeta.log("unable to read superMeta for "+superName);
+					} else {
+						classMeta.log("superMeta "+superName+" is not an entity/embedded/mappedsuperclass "+superMeta.getClassAnnotations());
+					}
+				}	
 			}
 		}
 

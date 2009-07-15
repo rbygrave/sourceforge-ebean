@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.server.core.BootupClasses;
@@ -28,11 +29,13 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 /**
  * Default implementation for creating BeanControllers.
  */
-public class DefaultPersistControllerManager {
- 
+public class PersistControllerManager {
+
+	private static final Logger logger = Logger.getLogger(PersistControllerManager.class.getName());
+
     private final List<BeanPersistController> list;
     
-    public DefaultPersistControllerManager(BootupClasses bootupClasses){
+    public PersistControllerManager(BootupClasses bootupClasses){
     	
     	list = bootupClasses.getBeanPersistControllers();
     }
@@ -49,6 +52,7 @@ public class DefaultPersistControllerManager {
 		for (int i = 0; i < list.size(); i++) {
 			BeanPersistController c = list.get(i);
 			if (c.isRegisterFor(deployDesc.getBeanType())){
+				logger.fine("BeanPersistController on[" + deployDesc.getFullName() + "] " + c.getClass().getName());
 				deployDesc.addPersistController(c);
 			}
 		}		

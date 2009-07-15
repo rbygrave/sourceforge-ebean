@@ -26,7 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
 
@@ -40,7 +40,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
 	/**
 	 * The EbeanServer this is associated with. (used for lazy fetch).
 	 */
-	private transient InternalEbean internalEbean;
+	private transient LazyLoadEbeanServer internalEbean;
     
 	private transient final ObjectGraphNode profilePoint;
 	
@@ -90,7 +90,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         this(new LinkedHashSet<E>());
     }
 	
-    public BeanSet(InternalEbean internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+    public BeanSet(LazyLoadEbeanServer internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
 		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;

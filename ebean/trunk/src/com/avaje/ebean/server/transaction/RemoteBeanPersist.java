@@ -94,7 +94,7 @@ public class RemoteBeanPersist implements Serializable {
 	 */
 	public void notifyListener(BeanDescriptor<?> desc) {
 		
-		BeanPersistListener<?> listener = desc.getBeanPersistListener();
+		BeanPersistListener<?> listener = desc.getPersistListener();
 		if (listener != null){
 			switch (type) {
 			case INSERT:

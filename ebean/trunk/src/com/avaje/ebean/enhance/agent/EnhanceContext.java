@@ -11,35 +11,26 @@ import java.util.logging.Logger;
  */
 public class EnhanceContext {
 
-	static final Logger logger = Logger.getLogger(EnhanceContext.class
-			.getName());
+	private static final Logger logger = Logger.getLogger(EnhanceContext.class.getName());
 
-	final IgnoreClassHelper ignoreClassHelper;
+	private final IgnoreClassHelper ignoreClassHelper;
 
-	final boolean subclassing;
+	private final boolean subclassing;
 
-	final String agentArgs;
+	private final HashMap<String, String> agentArgsMap;
 
-	final HashMap<String, String> agentArgsMap;
+	private final boolean readOnly;
 
-	final boolean readOnly;
+	private PrintStream logout;
 
-	PrintStream logout;
+	private int logLevel;
 
-	int logLevel;
+	private HashMap<String, ClassMeta> map = new HashMap<String, ClassMeta>();
 
-	HashMap<String, ClassMeta> map = new HashMap<String, ClassMeta>();
-
-	/**
-	 * Additions to the class path used to process inheritance.
-	 */
-	URL[] extraClassPath;
-
-	ClassMetaReader reader;
+	private ClassMetaReader reader;
 
 	public EnhanceContext(URL[] extraClassPath, String agentArgs) {
 		this(extraClassPath, false, agentArgs);
-
 	}
 
 	public EnhanceContext(String agentArgs) {
@@ -54,13 +45,10 @@ public class EnhanceContext {
 	 * @param agentArgs
 	 *            parameters for enhancement such as log level
 	 */
-	private EnhanceContext(URL[] extraClassPath, boolean subclassing,
-			String agentArgs) {
+	private EnhanceContext(URL[] extraClassPath, boolean subclassing, String agentArgs) {
 
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
-		this.extraClassPath = extraClassPath;
 		this.subclassing = subclassing;
-		this.agentArgs = agentArgs;
 		this.agentArgsMap = ArgParser.parse(agentArgs);
 
 		this.logout = System.out;
@@ -72,8 +60,7 @@ public class EnhanceContext {
 			try {
 				logLevel = Integer.parseInt(debugValue);
 			} catch (NumberFormatException e) {
-				String msg = "Agent debug argument [" + debugValue
-						+ "] is not an int?";
+				String msg = "Agent debug argument [" + debugValue+ "] is not an int?";
 				logger.log(Level.WARNING, msg);
 			}
 		}

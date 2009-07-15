@@ -9,7 +9,7 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.common.BeanMap;
 
@@ -22,7 +22,7 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	final BeanDescriptor<T> targetDescriptor;
 	final String mapKey;
 	final BeanProperty beanProperty;
-	InternalEbean internalEbean;
+	LazyLoadEbeanServer internalEbean;
 	
 	/**
 	 * When created for a given query that will return a map.
@@ -46,7 +46,7 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 	
 	
-	public void setInternalEbean(InternalEbean internalEbean){
+	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
 		this.internalEbean = internalEbean;
 	}
 	

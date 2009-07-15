@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.InternalEbean;
+import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
 
@@ -42,7 +42,7 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 	 * The name of the EbeanServer this is associated with. (used for lazy
 	 * fetch).
 	 */
-	private transient InternalEbean internalEbean;
+	private transient LazyLoadEbeanServer internalEbean;
 
 	/**
 	 * The owning bean (used for lazy fetch).
@@ -92,7 +92,7 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		this(new LinkedHashMap<K, E>());
 	}
 
-	public BeanMap(InternalEbean internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+	public BeanMap(LazyLoadEbeanServer internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
 		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;

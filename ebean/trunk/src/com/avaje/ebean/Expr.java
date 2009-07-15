@@ -21,11 +21,10 @@ import java.util.Map;
  * ...
  * </pre>
  * @see Query#where()
+ * @deprecated
  */
 public class Expr {
 
-//	private static ExpressionFactory factory = null;//new DefaultExpressionFactory();
-	
 	private Expr() {
 	}
 

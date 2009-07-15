@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.bean.Message;
 import com.avaje.ebean.config.ServerConfig;
 
 /**
@@ -55,13 +54,7 @@ public class DatabasePlatformFactory {
 				
 			} else {
 				// guess using meta data from driver
-				DatabasePlatform db = byDataSource(serverConfig.getDataSource());
-				
-				String choosenDb = db.getClass().getName();
-				String name = serverConfig.getName();
-				logger.info(Message.msg("plugin.startup", new Object[] { name, choosenDb }));
-
-				return db;
+				return byDataSource(serverConfig.getDataSource());
 			}
 
 		} catch (Exception ex) {

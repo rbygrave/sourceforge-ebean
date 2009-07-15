@@ -38,6 +38,7 @@ import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.deploy.ChainedBeanPersistController;
+import com.avaje.ebean.server.deploy.ChainedBeanPersistListener;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
@@ -144,21 +145,13 @@ public class DeployBeanDescriptor<T> {
 	 */
 	Class<?> factoryType;
 
-	/**
-	 * Intercept pre post on insert,update,delete and postLoad(). Server side
-	 * only.
-	 */
 	List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
+	List<BeanPersistListener<T>> persistListeners = new ArrayList<BeanPersistListener<T>>();
 
 	/**
 	 * If set overrides the find implementation. Server side only.
 	 */
 	BeanFinder<T> beanFinder;
-
-	/**
-	 * Listens for post commit insert update and delete events.
-	 */
-	BeanPersistListener<T> beanPersistListener;
 
 	/**
 	 * The table joins for this bean. Server side only.
@@ -424,20 +417,6 @@ public class DeployBeanDescriptor<T> {
 	}
 
 	/**
-	 * Return the beanListener.
-	 */
-	public BeanPersistListener<T> getBeanPersistListener() {
-		return beanPersistListener;
-	}
-
-	/**
-	 * Set the beanListener.
-	 */
-	public void setBeanPersistListener(BeanPersistListener<T> beanListener) {
-		this.beanPersistListener = beanListener;
-	}
-
-	/**
 	 * Return the beanFinder. Usually null unless overriding the finder.
 	 */
 	public BeanFinder<T> getBeanFinder() {
@@ -453,9 +432,9 @@ public class DeployBeanDescriptor<T> {
 	}
 
 	/**
-	 * Return the Controller.
+	 * Return the BeanPersistController (could be a chain of them, 1 or null).
 	 */
-	public BeanPersistController getBeanController() {
+	public BeanPersistController getPersistController() {
 		if (persistControllers.size() == 0){
 			return null;
 		} else if (persistControllers.size() == 1) {
@@ -466,12 +445,28 @@ public class DeployBeanDescriptor<T> {
 	}
 
 	/**
+	 * Return the BeanPersistListener (could be a chain of them, 1 or null).
+	 */
+	public BeanPersistListener<T> getPersistListener() {
+		if (persistListeners.size() == 0){
+			return null;
+		} else if (persistListeners.size() == 1) {
+			return persistListeners.get(0);
+		} else {
+			return new ChainedBeanPersistListener<T>(persistListeners);			
+		}
+	}
+	
+	/**
 	 * Set the Controller.
 	 */
 	public void addPersistController(BeanPersistController controller) {
 		persistControllers.add(controller);
 	}
 
+	public void addPersistListener(BeanPersistListener<T> listener) {
+		persistListeners.add(listener);
+	}
 	/**
 	 * Return true if this bean type should use IdGeneration.
 	 * <p>

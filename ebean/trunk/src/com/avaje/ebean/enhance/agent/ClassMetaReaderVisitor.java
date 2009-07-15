@@ -1,7 +1,5 @@
 package com.avaje.ebean.enhance.agent;
 
-import java.util.logging.Logger;
-
 import com.avaje.ebean.enhance.asm.AnnotationVisitor;
 import com.avaje.ebean.enhance.asm.EmptyVisitor;
 import com.avaje.ebean.enhance.asm.FieldVisitor;
@@ -18,20 +16,13 @@ import com.avaje.ebean.enhance.asm.Opcodes;
  */
 public class ClassMetaReaderVisitor extends EmptyVisitor implements EnhanceConstants {
 
-	static final Logger logger = Logger.getLogger(ClassMetaReaderVisitor.class.getName());
+	private final ClassMeta classMeta;
 
-	final EnhanceContext enhanceContext;
-
-	final ClassMeta classMeta;
-
-	final boolean readMethodMeta;
+	private final boolean readMethodMeta;
 	
-	boolean implementsEntityBean;
-
 	public ClassMetaReaderVisitor(boolean readMethodMeta, EnhanceContext context) {
 		super();
 		this.readMethodMeta = readMethodMeta;
-		this.enhanceContext = context;
 		this.classMeta = context.createClassMeta();
 	}
 
@@ -52,13 +43,6 @@ public class ClassMetaReaderVisitor extends EmptyVisitor implements EnhanceConst
 	 */
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 
-		// Note: interfaces can be an empty array but not null
-		for (int i = 0; i < interfaces.length; i++) {
-			if (interfaces[i].equals(C_ENTITYBEAN)) {
-				implementsEntityBean = true;
-			}
-		}
-
 		classMeta.setClassName(name, superName);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
@@ -73,7 +57,7 @@ public class ClassMetaReaderVisitor extends EmptyVisitor implements EnhanceConst
 		if (desc.equals(EnhanceConstants.AVAJE_TRANSACTIONAL_ANNOTATION)) {
 			// we have class level Transactional annotation
 			// which will act as default for all methods in this class
-			return new AnnotationInfoVisitor(null, classMeta.classAnnotationInfo, av);
+			return new AnnotationInfoVisitor(null, classMeta.getAnnotationInfo(), av);
 
 		} else {
 			return av;

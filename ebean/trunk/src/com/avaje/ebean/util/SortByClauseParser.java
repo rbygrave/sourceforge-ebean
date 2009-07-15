@@ -3,14 +3,8 @@ package com.avaje.ebean.util;
 import com.avaje.ebean.util.SortByClause.Property;
 
 public final class SortByClauseParser {
-
-//	private static final char COMMA = ',';
 	
 	private final String rawSortBy;
-//	private final int maxLength;
-//	
-//	private int pos;
-//	private boolean endOfSection;
 	
 	public static SortByClause parse(String rawSortByClause){
 		return new SortByClauseParser(rawSortByClause).parse();
@@ -18,7 +12,6 @@ public final class SortByClauseParser {
 	
 	private SortByClauseParser(String rawSortByClause) {
 		this.rawSortBy = rawSortByClause.trim();
-//		this.maxLength = rawSortBy.length();		
 	}
 	
 	private SortByClause parse(){
@@ -70,53 +63,6 @@ public final class SortByClauseParser {
 		
 		return new Property(propName, ascending, nullsHigh);
 	}
-	
-//	private Property nextProperty() {
-//		
-//		if (pos >= maxLength) {
-//			return null;
-//		}
-//		
-//		boolean ascending = true;
-//		Boolean nullsHigh = null;
-//		
-//		String propertyName = nextWord();
-//		if (pos < maxLength && !endOfSection){
-//			// look for asc/desc/nullsHigh/nullsLow keyword
-//			String nextWord = nextWord().toLowerCase();
-//			if (nextWord.trim().length() == 0){
-//				// ignore
-//			} else if (nextWord.startsWith("nulls")){
-//				nullsHigh = isNullsHigh(nextWord);
-//				
-//			} else {
-//				ascending = isAscending(nextWord);
-//			}
-//		}
-//		if (pos < maxLength && !endOfSection){
-//			// look for asc/desc/nullsHigh/nullsLow keyword
-//			String nextWord = nextWord().toLowerCase();
-//			if (nextWord.trim().length() == 0){
-//				// ignore
-//			} else if (nextWord.startsWith("nulls")){
-//				nullsHigh = isNullsHigh(nextWord);
-//				
-//			} else {
-//				ascending = isAscending(nextWord);
-//			}
-//		}
-//
-//		if (pos < maxLength && !endOfSection){
-//			// some trailing whitespace 
-//			int x = pos;
-//			if (!findEndOfSection()) {
-//				String m = "Expecting to find a comma or eol after position "+x+" in ["+rawSortBy+"]";
-//				throw new RuntimeException(m);
-//			}
-//		}
-//		
-//		return new Property(propertyName, ascending, nullsHigh);	
-//	}
 
 	private Boolean isNullsHigh(String word){
 		if (SortByClause.NULLSHIGH.equalsIgnoreCase(word)){
@@ -140,55 +86,5 @@ public final class SortByClauseParser {
 		String m = "Expection ASC or DESC but got ["+word+"] in ["+rawSortBy+"]";
 		throw new RuntimeException(m);
 	}
-	
-//	private String nextWord() {
-//	
-//		if (pos >= maxLength){
-//			return null;
-//		}
-//
-//		// move to the next word
-//		trimWhitespace();
-//		
-//		int startPos = pos;
-//		
-//		while (pos < maxLength){
-//			char ch = rawSortBy.charAt(pos++);
-//			if (ch == COMMA){
-//				endOfSection = true;
-//				return rawSortBy.substring(startPos,pos-1);
-//				
-//			} else if (Character.isWhitespace(ch)){
-//				return rawSortBy.substring(startPos,pos-1);
-//			}
-//		}
-//		
-//		return rawSortBy.substring(startPos,pos);
-//	}
-//	
-//	private boolean findEndOfSection() {
-//		while (pos < maxLength){
-//			char ch = rawSortBy.charAt(pos);
-//			if (ch == COMMA){
-//				pos++;
-//				return true;
-//			} else if (Character.isWhitespace(ch)){
-//				pos++;
-//			} else {
-//				return false;
-//			}
-//		}	
-//		return true;
-//	}
-//	
-//	private void trimWhitespace() {
-//		while (pos < maxLength){
-//			char ch = rawSortBy.charAt(pos);
-//			if (Character.isWhitespace(ch)){
-//				pos++;
-//			} else {
-//				break;
-//			}
-//		}		
-//	}
+
 }
