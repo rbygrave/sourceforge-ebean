@@ -104,13 +104,13 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 		setNamingConvention(serverConfig);
 		
 		BootupClasses bootupClasses = getBootupClasses(serverConfig);
-		
-		setDataSource(serverConfig);
-		// check the autoCommit and Transaction Isolation
-		checkDataSource(serverConfig);
 
 		// determine database platform (Oracle etc)
 		setDatabasePlatform(serverConfig);
+
+		setDataSource(serverConfig);
+		// check the autoCommit and Transaction Isolation
+		checkDataSource(serverConfig);
 		
 		// inform the NamingConvention of the associated DatabasePlaform 
 		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
@@ -229,10 +229,12 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 	 */
 	private void setDatabasePlatform(ServerConfig config) {
 
-		DatabasePlatformFactory factory = new DatabasePlatformFactory();
 		
 		DatabasePlatform dbPlatform = config.getDatabasePlatform();
 		if (dbPlatform == null) {
+			
+			DatabasePlatformFactory factory = new DatabasePlatformFactory();
+			
 			DatabasePlatform db = factory.create(config);
 			config.setDatabasePlatform(db);
 			logger.info("DatabasePlatform "+config.getName()+" "+db.getName());
@@ -269,6 +271,12 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 			throw new PersistenceException(m);			
 		}
 			
+		if (dsConfig.getHeartbeatSql() == null){
+			// use default heartbeatSql from the DatabasePlatform
+			String heartbeatSql = config.getDatabasePlatform().getHeartbeatSql();
+			dsConfig.setHeartbeatSql(heartbeatSql);
+		}
+		
 		return DataSourceGlobalManager.getDataSource(config.getName(), dsConfig);
 	}
 

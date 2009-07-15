@@ -125,6 +125,9 @@ public class DataSourceConfig {
 
 	/**
 	 * Return a SQL statement used to test the database is accessible.
+	 * <p>
+	 * Note that if this is not set then it can get defaulted from the DatabasePlatform.
+	 * </p>
 	 */
 	public String getHeartbeatSql() {
 		return heartbeatSql;
@@ -132,6 +135,9 @@ public class DataSourceConfig {
 
 	/**
 	 * Set a SQL statement used to test the database is accessible.
+	 * <p>
+	 * Note that if this is not set then it can get defaulted from the DatabasePlatform.
+	 * </p>
 	 */
 	public void setHeartbeatSql(String heartbeatSql) {
 		this.heartbeatSql = heartbeatSql;

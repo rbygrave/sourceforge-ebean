@@ -64,6 +64,9 @@ public class DatabasePlatform {
 	/** Use a BackTick ` at the beginning and end of table or column names that you want to use quoted identifiers for. The backticks get converted to the appropriate characters in convertQuotedIdentifiers */
 	private static final char BACK_TICK = '`';
 
+	/** A query that is used to test that connections are valid. */
+	protected String heartbeatSql;
+	
 	/**
 	 * Instantiates a new database platform.
 	 */
@@ -168,6 +171,13 @@ public class DatabasePlatform {
 	 */
 	public SqlLimiter getSqlLimiter() {
 		return sqlLimiter;
+	}
+
+	/**
+	 * Return a query used to test if connections are valid.
+	 */
+	public String getHeartbeatSql() {
+		return heartbeatSql;
 	}
 
 	/**
