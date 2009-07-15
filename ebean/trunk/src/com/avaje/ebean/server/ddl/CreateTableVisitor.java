@@ -76,21 +76,30 @@ public class CreateTableVisitor implements BeanVisitor {
 	 * Typically check constraint based on Enum mapping values.
 	 * </p>
 	 */
-	protected void writeConstraint(BeanProperty p) {
-		
-		String constraintExpression = p.getDbConstraintExpression();
+	protected void writeConstraint(BeanProperty p, String prefix, String constraintExpression) {
 		
 		if (constraintExpression != null){
 
 			// build constraint clause 
-			String s = "constraint ck_"+p.getBeanDescriptor().getBaseTable()
-					+"_"+p.getDbColumn()+" "+constraintExpression;
+			String s = "constraint "+getConstraintName(prefix, p)+" "+constraintExpression;
 			
 			// add to list as we render all check constraints just prior to primary key
 			checkConstraints.add(s);
 		}
 	}
-		
+	
+	protected String getConstraintName(String prefix, BeanProperty p) {
+		return prefix + p.getBeanDescriptor().getBaseTable()+"_"+p.getDbColumn();
+	}
+
+	protected void writeConstraint(String constraintExpression) {
+		checkConstraints.add(constraintExpression);
+	}
+	
+	protected void writeConstraint(BeanProperty p) {
+		writeConstraint(p,"ck_", p.getDbConstraintExpression());
+	}
+	
 	public boolean visitBean(BeanDescriptor<?> descriptor) {
 		
 		wroteColumns.clear();
