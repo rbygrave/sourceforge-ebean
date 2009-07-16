@@ -31,6 +31,7 @@ import javax.management.MBeanServerFactory;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.common.BootupEbeanManager;
 import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
@@ -38,7 +39,6 @@ import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DatabasePlatformFactory;
 import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.InternalEbeanServerFactory;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebean.server.cache.DefaultServerCacheManager;
@@ -56,7 +56,7 @@ import com.avaje.ebean.server.net.CommandProcessor;
 /**
  * Default Server side implementation of ServerFactory.
  */
-public class DefaultServerFactory implements InternalEbeanServerFactory, Constants {
+public class DefaultServerFactory implements BootupEbeanManager, Constants {
 
 	private static final Logger logger = Logger.getLogger(DefaultServerFactory.class.getName());
 
@@ -105,12 +105,12 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 		
 		BootupClasses bootupClasses = getBootupClasses(serverConfig);
 
-		// determine database platform (Oracle etc)
-		setDatabasePlatform(serverConfig);
-
 		setDataSource(serverConfig);
 		// check the autoCommit and Transaction Isolation
 		checkDataSource(serverConfig);
+		
+		// determine database platform (Oracle etc)
+		setDatabasePlatform(serverConfig);
 		
 		// inform the NamingConvention of the associated DatabasePlaform 
 		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
@@ -273,11 +273,25 @@ public class DefaultServerFactory implements InternalEbeanServerFactory, Constan
 			
 		if (dsConfig.getHeartbeatSql() == null){
 			// use default heartbeatSql from the DatabasePlatform
-			String heartbeatSql = config.getDatabasePlatform().getHeartbeatSql();
+			String heartbeatSql = getHeartbeatSql(dsConfig.getDriver());
 			dsConfig.setHeartbeatSql(heartbeatSql);
 		}
 		
 		return DataSourceGlobalManager.getDataSource(config.getName(), dsConfig);
+	}
+	
+	/**
+	 * Return a heartbeatSql depending on the jdbc driver name.
+	 */
+	private String getHeartbeatSql(String driver) {
+		String d = driver.toLowerCase();
+		if (d.contains("oracle")){
+			return "select 'x' from dual";
+		}
+		if (d.contains(".h2.") || d.contains(".mysql.")){
+			return "select 1";
+		}
+		return null;
 	}
 
 	/**

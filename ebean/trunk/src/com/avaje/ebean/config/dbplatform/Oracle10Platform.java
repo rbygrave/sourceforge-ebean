@@ -36,7 +36,6 @@ public class Oracle10Platform extends DatabasePlatform {
     public Oracle10Platform() {
         super();
         this.name = "oracle";
-        this.heartbeatSql = "select 'x' from dual";
         
         this.sqlLimiter = new RownumSqlLimiter();
 
