@@ -39,7 +39,6 @@ public class MySqlPlatform extends DatabasePlatform {
     public MySqlPlatform(){
         super();
         this.name = "mysql";
-        this.heartbeatSql = "select 1";
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         

@@ -24,10 +24,9 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.common.BootupEbeanManager;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.internal.InternalEbeanServerFactory;
-import com.avaje.ebean.server.core.DefaultServerFactory;
+import com.avaje.ebean.config.ServerConfig;
 
 /**
  * Creates EbeanServer instances.
@@ -54,7 +53,7 @@ public class EbeanServerFactory {
 
 	private static final Logger logger = Logger.getLogger(EbeanServerFactory.class.getName());
 
-	private static InternalEbeanServerFactory serverFactory = createServerFactory();
+	private static BootupEbeanManager serverFactory = createServerFactory();
 
 	/**
 	 * Create using ebean.properties to configure the server.
@@ -87,9 +86,11 @@ public class EbeanServerFactory {
 		return server;
 	}
 
-	private static InternalEbeanServerFactory createServerFactory() {
+	private static BootupEbeanManager createServerFactory() {
 
-		String implClassName = GlobalProperties.get("ebean.serverfactory", null);
+//		String d = DefaultServerFactory.class.getName();
+		String dflt = "com.avaje.ebean.server.core.DefaultServerFactory";
+		String implClassName = GlobalProperties.get("ebean.serverfactory", dflt);
 
 		int delaySecs = GlobalProperties.getInt("ebean.start.delay", 0);
 		if (delaySecs > 0) {
@@ -105,17 +106,17 @@ public class EbeanServerFactory {
 				logger.log(Level.SEVERE, m, e);
 			}
 		}
-		if (implClassName == null) {
-			return new DefaultServerFactory();
-
-		} else {
+//		if (implClassName == null) {
+//			return new ();
+//
+//		} else {
 			try {
 				// use a client side implementation?
 				Class<?> cz = Class.forName(implClassName);
-				return (InternalEbeanServerFactory) cz.newInstance();
+				return (BootupEbeanManager) cz.newInstance();
 			} catch (Exception ex) {
 				throw new RuntimeException(ex);
 			}
-		}
+//		}
 	}
 }

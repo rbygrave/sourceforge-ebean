@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.internal;
+package com.avaje.ebean.common;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.config.ServerConfig;
@@ -31,7 +31,7 @@ import com.avaje.ebean.config.ServerConfig;
  * the EbeanServer on the application server.
  * </p>
  */
-public interface InternalEbeanServerFactory {
+public interface BootupEbeanManager {
 	
 	/**
 	 * Create the EbeanServer for a given configuration.
