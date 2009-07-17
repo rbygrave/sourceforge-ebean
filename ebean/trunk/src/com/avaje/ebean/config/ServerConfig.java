@@ -1,9 +1,21 @@
 /**
- * Imilia Interactive Mobile Applications GmbH
- * Copyright (c) 2009 - all rights reserved
- *
- * Created on: Jul 2, 2009
- * Created by: emcgreal
+ * Copyright (C) 2006  Authors
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
 package com.avaje.ebean.config;
 
@@ -12,6 +24,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.AdminLogging.StmtLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
@@ -21,6 +34,43 @@ import com.avaje.ebean.event.BeanPersistListener;
 
 /**
  * The configuration used for creating a EbeanServer.
+ * <p>
+ * Used to programmatically construct an EbeanServer and optionally register
+ * it with the Ebean singleton.
+ * </p>
+ * <p>
+ * If you just use Ebean without this programmatic configuration Ebean will read
+ * the ebean.properties file and take the configuration from there. This usually
+ * includes searching the class path and automatically registering any entity 
+ * classes and listeners etc.
+ * </p>
+ * 
+ * <pre class="code">
+ * ServerConfig c = new ServerConfig();
+ * c.setName("ordh2");
+ * 
+ * // read the ebean.properties and load 
+ * // those settings into this serverConfig object 
+ * c.loadFromProperties();
+ * 
+ * // generate DDL and run it
+ * c.setDdlGenerate(true);
+ * c.setDdlRun(true);
+ * 
+ * // add any classes found in the app.data package
+ * c.addPackage("app.data");
+ * 
+ * // register as the 'Default' server
+ * c.setDefaultServer(true);
+ * 
+ * EbeanServer server = EbeanServerFactory.create(c);
+ * 
+ * </pre>
+ * 
+ * @see EbeanServerFactory
+ * 
+ * @author emcgreal
+ * @author rbygrave 
  */
 public class ServerConfig {
 
@@ -610,7 +660,7 @@ public class ServerConfig {
 	 * automatically via searching the class path.
 	 * </p>
 	 * <p>
-	 * Alternatively the classes can contain added via {@link #addClass(Class)}.
+	 * Alternatively the classes can be added via {@link #setClasses(List)}.
 	 * </p>
 	 *
 	 * @param cls the entity type (or other type) that should be registered by
@@ -728,7 +778,7 @@ public class ServerConfig {
 	/**
 	 * Register all the BeanPersistController instances.
 	 * <p>
-	 * Note alternatively you can use {@link #add(BeanPersistController))} to 
+	 * Note alternatively you can use {@link #add(BeanPersistController)} to 
 	 * add BeanPersistController instances one at a time.
 	 * </p>
 	 */
@@ -757,7 +807,7 @@ public class ServerConfig {
 	/**
 	 * Register all the BeanPersistListener instances.
 	 * <p>
-	 * Note alternatively you can use {@link #add(BeanPersistListener))} to 
+	 * Note alternatively you can use {@link #add(BeanPersistListener)} to 
 	 * add BeanPersistListener instances one at a time.
 	 * </p>
 	 */
