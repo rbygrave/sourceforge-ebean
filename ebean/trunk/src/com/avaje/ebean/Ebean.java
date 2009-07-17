@@ -738,6 +738,15 @@ public final class Ebean {
 	}
 
 	/**
+	 * Create a CallableSql to execute a given stored procedure.
+	 * 
+	 * @see CallableSql
+	 */
+	public static CallableSql createCallableSql(String sql) {
+		return serverMgr.getPrimaryServer().createCallableSql(sql);
+	}
+	
+	/**
 	 * Create a named sql update.
 	 * <p>
 	 * The statement (an Insert Update or Delete statement) will be defined in a
