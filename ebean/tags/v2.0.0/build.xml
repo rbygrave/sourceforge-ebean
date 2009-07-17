@@ -1,0 +1,213 @@
+<?xml version="1.0"?>
+
+<project name="Ebean" default="dist" basedir=".">
+
+    <property file="build.properties"/>
+
+    <property name="name" value="ebean"/>
+    <property name="version" value="2.0.0"/>
+
+    <property name="lib.dir" value="lib"/>
+    <property name="src.dir" value="src"/>
+    <property name="doc.dir" value="doc"/>
+    <property name="ide.bin.dir" value="bin"/>
+    <property name="bin.dir" value="build/bin"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="base.dir" value="."/>
+    <property name="maven.dir" value="${user.home}/.m2/repository"/>
+
+    <property name="test-lib.dir" value="test-lib"/>
+    <property name="test-bin.dir" value="build/test-bin"/>
+    <property name="test-src.dir" value="test-src"/>
+    <property name="test-res.dir" value="test-resources"/>
+
+    <property name="packages" value="com.avaje.*"/>
+
+    <!-- =================================================================== -->
+    <!-- Enhance the built in @Entity beans                                  -->
+    <!-- =================================================================== -->
+
+    <taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask" classpath="${ide.bin.dir}"/>
+
+    <target name="enhance" depends="compile">
+        <ebeanEnhance classSource="${bin.dir}" packages="com.avaje.ebean.meta.**" transformArgs="debug=1"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Prepares the build directory                                        -->
+    <!-- =================================================================== -->
+    <target name="prepare">
+        <mkdir dir="${bin.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <tstamp/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the source code                                            -->
+    <!-- =================================================================== -->
+
+    <path id="lib.path.ref">
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+    </path>
+
+    <target name="compile" depends="prepare, clean">
+        <mkdir dir="${bin.dir}"/>
+
+        <javac source="1.5" target="1.5" debug="true" optimize="on" srcdir="${src.dir}" destdir="${bin.dir}"
+               deprecation="off">
+            <classpath refid="lib.path.ref"/>
+        </javac>
+
+        <copy todir="${bin.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.props"/>
+                <include name="**/*.properties"/>
+                <include name="**/*.dtd"/>
+                <include name="icons/**"/>
+            </fileset>
+        </copy>
+
+    </target>
+
+    <path id="test-lib.path.ref">
+        <pathelement location="${bin.dir}" />
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+        <fileset dir="${test-lib.dir}" includes="*.jar"/>
+    </path>
+
+    <target name="compile-tests" depends="enhance">
+        <mkdir dir="${test-bin.dir}"/>
+
+        <javac source="1.5" target="1.5" debug="true" optimize="on" srcdir="${test-src.dir}" destdir="${test-bin.dir}"
+               deprecation="off">
+            <classpath refid="test-lib.path.ref"/>
+        </javac>
+
+        <copy todir="${test-bin.dir}">
+            <fileset dir="${test-res.dir}">
+                <include name="**/*.props"/>
+                <include name="**/*.properties"/>
+                <include name="**/*.dtd"/>
+                <include name="icons/**"/>
+            </fileset>
+        </copy>
+
+    </target>
+
+    <target name="enhance-test" depends="compile-tests">
+        <ebeanEnhance classSource="${test-bin.dir}" packages="com.avaje.tests.compositeKeys.db.**,com.avaje.tests.idKeys.db.**" transformArgs="debug=1"/>
+    </target>
+
+    <target name="zipSource" depends="prepare,jar">
+        <zip zipfile="${dist.dir}/${name}-${version}-src.zip" basedir="${src.dir}"/>
+    </target>
+
+    <target name="zipDoc" depends="prepare,jar">
+        <zip zipfile="${dist.dir}/${name}-${version}-javadoc.zip" basedir="${doc.dir}"/>
+    </target>
+
+    <target name="dist" depends="prepare,test,jar,zipSource,zipDoc">
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Creates a minimal javaagent jar                                     -->
+    <!-- =================================================================== -->
+
+    <target name="jar-agent" depends="prepare,compile,enhance">
+
+        <mkdir dir="${dist.dir}"/>
+
+        <jar jarfile="dist/ebean-agent-${version}.jar" basedir="${bin.dir}">
+            <include name="com/avaje/ebean/enhance/asm/**/*.class"/>
+            <include name="com/avaje/ebean/enhance/agent/**/*.class"/>
+            <manifest>
+                <attribute name="Premain-Class" value="com.avaje.ebean.enhance.agent.Transformer"/>
+            </manifest>
+        </jar>
+
+    </target>
+
+    <target name="jar-ant" depends="prepare,compile,enhance">
+
+        <mkdir dir="${dist.dir}"/>
+
+        <jar jarfile="dist/ebean-ant-${version}.jar" basedir="${bin.dir}">
+            <include name="com/avaje/ebean/enhance/**/*.class"/>
+            <manifest>
+                <attribute name="Premain-Class" value="com.avaje.ebean.enhance.agent.Transformer"/>
+            </manifest>
+        </jar>
+
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Creates the jar archive                                             -->
+    <!-- =================================================================== -->
+
+    <target name="jar" depends="prepare,compile,enhance,jar-agent,jar-ant">
+        <mkdir dir="${dist.dir}"/>
+        <jar jarfile="${dist.dir}/${name}-${version}.jar" basedir="${bin.dir}" includes="**">
+
+            <exclude name="com/avaje/ebean/enhance/ant**"/>
+
+            <manifest>
+                <attribute name="Premain-Class" value="com.avaje.ebean.enhance.agent.Transformer"/>
+            </manifest>
+        </jar>
+
+        <copy overwrite="true" failonerror="true" file="${dist.dir}/${name}-${version}.jar"
+              todir="${webapp.dir}/WEB-INF/lib"/>
+
+    </target>
+
+    <path id="classpath.test">
+        <pathelement location="${test-bin.dir}"/>
+        <pathelement location="${bin.dir}"/>
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+        <fileset dir="${test-lib.dir}" includes="*.jar"/>
+    </path>
+
+    <path id="classpath-ebean-ant">
+        <pathelement location="${test-bin.dir}"/>
+        <pathelement location="${bin.dir}"/>
+        <fileset dir="bin" includes="ebean-ant-*.jar"/>
+    </path>
+
+    <target name="test" depends="enhance,enhance-test">
+        <property name="myclasspath" refid="classpath.test"/>
+
+        <echo message="Classpath = ${myclasspath}"/>
+
+        <junit>
+            <classpath refid="classpath.test"/>
+            <formatter type="brief" usefile="false"/>
+            <batchtest haltonfailure="true" >
+                <fileset dir="${test-src.dir}">
+                    <include name="**/Test*.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+
+    </target>
+
+    <target name="main" depends="jar">
+        <tstamp/>
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Cleans up generated stuff                                           -->
+    <!-- =================================================================== -->
+    <target name="clean">
+        <delete dir="${test-bin.dir}"/>
+        <delete dir="${bin.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <mkdir dir="${bin.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+</project>
+
