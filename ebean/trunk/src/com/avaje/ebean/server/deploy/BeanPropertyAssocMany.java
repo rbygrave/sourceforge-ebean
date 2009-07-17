@@ -32,7 +32,7 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
@@ -270,7 +270,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			// for ManyToMany lazy loading we need to include a
 			// join to the intersection table. The predicate column
 			// is not on the 'destination many table'.
-			OrmQuery<?> iq = (OrmQuery<?>)query;
+			SpiQuery<?> iq = (SpiQuery<?>)query;
 			iq.setIncludeTableJoin(inverseJoin);
 		}
 		

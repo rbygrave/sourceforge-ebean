@@ -20,7 +20,7 @@
 package com.avaje.ebean.server.net;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.CommandContext;
 import com.avaje.ebean.net.Constants;
 
@@ -40,7 +40,7 @@ public class ClusterContextManager implements CommandContextManager, Constants {
     	// the header has the name of the EbeanServer
         String name = headers.get(SERVER_NAME_KEY);
         
-        InternalEbeanServer server = (InternalEbeanServer)Ebean.getServer(name);
+        SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(name);
         
         CommandContext context = new CommandContext();
         context.setServer(server);

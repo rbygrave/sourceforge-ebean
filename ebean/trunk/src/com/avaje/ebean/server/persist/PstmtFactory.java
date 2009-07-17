@@ -24,7 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * Factory for creating Statements.
@@ -38,7 +38,7 @@ public class PstmtFactory {
 	/**
 	 * Get a callable statement without any batching.
 	 */
-	public CallableStatement getCstmt(ServerTransaction t, String sql) throws SQLException {
+	public CallableStatement getCstmt(SpiTransaction t, String sql) throws SQLException {
 		Connection conn = t.getInternalConnection();
 		return conn.prepareCall(sql);
 	}
@@ -46,7 +46,7 @@ public class PstmtFactory {
 	/**
 	 * Get a prepared statement without any batching.
 	 */
-	public PreparedStatement getPstmt(ServerTransaction t, String sql) throws SQLException {
+	public PreparedStatement getPstmt(SpiTransaction t, String sql) throws SQLException {
 		Connection conn = t.getInternalConnection();
 		return conn.prepareStatement(sql);
 	}
@@ -54,7 +54,7 @@ public class PstmtFactory {
 	/**
 	 * Return a prepared statement taking into account batch requirements.
 	 */
-	public PreparedStatement getPstmt(ServerTransaction t, String sql, BatchPostExecute batchExe)
+	public PreparedStatement getPstmt(SpiTransaction t, String sql, BatchPostExecute batchExe)
 			throws SQLException {
 
 		BatchedPstmtHolder batch = t.getBatchControl().getPstmtHolder();
@@ -75,7 +75,7 @@ public class PstmtFactory {
 	/**
 	 * Return a callable statement taking into account batch requirements.
 	 */
-	public CallableStatement getCstmt(ServerTransaction t, String sql, BatchPostExecute batchExe)
+	public CallableStatement getCstmt(SpiTransaction t, String sql, BatchPostExecute batchExe)
 			throws SQLException {
 
 		BatchedPstmtHolder batch = t.getBatchControl().getPstmtHolder();

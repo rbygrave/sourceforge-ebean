@@ -25,9 +25,9 @@ import java.util.List;
 
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.InternalCallableSql;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiCallableSql;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.internal.BindParams.Param;
 import com.avaje.ebean.server.persist.PersistExecute;
@@ -37,7 +37,7 @@ import com.avaje.ebean.server.persist.PersistExecute;
  */
 public final class PersistRequestCallableSql extends PersistRequest {
 
-	private final InternalCallableSql callableSql;
+	private final SpiCallableSql callableSql;
 
 	private int rowCount;
 
@@ -50,12 +50,12 @@ public final class PersistRequestCallableSql extends PersistRequest {
 	/**
 	 * Create.
 	 */
-	public PersistRequestCallableSql(InternalEbeanServer server,
-			CallableSql cs, ServerTransaction t, PersistExecute persistExecute) {
+	public PersistRequestCallableSql(SpiEbeanServer server,
+			CallableSql cs, SpiTransaction t, PersistExecute persistExecute) {
 		
 		super(server, t, persistExecute);
 		this.type = PersistRequest.Type.CALLABLESQL;
-		this.callableSql = (InternalCallableSql)cs;
+		this.callableSql = (SpiCallableSql)cs;
 	}
 	
 	@Override
@@ -71,7 +71,7 @@ public final class PersistRequestCallableSql extends PersistRequest {
 	/**
 	 * Return the CallableSql.
 	 */
-	public InternalCallableSql getCallableSql() {
+	public SpiCallableSql getCallableSql() {
 		return callableSql;
 	}
 

@@ -33,7 +33,7 @@ import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEvent;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
@@ -273,21 +273,21 @@ public class TransactionManager implements Constants {
 	/**
 	 * Log a message to the Transaction log.
 	 */
-	public void log(ServerTransaction t, String msg) {
+	public void log(SpiTransaction t, String msg) {
 		transLogger.log(t, msg, null);
 	}
 
 	/**
 	 * Log an error to the transaction log.
 	 */
-	public void log(ServerTransaction t, String msg, Throwable error) {
+	public void log(SpiTransaction t, String msg, Throwable error) {
 		transLogger.log(t, msg, error);
 	}
 
 	/**
 	 * Wrap the externally supplied Connection.
 	 */
-	public ServerTransaction wrapExternalConnection(Connection c) {
+	public SpiTransaction wrapExternalConnection(Connection c) {
 
 		return wrapExternalConnection(externalTransPrefix + c.hashCode(), c);
 	}
@@ -295,7 +295,7 @@ public class TransactionManager implements Constants {
 	/**
 	 * Wrap an externally supplied Connection with a known transaction id.
 	 */
-	public ServerTransaction wrapExternalConnection(String id, Connection c) {
+	public SpiTransaction wrapExternalConnection(String id, Connection c) {
 
 		ExternalJdbcTransaction t = new ExternalJdbcTransaction(id, true, c, this);
 
@@ -311,7 +311,7 @@ public class TransactionManager implements Constants {
 	/**
 	 * Create a new Transaction.
 	 */
-	public ServerTransaction createTransaction(boolean explicit, int isolationLevel) {
+	public SpiTransaction createTransaction(boolean explicit, int isolationLevel) {
 		try {
 			long id;
 			synchronized (monitor) {
@@ -347,7 +347,7 @@ public class TransactionManager implements Constants {
 		}
 	}
 	
-	public ServerTransaction createQueryTransaction() {
+	public SpiTransaction createQueryTransaction() {
 		try {
 			long id;
 			// Perhaps could use JDK5 atomic Integer instead
@@ -379,7 +379,7 @@ public class TransactionManager implements Constants {
 	/**
 	 * Process a local rolled back transaction.
 	 */
-	public void notifyOfRollback(ServerTransaction transaction, Throwable cause) {
+	public void notifyOfRollback(SpiTransaction transaction, Throwable cause) {
 		
 		try {
 			String msg = "Rollback";
@@ -400,7 +400,7 @@ public class TransactionManager implements Constants {
 	/**
 	 * Query only transaction in read committed isolation.
 	 */
-	public void notifyOfQueryOnly(boolean onCommit, ServerTransaction transaction, Throwable cause) {
+	public void notifyOfQueryOnly(boolean onCommit, SpiTransaction transaction, Throwable cause) {
 		
 		try {
 			// close the logger if one was created for this transaction
@@ -452,7 +452,7 @@ public class TransactionManager implements Constants {
 	/**
 	 * Process a local committed transaction.
 	 */
-	public void notifyOfCommit(ServerTransaction transaction) {
+	public void notifyOfCommit(SpiTransaction transaction) {
 
 		try {
 			// close the logger if required

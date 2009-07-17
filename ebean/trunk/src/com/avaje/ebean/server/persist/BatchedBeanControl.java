@@ -22,7 +22,7 @@ package com.avaje.ebean.server.persist;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
 
@@ -42,13 +42,13 @@ public class BatchedBeanControl {
 	 */
 	private final HashMap<String, BatchedBeanHolder> beanHoldMap = new HashMap<String, BatchedBeanHolder>();
 
-	private final ServerTransaction transaction;
+	private final SpiTransaction transaction;
 
 	private final BatchControl batchControl;
 
 	private int maxSize;
 
-	public BatchedBeanControl(ServerTransaction t, BatchControl batchControl) {
+	public BatchedBeanControl(SpiTransaction t, BatchControl batchControl) {
 		this.transaction = t;
 		this.batchControl = batchControl;
 	}

@@ -9,7 +9,7 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.Query;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiQuery;
 
 /**
  * Expression factory for creating standard expressions.
@@ -219,7 +219,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * In - using a subQuery.
 	 */
 	public Expression in(String propertyName, Query<?> subQuery){
-		return new InQueryExpression(propertyName, (OrmQuery<?>)subQuery);
+		return new InQueryExpression(propertyName, (SpiQuery<?>)subQuery);
 	}
 	
 	/**

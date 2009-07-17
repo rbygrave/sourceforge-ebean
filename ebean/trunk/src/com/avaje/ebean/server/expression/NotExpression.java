@@ -2,31 +2,31 @@ package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-final class NotExpression implements InternalExpression {
+final class NotExpression implements SpiExpression {
 
 	private static final long serialVersionUID = 5648926732402355781L;
 
 	private static final String NOT = "not (";
 	
-	final InternalExpression exp;
+	final SpiExpression exp;
 	
 	NotExpression(Expression exp){
-		this.exp = (InternalExpression)exp;
+		this.exp = (SpiExpression)exp;
 	}
 	
 	public String getPropertyName() {
 		return exp.getPropertyName();
 	}
 
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		exp.addBindValues(request);
 	}
 	
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 		request.append(NOT);
 		exp.addSql(request);
 		request.append(") ");

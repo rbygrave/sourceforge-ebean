@@ -42,18 +42,11 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
-import com.avaje.ebean.el.ElComparator;
-import com.avaje.ebean.el.ElComparatorCompound;
-import com.avaje.ebean.el.ElComparatorProperty;
-import com.avaje.ebean.el.ElPropertyChainBuilder;
-import com.avaje.ebean.el.ElPropertyDeploy;
-import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.cache.ServerCache;
 import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.ConcurrencyMode;
@@ -63,7 +56,14 @@ import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.IdBinderFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyLists;
+import com.avaje.ebean.server.el.ElComparator;
+import com.avaje.ebean.server.el.ElComparatorCompound;
+import com.avaje.ebean.server.el.ElComparatorProperty;
+import com.avaje.ebean.server.el.ElPropertyChainBuilder;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
+import com.avaje.ebean.server.el.ElPropertyValue;
 import com.avaje.ebean.server.query.CQueryPlan;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 import com.avaje.ebean.server.reflect.BeanReflect;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.server.validate.Validator;
@@ -854,7 +854,7 @@ public class BeanDescriptor<T> {
 	/**
 	 * Return the many property included in the query or null if one is not.
 	 */
-	public BeanPropertyAssocMany<?> getManyProperty(OrmQuery<?> query) {
+	public BeanPropertyAssocMany<?> getManyProperty(SpiQuery<?> query) {
 				
 		OrmQueryDetail detail = query.getDetail();
 		for (int i = 0; i < propertiesMany.length; i++) {

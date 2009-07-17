@@ -94,12 +94,15 @@ import com.avaje.ebean.config.ServerConfig;
 public interface EbeanServer {
 
 	/**
-	 * Return ServerControl which provides runtime access to control the logging
-	 * and profiling etc.
+	 * Return the AdminLogging which is used to control and
+	 * configure the Transaction logging at runtime. 
 	 */
-//	public ServerControl getServerControl();
-
 	public AdminLogging getAdminLogging();
+	
+	/**
+	 * Return the AdminAutofetch which is used to control and
+	 * configure the Autofetch service at runtime. 
+	 */
 	public AdminAutofetch getAdminAutofetch();
 
 	/**
@@ -224,15 +227,15 @@ public interface EbeanServer {
 
 	/**
 	 * Create a named update for an entity bean (refer
-	 * {@link Ebean#createUpdate(Class, String)}).
+	 * {@link Ebean#createNamedUpdate(Class, String)}).
 	 */
-	public <T> Update<T> createUpdate(Class<T> beanType, String namedUpdate);
+	public <T> Update<T> createNamedUpdate(Class<T> beanType, String namedUpdate);
 
 	/**
 	 * Create a update for an entity bean where you will manually specify the
 	 * insert update or delete statement.
 	 */
-	public <T> Update<T> createUpdate(Class<T> beanType);
+	public <T> Update<T> createUpdate(Class<T> beanType, String ormUpdate);
 
 	/**
 	 * Create a sql query for executing native sql query statements (refer

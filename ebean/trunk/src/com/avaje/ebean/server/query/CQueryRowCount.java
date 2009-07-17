@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
@@ -47,7 +47,7 @@ public class CQueryRowCount {
 
 	final BeanDescriptor<?> desc;
 
-	final OrmQuery<?> query;
+	final SpiQuery<?> query;
 
 	/**
 	 * Where clause predicates.
@@ -125,7 +125,7 @@ public class CQueryRowCount {
 		startNano = System.nanoTime();
 		try {
 			
-			ServerTransaction t = request.getTransaction();
+			SpiTransaction t = request.getTransaction();
 			Connection conn = t.getInternalConnection();
 			pstmt = conn.prepareStatement(sql);
 	

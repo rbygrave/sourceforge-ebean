@@ -29,10 +29,10 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.PersistenceContext;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.query.CQueryPlan;
@@ -48,7 +48,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	
 	private final OrmQueryEngine queryEngine;
 
-	private final OrmQuery<T> query;
+	private final SpiQuery<T> query;
 
 	private final BeanFinder<T> finder;
 
@@ -74,8 +74,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	/**
 	 * Create the InternalQueryRequest.
 	 */
-	public OrmQueryRequest(InternalEbeanServer server, OrmQueryEngine queryEngine, OrmQuery<T> query,
-			BeanDescriptor<T> desc, ServerTransaction t) {
+	public OrmQueryRequest(SpiEbeanServer server, OrmQueryEngine queryEngine, SpiQuery<T> query,
+			BeanDescriptor<T> desc, SpiTransaction t) {
 
 		super(server, t);
 		
@@ -159,7 +159,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	/**
 	 * Get the TransactionContext either explicitly set on the query or transaction scoped.
 	 */
-	private PersistenceContext getPersistenceContext(OrmQuery<?> query, ServerTransaction t){
+	private PersistenceContext getPersistenceContext(SpiQuery<?> query, SpiTransaction t){
 		
 		PersistenceContext ctx = query.getPersistenceContext();
 		if (ctx == null){
@@ -269,7 +269,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	/**
 	 * Return the find that is to be performed.
 	 */
-	public OrmQuery<T> getQuery() {
+	public SpiQuery<T> getQuery() {
 		return query;
 	}
 

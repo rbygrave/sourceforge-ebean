@@ -2,11 +2,11 @@ package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-class LikeExpression implements InternalExpression {
+class LikeExpression implements SpiExpression {
 
 	private static final long serialVersionUID = -5398151809111172380L;
 
@@ -29,12 +29,12 @@ class LikeExpression implements InternalExpression {
 		return propertyName;
 	}
 
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		
 		request.addBindValue(value);
 	}
 	
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 		
 		if (caseInsensitive) {
 			request.append("lower(").append(propertyName).append(")");

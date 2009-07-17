@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.transaction;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * Used by EbeanMgr to store its Transactions in a ThreadLocal.
@@ -51,14 +51,14 @@ public final class DefaultTransactionThreadLocal {
     /**
      * Return the current Transaction for this serverName and Thread.
      */
-    public static ServerTransaction get(String serverName) {
+    public static SpiTransaction get(String serverName) {
         return getState(serverName).transaction;
     }
 
     /**
      * Set a new Transaction for this serverName and Thread.
      */
-    public static void set(String serverName, ServerTransaction trans) {
+    public static void set(String serverName, SpiTransaction trans) {
         getState(serverName).set(trans);
     }
     
@@ -108,7 +108,7 @@ public final class DefaultTransactionThreadLocal {
      * thread so it can continue the fetch.
      * </p>
      */
-    public static void replace(String serverName, ServerTransaction trans) {
+    public static void replace(String serverName, SpiTransaction trans) {
         getState(serverName).replace(trans);
     }
 }

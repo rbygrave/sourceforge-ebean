@@ -10,7 +10,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.resource.ResourceManager;
 
 public class AutoFetchManagerFactory {
@@ -18,13 +18,13 @@ public class AutoFetchManagerFactory {
 	private static final Logger logger = Logger.getLogger(AutoFetchManagerFactory.class.getName());
 	
 	
-	public static AutoFetchManager create(InternalEbeanServer server, ServerConfig serverConfig, ResourceManager resourceManager) {
+	public static AutoFetchManager create(SpiEbeanServer server, ServerConfig serverConfig, ResourceManager resourceManager) {
 		
 		AutoFetchManagerFactory me = new AutoFetchManagerFactory();
 		return me.createAutoFetchManager(server, serverConfig, resourceManager);
 	}
 	
-	private AutoFetchManager createAutoFetchManager(InternalEbeanServer server, ServerConfig serverConfig, ResourceManager resourceManager){
+	private AutoFetchManager createAutoFetchManager(SpiEbeanServer server, ServerConfig serverConfig, ResourceManager resourceManager){
 		
 		AutoFetchManager manager = createAutoFetchManager(server.getName(), resourceManager);
 		manager.setOwner(server, serverConfig);

@@ -24,7 +24,7 @@ import java.util.Arrays;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
 
@@ -52,7 +52,7 @@ public final class BatchControl {
 	/**
 	 * The associated transaction.
 	 */
-	private final ServerTransaction transaction;
+	private final SpiTransaction transaction;
 
 
 	/**
@@ -82,7 +82,7 @@ public final class BatchControl {
 	 * Create for a given transaction, PersistExecute, default size and
 	 * getGeneratedKeys.
 	 */
-	public BatchControl(ServerTransaction t, int batchSize, boolean getGenKeys) {
+	public BatchControl(SpiTransaction t, int batchSize, boolean getGenKeys) {
 		this.transaction = t;
 		this.batchSize = batchSize;
 		this.getGeneratedKeys = getGenKeys;

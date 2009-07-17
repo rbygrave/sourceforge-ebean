@@ -20,7 +20,7 @@
 package com.avaje.ebean.server.transaction;
 
 import com.avaje.ebean.config.ExternalTransactionManager;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * A TransactionScopeManager aware of external transaction managers.
@@ -48,12 +48,12 @@ public class ExternalTransactionScopeManager extends TransactionScopeManager {
 		DefaultTransactionThreadLocal.end(serverName);
 	}
 
-	public ServerTransaction get() {
+	public SpiTransaction get() {
 		
-		return (ServerTransaction)externalManager.getCurrentTransaction();		
+		return (SpiTransaction)externalManager.getCurrentTransaction();		
 	}
 
-	public void replace(ServerTransaction trans) {
+	public void replace(SpiTransaction trans) {
 		DefaultTransactionThreadLocal.replace(serverName, trans);
 	}
 
@@ -61,7 +61,7 @@ public class ExternalTransactionScopeManager extends TransactionScopeManager {
 		DefaultTransactionThreadLocal.rollback(serverName);
 	}
 
-	public void set(ServerTransaction trans) {
+	public void set(SpiTransaction trans) {
 		DefaultTransactionThreadLocal.set(serverName, trans);
 	}
 }

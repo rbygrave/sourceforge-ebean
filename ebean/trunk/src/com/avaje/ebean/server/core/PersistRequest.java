@@ -19,8 +19,8 @@
  */
 package com.avaje.ebean.server.core;
 
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.persist.BatchPostExecute;
 import com.avaje.ebean.server.persist.PersistExecute;
@@ -52,7 +52,7 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 	/**
 	 * Used by CallableSqlRequest and UpdateSqlRequest.
 	 */
-	public PersistRequest(InternalEbeanServer server, ServerTransaction t, PersistExecute persistExecute) {
+	public PersistRequest(SpiEbeanServer server, SpiTransaction t, PersistExecute persistExecute) {
 		super(server, t);
 		this.persistExecute = persistExecute;
 	}

@@ -30,10 +30,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.el.ElPropertyValue;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
-import com.avaje.ebean.query.OrmQueryProperties;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -42,6 +39,9 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.InheritInfo;
+import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
+import com.avaje.ebean.server.querydefn.OrmQueryProperties;
 
 /**
  * Factory for SqlSelectClause.
@@ -50,7 +50,7 @@ public class SqlTreeBuilder {
 
 	private static final Logger logger = Logger.getLogger(SqlTreeBuilder.class.getName());
 
-	private final OrmQuery<?> query;
+	private final SpiQuery<?> query;
 
 	private final OrmQueryDetail queryDetail;
 

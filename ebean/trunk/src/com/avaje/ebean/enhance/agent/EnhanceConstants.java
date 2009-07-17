@@ -51,9 +51,9 @@ public interface EnhanceConstants {
 
     public static final String L_EMBEDDEDCOLUMNS = "Lcom/avaje/ebean/annotation/EmbeddedColumns;";
 
-    public static final String L_SCOPETRANS = "Lcom/avaje/ebean/common/ScopeTrans;";
+    public static final String L_SCOPETRANS = "Lcom/avaje/ebean/internal/ScopeTrans;";
     
-    public static final String L_HELPSCOPETRANS ="Lcom/avaje/ebean/common/HelpScopeTrans;";
+    public static final String L_HELPSCOPETRANS ="Lcom/avaje/ebean/internal/HelpScopeTrans;";
     
     public static final String C_TXTYPE = "com/avaje/ebean/TxType";
     

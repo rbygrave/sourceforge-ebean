@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 
 
 /**
@@ -54,16 +54,16 @@ public class TransactionMap {
      */
     public static class State {
 
-        ServerTransaction transaction;
+        SpiTransaction transaction;
         
-        public ServerTransaction get() {
+        public SpiTransaction get() {
             return transaction;
         }
         
         /**
          * Set the transaction. This will now be the current transaction.
          */
-        public void set(ServerTransaction trans) {
+        public void set(SpiTransaction trans) {
             
         	if (transaction != null && transaction.isActive()){
         		String m = "The existing transaction is still active?";
@@ -102,7 +102,7 @@ public class TransactionMap {
         /**
          * Used to replace transaction with a proxy.
          */
-        public void replace(ServerTransaction trans) {
+        public void replace(SpiTransaction trans) {
             transaction = trans;
         }
 

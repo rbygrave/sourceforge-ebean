@@ -7,12 +7,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.el.ElPropertyValue;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
-import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
+import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 
 /**
  * Collects usages statistics for a given node in the object graph.

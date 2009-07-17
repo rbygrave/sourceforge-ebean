@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmUpdate;
+import com.avaje.ebean.internal.SpiUpdate;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.util.BindParamsParser;
@@ -57,7 +57,7 @@ public class ExeOrmUpdate {
      */
     public int execute(PersistRequestOrmUpdate request) {
 
-        ServerTransaction t = request.getTransaction();
+        SpiTransaction t = request.getTransaction();
         
         boolean batchThisRequest = t.isBatchThisRequest();
         
@@ -72,7 +72,7 @@ public class ExeOrmUpdate {
                 return -1;
                 
             } else {
-            	OrmUpdate<?> ormUpdate = request.getOrmUpdate();
+            	SpiUpdate<?> ormUpdate = request.getOrmUpdate();
             	if (ormUpdate.getTimeout() > 0){
             		pstmt.setQueryTimeout(ormUpdate.getTimeout());
             	}
@@ -85,7 +85,7 @@ public class ExeOrmUpdate {
             }
 
         } catch (SQLException ex) {
-        	OrmUpdate<?> ormUpdate = request.getOrmUpdate();
+        	SpiUpdate<?> ormUpdate = request.getOrmUpdate();
         	String msg = "Error executing: "+ormUpdate.getGeneratedSql();
             throw new PersistenceException(msg, ex);
 
@@ -111,8 +111,8 @@ public class ExeOrmUpdate {
 	
     private PreparedStatement bindStmt(PersistRequestOrmUpdate request, boolean batchThisRequest) throws SQLException {
         
-    	OrmUpdate<?> ormUpdate = request.getOrmUpdate();
-    	ServerTransaction t = request.getTransaction();
+    	SpiUpdate<?> ormUpdate = request.getOrmUpdate();
+    	SpiTransaction t = request.getTransaction();
     	
     	String sql = ormUpdate.getUpdateStatement();
     	

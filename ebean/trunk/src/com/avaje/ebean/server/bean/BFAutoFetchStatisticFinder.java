@@ -9,9 +9,9 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
-import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.Statistics;
 
@@ -26,11 +26,11 @@ public class BFAutoFetchStatisticFinder implements BeanFinder<MetaAutoFetchStati
 
 
 	public MetaAutoFetchStatistic find(BeanQueryRequest<MetaAutoFetchStatistic> request) {
-		OrmQuery<MetaAutoFetchStatistic> query = (OrmQuery<MetaAutoFetchStatistic>)request.getQuery();
+		SpiQuery<MetaAutoFetchStatistic> query = (SpiQuery<MetaAutoFetchStatistic>)request.getQuery();
 		try {
 			String queryPointKey = (String) query.getId();
 
-			InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
+			SpiEbeanServer server = (SpiEbeanServer) request.getEbeanServer();
 			AutoFetchManager manager = server.getAutoFetchManager();
 
 			Statistics stats = manager.getStatistics(queryPointKey);
@@ -55,7 +55,7 @@ public class BFAutoFetchStatisticFinder implements BeanFinder<MetaAutoFetchStati
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 
-		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
+		SpiEbeanServer server = (SpiEbeanServer) request.getEbeanServer();
 		AutoFetchManager manager = server.getAutoFetchManager();
 
 		BeanList<MetaAutoFetchStatistic> list = new BeanList<MetaAutoFetchStatistic>();

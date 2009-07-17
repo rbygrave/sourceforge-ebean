@@ -28,8 +28,8 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiQuery;
 
 /**
  * Collects and manages the the profile information.
@@ -48,7 +48,7 @@ public interface AutoFetchManager extends NodeUsageListener {
 	/**
 	 * Set the owning ebean server.
 	 */
-	public void setOwner(InternalEbeanServer server, ServerConfig serverConfig);
+	public void setOwner(SpiEbeanServer server, ServerConfig serverConfig);
 
 	/**
 	 * Clear the query execution statistics.
@@ -234,7 +234,7 @@ public interface AutoFetchManager extends NodeUsageListener {
 	 * This will also determine if the query should be profiled.
 	 * </p>
 	 */
-	public void tuneQuery(OrmQuery<?> query);
+	public void tuneQuery(SpiQuery<?> query);
 
 	/**
 	 * Collect query profiling information.

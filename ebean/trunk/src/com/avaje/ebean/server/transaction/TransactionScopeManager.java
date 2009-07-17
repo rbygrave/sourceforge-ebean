@@ -1,11 +1,12 @@
 package com.avaje.ebean.server.transaction;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransactionScopeManager;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * Manages the Transactions typically held in a ThreadLocal.
  */
-public abstract class TransactionScopeManager {
+public abstract class TransactionScopeManager implements SpiTransactionScopeManager {
 
 	protected final TransactionManager transactionManager;
 	
@@ -19,12 +20,12 @@ public abstract class TransactionScopeManager {
 	 /**
      * Return the current Transaction for this serverName and Thread.
      */
-    public abstract ServerTransaction get();
+    public abstract SpiTransaction get();
 
     /**
      * Set a new Transaction for this serverName and Thread.
      */
-    public abstract void set(ServerTransaction trans);
+    public abstract void set(SpiTransaction trans);
     
     /**
      * Commit the current transaction.
@@ -53,5 +54,5 @@ public abstract class TransactionScopeManager {
      * thread so it can continue the fetch.
      * </p>
      */
-    public abstract void replace(ServerTransaction trans);
+    public abstract void replace(SpiTransaction trans);
 }

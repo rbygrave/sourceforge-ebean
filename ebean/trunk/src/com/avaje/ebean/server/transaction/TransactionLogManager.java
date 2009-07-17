@@ -28,7 +28,7 @@ import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
 import com.avaje.ebean.server.transaction.log.LogTime;
 import com.avaje.ebean.server.transaction.log.TransactionLogger;
@@ -166,7 +166,7 @@ public class TransactionLogManager {
 	/**
 	 * If this transaction has its own Logger close it.
 	 */
-	public void transactionEnded(ServerTransaction t, String msg) {
+	public void transactionEnded(SpiTransaction t, String msg) {
 		TransactionLogger logger = removeLogger(t);
 		if (logger != null) {
 			if (msg != null) {
@@ -177,7 +177,7 @@ public class TransactionLogManager {
 		}
 	}
 
-	public void log(ServerTransaction t, String msg, Throwable error) {
+	public void log(SpiTransaction t, String msg, Throwable error) {
 		switch (logLevel) {
 		case NONE:
 			break;
@@ -196,12 +196,12 @@ public class TransactionLogManager {
 		}
 	}
 
-	private void logInfo(ServerTransaction t, String msg, Throwable error) {
+	private void logInfo(SpiTransaction t, String msg, Throwable error) {
 
 		getLogger(t).log(t.getId(), msg, error);
 	}
 
-	private TransactionLogger removeLogger(ServerTransaction t) {
+	private TransactionLogger removeLogger(SpiTransaction t) {
 		String id = t.getId();
 		if (id != null){
 			return loggerMap.remove(id);
@@ -213,7 +213,7 @@ public class TransactionLogManager {
 	/**
 	 * Get the Logger for a given transaction.
 	 */
-	private TransactionLogger getLogger(ServerTransaction t) {
+	private TransactionLogger getLogger(SpiTransaction t) {
 		
 		if (logSharing == TxLogSharing.ALL) {
 			return sharedLogger;
@@ -230,7 +230,7 @@ public class TransactionLogManager {
 		return logger;
 	}
 
-	private TransactionLogger createLogger(ServerTransaction t) {
+	private TransactionLogger createLogger(SpiTransaction t) {
 
 		LogTime logTime = LogTime.getWithCheck();
 

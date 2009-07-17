@@ -33,8 +33,8 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanPersistRequest;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEvent;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
@@ -106,7 +106,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	private boolean notifyCache;
 
     @SuppressWarnings("unchecked")
-	public PersistRequestBean(InternalEbeanServer server, T bean, Object parentBean, BeanManager<T> mgr, ServerTransaction t, PersistExecute persistExecute) {
+	public PersistRequestBean(SpiEbeanServer server, T bean, Object parentBean, BeanManager<T> mgr, SpiTransaction t, PersistExecute persistExecute) {
        super(server, t, persistExecute);
 		this.beanManager = mgr;
 		this.beanDescriptor = mgr.getBeanDescriptor();

@@ -28,22 +28,22 @@ import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.RelationalQuery;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiSqlQuery;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * Wraps the objects involved in executing a SqlQuery.
  */
 public final class RelationalQueryRequest {
 
-	private final RelationalQuery query;
+	private final SpiSqlQuery query;
 
 	private final RelationalQueryEngine queryEngine;
 
-	private final InternalEbeanServer ebeanServer;
+	private final SpiEbeanServer ebeanServer;
 
-	private ServerTransaction trans;
+	private SpiTransaction trans;
 
 	private boolean createdTransaction;
 
@@ -52,11 +52,11 @@ public final class RelationalQueryRequest {
 	/**
 	 * Create the BeanFindRequest.
 	 */
-	public RelationalQueryRequest(InternalEbeanServer server, RelationalQueryEngine engine, SqlQuery q, Transaction t) {
+	public RelationalQueryRequest(SpiEbeanServer server, RelationalQueryEngine engine, SqlQuery q, Transaction t) {
 		this.ebeanServer = server;
 		this.queryEngine = engine;
-		this.query = (RelationalQuery) q;
-		this.trans = (ServerTransaction) t;
+		this.query = (SpiSqlQuery) q;
+		this.trans = (SpiTransaction) t;
 	}
 
 	/**
@@ -117,7 +117,7 @@ public final class RelationalQueryRequest {
 	/**
 	 * Return the find that is to be performed.
 	 */
-	public RelationalQuery getQuery() {
+	public SpiSqlQuery getQuery() {
 		return query;
 	}
 
@@ -132,7 +132,7 @@ public final class RelationalQueryRequest {
 		return ebeanServer;
 	}
 
-	public ServerTransaction getTransaction() {
+	public SpiTransaction getTransaction() {
 		return trans;
 	}
 

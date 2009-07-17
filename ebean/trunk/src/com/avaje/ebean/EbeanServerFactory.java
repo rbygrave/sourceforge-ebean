@@ -46,7 +46,7 @@ import com.avaje.ebean.config.ServerConfig;
  * convenient way of using the 'default/primary' EbeanServer.
  * </p>
  * 
- * @author rob
+ * @author Rob Bygrave
  * 
  */
 public class EbeanServerFactory {
@@ -88,7 +88,7 @@ public class EbeanServerFactory {
 
 	private static BootupEbeanManager createServerFactory() {
 
-//		String d = DefaultServerFactory.class.getName();
+//		String d___ =  com.avaje.ebean.server.core.DefaultServerFactory.class.getName();
 		String dflt = "com.avaje.ebean.server.core.DefaultServerFactory";
 		String implClassName = GlobalProperties.get("ebean.serverfactory", dflt);
 
@@ -106,17 +106,12 @@ public class EbeanServerFactory {
 				logger.log(Level.SEVERE, m, e);
 			}
 		}
-//		if (implClassName == null) {
-//			return new ();
-//
-//		} else {
-			try {
-				// use a client side implementation?
-				Class<?> cz = Class.forName(implClassName);
-				return (BootupEbeanManager) cz.newInstance();
-			} catch (Exception ex) {
-				throw new RuntimeException(ex);
-			}
-//		}
+		try {
+			// use a client side implementation?
+			Class<?> cz = Class.forName(implClassName);
+			return (BootupEbeanManager) cz.newInstance();
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 }

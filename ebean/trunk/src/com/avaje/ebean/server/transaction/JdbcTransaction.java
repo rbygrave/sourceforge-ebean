@@ -28,7 +28,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
 import com.avaje.ebean.internal.PersistenceContext;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEvent;
 import com.avaje.ebean.server.persist.BatchControl;
 import com.avaje.ebean.server.transaction.TransactionManager.OnQueryOnly;
@@ -36,7 +36,7 @@ import com.avaje.ebean.server.transaction.TransactionManager.OnQueryOnly;
 /**
  * JDBC Connection based transaction.
  */
-public class JdbcTransaction implements ServerTransaction {
+public class JdbcTransaction implements SpiTransaction {
 
 	private static final Logger logger = Logger.getLogger(JdbcTransaction.class.getName());
 	

@@ -20,10 +20,10 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 
 /**
  * The manager of all the usage/query statistics as well as the tuned fetch
@@ -75,7 +75,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	/**
 	 * Server that owns this Profile Listener.
 	 */
-	private transient InternalEbeanServer server;
+	private transient SpiEbeanServer server;
 
 	/**
 	 * The logger.
@@ -89,7 +89,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	/**
 	 * Set up this profile listener before it is active.
 	 */
-	public void setOwner(InternalEbeanServer server, ServerConfig serverConfig) {
+	public void setOwner(SpiEbeanServer server, ServerConfig serverConfig) {
 		this.server = server;
 		this.logging = new DefaultAutoFetchManagerLogging(serverConfig, this);
 
@@ -388,7 +388,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	/**
 	 * Return true if we should try to use autoFetch for this query.
 	 */
-	private boolean useAutoFetch(OrmQuery<?> query) {
+	private boolean useAutoFetch(SpiQuery<?> query) {
 
 		Boolean autoFetch = query.isAutofetch();
 		if (autoFetch != null) {
@@ -416,7 +416,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	/**
 	 * Auto tune the query and enable profiling.
 	 */
-	public void tuneQuery(OrmQuery<?> query) {
+	public void tuneQuery(SpiQuery<?> query) {
 
 		if (!queryTuning && !profiling) {
 			return;

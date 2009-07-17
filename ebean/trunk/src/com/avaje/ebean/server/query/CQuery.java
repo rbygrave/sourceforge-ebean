@@ -37,8 +37,8 @@ import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.internal.PersistenceContext;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
@@ -132,7 +132,7 @@ public class CQuery<T> implements DbReadContext {
 
 	private final BeanDescriptor<T> desc;
 
-	private final OrmQuery<T> query;
+	private final SpiQuery<T> query;
 
 	private final QueryListener<T> queryListener;
 
@@ -312,7 +312,7 @@ public class CQuery<T> implements DbReadContext {
 		startNano = System.nanoTime();
 		
 		// prepare
-		ServerTransaction t = request.getTransaction();
+		SpiTransaction t = request.getTransaction();
 		Connection conn = t.getInternalConnection();
 		pstmt = conn.prepareStatement(sql);
 
@@ -656,7 +656,7 @@ public class CQuery<T> implements DbReadContext {
 		return bindLog;
 	}
 
-	public ServerTransaction getTransaction() {
+	public SpiTransaction getTransaction() {
 		return request.getTransaction();
 	}
 

@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.InternalCallableSql;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiCallableSql;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.util.BindParamsParser;
 
@@ -53,7 +53,7 @@ public class ExeCallableSql {
      */
     public int execute(PersistRequestCallableSql request) {
 
-        ServerTransaction t = request.getTransaction();
+        SpiTransaction t = request.getTransaction();
         
         boolean batchThisRequest = t.isBatchThisRequest();
         
@@ -93,8 +93,8 @@ public class ExeCallableSql {
 	
     private CallableStatement bindStmt(PersistRequestCallableSql request, boolean batchThisRequest) throws SQLException {
         
-    	InternalCallableSql callableSql = request.getCallableSql();
-    	ServerTransaction t = request.getTransaction();
+    	SpiCallableSql callableSql = request.getCallableSql();
+    	SpiTransaction t = request.getTransaction();
     	
     	String sql = callableSql.getSql();
     	

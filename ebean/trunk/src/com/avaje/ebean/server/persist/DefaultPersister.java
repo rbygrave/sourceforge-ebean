@@ -35,9 +35,9 @@ import com.avaje.ebean.Update;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmUpdate;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiUpdate;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
@@ -81,11 +81,11 @@ public final class DefaultPersister implements Persister {
 
 	private final boolean validation;
 
-	private final InternalEbeanServer server;
+	private final SpiEbeanServer server;
 
 	private final BeanDescriptorManager beanDescriptorManager;
 	
-	public DefaultPersister(InternalEbeanServer server, boolean validate, MAdminLogging logControl, Binder binder, BeanDescriptorManager descMgr) {
+	public DefaultPersister(SpiEbeanServer server, boolean validate, MAdminLogging logControl, Binder binder, BeanDescriptorManager descMgr) {
 
 		this.server = server;
 		this.beanDescriptorManager = descMgr;
@@ -99,7 +99,7 @@ public final class DefaultPersister implements Persister {
 	public int executeCallable(CallableSql callSql, Transaction t) {
 
 		PersistRequestCallableSql request = new PersistRequestCallableSql(server, callSql,
-				(ServerTransaction) t, persistExecute);
+				(SpiTransaction) t, persistExecute);
 		try {
 			return request.executeOrQueue();
 
@@ -114,7 +114,7 @@ public final class DefaultPersister implements Persister {
 	 */
 	public int executeOrmUpdate(Update<?> update, Transaction t) {
 
-		OrmUpdate<?> ormUpdate = (OrmUpdate<?>) update;
+		SpiUpdate<?> ormUpdate = (SpiUpdate<?>) update;
 		
 		BeanManager<?> mgr = beanDescriptorManager.getBeanManager(ormUpdate.getBeanType());
 		
@@ -123,7 +123,7 @@ public final class DefaultPersister implements Persister {
 			throw new PersistenceException(msg);
 		}
 
-		PersistRequestOrmUpdate request = new PersistRequestOrmUpdate(server, mgr, ormUpdate, (ServerTransaction) t, persistExecute);
+		PersistRequestOrmUpdate request = new PersistRequestOrmUpdate(server, mgr, ormUpdate, (SpiTransaction) t, persistExecute);
 		try {
 			return request.executeOrQueue();
 
@@ -139,7 +139,7 @@ public final class DefaultPersister implements Persister {
 	public int executeSqlUpdate(SqlUpdate updSql, Transaction t) {
 
 		PersistRequestUpdateSql request = new PersistRequestUpdateSql(server, updSql,
-				(ServerTransaction) t, persistExecute);
+				(SpiTransaction) t, persistExecute);
 		try {
 			return request.executeOrQueue();
 
@@ -361,7 +361,7 @@ public final class DefaultPersister implements Persister {
 					if (prop.isSaveRecurseSkippable(detailBean)) {
 						// skip saving this bean
 					} else {
-						ServerTransaction t = request.getTransaction();
+						SpiTransaction t = request.getTransaction();
 						t.depth(+1);
 						saveRecurse(detailBean, t, parentBean);
 						t.depth(-1);
@@ -402,7 +402,7 @@ public final class DefaultPersister implements Persister {
 		if (detailIt != null) {
 
 			// increase depth for batching order
-			ServerTransaction t = request.getTransaction();
+			SpiTransaction t = request.getTransaction();
 			t.depth(+1);
 
 			// if a map, then we get the key value and
@@ -509,7 +509,7 @@ public final class DefaultPersister implements Persister {
 			manyValue.modifyReset();
 		}
 
-		ServerTransaction t = request.getTransaction();
+		SpiTransaction t = request.getTransaction();
 		t.depth(+1);
 
 		if (additions != null && !additions.isEmpty()) {
@@ -570,7 +570,7 @@ public final class DefaultPersister implements Persister {
 			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(parentBean);
 				if (detailBean != null) {
-					ServerTransaction t = request.getTransaction();
+					SpiTransaction t = request.getTransaction();
 					t.depth(-1);
 					deleteRecurse(detailBean, t);
 					t.depth(+1);
@@ -599,7 +599,7 @@ public final class DefaultPersister implements Persister {
 				if (it != null) {
 					// decrease depth for batched processing
 					// lowest depth executes first
-					ServerTransaction t = request.getTransaction();
+					SpiTransaction t = request.getTransaction();
 					t.depth(-1);
 
 					while (it.hasNext()) {
@@ -640,7 +640,7 @@ public final class DefaultPersister implements Persister {
 						// we can skip saving this bean
 					
 					} else {
-						ServerTransaction t = request.getTransaction();
+						SpiTransaction t = request.getTransaction();
 						t.depth(-1);
 						saveRecurse(detailBean, t, null);
 						t.depth(+1);
@@ -749,7 +749,7 @@ public final class DefaultPersister implements Persister {
 			throw new PersistenceException(msg);
 		}
 
-		return new PersistRequestBean<T>(server, bean, parentBean, mgr, (ServerTransaction) t,persistExecute);
+		return new PersistRequestBean<T>(server, bean, parentBean, mgr, (SpiTransaction) t,persistExecute);
 	}
 
 	/**

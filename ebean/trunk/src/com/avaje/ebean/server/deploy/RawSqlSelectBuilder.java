@@ -3,7 +3,7 @@ package com.avaje.ebean.server.deploy;
 import java.util.List;
 
 import com.avaje.ebean.config.NamingConvention;
-import com.avaje.ebean.query.SimpleTextParser;
+import com.avaje.ebean.server.querydefn.SimpleTextParser;
 
 /**
  * Parses sql-select queries to try and determine the location where WHERE and HAVING
