@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.el.ElPropertyDeploy;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
  * For updates converts logical property names to database columns and bean type to base table.

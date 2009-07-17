@@ -13,8 +13,8 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.QueryStats;
-import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 
 public class Statistics implements Serializable {
 

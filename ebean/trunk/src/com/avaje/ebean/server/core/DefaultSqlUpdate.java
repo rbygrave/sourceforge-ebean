@@ -26,7 +26,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Update;
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.InternalSqlUpdate;
+import com.avaje.ebean.internal.SpiSqlUpdate;
 
 /**
  * A SQL Update Delete or Insert statement that can be executed. For the times
@@ -96,7 +96,7 @@ import com.avaje.ebean.internal.InternalSqlUpdate;
  * @see com.avaje.ebean.CallableSql
  * @see com.avaje.ebean.Ebean#execute(SqlUpdate)
  */
-public final class DefaultSqlUpdate implements Serializable, InternalSqlUpdate {
+public final class DefaultSqlUpdate implements Serializable, SpiSqlUpdate {
 
 	private static final long serialVersionUID = -6493829438421253102L;
 
@@ -197,16 +197,6 @@ public final class DefaultSqlUpdate implements Serializable, InternalSqlUpdate {
 		return this;
 	}
 
-	public SqlUpdate set(int position, Object value) {
-		bindParams.setParameter(position, value);
-		return this;
-	}
-
-	public SqlUpdate bind(int position, Object value) {
-		bindParams.setParameter(position, value);
-		return this;
-	}
-
 	public SqlUpdate setParameter(int position, Object value) {
 		bindParams.setParameter(position, value);
 		return this;
@@ -217,23 +207,8 @@ public final class DefaultSqlUpdate implements Serializable, InternalSqlUpdate {
 		return this;
 	}
 
-	public SqlUpdate bindNull(int position, int jdbcType) {
-		bindParams.setNullParameter(position, jdbcType);
-		return this;
-	}
-
 	public SqlUpdate setNullParameter(int position, int jdbcType) {
 		bindParams.setNullParameter(position, jdbcType);
-		return this;
-	}
-
-	public SqlUpdate set(String name, Object value) {
-		bindParams.setParameter(name, value);
-		return this;
-	}
-
-	public SqlUpdate bind(String name, Object value) {
-		bindParams.setParameter(name, value);
 		return this;
 	}
 
@@ -243,11 +218,6 @@ public final class DefaultSqlUpdate implements Serializable, InternalSqlUpdate {
 	}
 
 	public SqlUpdate setNull(String name, int jdbcType) {
-		bindParams.setNullParameter(name, jdbcType);
-		return this;
-	}
-
-	public SqlUpdate bindNull(String name, int jdbcType) {
 		bindParams.setNullParameter(name, jdbcType);
 		return this;
 	}

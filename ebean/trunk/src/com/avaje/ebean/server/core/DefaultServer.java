@@ -55,18 +55,14 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.common.ScopeTrans;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.el.ElFilter;
 import com.avaje.ebean.event.BeanPersistController;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.PersistenceContext;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.ScopeTrans;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEventTable;
-import com.avaje.ebean.query.DefaultOrmQuery;
-import com.avaje.ebean.query.DefaultOrmUpdate;
-import com.avaje.ebean.query.DefaultRelationalQuery;
-import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
@@ -79,10 +75,14 @@ import com.avaje.ebean.server.deploy.DNativeQuery;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
+import com.avaje.ebean.server.el.ElFilter;
 import com.avaje.ebean.server.jmx.MAdminAutofetch;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
+import com.avaje.ebean.server.querydefn.DefaultOrmQuery;
+import com.avaje.ebean.server.querydefn.DefaultOrmUpdate;
+import com.avaje.ebean.server.querydefn.DefaultRelationalQuery;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 import com.avaje.ebean.server.transaction.TransactionManager;
@@ -91,7 +91,7 @@ import com.avaje.ebean.server.transaction.TransactionScopeManager;
 /**
  * The default server side implementation of EbeanServer.
  */
-public final class DefaultServer implements InternalEbeanServer {
+public final class DefaultServer implements SpiEbeanServer {
 
 	private static final Logger logger = Logger.getLogger(DefaultServer.class.getName());
 
@@ -310,7 +310,7 @@ public final class DefaultServer implements InternalEbeanServer {
 			BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) desc.getBeanProperty(propertyName);
 
 			Class<?> manyTypeCls = many.getTargetType();
-			OrmQuery<?> query = (OrmQuery<?>) createQuery(manyTypeCls);
+			SpiQuery<?> query = (SpiQuery<?>) createQuery(manyTypeCls);
 
 			// add parentBean to context for bidirectional relationships
 			query.contextAdd(parent);
@@ -356,7 +356,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		Object parentBean = ebi.getParentBean();
 
-		OrmQuery<?> query = (OrmQuery<?>) createQuery(beanType);
+		SpiQuery<?> query = (SpiQuery<?>) createQuery(beanType);
 		
 		// don't collect autoFetch usage profiling information
 		// as we just copy the data out of these fetched beans
@@ -439,7 +439,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * </p>
 	 */
 	public void externalModification(TransactionEventTable tableEvent) {
-		ServerTransaction t = transactionScopeManager.get();
+		SpiTransaction t = transactionScopeManager.get();
 		if (t != null) {
 			t.getEvent().add(tableEvent);
 		} else {
@@ -500,7 +500,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		Object ref = null;
 		PersistenceContext ctx = null;
 
-		ServerTransaction t = transactionScopeManager.get();
+		SpiTransaction t = transactionScopeManager.get();
 		if (t != null) {
 			ctx = t.getPersistenceContext();
 			ref = ctx.get(type, id);
@@ -624,7 +624,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 * types.
 	 * </p>
 	 */
-	private boolean createNewTransaction(ServerTransaction t, TxScope scope) {
+	private boolean createNewTransaction(SpiTransaction t, TxScope scope) {
 
 		TxType type = scope.getType();
 		switch (type) {
@@ -662,10 +662,10 @@ public final class DefaultServer implements InternalEbeanServer {
 			txScope = new TxScope();
 		}
 
-		ServerTransaction suspended = null;
+		SpiTransaction suspended = null;
 
 		// get current transaction from ThreadLocal or equivalent
-		ServerTransaction t = transactionScopeManager.get();
+		SpiTransaction t = transactionScopeManager.get();
 
 		boolean newTransaction;
 		if (txScope.getType().equals(TxType.NOT_SUPPORTED)) {
@@ -703,7 +703,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	/**
 	 * Returns the current transaction (or null) from the scope.
 	 */
-	public ServerTransaction getCurrentServerTransaction() {
+	public SpiTransaction getCurrentServerTransaction() {
 		return transactionScopeManager.get();
 	}
 
@@ -715,7 +715,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 */
 	public Transaction beginTransaction() {
 		// start an explicit transaction
-		ServerTransaction t = transactionManager.createTransaction(true, -1);
+		SpiTransaction t = transactionManager.createTransaction(true, -1);
 		transactionScopeManager.set(t);
 		return t;
 	}
@@ -728,7 +728,7 @@ public final class DefaultServer implements InternalEbeanServer {
 	 */
 	public Transaction beginTransaction(TxIsolation isolation) {
 		// start an explicit transaction
-		ServerTransaction t = transactionManager.createTransaction(true, isolation.getLevel());
+		SpiTransaction t = transactionManager.createTransaction(true, isolation.getLevel());
 		transactionScopeManager.set(t);
 		return t;
 	}
@@ -865,7 +865,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		}
 	}
 
-	public <T> Update<T> createUpdate(Class<T> beanType, String namedUpdate) {
+	public <T> Update<T> createNamedUpdate(Class<T> beanType, String namedUpdate) {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
 			String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
@@ -880,14 +880,14 @@ public final class DefaultServer implements InternalEbeanServer {
 		return new DefaultOrmUpdate<T>(beanType, this, desc.getBaseTable(), deployUpdate);
 	}
 
-	public <T> Update<T> createUpdate(Class<T> beanType) {
+	public <T> Update<T> createUpdate(Class<T> beanType, String ormUpdate) {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
 			String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
 			throw new PersistenceException(m);
 		}
 
-		return new DefaultOrmUpdate<T>(beanType, this, desc.getBaseTable());
+		return new DefaultOrmUpdate<T>(beanType, this, desc.getBaseTable(), ormUpdate);
 	}
 
 	public SqlQuery createSqlQuery(String sql) {
@@ -939,14 +939,14 @@ public final class DefaultServer implements InternalEbeanServer {
 
 	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
-		OrmQuery<T> query = (OrmQuery<T>) q;
+		SpiQuery<T> query = (SpiQuery<T>) q;
 		BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(query.getBeanType());
 
 		if (desc.isAutoFetchTunable() && !query.isSqlSelect()) {
 			// its a tunable query
 			autoFetchManager.tuneQuery(query);
 		}
-		ServerTransaction serverTrans = (ServerTransaction)t;
+		SpiTransaction serverTrans = (SpiTransaction)t;
 		OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);
 		// the query hash after an AutoFetch tuning
 		request.calculateQueryPlanHash();
@@ -974,7 +974,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		// actually a find by Id type of query...
 		// ... perhaps with joins and cache hints?
-		OrmQuery<T> q = (OrmQuery<T>) query;
+		SpiQuery<T> q = (SpiQuery<T>) query;
 		Object id = q.getId();
 		if (id != null) {
 			return findId(query, t);
@@ -1162,7 +1162,7 @@ public final class DefaultServer implements InternalEbeanServer {
 
 		TransWrapper wrap = initTransIfRequired(t);
 		try {
-			ServerTransaction trans = wrap.transaction;
+			SpiTransaction trans = wrap.transaction;
 			int saveCount = 0;
 			while (it.hasNext()) {
 				Object bean = it.next();
@@ -1212,7 +1212,7 @@ public final class DefaultServer implements InternalEbeanServer {
 		TransWrapper wrap = initTransIfRequired(t);
 
 		try {
-			ServerTransaction trans = wrap.transaction;
+			SpiTransaction trans = wrap.transaction;
 			int deleteCount = 0;
 			while (it.hasNext()) {
 				Object bean = it.next();
@@ -1326,11 +1326,11 @@ public final class DefaultServer implements InternalEbeanServer {
 	TransWrapper initTransIfRequired(Transaction t) {
 
 		if (t != null) {
-			return new TransWrapper((ServerTransaction) t, false);
+			return new TransWrapper((SpiTransaction) t, false);
 		}
 
 		boolean wasCreated = false;
-		ServerTransaction trans = transactionScopeManager.get();
+		SpiTransaction trans = transactionScopeManager.get();
 		if (trans == null || !trans.isActive()) {
 			// create a transaction
 			trans = transactionManager.createTransaction(false, -1);
@@ -1339,11 +1339,11 @@ public final class DefaultServer implements InternalEbeanServer {
 		return new TransWrapper(trans, wasCreated);
 	}
 
-	public ServerTransaction createServerTransaction(boolean isExplicit, int isolationLevel) {
+	public SpiTransaction createServerTransaction(boolean isExplicit, int isolationLevel) {
 		return transactionManager.createTransaction(isExplicit, isolationLevel);
 	}
 
-	public ServerTransaction createQueryTransaction() {
+	public SpiTransaction createQueryTransaction() {
 		return transactionManager.createQueryTransaction();
 	}
 }

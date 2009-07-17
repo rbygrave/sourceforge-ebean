@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebean.Expression;
-import com.avaje.ebean.el.ElPropertyDeploy;
-import com.avaje.ebean.internal.InternalExpression;
+import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
  * Controls the modification of a query in preparation for a row Count query.
@@ -30,7 +30,7 @@ public class ModifyQuery {
 		this.desc = desc;
 	}
 
-	public boolean containsMany(InternalExpression expression) {
+	public boolean containsMany(SpiExpression expression) {
 		String propertyName = expression.getPropertyName();
 		ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 		return elProp.containsMany();		
@@ -40,7 +40,7 @@ public class ModifyQuery {
 	 * Return true if this expression should be removed from the where
 	 * expression list.
 	 */
-	public boolean removeMany(InternalExpression expression) {
+	public boolean removeMany(SpiExpression expression) {
 		String propertyName = expression.getPropertyName();
 		ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 		if (elProp.containsMany()) {

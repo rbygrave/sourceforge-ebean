@@ -25,8 +25,8 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.internal.PersistenceContext;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -63,7 +63,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 
     	BeanCollection<T> result = null;
     	
-        OrmQuery<T> query = request.getQuery();
+        SpiQuery<T> query = request.getQuery();
 
         if (query.isUseCache()){
         	result = request.getFromQueryCache();
@@ -72,7 +72,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	}
         }
  
-        ServerTransaction t = request.getTransaction();
+        SpiTransaction t = request.getTransaction();
         
         // before we perform a query, we need to flush any
         // previous persist requests that are queued/batched.
@@ -113,7 +113,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         
 		T result = null;
 		
-		OrmQuery<T> query = request.getQuery();
+		SpiQuery<T> query = request.getQuery();
 		
 		boolean useBeanCache = query.isUseCache() && query.getId() != null; 
 		if (useBeanCache){
@@ -123,7 +123,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 			}
 		}
         
-        ServerTransaction t = request.getTransaction();
+        SpiTransaction t = request.getTransaction();
         
         if (t.isBatchFlushOnQuery()){
             // before we perform a query, we need to flush any

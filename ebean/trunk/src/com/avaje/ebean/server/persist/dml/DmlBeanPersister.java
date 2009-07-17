@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.persist.BeanPersister;
@@ -88,7 +88,7 @@ public final class DmlBeanPersister implements BeanPersister {
 	 */
 	private void execute(PersistRequest request, PersistHandler handler) {
 
-		ServerTransaction trans = request.getTransaction();
+		SpiTransaction trans = request.getTransaction();
 		boolean batchThisRequest = trans.isBatchThisRequest();
 
 		try {

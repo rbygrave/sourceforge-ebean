@@ -1,27 +1,61 @@
+/**
+ * Copyright (C) 2006  Authors
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
 package com.avaje.ebean;
 
 import java.util.Collection;
 import java.util.Map;
 
-
 /**
- * Expression factory for creating standard expressions.
+ * Expression factory for creating standard expressions for WHERE and HAVING
+ * clauses.
  * <p>
- * Creates standard common expressions for using in a Query Where or Having clause.
+ * Generally you will only need to use this object for creating OR, JUNCTION or
+ * CONJUNCTION expressions. To create simple expressions you will most likely
+ * just use the methods on the ExpressionList object that is returned via
+ * {@link Query#where()}.
  * </p>
  * <p>
+ * This provides a convenient way to create expressions for the 'Default'
+ * server. It is actually a short cut for using the ExpressionFactory of the
+ * 'default' EbeanServer.
+ * <p>
+ * See also {@link Ebean#getExpressionFactory()}
  * </p>
+ * <p>
+ * Creates standard common expressions for using in a Query Where or Having
+ * clause.
+ * </p>
+ * 
  * <pre class="code">
- *  // Example: fetch orders where status equals new and orderDate > lastWeek.
+ *  // Example: Using an Expr.or() method
  * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
- * query.where()
- *     .add(Expr.eq(&quot;status&quot;, Order.NEW))
- *     .add(Expr.gt(&quot;orderDate&quot;, lastWeek));
+ * query.where( 
+ * 		Expr.or(Expr.eq(&quot;status&quot;, Order.NEW),
+ *     		    Expr.gt(&quot;orderDate&quot;, lastWeek));
+ *     
  * List&lt;Order&gt; list = query.findList();
  * ...
  * </pre>
+ * 
  * @see Query#where()
- * @deprecated
+ * @author Rob Bygrave
  */
 public class Expr {
 

@@ -27,14 +27,14 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryLimitRequest;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployPropertyParser;
 import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.persist.Binder;
+import com.avaje.ebean.server.querydefn.OrmQueryLimitRequest;
 
 /**
  * Factory for SqlSelectClause based on raw sql.
@@ -63,7 +63,7 @@ public class RawSqlSelectClauseBuilder {
 	 */
 	public <T> CQuery<T> build(OrmQueryRequest<T> request) throws PersistenceException {
 
-		OrmQuery<T> query = request.getQuery();
+		SpiQuery<T> query = request.getQuery();
 		BeanDescriptor<T> desc = request.getBeanDescriptor();
 		
 		DeployNamedQuery namedQuery = desc.getNamedQuery(query.getName());

@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.net;
 
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.Command;
 import com.avaje.ebean.net.CommandContext;
 import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
@@ -48,7 +48,7 @@ public final class CmdRemoteTransactionEvent extends Command {
      * Notify local BeanListeners of remote inserts updates and deletes.
      */
     public void execute(CommandContext context) {
-        InternalEbeanServer server = context.getServer();
+        SpiEbeanServer server = context.getServer();
         server.remoteTransactionEvent(event);
         
         event = null;

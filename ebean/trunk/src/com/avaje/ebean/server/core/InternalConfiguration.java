@@ -6,7 +6,7 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
 import com.avaje.ebean.server.cache.ServerCacheManager;
@@ -122,7 +122,7 @@ public class InternalConfiguration {
 		
 	}
 
-	public AutoFetchManager createAutoFetchManager(InternalEbeanServer server){
+	public AutoFetchManager createAutoFetchManager(SpiEbeanServer server){
 		return AutoFetchManagerFactory.create(server, serverConfig, resourceManager);
 	}
 
@@ -135,7 +135,7 @@ public class InternalConfiguration {
 		return new DefaultOrmQueryEngine(beanDescriptorManager,  cQueryEngine);
 	}
 	
-	public Persister createPersister(InternalEbeanServer server) {
+	public Persister createPersister(SpiEbeanServer server) {
 		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager);
 	}
 

@@ -37,8 +37,7 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.config.dbplatform.DatabasePlatformFactory;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebean.server.cache.DefaultServerCacheManager;
@@ -87,7 +86,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	 * Create the server reading configuration information
 	 * from ebean.properties.
 	 */
-	public InternalEbeanServer createServer(String name) {
+	public SpiEbeanServer createServer(String name) {
 
 		ConfigBuilder b = new ConfigBuilder();
 		ServerConfig config = b.build(name);
@@ -99,7 +98,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	/**
 	 * Create the implementation from the configuration.
 	 */
-	public InternalEbeanServer createServer(ServerConfig serverConfig) {
+	public SpiEbeanServer createServer(ServerConfig serverConfig) {
 
 		setNamingConvention(serverConfig);
 		
@@ -210,7 +209,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	/**
 	 * Execute the DDL if required.
 	 */
-	private void executeDDL(InternalEbeanServer server) {
+	private void executeDDL(SpiEbeanServer server) {
 		
 		server.getDdlGenerator().execute();	
 	}

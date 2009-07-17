@@ -22,7 +22,7 @@ package com.avaje.ebean.server.persist.dml;
 import java.sql.SQLException;
 import java.util.Set;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
@@ -52,7 +52,7 @@ public class UpdateHandler extends DmlHandler {
 
 		updatedProperties = persistRequest.getUpdatedProperties();
 		
-		ServerTransaction t = persistRequest.getTransaction();
+		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
 
 		if (isBatch) {

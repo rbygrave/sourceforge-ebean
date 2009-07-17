@@ -6,8 +6,8 @@ import java.util.Iterator;
 import com.avaje.ebean.ExampleExpression;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -36,7 +36,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
  *  
  * </pre>
  */
-public class DefaultExampleExpression implements InternalExpression, ExampleExpression {
+public class DefaultExampleExpression implements SpiExpression, ExampleExpression {
 
 	private static final long serialVersionUID = 1L;
 
@@ -64,7 +64,7 @@ public class DefaultExampleExpression implements InternalExpression, ExampleExpr
 	 * The non null bean properties and found and together added as a list of
 	 * expressions (like or equal to expressions).
 	 */
-	private ArrayList<InternalExpression> list;
+	private ArrayList<SpiExpression> list;
 
 	/**
 	 * Construct the query by example expression.
@@ -140,10 +140,10 @@ public class DefaultExampleExpression implements InternalExpression, ExampleExpr
 	/**
 	 * Adds bind values to the request.
 	 */
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 
 		for (int i = 0; i < list.size(); i++) {
-			InternalExpression item = list.get(i);
+			SpiExpression item = list.get(i);
 			item.addBindValues(request);
 		}
 	}
@@ -151,13 +151,13 @@ public class DefaultExampleExpression implements InternalExpression, ExampleExpr
 	/**
 	 * Generates and adds the sql to the request.
 	 */
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 
 		if (!list.isEmpty()) {
 			request.append("(");
 
 			for (int i = 0; i < list.size(); i++) {
-				InternalExpression item = list.get(i);
+				SpiExpression item = list.get(i);
 				if (i > 0) {
 					request.append(" and ");
 				}
@@ -210,9 +210,9 @@ public class DefaultExampleExpression implements InternalExpression, ExampleExpr
 	/**
 	 * Build the List of expressions.
 	 */
-	private ArrayList<InternalExpression> buildExpressions(BeanQueryRequest<?> request) {
+	private ArrayList<SpiExpression> buildExpressions(BeanQueryRequest<?> request) {
 
-		ArrayList<InternalExpression> list = new ArrayList<InternalExpression>();
+		ArrayList<SpiExpression> list = new ArrayList<SpiExpression>();
 
 		OrmQueryRequest<?> r = (OrmQueryRequest<?>)request;
 		BeanDescriptor<?> beanDescriptor = r.getBeanDescriptor();

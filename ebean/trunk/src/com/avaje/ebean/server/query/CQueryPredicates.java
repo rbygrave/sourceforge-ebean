@@ -8,9 +8,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.InternalExpressionList;
+import com.avaje.ebean.internal.SpiExpressionList;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.BindParams.OrderedList;
-import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -38,7 +38,7 @@ public class CQueryPredicates {
 
 	final OrmQueryRequest<?> request;
 
-	final OrmQuery<?> query;
+	final SpiQuery<?> query;
 
 	final Object idValue;
 
@@ -226,7 +226,7 @@ public class CQueryPredicates {
 		buildBindWhereRawSql(buildSql);
 		buildBindHavingRawSql(buildSql);
 
-		InternalExpressionList<?> whereExp = query.getWhereExpressions();
+		SpiExpressionList<?> whereExp = query.getWhereExpressions();
 		
 		DefaultExpressionRequest whereExpReq = new DefaultExpressionRequest(request);
 		
@@ -238,7 +238,7 @@ public class CQueryPredicates {
 		}
 
 		// having expression
-		InternalExpressionList<?> havingExpr = query.getHavingExpressions();
+		SpiExpressionList<?> havingExpr = query.getHavingExpressions();
 
 		DefaultExpressionRequest havingExpReq = new DefaultExpressionRequest(request);
 

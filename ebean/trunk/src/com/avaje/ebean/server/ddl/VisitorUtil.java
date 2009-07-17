@@ -3,7 +3,7 @@ package com.avaje.ebean.server.ddl;
 import java.util.Iterator;
 import java.util.List;
 
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -17,7 +17,7 @@ public class VisitorUtil {
 	/**
 	 * Visit all the descriptors for a given server.
 	 */
-	public static void visit(InternalEbeanServer server, BeanVisitor visitor){
+	public static void visit(SpiEbeanServer server, BeanVisitor visitor){
 
 		visit(server.getBeanDescriptors(), visitor);
 	}

@@ -3,7 +3,7 @@ package com.avaje.ebean.server.deploy;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.avaje.ebean.el.ElPropertyDeploy;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
  * Converts logical property names to database columns with table alias.

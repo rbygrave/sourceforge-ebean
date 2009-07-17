@@ -1,15 +1,15 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.util.DefaultExpressionRequest;
 
 
 /**
  * Slightly redundant as Query.setId() ultimately also does the same job.
  */
-class IdExpression implements InternalExpression {
+class IdExpression implements SpiExpression {
 
 	private static final long serialVersionUID = -3065936341718489842L;
 
@@ -24,7 +24,7 @@ class IdExpression implements InternalExpression {
 	}
 
 	
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		
 		// 'flatten' EmbeddedId and multiple Id cases
 		// into an array of the underlying scalar field values
@@ -35,7 +35,7 @@ class IdExpression implements InternalExpression {
 		}	
 	}
 
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 		
 		DefaultExpressionRequest r = (DefaultExpressionRequest)request;
 		String idSql = r.getBeanDescriptor().getBindIdSql();

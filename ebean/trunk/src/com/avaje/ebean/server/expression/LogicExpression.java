@@ -2,14 +2,14 @@ package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
 /**
  * A logical And or Or for joining two expressions.
  */
-abstract class LogicExpression implements InternalExpression {
+abstract class LogicExpression implements SpiExpression {
 
 	private static final long serialVersionUID = 616860781960645251L;
 	
@@ -34,28 +34,28 @@ abstract class LogicExpression implements InternalExpression {
 		}
 	}
 
-	final InternalExpression expOne;
+	final SpiExpression expOne;
 
-	final InternalExpression expTwo;
+	final SpiExpression expTwo;
 
 	final String joinType;
 
 	LogicExpression(String joinType, Expression expOne, Expression expTwo) {
 		this.joinType = joinType;
-		this.expOne = (InternalExpression)expOne;
-		this.expTwo = (InternalExpression)expTwo;
+		this.expOne = (SpiExpression)expOne;
+		this.expTwo = (SpiExpression)expTwo;
 	}
 
 	public String getPropertyName() {
 		return null;
 	}
 	
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		expOne.addBindValues(request);
 		expTwo.addBindValues(request);
 	}
 
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 
 		request.append("(");
 		expOne.addSql(request);

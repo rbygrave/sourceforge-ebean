@@ -21,7 +21,7 @@ package com.avaje.ebean.server.persist;
 
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.event.BeanPersistController;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
@@ -72,7 +72,7 @@ public final class DefaultPersistExecute implements PersistExecute {
 		this.defaultBatchSize = GlobalProperties.getInt("batch.size", 20);
     }
 
-	public BatchControl createBatchControl(ServerTransaction t) {
+	public BatchControl createBatchControl(SpiTransaction t) {
 
 		// create a BatchControl and set its defaults
 		return new BatchControl(t, defaultBatchSize, defaultBatchGenKeys);

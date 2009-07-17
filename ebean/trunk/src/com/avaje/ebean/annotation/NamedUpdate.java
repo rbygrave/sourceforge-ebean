@@ -31,11 +31,6 @@ import java.lang.annotation.Target;
  * and columns etc or the equivalent statement but with table names and columns
  * expressed as bean types and bean properties.
  * </p>
- * <p>
- * If the update is expressed with bean types and bean properties you must set
- * the isSql flag to false. Ebean will then translate the statement converting
- * the logical bean types into tables and bean properties into columns.
- * </p>
  */
 @Target( { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
@@ -45,17 +40,6 @@ public @interface NamedUpdate {
 	 * The name of the update.
 	 */
 	String name();
-
-	/**
-	 * Set this to false if the update is written using bean types and bean
-	 * property names rather than the actual table and columns.
-	 * <p>
-	 * If isSql is false then Ebean will translate the update statement
-	 * converting the bean types and property names into database tables and
-	 * columns.
-	 * </p>
-	 */
-	boolean isSql() default true;
 
 	/**
 	 * The insert, update or delete statement.

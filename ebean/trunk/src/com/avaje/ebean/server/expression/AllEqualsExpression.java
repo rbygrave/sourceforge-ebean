@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
-class AllEqualsExpression implements InternalExpression {
+class AllEqualsExpression implements SpiExpression {
 
 	private static final long serialVersionUID = -8691773558205937025L;
 	
@@ -23,7 +23,7 @@ class AllEqualsExpression implements InternalExpression {
 		return null;
 	}
 
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		
 		if (propMap.isEmpty()) {
 			return;
@@ -39,7 +39,7 @@ class AllEqualsExpression implements InternalExpression {
 		}
 	}
 
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 		
 		if (propMap.isEmpty()) {
 			return;

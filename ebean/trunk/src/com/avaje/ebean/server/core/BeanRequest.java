@@ -22,8 +22,8 @@ package com.avaje.ebean.server.core;
 import java.sql.Connection;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * Base class for find and persist requests.
@@ -33,20 +33,20 @@ public abstract class BeanRequest {
 	/**
 	 * The server processing the request.
 	 */
-	final InternalEbeanServer ebeanServer;
+	final SpiEbeanServer ebeanServer;
 
 	final String serverName;
 
 	/**
 	 * The transaction this is part of.
 	 */
-	ServerTransaction transaction;
+	SpiTransaction transaction;
 
 	boolean createdTransaction;
 
 	boolean readOnly;
 
-	public BeanRequest(InternalEbeanServer ebeanServer, ServerTransaction t) {
+	public BeanRequest(SpiEbeanServer ebeanServer, SpiTransaction t) {
 		this.ebeanServer = ebeanServer;
 		this.serverName = ebeanServer.getName();
 		this.transaction = t;
@@ -118,7 +118,7 @@ public abstract class BeanRequest {
 	/**
 	 * Return the Transaction associated with this request.
 	 */
-	public ServerTransaction getTransaction() {
+	public SpiTransaction getTransaction() {
 		return transaction;
 	}
 

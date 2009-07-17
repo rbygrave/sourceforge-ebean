@@ -27,7 +27,7 @@ import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -106,7 +106,7 @@ public class InsertHandler extends DmlHandler {
 		String sql = meta.getSql(withId);
 		logSql(sql);
 
-		ServerTransaction t = persistRequest.getTransaction();
+		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
 
 		if (isBatch) {
@@ -130,7 +130,7 @@ public class InsertHandler extends DmlHandler {
 	/**
 	 * Check with useGeneratedKeys to get appropriate PreparedStatement.
 	 */
-	protected PreparedStatement getPstmt(ServerTransaction t, String sql) throws SQLException {
+	protected PreparedStatement getPstmt(SpiTransaction t, String sql) throws SQLException {
 		Connection conn = t.getInternalConnection();
 		if (useGeneratedKeys) {
 			// the Id generated is always the first column

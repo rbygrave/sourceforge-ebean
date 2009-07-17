@@ -1,5 +1,36 @@
 package com.avaje.ebean;
 
+/**
+ * A SqlUpdate for executing insert update or delete statements.
+ * <p>
+ * Provides a simple way to execute raw SQL insert update or delete
+ * statements without having to resort to JDBC.
+ * </p>
+ * <p>
+ * Supports the use of positioned or named parameters and can automatically
+ * notify Ebean of the table modified so that Ebean can maintain its cache.
+ * </p>
+ * <p>
+ * Note that {@link #setAutoTableMod(boolean)} and Ebean#externalModification(String, boolean, boolean, boolean)}
+ * can be to notify Ebean of external changes and enable Ebean to maintain it's "L2" server cache.
+ * </p>
+ * 
+ * <pre class="code"> 
+ * // example that uses 'named' parameters 
+ * String s = &quot;UPDATE f_topic set post_count = :count where id = :id&quot;
+ * SqlUpdate update = Ebean.createSqlUpdate(s);
+ * update.setParameter(&quot;id&quot;, 1);
+ * update.setParameter(&quot;count&quot;, 50);
+ * 
+ * int modifiedCount = Ebean.execute(update);
+ * 
+ * String msg = &quot;There where &quot; + modifiedCount + &quot;rows updated&quot; 
+ * </pre>
+ * 
+ * @see Update
+ * @see SqlQuery
+ * @see CallableSql
+ */
 public interface SqlUpdate {
 
 	/**
@@ -15,7 +46,7 @@ public interface SqlUpdate {
 	 * </p>
 	 * @see com.avaje.ebean.Ebean#execute(SqlUpdate)
 	 */
-	public abstract int execute();
+	public int execute();
 
 	/**
 	 * Return true if eBean should automatically deduce the table modification
@@ -25,7 +56,7 @@ public interface SqlUpdate {
 	 * aware of the modification.
 	 * </p>
 	 */
-	public abstract boolean isAutoTableMod();
+	public boolean isAutoTableMod();
 
 	/**
 	 * Set this to false if you don't want eBean to automatically deduce the
@@ -36,12 +67,12 @@ public interface SqlUpdate {
 	 * and you know that it is not important for cached objects or text indexes.
 	 * </p>
 	 */
-	public abstract SqlUpdate setAutoTableMod(boolean isAutoTableMod);
+	public SqlUpdate setAutoTableMod(boolean isAutoTableMod);
 
 	/**
 	 * Return the label that can be seen in the transaction logs.
 	 */
-	public abstract String getLabel();
+	public String getLabel();
 
 	/**
 	 * Set a descriptive text that can be put into the transaction log.
@@ -49,17 +80,17 @@ public interface SqlUpdate {
 	 * Useful when identifying the statement in the transaction log.
 	 * </p>
 	 */
-	public abstract SqlUpdate setLabel(String label);
+	public SqlUpdate setLabel(String label);
 
 	/**
 	 * Return the sql statement.
 	 */
-	public abstract String getSql();
+	public String getSql();
 
 	/**
 	 * Return the timeout used to execute this statement.
 	 */
-	public abstract int getTimeout();
+	public int getTimeout();
 
 	/**
 	 * Set the timeout in seconds. Zero implies no limit.
@@ -69,70 +100,38 @@ public interface SqlUpdate {
 	 * PersistenceException.
 	 * </p>
 	 */
-	public abstract SqlUpdate setTimeout(int secs);
-
-	/**
-	 * @deprecated Use {@link #setParameter(int, Object)} 
-	 */
-	public abstract SqlUpdate set(int position, Object value);
-
-	/**
-	 * @deprecated Use {@link #setParameter(int, Object)} 
-	 */
-	public abstract SqlUpdate bind(int position, Object value);
+	public SqlUpdate setTimeout(int secs);
 
 	/**
 	 * Set a parameter via its index position.
 	 */
-	public abstract SqlUpdate setParameter(int position, Object value);
+	public SqlUpdate setParameter(int position, Object value);
 
 	/**
 	 * Set a null parameter via its index position. Exactly the same as
 	 * {@link #setNull(int, int)}.
 	 */
-	public abstract SqlUpdate setNull(int position, int jdbcType);
-
-	/**
-	 * @deprecated Use {@link #setNull(int, int)} or
-	 *             {@link #setNullParameter(int, int)}
-	 */
-	public abstract SqlUpdate bindNull(int position, int jdbcType);
+	public SqlUpdate setNull(int position, int jdbcType);
 
 	/**
 	 * Set a null valued parameter using its index position.
 	 */
-	public abstract SqlUpdate setNullParameter(int position, int jdbcType);
-
-	/**
-	 * @deprecated Use {@link #setParameter(String, Object)} 
-	 */
-	public abstract SqlUpdate set(String name, Object value);
-
-	/**
-	 * @deprecated Use {@link #setParameter(String, Object)} 
-	 */
-	public abstract SqlUpdate bind(String name, Object value);
+	public SqlUpdate setNullParameter(int position, int jdbcType);
 
 	/**
 	 * Set a named parameter value.
 	 */
-	public abstract SqlUpdate setParameter(String name, Object param);
+	public SqlUpdate setParameter(String name, Object param);
 
 	/**
 	 * Set a named parameter that has a null value. Exactly the same as
 	 * {@link #setNullParameter(String, int)}.
 	 */
-	public abstract SqlUpdate setNull(String name, int jdbcType);
-
-	/**
-	 * @deprecated Use {@link #setNull(String, int)} or
-	 *             {@link #setNullParameter(String, int)}
-	 */
-	public abstract SqlUpdate bindNull(String name, int jdbcType);
+	public SqlUpdate setNull(String name, int jdbcType);
 
 	/**
 	 * Set a named parameter that has a null value.
 	 */
-	public abstract SqlUpdate setNullParameter(String name, int jdbcType);
+	public SqlUpdate setNullParameter(String name, int jdbcType);
 
 }

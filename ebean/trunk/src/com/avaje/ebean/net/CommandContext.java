@@ -22,7 +22,7 @@ package com.avaje.ebean.net;
 import java.util.HashMap;
 
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.net.CommandProcessor;
 
 /**
@@ -34,7 +34,7 @@ import com.avaje.ebean.server.net.CommandProcessor;
  */
 public class CommandContext {
 
-	InternalEbeanServer server;
+	SpiEbeanServer server;
 
 	CommandProcessor processor;
 
@@ -51,14 +51,14 @@ public class CommandContext {
 	/**
 	 * Get the appropriate server to run the command.
 	 */
-	public InternalEbeanServer getServer() {
+	public SpiEbeanServer getServer() {
 		return server;
 	}
 
 	/**
 	 * Set the server to run the command against.
 	 */
-	public void setServer(InternalEbeanServer server) {
+	public void setServer(SpiEbeanServer server) {
 		this.server = server;
 	}
 

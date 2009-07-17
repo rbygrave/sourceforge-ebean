@@ -17,8 +17,7 @@ import java.sql.SQLException;
  * <pre class="code">
  * String sql = &quot;{call sp_order_mod(?,?)}&quot;;
  * 
- * CallableSql cs = new CallableSql();
- * cs.setSql(sql);
+ * CallableSql cs = Ebean.createCallableSql(sql);
  * cs.setParameter(1, &quot;turbo&quot;);
  * cs.registerOut(2, Types.INTEGER);
  * 

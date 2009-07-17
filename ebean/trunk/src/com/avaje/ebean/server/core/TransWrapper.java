@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.core;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 
 /**
  * Used to temporarily wrap a thread local based transaction.
@@ -11,14 +11,14 @@ import com.avaje.ebean.internal.ServerTransaction;
  */
 final class TransWrapper {
 
-	final ServerTransaction transaction;
+	final SpiTransaction transaction;
 
 	private final boolean wasCreated;
 
 	/**
 	 * Wrap the transaction indicating if it was just created.
 	 */
-	TransWrapper(ServerTransaction t, boolean created) {
+	TransWrapper(SpiTransaction t, boolean created) {
 		transaction = t;
 		wasCreated = created;
 	}

@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.jmx.MAdminLogging;
@@ -70,7 +70,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 
 	final Set<String> loadedProps;
 
-	final ServerTransaction transaction;
+	final SpiTransaction transaction;
 
 	protected DmlHandler(PersistRequestBean<?> persistRequest) {
 		this.persistRequest = persistRequest;
@@ -254,7 +254,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	/**
 	 * Check with useGeneratedKeys to get appropriate PreparedStatement.
 	 */
-	protected PreparedStatement getPstmt(ServerTransaction t, String sql, boolean genKeys) throws SQLException {
+	protected PreparedStatement getPstmt(SpiTransaction t, String sql, boolean genKeys) throws SQLException {
 		Connection conn = t.getInternalConnection();
 		if (genKeys) {
 			// the Id generated is always the first column
@@ -271,7 +271,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	/**
 	 * Return a prepared statement taking into account batch requirements.
 	 */
-	protected PreparedStatement getPstmt(ServerTransaction t, String sql, BatchPostExecute batchExe, boolean genKeys)
+	protected PreparedStatement getPstmt(SpiTransaction t, String sql, BatchPostExecute batchExe, boolean genKeys)
 			throws SQLException {
 
 		BatchedPstmtHolder batch = t.getBatchControl().getPstmtHolder();

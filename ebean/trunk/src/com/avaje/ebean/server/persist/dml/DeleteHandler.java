@@ -21,7 +21,7 @@ package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 
 /**
@@ -47,7 +47,7 @@ public class DeleteHandler extends DmlHandler {
 		// log the sql to transaction log if request
 		logSql(sql);
 		
-		ServerTransaction t = persistRequest.getTransaction();
+		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
 
 		if (isBatch) {

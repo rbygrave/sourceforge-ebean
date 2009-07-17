@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.el.ElPropertyValue;
+import com.avaje.ebean.server.el.ElPropertyValue;
 
 /**
  * Used to evaluate imported foreign keys so as to avoid unnecssary joins.

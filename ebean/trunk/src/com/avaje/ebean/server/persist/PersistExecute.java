@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.persist;
 
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
@@ -38,7 +38,7 @@ public interface PersistExecute {
 	/**
 	 * Create a BatchControl for the current transaction.
 	 */
-	public BatchControl createBatchControl(ServerTransaction t);
+	public BatchControl createBatchControl(SpiTransaction t);
 	
 	/**
 	 * Execute a Bean (or MapBean) insert.

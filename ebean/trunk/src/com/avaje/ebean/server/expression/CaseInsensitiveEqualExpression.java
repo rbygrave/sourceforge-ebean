@@ -1,11 +1,11 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-class CaseInsensitiveEqualExpression implements InternalExpression {
+class CaseInsensitiveEqualExpression implements SpiExpression {
 
 	private static final long serialVersionUID = -6406036750998971064L;
 
@@ -22,11 +22,11 @@ class CaseInsensitiveEqualExpression implements InternalExpression {
 		return propertyName;
 	}
 
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		request.addBindValue(value);
 	}
 
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 		
 		request.append("lower(").append(propertyName).append(") =? ");
 	}

@@ -5,8 +5,8 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.query.OrmQueryDetail;
 import com.avaje.ebean.server.lib.BackgroundThread;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
 
 /**

@@ -10,7 +10,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.query.CQueryPlan;
@@ -37,7 +37,7 @@ public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 		
 		BeanList<MetaQueryStatistic> list = new BeanList<MetaQueryStatistic>();
 		
-		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
+		SpiEbeanServer server = (SpiEbeanServer) request.getEbeanServer();
 		build(list, server);
 		
 		String orderBy = request.getQuery().getOrderBy();
@@ -49,7 +49,7 @@ public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 		return list;
 	}
 
-	private void build(List<MetaQueryStatistic> list, InternalEbeanServer server) {
+	private void build(List<MetaQueryStatistic> list, SpiEbeanServer server) {
 
 		for (BeanDescriptor<?> desc : server.getBeanDescriptors()) {
 			desc.clearQueryStatistics();			

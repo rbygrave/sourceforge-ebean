@@ -26,12 +26,12 @@ import java.sql.SQLException;
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.InternalCallableSql;
+import com.avaje.ebean.internal.SpiCallableSql;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.internal.BindParams.Param;
 
 
-public class DefaultCallableSql implements Serializable, InternalCallableSql {
+public class DefaultCallableSql implements Serializable, SpiCallableSql {
 
 	private static final long serialVersionUID = 8984272253185424701L;
 

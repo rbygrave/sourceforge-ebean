@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.InternalSqlUpdate;
-import com.avaje.ebean.internal.ServerTransaction;
+import com.avaje.ebean.internal.SpiSqlUpdate;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql.SqlType;
 import com.avaje.ebean.server.util.BindParamsParser;
@@ -57,7 +57,7 @@ public class ExeUpdateSql {
      */
     public int execute(PersistRequestUpdateSql request) {
 
-        ServerTransaction t = request.getTransaction();
+        SpiTransaction t = request.getTransaction();
         
         boolean batchThisRequest = t.isBatchThisRequest();
         
@@ -96,8 +96,8 @@ public class ExeUpdateSql {
 	
     private PreparedStatement bindStmt(PersistRequestUpdateSql request, boolean batchThisRequest) throws SQLException {
         
-    	InternalSqlUpdate updateSql = request.getUpdateSql();
-    	ServerTransaction t = request.getTransaction();
+    	SpiSqlUpdate updateSql = request.getUpdateSql();
+    	SpiTransaction t = request.getTransaction();
     	
     	String sql = updateSql.getSql();
     	

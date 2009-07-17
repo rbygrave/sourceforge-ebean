@@ -3,9 +3,9 @@ package com.avaje.ebean.server.autofetch;
 import java.io.Serializable;
 
 import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryDetail;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 
 /**
  * Holds tuned query information. Is immutable so this represents the tuning at
@@ -115,7 +115,7 @@ public class TunedQueryInfo implements Serializable {
 	 * 
 	 * @return true if the query was tuned, otherwise false.
 	 */
-	public boolean autoFetchTune(OrmQuery<?> query) {
+	public boolean autoFetchTune(SpiQuery<?> query) {
 		if (tunedDetail != null) {
 			//Note: tunedDetail is immutable by convention
 			query.setDetail(tunedDetail);	

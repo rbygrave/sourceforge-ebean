@@ -22,7 +22,7 @@ package com.avaje.ebean.server.net;
 import javax.servlet.http.HttpSession;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.CommandContext;
 
 /**
@@ -52,7 +52,7 @@ public class ServletContextManager implements CommandContextManager {
             session.setAttribute(ATTR_KEY, context);
         }
         String name = headers.get("NAME");
-        InternalEbeanServer server = (InternalEbeanServer)Ebean.getServer(name);
+        SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(name);
         
         context.setServer(server);
         

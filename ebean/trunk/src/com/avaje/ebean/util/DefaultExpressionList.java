@@ -12,21 +12,21 @@ import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.el.ElPropertyDeploy;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionList;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionList;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
  * Default implementation of ExpressionList.
  */
-public class DefaultExpressionList<T> implements InternalExpressionList<T> {
+public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
 	private static final long serialVersionUID = -6992345500247035947L;
 
-	private final ArrayList<InternalExpression> list = new ArrayList<InternalExpression>();
+	private final ArrayList<SpiExpression> list = new ArrayList<SpiExpression>();
 	
 	private final Query<T> query;
 	
@@ -163,7 +163,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	}
 	
 	public DefaultExpressionList<T> add(Expression expr) {
-		list.add((InternalExpression)expr);
+		list.add((SpiExpression)expr);
 		return this;
 	}
 	
@@ -171,10 +171,10 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 		return list.isEmpty();
 	}
 
-	public String buildSql(InternalExpressionRequest request) {
+	public String buildSql(SpiExpressionRequest request) {
 		
 		for (int i = 0, size=list.size(); i < size; i++) {
-			InternalExpression expression = list.get(i);
+			SpiExpression expression = list.get(i);
 			if (i > 0){
 				request.append(" and ");
 			}
@@ -184,10 +184,10 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	}
 	
 
-	public ArrayList<Object> buildBindValues(InternalExpressionRequest request) {
+	public ArrayList<Object> buildBindValues(SpiExpressionRequest request) {
 	
 		for (int i = 0, size=list.size(); i < size; i++) {
-			InternalExpression expression = list.get(i);
+			SpiExpression expression = list.get(i);
 			expression.addBindValues(request);
 		}
 		return request.getBindValues();
@@ -199,7 +199,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public int queryAutoFetchHash() {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
-			InternalExpression expression = list.get(i);
+			SpiExpression expression = list.get(i);
 			hash = hash*31 + expression.queryAutoFetchHash();
 		}
 		return hash;
@@ -211,7 +211,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public int queryPlanHash(BeanQueryRequest<?> request) {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
-			InternalExpression expression = list.get(i);
+			SpiExpression expression = list.get(i);
 			hash = hash*31 + expression.queryPlanHash(request);
 		}
 		return hash;
@@ -223,7 +223,7 @@ public class DefaultExpressionList<T> implements InternalExpressionList<T> {
 	public int queryBindHash() {
 		int hash = DefaultExpressionList.class.getName().hashCode();
 		for (int i = 0, size=list.size(); i < size; i++) {
-			InternalExpression expression = list.get(i);
+			SpiExpression expression = list.get(i);
 			hash = hash*31 + expression.queryBindHash();
 		}
 		return hash;

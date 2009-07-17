@@ -21,10 +21,10 @@ package com.avaje.ebean.server.core;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.OrmUpdate;
-import com.avaje.ebean.query.OrmUpdate.OrmUpdateType;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiUpdate;
+import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.internal.SpiUpdate.OrmUpdateType;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.persist.PersistExecute;
@@ -36,7 +36,7 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 
 	private final BeanDescriptor<?> beanDescriptor;
 	
-	private OrmUpdate<?> ormUpdate;
+	private SpiUpdate<?> ormUpdate;
 
 	private int rowCount;
 
@@ -45,8 +45,8 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 	/**
 	 * Create.
 	 */
-	public PersistRequestOrmUpdate(InternalEbeanServer server, BeanManager<?> mgr, OrmUpdate<?> ormUpdate, 
-			ServerTransaction t, PersistExecute persistExecute) {
+	public PersistRequestOrmUpdate(SpiEbeanServer server, BeanManager<?> mgr, SpiUpdate<?> ormUpdate, 
+			SpiTransaction t, PersistExecute persistExecute) {
 		
 		super(server, t, persistExecute);
 		this.beanDescriptor = mgr.getBeanDescriptor();
@@ -71,7 +71,7 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 	/**
 	 * Return the UpdateSql.
 	 */
-	public OrmUpdate<?> getOrmUpdate() {
+	public SpiUpdate<?> getOrmUpdate() {
 		return ormUpdate;
 	}
 

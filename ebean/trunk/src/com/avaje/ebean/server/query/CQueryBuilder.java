@@ -24,13 +24,13 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
-import com.avaje.ebean.query.OrmQuery;
-import com.avaje.ebean.query.OrmQueryLimitRequest;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.persist.Binder;
+import com.avaje.ebean.server.querydefn.OrmQueryLimitRequest;
 
 /**
  * Generates the SQL SELECT statements taking into account the physical
@@ -99,7 +99,7 @@ public class CQueryBuilder implements Constants {
 	 */
 	public <T> CQueryRowCount buildRowCountQuery(OrmQueryRequest<T> request) {
 
-    	OrmQuery<T> query = request.getQuery();
+    	SpiQuery<T> query = request.getQuery();
 
     	boolean hasMany = query.isManyInWhere();
     	
@@ -192,7 +192,7 @@ public class CQueryBuilder implements Constants {
 		
 	private SqlLimitResponse buildSql(String selectClause, OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
-		OrmQuery<?> query = request.getQuery();
+		SpiQuery<?> query = request.getQuery();
 		BeanPropertyAssocMany<?> manyProp = select.getManyProperty();
 
 		boolean useSqlLimiter = false;

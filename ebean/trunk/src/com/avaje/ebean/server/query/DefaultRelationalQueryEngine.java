@@ -35,8 +35,8 @@ import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.ServerTransaction;
-import com.avaje.ebean.query.RelationalQuery;
+import com.avaje.ebean.internal.SpiSqlQuery;
+import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.RelationalQueryEngine;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
@@ -65,11 +65,11 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
 	public Object findMany(RelationalQueryRequest request) {
 
-		RelationalQuery query = request.getQuery();
+		SpiSqlQuery query = request.getQuery();
 
 		long startTime = System.currentTimeMillis();
 
-		ServerTransaction t = request.getTransaction();
+		SpiTransaction t = request.getTransaction();
 		Connection conn = t.getInternalConnection();
 		ResultSet rset = null;
 		PreparedStatement pstmt = null;

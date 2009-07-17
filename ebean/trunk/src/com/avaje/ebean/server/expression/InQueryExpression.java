@@ -3,10 +3,10 @@ package com.avaje.ebean.server.expression;
 import java.util.List;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalEbeanServer;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
-import com.avaje.ebean.query.OrmQuery;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.query.CQuery;
 
 /**
@@ -14,17 +14,17 @@ import com.avaje.ebean.server.query.CQuery;
  * 
  * @authors Mario and Rob
  */
-class InQueryExpression implements InternalExpression {
+class InQueryExpression implements SpiExpression {
 
 	private static final long serialVersionUID = 666990277309851644L;
 
 	private final String propertyName;
 
-	private final OrmQuery<?> subQuery;
+	private final SpiQuery<?> subQuery;
 
 	private transient CQuery<?> compiledSubQuery;
 
-	public InQueryExpression(String propertyName, OrmQuery<?> subQuery) {
+	public InQueryExpression(String propertyName, SpiQuery<?> subQuery) {
 		this.propertyName = propertyName;
 		this.subQuery = subQuery;
 	}
@@ -57,7 +57,7 @@ class InQueryExpression implements InternalExpression {
 	 */
 	private CQuery<?> compileSubQuery(BeanQueryRequest<?> queryRequest) {
 
-		InternalEbeanServer ebeanServer = (InternalEbeanServer) queryRequest.getEbeanServer();
+		SpiEbeanServer ebeanServer = (SpiEbeanServer) queryRequest.getEbeanServer();
 		return ebeanServer.compileQuery(subQuery, queryRequest.getTransaction());
 	}
 
@@ -65,7 +65,7 @@ class InQueryExpression implements InternalExpression {
 		return subQuery.queryBindHash();
 	}
 
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 
 		String subSelect = compiledSubQuery.getGeneratedSql();
 		subSelect = subSelect.replace('\n', ' ');
@@ -77,7 +77,7 @@ class InQueryExpression implements InternalExpression {
 		request.append(") ");
 	}
 
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 
 		List<Object> bindParams = compiledSubQuery.getPredicates().getWhereExprBindValues();
 

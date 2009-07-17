@@ -19,14 +19,14 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
 
 /**
  * Controls the generation of DDL and potentially runs the resulting scripts.
  */
 public class DdlGenerator {
 
-	private final InternalEbeanServer server;
+	private final SpiEbeanServer server;
 
 	private final DatabasePlatform dbPlatform;
 
@@ -44,7 +44,7 @@ public class DdlGenerator {
 
 	private NamingConvention namingConvention;
 
-	public DdlGenerator(InternalEbeanServer server, DatabasePlatform dbPlatform, ServerConfig serverConfig) {
+	public DdlGenerator(SpiEbeanServer server, DatabasePlatform dbPlatform, ServerConfig serverConfig) {
 		this.server = server;
 		this.dbPlatform = dbPlatform;
 		this.generateDdl = serverConfig.isDdlGenerate();

@@ -1,11 +1,11 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-class SimpleExpression implements InternalExpression {
+class SimpleExpression implements SpiExpression {
 
 	private static final long serialVersionUID = -382881395755603790L;
 
@@ -58,11 +58,11 @@ class SimpleExpression implements InternalExpression {
 		return propertyName;
 	}
 	
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		request.addBindValue(value);
 	}
 	
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 		request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
 	}
 	

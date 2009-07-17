@@ -17,7 +17,6 @@ package com.avaje.ebean;
  * &#064;NamedUpdates(value = {
  *   &#064;NamedUpdate(
  *      name = &quot;setTitle&quot;, 
- *      isSql = false,
  *      notifyCache = false, 
  *      update = &quot;update topic set title = :title, postCount = :count where id = :id&quot;),
  *  &#064;NamedUpdate(
@@ -27,7 +26,6 @@ package com.avaje.ebean;
  *  &#064;NamedUpdate(
  *      name = &quot;incrementPostCount&quot;, 
  *      notifyCache = false, 
- *      isSql = false,
  *      update = &quot;update Topic set postCount = postCount + 1 where id = :id&quot;) 
  *      //update = &quot;update f_topic set post_count = post_count + 1 where id = :id&quot;) 
  *  })
@@ -59,22 +57,12 @@ public interface Update<T> {
 	public String getName();
 
 	/**
-	 * Set the insert update or delete statement.
-	 * <p>
-	 * If you use bean and property names these will be translated
-	 * to table and column names.
-	 * </p>
-	 * 
-	 * @param updateStatement
-	 *            an insert,update or delete statement where you can use the 
-	 *            bean and property names rather than tables
-	 *            and columns.
-	 */
-	public Update<T> setUpdate(String updateStatement);
-
-	/**
 	 * Set this to false if you do not want the cache to invalidate related
 	 * objects.
+	 * <p>
+	 * If you don't set this Ebean will automatically invalidate the 
+	 * appropriate parts of the "L2" server cache.
+	 * </p>
 	 */
 	public Update<T> setNotifyCache(boolean notifyCache);
 

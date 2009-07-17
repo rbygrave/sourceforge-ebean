@@ -9,9 +9,9 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalEbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.meta.MetaAutoFetchTunedQueryInfo;
-import com.avaje.ebean.query.OrmQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.TunedQueryInfo;
 
@@ -23,11 +23,11 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder<MetaAutoFetchTune
 
 	public MetaAutoFetchTunedQueryInfo find(BeanQueryRequest<MetaAutoFetchTunedQueryInfo> request) {
 		
-		OrmQuery<?> query = (OrmQuery<?>)request.getQuery();
+		SpiQuery<?> query = (SpiQuery<?>)request.getQuery();
 		try {
 			String queryPointKey = (String)query.getId();
 			
-			InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
+			SpiEbeanServer server = (SpiEbeanServer) request.getEbeanServer();
 			AutoFetchManager manager = server.getAutoFetchManager();
 	
 			TunedQueryInfo tunedFetch = manager.getTunedQueryInfo(queryPointKey);
@@ -52,7 +52,7 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder<MetaAutoFetchTune
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 		
-		InternalEbeanServer server = (InternalEbeanServer) request.getEbeanServer();
+		SpiEbeanServer server = (SpiEbeanServer) request.getEbeanServer();
 		AutoFetchManager manager = server.getAutoFetchManager();
 		
 		BeanList<MetaAutoFetchTunedQueryInfo> list = new BeanList<MetaAutoFetchTunedQueryInfo>();

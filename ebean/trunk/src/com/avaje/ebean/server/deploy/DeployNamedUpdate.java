@@ -7,29 +7,22 @@ import com.avaje.ebean.annotation.NamedUpdate;
  */
 public class DeployNamedUpdate {
 
-	final String name;
+	private final String name;
 	
-	final String updateStatement;
+	private final String updateStatement;
 
-	final boolean isSql;
-	
-	final boolean notifyCache;
+	private final boolean notifyCache;
 
-	String sqlUpdateStatement;
+	private String sqlUpdateStatement;
 
 	public DeployNamedUpdate(NamedUpdate update) {
 		this.name = update.name();
 		this.updateStatement = update.update();
-		this.isSql = update.isSql();
 		this.notifyCache = update.notifyCache();
 	}
 
 	public void initialise(DeployUpdateParser parser) {
-		if (isSql){
-			sqlUpdateStatement = updateStatement;
-		} else {
-			sqlUpdateStatement = parser.parse(updateStatement);
-		}
+		sqlUpdateStatement = parser.parse(updateStatement);
 	}
 	
 	public String getName() {

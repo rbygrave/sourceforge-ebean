@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.InternalExpression;
-import com.avaje.ebean.internal.InternalExpressionRequest;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 
 /**
  * Junction implementation.
  */
-abstract class JunctionExpression implements Junction, InternalExpression {
+abstract class JunctionExpression implements Junction, SpiExpression {
 
 	private static final long serialVersionUID = -7422204102750462676L;
 
@@ -33,7 +33,7 @@ abstract class JunctionExpression implements Junction, InternalExpression {
 		}
 	}
 	
-	final ArrayList<InternalExpression> list = new ArrayList<InternalExpression>();
+	final ArrayList<SpiExpression> list = new ArrayList<SpiExpression>();
 
 	final String joinType;
 
@@ -43,7 +43,7 @@ abstract class JunctionExpression implements Junction, InternalExpression {
 	}
 	
 	public Junction add(Expression item){
-		InternalExpression i = (InternalExpression)item;
+		SpiExpression i = (SpiExpression)item;
 		list.add(i);
 		return this;
 	}
@@ -52,21 +52,21 @@ abstract class JunctionExpression implements Junction, InternalExpression {
 		return null;
 	}
 	
-	public void addBindValues(InternalExpressionRequest request) {
+	public void addBindValues(SpiExpressionRequest request) {
 		
 		for (int i = 0; i < list.size(); i++) {
-			InternalExpression item = list.get(i);
+			SpiExpression item = list.get(i);
 			item.addBindValues(request);
 		}
 	}
 	
-	public void addSql(InternalExpressionRequest request) {
+	public void addSql(SpiExpressionRequest request) {
 	
 		if (!list.isEmpty()){
 			request.append("(");
 			
 			for (int i = 0; i < list.size(); i++) {
-				InternalExpression item = list.get(i);
+				SpiExpression item = list.get(i);
 				if (i > 0){
 					request.append(joinType);
 				}
