@@ -33,7 +33,7 @@ public class ImportedIdSimple implements ImportedId {
 		this.foreignProperty = foreignProperty;
 		this.logicalName = InternString.intern(owner.getName()+"."+foreignProperty.getName());
 	}
-	
+
 	public void addFkeys(String name) {
 		BeanFkeyProperty fkey = new BeanFkeyProperty(null, name+"."+foreignProperty.getName(), localDbColumn);
 		owner.getBeanDescriptor().add(fkey);
@@ -85,6 +85,10 @@ public class ImportedIdSimple implements ImportedId {
 	}
 
 	public boolean hasChanged(Object bean, Object oldValues) {
+		if (bean == null && oldValues == null){
+			return false;
+		}
+
 		Object id = foreignProperty.getValue(bean);
 
 		if (oldValues != null){
