@@ -135,8 +135,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			// FKey on other side
 			return false;
 		} else {
-			if (value == null && oldVal == null){
-				return false;
+			if (value == null) {
+				return oldVal != null;
+			} else if (oldValues == null){
+				return true;
 			}
 			
 			return importedId.hasChanged(value, oldVal);
