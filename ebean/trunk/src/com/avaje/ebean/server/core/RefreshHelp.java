@@ -136,10 +136,9 @@ public class RefreshHelp {
 		// populated so set loadedProps to null
 		ebi.setLoadedProps(null);
 		
-		if (!isLazyLoad){
-			// refresh will reset the loaded status
-			ebi.setLoaded();
-		}		
+		
+		// reset the loaded status
+		ebi.setLoaded();		
 	}
 
 	/**

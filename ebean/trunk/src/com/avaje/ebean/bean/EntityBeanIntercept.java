@@ -362,9 +362,8 @@ public class EntityBeanIntercept implements Serializable {
 
 		internalEbean.lazyLoadBean(owner, nodeUsageCollector);			
 
-		// the refresh always loads all properties
-		loadedProps = null;
-		loaded = true;
+		// bean should be loaded and intercepting now with
+		// setLoaded() called by code in internalEbean.lazyLoadBean(...)
 	}
 
 	/**
@@ -520,16 +519,6 @@ public class EntityBeanIntercept implements Serializable {
 		if (pcs == null && (!interceptField || !preSetterIsModifyCheck())){
 			// skip propertyChangeSupport && creating oldValues when value has changed
 			return null;
-		}
-		
-		if (newValue instanceof BeanCollection<?> || oldValue instanceof BeanCollection<?>){
-			throw new RuntimeException("Should not get this now");
-//			// skip setter interception on many's
-//			if (pcs != null){
-//				return new PropertyChangeEvent(owner, propertyName, oldValue, newValue);
-//			} else {
-//				return null;
-//			}
 		}
 		
 		boolean changed = !areEqual(oldValue, newValue);
