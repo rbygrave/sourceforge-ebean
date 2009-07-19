@@ -85,10 +85,7 @@ public class ImportedIdSimple implements ImportedId {
 	}
 
 	public boolean hasChanged(Object bean, Object oldValues) {
-		if (bean == null && oldValues == null){
-			return false;
-		}
-
+		
 		Object id = foreignProperty.getValue(bean);
 
 		if (oldValues != null){
