@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <description>Single Jar Distribution of Ebean</description>
+  <parent>
+    <groupId>org.avaje.ebean</groupId>
+    <artifactId>ebean-parent</artifactId>
+    <version>2.1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>ebean-uberjar</artifactId>
+  <packaging>pom</packaging>
+  <name>Ebean Distribution</name>
+  <dependencies>
+    <!-- All dependencoes are defined with a test scope. Ideally they should be using a provided
+         scope but doing this make them not being included in the uberjar. The reason we don't
+         want a compile scope is because otherwise users of the uberjar will find their m2 build
+         depending transitively on the individual dependencies thus getting the classes
+         twice in their classpaths... -->
+    <dependency>
+      <groupId>org.avaje.ebean</groupId>
+      <artifactId>ebean-api</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.avaje.ebean</groupId>
+      <artifactId>ebean-agent</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.avaje.ebean</groupId>
+      <artifactId>ebean-ant</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.avaje.ebean</groupId>
+      <artifactId>ebean-core</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptor>src/assemble/main.xml</descriptor>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
