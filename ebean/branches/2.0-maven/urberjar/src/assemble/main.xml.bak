@@ -1,0 +1,19 @@
+<assembly>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputFileNameMapping/>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>org.avaje.ebean:ebean-api</include>
+        <include>org.avaje.ebean:ebean-enhancement</include>
+        <include>org.avaje.ebean:ebean-core</include>
+      </includes>
+      <unpack>true</unpack>
+      <scope>test</scope>
+    </dependencySet>
+  </dependencySets>
+</assembly>
