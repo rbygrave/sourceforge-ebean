@@ -20,7 +20,12 @@
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <version>2.4</version>
-    </dependency>      
+    </dependency>
+    <dependency>
+      <groupId>org.avaje.ebean</groupId>
+      <artifactId>ebean-ant</artifactId>
+      <version>${project.version}</version>
+    </dependency>        
   </dependencies>
   <build>
     <plugins>      
@@ -30,6 +35,29 @@
           <group>"Public API" "com.avaje.ebean", "Event" "com.avaje.ebean.event"</group>
         </configuration>
       </plugin>
+	<plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-antrun-plugin</artifactId>
+		<executions>
+			<execution>
+				<id>compile</id>
+				<phase>compile</phase>
+				<configuration>
+					<tasks>
+						<property name="compile_classpath" refid="maven.compile.classpath" />
+						<echo message="compile classpath: ${compile_classpath}" />
+						<taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
+							classpath="${compile_classpath}" />
+						<ebeanEnhance classSource="${project.build.outputDirectory}"
+							packages="com.avaje.ebean.meta.**" transformArgs="debug=1" />
+					</tasks>
+				</configuration>
+				<goals>
+					<goal>run</goal>
+				</goals>
+			</execution>
+		</executions>
+	</plugin>      
     </plugins>
   </build>
 </project>
