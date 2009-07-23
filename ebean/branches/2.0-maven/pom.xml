@@ -55,6 +55,7 @@
     <module>agent</module>
     <module>ant</module>
     <module>core</module>
+    <module>spring</module>
   </modules>
-  
+
 </project>
