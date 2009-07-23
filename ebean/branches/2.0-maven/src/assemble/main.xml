@@ -1,0 +1,21 @@
+<assembly>
+  <id>uberjar</id>	
+  <formats>
+    <format>jar</format>
+  </formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+  <moduleSets>
+    <moduleSet>
+      <includes>
+        <include>org.avaje.ebean:ebean-api</include>
+        <include>org.avaje.ebean:ebean-core</include>
+        <include>org.avaje.ebean:ebean-ant</include>
+        <include>org.avaje.ebean:ebean-agent</include>
+      </includes>
+      <binaries>
+       <includeDependencies>false</includeDependencies>
+        <unpack>true</unpack>
+      </binaries>
+    </moduleSet>
+  </moduleSets>
+</assembly>
