@@ -1,0 +1,20 @@
+<assembly>
+  <id>src</id>	
+  <formats>
+    <format>jar</format>
+  </formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+  <moduleSets>
+    <moduleSet>
+      <includes>
+        <include>org.avaje.ebean:ebean-api</include>
+        <include>org.avaje.ebean:ebean-core</include>
+        <include>org.avaje.ebean:ebean-ant</include>
+        <include>org.avaje.ebean:ebean-agent</include>
+      </includes>
+      <sources>
+	      <includeModuleDirectory>false</includeModuleDirectory>
+      </sources>
+    </moduleSet>
+  </moduleSets>
+</assembly>
