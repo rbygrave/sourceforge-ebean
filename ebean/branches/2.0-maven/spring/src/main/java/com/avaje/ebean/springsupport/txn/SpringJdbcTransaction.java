@@ -27,7 +27,7 @@ import com.avaje.ebean.server.transaction.TransactionManager;
 
 public class SpringJdbcTransaction extends ExternalJdbcTransaction {
 
-	final ConnectionHolder holder;
+	private final ConnectionHolder holder;
 
 	public SpringJdbcTransaction(ConnectionHolder holder, TransactionManager manager) {
 		super("s"+holder.hashCode(), true, holder.getConnection(), manager);
