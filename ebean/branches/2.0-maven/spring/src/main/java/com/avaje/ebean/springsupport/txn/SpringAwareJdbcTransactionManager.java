@@ -47,11 +47,11 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
 	private final static Logger logger = Logger.getLogger(SpringAwareJdbcTransactionManager.class.getName());
 
 	/** The data source. */
-	DataSource dataSource;
+	private DataSource dataSource;
 
-	TransactionManager transactionManager;
+	private TransactionManager transactionManager;
 
-	String serverName;
+	private String serverName;
 
 	/**
 	 * Instantiates a new spring aware transaction scope manager.
@@ -70,12 +70,14 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
 
 
 	public Object getCurrentTransaction() {
-
+		
 		ConnectionHolder holder = (ConnectionHolder)TransactionSynchronizationManager.getResource(dataSource);
 		if (holder == null || !holder.isSynchronizedWithTransaction()){
 			// no current Spring transaction
 			DefaultTransactionThreadLocal.replace(serverName, null);
-			logger.log(Level.FINEST, "SpringTransaction - no current transaction ");
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.log(Level.FINEST, "SpringTransaction - no current transaction ");
+			}
 			return null;
 		}
 
@@ -86,14 +88,17 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
 		}
 
 		if (holder.equals(currentHolder)){
-			logger.log(Level.FINEST, "SpringTransaction - using current transaction "+currentTrans.getId());
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.log(Level.FINEST, "SpringTransaction - using current transaction "+currentTrans.getId());
+			}
 			return currentTrans;
 		}
 
 		SpringJdbcTransaction newTrans = new SpringJdbcTransaction(holder, transactionManager);
 		DefaultTransactionThreadLocal.set(serverName, newTrans);
-		logger.log(Level.FINEST, "SpringTransaction starting new transaction "+newTrans.getId());
-
+		if (logger.isLoggable(Level.FINEST)){
+			logger.log(Level.FINEST, "SpringTransaction starting new transaction "+newTrans.getId());
+		}
 		return newTrans;
 	}
 
