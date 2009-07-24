@@ -10,6 +10,9 @@
   <name>Ebean Core</name>
   <packaging>jar</packaging>
   <description>Core Implementation of Ebean</description>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>  
   <dependencies>
     <dependency>
       <groupId>javax.persistence</groupId>

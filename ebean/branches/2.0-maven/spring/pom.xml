@@ -10,6 +10,7 @@
 
 	<properties>
 		<spring.framework.version>2.5.6</spring.framework.version>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<artifactId>ebean-spring</artifactId>
 	<name>Ebean Spring Integration</name>

@@ -10,6 +10,9 @@
   <name>Ebean Ant</name>
   <packaging>jar</packaging>
   <description>Ant Enhancement Task for Ebean</description>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>  
   <dependencies>
     <dependency>
       <groupId>org.apache.ant</groupId>

@@ -1,5 +1,5 @@
 <assembly>
-  <id>uberjar</id>	
+  <id>all</id>	
   <formats>
     <format>jar</format>
   </formats>
