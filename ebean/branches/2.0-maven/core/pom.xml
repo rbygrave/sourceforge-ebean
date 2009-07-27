@@ -34,6 +34,17 @@
       <artifactId>joda-time</artifactId>
       <version>1.6</version>
     </dependency>
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>3.8.1</version>
+		<scope>test</scope>
+	</dependency>    
+	<dependency>
+		<groupId>com.h2database</groupId>
+		<artifactId>h2</artifactId>
+		<version>1.1.115</version>
+	</dependency>
     <dependency>
       <groupId>org.avaje.ebean</groupId>
       <artifactId>ebean-api</artifactId>
@@ -55,7 +66,37 @@
             <source>1.5</source>
             <target>1.5</target>
           </configuration>
-        </plugin>      
+        </plugin> 
+	    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-antrun-plugin</artifactId>
+		<executions>
+			<execution>
+				<id>compile</id>
+				<phase>test-compile</phase>
+				<configuration>
+					<tasks>
+						<property name="compile_classpath" refid="maven.compile.classpath" />
+						<echo message="compile classpath: ${compile_classpath}" />
+						<taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
+							classpath="${compile_classpath}" />
+						<ebeanEnhance classSource="${project.build.testOutputDirectory}"
+							packages="com.avaje.tests.**" transformArgs="debug=1" />
+					</tasks>
+				</configuration>
+				<goals>
+					<goal>run</goal>
+				</goals>
+			</execution>
+		</executions>
+	    </plugin> 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
+      </plugin>                      
       </plugins>
     </pluginManagement>  
   </build>
