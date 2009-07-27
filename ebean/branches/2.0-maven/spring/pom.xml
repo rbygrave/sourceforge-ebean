@@ -10,14 +10,18 @@
 
 	<properties>
 		<spring.framework.version>2.5.6</spring.framework.version>
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
 	<artifactId>ebean-spring</artifactId>
 	<name>Ebean Spring Integration</name>
 	<packaging>jar</packaging>
 	<description>Support for Spring transactions and IOC setup of Ebean server config</description>
 	<dependencies>
-
+		<dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>persistence-api</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -32,7 +36,7 @@
 			<version>${spring.framework.version}
 			</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.avaje.ebean</groupId>
 			<artifactId>ebean-core</artifactId>
@@ -53,7 +57,7 @@
 			</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -76,4 +80,36 @@
 			<version>1.1.115</version>
 		</dependency>
 	</dependencies>
+
+	<!-- Enhance the test classes -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>compile</id>
+						<phase>process-test-classes</phase>
+						<configuration>
+							<tasks>
+								<property name="compile_classpath" refid="maven.compile.classpath" />
+								<echo message="Ebean enhancing test classes debug level -----------------------------------" />
+								<echo message="Classpath: ${compile_classpath}" />
+								<taskdef name="ebeanEnhance"
+									classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
+									classpath="${compile_classpath}" />
+								<ebeanEnhance classSource="${project.build.testOutputDirectory}"
+									packages="com.avaje.ebean.**" transformArgs="debug=1" />
+							</tasks>
+							<encoding>UTF-8</encoding>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
