@@ -837,6 +837,16 @@ public class ServerConfig {
 		}
 		dataSourceConfig.loadSettings(p.getServerName());
 
+		String nc = p.get("namingconvention", null);
+		if (nc != null){
+			try {
+				Class<?> cls = Class.forName(nc);
+				namingConvention = (NamingConvention)cls.newInstance();
+			} catch (Exception e){
+				throw new RuntimeException(e);
+			}
+		}
+		
 		ddlGenerate = p.getBoolean("ddl.generate", false);
 		ddlRun = p.getBoolean("ddl.run", false);
 
