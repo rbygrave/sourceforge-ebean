@@ -220,27 +220,33 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	
 	public void deploy() {
 		
-		createListeners();		
-		readEmbeddedDeployment();
-		readEntityDeploymentInitial();
-		readEntityBeanTable();
-		readEntityDeploymentAssociations();
-		readEntityRelationships();
-		readRawSqlQueries();
-				
-		List<BeanDescriptor<?>> list = new ArrayList<BeanDescriptor<?>>(descMap.values());
-		Collections.sort(list, beanDescComparator);
-		immutableDescriptorList = Collections.unmodifiableList(list);
-
-		initialiseAll();
-		readForeignKeys();
-
-		readTableToDescriptor();
-		
-		logStatus();
-
-		deplyInfoMap.clear();
-		deplyInfoMap = null;
+		try {
+			createListeners();		
+			readEmbeddedDeployment();
+			readEntityDeploymentInitial();
+			readEntityBeanTable();
+			readEntityDeploymentAssociations();
+			readEntityRelationships();
+			readRawSqlQueries();
+					
+			List<BeanDescriptor<?>> list = new ArrayList<BeanDescriptor<?>>(descMap.values());
+			Collections.sort(list, beanDescComparator);
+			immutableDescriptorList = Collections.unmodifiableList(list);
+	
+			initialiseAll();
+			readForeignKeys();
+	
+			readTableToDescriptor();
+			
+			logStatus();
+	
+			deplyInfoMap.clear();
+			deplyInfoMap = null;
+		} catch (RuntimeException e){
+			String msg = "Error in deployment";
+			logger.log(Level.SEVERE, msg, e);
+			throw e;
+		}
 	}
 	
 	/**
