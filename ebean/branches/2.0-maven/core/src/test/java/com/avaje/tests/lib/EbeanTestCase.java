@@ -11,7 +11,7 @@ import com.avaje.ebean.Transaction;
  * The base class for all Ebean test to get access to the Ebean server and do
  * some cleanup stuff after a test has run
  */
-public class EbeanTestCase extends TestCase {
+public abstract class EbeanTestCase extends TestCase {
 	
 	@Override
 	public void run(TestResult testResult) {
@@ -26,13 +26,6 @@ public class EbeanTestCase extends TestCase {
 			}
 		}
 	}
-	
-//	/**
-//	 * Dummy test method to keep surefire happy.
-//	 */
-//	public void testDummy(){
-//		Assert.assertTrue(true);
-//	}
 
 	public EbeanServer getServer() {
 		
