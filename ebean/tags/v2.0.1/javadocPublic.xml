@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" 
+        	classpath="lib\javax.persistence.jar;lib\jta.jar;lib\javax.servlet.jar;" 
+        	destdir="doc" doctitle="Ebean Public API" nodeprecated="false" nodeprecatedlist="false" 
+        	noindex="false" nonavbar="false" notree="false" 
+        	overview="src\com\avaje\ebean\overview.html"
+    		stylesheetfile="src\com\avaje\ebean\stylesheet.css"
+        	packagenames="com.avaje.ebean.event,com.avaje.ebean.annotation,com.avaje.ebean,com.avaje.ebean.bean,com.avaje.ebean.validation,com.avaje.ebean.meta,com.avaje.ebean.config,com.avaje.ebean.config.dbplatform" 
+        	source="1.5" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
