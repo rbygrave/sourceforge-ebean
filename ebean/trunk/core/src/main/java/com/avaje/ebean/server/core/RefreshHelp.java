@@ -120,16 +120,15 @@ public class RefreshHelp {
 
 		refreshEmbedded(o, dbBean, desc, excludes);
 
+		// Can't refresh Many's. Only set a lazy loading
+		// proxy if there is not a current value already.
 		BeanPropertyAssocMany<?>[] manys = desc.propertiesMany();
 		for (int i = 0; i < manys.length; i++) {
-			BeanProperty prop = manys[i];
-			if (excludes != null && excludes.contains(prop.getName())){
-				 // ignore this property (partial bean lazy loading)
-				
-			} else {
-				Object dbVal = prop.getValue(dbBean);
-				prop.setValueIntercept(o, dbVal);
-			}
+			BeanPropertyAssocMany<?> prop = manys[i];
+			Object currentVal = prop.getValue(o);
+			if (currentVal == null){
+				prop.createReference(o, null);
+			}			
 		}
 		
 		// the refreshed/lazy loaded bean is always fully
