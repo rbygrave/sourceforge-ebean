@@ -29,16 +29,19 @@ public class ResetBasicData {
 		Ebean.execute(new TxRunnable() {
 			public void run() {
 				// orm update use bean name and bean properties
+				Ebean.createUpdate(OrderShipment.class, "delete from orderShipment")
+					.execute();
+			
 				Ebean.createUpdate(OrderDetail.class, "delete from orderDetail")
 					.execute();
 				
 				Ebean.createUpdate(Order.class,"delete from order")
 					.execute();
 	
-				Ebean.createUpdate(Address.class,"delete from address")
-					.execute();
-	
 				Ebean.createUpdate(Customer.class,"delete from Customer")
+					.execute();
+
+				Ebean.createUpdate(Address.class,"delete from address")
 					.execute();
 	
 				// sql update uses table and column names
