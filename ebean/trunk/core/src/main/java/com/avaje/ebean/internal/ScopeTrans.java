@@ -169,8 +169,9 @@ public class ScopeTrans implements Thread.UncaughtExceptionHandler {
 	}
 
 	private void rollback(Throwable e) {
-		if (transaction != null) {
+		if (transaction != null && transaction.isActive()) {
 			// transaction is null for NOT_SUPPORTED and sometimes SUPPORTS
+			// and Inactive (already rolled back) if nested REQUIRED
 			transaction.rollback(e);
 		}
 		rolledBack = true;
