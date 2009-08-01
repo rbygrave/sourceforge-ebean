@@ -79,6 +79,9 @@ public class Order {
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
     List<OrderDetail> details = new ArrayList<OrderDetail>();
     
+    @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
+    List<OrderShipment> shipments;
+    
 	/**
      * Return id.
      */    
@@ -191,5 +194,20 @@ public class Order {
   	    this.details = details;
     }
 
+	public List<OrderShipment> getShipments() {
+		return shipments;
+	}
 
+	public void setShipments(List<OrderShipment> shipments) {
+		this.shipments = shipments;
+	}
+	
+	public void add(OrderShipment shipment){
+		
+		if (shipments == null){
+			shipments = new ArrayList<OrderShipment>();	
+		}
+		
+		shipments.add(shipment);		
+	}
 }
