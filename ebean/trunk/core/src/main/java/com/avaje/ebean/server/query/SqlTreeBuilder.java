@@ -31,7 +31,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.internal.SpiQuery;
-import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -191,7 +190,7 @@ public class SqlTreeBuilder {
 		BeanPropertyAssocMany<?>[] manys = desc.propertiesMany();
 		for (int i = 0; i < manys.length; i++) {
 			String propPrefix = SplitName.add(prefix, manys[i].getName());
-			if (isIncludeMany(propPrefix, manys[i])){
+			if (isIncludeMany(prefix, propPrefix, manys[i])){
 				buildSelectChain(propPrefix, manys[i], manys[i].getTargetDescriptor(), myJoinList);
 			}
 		}
@@ -408,28 +407,32 @@ public class SqlTreeBuilder {
 	/**
 	 * Return true if this many node should be included in the query.
 	 */
-	private boolean isIncludeMany(String propName, BeanPropertyAssocMany<?> manyProp) {
+	private boolean isIncludeMany(String prefix, String propName, BeanPropertyAssocMany<?> manyProp) {
 		
 		if (queryDetail.isFetchJoinsEmpty()) {
 			return false;
 		}
-
+		
 		if (queryDetail.includes(propName)) {
 			// add the 'many' property to the baseProps list
 			// as we are going to set/populate these many'ies
 			// when reading the resultSet data
 			// queryDetail.addBaseProperty(propName);
-
-//			if (node.getJoinDepth() != 1) {
-//				// many must be directly associated with root object
-//				String m = Message.msg("fetch.many.depth", node.getPropertyPrefix());
-//				logger.warning(m);
-//				return false;
-//			}
+			
+			if (prefix != null) {
+				// many must be directly associated with root object
+				if (logger.isLoggable(Level.FINE)){
+					String msg = "Not joining to Many ["+propName+"] as not at root level.";
+					logger.fine(msg);
+				}
+				return false;
+			}
 			if (manyProperty != null) {
 				// only one many associated allowed to be included in fetch
-				String m = Message.msg("fetch.many.one", propName);
-				logger.warning(m);
+				if (logger.isLoggable(Level.FINE)){
+					String msg = "Not joining ["+propName+"] as already joined to a Many["+manyProperty+"].";
+					logger.fine(msg);
+				}
 				return false;
 			}
 
