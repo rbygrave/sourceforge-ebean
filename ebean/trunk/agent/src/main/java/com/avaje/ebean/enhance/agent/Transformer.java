@@ -1,14 +1,11 @@
 package com.avaje.ebean.enhance.agent;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
 
 import com.avaje.ebean.enhance.asm.ClassReader;
 import com.avaje.ebean.enhance.asm.ClassWriter;
@@ -33,7 +30,7 @@ public class Transformer implements ClassFileTransformer {
 
 	private static final int CLASS_WRITER_COMPUTEFLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
 
-	
+
 	private final EnhanceContext enhanceContext;
 
 	private boolean performDetect;
@@ -45,11 +42,16 @@ public class Transformer implements ClassFileTransformer {
 	}
 	
 	public Transformer(URL[] extraClassPath, String agentArgs) {
-		this.enhanceContext = new EnhanceContext(extraClassPath, agentArgs);
+		this(new ClassPathClassBytesReader(extraClassPath), agentArgs);
+	}
+
+	public Transformer(ClassBytesReader r, String agentArgs) {
+		this.enhanceContext = new EnhanceContext(r, false, agentArgs);
 		this.performDetect = enhanceContext.getPropertyBoolean("detect", true);
 		this.transformTransactional = enhanceContext.getPropertyBoolean("transactional", true);
 		this.transformEntityBeans = enhanceContext.getPropertyBoolean("entity", true);
 	}
+
 	
 	/**
 	 * Change the logout to something other than system out.
@@ -209,29 +211,8 @@ public class Transformer implements ClassFileTransformer {
 	 */
 	public static URL[] parseClassPaths(String extraClassPath){
 
-		try {
-
-			ArrayList<URL> list = new ArrayList<URL>();
-
-			if (extraClassPath == null || extraClassPath.trim().length()==0){
-				// its an empty list...
-				
-			} else {
-				// split path using ;
-				String[] stringPaths = extraClassPath.split(";");
-				for (int i = 0; i < stringPaths.length; i++) {
-					File f = new File(stringPaths[i].trim());
-					URL u = f.toURL();
-					list.add(u);
-				}
-			}
-			
-			return list.toArray(new URL[list.size()]);
-			
-			
-		} catch (MalformedURLException e){
-			throw new RuntimeException(e);
-		}
+		String[] stringPaths = extraClassPath.split(";");
+		return UrlPathHelper.convertToUrl(stringPaths);
 	}
 
 

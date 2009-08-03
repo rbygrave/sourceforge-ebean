@@ -17,9 +17,7 @@ import java.util.HashMap;
  */
 public class IgnoreClassHelper {
 
-	final String agentArgs;
-
-	final String[] processPackages;
+	private final String[] processPackages;
 
 	public IgnoreClassHelper(String agentArgs) {
 
@@ -34,10 +32,6 @@ public class IgnoreClassHelper {
 		} else {
 			processPackages = new String[0];
 		}
-
-		// perhaps use these to load a properties file or
-		// similar rather than this interesting if statement :)
-		this.agentArgs = agentArgs;
 	}
 
 	/**
@@ -98,6 +92,9 @@ public class IgnoreClassHelper {
 	 * @return true if this class should not be processed.
 	 */
 	public boolean isIgnoreClass(String className) {
+		
+		className = className.replace('.', '/');
+		
 		// the special entity beans supplied by Ebean SHOULD be processed
 		if (className.startsWith(EnhanceConstants.EBEAN_META_PREFIX)) {
 			return false;
@@ -146,6 +143,10 @@ public class IgnoreClassHelper {
 		}
 		// ignore oracle
 		if (className.startsWith("oracle/")) {
+			return true;
+		}
+		// ignore base groovy classes
+		if (className.startsWith("groovy/")) {
 			return true;
 		}
 		// ignore $Proxy classes

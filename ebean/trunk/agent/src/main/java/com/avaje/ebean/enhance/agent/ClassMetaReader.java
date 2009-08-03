@@ -1,14 +1,7 @@
 package com.avaje.ebean.enhance.agent;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.avaje.ebean.enhance.asm.ClassReader;
 
@@ -22,16 +15,11 @@ import com.avaje.ebean.enhance.asm.ClassReader;
  */
 public class ClassMetaReader {
 
-	private static Logger logger = Logger.getLogger(ClassMetaReader.class.getName());
-
 	private Map<String, ClassMeta> cache = new HashMap<String, ClassMeta>();
 
 	private final EnhanceContext enhanceContext;
 
-	private final URL[] urls;
-
-	public ClassMetaReader(EnhanceContext enhanceContext, URL[] urls) {
-		this.urls = urls == null ? new URL[0] : urls;
+	public ClassMetaReader(EnhanceContext enhanceContext) {
 		this.enhanceContext = enhanceContext;
 	}
 
@@ -63,36 +51,22 @@ public class ClassMetaReader {
 	private ClassMeta readFromResource(boolean readMethodAnnotations, String className, ClassLoader classLoader)
 			throws ClassNotFoundException {
 
-		String resource = className.replace('.', '/') + ".class";
-
-		try {
-
-			final URLClassLoader cl = new URLClassLoader(urls, classLoader);
-
-			// read the class bytes, and define the class
-			URL url = cl.getResource(resource);
-			if (url == null) {
-				throw new ClassNotFoundException(className);
+			
+		byte[] classBytes = enhanceContext.getClassBytes(className, classLoader);
+		if (classBytes == null){
+			enhanceContext.log(1, "Class ["+className+"] not found.");
+			return null;
+		} else {
+			if (enhanceContext.isLog(3)) {
+				enhanceContext.log(className, "read ClassMeta");
 			}
-
-			InputStream is = url.openStream();
-			byte[] classBytes = InputStreamTransform.readBytes(is);
-
-			ClassReader cr = new ClassReader(classBytes);
-			ClassMetaReaderVisitor ca = new ClassMetaReaderVisitor(readMethodAnnotations, enhanceContext);
-
-			cr.accept(ca, 0);
-
-			return ca.getClassMeta();
-
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "Extra ClassPath URLS: " + Arrays.toString(urls));
-
-			String msg = "Error trying to read the class info for " + resource+" URLS:"+Arrays.toString(urls);
-			logger.log(Level.SEVERE, msg, e);
-			throw new RuntimeException(msg, e);
 		}
+		ClassReader cr = new ClassReader(classBytes);
+		ClassMetaReaderVisitor ca = new ClassMetaReaderVisitor(readMethodAnnotations, enhanceContext);
 
+		cr.accept(ca, 0);
+
+		return ca.getClassMeta();
 	}
 
 }
