@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.enhance.agent.ClassPathClassBytesReader;
 import com.avaje.ebean.enhance.agent.EnhanceConstants;
 import com.avaje.ebean.enhance.agent.EnhanceContext;
 import com.avaje.ebean.enhance.asm.ClassReader;
@@ -41,11 +42,11 @@ public class SubClassFactory extends ClassLoader implements EnhanceConstants, Ge
    
 	private static final Logger logger = Logger.getLogger(SubClassFactory.class.getName());
 	
-	static final int CLASS_WRITER_FLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
+	private static final int CLASS_WRITER_FLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
 
-	final EnhanceContext enhanceContext;
+	private final EnhanceContext enhanceContext;
 	
-	final ClassLoader parentClassLoader;
+	private final ClassLoader parentClassLoader;
 	
 
     /**
@@ -54,7 +55,9 @@ public class SubClassFactory extends ClassLoader implements EnhanceConstants, Ge
     public SubClassFactory(ClassLoader parent, int logLevel) {
         super(parent);
         parentClassLoader = parent;
-        enhanceContext = new EnhanceContext("debug="+logLevel);
+        
+        ClassPathClassBytesReader reader = new ClassPathClassBytesReader(null);
+        enhanceContext = new EnhanceContext(reader, true, "debug="+logLevel);
     }
 
     /**
