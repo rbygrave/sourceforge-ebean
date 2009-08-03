@@ -14,4 +14,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: avaje.org
 Bundle-ClassPath: .,
- lib/ebean-agent-2.0.0.jar
+ lib/ebean-agent-2.0.2.jar
