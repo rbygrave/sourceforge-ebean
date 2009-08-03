@@ -1,7 +1,6 @@
 package com.avaje.ebean.enhance.agent;
 
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,22 +20,17 @@ public class EnhanceContext {
 
 	private final boolean readOnly;
 
+	private final ClassMetaReader reader;
+
+	private final ClassBytesReader classBytesReader;
+
 	private PrintStream logout;
 
 	private int logLevel;
 
 	private HashMap<String, ClassMeta> map = new HashMap<String, ClassMeta>();
 
-	private ClassMetaReader reader;
-
-	public EnhanceContext(URL[] extraClassPath, String agentArgs) {
-		this(extraClassPath, false, agentArgs);
-	}
-
-	public EnhanceContext(String agentArgs) {
-		this(null, true, agentArgs);
-	}
-
+	
 	/**
 	 * Construct a context for enhancement or subclass generation.
 	 * 
@@ -45,7 +39,7 @@ public class EnhanceContext {
 	 * @param agentArgs
 	 *            parameters for enhancement such as log level
 	 */
-	private EnhanceContext(URL[] extraClassPath, boolean subclassing, String agentArgs) {
+	public EnhanceContext(ClassBytesReader classBytesReader, boolean subclassing, String agentArgs) {
 
 		this.ignoreClassHelper = new IgnoreClassHelper(agentArgs);
 		this.subclassing = subclassing;
@@ -53,7 +47,8 @@ public class EnhanceContext {
 
 		this.logout = System.out;
 
-		this.reader = new ClassMetaReader(this, extraClassPath);
+		this.classBytesReader = classBytesReader;
+		this.reader = new ClassMetaReader(this);
 
 		String debugValue = agentArgsMap.get("debug");
 		if (debugValue != null) {
@@ -71,6 +66,10 @@ public class EnhanceContext {
 		} else {
 			readOnly = false;
 		}
+	}
+	
+	public byte[] getClassBytes(String className, ClassLoader classLoader){
+		return classBytesReader.getClassBytes(className, classLoader);
 	}
 	
 	/**
