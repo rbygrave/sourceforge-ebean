@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class UrlPathHelper {
 
-	private static final String PROTOCAL_PREFIX = "file:/";
+	private static final String PROTOCAL_PREFIX = "file:";
 	
 
 	/**
@@ -29,7 +29,7 @@ public class UrlPathHelper {
 	 */
 	public static URL convertToUrl(String path) {
 		try {
-			return new URL(PROTOCAL_PREFIX + convertUrlString(path.trim()));
+			return new URL(PROTOCAL_PREFIX + convertUrlString(path));
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
@@ -39,6 +39,12 @@ public class UrlPathHelper {
 	 * Convert a string path to be used in URL class path entry.
 	 */
 	public static String convertUrlString(String classpath) {
+		classpath = classpath.trim();
+		if (classpath.charAt(0) != '/' && classpath.charAt(1) == ':'){
+			// add leading slash for windows platform
+			// assuming drive letter path
+			classpath = "/"+classpath;
+		}
 		if (!classpath.endsWith("/")) {
 			File file = new File(classpath);
 			if (file.exists() && file.isDirectory()) {
