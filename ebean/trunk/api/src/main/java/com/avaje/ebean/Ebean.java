@@ -117,7 +117,7 @@ import com.avaje.ebean.config.ServerConfig;
  * hrDb.save(contact);
  * </pre>
  * 
- * @version 2.0.0
+ * @version 2.0
  */
 public final class Ebean {
 
@@ -126,7 +126,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "2.0.1-20090719";
+	private static final String EBVERSION = "2.0.2-20090804";
 
 	static {
 		String version = System.getProperty("java.version");
