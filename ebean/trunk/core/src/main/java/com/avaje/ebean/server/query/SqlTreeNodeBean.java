@@ -148,10 +148,18 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		EntityBean localBean;
 		if (inheritInfo != null){
 			InheritInfo localInfo = inheritInfo.readType(ctx);
-			localBean = localInfo.createEntityBean();
-			localType = localInfo.getType();
-			localIdBinder = localInfo.getIdBinder();
-			localDesc = localInfo.getBeanDescriptor();
+			if (localInfo == null){
+				// the bean must be null
+				localIdBinder = idBinder;
+				localBean = null;
+				localType = null;
+				localDesc = desc;
+			} else {
+				localBean = localInfo.createEntityBean();
+				localType = localInfo.getType();
+				localIdBinder = localInfo.getIdBinder();
+				localDesc = localInfo.getBeanDescriptor();
+			}
 	        
 		} else {
 			localType = null;

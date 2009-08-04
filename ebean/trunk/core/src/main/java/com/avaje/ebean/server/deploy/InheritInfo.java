@@ -145,6 +145,10 @@ public class InheritInfo {
 		
 		String discValue = ctx.getRset().getString(ctx.nextRsetIndex());
 		
+		if (discValue == null){
+			return null;
+		}
+		
 		InheritInfo typeInfo = root.getType(discValue);
 		if (typeInfo == null){
 	        String m = "A type for discriminator value ["+discValue+"] was not found?";

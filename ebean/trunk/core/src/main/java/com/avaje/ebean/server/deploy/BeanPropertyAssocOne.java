@@ -297,8 +297,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			if (targetInheritInfo != null){
 				// read discriminator to determine the type
 				InheritInfo rowInheritInfo = targetInheritInfo.readType(ctx);
-				rowType = rowInheritInfo.getType();
-				rowDescriptor = rowInheritInfo.getBeanDescriptor();
+				if (rowInheritInfo != null){
+					rowType = rowInheritInfo.getType();
+					rowDescriptor = rowInheritInfo.getBeanDescriptor();
+				}
 			}
 			
 			// read the foreign key column(s)
