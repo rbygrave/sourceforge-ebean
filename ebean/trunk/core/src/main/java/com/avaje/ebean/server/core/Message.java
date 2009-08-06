@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
  */
 public class Message {
 
-    private static final String bundle = "com.avaje.ebean.message";
+    private static final String bundle = "com.avaje.ebean.internal.message";
 
     /**
      * Return a message that has a single argument.
