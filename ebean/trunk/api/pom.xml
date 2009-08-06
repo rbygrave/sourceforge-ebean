@@ -36,6 +36,8 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <group>"Public API" "com.avaje.ebean", "Event" "com.avaje.ebean.event"</group>
+          <excludePackageNames>com.avaje.ebean.validation.factory</excludePackageNames>
+          <overview>${basedir}/src/main/java/com/avaje/ebean/overview.html.</overview>
         </configuration>
       </plugin>
 	<plugin>
