@@ -63,7 +63,16 @@ public final class GlobalProperties {
 	private static synchronized PropertyMap getPropertyMap() {
 		
 		if (globalMap == null){
-			globalMap = PropertyMapLoader.load(null, "ebean.properties");
+			
+			String fileName = System.getenv("EBEAN_PROPS_FILE");
+			if (fileName == null) {
+				fileName = System.getProperty("ebean.props.file");
+				if (fileName == null) {
+					fileName = "ebean.properties";
+				}
+			}
+			
+			globalMap = PropertyMapLoader.load(null, fileName);
 			if (globalMap == null){
 				// ebean.properties file was not found... but that 
 				// is ok because we are likely doing programmatic config
