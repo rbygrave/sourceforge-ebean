@@ -15,7 +15,7 @@ public class ClassPathClassBytesReader implements ClassBytesReader {
 	private final URL[] urls;
 	
 	public ClassPathClassBytesReader(URL[] urls) {
-		this.urls = urls;
+		this.urls = urls == null ? new URL[0]: urls;
 	}
 	
 	public byte[] getClassBytes(String className, ClassLoader classLoader) {
