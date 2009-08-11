@@ -1,12 +1,14 @@
 package com.avaje.tests.model.basic;
 
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.annotation.EnumMapping;
 import com.avaje.ebean.validation.Length;
@@ -30,7 +32,13 @@ public class Customer extends BasicDomain {
 		ACTIVE,
 		INACTIVE
 	}
+	
+	@Transient 
+	Boolean selected;
 
+	@Transient
+	ReentrantLock lock = new ReentrantLock();
+	
     Status status;
     
     @NotNull
@@ -118,5 +126,17 @@ public class Customer extends BasicDomain {
   	    this.orders = orders;
     }
 
+	public Boolean getSelected() {
+		return selected;
+	}
 
+	public void setSelected(Boolean selected) {
+		this.selected = selected;
+	}
+
+	public ReentrantLock getLock() {
+		return lock;
+	}
+	
+	
 }
