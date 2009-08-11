@@ -118,8 +118,6 @@ public class TransactionManager implements Constants {
 	 */
 	private final ThreadPool threadPool;
 			
-	private final boolean logCommitEvent;
-	
 	private final ClusterManager clusterManager;
 	
 	private final int debugLevel;
@@ -149,12 +147,22 @@ public class TransactionManager implements Constants {
 		
 		this.dataSource = config.getDataSource();
 		
-		this.debugLevel = config.getTransactionDebugLevel();	
+		if (config.isUseJuliTransactionLogger()){
+			// turn this off as already logging these using a juli logger
+			this.debugLevel = 0;
+		} else {
+			// log some transaction events using a juli logger
+			int debug = config.getTransactionDebugLevel();
+			if (debug < 1 && GlobalProperties.getBoolean("log.commit", false)){
+				debug = 1;
+			}
+			this.debugLevel = debug;	
+		}
+		
 		this.defaultBatchMode = config.getDatabasePlatform().isDefaultBatching();
 		
 		this.prefix = GlobalProperties.get("transaction.prefix", "");
 		this.externalTransPrefix = GlobalProperties.get("transaction.prefix", "e");
-		this.logCommitEvent = GlobalProperties.getBoolean("log.commit", false);
 		this.logAllCommits = GlobalProperties.getBoolean("transaction.logallcommits", false);
 		
 		String value = GlobalProperties.get("transaction.onqueryonly", "ROLLBACK").toUpperCase().trim();
@@ -473,8 +481,8 @@ public class TransactionManager implements Constants {
 			// cluster and text indexing
 			localCommitBackgroundProcess(event);
 			
-			if (logCommitEvent || debugLevel >= 1){
-				logger.info("Transaction ["+transaction.getId()+"] commit: "+event.toString());
+			if (debugLevel >= 1){
+				logger.info("Transaction ["+transaction.getId()+"] commit");
 			}
 		} catch (Exception ex) {
 			String m = "Potentially Transaction Log incomplete due to error:";
