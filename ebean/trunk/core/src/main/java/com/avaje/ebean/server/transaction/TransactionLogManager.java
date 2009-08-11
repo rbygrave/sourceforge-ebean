@@ -30,6 +30,7 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.transaction.log.DefaultTransactionLogger;
+import com.avaje.ebean.server.transaction.log.JuliTransactionLogger;
 import com.avaje.ebean.server.transaction.log.LogTime;
 import com.avaje.ebean.server.transaction.log.TransactionLogger;
 
@@ -84,6 +85,8 @@ public class TransactionLogManager {
 
 	private TxLogSharing logSharing;
 
+	private final boolean useJuliTransactionLogger;
+	
 	private final TransactionLogger sharedLogger;
 
 
@@ -102,6 +105,7 @@ public class TransactionLogManager {
 		
 		this.logLevel = serverConfig.getTransactionLogging();
 		this.logSharing = serverConfig.getTransactionLogSharing();
+		this.useJuliTransactionLogger = serverConfig.isUseJuliTransactionLogger();
 		
 		String dir = serverConfig.getTransactionLogDirectoryWithEval();
 		if (dir == null) {
@@ -202,6 +206,10 @@ public class TransactionLogManager {
 	}
 
 	private TransactionLogger removeLogger(SpiTransaction t) {
+		
+		if (useJuliTransactionLogger){
+			return sharedLogger;
+		}
 		String id = t.getId();
 		if (id != null){
 			return loggerMap.remove(id);
@@ -214,6 +222,10 @@ public class TransactionLogManager {
 	 * Get the Logger for a given transaction.
 	 */
 	private TransactionLogger getLogger(SpiTransaction t) {
+		
+		if (useJuliTransactionLogger){
+			return sharedLogger;
+		}
 		
 		if (logSharing == TxLogSharing.ALL) {
 			return sharedLogger;
@@ -232,6 +244,10 @@ public class TransactionLogManager {
 
 	private TransactionLogger createLogger(SpiTransaction t) {
 
+		if (useJuliTransactionLogger){
+			return sharedLogger;
+		}
+		
 		LogTime logTime = LogTime.getWithCheck();
 
 		String logFileName = serverName+ "_"+ t.getId() + "_" 
@@ -245,6 +261,10 @@ public class TransactionLogManager {
 	 */
 	private TransactionLogger createSharedLogger() {
 
+		if (useJuliTransactionLogger){
+			return new JuliTransactionLogger();
+		}
+		
 		String logFileName = serverName+"_" + sharedLogFileName;
 		return new DefaultTransactionLogger(baseDir, logFileName, true);
 	}
