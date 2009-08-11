@@ -83,14 +83,16 @@ public class ServerConfig {
 	/** The enhance log level. */
 	private int enhanceLogLevel;
 
-	/** The register. */
-	boolean register = true;
+	/** true to register this EbeanServer with the Ebean singleton. */
+	private boolean register = true;
 
-	/** The default server. */
-	boolean defaultServer;
+	/** true if this is the default/primary server. */
+	private boolean defaultServer;
 
 	/** The validate on save. */
-	boolean validateOnSave = true;
+	private boolean validateOnSave = true;
+	
+	private boolean useJuliTransactionLogger;
 
 	/** List of interesting classes such as entities, embedded, ScalarTypes, Listeners, Finders, Controllers etc. */
 	private List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -579,6 +581,30 @@ public class ServerConfig {
 		this.transactionLogDirectory = transactionLogDirectory;
 	}
 
+	
+	/**
+	 * Return true if you want to use a java.util.logging.Logger to 
+	 * log transaction statements, bind values etc. 
+	 * <p>
+	 * If this is false then the default transaction logger is used
+	 * which logs the transaction details to separate transaction log
+	 * files.
+	 * </p>
+	 */
+	public boolean isUseJuliTransactionLogger() {
+		return useJuliTransactionLogger;
+	}
+
+	/**
+	 * Set this to true if you want transaction logging to use a
+	 * java.util.logging.Logger to log the statements and bind variables
+	 * etc rather than the default one which creates separate transaction
+	 * log files.
+	 */
+	public void setUseJuliTransactionLogger(boolean useJuliTransactionLogger) {
+		this.useJuliTransactionLogger = useJuliTransactionLogger;
+	}
+
 	/**
 	 * Return the logging level on Insert Update and Delete statements.
 	 */
@@ -853,6 +879,8 @@ public class ServerConfig {
 		transactionLogging = p.getEnum(TxLogLevel.class, "logging", TxLogLevel.ALL);//"log.level"
 		transactionLogSharing = p.getEnum(TxLogSharing.class, "logsharing", TxLogSharing.EXPLICIT);//"log.sharing"
 
+		useJuliTransactionLogger = p.getBoolean("useJuliTransactionLogger", false);
+		
 		debugSql = p.getBoolean("debug.sql", false);
 		debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
