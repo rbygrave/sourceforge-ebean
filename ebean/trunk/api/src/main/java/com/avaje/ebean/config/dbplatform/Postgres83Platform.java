@@ -21,6 +21,8 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
+import com.avaje.ebean.config.GlobalProperties;
+
 
 /**
  * Postgres v8.3 specific platform.
@@ -34,10 +36,16 @@ public class Postgres83Platform extends DatabasePlatform {
         super();
         this.name = "postgres83";    
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
-        this.dbIdentity.setSupportsSequence(true, IdType.GENERATOR);
+        this.dbIdentity.setSupportsSequence(true, IdType.SEQUENCE);
         this.dbIdentity.setSequenceNextValTemplate("nextval('{sequence}')");
         this.dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} ");
 
+        String colAlias = GlobalProperties.get("ebean.columnAliasPrefix", null);
+        if (colAlias == null){
+        	// Postgres requires the "as" keyword for column alias
+        	GlobalProperties.put("ebean.columnAliasPrefix", "as c");
+        }
+        
         this.openQuote = "\"";
         this.closeQuote = "\"";
         
