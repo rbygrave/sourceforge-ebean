@@ -8,7 +8,13 @@ import com.avaje.ebean.TxRunnable;
 
 public class ResetBasicData {
 
-	public static void reset() {
+	private static boolean runOnce;
+	
+	public static synchronized void reset() {
+		
+		if (runOnce){
+			return;
+		}
 		
 		final ResetBasicData me = new ResetBasicData();
 		
@@ -20,6 +26,7 @@ public class ResetBasicData {
 				me.insertTestCustAndOrders();
 			}
 		});
+		runOnce = true;
 	}
 	
 	
