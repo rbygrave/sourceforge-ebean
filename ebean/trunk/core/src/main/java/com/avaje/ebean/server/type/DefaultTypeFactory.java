@@ -30,42 +30,16 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
  */
 public class DefaultTypeFactory {
 
-	final ServerConfig serverConfig;
+	private final ServerConfig serverConfig;
 
 	public DefaultTypeFactory(ServerConfig serverConfig) {
 		this.serverConfig = serverConfig;
 	}
 
-	/**
-	 * Create the ScalarType for mapping Booleans. For some databases this is a
-	 * native data type and for others Booleans will be converted to Y/N or 0/1
-	 * etc.
-	 */
-	public ScalarType createBoolean() {
-
-
-		int booleanDbType = serverConfig.getDatabasePlatform().getBooleanDbType();
-		
-		if (booleanDbType == Types.BOOLEAN){
-			return new ScalarTypeBoolean.Native();			
-		}
-		
-		// Some dbs use BIT e.g. MySQL
-		if (booleanDbType == Types.BIT){
-			return new ScalarTypeBoolean.BitBoolean();
-		}
-		
-	
-		String falseValue = serverConfig.getDatabaseBooleanFalse();
-		String trueValue = serverConfig.getDatabaseBooleanTrue();
-
-		if (falseValue == null || trueValue == null){
-			// assume native boolean support
-			return new ScalarTypeBoolean.Native();
-		}
+	private ScalarType createBoolean(String trueValue, String falseValue) {
 		
 		try {
-
+			// first try Integer based boolean
 			Integer intTrue = BasicTypeConverter.toInteger(trueValue);
 			Integer intFalse = BasicTypeConverter.toInteger(falseValue);
 
@@ -73,13 +47,48 @@ public class DefaultTypeFactory {
 
 		} catch (NumberFormatException e){
 		}
+
+		// treat as Varchar/String based boolean
+		return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
 		
-		if (falseValue == null || trueValue == null) {
-			// the JDBC driver/Database supports Booleans
-			return new ScalarTypeBoolean.Native();
+	}
+	
+	/**
+	 * Create the ScalarType for mapping Booleans. For some databases this is a
+	 * native data type and for others Booleans will be converted to Y/N or 0/1
+	 * etc.
+	 */
+	public ScalarType createBoolean() {
+
+		String trueValue = serverConfig.getDatabaseBooleanTrue();
+		String falseValue = serverConfig.getDatabaseBooleanFalse();
+
+		if (falseValue != null && trueValue != null){
+			// explicit integer or string based booleans
+			return createBoolean(trueValue, falseValue);
 		}
 
-		return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
+		// determine based on database platform configuration
+		int booleanDbType = serverConfig.getDatabasePlatform().getBooleanDbType();
+		
+		// Some dbs use BIT e.g. MySQL
+		if (booleanDbType == Types.BIT){
+			return new ScalarTypeBoolean.BitBoolean();
+		}
+		
+		if (booleanDbType == Types.INTEGER){
+			return new ScalarTypeBoolean.IntBoolean(1, 0);
+		}
+		if (booleanDbType == Types.VARCHAR){
+			return new ScalarTypeBoolean.StringBoolean("T", "F");
+		}
+		
+		if (booleanDbType == Types.BOOLEAN){
+			return new ScalarTypeBoolean.Native();			
+		}
+
+		// assume the JDBC driver can convert the type
+		return new ScalarTypeBoolean.Native();			
 	}
 
 	/**
