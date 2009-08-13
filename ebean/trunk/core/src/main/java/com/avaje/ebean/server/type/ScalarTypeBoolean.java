@@ -119,13 +119,18 @@ public class ScalarTypeBoolean {
 	 */
 	public static class IntBoolean extends ScalarTypeBase {
 		
-		final Integer trueValue;
-		final Integer falseValue;
+		private final Integer trueValue;
+		private final Integer falseValue;
 
 		public IntBoolean(Integer trueValue, Integer falseValue) {
 			super(Boolean.class, false, Types.INTEGER);
 			this.trueValue = trueValue;
 			this.falseValue = falseValue;
+		}
+		
+		@Override
+		public int getLength() {
+			return 1;
 		}
 
 		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
@@ -191,13 +196,21 @@ public class ScalarTypeBoolean {
 	 */
 	public static class StringBoolean extends ScalarTypeBase {
 		
-		final String trueValue;
-		final String falseValue;
+		private final String trueValue;
+		private final String falseValue;
 
 		public StringBoolean(String trueValue, String falseValue) {
 			super(Boolean.class, false, Types.VARCHAR);
 			this.trueValue = trueValue;
 			this.falseValue = falseValue;
+		}
+
+		
+		
+		@Override
+		public int getLength() {
+			// typically this will return 1
+			return Math.max(trueValue.length(), falseValue.length());
 		}
 
 		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
