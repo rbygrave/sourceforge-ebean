@@ -48,6 +48,8 @@ public class EntityBeanIntercept implements Serializable {
 
 	private transient PropertyChangeSupport pcs;
 	
+	private transient PersistenceContext persistenceContext;
+	
 	/**
 	 * The actual entity bean that 'owns' this intercept.
 	 */
@@ -113,6 +115,20 @@ public class EntityBeanIntercept implements Serializable {
 		return "OldValues: " + oldValues;
 	}
 	
+	/**
+	 * Return the persistenceContext.
+	 */
+	public PersistenceContext getPersistenceContext() {
+		return persistenceContext;
+	}
+
+	/**
+	 * Set the persistenceContext.
+	 */
+	public void setPersistenceContext(PersistenceContext persistenceContext) {
+		this.persistenceContext = persistenceContext;
+	}
+
 	/**
 	 * Add a property change listener for this entity bean.
 	 */
