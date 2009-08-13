@@ -1,4 +1,4 @@
-package com.avaje.tests.basic.lazyload;
+package com.avaje.tests.basic;
 
 import java.sql.Date;
 import java.util.List;

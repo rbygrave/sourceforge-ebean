@@ -1,4 +1,4 @@
-package com.avaje.tests.basic.lazyload;
+package com.avaje.tests.basic;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
