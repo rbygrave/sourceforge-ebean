@@ -128,7 +128,7 @@ public class ServerConfig {
 	private int transactionDebugLevel;
 
 	/** The transaction log directory. */
-	private String transactionLogDirectory;
+	private String transactionLogDirectory = "logs";
 
 	/** The transaction logging. */
 	private TxLogLevel transactionLogging = TxLogLevel.ALL;
@@ -872,6 +872,18 @@ public class ServerConfig {
 				throw new RuntimeException(e);
 			}
 		}
+		String dbp = p.get("databasePlatform", null);
+		if (dbp != null){
+			try {
+				Class<?> cls = Class.forName(dbp);
+				databasePlatform = (DatabasePlatform)cls.newInstance();
+			} catch (Exception e){
+				throw new RuntimeException(e);
+			}
+		}
+		
+		databaseBooleanTrue = p.get("databaseBooleanTrue", null);
+		databaseBooleanFalse = p.get("databaseBooleanFalse", null);
 		
 		ddlGenerate = p.getBoolean("ddl.generate", false);
 		ddlRun = p.getBoolean("ddl.run", false);
