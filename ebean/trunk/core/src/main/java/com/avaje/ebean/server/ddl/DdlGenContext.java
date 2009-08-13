@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebean.config.NamingConvention;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.dbplatform.DbTypeMap;
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
@@ -25,51 +26,60 @@ import com.avaje.ebean.server.type.ScalarType;
  */
 public class DdlGenContext {
 
-	final StringWriter stringWriter = new StringWriter();
+	private final StringWriter stringWriter = new StringWriter();
 
 	/**
 	 * Used to map bean types to DB specific types.
 	 */
-	final DbTypeMap dbTypeMap;
+	private final DbTypeMap dbTypeMap;
 
 	/**
 	 * Handles DB specific DDL syntax.
 	 */
-	final DbDdlSyntax ddlSyntax;
+	private final DbDdlSyntax ddlSyntax;
 
 	/**
 	 * The new line character that is used.
 	 */
-	final String newLine;
+	private final String newLine;
 
 	/**
 	 * Last content written (used with removeLast())
 	 */
-	String lastContent;
+	private String lastContent;
 
-	Set<String> intersectionTables = new HashSet<String>();
+	private Set<String> intersectionTables = new HashSet<String>();
 
-	List<String> intersectionTablesCreateDdl = new ArrayList<String>();
-	List<String> intersectionTablesFkDdl = new ArrayList<String>();
+	private List<String> intersectionTablesCreateDdl = new ArrayList<String>();
+	private List<String> intersectionTablesFkDdl = new ArrayList<String>();
 
+	private final DatabasePlatform dbPlatform;
+	
 	/** The Naming convention used to define FK an IX names */
-	protected final NamingConvention namingConvention;
+	private final NamingConvention namingConvention;
 
 	/** The global fk count used to keep FK names unique */
-	protected int fkCount;
+	private int fkCount;
 
 	/** The ix count. */
-	protected int ixCount;
+	private int ixCount;
 
-	public DdlGenContext(DbTypeMap dbTypeMap, DbDdlSyntax ddlSyntax, NamingConvention namingConvention){
-		this.dbTypeMap = dbTypeMap;
-		this.ddlSyntax = ddlSyntax;
+	public DdlGenContext(DatabasePlatform dbPlatform, NamingConvention namingConvention){
+		this.dbPlatform = dbPlatform;
+		this.dbTypeMap = dbPlatform.getDbTypeMap();
+		this.ddlSyntax = dbPlatform.getDbDdlSyntax();
 		this.newLine = ddlSyntax.getNewLine();
 		this.namingConvention = namingConvention;
 	}
 
-	public boolean isProcessIntersectionTable(String tableName){
+	/**
+	 * Return the dbPlatform.
+	 */
+	public DatabasePlatform getDbPlatform() {
+		return dbPlatform;
+	}
 
+	public boolean isProcessIntersectionTable(String tableName){
 		return intersectionTables.add(tableName);
 	}
 

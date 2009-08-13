@@ -159,7 +159,7 @@ public class DdlGenerator {
 	}
 
 	protected DdlGenContext createContext() {
-		return new DdlGenContext(dbPlatform.getDbTypeMap(), dbPlatform.getDbDdlSyntax(), namingConvention);
+		return new DdlGenContext(dbPlatform, namingConvention);
 	}
 
 	protected void writeFile(String fileName, String fileContent) throws IOException {

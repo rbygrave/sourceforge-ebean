@@ -3,6 +3,7 @@ package com.avaje.ebean.server.ddl;
 import java.sql.Types;
 
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
+import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -15,19 +16,19 @@ import com.avaje.ebean.server.deploy.id.ImportedId;
  */
 public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
-	final DdlGenContext ctx;
+	private final DdlGenContext ctx;
 
-	final DbDdlSyntax ddl;
+	private final DbDdlSyntax ddl;
 
-	final int columnNameWidth;
+	//private final int columnNameWidth;
 
-	final CreateTableVisitor parent;
+	private final CreateTableVisitor parent;
 
 	public CreateTableColumnVisitor(CreateTableVisitor parent, DdlGenContext ctx) {
 		this.parent = parent;
 		this.ctx = ctx;
 		this.ddl = ctx.getDdlSyntax();
-		this.columnNameWidth = ddl.getColumnNameWidth();
+		//this.columnNameWidth = ddl.getColumnNameWidth();
 	}
 
 	
@@ -147,6 +148,13 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 	}
 
 	protected boolean isIdentity(BeanProperty p) {
+		
+		IdType idType = ctx.getDbPlatform().getDbIdentity().getIdType();
+		if (!idType.equals(IdType.IDENTITY)){
+			// this dbPlatform probably uses Sequences
+			return false;
+		}
+		
 		if (p.isId()) {
 			int jdbcType = p.getScalarType().getJdbcType();
 			if (jdbcType == Types.INTEGER || jdbcType == Types.BIGINT || jdbcType == Types.SMALLINT) {
