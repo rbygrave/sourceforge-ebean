@@ -49,7 +49,7 @@ public class Postgres83Platform extends DatabasePlatform {
         this.openQuote = "\"";
         this.closeQuote = "\"";
         
-        dbTypeMap.put(Types.BOOLEAN, new DbType("bit default 0"));
+        //dbTypeMap.put(Types.BOOLEAN, new DbType("bit default 0"));
 
         dbTypeMap.put(Types.DOUBLE, new DbType("float"));
         dbTypeMap.put(Types.TINYINT, new DbType("smallint"));

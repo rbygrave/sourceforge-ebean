@@ -40,13 +40,14 @@ public class Oracle9Platform extends DatabasePlatform {
         // use Sequence as default IdType
         dbIdentity.setSupportsGetGeneratedKeys(false);
         // Oracle9 doesn't support getGeneratedKeys so use IdType.GENERATOR
-        dbIdentity.setSupportsSequence(true, IdType.GENERATOR);
+        dbIdentity.setSupportsSequence(true, IdType.SEQUENCE);
         dbIdentity.setSequenceNextValTemplate("{sequence}.nextval");
         dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} from dual");
                 
         this.openQuote = "\"";
         this.closeQuote = "\"";
        
+        booleanDbType = Types.INTEGER;
 		dbTypeMap.put(Types.BOOLEAN, new DbType("number(1) default 0"));
 
 		dbTypeMap.put(Types.INTEGER, new DbType("number", 10));

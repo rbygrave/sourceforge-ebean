@@ -50,6 +50,7 @@ public class Oracle10Platform extends DatabasePlatform {
         this.openQuote = "\"";
         this.closeQuote = "\"";
         
+        booleanDbType = Types.INTEGER;
 		dbTypeMap.put(Types.BOOLEAN, new DbType("number(1) default 0"));
 
 		dbTypeMap.put(Types.INTEGER, new DbType("number", 10));
