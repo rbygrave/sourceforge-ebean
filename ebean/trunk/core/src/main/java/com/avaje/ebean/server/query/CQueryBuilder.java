@@ -101,6 +101,9 @@ public class CQueryBuilder implements Constants {
 
     	SpiQuery<T> query = request.getQuery();
 
+    	// always set the order by to null for row count query
+    	query.setOrderBy(null);
+    	
     	boolean hasMany = query.isManyInWhere();
     	
     	query.setSelectId();
