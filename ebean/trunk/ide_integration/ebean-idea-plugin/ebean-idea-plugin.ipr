@@ -2,6 +2,14 @@
 <project relativePaths="true" version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
+    <buildFile url="file://$PROJECT_DIR$/ebean-idea-plugin.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
+      <properties />
+    </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />
@@ -313,7 +321,7 @@
   </component>
   <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectKey">
-    <option name="state" value="project://C:\Users\im\projects\opsxcited_3rdpary\ebean\ide_integration\ebean-idea-plugin\ebean-idea-plugin.ipr" />
+    <option name="state" value="https://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/ide_integration/ebean-idea-plugin/ebean-idea-plugin.ipr" />
   </component>
   <component name="ProjectModuleManager">
     <modules>
@@ -341,7 +349,7 @@
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="" />
+    <mapping directory="" vcs="svn" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <UsedPathMacros>
