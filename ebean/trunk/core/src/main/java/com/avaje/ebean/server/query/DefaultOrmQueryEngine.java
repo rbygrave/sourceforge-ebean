@@ -19,17 +19,14 @@
  */
 package com.avaje.ebean.server.query;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.event.BeanFinder;
-import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 
 /**
@@ -42,7 +39,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
      */
     private final CQueryEngine queryEngine;
     
-    private final BeanDescriptorManager beanDescriptorManager;
+//    private final BeanDescriptorManager beanDescriptorManager;
     
     /**
      * Create the Finder.
@@ -50,12 +47,17 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     public DefaultOrmQueryEngine(BeanDescriptorManager descMgr, CQueryEngine queryEngine) {
    
         this.queryEngine = queryEngine;
-        this.beanDescriptorManager = descMgr;
+//        this.beanDescriptorManager = descMgr;
     }
     
     public <T> int findRowCount(OrmQueryRequest<T> request){
     	
     	return queryEngine.findRowCount(request);
+    }
+
+    public <T> List<Object> findIds(OrmQueryRequest<T> request){
+    	
+    	return queryEngine.findIds(request);
     }
 
     
@@ -79,16 +81,16 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         // The query may read data affected by those requests.
         t.batchFlush();
         
-        ArrayList<EntityBean> adds = query.getContextAdditions();
-        if (adds != null){
-            PersistenceContext pc = t.getPersistenceContext();
-            for (int i = 0; i < adds.size(); i++) {
-            	EntityBean bean = adds.get(i);
-            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
-            	Object id = desc.getId(bean);
-            	pc.add(bean, id, false);
-			}
-        }
+//        ArrayList<EntityBean> adds = query.getContextAdditions();
+//        if (adds != null){
+//            PersistenceContext pc = t.getPersistenceContext();
+//            for (int i = 0; i < adds.size(); i++) {
+//            	EntityBean bean = adds.get(i);
+//            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
+//            	Object id = desc.getId(bean);
+//            	pc.add(bean, id);//, false);
+//			}
+//        }
 
         BeanFinder<T> finder = request.getBeanFinder();
         if (finder != null) {
@@ -132,16 +134,16 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	t.batchFlush();
         }
 
-        ArrayList<EntityBean> adds = query.getContextAdditions();
-        if (adds != null){
-            PersistenceContext pc = t.getPersistenceContext();
-            for (int i = 0; i < adds.size(); i++) {
-            	EntityBean bean = adds.get(i);
-            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
-            	Object id = desc.getId(bean);
-            	pc.add(bean, id, false);
-			}
-        }
+//        ArrayList<EntityBean> adds = query.getContextAdditions();
+//        if (adds != null){
+//            PersistenceContext pc = t.getPersistenceContext();
+//            for (int i = 0; i < adds.size(); i++) {
+//            	EntityBean bean = adds.get(i);
+//            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
+//            	Object id = desc.getId(bean);
+//            	pc.add(bean, id);//, false);
+//			}
+//        }
         
         BeanFinder<T> finder = request.getBeanFinder();
         if (finder != null) {

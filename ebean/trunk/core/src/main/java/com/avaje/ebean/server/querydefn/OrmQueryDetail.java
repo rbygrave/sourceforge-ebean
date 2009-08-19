@@ -1,11 +1,15 @@
 package com.avaje.ebean.server.querydefn;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
  * Represents the internal structure of an Object Relational query.
@@ -22,11 +26,11 @@ public class OrmQueryDetail implements Serializable {
 
 	private static final long serialVersionUID = -2510486880141461806L;
 
-	OrmQueryProperties baseProps = new OrmQueryProperties();
+	private OrmQueryProperties baseProps = new OrmQueryProperties();
 
-	HashMap<String, OrmQueryProperties> fetchJoins = new HashMap<String, OrmQueryProperties>(8);
+	private HashMap<String, OrmQueryProperties> fetchJoins = new HashMap<String, OrmQueryProperties>(8);
 
-	HashSet<String> includes = new HashSet<String>(8);
+	private HashSet<String> includes = new HashSet<String>(8);
 
 	/**
 	 * Return a deep copy of the OrmQueryDetail.
@@ -120,6 +124,27 @@ public class OrmQueryDetail implements Serializable {
 		OrmQueryProperties chunk = new OrmQueryProperties(property, partialProps);
 		addFetchJoin(chunk);
 		return chunk;
+	}
+	
+	public void removeManyJoins(BeanDescriptor<?> beanDescriptor) {
+		
+		ArrayList<String> removeList = new ArrayList<String>();
+		
+		Iterator<String> it = fetchJoins.keySet().iterator();
+		while (it.hasNext()) {
+			String joinProp = (String) it.next();
+			ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(joinProp);
+			if (elProp.containsMany()){
+				removeList.add(joinProp);
+			}
+		}
+		
+		for (int i = 0; i < removeList.size(); i++) {
+			String manyJoinProp = removeList.get(i);
+			includes.remove(manyJoinProp);
+			fetchJoins.remove(manyJoinProp);
+		}
+		
 	}
 
 	/**

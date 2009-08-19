@@ -20,10 +20,13 @@
 package com.avaje.ebean.server.query;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
@@ -37,6 +40,8 @@ import com.avaje.ebean.server.persist.Binder;
  */
 public class CQueryEngine {
 
+	private static final Logger logger = Logger.getLogger(CQueryEngine.class.getName());
+	
 	/**
 	 * Thread pool used for background fetching.
 	 */
@@ -57,6 +62,43 @@ public class CQueryEngine {
 		return queryBuilder.buildQuery(request);
 	}
 
+	/**
+	 * Build and execute the row count query.
+	 */
+	public <T> List<Object> findIds(OrmQueryRequest<T> request) {
+
+
+		CQueryFetchIds rcQuery = queryBuilder.buildFetchIdsQuery(request);
+		try {
+
+			String sql = rcQuery.getGeneratedSql();
+			sql = sql.replace(Constants.NEW_LINE, ' ');
+
+			if (logControl.isDebugGeneratedSql()) {
+				System.out.println(sql);
+			}
+			if (logControl.isLogQuery(MAdminLogging.SQL)) {
+				request.getTransaction().log(sql);
+			}
+
+			List<Object> list = rcQuery.findIds();
+
+			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+				request.getTransaction().log(rcQuery.getSummary());
+			}
+
+			if (request.getQuery().isFutureFetch()){
+				logger.fine("Future findIds completed!");
+				request.getTransaction().end();
+			}
+			
+			return list;
+
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		}
+	}
+	
 	/**
 	 * Build and execute the row count query.
 	 */
@@ -81,7 +123,11 @@ public class CQueryEngine {
 			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				request.getTransaction().log(rcQuery.getSummary());
 			}
-
+			
+			if (request.getQuery().isFutureFetch()){
+				logger.fine("Future findRowCount completed!");
+				request.getTransaction().end();
+			}
 			return rowCount;
 
 		} catch (SQLException e) {
@@ -98,6 +144,8 @@ public class CQueryEngine {
 		boolean useBackgroundToContinueFetch = false;
 
 		CQuery<T> cquery = queryBuilder.buildQuery(request);
+		request.setCancelableQuery(cquery);
+		
 		try {
 
 			if (logControl.isDebugGeneratedSql()) {
@@ -107,9 +155,20 @@ public class CQueryEngine {
 				logSql(cquery);
 			}
 
-			cquery.prepareBindExecuteQuery();
+			if (!cquery.prepareBindExecuteQuery()) {
+				// query has been cancelled already
+				logger.finest("Future fetch already cancelled");
+				return null;
+			}
 
 			BeanCollection<T> beanCollection = cquery.readCollection();
+			
+			BeanCollectionTouched collectionTouched = request.getQuery().getBeanCollectionTouched();
+			if (collectionTouched != null){
+				// register a listener that wants to be notified when the
+				// bean collection is first used
+				beanCollection.setBeanCollectionTouched(collectionTouched);
+			}
 
 			if (cquery.useBackgroundToContinueFetch()) {
 				// stop the request from putting connection back into pool
@@ -125,6 +184,11 @@ public class CQueryEngine {
 				logFindManySummary(cquery);
 			}
 
+			if (request.getQuery().isFutureFetch()){
+				logger.fine("Future fetch completed!");
+				request.getTransaction().end();
+			}
+			
 			return beanCollection;
 
 		} catch (SQLException e) {

@@ -21,8 +21,6 @@ package com.avaje.ebean.internal;
 
 import java.util.List;
 
-import javax.management.MBeanServer;
-
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
@@ -40,19 +38,22 @@ import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
  * Service Provider extension to EbeanServer.
  */
 public interface SpiEbeanServer extends LazyLoadEbeanServer {
-	
+
+	/**
+	 * Return the BackgroundExecutor for asynchronous processing of queries.
+	 */
+	public BackgroundExecutor getBackgroundExecutor();
+
 	/**
 	 * Return the DDL generator.
 	 */
 	public DdlGenerator getDdlGenerator();
 
-	public void registerMBeans(MBeanServer mbeanServer);
-	
 	/**
 	 * Return the AutoFetchListener.
 	 */
 	public AutoFetchManager getAutoFetchManager();
-	
+
 	/**
 	 * Return the server cache.
 	 */
@@ -62,12 +63,12 @@ public interface SpiEbeanServer extends LazyLoadEbeanServer {
 	 * Clear the query execution statistics.
 	 */
 	public void clearQueryStatistics();
-	
+
 	/**
 	 * Return all the descriptors.
 	 */
 	public List<BeanDescriptor<?>> getBeanDescriptors();
-	
+
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
@@ -91,12 +92,13 @@ public interface SpiEbeanServer extends LazyLoadEbeanServer {
 	 * </p>
 	 */
 	public SpiTransaction createServerTransaction(boolean isExplicit, int isolationLevel);
-	
+
 	/**
-	 * Return the current transaction or null if there is no current transaction.
+	 * Return the current transaction or null if there is no current
+	 * transaction.
 	 */
 	public SpiTransaction getCurrentServerTransaction();
-	
+
 	/**
 	 * Create a ScopeTrans for a method for the given scope definition.
 	 */
@@ -117,15 +119,24 @@ public interface SpiEbeanServer extends LazyLoadEbeanServer {
 	 * Create a query request object.
 	 */
 	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t);
-	
+
 	/**
 	 * Compile a query.
 	 */
 	public <T> CQuery<T> compileQuery(Query<T> query, Transaction t);
-	
+
 	/**
 	 * Return the queryEngine for this server.
 	 */
 	public CQueryEngine getQueryEngine();
+
+	/**
+	 * Execute the findId's query but without copying the query.
+	 * <p>
+	 * Used so that the list of Id's can be made accessible to client code
+	 * before the query has finished (if executing in a background thread).
+	 * </p>
+	 */
+	public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t);
 
 }

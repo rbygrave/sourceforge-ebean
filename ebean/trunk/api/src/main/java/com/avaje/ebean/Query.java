@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.SqlSelect;
@@ -36,7 +37,7 @@ import com.avaje.ebean.annotation.SqlSelect;
  * query.setParameter(&quot;custName&quot;, &quot;rob%&quot;);
  * query.setParameter(&quot;lastWeek&quot;, lastWeek);
  * ...
- *   
+ * 
  * </pre>
  * 
  * <p>
@@ -76,9 +77,8 @@ import com.avaje.ebean.annotation.SqlSelect;
  * 
  * <h3>Autofetch</h3>
  * <p>
- * Ebean has built in support for "Autofetch". This is a
- * mechanism where a query can be automatically tuned based on profiling
- * information that is collected.
+ * Ebean has built in support for "Autofetch". This is a mechanism where a query
+ * can be automatically tuned based on profiling information that is collected.
  * </p>
  * <p>
  * This is effectively the same as automatically using select() and join() to
@@ -94,10 +94,9 @@ import com.avaje.ebean.annotation.SqlSelect;
  * 
  * <h3>Query Language</h3>
  * <p>
- * Ebean includes its own query language. The intention is
- * for future versions of Ebean to <em>additionally</em> support the query
- * language of JPA (JPAQL) - hence the query language uses "FIND" rather than
- * "SELECT".
+ * Ebean includes its own query language. The intention is for future versions
+ * of Ebean to <em>additionally</em> support the query language of JPA (JPAQL) -
+ * hence the query language uses "FIND" rather than "SELECT".
  * </p>
  * <p>
  * <b>Partial Objects</b>
@@ -120,29 +119,29 @@ import com.avaje.ebean.annotation.SqlSelect;
  * <b>How <em>join</em> works</b>
  * </p>
  * <p>
- * With <em>join</em> you do not specify the join type (LEFT OUTER, INNER
- * etc). Ebean works out the appropriate join types for you depending on the
+ * With <em>join</em> you do not specify the join type (LEFT OUTER, INNER etc).
+ * Ebean works out the appropriate join types for you depending on the
  * cardinality of the relationship and whether properties are "nullable" (which
  * is different to JPAQL).
  * </p>
  * <p>
- * You only specify a <em>join</em> for fetching purposes (that is equivalent
- * to a JPAQL fetch joins). If you include an association in the <em>where</em>
- * or <em>order by</em> clause (that does not have a matching <em>join</em>
- * clause) then Ebean automatically detects this and adds the appropriate SQL
- * JOIN clauses as required.
+ * You only specify a <em>join</em> for fetching purposes (that is equivalent to
+ * a JPAQL fetch joins). If you include an association in the <em>where</em> or
+ * <em>order by</em> clause (that does not have a matching <em>join</em> clause)
+ * then Ebean automatically detects this and adds the appropriate SQL JOIN
+ * clauses as required.
  * </p>
  * <p>
  * <b>Start with <em>join</em>, <em>where</em> or even <em>order by</em></b>
  * </p>
  * <p>
  * You do not need to start a query with <em>find</em>. You can start a query
- * with <em>join</em> <em>where</em> or <em>order by</em>. This is due to
- * the way {@link Ebean#createQuery(Class)} requires a beanType for supporting
- * java generics. In this way it is known the type of object you are finding
- * without specifying a <em>find</em> clause. Essentially the only thing in
- * the <em>find</em> clause that Ebean is interested in is the fetch
- * properties (to fetch all the properties or just some).
+ * with <em>join</em> <em>where</em> or <em>order by</em>. This is due to the
+ * way {@link Ebean#createQuery(Class)} requires a beanType for supporting java
+ * generics. In this way it is known the type of object you are finding without
+ * specifying a <em>find</em> clause. Essentially the only thing in the
+ * <em>find</em> clause that Ebean is interested in is the fetch properties (to
+ * fetch all the properties or just some).
  * </p>
  * 
  * <pre class="code">
@@ -162,9 +161,9 @@ import com.avaje.ebean.annotation.SqlSelect;
  * properties ALL the properties for those beans are fetched.
  * </p>
  * <p>
- * In object graph terms the <em>find</em> clause specifies the type of bean
- * at the root level and the <em>join</em> clauses specify the nodes of the
- * object graph to populate.
+ * In object graph terms the <em>find</em> clause specifies the type of bean at
+ * the root level and the <em>join</em> clauses specify the nodes of the object
+ * graph to populate.
  * </p>
  * <p>
  * <b>JOIN</b> <b>{associated property}</b> [ ( <i>*</i> | <i>{fetch
@@ -202,7 +201,7 @@ import com.avaje.ebean.annotation.SqlSelect;
  * The limit offset specifies the max rows and first row to fetch. The offset is
  * optional.
  * </p>
- * <h4> Examples of Ebean's Query Language </h4>
+ * <h4>Examples of Ebean's Query Language</h4>
  * <p>
  * Find orders fetching all its properties
  * </p>
@@ -321,9 +320,9 @@ import com.avaje.ebean.annotation.SqlSelect;
  * Refer to the {@link SqlSelect} annotation.
  * </p>
  * <p>
- * Ebean supports a reasonable approach to deriving some
- * aggregate data via the {@link Formula} annotation. Please have a look at the
- * documentation for that and note there is some ongoing work in this area.
+ * Ebean supports a reasonable approach to deriving some aggregate data via the
+ * {@link Formula} annotation. Please have a look at the documentation for that
+ * and note there is some ongoing work in this area.
  * </p>
  * 
  * @see SqlSelect
@@ -348,33 +347,48 @@ public interface Query<T> extends Serializable {
 		 * Find by Id or unique returning a single bean.
 		 */
 		BEAN,
-		
+
 		/**
 		 * Find returning a List.
 		 */
 		LIST,
-		
+
 		/**
 		 * Find returning a Set.
 		 */
 		SET,
-		
+
 		/**
 		 * Find returning a Map.
 		 */
-		MAP
+		MAP,
+
+		/**
+		 * Find the Id's.
+		 */
+		ID_LIST
+
 	}
-	
+
 	/**
 	 * Return the type of query (List, Set, Map, Bean, rowCount etc).
 	 */
 	public Type getType();
-	
+
+	/**
+	 * Cancel the query execution if supported by the underlying database and
+	 * driver.
+	 * <p>
+	 * This must be called from a different thread to the query executor.
+	 * </p>
+	 */
+	public void cancel();
+
 	/**
 	 * Return the ExpressionFactory used by this query.
 	 */
 	public ExpressionFactory getExpressionFactory();
-	
+
 	/**
 	 * Returns true if this query was tuned by autoFetch.
 	 */
@@ -397,7 +411,8 @@ public interface Query<T> extends Serializable {
 	public Query<T> setAutofetch(boolean autofetch);
 
 	/**
-	 * Please use {@link #setAutofetch(boolean)}. 
+	 * Please use {@link #setAutofetch(boolean)}.
+	 * 
 	 * @deprecated
 	 */
 	public Query<T> setAutoFetch(boolean autoFetch);
@@ -406,8 +421,8 @@ public interface Query<T> extends Serializable {
 	 * Set the query using the query language.
 	 * <p>
 	 * You are <em>NOT</em> allowed to use this method if the query is a named
-	 * query. You are allowed to add additional clauses using where() as well
-	 * as use join() and setOrderBy().
+	 * query. You are allowed to add additional clauses using where() as well as
+	 * use join() and setOrderBy().
 	 * </p>
 	 * This can contain join where order by and limit clauses. The query can
 	 * also contain named parameters.
@@ -425,7 +440,8 @@ public interface Query<T> extends Serializable {
 
 	/**
 	 * Explicitly set a comma delimited list of the properties to fetch on the
-	 * 'main' entity bean (aka partial object). Note that '*' means all properties.
+	 * 'main' entity bean (aka partial object). Note that '*' means all
+	 * properties.
 	 * 
 	 * <pre class="code">
 	 * Query&lt;Customer&gt; query = Ebean.createQuery(Customer.class);
@@ -444,8 +460,8 @@ public interface Query<T> extends Serializable {
 	public Query<T> select(String fetchProperties);
 
 	/**
-	 * Specify a property (associated bean) to join and <em>fetch</em> with
-	 * its specific properties to include (aka partial object).
+	 * Specify a property (associated bean) to join and <em>fetch</em> with its
+	 * specific properties to include (aka partial object).
 	 * <p>
 	 * Note that you do <em>NOT</em> need to specify a join just for the
 	 * purposes of a where clause (predicate) or order by clause. Ebean will
@@ -519,7 +535,7 @@ public interface Query<T> extends Serializable {
 	 * @see EbeanServer#findList(Query, Transaction)
 	 */
 	public List<T> findList();
-	
+
 	/**
 	 * Execute the query returning the set of objects.
 	 * <p>
@@ -598,10 +614,67 @@ public interface Query<T> extends Serializable {
 	public int findRowCount();
 
 	/**
-	 * Deprecated: Please use {@link #setParameter(int, Object)} for positioned parameters.
+	 * Execute find row count query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @return a Future object for the row count query
+	 */
+	public Future<Integer> findFutureRowCount();
+
+	/**
+	 * Execute find Id's query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @return a Future object for the list of Id's
+	 */
+	public FutureIds<T> findFutureIds();
+
+	/**
+	 * Execute find list query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @return a Future object for the list result of the query
+	 */
+	public FutureList<T> findFutureList();
+
+	/**
+	 * Return a PagingList for this query.
+	 * <p>
+	 * This can be used to break up a query into multiple queries to fetch the
+	 * data a page at a time.
+	 * </p>
+	 * <p>
+	 * This typically works by using a query per page and setting
+	 * {@link Query#setFirstRow(int)} and and {@link Query#setMaxRows(int)} on
+	 * the query. This usually would translate into SQL that uses limit offset,
+	 * rownum or row_number function to limit the result set.
+	 * </p>
+	 * 
+	 * @param pageSize
+	 *            the number of beans fetched per Page
+	 * 
+	 */
+	public PagingList<T> findPagingList(int pageSize);
+
+	/**
+	 * Deprecated: Please use {@link #setParameter(int, Object)} for positioned
+	 * parameters.
 	 * <p>
 	 * set() is just an alias for setParameter().
 	 * </p>
+	 * 
 	 * @deprecated
 	 */
 	public Query<T> set(int position, Object value);
@@ -612,6 +685,7 @@ public interface Query<T> extends Serializable {
 	 * <p>
 	 * set() is just an alias for setParameter().
 	 * </p>
+	 * 
 	 * @deprecated
 	 */
 	public Query<T> set(String name, Object value);
@@ -827,7 +901,7 @@ public interface Query<T> extends Serializable {
 	 * Return the orderBy clause.
 	 */
 	public String getOrderBy();
-	
+
 	/**
 	 * Set the order by clause.
 	 */
@@ -847,7 +921,7 @@ public interface Query<T> extends Serializable {
 	 * Return the first row value.
 	 */
 	public int getFirstRow();
-	
+
 	/**
 	 * Set the first row to return for this query.
 	 * 
@@ -859,7 +933,7 @@ public interface Query<T> extends Serializable {
 	 * Return the max rows for this query.
 	 */
 	public int getMaxRows();
-	
+
 	/**
 	 * Set the maximum number of rows to return in the query.
 	 * 
@@ -881,6 +955,7 @@ public interface Query<T> extends Serializable {
 	 * Set the initial capacity that should be allocated for a collection type
 	 * (List, Set or Map).
 	 * </p>
+	 * 
 	 * @deprecated
 	 */
 	public Query<T> setInitialCapacity(int initialCapacity);
@@ -920,14 +995,25 @@ public interface Query<T> extends Serializable {
 	/**
 	 * Set a timeout on this query.
 	 * <p>
-	 * This will typically result in a call to setQueryTimeout() on a preparedStatement.
-	 * If the timeout occurs an exception will be thrown - this will be a SQLException wrapped
-	 * up in a PersistenceException.
+	 * This will typically result in a call to setQueryTimeout() on a
+	 * preparedStatement. If the timeout occurs an exception will be thrown -
+	 * this will be a SQLException wrapped up in a PersistenceException.
 	 * </p>
 	 * 
-	 * @param secs the query timeout limit in seconds. Zero means there is no limit.
+	 * @param secs
+	 *            the query timeout limit in seconds. Zero means there is no
+	 *            limit.
 	 */
 	public Query<T> setTimeout(int secs);
+
+	/**
+	 * A hint which for JDBC translates to the Statement.fetchSize().
+	 * <p>
+	 * Gives the JDBC driver a hint as to the number of rows that should be
+	 * fetched from the database when more rows are needed for ResultSet.
+	 * </p>
+	 */
+	public Query<T> setBufferFetchSizeHint(int fetchSize);
 
 	/**
 	 * Return the sql that was generated for executing this query.

@@ -1,17 +1,40 @@
+/**
+ * Copyright (C) 2009  Robin Bygrave
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
 package com.avaje.ebean.internal;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.TableJoin;
+import com.avaje.ebean.server.query.CancelableQuery;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 
 /**
@@ -19,6 +42,39 @@ import com.avaje.ebean.server.querydefn.OrmQueryDetail;
  */
 public interface SpiQuery<T> extends Query<T> {
 
+	/**
+	 * Return a listener that wants to be notified when the 
+	 * bean collection is first used.
+	 */
+	public BeanCollectionTouched getBeanCollectionTouched();
+	
+	/**
+	 * Set a listener to be notified when the bean collection has
+	 * been touched (when the list/set/map is first used).
+	 */
+    public void setBeanCollectionTouched(BeanCollectionTouched notify);
+    
+	/**
+	 * Set the list of Id's that is being populated.
+	 * <p>
+	 * This is a mutating list of id's and we are setting this so 
+	 * that other threads have access to the id's before the id query
+	 * has finished.
+	 * </p>
+	 */
+	public void setPartialIds(List<Object> ids);
+	
+	/**
+	 * Return the list of Id's that is currently being fetched
+	 * by a background thread.
+	 */
+	public List<Object> getPartialIds();
+
+	/**
+	 * Return a copy of the query.
+	 */
+	public SpiQuery<T> copy();
+	
 	/**
 	 * Set the query type (List, Set etc).
 	 */
@@ -39,6 +95,13 @@ public interface SpiQuery<T> extends Query<T> {
 	 */
 	public void setSelectId();
 		
+	/**
+	 * Remove any many joins from the select. Joins to Manys may still
+	 * be required to support the where or order by clauses and in this 
+	 * case typically distinct must be used.
+	 */
+	public void removeManyJoins();
+
 	/**
 	 * Return the TransactionContext.
 	 * <p>
@@ -337,4 +400,30 @@ public interface SpiQuery<T> extends Query<T> {
 	 * @param generatedSql
 	 */
 	public void setGeneratedSql(String generatedSql);
+	
+	/**
+	 * Return the hint for Statement.setFetchSize().
+	 */
+	public int getBufferFetchSizeHint();
+	
+	/**
+	 * Return true if this is a query executing in the background.
+	 */
+	public boolean isFutureFetch();
+
+	/**
+	 * Set to true to indicate the query is executing in a background
+	 * thread asynchronously.
+	 */
+	public void setFutureFetch(boolean futureFetch);
+
+	/**
+	 * Set the underlying cancelable query (with the PreparedStatement). 
+	 */
+	public void setCancelableQuery(CancelableQuery cancelableQuery);
+		
+	/**
+	 * Return true if this query has been cancelled.
+	 */
+	public boolean isCancelled();
 }

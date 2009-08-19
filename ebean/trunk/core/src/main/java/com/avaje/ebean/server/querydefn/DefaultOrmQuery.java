@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.persistence.PersistenceException;
 
@@ -11,21 +12,27 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.FutureIds;
+import com.avaje.ebean.FutureList;
+import com.avaje.ebean.PagingList;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.BindParams;
 import com.avaje.ebean.internal.SpiExpressionList;
-import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.deploy.TableJoin;
+import com.avaje.ebean.server.query.CancelableQuery;
 import com.avaje.ebean.util.DefaultExpressionList;
 
 /**
@@ -38,6 +45,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	private final Class<T> beanType;
 	
 	private transient final EbeanServer server;
+	
+	private transient BeanCollectionTouched beanCollectionTouched; 
 	
 	private transient final ExpressionFactory expressionFactory;
 	
@@ -57,6 +66,10 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	private transient AutoFetchManager autoFetchManager;
 
 	private transient BeanDescriptor<T> beanDescriptor;
+	
+	private boolean cancelled;
+	
+	private transient CancelableQuery cancelableQuery;
 	
 	/**
 	 * The name of the query.
@@ -88,6 +101,13 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private boolean distinct;
 
+	/**
+	 * Set to true if this is a future fetch using background threads.
+	 */
+	private boolean futureFetch;
+	
+	private List<Object> partialIds;
+	
 	/**
 	 * The rows after which the fetch continues in a bg thread.
 	 */
@@ -121,6 +141,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private DefaultExpressionList<T> havingExpressions;
 
+	private int bufferFetchSizeHint;
+	
 	private boolean usageProfiling = true;
 
 	private boolean useCache;
@@ -209,6 +231,15 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
     	}
 	}
 
+	/**
+	 * Remove any many joins from the select. Joins to Manys may still
+	 * be required to support the where or order by clauses and in this 
+	 * case typically distinct must be used.
+	 */
+	public void removeManyJoins() {
+		detail.removeManyJoins(beanDescriptor);
+	}
+	
 	/**
 	 * Set the select clause to select the Id property.
 	 */
@@ -544,13 +575,18 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return this;
 	}
 	
+	public List<Object> findIds() {
+		// a copy of this query is made in the server
+		// as the query needs to modified (so we modify
+		// the copy rather than this query instance)
+		return server.findIds(this, null);
+	}
 	
 	public int findRowCount(){
-		
-		// create a copy
-		DefaultOrmQuery<T> copy = copy();
-		
-		return server.findRowCount(copy, null);
+		// a copy of this query is made in the server
+		// as the query needs to modified (so we modify
+		// the copy rather than this query instance)
+		return server.findRowCount(this, null);
 	}
 
 	public List<T> findList() {
@@ -567,6 +603,22 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public T findUnique() {
 		return server.findUnique(this, null);
+	}
+	
+	public FutureIds<T> findFutureIds() {
+		return server.findFutureIds(this, null);
+	}
+
+	public FutureList<T> findFutureList() {
+		return server.findFutureList(this, null);
+	}
+
+	public Future<Integer> findFutureRowCount() {
+		return server.findFutureRowCount(this, null);
+	}
+	
+	public PagingList<T> findPagingList(int pageSize) {
+		return server.findPagingList(this, null, pageSize);
 	}
 
 	public DefaultOrmQuery<T> setParameter(int position, Object value) {
@@ -862,7 +914,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 * Return true if using background fetching or a queryListener.
 	 */
 	public boolean useOwnTransaction() {
-		if (backgroundFetchAfter > 0 || queryListener != null) {
+		if (futureFetch || backgroundFetchAfter > 0 || queryListener != null) {
 			return true;
 		}
 		return false;
@@ -876,4 +928,60 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.generatedSql = generatedSql;
 	}
 
+	public Query<T> setBufferFetchSizeHint(int bufferFetchSizeHint){
+		this.bufferFetchSizeHint = bufferFetchSizeHint;
+		return this;
+	}
+	
+	public int getBufferFetchSizeHint() {
+		return bufferFetchSizeHint;
+	}
+
+	public void setBeanCollectionTouched(BeanCollectionTouched notify) {
+		this.beanCollectionTouched = notify;
+	}
+
+	public BeanCollectionTouched getBeanCollectionTouched() {
+		return beanCollectionTouched;
+	}
+
+	public List<Object> getPartialIds() {
+		return partialIds;
+	}
+
+	public void setPartialIds(List<Object> partialIds) {
+		this.partialIds = partialIds;
+	}
+
+	public boolean isFutureFetch() {
+		return futureFetch;
+	}
+
+	public void setFutureFetch(boolean backgroundFetch) {
+		this.futureFetch = backgroundFetch;
+	}
+
+	public void setCancelableQuery(CancelableQuery cancelableQuery) {
+		synchronized (this) {
+			this.cancelableQuery = cancelableQuery;
+		}
+	}
+	
+	public void cancel() {
+		synchronized (this) {
+			cancelled = true;
+			if (cancelableQuery != null){
+				cancelableQuery.cancel();
+			}
+		}
+	}
+
+	public boolean isCancelled() {
+		synchronized (this) {
+			return cancelled;
+		}
+	}
+	
+	
+	
 }

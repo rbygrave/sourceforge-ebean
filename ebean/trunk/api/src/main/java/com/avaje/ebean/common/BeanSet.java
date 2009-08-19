@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
@@ -44,6 +45,8 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     
 	private transient final ObjectGraphNode profilePoint;
 	
+	private transient BeanCollectionTouched beanCollectionTouched;
+
 	/**
 	 * The owning bean (used for lazy fetch).
 	 */
@@ -89,14 +92,18 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     public BeanSet() {
         this(new LinkedHashSet<E>());
     }
-	
-    public BeanSet(LazyLoadEbeanServer internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+
+	public BeanSet(LazyLoadEbeanServer internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
 		this.internalEbean = internalEbean;
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
 		this.profilePoint = profilePoint;
 	}
 	
+    public void setBeanCollectionTouched(BeanCollectionTouched notify) {
+		this.beanCollectionTouched = notify;
+	}
+    
     Object readResolve() throws ObjectStreamException {
         if (SerializeControl.isVanillaCollections()){
             return set;
@@ -128,6 +135,11 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
 			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
 			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
         }
+		if (beanCollectionTouched != null){
+			// only call this once
+			beanCollectionTouched.notifyTouched(this);
+			beanCollectionTouched = null;
+		}
     }
 
     /**

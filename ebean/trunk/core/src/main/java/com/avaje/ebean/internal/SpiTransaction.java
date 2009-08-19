@@ -22,6 +22,7 @@ package com.avaje.ebean.internal;
 import java.sql.Connection;
 
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.server.persist.BatchControl;
 
 /**

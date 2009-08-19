@@ -36,7 +36,7 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
-import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
@@ -60,7 +60,7 @@ import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
  * the key object used in reading the flat resultSet back into Objects.
  * </p>
  */
-public class CQuery<T> implements DbReadContext {
+public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private static final Logger logger = Logger.getLogger(CQuery.class.getName());
 
@@ -212,6 +212,8 @@ public class CQuery<T> implements DbReadContext {
 	 */
 	private PreparedStatement pstmt;
 
+	private boolean cancelled;
+	
 	private String bindLog;
 
 	private final CQueryPlan queryPlan;
@@ -307,24 +309,50 @@ public class CQuery<T> implements DbReadContext {
 		return request;
 	}
 
-	public void prepareBindExecuteQuery() throws SQLException {
-
-		startNano = System.nanoTime();
-		
-		// prepare
-		SpiTransaction t = request.getTransaction();
-		Connection conn = t.getInternalConnection();
-		pstmt = conn.prepareStatement(sql);
-
-		if (query.getTimeout() > 0){
-			pstmt.setQueryTimeout(query.getTimeout());
+	public void cancel() {
+		synchronized (this) {
+			this.cancelled = true;
+			if (pstmt != null){
+				try {
+					pstmt.cancel();
+				} catch (SQLException e){
+					String msg = "Error cancelling query";
+					throw new PersistenceException(msg, e);
+				}
+			}
 		}
-		
-		// bind
-		bindLog = predicates.bind(pstmt);
+	}
+	
+	public boolean prepareBindExecuteQuery() throws SQLException {
 
-		// executeQuery
-		rset = pstmt.executeQuery();
+		synchronized (this) {
+			if (cancelled || query.isCancelled()){
+				// cancelled before we started
+				cancelled = true;
+				return false;
+			}
+		
+			startNano = System.nanoTime();
+			
+			// prepare
+			SpiTransaction t = request.getTransaction();
+			Connection conn = t.getInternalConnection();
+			pstmt = conn.prepareStatement(sql);
+	
+			if (query.getTimeout() > 0){
+				pstmt.setQueryTimeout(query.getTimeout());
+			}
+			if (query.getBufferFetchSizeHint() > 0){
+				pstmt.setFetchSize(query.getBufferFetchSizeHint());
+			}
+			
+			// bind
+			bindLog = predicates.bind(pstmt);
+	
+			// executeQuery
+			rset = pstmt.executeQuery();
+			return true;
+		}
 	}
 
 	/**
@@ -424,26 +452,32 @@ public class CQuery<T> implements DbReadContext {
 	 */
 	private boolean readRow() throws SQLException {
 
-		if (!rset.next()) {
-			return false;
+		synchronized (this) {
+			if (cancelled){
+				return false;
+			}
+		
+			if (!rset.next()) {
+				return false;
+			}
+			rowCount++;
+	
+	//		if (rowCount >= maxRowsLimit) {
+	//			hasHitMaxRows = true;
+	//		} else if (rowCount >= backgroundFetchAfter) {
+	//			hasHitBackgroundFetchAfter = true;
+	//		}
+			rsetIndex = 0;
+	
+			if (rowNumberIncluded) {
+				// row_number() column used for limit features
+				rset.getInt(++rsetIndex);
+			}
+	
+			rootNode.load(this, null);
+	
+			return true;
 		}
-		rowCount++;
-
-//		if (rowCount >= maxRowsLimit) {
-//			hasHitMaxRows = true;
-//		} else if (rowCount >= backgroundFetchAfter) {
-//			hasHitBackgroundFetchAfter = true;
-//		}
-		rsetIndex = 0;
-
-		if (rowNumberIncluded) {
-			// row_number() column used for limit features
-			rset.getInt(++rsetIndex);
-		}
-
-		rootNode.load(this, null);
-
-		return true;
 	}
 
 	int executionTimeMicros;

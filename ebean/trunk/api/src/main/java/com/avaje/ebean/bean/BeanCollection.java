@@ -40,6 +40,8 @@ import java.util.Set;
  */
 public interface BeanCollection<E> extends Serializable {
 	
+	public void setBeanCollectionTouched(BeanCollectionTouched notify);
+	
 	/**
 	 * Add the bean to the collection.
 	 * <p>

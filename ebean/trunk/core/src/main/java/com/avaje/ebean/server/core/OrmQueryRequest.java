@@ -27,15 +27,16 @@ import com.avaje.ebean.Query;
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiEbeanServer;
-import com.avaje.ebean.internal.PersistenceContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.query.CQueryPlan;
+import com.avaje.ebean.server.query.CancelableQuery;
 import com.avaje.ebean.server.query.SqlTreeAlias;
 
 /**
@@ -49,14 +50,12 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	private final OrmQueryEngine queryEngine;
 
 	private final SpiQuery<T> query;
-
+	
 	private final BeanFinder<T> finder;
 
 	private PersistenceContext persistenceContext;
 
 	private boolean createdTransaction;
-
-//	private ManyType manyType;
 
 	private Integer cacheKey;
 
@@ -69,7 +68,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	private boolean backgroundFetching;
 	
-	final SqlTreeAlias sqlTreeAlias;
+	private final SqlTreeAlias sqlTreeAlias;
 	
 	/**
 	 * Create the InternalQueryRequest.
@@ -82,6 +81,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		this.beanDescriptor = desc;
 		query.setBeanDescriptor(desc);
 		
+		//this.backgroundFetching = query.isBackgroundFetch();
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;
 		this.query = query;
@@ -117,18 +117,12 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return query.isSqlSelect();
 	}
 
+	/**
+	 * Return the PersistenceContext used for this request.
+	 */
 	public PersistenceContext getPersistenceContext() {
 		return persistenceContext;
 	}
-
-//	/**
-//	 * Rollback the local transaction if required.
-//	 */
-//	public void rollbackTransIfRequired(String stackTrace) {
-//		if (createdTransaction) {
-//			transaction.rollback();
-//		}
-//	}
 
 	/**
 	 * This will create a local (readOnly) transaction if no current transaction
@@ -194,7 +188,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public boolean isFindById() {
 		return query.getType() == Type.BEAN;
-//		return manyType == ManyType.FIND_ONE;
 	}
 
 	/**
@@ -209,23 +202,26 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public Object findId() {
 		query.setType(Query.Type.BEAN);
-//		manyType = ManyType.FIND_ONE;
 		return queryEngine.findId(this);
 	}
 
 	public int findRowCount() {
 		query.setType(Query.Type.ROWCOUNT);
-//		manyType = ManyType.FIND_ROWCOUNT;
 		return queryEngine.findRowCount(this);
+	}
+
+	public List<Object> findIds() {
+		query.setType(Query.Type.ID_LIST);
+		return queryEngine.findIds(this);
 	}
 
 	/**
 	 * Execute the query as findList.
 	 */
-	public List<?> findList() {
+	@SuppressWarnings("unchecked")
+	public List<T> findList() {
 		query.setType(Query.Type.LIST);
-//		manyType = ManyType.LIST;
-		return (List<?>) queryEngine.findMany(this);
+		return (List<T>) queryEngine.findMany(this);
 	}
 
 	/**
@@ -233,7 +229,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public Set<?> findSet() {
 		query.setType(Query.Type.SET);
-//		manyType = ManyType.SET;
 		return (Set<?>) queryEngine.findMany(this);
 	}
 
@@ -242,7 +237,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public Map<?, ?> findMap() {
 		query.setType(Query.Type.MAP);
-//		manyType = ManyType.MAP;
 		return (Map<?, ?>) queryEngine.findMany(this);
 	}
 	
@@ -250,14 +244,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	public Query.Type getQueryType() {
 		return query.getType();
 	}
-
-//	public QueryType getQueryType() {
-//		if (manyType != null){
-//			return manyType.getQueryType();
-//		} else {
-//			return null;
-//		}
-//	}
 
 	/**
 	 * Return a bean specific finder if one has been set.
@@ -307,14 +293,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	public void putQueryPlan(CQueryPlan queryPlan) {
 		beanDescriptor.putQueryPlan(queryPlanHash, queryPlan);
 	}
-
-//	/**
-//	 * Return the type (List, Set or Map) that this fetch returns.
-//	 */
-//	public ManyType getManyType() {
-//		return manyType;
-//	}
-
 	
 	@SuppressWarnings("unchecked")
 	public T getFromBeanCache() {
@@ -349,4 +327,13 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	public void putToQueryCache(BeanCollection<T> queryResult) {
 		beanDescriptor.queryCachePut(cacheKey, queryResult);
 	}
+
+	/**
+	 * Set an Query object that owns the PreparedStatement 
+	 * that can be cancelled.
+	 */
+	public void setCancelableQuery(CancelableQuery cancelableQuery) {
+		query.setCancelableQuery(cancelableQuery);
+	}
+	
 }

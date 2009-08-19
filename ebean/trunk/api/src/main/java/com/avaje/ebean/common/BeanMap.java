@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
@@ -43,6 +44,8 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 	 * fetch).
 	 */
 	private transient LazyLoadEbeanServer internalEbean;
+
+	private transient BeanCollectionTouched beanCollectionTouched;
 
 	/**
 	 * The owning bean (used for lazy fetch).
@@ -99,6 +102,10 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		this.profilePoint = profilePoint;
 	}
 
+    public void setBeanCollectionTouched(BeanCollectionTouched notify) {
+		this.beanCollectionTouched = notify;
+	}
+    
 	Object readResolve() throws ObjectStreamException {
 		if (SerializeControl.isVanillaCollections()) {
 			return map;
@@ -130,6 +137,11 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 		if (map == null && internalEbean != null) {
 			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
 			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
+		}
+		if (beanCollectionTouched != null){
+			// only call this once
+			beanCollectionTouched.notifyTouched(this);
+			beanCollectionTouched = null;
 		}
 	}
 
