@@ -45,20 +45,30 @@ public class TestPaging extends TestCase {
 		
 		loadData();
 		
-		EbeanServer server = Ebean.getServer(null);
-		
-		Query<TOne> query = server.find(TOne.class)
-			.where().gt("name", "2")
-			.query();
-		
+
 		int pageSize = 10;
 		
-		PagingList<TOne> pagingList = query.findPagingList(pageSize);
+		PagingList<TOne> pagingList = 
+			Ebean.find(TOne.class)
+				.where().gt("name", "2")
+				.findPagingList(10);
 		
+				
 		// get the row count in the background...
+		// ... otherwise it is fetched on demand
+		// ... when getRowCount() or getPageCount() 
+		// ... is called
 		pagingList.getFutureRowCount();
 		
+		// use fetch ahead... fetching the next page
+		// in a background thread when the data in
+		// the current page is touched
+		pagingList.setFetchAhead(1);
+		
+		// get the first page
 		Page<TOne> page = pagingList.getPage(0);
+		
+		// get the beans from the page as a list
 		List<TOne> list = page.getList();
 		
 		Assert.assertTrue("page size ",list.size() == pageSize);

@@ -78,6 +78,16 @@ public interface ExpressionList<T> extends Serializable {
 	public List<T> findList();
 
 	/**
+	 * Return a PagingList for this query using the page size.
+	 */
+	public PagingList<T> findPagingList(int pageSize);
+	
+	/**
+	 * Execute find list query in a background thread.
+	 */
+	public FutureList<T> findFutureList();
+	
+	/**
 	 * Execute the query returning a set.
 	 * @see Query#findSet()
 	 */
