@@ -9,7 +9,9 @@ import java.util.Set;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.FutureList;
 import com.avaje.ebean.Junction;
+import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.event.BeanQueryRequest;
@@ -105,7 +107,15 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 	public Query<T> setOrderBy(String orderBy) {
 		return query.orderBy(orderBy);
 	}
-	
+		
+	public FutureList<T> findFutureList() {
+		return query.findFutureList();
+	}
+
+	public PagingList<T> findPagingList(int pageSize) {
+		return query.findPagingList(pageSize);
+	}
+
 	public List<T> findList() {
 		return query.findList();
 	}
