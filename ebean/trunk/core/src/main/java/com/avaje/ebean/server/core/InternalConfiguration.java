@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2009 Authors
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
 package com.avaje.ebean.server.core;
 
 import java.util.logging.Logger;
@@ -6,6 +25,7 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.internal.BackgroundExecutor;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
@@ -33,6 +53,12 @@ import com.avaje.ebean.server.transaction.TransactionScopeManager;
 import com.avaje.ebean.server.type.DefaultTypeManager;
 import com.avaje.ebean.server.type.TypeManager;
 
+/**
+ * Used to extend the ServerConfig with additional objects used
+ * to configure and construct an EbeanServer.
+ * 
+ * @author rbygrave
+ */
 public class InternalConfiguration {
 
 	private static final Logger logger = Logger.getLogger(InternalConfiguration.class.getName());
@@ -77,9 +103,13 @@ public class InternalConfiguration {
 	
 	private final ExpressionFactory expressionFactory;
 	
-	public InternalConfiguration(ClusterManager clusterManager, ServerCacheManager cacheManager, ServerConfig serverConfig, BootupClasses bootupClasses) {
+	private final BackgroundExecutor backgroundExecutor;
+	
+	public InternalConfiguration(ClusterManager clusterManager, ServerCacheManager cacheManager, 
+			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, BootupClasses bootupClasses) {
 		
 		this.clusterManager = clusterManager;
+		this.backgroundExecutor = backgroundExecutor;
 		this.cacheManager = cacheManager;
 		this.serverConfig = serverConfig;
 		this.bootupClasses = bootupClasses;
@@ -229,7 +259,8 @@ public class InternalConfiguration {
 		return debugLazyLoad;
 	}
 
-	
-	
+	public BackgroundExecutor getBackgroundExecutor() {
+		return backgroundExecutor;
+	}
 
 }

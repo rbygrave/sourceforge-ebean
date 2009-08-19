@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.persistence.OptimisticLockException;
 
@@ -408,6 +409,11 @@ public interface EbeanServer {
 	public <T> int findRowCount(Query<T> query, Transaction transaction);
 
 	/**
+	 * Return the Id values of the query as a List.
+	 */
+	public <T> List<Object> findIds(Query<T> query, Transaction t);
+
+	/**
 	 * Execute a query returning a list of beans.
 	 * <p>
 	 * Generally you are able to use {@link Query#findList()} rather than
@@ -425,6 +431,72 @@ public interface EbeanServer {
 	 * @see Query#findList()
 	 */
 	public <T> List<T> findList(Query<T> query, Transaction transaction);
+
+	/**
+	 * Execute find row count query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @param query
+	 *            the query to execute the row count on
+	 * @param t
+	 *            the transaction (can be null).
+	 * @return a Future object for the row count query
+	 */
+	public <T> Future<Integer> findFutureRowCount(Query<T> query, Transaction t);
+
+	/**
+	 * Execute find Id's query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @param query
+	 *            the query to execute the fetch Id's on
+	 * @param t
+	 *            the transaction (can be null).
+	 * @return a Future object for the list of Id's
+	 */
+	public <T> FutureIds<T> findFutureIds(Query<T> query, Transaction t);
+
+	/**
+	 * Execute find list query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @param query
+	 *            the query to execute in the background
+	 * @param t
+	 *            the transaction (can be null).
+	 * @return a Future object for the list result of the query
+	 */
+	public <T> FutureList<T> findFutureList(Query<T> query, Transaction t);
+	
+	/**
+	 * Execute find list SQL query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @param query
+	 *            the query to execute in the background
+	 * @param t
+	 *            the transaction (can be null).
+	 * @return a Future object for the list result of the query
+	 */
+	public SqlFutureList findFutureList(SqlQuery query, Transaction t);
+
+	public <T> PagingList<T> findPagingList(Query<T> query, Transaction t, int pageSize);
 
 	/**
 	 * Execute the query returning a set of entity beans.

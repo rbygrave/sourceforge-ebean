@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2009  Robin Bygrave
  * 
  * This file is part of Ebean.
  * 
@@ -43,39 +43,39 @@ public class CQueryRowCount {
 	/**
 	 * The overall find request wrapper object.
 	 */
-	final OrmQueryRequest<?> request;
+	private final OrmQueryRequest<?> request;
 
-	final BeanDescriptor<?> desc;
+	private final BeanDescriptor<?> desc;
 
-	final SpiQuery<?> query;
+	private final SpiQuery<?> query;
 
 	/**
 	 * Where clause predicates.
 	 */
-	final CQueryPredicates predicates;
+	private final CQueryPredicates predicates;
 
 	/**
 	 * The final sql that is generated.
 	 */
-	final String sql;
+	private final String sql;
 
 	/**
 	 * The resultSet that is read and converted to objects.
 	 */
-	ResultSet rset;
+	private ResultSet rset;
 
 	/**
 	 * The statement used to create the resultSet.
 	 */
-	PreparedStatement pstmt;
+	private PreparedStatement pstmt;
 
-	String bindLog;
+	private String bindLog;
 
-	long startNano;
+	private long startNano;
 	
-	int executionTimeMicros;
+	private int executionTimeMicros;
 
-	int rowCount;
+	private int rowCount;
 	
 	/**
 	 * Create the Sql select based on the request.

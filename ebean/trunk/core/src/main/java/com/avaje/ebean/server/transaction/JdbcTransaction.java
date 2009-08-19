@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
-import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEvent;
 import com.avaje.ebean.server.persist.BatchControl;

@@ -97,6 +97,36 @@ public class CQueryBuilder implements Constants {
 	/**
 	 * Build the row count query.
 	 */
+	public <T> CQueryFetchIds buildFetchIdsQuery(OrmQueryRequest<T> request) {
+
+    	SpiQuery<T> query = request.getQuery();
+    	
+    	boolean hasMany = query.isManyInWhere();
+    	
+    	query.setSelectId();
+    	    	
+    	//String sqlSelect = "select count(*)";
+    	if (hasMany){
+    		// need to count distinct id's ...
+        	query.setDistinct(true);
+    		//sqlSelect = null;
+    	}
+    	
+		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
+		predicates.prepare(true, true);
+
+		SqlTree sqlTree = createSqlTree(request, predicates);
+
+		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
+
+		String sql = s.getSql();
+		
+		return new CQueryFetchIds(request, predicates, sql);
+	}
+	
+	/**
+	 * Build the row count query.
+	 */
 	public <T> CQueryRowCount buildRowCountQuery(OrmQueryRequest<T> request) {
 
     	SpiQuery<T> query = request.getQuery();
@@ -139,6 +169,17 @@ public class CQueryBuilder implements Constants {
 
 		if (request.isSqlSelect()){
 			return rawSqlBuilder.build(request);
+		}
+		
+		SpiQuery<T> query = request.getQuery();
+		if (query.hasMaxRowsOrFirstRow()) {
+		//if (query.isRemoveManyJoins()){
+			// ensure there are no joins to Many's so that limit offset work etc
+			query.removeManyJoins();
+			
+			if (query.isManyInWhere()){
+				query.setDistinct(true);
+			}
 		}
 		
 		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
@@ -207,7 +248,7 @@ public class CQueryBuilder implements Constants {
 			
 		} else {
 
-			useSqlLimiter = (query.getMaxRows() > 0 || query.getFirstRow() > 0 && manyProp != null);
+			useSqlLimiter = (query.hasMaxRowsOrFirstRow() && manyProp == null);
 	
 			if (!useSqlLimiter){
 				sb.append("select ");

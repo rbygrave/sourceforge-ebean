@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.bean.PersistenceContext;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.

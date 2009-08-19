@@ -28,6 +28,7 @@ import java.util.ListIterator;
 import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
@@ -43,6 +44,8 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 	 * The EbeanServer this is associated with. (used for lazy fetch).
 	 */
 	private transient LazyLoadEbeanServer internalEbean;
+	
+	private transient BeanCollectionTouched beanCollectionTouched;
 	
 
 	private final transient ObjectGraphNode profilePoint;
@@ -102,6 +105,11 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 		this.profilePoint = profilePoint;
 	}
 
+	public void setBeanCollectionTouched(BeanCollectionTouched notify){
+		this.beanCollectionTouched = notify;
+	}
+	
+	
 	Object readResolve() throws ObjectStreamException {
 		if (SerializeControl.isVanillaCollections()) {
 			return list;
@@ -125,6 +133,11 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 		if (list == null && internalEbean != null){
 			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
 			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
+		}
+		if (beanCollectionTouched != null){
+			// only call this once
+			beanCollectionTouched.notifyTouched(this);
+			beanCollectionTouched = null;
 		}
 	}
 

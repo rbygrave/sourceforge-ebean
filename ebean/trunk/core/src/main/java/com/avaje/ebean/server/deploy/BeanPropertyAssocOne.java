@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
@@ -33,22 +33,22 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
  */
 public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
-	final boolean oneToOne;
+	private final boolean oneToOne;
 
-	final boolean oneToOneExported;
+	private final boolean oneToOneExported;
 
-	final boolean embeddedVersion;
+	private final boolean embeddedVersion;
 
-	final boolean importedPrimaryKey;
+	private final boolean importedPrimaryKey;
 	
-	final LocalHelp localHelp;
+	private final LocalHelp localHelp;
 
-	final BeanProperty[] embeddedProps;
+	private final BeanProperty[] embeddedProps;
 	
 	/**
 	 * The information for Imported foreign Keys.
 	 */
-	ImportedId importedId;
+	private ImportedId importedId;
 
 
 	/**
@@ -333,7 +333,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				}
 				
 				setValue(bean, ref);
-				ctx.getPersistenceContext().set(id, ref);
+				ctx.getPersistenceContext().put(id, ref);
 				return ref;
 			}
 		}
@@ -392,7 +392,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				Object parent = null;
 				Object ref = targetDescriptor.createReference(id, parent, null);
 				setValue(bean, ref);
-				persistCtx.set(id, ref);
+				persistCtx.put(id, ref);
 				return ref;
 			}
 		}

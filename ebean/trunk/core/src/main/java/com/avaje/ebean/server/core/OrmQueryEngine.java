@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.core;
 
+import java.util.List;
+
 import com.avaje.ebean.bean.BeanCollection;
 
 /**
@@ -40,5 +42,11 @@ public interface OrmQueryEngine {
      * Execute the row count query.
      */
     public <T> int findRowCount(OrmQueryRequest<T> request);
+    
+    /**
+     * Execute the find id's query.
+     */
+    public <T> List<Object> findIds(OrmQueryRequest<T> request);
+
 
 }

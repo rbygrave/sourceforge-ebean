@@ -25,7 +25,7 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
@@ -180,29 +180,31 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				// bean must be null...
 				localBean = null;
 			} else {
-				// check the TransactionContext to see if the bean already exists
-				PersistenceContext persistCtx = ctx.getPersistenceContext();
+				// check the PersistenceContext to see if the bean already exists
+				PersistenceContext persistenceContext = ctx.getPersistenceContext();
 
-//				contextBean = classContext.getOrSet(id, localBean);
-//				if (contextBean != null){
+				contextBean = persistenceContext.putIfAbsent(id, localBean);
+				if (contextBean != null){
+					// bean already exists in persistenceContext
+					localBean = null;					
+				} else {
+					// bean just added to the persistenceContext
+					contextBean = localBean;
+					localBean._ebean_getIntercept().setPersistenceContext(persistenceContext);
+				}
+				
+//				contextBean = persistCtx.get(localBean.getClass(), id);
+//				if (contextBean != null && !((EntityBean)contextBean)._ebean_getIntercept().isReference()) {
 //					// bean already exists in transaction context
 //					localBean = null;
+//
 //				} else {
+//					// load the bean into the TransactionContext
+//					// it may be accessed by other beans in the same jdbc
+//					// resultSet row (detail beans in master/detail query).
+//					persistCtx.set(id, localBean);
 //					contextBean = localBean;
 //				}
-				
-				contextBean = persistCtx.get(localBean.getClass(), id);
-				if (contextBean != null && !((EntityBean)contextBean)._ebean_getIntercept().isReference()) {
-					// bean already exists in transaction context
-					localBean = null;
-
-				} else {
-					// load the bean into the TransactionContext
-					// it may be accessed by other beans in the same jdbc
-					// resultSet row (detail beans in master/detail query).
-					persistCtx.set(id, localBean);
-					contextBean = localBean;
-				}
 			}
 		} 
 

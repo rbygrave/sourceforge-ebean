@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,6 +38,7 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.internal.BackgroundExecutor;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
@@ -65,6 +67,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 
 	private final BootupClassPathSearch bootupClassSearch;	
 
+	private final AtomicInteger serverId = new AtomicInteger(1);
 	
 	public DefaultServerFactory() {
 
@@ -94,6 +97,16 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		return createServer(config);
 	}
 	
+	private BackgroundExecutor createBackgroundExecutor(ServerConfig serverConfig, int uniqueServerId) {
+		
+		String bgThreadPoolPrefix = "ebean-"+serverConfig.getName()+uniqueServerId+"-";
+		
+		int coreSize = GlobalProperties.getInt("backgroundExecutor.poolsize", 20);
+		int idleSecs = GlobalProperties.getInt("backgroundExecutor.idlesecs", 60*5);
+		int shutdownSecs = GlobalProperties.getInt("backgroundExecutor.shutdownSecs", 30);
+		
+		return new DefaultBackgroundExecutor(coreSize, idleSecs, shutdownSecs, bgThreadPoolPrefix);
+	}
 	
 	/**
 	 * Create the implementation from the configuration.
@@ -116,7 +129,10 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 
 		ServerCacheManager cacheManager  = getCacheManager(serverConfig);
 
-		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, serverConfig, bootupClasses);
+		int uniqueServerId = serverId.incrementAndGet();
+		BackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
+			
+		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, bgExecutor, serverConfig, bootupClasses);
 		
 		DefaultServer server = new DefaultServer(c, cacheManager);
 		
@@ -130,7 +146,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			mbeanServer = (MBeanServer)list.get(0);
 		}
 
-		server.registerMBeans(mbeanServer);
+		server.registerMBeans(mbeanServer, uniqueServerId);
 		
 		executeDDL(server);
 		

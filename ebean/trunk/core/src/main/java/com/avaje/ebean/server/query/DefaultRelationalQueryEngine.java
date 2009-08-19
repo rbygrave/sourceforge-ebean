@@ -88,27 +88,40 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
 		try {
 
-			pstmt = conn.prepareStatement(sql);
-
-			if (query.getTimeout() > 0){
-				pstmt.setQueryTimeout(query.getTimeout());
+			String bindLog = "";
+			String[] propNames = null;
+			
+			synchronized (query) {
+				if (query.isCancelled()){
+					logger.finest("Query already cancelled");
+					return null;
+				}
+				
+				// synchronise for query.cancel() support		
+				pstmt = conn.prepareStatement(sql);
+	
+				if (query.getTimeout() > 0){
+					pstmt.setQueryTimeout(query.getTimeout());
+				}
+				if (query.getBufferFetchSizeHint() > 0){
+					pstmt.setFetchSize(query.getBufferFetchSizeHint());
+				}
+				
+				if (!bindParams.isEmpty()) {
+					bindLog = binder.bind(bindParams, 0, pstmt);
+				}
+	
+				if (logControl.isLogSqlQuery(MAdminLogging.SQL)) {
+					String sOut = sql.replace(Constants.NEW_LINE, ' ');
+					sOut = sOut.replace(Constants.CARRIAGE_RETURN, ' ');
+					t.log(sOut);
+				}
+	
+				rset = pstmt.executeQuery();
+	
+				propNames = getPropertyNames(rset);
 			}
 			
-			String bindLog = "";
-			if (!bindParams.isEmpty()) {
-				bindLog = binder.bind(bindParams, 0, pstmt);
-			}
-
-			if (logControl.isLogSqlQuery(MAdminLogging.SQL)) {
-				String sOut = sql.replace(Constants.NEW_LINE, ' ');
-				sOut = sOut.replace(Constants.CARRIAGE_RETURN, ' ');
-				t.log(sOut);
-			}
-
-			rset = pstmt.executeQuery();
-
-			String[] propNames = getPropertyNames(rset);
-
 			// calculate the initialCapacity of the Map to reduce
 			// rehashing for queries with 12+ columns
 			float initCap = (propNames.length) / 0.7f;
@@ -129,27 +142,37 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 			BeanCollectionWrapper wrapper = new BeanCollectionWrapper(request);
 			boolean isMap = wrapper.isMap();
 			String mapKey = query.getMapKey();
-
+			
+			SqlRow bean = null;
+			
 			while (rset.next()) {
-				SqlRow bean = readRow(request, rset, propNames, estimateCapacity);
-				if (listener != null) {
-					listener.process(bean);
-
-				} else {
-					if (isMap) {
-						Object keyValue = bean.get(mapKey);
-						wrapper.addToMap(bean, keyValue);
-					} else {
-						wrapper.addToCollection(bean);
+				synchronized (query) {					
+					// synchronise for query.cancel() support		
+					if (!query.isCancelled()){
+						bean = readRow(request, rset, propNames, estimateCapacity);
 					}
 				}
-
-				loadRowCount++;
-
-				if (loadRowCount == maxRows) {
-					// break, as we have hit the max rows to fetch...
-					hasHitMaxRows = true;
-					break;
+				if (bean != null){
+					// bean can be null if query cancelled
+					if (listener != null) {
+						listener.process(bean);
+	
+					} else {
+						if (isMap) {
+							Object keyValue = bean.get(mapKey);
+							wrapper.addToMap(bean, keyValue);
+						} else {
+							wrapper.addToCollection(bean);
+						}
+					}
+	
+					loadRowCount++;
+	
+					if (loadRowCount == maxRows) {
+						// break, as we have hit the max rows to fetch...
+						hasHitMaxRows = true;
+						break;
+					}
 				}
 			}
 
@@ -175,6 +198,11 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 
 				t.log(msg);
 			}
+			
+			if (query.isCancelled()){
+				logger.fine("Query was cancelled during execution rows:"+loadRowCount);
+			}
+			
 			return beanColl;
 
 		} catch (Exception e) {
@@ -197,9 +225,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				} catch (SQLException e) {
 					logger.log(Level.SEVERE, null, e);
 				}
-			} else {
-				// dp("left closing resources up to Background process...");
-			}
+			} 
 		}
 	}
 

@@ -39,6 +39,14 @@ import java.util.Set;
 public interface SqlQuery extends Serializable {
 
 	/**
+	 * Cancel the query if support by the underlying database and driver.
+	 * <p>
+	 * This must be called from a different thread to the one executing the query.
+	 * </p>
+	 */
+	public void cancel();
+	
+	/**
 	 * Execute the query returning a list.
 	 */
 	public List<SqlRow> findList();
@@ -61,6 +69,18 @@ public interface SqlQuery extends Serializable {
 	 * </p>
 	 */
 	public SqlRow findUnique();
+
+	/**
+	 * Execute find list SQL query in a background thread.
+	 * <p>
+	 * This returns a Future object which can be used to cancel, check the
+	 * execution status (isDone etc) and get the value (with or without a
+	 * timeout).
+	 * </p>
+	 * 
+	 * @return a Future object for the list result of the query
+	 */
+	public SqlFutureList findFutureList();
 
 	/**
 	 * The same as bind for named parameters.
@@ -116,5 +136,14 @@ public interface SqlQuery extends Serializable {
 	 * @param secs the query timeout limit in seconds. Zero means there is no limit.
 	 */
 	public SqlQuery setTimeout(int secs);
+
+	/**
+	 * A hint which for JDBC translates to the Statement.fetchSize().
+	 * <p>
+	 * Gives the JDBC driver a hint as to the number of rows that should be fetched from the 
+	 * database when more rows are needed for ResultSet.
+	 * </p>
+	 */
+	public SqlQuery setBufferFetchSizeHint(int bufferFetchSizeHint);
 
 }

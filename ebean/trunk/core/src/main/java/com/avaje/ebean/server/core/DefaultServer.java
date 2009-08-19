@@ -19,11 +19,15 @@
  */
 package com.avaje.ebean.server.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,8 +42,12 @@ import com.avaje.ebean.BeanState;
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Filter;
+import com.avaje.ebean.FutureIds;
+import com.avaje.ebean.FutureList;
 import com.avaje.ebean.InvalidValue;
+import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.SqlFutureList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.SqlUpdate;
@@ -55,12 +63,14 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.event.BeanPersistController;
-import com.avaje.ebean.internal.SpiEbeanServer;
-import com.avaje.ebean.internal.PersistenceContext;
-import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.BackgroundExecutor;
 import com.avaje.ebean.internal.ScopeTrans;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.SpiSqlQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
@@ -80,6 +90,14 @@ import com.avaje.ebean.server.jmx.MAdminAutofetch;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
+import com.avaje.ebean.server.query.CallableQueryIds;
+import com.avaje.ebean.server.query.CallableQueryList;
+import com.avaje.ebean.server.query.CallableQueryRowCount;
+import com.avaje.ebean.server.query.CallableSqlQueryList;
+import com.avaje.ebean.server.query.LimitOffsetPagingQuery;
+import com.avaje.ebean.server.query.QueryFutureIds;
+import com.avaje.ebean.server.query.QueryFutureList;
+import com.avaje.ebean.server.query.SqlQueryFutureList;
 import com.avaje.ebean.server.querydefn.DefaultOrmQuery;
 import com.avaje.ebean.server.querydefn.DefaultOrmUpdate;
 import com.avaje.ebean.server.querydefn.DefaultRelationalQuery;
@@ -142,12 +160,15 @@ public final class DefaultServer implements SpiEbeanServer {
 	
 	private final ExpressionFactory expressionFactory;
 	
+	private final BackgroundExecutor backgroundExecutor;
+	
 	/**
 	 * Create the DefaultServer.
 	 */
 	public DefaultServer(InternalConfiguration config, ServerCacheManager serverCache) {
 		
 		this.serverCache = serverCache;
+		this.backgroundExecutor = config.getBackgroundExecutor();
 		this.serverName = config.getServerConfig().getName();
 		this.cqueryEngine = config.getCQueryEngine();
 		this.expressionFactory = config.getExpressionFactory();
@@ -172,7 +193,10 @@ public final class DefaultServer implements SpiEbeanServer {
 		ShutdownManager.register(new Shutdown());
 	}
 
-	
+	public BackgroundExecutor getBackgroundExecutor() {
+		return backgroundExecutor;
+	}
+
 	public ExpressionFactory getExpressionFactory() {
 		return expressionFactory;
 	}
@@ -195,9 +219,9 @@ public final class DefaultServer implements SpiEbeanServer {
 		return autoFetchManager;
 	}
 
-	public void registerMBeans(MBeanServer mbeanServer) {
+	public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {
 		
-		String mbeanName = "Ebean:server=" + serverName;
+		String mbeanName = "Ebean:server=" + serverName + uniqueServerId;
 
 		try {
 			mbeanServer.registerMBean(adminLogging, new ObjectName(mbeanName + ",function=Logging"));
@@ -312,8 +336,16 @@ public final class DefaultServer implements SpiEbeanServer {
 			Class<?> manyTypeCls = many.getTargetType();
 			SpiQuery<?> query = (SpiQuery<?>) createQuery(manyTypeCls);
 
-			// add parentBean to context for bidirectional relationships
-			query.contextAdd(parent);
+			PersistenceContext persistenceContext = parent._ebean_getIntercept().getPersistenceContext();
+			if (persistenceContext == null){
+				persistenceContext = new DefaultPersistenceContext();
+				Object parentId = desc.getId(parent);
+				persistenceContext.put(parentId, parent);
+			}
+			query.setPersistenceContext(persistenceContext);
+			
+//			// add parentBean to context for bidirectional relationships
+//			query.contextAdd(parent);
 			if (profilePoint != null) {
 				// so we can hook back to the root query
 				query.setParentNode(profilePoint);
@@ -363,26 +395,46 @@ public final class DefaultServer implements SpiEbeanServer {
 		// and put the data into the original bean
 		query.setUsageProfiling(false);
 		
+		PersistenceContext persistenceContext = null;
 		if (!isLazyLoad){
-			// for refresh we want to run in our own
-			// context (not an existing transaction scoped one)
-			query.setPersistenceContext(new DefaultPersistenceContext());
+			// for refresh we want to run in a new persistenceContext
+			persistenceContext = new DefaultPersistenceContext();
+			
+		} else {
+			persistenceContext = eb._ebean_getIntercept().getPersistenceContext();
+			if (persistenceContext == null){
+				// a reference with no existing persistenceContext
+				persistenceContext = new DefaultPersistenceContext();
+				eb._ebean_getIntercept().setPersistenceContext(persistenceContext);
+			} else {
+				// remove the bean from the persistence context temporarily 
+				// so that we load a fresh bean from the database
+				persistenceContext.clear(eb.getClass(), id);
+			}
 		}
 
 		if (parentBean != null) {
-			query.contextAdd(eb);
+			// Special case for OneToOne 
+			BeanDescriptor<?> parentDesc = getBeanDescriptor(parentBean.getClass());
+			Object parentId = parentDesc.getId(parentBean);
+			persistenceContext.put(parentId, parentBean);
 		}
+		
+		query.setPersistenceContext(persistenceContext);
 
 		if (collector != null) {
 			query.setParentNode(collector.getNode());
 		}
 
-		query.setId(id);
-		Object dbBean = query.findUnique();
+		Object dbBean = query.setId(id).findUnique();
 		if (dbBean == null) {
 			String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
 			throw new PersistenceException(msg);
 		}
+
+		// put the refreshed entity into the persistenceContext
+		// after the dbBean (fresh one) has been loaded
+		persistenceContext.put(id, eb);
 
 		// merge the existing and new dbBean bean
 		refreshHelp.refresh(bean, dbBean, desc, ebi, id, isLazyLoad);
@@ -541,7 +593,7 @@ public final class DefaultServer implements SpiEbeanServer {
 			}
 
 			if (ctx != null) {
-				ctx.set(id, ref);
+				ctx.put(id, ref);
 			}
 		}
 		return (T) ref;
@@ -1028,10 +1080,11 @@ public final class DefaultServer implements SpiEbeanServer {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> int findRowCount(Query<T> query, Transaction t){
 		
-		OrmQueryRequest request = createQueryRequest(query, t);
+		SpiQuery<T> copy = ((SpiQuery<T>)query).copy();
+		
+		OrmQueryRequest<T> request = createQueryRequest(copy, t);
 		try {
 			request.initTransIfRequired();
 			int rowCount = request.findRowCount();
@@ -1045,13 +1098,122 @@ public final class DefaultServer implements SpiEbeanServer {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> List<T> findList(Query<T> query, Transaction t) {
+	public <T> List<Object> findIds(Query<T> query, Transaction t){
+		
+		SpiQuery<T> copy = ((SpiQuery<T>)query).copy();
 
-		OrmQueryRequest request = createQueryRequest(query, t);
+		return findIdsWithCopy(copy, t);
+	}
+	
+	public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t){
+			
+		OrmQueryRequest<T> request = createQueryRequest(query, t);
 		try {
 			request.initTransIfRequired();
-			List<T> list = (List<T>) request.findList();
+			List<Object> list = request.findIds();
+			request.endTransIfRequired();
+
+			return list;
+			
+		} catch (RuntimeException ex) {
+			request.rollbackTransIfRequired();
+			throw ex;
+		}
+	}
+
+	public <T> Future<Integer> findFutureRowCount(Query<T> query, Transaction t) {
+
+		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
+		spiQuery.setFutureFetch(true);
+				
+		Transaction newTxn = createTransaction();
+		CallableQueryRowCount<T> call = new CallableQueryRowCount<T>(this, query, newTxn);
+		
+		FutureTask<Integer> futureTask = new FutureTask<Integer>(call);
+		
+		backgroundExecutor.execute(futureTask);
+		
+		return futureTask;
+	}
+	
+	public <T> FutureIds<T> findFutureIds(Query<T> query, Transaction t) {
+
+		SpiQuery<T> copy = ((SpiQuery<T>)query).copy();
+		copy.setFutureFetch(true);
+		
+		// this is the list we will put the id's in ... create it now so
+		// it is available for other threads to read while the id query
+		// is still executing (we don't need to wait for it to finish)
+		List<Object> idList = Collections.synchronizedList(new ArrayList<Object>());
+		copy.setPartialIds(idList);
+		
+		
+		Transaction newTxn = createTransaction();
+		
+		CallableQueryIds<T> call = new CallableQueryIds<T>(this, copy, newTxn);
+		FutureTask<List<Object>> futureTask = new FutureTask<List<Object>>(call);
+		
+		QueryFutureIds<T> queryFuture = new QueryFutureIds<T>(copy, futureTask);
+		
+		backgroundExecutor.execute(futureTask);
+		
+		return queryFuture;
+	}
+	
+	public <T> FutureList<T> findFutureList(Query<T> query, Transaction t) {
+
+		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
+		spiQuery.setFutureFetch(true);
+		
+		if (spiQuery.getPersistenceContext() == null){
+			if (t != null){
+				spiQuery.setPersistenceContext(((SpiTransaction)t).getPersistenceContext());
+			} else {
+				SpiTransaction st = getCurrentServerTransaction();
+				if (st != null){
+					spiQuery.setPersistenceContext(st.getPersistenceContext());					
+				}
+			}
+		}
+		
+		Transaction newTxn = createTransaction();
+		CallableQueryList<T> call = new CallableQueryList<T>(this, query, newTxn);
+		
+		FutureTask<List<T>> futureTask = new FutureTask<List<T>>(call);
+		
+		backgroundExecutor.execute(futureTask);
+		
+		return new QueryFutureList<T>(query, futureTask);
+	}
+
+	public <T> PagingList<T> findPagingList(Query<T> query, Transaction t, int pageSize) {
+
+		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
+		
+		// we want to use a single PersistenceContext to be used
+		// for all the paging queries so we make sure there is a 
+		// PersistenceContext on the query
+		PersistenceContext pc = spiQuery.getPersistenceContext();
+		if (pc == null){
+			SpiTransaction currentTransaction = getCurrentServerTransaction();
+			if (currentTransaction != null){
+				pc = currentTransaction.getPersistenceContext();
+			}
+			if (pc == null){
+				pc = new DefaultPersistenceContext();
+			}
+			spiQuery.setPersistenceContext(pc);
+		}
+		
+		return new LimitOffsetPagingQuery<T>(this, spiQuery, pageSize);
+	}
+	
+	public <T> List<T> findList(Query<T> query, Transaction t) {
+
+		OrmQueryRequest<T> request = createQueryRequest(query, t);
+		try {
+			request.initTransIfRequired();
+			List<T> list = request.findList();
 			request.endTransIfRequired();
 
 			return list;
@@ -1080,6 +1242,21 @@ public final class DefaultServer implements SpiEbeanServer {
 		}
 	}
 
+	public SqlFutureList findFutureList(SqlQuery query, Transaction t) {
+
+		SpiSqlQuery spiQuery = (SpiSqlQuery)query;
+		spiQuery.setFutureFetch(true);
+				
+		Transaction newTxn = createTransaction();
+		CallableSqlQueryList call = new CallableSqlQueryList(this, query, newTxn);
+		
+		FutureTask<List<SqlRow>> futureTask = new FutureTask<List<SqlRow>>(call);
+		
+		backgroundExecutor.execute(futureTask);
+		
+		return new SqlQueryFutureList(query, futureTask);
+	}
+	
 	public List<SqlRow> findList(SqlQuery query, Transaction t) {
 
 		RelationalQueryRequest request = new RelationalQueryRequest(this, relationalQueryEngine, query, t);

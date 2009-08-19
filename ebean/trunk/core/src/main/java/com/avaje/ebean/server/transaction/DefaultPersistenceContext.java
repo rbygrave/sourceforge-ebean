@@ -19,9 +19,13 @@
  */
 package com.avaje.ebean.server.transaction;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.WeakHashMap;
 
-import com.avaje.ebean.internal.PersistenceContext;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.internal.Monitor;
 import com.avaje.ebean.server.subclass.SubClassUtil;
 
 /**
@@ -46,8 +50,10 @@ public final class DefaultPersistenceContext implements PersistenceContext {
     /**
      * Map used hold caches. One cache per bean type.
      */
-    final HashMap<String,ClassContext> typeCache = new HashMap<String,ClassContext>();
+    private final HashMap<String,ClassContext> typeCache = new HashMap<String,ClassContext>();
 
+    private final Monitor monitor = new Monitor();
+    
     /**
      * Create a new PersistanceContext.
      */
@@ -64,55 +70,74 @@ public final class DefaultPersistenceContext implements PersistenceContext {
      * already loaded into the PersistanceContext.
      * </p>
      */
-    public boolean add(Object id, Object entityBean, boolean forceReplace) {
+    public boolean add(Object id, Object entityBean) {//, boolean forceReplace) {
 
-    	ClassContext classMap = getClassContext(entityBean.getClass());
-        if (forceReplace || !classMap.containsKey(id)) {
-            classMap.put(id, entityBean);
-            return true;
-        }
-    	
-        return false;
+    	synchronized (monitor) {
+	    	ClassContext classMap = getClassContext(entityBean.getClass());
+	        if (!classMap.containsKey(id)) {
+	            classMap.put(id, entityBean);
+	            return true;
+	        }
+	    	
+	        return false;
+    	}
     }
 
     /**
      * Set an object into the PersistanceContext.
      */
-    public void set(Object id, Object bean) {
-    	getClassContext(bean.getClass()).put(id, bean);
+    public void put(Object id, Object bean) {
+    	synchronized (monitor) {
+    		getClassContext(bean.getClass()).put(id, bean);
+    	}
     }
+    
+    public Object putIfAbsent(Object id, Object bean){
+    	synchronized (monitor) {
+    		return getClassContext(bean.getClass()).putIfAbsent(id, bean);
+    	}
+    }
+
+    
 
     /**
      * Return an object given its type and unique id.
      */
     public Object get(Class<?> beanType, Object id) {
-
-    	return getClassContext(beanType).get(id);
+    	synchronized (monitor) {
+    		return getClassContext(beanType).get(id);
+    	}
     }
 
     /**
      * Clear the PersistenceContext.
      */
     public void clear() {
-        typeCache.clear();
+    	synchronized (monitor) {
+    		typeCache.clear();
+    	}
     }
 
     public void clear(Class<?> beanType) {
-    	ClassContext classMap = typeCache.get(beanType.getName());
-        if (classMap != null) {
-        	classMap.clear();	
-        }
+    	synchronized (monitor) {
+	    	ClassContext classMap = typeCache.get(beanType.getName());
+	        if (classMap != null) {
+	        	classMap.clear();	
+	        }
+    	}
     }
 
     public void clear(Class<?> beanType, Object id) {
-    	ClassContext classMap = typeCache.get(beanType.getName());
-        if (classMap != null && id != null) {
-            //id = getUid(beanType, id);
-            classMap.remove(id);
-        }
+    	synchronized (monitor) {
+	    	ClassContext classMap = typeCache.get(beanType.getName());
+	        if (classMap != null && id != null) {
+	            //id = getUid(beanType, id);
+	            classMap.remove(id);
+	        }
+    	}
     }
    
-    public ClassContext getClassContext(Class<?> beanType) {
+    private ClassContext getClassContext(Class<?> beanType) {
 
     	// strip off $$EntityBean.. suffix...
     	String clsName = SubClassUtil.getSuperClassName(beanType.getName());
@@ -127,21 +152,44 @@ public final class DefaultPersistenceContext implements PersistenceContext {
 
     private static class ClassContext {
     	
-    	HashMap<Object,Object> map = new HashMap<Object, Object>();
+    	private final WeakHashMap<Object,WeakReference<Object>> map = new WeakHashMap<Object, WeakReference<Object>>();
         
-    	public Object get(Object id){
-    		return map.get(id);
+    	private Object get(Object id){
+    		WeakReference<Object> reference = map.get(id);
+    		if (reference != null){
+    			return reference.get();
+    		} else {
+    			return null;
+    		}
     	}
-    	public void put(Object id, Object b){
-    		map.put(id, b);
+    	
+        private Object putIfAbsent(Object id, Object bean){
+        	Object existing = null;
+        	WeakReference<Object> reference = map.get(id);
+        	if (reference != null){
+        		existing = reference.get();
+        	}
+        	if (existing != null && !((EntityBean)existing)._ebean_getIntercept().isReference()){
+        		return existing;
+        	} else {
+        		map.put(id, new WeakReference<Object>(bean));
+        		return null;
+        	}
+        }
+        
+    	private void put(Object id, Object b){
+    		map.put(id, new WeakReference<Object>(b));
     	}
-    	public boolean containsKey(Object id){
+    	
+    	private boolean containsKey(Object id){
     		return map.containsKey(id);
     	}
-    	public void clear(){
+    	
+    	private void clear(){
     		map.clear();
     	}
-    	public Object remove(Object id){
+    	
+    	private Object remove(Object id){
     		return map.remove(id);
     	}
     }

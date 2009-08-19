@@ -1,5 +1,7 @@
 package com.avaje.ebean.internal;
 
+import java.sql.PreparedStatement;
+
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlQueryListener;
 
@@ -48,4 +50,28 @@ public interface SpiSqlQuery extends SqlQuery {
 	 */
 	public int getTimeout();
 
+	/**
+	 * Return the hint for Statement.setFetchSize().
+	 */
+	public int getBufferFetchSizeHint();
+
+	/**
+	 * Return true if this is a future fetch type query.
+	 */
+	public boolean isFutureFetch();
+
+	/**
+	 * Set to true if this is a future fetch type query.
+	 */
+	public void setFutureFetch(boolean futureFetch);
+
+	/**
+	 * Set the PreparedStatement for the purposes of supporting cancel.
+	 */
+	public void setPreparedStatement(PreparedStatement pstmt);
+	
+	/**
+	 * Return true if the query has been cancelled.
+	 */
+	public boolean isCancelled();
 }

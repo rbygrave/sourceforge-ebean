@@ -1,10 +1,15 @@
 package com.avaje.ebean.server.querydefn;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.SqlFutureList;
 import com.avaje.ebean.SqlQueryListener;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.internal.BindParams;
@@ -29,11 +34,22 @@ public class DefaultRelationalQuery implements SpiSqlQuery {
 
 	private int timeout;
 	
+	private boolean futureFetch;
+	
+	private boolean cancelled;
+	
+	/**
+	 * For the purposes of cancelling the query.
+	 */
+	private transient PreparedStatement pstmt;
+	
     /**
 	 * The rows after which the fetch continues in a bg thread.
 	 */
 	private int backgroundFetchAfter;
 
+	private int bufferFetchSizeHint;
+	
 	/**
 	 * The property used to get the key value for a Map.
 	 */
@@ -71,6 +87,10 @@ public class DefaultRelationalQuery implements SpiSqlQuery {
 	
 	public SqlRow findUnique() {
 		return server.findUnique(this, null);
+	}
+
+	public SqlFutureList findFutureList() {
+		return server.findFutureList(this, null);
 	}
 
 	public DefaultRelationalQuery setParameter(int position, Object value) {
@@ -156,8 +176,54 @@ public class DefaultRelationalQuery implements SpiSqlQuery {
 		return bindParams;
 	}
 
+	public DefaultRelationalQuery setBufferFetchSizeHint(int bufferFetchSizeHint){
+		this.bufferFetchSizeHint = bufferFetchSizeHint;
+		return this;
+	}
+
+	
+	public int getBufferFetchSizeHint() {
+		return bufferFetchSizeHint;
+	}
 	
 	public String getQuery() {
 		return query;
+	}
+
+	public boolean isFutureFetch() {
+		return futureFetch;
+	}
+
+	public void setFutureFetch(boolean futureFetch) {
+		this.futureFetch = futureFetch;
+	}
+
+	public void setPreparedStatement(PreparedStatement pstmt){
+		synchronized (this) {
+			this.pstmt = pstmt;
+		}
+	}
+	
+	public void cancel() {
+		synchronized (this) {
+			this.cancelled = true;
+			if (pstmt != null){
+				try {
+					pstmt.cancel();
+				} catch (SQLException e) {
+					String msg = "Error cancelling query";
+					throw new PersistenceException(msg, e);
+				}
+			}
+		}
+	}
+	
+	public boolean isCancelled() {
+		synchronized (this) {
+			return cancelled;
+		}
 	}    
+	
+	
+	
 }
