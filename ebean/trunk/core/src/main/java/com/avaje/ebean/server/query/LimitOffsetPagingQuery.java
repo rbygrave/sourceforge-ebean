@@ -106,6 +106,13 @@ public class LimitOffsetPagingQuery<T> implements PagingList<T> {
 		}
 	}
 	
+	public void refresh() {
+		synchronized (monitor) {
+			futureRowCount = null;
+			pages.clear();
+		}
+	}
+
 	public Page<T> getPage(int i) {
 		return internalGetPage(i);
 	}

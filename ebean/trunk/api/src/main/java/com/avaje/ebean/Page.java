@@ -32,7 +32,7 @@ import java.util.List;
  * @param <T>
  *            the entity bean type
  *            
- * @see Query#fi           
+ * @see Query#findPagingList(int)         
  * @see PagingList
  */
 public interface Page<T> {
@@ -42,6 +42,21 @@ public interface Page<T> {
 	 */
 	public List<T> getList();
 
+	/**
+	 * Return the total row count for all pages.
+	 */
+    public int getRowCount();
+    
+    /**
+     * Return the total number of pages.
+     */
+    public int getPageCount();
+    
+    /**
+     * Return the index position of this page.
+     */
+    public int getPageIndex();
+    
 	/**
 	 * Return true if there is a next page.
 	 */

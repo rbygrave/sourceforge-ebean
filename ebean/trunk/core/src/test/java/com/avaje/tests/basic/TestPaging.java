@@ -84,6 +84,7 @@ public class TestPaging extends TestCase {
 		Assert.assertTrue("page size ",list2.size() == pageSize);
 		
 		checkForLoop();
+		
 	}
 	
 	private void checkForLoop() {
@@ -108,4 +109,5 @@ public class TestPaging extends TestCase {
 			System.out.print(".");
 		}
 	}
+	
 }
