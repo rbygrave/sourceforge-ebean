@@ -172,8 +172,7 @@ public class CQueryBuilder implements Constants {
 		}
 		
 		SpiQuery<T> query = request.getQuery();
-		if (query.hasMaxRowsOrFirstRow()) {
-		//if (query.isRemoveManyJoins()){
+		if (query.hasMaxRowsOrFirstRow() && query.getBackgroundFetchAfter() == 0) {
 			// ensure there are no joins to Many's so that limit offset work etc
 			query.removeManyJoins();
 			

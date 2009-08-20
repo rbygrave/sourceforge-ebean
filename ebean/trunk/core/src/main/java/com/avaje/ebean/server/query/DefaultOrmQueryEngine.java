@@ -38,16 +38,13 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
      * Find using predicates
      */
     private final CQueryEngine queryEngine;
-    
-//    private final BeanDescriptorManager beanDescriptorManager;
-    
+      
     /**
      * Create the Finder.
      */
     public DefaultOrmQueryEngine(BeanDescriptorManager descMgr, CQueryEngine queryEngine) {
    
         this.queryEngine = queryEngine;
-//        this.beanDescriptorManager = descMgr;
     }
     
     public <T> int findRowCount(OrmQueryRequest<T> request){
@@ -80,17 +77,6 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         // previous persist requests that are queued/batched.
         // The query may read data affected by those requests.
         t.batchFlush();
-        
-//        ArrayList<EntityBean> adds = query.getContextAdditions();
-//        if (adds != null){
-//            PersistenceContext pc = t.getPersistenceContext();
-//            for (int i = 0; i < adds.size(); i++) {
-//            	EntityBean bean = adds.get(i);
-//            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
-//            	Object id = desc.getId(bean);
-//            	pc.add(bean, id);//, false);
-//			}
-//        }
 
         BeanFinder<T> finder = request.getBeanFinder();
         if (finder != null) {
@@ -133,17 +119,6 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
             // The query may read data affected by those requests.
         	t.batchFlush();
         }
-
-//        ArrayList<EntityBean> adds = query.getContextAdditions();
-//        if (adds != null){
-//            PersistenceContext pc = t.getPersistenceContext();
-//            for (int i = 0; i < adds.size(); i++) {
-//            	EntityBean bean = adds.get(i);
-//            	BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(bean.getClass());
-//            	Object id = desc.getId(bean);
-//            	pc.add(bean, id);//, false);
-//			}
-//        }
         
         BeanFinder<T> finder = request.getBeanFinder();
         if (finder != null) {

@@ -106,4 +106,17 @@ public class LimitOffsetPage<T> implements Page<T>, BeanCollectionTouched {
 		return owner.getPage(pageIndex - 1);
 	}
 
+	public int getPageIndex() {
+		return pageIndex;
+	}
+
+	public int getPageCount() {
+		return owner.getPageCount();
+	}
+
+	public int getRowCount() {
+		return owner.getRowCount();
+	}
+
+	
 }
