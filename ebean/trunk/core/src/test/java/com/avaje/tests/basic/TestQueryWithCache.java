@@ -6,6 +6,10 @@ import junit.framework.TestCase;
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.server.core.ReferenceOptions;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.tests.model.basic.Country;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
@@ -73,7 +77,39 @@ public class TestQueryWithCache extends TestCase {
 
 		// NOT the same instance as readOnly = false
 		Assert.assertTrue("not same instance", o != o3);
+	}
+	
+	public void testCountryDeploy() {
 
+		ResetBasicData.reset();
+		
+		SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(null);
+		BeanDescriptor<Country> beanDescriptor = server.getBeanDescriptor(Country.class);
+		ReferenceOptions referenceOptions = beanDescriptor.getReferenceOptions();
+		
+		Assert.assertNotNull(referenceOptions);
+		Assert.assertTrue(referenceOptions.isUseCache());
+		Assert.assertTrue(referenceOptions.isReadOnly());
+		
+		
+		Country nz1 = Ebean.getReference(Country.class, "NZ");
+		// has the effect of loading the cache via lazy loading
+		nz1.getName();
 
+		Country nz2 = Ebean.getReference(Country.class, "NZ");
+		Country nz2b = Ebean.getReference(Country.class, "NZ");
+		
+		Country nz3 = Ebean.find(Country.class, "NZ");
+
+		Country nz4 = Ebean.find(Country.class)
+			.setId("NZ")
+			.setAutofetch(false)
+			.setUseCache(false)
+			.findUnique();
+		
+		Assert.assertTrue(nz2 == nz2b);
+		Assert.assertTrue(nz2 == nz3);
+		Assert.assertTrue(nz3 != nz4);
+		
 	}
 }
