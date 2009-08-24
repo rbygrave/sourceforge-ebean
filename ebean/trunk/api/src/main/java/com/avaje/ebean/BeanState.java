@@ -28,6 +28,15 @@ import java.util.Set;
 public interface BeanState {
 
 	/**
+	 * Return true if this is a lazy loading reference bean.
+	 * <p>
+	 * If so the this bean only holds the Id property and will 
+	 * invoke lazy loading if any other property is get or set.
+	 * </p>
+	 */
+	public boolean isReference();
+	
+	/**
 	 * Return true if the bean is new (and not yet saved).
 	 */
 	public boolean isNew();
