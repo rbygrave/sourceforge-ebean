@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy;
 
@@ -41,11 +41,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	private final boolean embeddedVersion;
 
 	private final boolean importedPrimaryKey;
-	
+
 	private final LocalHelp localHelp;
 
 	private final BeanProperty[] embeddedProps;
-	
+
 	/**
 	 * The information for Imported foreign Keys.
 	 */
@@ -79,17 +79,17 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		}
 		localHelp = createHelp(embedded, oneToOneExported);
 	}
-	
+
 	@Override
 	public void initialise() {
 		super.initialise();
 		if (!isTransient){
-			if (!embedded && !oneToOneExported) {				
+			if (!embedded && !oneToOneExported) {
 				importedId = createImportedId(this, targetDescriptor, tableJoin);
 			}
 		}
 	}
-	
+
 	public void addFkey() {
 		if (importedId != null){
 			importedId.addFkeys(name);
@@ -110,9 +110,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		BeanDescriptor<?> target = getTargetDescriptor();
 		return target.validate(true, value);
 	}
-	
+
 	private boolean hasChangedEmbedded(Object bean, Object oldValues) {
-		
+
 		Object embValue = getValue(oldValues);
 		if (embValue instanceof EntityBean){
 			// the embedded bean .. has its own old values
@@ -124,7 +124,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			return false;
 		}
 	}
-	
+
 	@Override
 	public boolean hasChanged(Object bean, Object oldValues) {
 		if (embedded){
@@ -141,11 +141,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			} else if (oldValues == null){
 				return true;
 			}
-			
+
 			return importedId.hasChanged(value, oldVal);
 		}
 	}
-	
+
 	/**
 	 * Return meta data for the deployment of the embedded bean specific to this
 	 * property.
@@ -197,7 +197,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	public Object createEmbeddedId() {
 		return getTargetDescriptor().createVanillaBean();
 	}
-	
+
 	public ImportedId getImportedId() {
 		return importedId;
 	}
@@ -218,6 +218,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		return localHelp.readSet(ctx, bean, assignable);
 	}
 
+	@Override
+	public Object read(DbReadContext ctx) throws SQLException {
+		return null;
+	}
+
 	private LocalHelp createHelp(boolean embedded, boolean oneToOneExported) {
 		if (embedded) {
 			return new Embedded();
@@ -233,7 +238,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 * cases.
 	 */
 	private abstract class LocalHelp {
-		
+
 		abstract Object readSet(DbReadContext ctx, Object bean, boolean assignAble)
 				throws SQLException;
 
@@ -259,12 +264,12 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			if (notNull && assignable) {
 				// set back to the parent bean
 				setValue(bean, embeddedBean);
-				
+
 				// Handled by the EntityBean itself now (since 1.2)
 				// make sure it is intercepting setters etc
 				//embeddedBean._ebean_getIntercept().setLoaded();
 				return embeddedBean;
-				
+
 			} else {
 				return null;
 			}
@@ -288,7 +293,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	private final class Reference extends LocalHelp {
 
 		private final BeanPropertyAssocOne<?> beanProp;
-	
+
 		Reference(BeanPropertyAssocOne<?> beanProp){
 			this.beanProp = beanProp;
 		}
@@ -309,7 +314,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 					rowDescriptor = rowInheritInfo.getBeanDescriptor();
 				}
 			}
-			
+
 			// read the foreign key column(s)
 			Object id = targetIdBinder.read(ctx);
 			if (id == null || bean == null || !assignable) {
@@ -327,7 +332,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				// parent always null for this case (but here to document)
 				Object parent = null;
 				Object ref = null;
-				
+
 				ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
 				if (options != null && options.isUseCache()) {
 					ref = targetDescriptor.cacheGet(id);
@@ -336,14 +341,14 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 						return targetDescriptor.createCopy(ref);
 					}
 				}
-				
+
 				if (ref == null){
-					// create a lazy loading reference/proxy 
+					// create a lazy loading reference/proxy
 					if (targetInheritInfo != null){
 						// for inheritance hierarchy create the correct type for this row...
-						ref = rowDescriptor.createReference(id, parent, options);	
+						ref = rowDescriptor.createReference(id, parent, options);
 					} else {
-						ref = targetDescriptor.createReference(id, parent, options);					
+						ref = targetDescriptor.createReference(id, parent, options);
 					}
 					if (ctx.isAutoFetchProfiling()){
 						// add profiling to this reference bean
@@ -353,9 +358,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 				Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
 				if (existingBean != null){
-					// advanced case when we use multiple concurrent threads to 
+					// advanced case when we use multiple concurrent threads to
 					// build a single object graph, and another thread has since
-					// loaded a matching bean so we will use that instead.					
+					// loaded a matching bean so we will use that instead.
 					ref = existing;
 				}
 
@@ -378,9 +383,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		 */
 		@Override
 		void appendSelect(DbSqlContext ctx) {
-			
+
 			if (targetInheritInfo != null){
-				// add discriminator column		
+				// add discriminator column
 				String relativePrefix = ctx.getRelativePrefix(getName());
 				String tableAlias = ctx.getTableAlias(relativePrefix);
 				ctx.appendColumn(tableAlias, targetInheritInfo.getDiscriminatorColumn());
@@ -429,7 +434,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		@Override
 		void appendSelect(DbSqlContext ctx) {
 
-			// set appropriate tableAlias for 
+			// set appropriate tableAlias for
 			// the exported id columns
 
 			String relativePrefix = ctx.getRelativePrefix(getName());
