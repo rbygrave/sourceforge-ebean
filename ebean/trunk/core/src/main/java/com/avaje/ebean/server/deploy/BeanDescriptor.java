@@ -39,12 +39,12 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
 import com.avaje.ebean.server.cache.ServerCache;
@@ -357,7 +357,9 @@ public class BeanDescriptor<T> {
 	
 	private final ServerCacheManager cacheManager;
 	
-	private LazyLoadEbeanServer internalEbean;
+	private final ReferenceOptions referenceOptions;
+	
+	private SpiEbeanServer ebeanServer;
 	
 	private ServerCache beanCache;
 
@@ -385,6 +387,7 @@ public class BeanDescriptor<T> {
 		this.beanFinder = deploy.getBeanFinder();
 		this.persistController = deploy.getPersistController();
 		this.persistListener = deploy.getPersistListener();
+		this.referenceOptions = deploy.getReferenceOptions();
 
 		this.idType = deploy.getIdType();
 		this.idGeneratorName = InternString.intern(deploy.getIdGeneratorName());
@@ -464,19 +467,31 @@ public class BeanDescriptor<T> {
 	/**
 	 * Set the server. Primarily so that the Many's can lazy load.
 	 */
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
-		this.internalEbean = internalEbean;
+	public void setEbeanServer(SpiEbeanServer ebeanServer){
+		this.ebeanServer = ebeanServer;
 		for (int i = 0; i < propertiesMany.length; i++) {
 			// used for creating lazy loading lists etc 
-			propertiesMany[i].setInternalEbean(internalEbean);
+			propertiesMany[i].setEbeanServer(ebeanServer);
 		}		
+	}
+	
+	/**
+	 * Create a copy of this bean.
+	 * <p>
+	 * Originally for the purposes of returning a copy (rather than a shared
+	 * instance) from the cache - where the app may want to change the data.
+	 * </p>
+	 */
+	@SuppressWarnings("unchecked")
+	public T createCopy(Object bean) {
+		return (T)((EntityBean)bean)._ebean_createCopy();
 	}
 	
 	/**
 	 * Return the EbeanServer instance that owns this BeanDescriptor.
 	 */
-	public LazyLoadEbeanServer getInternalEbean() {
-		return internalEbean;
+	public SpiEbeanServer getEbeanServer() {
+		return ebeanServer;
 	}
 
 	/**
@@ -562,6 +577,37 @@ public class BeanDescriptor<T> {
 			propertiesOneImported[i].addFkey();
 		}
 	}
+	
+	public boolean calculateUseCache(Boolean queryUseCache) {
+		if (queryUseCache != null){
+			return queryUseCache;
+		} else {
+			if (referenceOptions != null){
+				return referenceOptions.isUseCache();
+			} else {
+				return false;
+			}
+		}
+	}
+
+	public boolean calculateReadOnly(Boolean queryReadOnly) {
+		if (queryReadOnly != null){
+			return queryReadOnly;
+		} else {
+			if (referenceOptions != null){
+				return referenceOptions.isReadOnly();
+			} else {
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * Return the reference options.
+	 */
+	public ReferenceOptions getReferenceOptions() {
+		return referenceOptions;
+	}
 
 	/**
 	 * Return true if this object is the root level object in its
@@ -637,6 +683,11 @@ public class BeanDescriptor<T> {
 			beanCache.clear();
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public T cachePutObject(Object bean){
+		return cachePut((T)bean);
+	}
 	
 	/**
 	 * Put a bean into the bean cache.
@@ -647,6 +698,12 @@ public class BeanDescriptor<T> {
 			beanCache = cacheManager.getBeanCache(beanType);
 		}
 		Object id = getId(bean);
+		
+		// make sure beans put in the cache are readOnly
+		EntityBeanIntercept ebi = ((EntityBean)bean)._ebean_getIntercept();
+		ebi.setUseCache(true);
+		ebi.setReadOnly(true);
+		
 		return (T)beanCache.put(id, bean);
 	}
 	
@@ -940,7 +997,7 @@ public class BeanDescriptor<T> {
 			EntityBean eb = (EntityBean) beanReflect.createEntityBean();
 			EntityBeanIntercept ebi = eb._ebean_getIntercept();
 			//ebi.setServerName(serverName);
-			ebi.setInternalEbean(internalEbean);
+			ebi.setInternalEbean(ebeanServer);
 
 			return eb;
 
@@ -961,7 +1018,7 @@ public class BeanDescriptor<T> {
 
 			EntityBeanIntercept ebi = eb._ebean_getIntercept();
 			//ebi.setServerName(serverName);
-			ebi.setInternalEbean(internalEbean);
+			ebi.setInternalEbean(ebeanServer);
 			if (parent != null) {
 				// Special case for a OneToOne ... parent
 				// needs to be added to context prior to query
@@ -970,6 +1027,10 @@ public class BeanDescriptor<T> {
 
 			convertSetId(id, eb);
 
+			if (options != null){
+				ebi.setUseCache(options.isUseCache());
+				ebi.setReadOnly(options.isReadOnly());
+			}
 			// Note: not creating proxies for many's...
 
 			ebi.setReference();

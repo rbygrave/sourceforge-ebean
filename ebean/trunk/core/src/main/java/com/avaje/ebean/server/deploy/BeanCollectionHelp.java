@@ -18,7 +18,7 @@ public interface BeanCollectionHelp<T> {
 	/**
 	 * Set the EbeanServer that owns the configuration.
 	 */
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean);
+	public void setEbeanServer(LazyLoadEbeanServer ebeanServer);
 	
 	public BeanCollection<T> createEmpty();
 

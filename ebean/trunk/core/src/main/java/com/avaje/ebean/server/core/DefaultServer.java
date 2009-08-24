@@ -176,7 +176,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		this.refreshHelp = config.getRefreshHelp();
 		this.debugLazyHelper = config.getDebugLazyLoad();
 		this.beanDescriptorManager = config.getBeanDescriptorManager();
-		beanDescriptorManager.setInternalEbean(this);
+		beanDescriptorManager.setEbeanServer(this);
 		this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
 
 		this.transactionManager = config.getTransactionManager();
@@ -386,15 +386,6 @@ public final class DefaultServer implements SpiEbeanServer {
 
 		EntityBeanIntercept ebi = eb._ebean_getIntercept();
 
-		Object parentBean = ebi.getParentBean();
-
-		SpiQuery<?> query = (SpiQuery<?>) createQuery(beanType);
-		
-		// don't collect autoFetch usage profiling information
-		// as we just copy the data out of these fetched beans
-		// and put the data into the original bean
-		query.setUsageProfiling(false);
-		
 		PersistenceContext persistenceContext = null;
 		if (!isLazyLoad){
 			// for refresh we want to run in a new persistenceContext
@@ -412,24 +403,48 @@ public final class DefaultServer implements SpiEbeanServer {
 				persistenceContext.clear(eb.getClass(), id);
 			}
 		}
-
-		if (parentBean != null) {
-			// Special case for OneToOne 
-			BeanDescriptor<?> parentDesc = getBeanDescriptor(parentBean.getClass());
-			Object parentId = parentDesc.getId(parentBean);
-			persistenceContext.put(parentId, parentBean);
+		
+		
+		Object sourceBean =  null;
+		if (ebi.isUseCache()){
+			// try to use a bean from the cache to load from
+			sourceBean = desc.cacheGet(id);
 		}
 		
-		query.setPersistenceContext(persistenceContext);
+		if (sourceBean == null){
+			// query the database 
+			Object parentBean = ebi.getParentBean();
+	
+			SpiQuery<?> query = (SpiQuery<?>) createQuery(beanType);
+			
+			// don't collect autoFetch usage profiling information
+			// as we just copy the data out of these fetched beans
+			// and put the data into the original bean
+			query.setUsageProfiling(false);
 
-		if (collector != null) {
-			query.setParentNode(collector.getNode());
-		}
-
-		Object dbBean = query.setId(id).findUnique();
-		if (dbBean == null) {
-			String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
-			throw new PersistenceException(msg);
+			if (parentBean != null) {
+				// Special case for OneToOne 
+				BeanDescriptor<?> parentDesc = getBeanDescriptor(parentBean.getClass());
+				Object parentId = parentDesc.getId(parentBean);
+				persistenceContext.put(parentId, parentBean);
+			}
+			
+			query.setPersistenceContext(persistenceContext);
+	
+			if (collector != null) {
+				query.setParentNode(collector.getNode());
+			}
+	
+			sourceBean = query.setId(id).findUnique();
+			if (sourceBean == null) {
+				String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
+				throw new PersistenceException(msg);
+			}
+			
+			if (ebi.isUseCache()){
+				// put it in the cache with read only state
+				desc.cachePutObject(sourceBean);
+			}
 		}
 
 		// put the refreshed entity into the persistenceContext
@@ -437,9 +452,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		persistenceContext.put(id, eb);
 
 		// merge the existing and new dbBean bean
-		refreshHelp.refresh(bean, dbBean, desc, ebi, id, isLazyLoad);
-
-	
+		refreshHelp.refresh(bean, sourceBean, desc, ebi, id, isLazyLoad);
 	}
 
 	public InvalidValue validate(Object bean) {
@@ -476,8 +489,7 @@ public final class DefaultServer implements SpiEbeanServer {
 			return null;
 		}
 
-		Class<?> cls = a.getClass();
-		BeanDescriptor<?> desc = getBeanDescriptor(cls);
+		BeanDescriptor<?> desc = getBeanDescriptor(a.getClass());
 		return diffHelp.diff(a, b, desc);
 	}
 
@@ -549,20 +561,31 @@ public final class DefaultServer implements SpiEbeanServer {
 			throw new NullPointerException("The id is null");
 		}
 
+		BeanDescriptor desc = getBeanDescriptor(type);
+		// convert the id type if necessary
+		id = desc.convertId(id);
+
 		Object ref = null;
 		PersistenceContext ctx = null;
 
 		SpiTransaction t = transactionScopeManager.get();
 		if (t != null) {
+			// first try the persistence context
 			ctx = t.getPersistenceContext();
 			ref = ctx.get(type, id);
 		}
 		if (ref == null) {
-			BeanDescriptor desc = getBeanDescriptor(type);
-
-			// convert the id type if necessary
-			id = desc.convertId(id);
-
+			// check to see if the bean cache should be used
+			ReferenceOptions opts = desc.getReferenceOptions();
+			if (opts != null && opts.isUseCache()){
+				ref = desc.cacheGet(id);
+				if (ref != null && !opts.isReadOnly()){
+					ref = desc.createCopy(ref);
+				}
+			}
+		}
+		
+		if (ref == null) {
 			InheritInfo inheritInfo = desc.getInheritInfo();
 			if (inheritInfo != null) {
 				// we actually need to do a query because
@@ -589,7 +612,8 @@ public final class DefaultServer implements SpiEbeanServer {
 				ref = query.findUnique();
 
 			} else {
-				ref = desc.createReference(id, null, null);
+				// use the default reference options
+				ref = desc.createReference(id, null, desc.getReferenceOptions());
 			}
 
 			if (ctx != null) {
@@ -1007,7 +1031,16 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	@SuppressWarnings("unchecked")
 	public <T> T findId(Query<T> query, Transaction t) {
-		OrmQueryRequest request = createQueryRequest(query, t);
+		
+		OrmQueryRequest<T> request = createQueryRequest(query, t);
+		
+		// if the cache should be used etc try it now before
+		// potentially creating a new transaction
+		T cachedBean = request.getFromBeanCache();
+		if (cachedBean != null){
+			return cachedBean;
+		}
+		
 		try {
 			request.initTransIfRequired();
 

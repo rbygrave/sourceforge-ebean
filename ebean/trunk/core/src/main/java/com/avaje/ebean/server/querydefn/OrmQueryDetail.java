@@ -177,12 +177,9 @@ public class OrmQueryDetail implements Serializable {
 
 	public OrmQueryProperties getChunk(String propertyName, boolean create) {
 		if (propertyName == null) {
-//			if (create && baseProps == null) {
-//				baseProps = new OrmQueryProperties();
-//			}
 			return baseProps;
 		}
-		OrmQueryProperties props = fetchJoins.get(propertyName);//.toLowerCase());
+		OrmQueryProperties props = fetchJoins.get(propertyName);
 		if (create && props == null) {
 			return addFetchJoin(propertyName, null);
 		} else {
@@ -194,7 +191,11 @@ public class OrmQueryDetail implements Serializable {
 	 * Return true if the property is included.
 	 */
 	public boolean includes(String propertyName) {
-		return includes.contains(propertyName);//.toLowerCase());
+		
+		OrmQueryProperties chunk = fetchJoins.get(propertyName);
+		
+		// may not have fetch properties if just +cache etc
+		return chunk != null && chunk.isFetchInclude();
 	}
 
 	/**

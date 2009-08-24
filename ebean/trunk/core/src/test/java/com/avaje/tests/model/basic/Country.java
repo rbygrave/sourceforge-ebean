@@ -4,11 +4,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.validation.Length;
 
 /**
  * Country entity bean.
  */
+@CacheStrategy(readOnly=true)
 @Entity
 @Table(name="o_country")
 public class Country {

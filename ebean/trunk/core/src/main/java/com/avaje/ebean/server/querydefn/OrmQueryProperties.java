@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.lib.util.StringHelper;
 
 /**
@@ -91,6 +92,22 @@ public class OrmQueryProperties implements Serializable {
 		int hc = (entity != null ? entity.hashCode() : 1);
 		hc = hc * 31 + (queryPlanProperties != null ? queryPlanProperties.hashCode() : 1);
 		return hc;
+	}
+	
+	public ReferenceOptions getReferenceOptions(){
+		if (cache || readOnly){
+			return new ReferenceOptions(cache, readOnly); 
+		} else {
+			return null;
+		}
+	}
+	
+	public boolean isFetchInclude() {
+		if (cache){
+			return false;
+		} else {
+			return allProperties || included != null && !included.isEmpty();
+		}
 	}
 	
 	/**

@@ -20,7 +20,12 @@ public class DefaultBeanState implements BeanState {
 		this.entityBean = entityBean;
 		this.intercept = entityBean._ebean_getIntercept();
 	}
-		
+
+	public boolean isReference() {
+		return intercept.isReference();
+	}
+
+	
 	public boolean isNew() {
 		return intercept.isNew();
 	}

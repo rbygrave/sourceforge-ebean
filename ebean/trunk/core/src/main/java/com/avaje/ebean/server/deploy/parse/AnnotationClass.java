@@ -27,10 +27,12 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
 import com.avaje.ebean.annotation.UpdateMode;
 import com.avaje.ebean.config.TableName;
+import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 
@@ -107,8 +109,21 @@ public class AnnotationClass extends AnnotationParser {
 		if (namedUpdate != null){
 			readNamedUpdate(namedUpdate);
 		}
+		
+		CacheStrategy cacheStrategy = cls.getAnnotation(CacheStrategy.class);
+		if (cacheStrategy != null){
+			readCacheStrategy(cacheStrategy);
+		}
 	}
 
+	private void readCacheStrategy(CacheStrategy cacheStrategy){
+		
+		boolean useCache = cacheStrategy.useBeanCache();
+		boolean readOnly = cacheStrategy.readOnly();
+		ReferenceOptions opt = new ReferenceOptions(useCache, readOnly);
+		descriptor.setReferenceOptions(opt);
+	}
+	
 	private void readNamedQueries(NamedQueries namedQueries) {
 		NamedQuery[] queries = namedQueries.value();
 		for (int i = 0; i < queries.length; i++) {

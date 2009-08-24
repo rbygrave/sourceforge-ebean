@@ -1,54 +1,34 @@
 package com.avaje.ebean.server.core;
 
 /**
- * Options for controlling how references are built.
+ * Options for building references such as useCache and readOnly.
  */
 public class ReferenceOptions {
 
-	private boolean readOnly;
+	private final boolean readOnly;
 	
-	private boolean cache;
-
-	private boolean noCache;
+	private final boolean useCache;
 	
 	/**
-	 * Return true if the cache should be used otherwise false.
+	 * Construct with options.
 	 */
-	public boolean isUseCache(boolean beanDefault){
-		if (noCache){
-			return false;
-		}
-		if (cache){
-			return true;
-		}
-		noCache = !beanDefault;
-		cache = beanDefault;
-		return beanDefault;
-	}
-
-	public boolean isCache() {
-		return cache;
-	}
-
-	public void setCache(boolean cache) {
-		this.cache = cache;
-	}
-
-	public boolean isNoCache() {
-		return noCache;
-	}
-
-	public void setNoCache(boolean noCache) {
-		this.noCache = noCache;
-	}
-
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
+	public ReferenceOptions(boolean useCache, boolean readOnly) {
+		this.useCache = useCache;
 		this.readOnly = readOnly;
 	}
-	
+
+	/**
+	 * Return true if this should use a cache for lazy loading.
+	 */
+	public boolean isUseCache() {
+		return useCache;
+	}
+
+	/**
+	 * Return true if the resulting bean should be readOnly.
+	 */
+	public boolean isReadOnly() {
+		return readOnly;
+	}	
 	
 }
