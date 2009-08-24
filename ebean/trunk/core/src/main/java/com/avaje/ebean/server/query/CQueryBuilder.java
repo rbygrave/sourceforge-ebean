@@ -171,16 +171,6 @@ public class CQueryBuilder implements Constants {
 			return rawSqlBuilder.build(request);
 		}
 		
-		SpiQuery<T> query = request.getQuery();
-		if (query.hasMaxRowsOrFirstRow() && query.getBackgroundFetchAfter() == 0) {
-			// ensure there are no joins to Many's so that limit offset work etc
-			query.removeManyJoins();
-			
-			if (query.isManyInWhere()){
-				query.setDistinct(true);
-			}
-		}
-		
 		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
 		
 		
