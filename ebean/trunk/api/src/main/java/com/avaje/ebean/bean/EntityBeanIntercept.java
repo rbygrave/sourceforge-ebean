@@ -40,7 +40,7 @@ import javax.persistence.PersistenceException;
  */
 public class EntityBeanIntercept implements Serializable {
 
-	private static final long serialVersionUID = -3664031775464862645L;
+	private static final long serialVersionUID = -3664031775464862647L;
 	
 	private transient NodeUsageCollector nodeUsageCollector;
 
@@ -76,6 +76,11 @@ public class EntityBeanIntercept implements Serializable {
 	 * If true calling setters throws an exception.
 	 */
 	private boolean readOnly;
+
+	/**
+	 * set to true if the lazy loading should use the L2 cache.
+	 */
+	private boolean useCache;
 
 	/**
 	 * The bean as it was before it was modified. Null if no non-transient
@@ -240,6 +245,20 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	public Object getOldValues() {
 		return oldValues;
+	}
+	
+	/**
+	 * Return true if this bean should use the cache when lazy loading.
+	 */
+	public boolean isUseCache() {
+		return useCache;
+	}
+
+	/**
+	 * Set to true if this bean should use the cache when lazy loading.
+	 */
+	public void setUseCache(boolean useCache) {
+		this.useCache = useCache;
 	}
 
 	/**

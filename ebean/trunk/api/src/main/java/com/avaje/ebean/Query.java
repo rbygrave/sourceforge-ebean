@@ -1011,6 +1011,8 @@ public interface Query<T> extends Serializable {
 	 */
 	public Query<T> setUseCache(boolean useCache);
 
+	public Query<T>  setReadOnly(boolean readOnly);
+
 	/**
 	 * Set a timeout on this query.
 	 * <p>
