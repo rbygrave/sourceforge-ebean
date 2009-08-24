@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
@@ -223,7 +224,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		} else if (oneToOneExported) {
 			return new ReferenceExported();
 		} else {
-			return new Reference();
+			return new Reference(this);
 		}
 	}
 
@@ -286,6 +287,12 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 */
 	private final class Reference extends LocalHelp {
 
+		private final BeanPropertyAssocOne<?> beanProp;
+	
+		Reference(BeanPropertyAssocOne<?> beanProp){
+			this.beanProp = beanProp;
+		}
+
 		/**
 		 * Read and set a Reference bean.
 		 */
@@ -317,23 +324,42 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				return existing;
 
 			} else {
-				// create a lazy loading reference/proxy 
+				// parent always null for this case (but here to document)
 				Object parent = null;
-				Object ref;
-				if (targetInheritInfo != null){
-					// for inheritance heirarchy create the 
-					// correct type for this row...
-					ref = rowDescriptor.createReference(id, parent, null);	
-				} else {
-					ref = targetDescriptor.createReference(id, parent, null);					
-				}
-				if (ctx.isAutoFetchProfiling()){
-					// add profiling to this reference bean
-					ctx.profileReference(((EntityBean)ref)._ebean_getIntercept(), getName());
+				Object ref = null;
+				
+				ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
+				if (options != null && options.isUseCache()) {
+					ref = targetDescriptor.cacheGet(id);
+					if (ref != null && !options.isReadOnly()){
+						// create a copy as the user may mutate it
+						return targetDescriptor.createCopy(ref);
+					}
 				}
 				
+				if (ref == null){
+					// create a lazy loading reference/proxy 
+					if (targetInheritInfo != null){
+						// for inheritance hierarchy create the correct type for this row...
+						ref = rowDescriptor.createReference(id, parent, options);	
+					} else {
+						ref = targetDescriptor.createReference(id, parent, options);					
+					}
+					if (ctx.isAutoFetchProfiling()){
+						// add profiling to this reference bean
+						ctx.profileReference(((EntityBean)ref)._ebean_getIntercept(), getName());
+					}
+				}
+
+				Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
+				if (existingBean != null){
+					// advanced case when we use multiple concurrent threads to 
+					// build a single object graph, and another thread has since
+					// loaded a matching bean so we will use that instead.					
+					ref = existing;
+				}
+
 				setValue(bean, ref);
-				ctx.getPersistenceContext().put(id, ref);
 				return ref;
 			}
 		}

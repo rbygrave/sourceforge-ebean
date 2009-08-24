@@ -16,13 +16,13 @@ import com.avaje.ebean.common.BeanMap;
 /**
  * Helper specifically for dealing with Maps.
  */
-public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
+public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 
-	final BeanPropertyAssocMany<T> many;
-	final BeanDescriptor<T> targetDescriptor;
-	final String mapKey;
-	final BeanProperty beanProperty;
-	LazyLoadEbeanServer internalEbean;
+	private final BeanPropertyAssocMany<T> many;
+	private final BeanDescriptor<T> targetDescriptor;
+	private final BeanProperty beanProperty;
+	private LazyLoadEbeanServer ebeanServer;
+	//private final String mapKey;
 	
 	/**
 	 * When created for a given query that will return a map.
@@ -41,13 +41,13 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	private BeanMapHelp(BeanPropertyAssocMany<T> many, BeanDescriptor<T> targetDescriptor, String mapKey){
 		this.many = many;
 		this.targetDescriptor = targetDescriptor;
-		this.mapKey = mapKey;
+		//this.mapKey = mapKey;
 		this.beanProperty = targetDescriptor.getBeanProperty(mapKey);
 	}
 	
 	
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
-		this.internalEbean = internalEbean;
+	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
+		this.ebeanServer = ebeanServer;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -68,7 +68,7 @@ public class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 
-		return new BeanMap(internalEbean, parentBean, propertyName, profilePoint);
+		return new BeanMap(ebeanServer, parentBean, propertyName, profilePoint);
 	}
 
 	public ArrayList<InvalidValue> validate(Object manyValue) {

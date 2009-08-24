@@ -18,9 +18,9 @@ import com.avaje.ebean.common.BeanSet;
  */
 public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	
-	final BeanPropertyAssocMany<T> many;
-	final BeanDescriptor<T> targetDescriptor;
-	LazyLoadEbeanServer internalEbean;
+	private final BeanPropertyAssocMany<T> many;
+	private final BeanDescriptor<T> targetDescriptor;
+	private LazyLoadEbeanServer ebeanServer;
 	
 	/**
 	 * When attached to a specific many property.
@@ -38,8 +38,8 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		this.targetDescriptor = null;
 	}
 	
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
-		this.internalEbean = internalEbean;
+	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
+		this.ebeanServer = ebeanServer;
 	}
 	
 	
@@ -54,7 +54,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	public BeanCollection<T> createReference(Object parentBean, String serverName,
 			String propertyName, ObjectGraphNode profilePoint) {
 		
-		return new BeanSet<T>(internalEbean, parentBean, propertyName, profilePoint);
+		return new BeanSet<T>(ebeanServer, parentBean, propertyName, profilePoint);
 	}
 	
 	public ArrayList<InvalidValue> validate(Object manyValue) {

@@ -36,13 +36,13 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.BootupClasses;
@@ -212,9 +212,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	/**
 	 * Set the internal EbeanServer instance to all BeanDescriptors.
 	 */
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean) {
+	public void setEbeanServer(SpiEbeanServer internalEbean) {
 		for (BeanDescriptor<?> desc: immutableDescriptorList) {
-			desc.setInternalEbean(internalEbean);
+			desc.setEbeanServer(internalEbean);
 		}
 	}
 	

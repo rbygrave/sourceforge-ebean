@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,11 +42,15 @@ import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
 import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbReadContext;
+import com.avaje.ebean.server.querydefn.OrmQueryDetail;
+import com.avaje.ebean.server.querydefn.OrmQueryProperties;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 
 /**
@@ -133,6 +138,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final BeanDescriptor<T> desc;
 
 	private final SpiQuery<T> query;
+	
+	private final OrmQueryDetail queryDetail;
 
 	private final QueryListener<T> queryListener;
 
@@ -233,6 +240,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final AutoFetchManager autoFetchManager;
 	
 	private final ObjectGraphOrigin autoFetchOriginQueryPoint;
+
+	private final HashMap<String,ReferenceOptions> referenceOptionsMap = new HashMap<String,ReferenceOptions>();
 	
 	/**
 	 * Create the Sql select based on the request.
@@ -241,6 +250,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
+		this.queryDetail = query.getDetail();
 		autoFetchManager = query.getAutoFetchManager();
 		autoFetchProfiling = autoFetchManager != null;
 		autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;
@@ -379,6 +389,32 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, null, e);
 		}
+	}
+	
+	/**
+	 * Return the reference options used to define cache use.
+	 */
+	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
+	
+		String beanPropName = beanProp.getName();
+		if (currentPrefix != null){
+			beanPropName = currentPrefix+"."+beanPropName;
+		}
+		ReferenceOptions opt = referenceOptionsMap.get(beanPropName);
+		if (opt == null){
+			OrmQueryProperties chunk = queryDetail.getChunk(beanPropName, false);
+			if (chunk != null) {
+				// get the options from the query
+				opt = chunk.getReferenceOptions();
+			} 
+			if (opt == null){
+				// get the default options defined for the target bean type
+				opt = beanProp.getTargetDescriptor().getReferenceOptions();
+			}
+			referenceOptionsMap.put(beanPropName, opt);
+		}
+
+		return opt;
 	}
 
 	/**
@@ -743,10 +779,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		ObjectGraphNode node = createAutoFetchNode(extraPath, prefix);
 		
 		ebi.setNodeUsageCollector(new NodeUsageCollector(bean, node, autoFetchManager));
-	}
-
-	public String getCurrentPrefix() {
-		return currentPrefix;
 	}
 
 	public void setCurrentPrefix(String currentPrefix) {

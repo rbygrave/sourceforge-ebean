@@ -37,6 +37,7 @@ import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
+import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.ChainedBeanPersistController;
 import com.avaje.ebean.server.deploy.ChainedBeanPersistListener;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
@@ -57,115 +58,117 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Map of BeanProperty Linked so as to preserve order.
 	 */
-	final LinkedHashMap<String, DeployBeanProperty> propMap = new LinkedHashMap<String, DeployBeanProperty>();
+	private final LinkedHashMap<String, DeployBeanProperty> propMap = new LinkedHashMap<String, DeployBeanProperty>();
 
 	/**
 	 * The type of bean this describes.
 	 */
-	final Class<T> beanType;
+	private final Class<T> beanType;
 
-	final Map<String, DeployNamedQuery> namedQueries = new LinkedHashMap<String, DeployNamedQuery>();
+	private final Map<String, DeployNamedQuery> namedQueries = new LinkedHashMap<String, DeployNamedQuery>();
 
-	final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
+	private final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
 	
-	final Map<String, RawSqlMeta> rawSqlMetas = new LinkedHashMap<String, RawSqlMeta>();
+	private final Map<String, RawSqlMeta> rawSqlMetas = new LinkedHashMap<String, RawSqlMeta>();
 	
-	DeployBeanPropertyAssocOne<?> unidirectional;
+	private DeployBeanPropertyAssocOne<?> unidirectional;
 
 	/**
 	 * Type of Identity generation strategy used.
 	 */
-	IdType idType;
+	private IdType idType;
 
 	/**
 	 * The name of an IdGenerator (optional).
 	 */
-	String idGeneratorName;
+	private String idGeneratorName;
 
-	IdGenerator idGenerator;
+	private IdGenerator idGenerator;
 
 	/**
 	 * The database sequence name (optional).
 	 */
-	String sequenceName;
+	private String sequenceName;
 
 	/**
 	 * The database sequence nextval (optional).
 	 */
-	String sequenceNextVal;
+	private String sequenceNextVal;
 	
 	/**
 	 * Used with Identity columns but no getGeneratedKeys support.
 	 */
-	String selectLastInsertedId;
+	private String selectLastInsertedId;
 
 	/**
 	 * True if this is Table based for TableBeans.
 	 */
-	boolean tableGenerated;
+	private boolean tableGenerated;
 
 	/**
 	 * True if this is an Embedded bean.
 	 */
-	boolean embedded;
+	private boolean embedded;
 
-	String lazyFetchIncludes;
+	private String lazyFetchIncludes;
 
 	/**
 	 * The concurrency mode for beans of this type.
 	 */
-	ConcurrencyMode concurrencyMode = ConcurrencyMode.ALL;
+	private ConcurrencyMode concurrencyMode = ConcurrencyMode.ALL;
 
-	boolean updateChangesOnly;
+	private boolean updateChangesOnly;
 	
 	/**
 	 * The tables this bean is dependent on.
 	 */
-	String[] dependantTables;
+	private String[] dependantTables;
 
 	/**
 	 * Extra deployment attributes.
 	 */
-	HashMap<String, String> extraAttrMap = new HashMap<String, String>();
+	private HashMap<String, String> extraAttrMap = new HashMap<String, String>();
 
 	/**
 	 * The base database table.
 	 */
-	String baseTable;
+	private String baseTable;
 
 	/**
 	 * Used to provide mechanism to new EntityBean instances. Generated code
 	 * faster than reflection at this stage.
 	 */
-	BeanReflect beanReflect;
+	private BeanReflect beanReflect;
 
 
 	/**
 	 * The EntityBean type used to create new EntityBeans.
 	 */
-	Class<?> factoryType;
+	private Class<?> factoryType;
 
-	List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
-	List<BeanPersistListener<T>> persistListeners = new ArrayList<BeanPersistListener<T>>();
+	private List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
+	private List<BeanPersistListener<T>> persistListeners = new ArrayList<BeanPersistListener<T>>();
 
+	private ReferenceOptions referenceOptions;
+	
 	/**
 	 * If set overrides the find implementation. Server side only.
 	 */
-	BeanFinder<T> beanFinder;
+	private BeanFinder<T> beanFinder;
 
 	/**
 	 * The table joins for this bean. Server side only.
 	 */
-	ArrayList<DeployTableJoin> tableJoinList = new ArrayList<DeployTableJoin>();
+	private ArrayList<DeployTableJoin> tableJoinList = new ArrayList<DeployTableJoin>();
 
 	/**
 	 * Inheritance information. Server side only.
 	 */
-	InheritInfo inheritInfo;
+	private InheritInfo inheritInfo;
 
-	String name;
+	private String name;
 	
-	boolean processedRawSqlExtend;
+	private boolean processedRawSqlExtend;
 	
 	/**
 	 * Construct the BeanDescriptor.
@@ -338,6 +341,20 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setInheritInfo(InheritInfo inheritInfo) {
 		this.inheritInfo = inheritInfo;
+	}
+	
+	/**
+	 * Return the reference options. 
+	 */
+	public ReferenceOptions getReferenceOptions() {
+		return referenceOptions;
+	}
+
+	/**
+	 * Set the reference options.
+	 */
+	public void setReferenceOptions(ReferenceOptions referenceOptions) {
+		this.referenceOptions = referenceOptions;
 	}
 
 	/**

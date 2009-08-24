@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
+import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
@@ -15,6 +16,7 @@ import com.avaje.ebean.validation.Length;
 /**
  * Product entity bean.
  */
+@CacheStrategy(readOnly=true)
 @Entity
 @Table(name="o_product")
 @Sql(select={

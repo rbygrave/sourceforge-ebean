@@ -26,7 +26,6 @@ import java.util.Set;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
@@ -294,16 +293,44 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		beanDescriptor.putQueryPlan(queryPlanHash, queryPlan);
 	}
 	
+	boolean useBeanCache;
+	boolean useBeanCacheReadOnly;
+	
+	public boolean isUseBeanCache() {
+		return useBeanCache;
+	}
+	public boolean isUseBeanCacheReadOnly() {
+		return useBeanCacheReadOnly;
+	}
+	
+	private boolean calculateUseBeanCache() {
+		useBeanCache = beanDescriptor.calculateUseCache(query.isUseBeanCache());
+		if (useBeanCache){
+			useBeanCacheReadOnly = beanDescriptor.calculateReadOnly(query.isReadOnly());
+		}
+		return useBeanCache;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public T getFromBeanCache() {
+		if (!calculateUseBeanCache()){
+			return null;
+		} 
 		
 		Object id = query.getId();
 		
 		Object cachedBean = beanDescriptor.cacheGet(id);
-		if (cachedBean != null){
-			return (T)((EntityBean)cachedBean)._ebean_createCopy();
-		} else {
+		if (cachedBean == null){
 			return null;
+		} 
+		if (useBeanCacheReadOnly){
+			// return the same instance as the application
+			// has indicated it won't modify the bean
+			return (T)cachedBean;
+		} else {
+			// need to create a copy as the application 
+			// may modify the instance (so can't be shared)
+			return beanDescriptor.createCopy(cachedBean);
 		}
 	}
 	

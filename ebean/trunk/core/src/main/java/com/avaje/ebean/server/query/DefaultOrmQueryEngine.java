@@ -27,6 +27,7 @@ import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 
 /**
@@ -64,7 +65,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     	
         SpiQuery<T> query = request.getQuery();
 
-        if (query.isUseCache()){
+        if (query.isUseQueryCache()){
         	result = request.getFromQueryCache();
         	if (result != null){
         		return result;
@@ -86,7 +87,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.findMany(request);
         }
 
-        if (query.isUseCache() && !result.isEmpty()){
+        if (query.isUseQueryCache() && !result.isEmpty()){
         	request.putToQueryCache(result);
         }
         
@@ -100,17 +101,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 	public <T> T findId(OrmQueryRequest<T> request) {
         
 		T result = null;
-		
-		SpiQuery<T> query = request.getQuery();
-		
-		boolean useBeanCache = query.isUseCache() && query.getId() != null; 
-		if (useBeanCache){
-			result = request.getFromBeanCache();
-			if (result != null){
-				return result;
-			}
-		}
-        
+		        
         SpiTransaction t = request.getTransaction();
         
         if (t.isBatchFlushOnQuery()){
@@ -127,8 +118,14 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.find(request);
         }
         
-        if (useBeanCache && result != null){
-        	request.getBeanDescriptor().cachePut(result);
+        if (result != null && request.isUseBeanCache()){
+        	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
+        	T cacheBean = result;
+        	if (!request.isUseBeanCacheReadOnly()){
+        		// put a copy into the cache
+        		cacheBean = descriptor.createCopy(result);
+        	} 
+            descriptor.cachePut(cacheBean);        		
         }
         
         return result;

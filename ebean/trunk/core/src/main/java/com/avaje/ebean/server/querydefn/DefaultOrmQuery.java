@@ -145,8 +145,10 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private boolean usageProfiling = true;
 
-	private boolean useCache;
+	private Boolean useCache;
 
+	private Boolean readOnly;
+	
 	private boolean sqlSelect;
 
 	/**
@@ -271,6 +273,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.mapKey = mapKey;
 		copy.id = id;
 		copy.useCache = useCache;
+		copy.readOnly = readOnly;
 		copy.sqlSelect = sqlSelect;
 		if (detail != null){
 			copy.detail = detail.copy();
@@ -531,8 +534,22 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return attributes.hasMaxRowsOrFirstRow();
 	}
 
-	public boolean isUseCache() {
+	
+	public Boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public DefaultOrmQuery<T>  setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+		return this;
+	}
+
+	public Boolean isUseBeanCache() {
 		return useCache;
+	}
+
+	public boolean isUseQueryCache() {
+		return useCache != null && useCache;
 	}
 
 	public DefaultOrmQuery<T> setUseCache(boolean useCache) {

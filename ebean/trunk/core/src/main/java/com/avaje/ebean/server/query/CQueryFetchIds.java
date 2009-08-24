@@ -35,8 +35,10 @@ import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbReadContext;
 
 /**
@@ -213,6 +215,11 @@ public class CQueryFetchIds {
 		
 		public int nextRsetIndex() {
 			return ++rsetIndex;
+		}
+
+		public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
+			// always null
+			return null;
 		}
 
 		public ObjectGraphNode createAutoFetchNode(String extraPath,

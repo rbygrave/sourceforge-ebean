@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.server.core.ReferenceOptions;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.
@@ -13,6 +14,11 @@ import com.avaje.ebean.bean.PersistenceContext;
  * @see {@link BeanProperty#read(DbReadContext)}
  */
 public interface DbReadContext {
+	
+	/**
+	 * Return the reference options for a given bean property.
+	 */
+	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProperty);
 	
 	/**
 	 * Set the JoinNode - used by proxy/reference beans for profiling.

@@ -133,9 +133,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			}
 		}
 	}
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean){
+	
+	/**
+	 * Set the lazy load server to help create reference collections (that lazy
+	 * load on demand).
+	 */
+	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
 		if (help != null){
-			help.setInternalEbean(internalEbean);
+			help.setEbeanServer(ebeanServer);
 		}
 	}
 	
