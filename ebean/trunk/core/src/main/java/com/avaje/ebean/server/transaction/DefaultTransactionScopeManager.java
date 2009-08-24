@@ -21,7 +21,12 @@ public class DefaultTransactionScopeManager extends TransactionScopeManager {
 	}
 
 	public SpiTransaction get() {
-		return DefaultTransactionThreadLocal.get(serverName);
+		SpiTransaction t = DefaultTransactionThreadLocal.get(serverName);
+		if (t == null || !t.isActive()){
+			return null;
+		} else {
+			return t;
+		}
 	}
 
 	public void replace(SpiTransaction trans) {
