@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- * 
+ *
  * This file is part of Ebean.
- * 
- * Ebean is free software; you can redistribute it and/or modify it 
+ *
+ * Ebean is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *  
- * Ebean is distributed in the hope that it will be useful, but 
+ *
+ * Ebean is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.avaje.ebean.server.deploy;
 
@@ -46,12 +46,12 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 * Join for manyToMany intersection table.
 	 */
 	final TableJoin intersectionJoin;
-	
+
 	/**
 	 * For ManyToMany this is the Inverse join used to build reference queries.
 	 */
 	final TableJoin inverseJoin;
-	
+
 	/**
 	 * Derived list of exported property and matching foreignKey
 	 */
@@ -63,12 +63,12 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	BeanProperty childMasterProperty;
 
 	boolean embeddedExportedProperties;
-	
+
 	/**
 	 * Flag to indicate that this is a unidirectional relationship.
 	 */
 	final boolean unidirectional;
-	
+
 	/**
 	 * Flag to indicate manyToMany relationship.
 	 */
@@ -79,14 +79,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	BeanProperty mapKeyProperty;
 
 	final String mapKey;
-	
+
 	/**
 	 * The type of the many, set, list or map.
 	 */
 	final Query.Type manyType;
 
 	final String serverName;
-	
+
 	BeanCollectionHelp<T> help;
 
 	ImportedId importedId;
@@ -102,17 +102,17 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		this.manyType = deploy.getManyType();
 		this.mapKey = deploy.getMapKey();
 		this.fetchOrderBy = deploy.getFetchOrderBy();
-		
+
 		this.intersectionJoin = deploy.createIntersectionTableJoin();
 		this.inverseJoin = deploy.createInverseTableJoin();
 	}
-		
+
 	public void initialise() {
 		super.initialise();
 		if (!isTransient){
-			
+
 			help = BeanCollectionHelpFactory.create(this);
-			
+
 			if (manyToMany){
 				// only manyToMany's have imported properties
 				importedId = createImportedId(this, targetDescriptor, tableJoin);
@@ -120,20 +120,20 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			} else {
 				// find the property in the many that matches
 				// back to the master (Order in the OrderDetail bean)
-				childMasterProperty = initChildMasterProperty();			
+				childMasterProperty = initChildMasterProperty();
 			}
-			
+
 			if (mapKey != null){
 				mapKeyProperty = initMapKeyProperty();
 			}
-			
+
 			exportedProperties = createExported();
 			if (exportedProperties.length > 0){
 				embeddedExportedProperties = exportedProperties[0].isEmbedded();
 			}
 		}
 	}
-	
+
 	/**
 	 * Set the lazy load server to help create reference collections (that lazy
 	 * load on demand).
@@ -143,23 +143,29 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			help.setEbeanServer(ebeanServer);
 		}
 	}
-	
+
 	/**
 	 * Ignore changes for Many properties.
 	 */
 	public boolean hasChanged(Object bean, Object oldValues) {
 		return false;
 	}
-	
+
 	@Override
 	public void appendSelect(DbSqlContext ctx) {
 	}
-	
+
 	@Override
 	public Object readSet(DbReadContext ctx, Object bean, Class<?> type) throws SQLException {
 		return null;
 	}
-	
+
+	@Override
+	public Object read(DbReadContext ctx) throws SQLException {
+		return null;
+	}
+
+
 	@Override
 	public boolean isValueLoaded(Object value) {
 		if (value instanceof BeanCollection<?>){
@@ -167,30 +173,30 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 		return true;
 	}
-	
+
 	public void add(BeanCollection<?> collection, Object bean) {
 		help.add(collection, bean);
 	}
-	
+
 	@Override
 	public InvalidValue validateCascade(Object manyValue) {
-		
+
 		ArrayList<InvalidValue> errs = help.validate(manyValue);
-		
+
 		if (errs == null){
 			return null;
 		} else {
 			return new InvalidValue("recurse.many", targetDescriptor.getFullName(), manyValue, InvalidValue.toArray(errs));
 		}
 	}
-	
+
 	/**
 	 * Refresh the appropriate list set or map.
 	 */
 	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
 		help.refresh(server, query, t, parentBean);
 	}
-	
+
 	/**
 	 * Returns true.
 	 */
@@ -212,24 +218,24 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public boolean isManyToMany() {
 		return manyToMany;
 	}
-	
+
 	/**
 	 * ManyToMany only, join from local table to intersection table.
 	 */
 	public TableJoin getIntersectionTableJoin() {
 		return intersectionJoin;
 	}
-	
+
 	/**
 	 * Set the join properties from the parent bean to the child bean.
 	 * This is only valid for OneToMany and NOT valid for ManyToMany.
 	 */
 	public void setJoinValuesToChild(PersistRequest request, Object parent, Object child, Object mapKeyValue) {
-		
+
 		if (mapKeyProperty != null){
 			mapKeyProperty.setValue(child, mapKeyValue);
 		}
-		
+
 		if (!manyToMany){
 			if (childMasterProperty != null){
 				// bidirectional in the sense that the 'master' property
@@ -258,19 +264,19 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
 	public void createReference(Object parentBean, ObjectGraphNode profilePoint) {
-		
+
 		BeanCollection<?> ref = help.createReference(parentBean, serverName, name, profilePoint);
 
 		setValue(parentBean, ref);
 	}
-	
+
 	public BeanCollection<?> createEmpty() {
-		
+
 		return help.createEmpty();
 	}
 
 	public void setPredicates(Query<?> query, Object parentBean) {
-		
+
 		if (manyToMany){
 			// for ManyToMany lazy loading we need to include a
 			// join to the intersection table. The predicate column
@@ -278,14 +284,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			SpiQuery<?> iq = (SpiQuery<?>)query;
 			iq.setIncludeTableJoin(inverseJoin);
 		}
-		
+
 		ExportedProperty[] expProps = getExported();
 		if (embeddedExportedProperties) {
 			// use the EmbeddedId object instead of the parentBean
 			BeanProperty[] uids = descriptor.propertiesId();
 			parentBean = uids[0].getValue(parentBean);
 		}
-		
+
 		for (int i = 0; i < expProps.length; i++) {
 			Object val = expProps[i].getValue(parentBean);
 			String fkColumn = expProps[i].getForeignDbColumn();
@@ -293,20 +299,20 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 				fkColumn = targetDescriptor.getBaseTableAlias()+"."+fkColumn;
 			} else {
 				// use hard coded alias for intersection table
-				fkColumn = "int_."+fkColumn;				
+				fkColumn = "int_."+fkColumn;
 			}
 			query.where().eq(fkColumn, val);
 		}
-		
+
 		if (extraWhere != null){
 			query.where().raw(extraWhere);
 		}
-		
+
 		if (fetchOrderBy != null){
 			query.orderBy(fetchOrderBy);
 		}
 	}
-		
+
 	private ExportedProperty[] getExported() {
 		if (exportedProperties == null) {
 			exportedProperties = createExported();
@@ -337,7 +343,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		} else {
 			for (int i = 0; i < uids.length; i++) {
 				ExportedProperty expProp = findMatch(false, uids[i]);
-				list.add(expProp);	
+				list.add(expProp);
 			}
 		}
 
@@ -357,14 +363,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			// look for column going to intersection
 			columns = intersectionJoin.columns();
 			searchTable = intersectionJoin.getTable();
-			
+
 		} else {
 			columns = tableJoin.columns();
 			searchTable = tableJoin.getTable();
 		}
 		for (int i = 0; i < columns.length; i++) {
 			String matchTo = columns[i].getLocalDbColumn();
-			
+
 			if (matchColumn.equalsIgnoreCase(matchTo)) {
 				String foreignCol = columns[i].getForeignDbColumn();
 				if (manyToMany){
@@ -372,9 +378,9 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 					// we will use for the reference find
 					//String refQuery = inverseJoin.getForeignTableAlias()+"." + foreignCol;
 					return new ExportedProperty(embedded, foreignCol, prop);//refQuery, prop, foreignCol);
-					
+
 				} else {
-					
+
 					return new ExportedProperty(embedded, foreignCol, prop);
 				}
 			}
@@ -398,7 +404,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		if (unidirectional){
 			return null;
 		}
-		
+
 		// search for the property, to see if it exists
 		Class<?> beanType = descriptor.getBeanType();
 		BeanDescriptor<?> targetDesc = getTargetDescriptor();
@@ -431,7 +437,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	private BeanProperty initMapKeyProperty() {
 
 		// search for the property
-		
+
 		BeanDescriptor<?> targetDesc = getTargetDescriptor();
 
 		Iterator<BeanProperty> it = targetDesc.propertiesAll();
@@ -439,7 +445,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			BeanProperty  prop = it.next();
 			if (mapKey.equalsIgnoreCase(prop.getName())) {
 				return prop;
-			}	
+			}
 		}
 
 		String from = descriptor.getFullName();
@@ -447,16 +453,16 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		String msg = from+": Could not find mapKey property ["+mapKey+"] on ["+to+"]";
 		throw new PersistenceException(msg);
 	}
-	
+
 	public IntersectionRow buildManyToManyMapBean(Object parent, Object other) {
-		
+
 		IntersectionRow row = new IntersectionRow(intersectionJoin.getTable());
-		
+
 		buildExport(row, parent);
 		buildImport(row, other);
 		return row;
 	}
-	
+
 	/**
 	 * Set the predicates for lazy loading of the association.
 	 * Handles predicates for both OneToMany and ManyToMany.
@@ -476,7 +482,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			row.put(fkColumn, val);
 		}
 	}
-	
+
 	/**
 	 * Set the predicates for lazy loading of the association.
 	 * Handles predicates for both OneToMany and ManyToMany.
@@ -486,5 +492,5 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		importedId.buildImport(row, otherBean);
 	}
 
-		
+
 }
