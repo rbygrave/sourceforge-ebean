@@ -1024,6 +1024,20 @@ public final class DefaultServer implements SpiEbeanServer {
 		}
 		SpiTransaction serverTrans = (SpiTransaction)t;
 		OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);
+		
+		
+		if (query.hasMaxRowsOrFirstRow()
+				&& !request.isSqlSelect() 
+				&& query.getBackgroundFetchAfter() == 0) {
+			// ensure there are no joins to Many's so that  
+			// limit offset type SQL clauses work etc
+			query.removeManyJoins();
+			
+			if (query.isManyInWhere()){
+				query.setDistinct(true);
+			}
+		}
+		
 		// the query hash after an AutoFetch tuning
 		request.calculateQueryPlanHash();
 		return request;
@@ -1541,7 +1555,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
 		boolean wasCreated = false;
 		SpiTransaction trans = transactionScopeManager.get();
-		if (trans == null || !trans.isActive()) {
+		if (trans == null) {
 			// create a transaction
 			trans = transactionManager.createTransaction(false, -1);
 			wasCreated = true;
