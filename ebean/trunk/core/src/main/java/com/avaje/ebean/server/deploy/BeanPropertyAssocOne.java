@@ -218,9 +218,14 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		return localHelp.readSet(ctx, bean, assignable);
 	}
 
+	/**
+	 * Read the data from the resultSet effectively ignoring it and returning null.
+	 */
 	@Override
 	public Object read(DbReadContext ctx) throws SQLException {
-		return null;
+		// just read the resultSet incrementing the column index
+		// pass in null for the bean so any data read is ignored
+		return localHelp.readSet(ctx, null, false);
 	}
 
 	private LocalHelp createHelp(boolean embedded, boolean oneToOneExported) {
