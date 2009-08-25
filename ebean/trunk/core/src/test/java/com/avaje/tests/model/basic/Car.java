@@ -3,6 +3,7 @@ package com.avaje.tests.model.basic;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
+import javax.persistence.ManyToOne;
 
 @Entity
 @Inheritance
@@ -13,6 +14,9 @@ public class Car extends Vehicle {
 
 	private String driver;
 
+	@ManyToOne
+	TruckRef carRef;
+	
 	public String getDriver() {
 		return driver;
 	}
@@ -20,5 +24,12 @@ public class Car extends Vehicle {
 	public void setDriver(String driver) {
 		this.driver = driver;
 	}
-		
+
+	public TruckRef getCarRef() {
+		return carRef;
+	}
+
+	public void setCarRef(TruckRef carRef) {
+		this.carRef = carRef;
+	}
 }
