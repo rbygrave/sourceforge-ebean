@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 import javax.persistence.CascadeType;
@@ -14,9 +15,11 @@ import javax.persistence.Version;
  */
 @Entity
 @Table(name="o_order_detail")
-public class OrderDetail {
+public class OrderDetail implements Serializable {
 
-    @Id
+	private static final long serialVersionUID = 1L;
+
+	@Id
     Integer id;
 
     Integer orderQty;

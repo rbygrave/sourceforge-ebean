@@ -39,9 +39,6 @@ public class TestQueryWithCache extends TestCase {
 		custState = Ebean.getBeanState(customer);
 		Assert.assertFalse(custState.isReference());
 		
-		//custState.
-		System.out.println("done");
-		
 	}
 	
 	public void testFindId() {
