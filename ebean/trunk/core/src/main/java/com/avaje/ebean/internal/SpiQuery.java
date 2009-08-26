@@ -285,6 +285,12 @@ public interface SpiQuery<T> extends Query<T> {
 	public boolean isUseQueryCache();
 
 	/**
+	 * Return true if the beans from this query should be loaded
+	 * into the bean cache.
+	 */
+	public boolean isLoadBeanCache();
+	
+	/**
 	 * Return true if the beans returned by this query should be
 	 * read only.
 	 */

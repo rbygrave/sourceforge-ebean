@@ -145,6 +145,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private boolean usageProfiling = true;
 
+	private boolean loadBeanCache;
+	
 	private Boolean useCache;
 
 	private Boolean readOnly;
@@ -557,6 +559,15 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return this;
 	}
 
+	public boolean isLoadBeanCache() {
+		return loadBeanCache;
+	}
+
+	public DefaultOrmQuery<T> setLoadBeanCache(boolean loadBeanCache) {
+		this.loadBeanCache = loadBeanCache;
+		return this;
+	}
+	
 	public DefaultOrmQuery<T> setTimeout(int secs) {
 		this.timeout = secs;
 		return this;

@@ -484,7 +484,14 @@ public class BeanDescriptor<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public T createCopy(Object bean) {
-		return (T)((EntityBean)bean)._ebean_createCopy();
+		EntityBean orig = ((EntityBean)bean);
+		EntityBean copy = (EntityBean)orig._ebean_createCopy();
+		EntityBeanIntercept origEbi = orig._ebean_getIntercept();
+		EntityBeanIntercept copyEbi = copy._ebean_getIntercept();
+		
+		origEbi.copyStateTo(copyEbi);		
+		
+		return (T)copy;
 	}
 	
 	/**
