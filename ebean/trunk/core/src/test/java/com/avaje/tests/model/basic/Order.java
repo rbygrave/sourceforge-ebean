@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
@@ -31,7 +31,9 @@ import com.avaje.ebean.validation.NotNull;
   @SqlSelect(name="test",query="select id, status from o_customer u", tableAlias="u"),
   @SqlSelect(name="test2",extend="test",where="u.status = :status")
 })
-public class Order {
+public class Order implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	//@EnumMapping(nameValuePairs="APPROVED=A, COMPLETE=C, NEW=N, SHIPPED=S")
 	public enum Status {
@@ -62,8 +64,6 @@ public class Order {
 
     Date shipDate;
 
-
-    @Transient
     @NotNull
     @ManyToOne
     @JoinColumn(name="kcustomer_id")

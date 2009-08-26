@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 import javax.persistence.Id;
@@ -9,7 +10,9 @@ import javax.persistence.Version;
 import com.avaje.ebean.annotation.CreatedTimestamp;
 
 @MappedSuperclass
-public class BasicDomain {
+public class BasicDomain implements Serializable {
+
+	private static final long serialVersionUID = 5569496199004449769L;
 
 	@Id
 	Integer id;
