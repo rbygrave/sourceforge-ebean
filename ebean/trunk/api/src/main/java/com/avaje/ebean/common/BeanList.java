@@ -159,7 +159,7 @@ public final class BeanList<E> implements List<E>, BeanCollection<E> {
 		return list;
 	}
 
-	public Iterator<?> getActualDetails() {
+	public Iterator<E> getActualDetails() {
 		return list.iterator();
 	}
 

@@ -105,6 +105,19 @@ public class EntityBeanIntercept implements Serializable {
 	public EntityBeanIntercept(Object owner) {
 		this.owner = (EntityBean)owner;
 	}
+
+	/**
+	 * Copy the internal state of the intercept to another intercept.
+	 */
+	public void copyStateTo(EntityBeanIntercept dest) {
+		dest.internalEbean = internalEbean;
+		dest.loadedProps = loadedProps;
+		dest.useCache = useCache;
+		dest.readOnly = readOnly;
+		if (isLoaded()){
+			dest.setLoaded();
+		}
+	}
 	
 	/**
 	 * Return the 'owning' entity bean.
@@ -178,7 +191,10 @@ public class EntityBeanIntercept implements Serializable {
 	public void setNodeUsageCollector(NodeUsageCollector usageCollector) {
 		this.nodeUsageCollector = usageCollector;
 	}
-	
+
+	/**
+	 * Set the EbeanServer for lazy loading support.
+	 */
 	public void setInternalEbean(LazyLoadEbeanServer internalEbean) {
 		this.internalEbean = internalEbean;
 	}

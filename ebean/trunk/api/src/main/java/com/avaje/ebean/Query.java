@@ -1011,7 +1011,16 @@ public interface Query<T> extends Serializable {
 	 */
 	public Query<T> setUseCache(boolean useCache);
 
-	public Query<T>  setReadOnly(boolean readOnly);
+	/**
+	 * When set to true when you want the returned beans to be read only.
+	 */
+	public Query<T> setReadOnly(boolean readOnly);
+
+	/**
+	 * When set to true all the beans from this query are loaded into the bean
+	 * cache.
+	 */
+	public Query<T> setLoadBeanCache(boolean loadBeanCache);
 
 	/**
 	 * Set a timeout on this query.

@@ -167,8 +167,8 @@ public final class BeanMap<K, E> implements Map<K, E>, BeanCollection<E> {
 	 * they don't need to be set twice).
 	 * </p>
 	 */
-	public Iterator<?> getActualDetails() {
-		return map.entrySet().iterator();
+	public Iterator<E> getActualDetails() {
+		return map.values().iterator();
 	}
 
 	/**

@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean;
 
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -169,6 +171,22 @@ public interface EbeanServer {
 	 * </p>
 	 */
 	public <T> T createEntityBean(Class<T> type);
+
+	/**
+	 * Create a ObjectInputStream that can be used to deserialise "Proxy" or
+	 * "SubClassed" entity beans.
+	 * <p>
+	 * This is NOT required when entity beans are "Enhanced" (via java agent or
+	 * ant task etc).
+	 * </p>
+	 * <p>
+	 * The reason this is needed to deserialise "Proxy" beans is because Ebean
+	 * creates the "Proxy/SubClass" classes in a class loader - and generally
+	 * the class loader deserialising the inputStream is not aware of these
+	 * other classes.
+	 * </p>
+	 */
+	public ObjectInputStream createProxyObjectInputStream(InputStream is);
 
 	/**
 	 * Create a named query for an entity bean (refer
