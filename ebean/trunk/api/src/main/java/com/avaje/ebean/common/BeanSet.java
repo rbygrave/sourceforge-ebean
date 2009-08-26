@@ -157,7 +157,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         return set;
     }
     
-	public Iterator<?> getActualDetails() {
+	public Iterator<E> getActualDetails() {
 		return set.iterator();
 	}
 	

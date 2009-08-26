@@ -72,7 +72,7 @@ public interface BeanCollection<E> extends Serializable {
 	 * map.
 	 * </p>
 	 */
-	public Iterator<?> getActualDetails();
+	public Iterator<E> getActualDetails();
 
 	/**
 	 * Set to true if maxRows was hit and there are actually more rows
