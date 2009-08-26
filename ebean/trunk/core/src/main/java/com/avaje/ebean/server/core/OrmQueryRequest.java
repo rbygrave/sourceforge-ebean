@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
@@ -33,6 +35,7 @@ import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.query.CancelableQuery;
@@ -236,6 +239,16 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public Map<?, ?> findMap() {
 		query.setType(Query.Type.MAP);
+		String mapKey = query.getMapKey();
+		if (mapKey == null){
+			BeanProperty[] ids = beanDescriptor.propertiesId();
+			if (ids.length == 1){
+				query.setMapKey(ids[0].getName());
+			} else {
+				String msg = "No mapKey specified for query";
+				throw new PersistenceException(msg);
+			}
+		}
 		return (Map<?, ?>) queryEngine.findMany(this);
 	}
 	
@@ -301,6 +314,17 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	}
 	public boolean isUseBeanCacheReadOnly() {
 		return useBeanCacheReadOnly;
+	}
+	
+	/**
+	 * Return true if the query is defined as read only.
+	 * <p>
+	 * If there is no explicit readOnly setting on the query then
+	 * the cache setting on BeanDescriptor is used.
+	 * </p>
+	 */
+	public boolean isReadOnly() {
+		return beanDescriptor.calculateReadOnly(query.isReadOnly());
 	}
 	
 	private boolean calculateUseBeanCache() {

@@ -19,6 +19,9 @@
  */
 package com.avaje.ebean.server.core;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -544,6 +547,17 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> T createEntityBean(Class<T> type) {
 		BeanDescriptor<T> desc = getBeanDescriptor(type);
 		return (T)desc.createEntityBean();
+	}
+	
+	
+
+	public ObjectInputStream createProxyObjectInputStream(InputStream is) {
+		
+		try {
+			return new ProxyBeanObjectInputStream(is, this);
+		} catch (IOException e) {
+			throw new PersistenceException(e);
+		}
 	}
 
 	/**
@@ -1096,6 +1110,14 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
 		OrmQueryRequest request = createQueryRequest(query, t);
+		
+        if (request.getQuery().isUseQueryCache()){
+        	Object result = request.getFromQueryCache();
+        	if (result != null){
+        		return (Set<T>)result;
+        	}
+        }
+		
 		try {
 			request.initTransIfRequired();
 			Set<T> set = (Set<T>) request.findSet();
@@ -1113,6 +1135,14 @@ public final class DefaultServer implements SpiEbeanServer {
 	@SuppressWarnings("unchecked")
 	public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
 		OrmQueryRequest request = createQueryRequest(query, t);
+		
+        if (request.getQuery().isUseQueryCache()){
+        	Object result = request.getFromQueryCache();
+        	if (result != null){
+        		return (Map<?, T>)result;
+        	}
+        }
+		
 		try {
 			request.initTransIfRequired();
 			Map<?, T> map = (Map<?, T>) request.findMap();
@@ -1255,9 +1285,17 @@ public final class DefaultServer implements SpiEbeanServer {
 		return new LimitOffsetPagingQuery<T>(this, spiQuery, pageSize);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T> List<T> findList(Query<T> query, Transaction t) {
 
 		OrmQueryRequest<T> request = createQueryRequest(query, t);
+		
+        if (request.getQuery().isUseQueryCache()){
+        	Object result = request.getFromQueryCache();
+        	if (result != null){
+        		return (List<T>)result;
+        	}
+        }
 		try {
 			request.initTransIfRequired();
 			List<T> list = request.findList();

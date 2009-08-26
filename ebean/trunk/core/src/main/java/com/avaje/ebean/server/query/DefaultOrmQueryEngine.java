@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.query;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.avaje.ebean.bean.BeanCollection;
@@ -62,15 +63,6 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 
     	BeanCollection<T> result = null;
-    	
-        SpiQuery<T> query = request.getQuery();
-
-        if (query.isUseQueryCache()){
-        	result = request.getFromQueryCache();
-        	if (result != null){
-        		return result;
-        	}
-        }
  
         SpiTransaction t = request.getTransaction();
         
@@ -87,8 +79,26 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.findMany(request);
         }
 
+        SpiQuery<T> query = request.getQuery();
+        
         if (query.isUseQueryCache() && !result.isEmpty()){
+        	// load the query result into the query cache
         	request.putToQueryCache(result);
+        }
+        
+        if (query.isLoadBeanCache()){
+        	// load the individual beans into the bean cache
+        	boolean readOnly = Boolean.TRUE.equals(query.isReadOnly());
+        	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
+        	Iterator<T> it  = result.getActualDetails();
+        	while (it.hasNext()) {
+				T bean = it.next();
+				if (!readOnly){
+					// create a copy as the client can modify these beans
+					bean = descriptor.createCopy(bean);
+				}
+				descriptor.cachePut(bean);
+			}
         }
         
         return result;

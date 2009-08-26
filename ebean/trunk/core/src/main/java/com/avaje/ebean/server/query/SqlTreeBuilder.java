@@ -210,6 +210,10 @@ public class SqlTreeBuilder {
 
 		if (prefix == null) {
 			buildExtraJoins(desc, myList);
+			if (query.isReadOnly() != null){
+				// all root level beans are read only
+				props.setReadOnly(query.isReadOnly());
+			}
 			return new SqlTreeNodeRoot(desc, props, myList, !subQuery, query.getIncludeTableJoin());
 
 		} else if (prop instanceof BeanPropertyAssocMany<?>) {
