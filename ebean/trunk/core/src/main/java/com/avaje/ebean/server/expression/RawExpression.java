@@ -3,6 +3,7 @@ package com.avaje.ebean.server.expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 
 class RawExpression implements SpiExpression {
@@ -17,9 +18,12 @@ class RawExpression implements SpiExpression {
 		this.sql = sql;
 		this.values = values;
 	}
-	
-	public String getPropertyName() {
-		return null;
+		
+	/**
+	 * Always returns false.
+	 */
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		return false;
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {

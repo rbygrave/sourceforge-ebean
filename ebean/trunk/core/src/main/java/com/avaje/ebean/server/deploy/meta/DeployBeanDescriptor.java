@@ -356,7 +356,7 @@ public class DeployBeanDescriptor<T> {
 	public void setReferenceOptions(ReferenceOptions referenceOptions) {
 		this.referenceOptions = referenceOptions;
 	}
-
+	
 	/**
 	 * Return true if this was generated from jdbc meta data of a table. Returns
 	 * false for normal beans.

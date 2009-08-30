@@ -43,6 +43,18 @@ import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 public interface SpiQuery<T> extends Query<T> {
 
 	/**
+	 * This is a lazy loading query for a shared instance.
+	 * That means all the beans returned by this query will
+	 * also be marked as 'sharedInstance'.
+	 */
+	public void setSharedInstance();
+	
+	/**
+	 * Return true if this is a lazy loading query for a shared instance.
+	 */
+	public boolean isSharedInstance();
+	
+	/**
 	 * Return a listener that wants to be notified when the 
 	 * bean collection is first used.
 	 */

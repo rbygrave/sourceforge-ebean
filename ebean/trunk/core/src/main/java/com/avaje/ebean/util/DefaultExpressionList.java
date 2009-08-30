@@ -19,7 +19,6 @@ import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionList;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
  * Default implementation of ExpressionList.
@@ -71,26 +70,12 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 		
 		for (int i = 0; i < list.size(); i++) {
 			
-			String propertyName = list.get(i).getPropertyName();
-			ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
-			if (elProp != null && elProp.containsMany()){
+			if (list.get(i).containsMany(desc)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
-//	/**
-//	 * Remove expressions related to any Many properties.
-//	 */
-//	public void removeMany(ModifyQuery modifyQuery){
-//		for (int i = list.size()-1; i >= 0; i--) {
-//			Expression expression = list.get(i);
-//			if (modifyQuery.removeMany(expression)){
-//				list.remove(i);
-//			}
-//		}
-//	}
 
 	public Query<T> query() {
 		return query;

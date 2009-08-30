@@ -36,9 +36,12 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.cache.ServerCache;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
@@ -47,8 +50,6 @@ import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
-import com.avaje.ebean.server.cache.ServerCache;
-import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.ReferenceOptions;
@@ -617,6 +618,28 @@ public class BeanDescriptor<T> {
 	}
 
 	/**
+	 * Execute the warming cache query (if defined) and load the cache.
+	 */
+	public void runCacheWarming() {
+		if (referenceOptions == null){
+			return;
+		}
+		String warmingQuery = referenceOptions.getWarmingQuery();
+		if (warmingQuery != null && warmingQuery.trim().length() > 0){
+			Query<T> query = ebeanServer.createQuery(beanType);
+			query.setQuery(warmingQuery);
+			query.setUseCache(true);
+			query.setReadOnly(true);
+			query.setLoadBeanCache(true);
+			List<T> list = query.findList();
+			if (logger.isLoggable(Level.INFO)){
+				String msg = "Loaded "+beanType+" cache with ["+list.size()+"] beans"; 
+				logger.info(msg);
+			}
+		}
+	}
+	
+	/**
 	 * Return true if this object is the root level object in its
 	 * entity inheritance.
 	 */
@@ -706,10 +729,8 @@ public class BeanDescriptor<T> {
 		}
 		Object id = getId(bean);
 		
-		// make sure beans put in the cache are readOnly
-		EntityBeanIntercept ebi = ((EntityBean)bean)._ebean_getIntercept();
-		ebi.setUseCache(true);
-		ebi.setReadOnly(true);
+		// make sure beans put in the cache are always going to be readOnly
+		((EntityBean)bean)._ebean_getIntercept().setSharedInstance();
 		
 		return (T)beanCache.put(id, bean);
 	}

@@ -21,15 +21,15 @@ package com.avaje.ebean.server.core;
 
 import java.util.logging.Logger;
 
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.ExpressionFactory;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.internal.BackgroundExecutor;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
-import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.DeployOrmXml;
 import com.avaje.ebean.server.deploy.parse.DeployCreateProperties;

@@ -269,6 +269,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			if (notNull && assignable) {
 				// set back to the parent bean
 				setValue(bean, embeddedBean);
+				if (ctx.isSharedInstance()) {
+					embeddedBean._ebean_getIntercept().setSharedInstance();
+				} else if (ctx.isReadOnly()) {
+					embeddedBean._ebean_getIntercept().setReadOnly(true);
+				}
 
 				// Handled by the EntityBean itself now (since 1.2)
 				// make sure it is intercepting setters etc
@@ -341,7 +346,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
 				if (options != null && options.isUseCache()) {
 					ref = targetDescriptor.cacheGet(id);
-					if (ref != null && !options.isReadOnly()){
+					if (ref != null && !ctx.isReadOnly() && !options.isReadOnly()){
 						// create a copy as the user may mutate it
 						return targetDescriptor.createCopy(ref);
 					}
@@ -366,9 +371,18 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 					// advanced case when we use multiple concurrent threads to
 					// build a single object graph, and another thread has since
 					// loaded a matching bean so we will use that instead.
-					ref = existing;
+					ref = existingBean;
 				}
 
+				if (ctx.isSharedInstance()){
+					// propagate sharedInstance status 
+					((EntityBean)ref)._ebean_getIntercept().setSharedInstance();
+					
+				} else if (ctx.isReadOnly()){
+					// propagate readOnly status 
+					((EntityBean)ref)._ebean_getIntercept().setReadOnly(true);
+				}
+				
 				setValue(bean, ref);
 				return ref;
 			}
@@ -410,7 +424,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		@Override
 		Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
 
-			//TODO: Support for Inheritance heirarchy on exported OneToOne ?
+			//TODO: Support for Inheritance hierarchy on exported OneToOne ?
 			IdBinder idBinder = targetDescriptor.getIdBinder();
 			Object id = idBinder.read(ctx);
 			if (id == null || bean == null || !assignable) {
@@ -427,6 +441,13 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			} else {
 				Object parent = null;
 				Object ref = targetDescriptor.createReference(id, parent, null);
+				
+				if (ctx.isSharedInstance()) {
+					((EntityBean)ref)._ebean_getIntercept().setSharedInstance();
+				} else if (ctx.isReadOnly()) {
+					((EntityBean)ref)._ebean_getIntercept().setReadOnly(true);
+				}
+
 				setValue(bean, ref);
 				persistCtx.put(id, ref);
 				return ref;

@@ -143,13 +143,12 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private final QueryListener<T> queryListener;
 
+	private final boolean sharedInstance;
+	
+	private final boolean readOnly;
+	
 	private String currentPrefix;
 	
-//	/**
-//	 * When building a BeanMap result.
-//	 */
-//	private final String mapKey;
-
 	/**
 	 * Flag set true when reading 'master' and 'detail' beans.
 	 */
@@ -250,7 +249,12 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
+		this.sharedInstance = query.isSharedInstance();
 		this.queryDetail = query.getDetail();
+		
+		// the objects built should be treated as readOnly
+		this.readOnly = query.isReadOnly() != null && query.isReadOnly();
+		
 		autoFetchManager = query.getAutoFetchManager();
 		autoFetchProfiling = autoFetchManager != null;
 		autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;
@@ -279,7 +283,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.desc = request.getBeanDescriptor();
 		this.predicates = predicates;
 
-//		mapKey = query.getMapKey();
 		queryListener = query.getListener();
 		if (queryListener == null) {
 			// normal, use the one from the transaction
@@ -311,6 +314,20 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 	
+	/**
+	 * Return true if the query is to a lazy load for a bean in the cache.
+	 */
+	public boolean isSharedInstance() {
+		return sharedInstance;
+	}
+
+	/**
+	 * The entities should be returned in readOnly mode.
+	 */
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
 	public CQueryPredicates getPredicates() {
 		return predicates;
 	}

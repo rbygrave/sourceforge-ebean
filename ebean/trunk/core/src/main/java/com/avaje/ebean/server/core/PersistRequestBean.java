@@ -158,7 +158,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 
 	public void notifyCache() {
 		if (notifyCache){
-			beanDescriptor.cacheRemove(bean);
+			beanDescriptor.cacheRemove(idValue);
 		}
 	}
 	

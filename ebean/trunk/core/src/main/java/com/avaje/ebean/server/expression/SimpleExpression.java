@@ -1,11 +1,10 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-class SimpleExpression implements SpiExpression {
+class SimpleExpression extends AbstractExpression {
 
 	private static final long serialVersionUID = -382881395755603790L;
 
@@ -41,15 +40,13 @@ class SimpleExpression implements SpiExpression {
 			}
 		}
 	}
-	
-	private final String propertyName;
-	
+		
 	private final Op type;
 	
 	private final Object value;
 	
 	public SimpleExpression(String propertyName, Op type, Object value) {
-		this.propertyName = propertyName;
+		super(propertyName);
 		this.type = type;
 		this.value = value;
 	}

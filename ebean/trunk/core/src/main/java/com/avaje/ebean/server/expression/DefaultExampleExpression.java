@@ -81,6 +81,19 @@ public class DefaultExampleExpression implements SpiExpression, ExampleExpressio
 		this.caseInsensitive = caseInsensitive;
 		this.likeType = likeType;
 	}
+	
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		if (list != null){
+			for (int i = 0; i < list.size(); i++) {
+				if (list.get(i).containsMany(desc)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
 
 	/* (non-Javadoc)
 	 * @see com.avaje.ebean.expression.IExampleExpression#includeZeros()

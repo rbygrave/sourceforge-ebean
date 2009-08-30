@@ -2,31 +2,24 @@ package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-class LikeExpression implements SpiExpression {
+class LikeExpression extends AbstractExpression {
 
 	private static final long serialVersionUID = -5398151809111172380L;
 
-	final String propertyName;
+	private final Object value;
 
-	final Object value;
-
-	final boolean caseInsensitive;
+	private final boolean caseInsensitive;
 	
-	final LikeType type;
+	private final LikeType type;
 
 	LikeExpression(String propertyName, String value, boolean caseInsensitive, LikeType type) {
-		this.propertyName = propertyName;
+		super(propertyName);
 		this.caseInsensitive = caseInsensitive;
 		this.type = type;
 		this.value = getValue(value, caseInsensitive, type);
-	}
-
-	public String getPropertyName() {
-		return propertyName;
 	}
 
 	public void addBindValues(SpiExpressionRequest request) {

@@ -24,8 +24,11 @@ public class DefaultBeanState implements BeanState {
 	public boolean isReference() {
 		return intercept.isReference();
 	}
-
 	
+	public boolean isSharedInstance() {
+		return intercept.isSharedInstance();
+	}
+
 	public boolean isNew() {
 		return intercept.isNew();
 	}

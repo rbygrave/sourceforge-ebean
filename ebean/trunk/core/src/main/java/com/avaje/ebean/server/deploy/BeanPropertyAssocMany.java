@@ -263,9 +263,15 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		return mapKey;
 	}
 
-	public void createReference(Object parentBean, ObjectGraphNode profilePoint) {
+	public void createReference(Object parentBean, ObjectGraphNode profilePoint, boolean readOnly, boolean sharedInstance) {
 
 		BeanCollection<?> ref = help.createReference(parentBean, serverName, name, profilePoint);
+		if (sharedInstance){
+			// a Many property of a bean in the cache
+			ref.setSharedInstance();
+		} else if (readOnly){
+			ref.setReadOnly(true);
+		}
 
 		setValue(parentBean, ref);
 	}

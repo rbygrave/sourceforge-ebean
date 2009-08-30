@@ -4,6 +4,7 @@ import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 
 final class NotExpression implements SpiExpression {
@@ -12,14 +13,14 @@ final class NotExpression implements SpiExpression {
 
 	private static final String NOT = "not (";
 	
-	final SpiExpression exp;
+	private final SpiExpression exp;
 	
 	NotExpression(Expression exp){
 		this.exp = (SpiExpression)exp;
 	}
 	
-	public String getPropertyName() {
-		return exp.getPropertyName();
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		return exp.containsMany(desc);
 	}
 
 	public void addBindValues(SpiExpressionRequest request) {

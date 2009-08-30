@@ -19,7 +19,7 @@
  */
 package com.avaje.ebean.server.deploy;
 
-import com.avaje.ebean.server.cache.ServerCacheManager;
+import com.avaje.ebean.cache.ServerCacheManager;
 
 
 /**

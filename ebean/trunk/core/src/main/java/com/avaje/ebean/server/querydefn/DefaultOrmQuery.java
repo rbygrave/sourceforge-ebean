@@ -106,6 +106,11 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private boolean futureFetch;
 	
+	/**
+	 * Set to true when this is a lazy load for a sharedInstance.
+	 */
+	private boolean sharedInstance;
+	
 	private List<Object> partialIds;
 	
 	/**
@@ -368,6 +373,14 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public void setAutoFetchManager(AutoFetchManager autoFetchManager) {
 		this.autoFetchManager = autoFetchManager;
 	}
+	
+	public boolean isSharedInstance() {
+		return sharedInstance || (Boolean.TRUE.equals(useCache) && Boolean.TRUE.equals(readOnly));
+	}
+
+	public void setSharedInstance() {
+		this.sharedInstance = true;
+	}
 
 	public boolean isUsageProfiling() {
 		return usageProfiling;
@@ -420,6 +433,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
+		hc = hc * 31 + (readOnly == null ? 0 : readOnly.hashCode());
 
 		hc = hc * 31 + attributes.queryPlanHash();
 		hc = hc * 31 + detail.queryPlanHash();

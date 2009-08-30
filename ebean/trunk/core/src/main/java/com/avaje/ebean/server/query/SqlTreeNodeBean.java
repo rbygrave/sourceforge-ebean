@@ -54,6 +54,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	final SqlTreeNode[] children;
 
 	final boolean readOnly;
+	
+//	final boolean sharedInstance;
 
 	/**
 	 * Set to true if this is a partial object fetch.
@@ -92,17 +94,18 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	
 	final String prefix;
 
-	public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, 
+	public SqlTreeNodeBean(boolean sharedInstance, String prefix, BeanPropertyAssoc<?> beanProp, 
 			SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
-		this(prefix, beanProp, beanProp.getTargetDescriptor(),props, myChildren, withId);
+		this(sharedInstance, prefix, beanProp, beanProp.getTargetDescriptor(),props, myChildren, withId);
 	}
 	
 	/**
 	 * Create with the appropriate node.
 	 */
-	public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, BeanDescriptor<?> desc, 
+	public SqlTreeNodeBean(boolean sharedInstance, String prefix, BeanPropertyAssoc<?> beanProp, BeanDescriptor<?> desc, 
 			SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
 
+//		this.sharedInstance = sharedInstance;
 		this.prefix = prefix;
 		this.nodeBeanProp = beanProp;
 		this.desc = desc;
@@ -191,6 +194,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 					// bean just added to the persistenceContext
 					contextBean = localBean;
 					localBean._ebean_getIntercept().setPersistenceContext(persistenceContext);
+					
 				}
 				
 //				contextBean = persistCtx.get(localBean.getClass(), id);
@@ -262,7 +266,9 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			if (includedProps != null) {
 				ebi.setLoadedProps(includedProps);
 			}
-			if (readOnly) {
+			if (ctx.isSharedInstance()){
+				ebi.setSharedInstance();
+			} else if (readOnly) {
 				ebi.setReadOnly(true);
 			}
 			
@@ -307,9 +313,9 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			} else {
 				// create a proxy for the many (deferred fetching)
 				if (ctx.isAutoFetchProfiling()){
-					manys[i].createReference(localBean, ctx.createAutoFetchNode(manys[i].getName(), prefix));					
+					manys[i].createReference(localBean, ctx.createAutoFetchNode(manys[i].getName(), prefix), readOnly, ctx.isSharedInstance());					
 				} else {
-					manys[i].createReference(localBean, null);
+					manys[i].createReference(localBean, null, readOnly, ctx.isSharedInstance());
 				}
 			}
 		}

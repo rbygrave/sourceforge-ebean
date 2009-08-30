@@ -12,13 +12,13 @@ import com.avaje.ebean.server.deploy.TableJoin;
  */
 public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 
-	final TableJoin includeJoin;
+	private final TableJoin includeJoin;
 	
 	/**
 	 * Specify for SqlSelect to include an Id property or not.
 	 */
-	public SqlTreeNodeRoot(BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, TableJoin includeJoin) {
-		super(null, null, desc, props, myList, withId);
+	public SqlTreeNodeRoot(boolean sharedInstance, BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, TableJoin includeJoin) {
+		super(sharedInstance, null, null, desc, props, myList, withId);
 		this.includeJoin = includeJoin;
 	}
 
