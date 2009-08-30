@@ -18,11 +18,11 @@ public class TestLimitQuery extends TestCase {
 
 		Query<Customer> query = Ebean.find(Customer.class);
 		query.setAutofetch(false);
-		query.setFirstRow(1);
+		query.setFirstRow(0);
 		query.setMaxRows(10);
 
 		Junction junc = Expr.disjunction();
-		junc.add(Expr.like("name", "%a%"));
+		junc.add(Expr.like("name", "%A%"));
 		query.where(junc);
 
 		List<Customer> customer = query.findList();
