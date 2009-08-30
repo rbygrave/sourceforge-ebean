@@ -1,28 +1,21 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
 /**
  * Slightly redundant as Query.setId() ultimately also does the same job.
  */
-class NullExpression implements SpiExpression {
+class NullExpression extends AbstractExpression {
 
 	private static final long serialVersionUID = 4246991057451128269L;
-
-	final String propertyName;
 	
-	final boolean notNull;
+	private final boolean notNull;
 	
 	NullExpression(String propertyName, boolean notNull) {
-		this.propertyName = propertyName;
+		super(propertyName);
 		this.notNull = notNull;
-	}
-
-	public String getPropertyName() {
-		return propertyName;
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {

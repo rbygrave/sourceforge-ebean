@@ -16,6 +16,16 @@ import com.avaje.ebean.server.core.ReferenceOptions;
 public interface DbReadContext {
 	
 	/**
+	 * Return true if this is a lazy loading query for a shared instance.
+	 */
+	public boolean isSharedInstance();
+	
+	/**
+	 * Return true if the objects built should be readOnly.
+	 */
+	public boolean isReadOnly();
+	
+	/**
 	 * Return the reference options for a given bean property.
 	 */
 	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProperty);

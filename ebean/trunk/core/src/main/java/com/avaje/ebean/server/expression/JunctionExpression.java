@@ -7,6 +7,7 @@ import com.avaje.ebean.Junction;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Junction implementation.
@@ -33,23 +34,29 @@ abstract class JunctionExpression implements Junction, SpiExpression {
 		}
 	}
 	
-	final ArrayList<SpiExpression> list = new ArrayList<SpiExpression>();
+	private final ArrayList<SpiExpression> list = new ArrayList<SpiExpression>();
 
-	final String joinType;
+	private final String joinType;
 
 	
 	JunctionExpression(String joinType) {
 		this.joinType = joinType;
 	}
 	
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i).containsMany(desc)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public Junction add(Expression item){
 		SpiExpression i = (SpiExpression)item;
 		list.add(i);
 		return this;
-	}
-	
-	public String getPropertyName() {
-		return null;
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {

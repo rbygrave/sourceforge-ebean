@@ -1,27 +1,20 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 
 
-class CaseInsensitiveEqualExpression implements SpiExpression {
+class CaseInsensitiveEqualExpression extends AbstractExpression {
 
 	private static final long serialVersionUID = -6406036750998971064L;
-
-	private final String propertyName;
 	
 	private final String value;
 	
 	CaseInsensitiveEqualExpression(String propertyName, String value) {
-		this.propertyName = propertyName;
+		super(propertyName);
 		this.value = value.toLowerCase();
 	}
 	
-	public String getPropertyName() {
-		return propertyName;
-	}
-
 	public void addBindValues(SpiExpressionRequest request) {
 		request.addBindValue(value);
 	}

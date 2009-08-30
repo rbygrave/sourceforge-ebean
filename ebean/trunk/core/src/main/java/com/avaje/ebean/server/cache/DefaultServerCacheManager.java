@@ -1,5 +1,11 @@
 package com.avaje.ebean.server.cache;
 
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.cache.ServerCache;
+import com.avaje.ebean.cache.ServerCacheFactory;
+import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.cache.ServerCacheOptions;
+
 
 /**
  * Manages the bean and query caches. 
@@ -10,15 +16,28 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 
 	private final DefaultCacheHolder queryCache;
 
+	private final ServerCacheFactory cacheFactory;
 	
 	/**
 	 * Create with a cache factory and default cache options.
 	 */
 	public DefaultServerCacheManager(ServerCacheFactory cacheFactory, ServerCacheOptions defaultBeanOptions, ServerCacheOptions defaultQueryOptions) {
-		this.beanCache = new DefaultCacheHolder(cacheFactory, defaultBeanOptions);
-		this.queryCache = new DefaultCacheHolder(cacheFactory, defaultQueryOptions);
-	}
+		this.cacheFactory = cacheFactory;
+		this.beanCache = new DefaultCacheHolder(cacheFactory, defaultBeanOptions, true);
+		this.queryCache = new DefaultCacheHolder(cacheFactory, defaultQueryOptions, false);
+	}	
 	
+		
+	public void init(EbeanServer server) {
+		cacheFactory.init(server);
+	}
+
+
+	public void clearAll() {
+		beanCache.clearAll();
+		queryCache.clearAll();
+	}
+
 	/**
 	 * Return the query cache for a given bean type.
 	 */

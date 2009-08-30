@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiEbeanServer;
-import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.query.CQuery;
@@ -14,23 +13,17 @@ import com.avaje.ebean.server.query.CQuery;
  * 
  * @authors Mario and Rob
  */
-class InQueryExpression implements SpiExpression {
+class InQueryExpression extends AbstractExpression {
 
 	private static final long serialVersionUID = 666990277309851644L;
-
-	private final String propertyName;
 
 	private final SpiQuery<?> subQuery;
 
 	private transient CQuery<?> compiledSubQuery;
 
 	public InQueryExpression(String propertyName, SpiQuery<?> subQuery) {
-		this.propertyName = propertyName;
+		super(propertyName);
 		this.subQuery = subQuery;
-	}
-
-	public String getPropertyName() {
-		return propertyName;
 	}
 
 	public int queryAutoFetchHash() {

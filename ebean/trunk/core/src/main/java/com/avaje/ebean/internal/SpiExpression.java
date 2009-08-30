@@ -2,6 +2,7 @@ package com.avaje.ebean.internal;
 
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 
 /**
@@ -10,12 +11,13 @@ import com.avaje.ebean.event.BeanQueryRequest;
 public interface SpiExpression extends Expression {
 
 	/**
-	 * Return the name of the property this expression is for.
+	 * Return true if this expression is for a "Many" property.
 	 * <p>
-	 * If there are multiple properties or non null can be returned.
+	 * This can be used to handle some implementations that are 
+	 * dependent on the requirement for a join to a "Many".
 	 * </p>
 	 */
-	public String getPropertyName();
+	public boolean containsMany(BeanDescriptor<?> desc);
 	
 	/**
 	 * Calculate a hash value used to identify a query for AutoFetch tuning.

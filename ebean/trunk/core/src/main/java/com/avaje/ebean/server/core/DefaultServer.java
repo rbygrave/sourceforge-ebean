@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,12 +40,14 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.AdminAutofetch;
 import com.avaje.ebean.AdminLogging;
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Filter;
 import com.avaje.ebean.FutureIds;
 import com.avaje.ebean.FutureList;
+import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
@@ -67,9 +68,9 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.event.BeanPersistController;
-import com.avaje.ebean.internal.BackgroundExecutor;
 import com.avaje.ebean.internal.ScopeTrans;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
@@ -77,7 +78,6 @@ import com.avaje.ebean.internal.SpiSqlQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.TransactionEventTable;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
@@ -100,6 +100,7 @@ import com.avaje.ebean.server.query.CallableSqlQueryList;
 import com.avaje.ebean.server.query.LimitOffsetPagingQuery;
 import com.avaje.ebean.server.query.QueryFutureIds;
 import com.avaje.ebean.server.query.QueryFutureList;
+import com.avaje.ebean.server.query.QueryFutureRowCount;
 import com.avaje.ebean.server.query.SqlQueryFutureList;
 import com.avaje.ebean.server.querydefn.DefaultOrmQuery;
 import com.avaje.ebean.server.querydefn.DefaultOrmUpdate;
@@ -145,7 +146,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	private final RelationalQueryEngine relationalQueryEngine;
 
-	private final ServerCacheManager serverCache;
+	private final ServerCacheManager serverCacheManager;
 
 	private final BeanDescriptorManager beanDescriptorManager;
 
@@ -168,9 +169,9 @@ public final class DefaultServer implements SpiEbeanServer {
 	/**
 	 * Create the DefaultServer.
 	 */
-	public DefaultServer(InternalConfiguration config, ServerCacheManager serverCache) {
+	public DefaultServer(InternalConfiguration config, ServerCacheManager cache) {
 		
-		this.serverCache = serverCache;
+		this.serverCacheManager = cache;
 		this.backgroundExecutor = config.getBackgroundExecutor();
 		this.serverName = config.getServerConfig().getName();
 		this.cqueryEngine = config.getCQueryEngine();
@@ -268,6 +269,26 @@ public final class DefaultServer implements SpiEbeanServer {
 	}
 	
 	/**
+	 * Run the cache warming queries on all beans that have them defined.
+	 */
+	public void runCacheWarming() {
+		List<BeanDescriptor<?>> descList = beanDescriptorManager.getBeanDescriptorList();
+		for (int i = 0; i < descList.size(); i++) {
+			descList.get(i).runCacheWarming();
+		}
+	}
+
+	public void runCacheWarming(Class<?> beanType) {
+		BeanDescriptor<?> desc  = beanDescriptorManager.getBeanDescriptor(beanType);
+		if (desc == null){
+			String msg = "Is "+beanType+" an entity? Could not find a BeanDescriptor";
+			throw new PersistenceException(msg);
+		} else {
+			desc.runCacheWarming();
+		}
+	}
+	
+	/**
 	 * Compile a query.
 	 */
 	public <T> CQuery<T> compileQuery(Query<T> query, Transaction t) {
@@ -280,8 +301,8 @@ public final class DefaultServer implements SpiEbeanServer {
 		return cqueryEngine;
 	}
 
-	public ServerCacheManager getServerCache() {
-		return serverCache;
+	public ServerCacheManager getServerCacheManager() {
+		return serverCacheManager;
 	}
 
 	/**
@@ -356,6 +377,11 @@ public final class DefaultServer implements SpiEbeanServer {
 
 			// build appropriate predicates for the query...
 			many.setPredicates(query, parent);
+			
+			if (parent._ebean_getIntercept().isSharedInstance()){
+				// lazy loading for a sharedInstance (bean in the cache)
+				query.setSharedInstance();
+			}
 
 			many.refresh(this, query, t, parent);
 
@@ -409,7 +435,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		
 		
 		Object sourceBean =  null;
-		if (ebi.isUseCache()){
+		if (ebi.isUseCache() && ebi.isReference()) {
 			// try to use a bean from the cache to load from
 			sourceBean = desc.cacheGet(id);
 		}
@@ -438,14 +464,21 @@ public final class DefaultServer implements SpiEbeanServer {
 				query.setParentNode(collector.getNode());
 			}
 	
-			sourceBean = query.setId(id).findUnique();
+			// make sure the query doesn't use the cache and
+			// use readOnly in case we put the bean in the cache
+			sourceBean = query.setId(id)
+				.setUseCache(false)
+				.setReadOnly(true)
+				.findUnique();
+			
 			if (sourceBean == null) {
 				String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
 				throw new PersistenceException(msg);
 			}
 			
 			if (ebi.isUseCache()){
-				// put it in the cache with read only state
+				// put the fresh source bean into the cache
+				// it will be readOnly and a sharedInstance
 				desc.cachePutObject(sourceBean);
 			}
 		}
@@ -1198,7 +1231,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		}
 	}
 
-	public <T> Future<Integer> findFutureRowCount(Query<T> query, Transaction t) {
+	public <T> FutureRowCount<T> findFutureRowCount(Query<T> query, Transaction t) {
 
 		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
 		spiQuery.setFutureFetch(true);
@@ -1208,9 +1241,10 @@ public final class DefaultServer implements SpiEbeanServer {
 		
 		FutureTask<Integer> futureTask = new FutureTask<Integer>(call);
 		
+		QueryFutureRowCount<T> queryFuture = new QueryFutureRowCount<T>(query, futureTask);
 		backgroundExecutor.execute(futureTask);
 		
-		return futureTask;
+		return queryFuture;
 	}
 	
 	public <T> FutureIds<T> findFutureIds(Query<T> query, Transaction t) {

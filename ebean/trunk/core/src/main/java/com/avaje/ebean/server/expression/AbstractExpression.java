@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009  Robin Bygrave
+ * Copyright (C) 2009 Authors
  * 
  * This file is part of Ebean.
  * 
@@ -17,33 +17,37 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.server.query;
+package com.avaje.ebean.server.expression;
 
-import java.util.concurrent.FutureTask;
-
-import com.avaje.ebean.FutureRowCount;
-import com.avaje.ebean.Query;
+import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
- * Future implementation for the row count query.
+ * Base class for simple expressions.
+ * 
+ * @author rbygrave
  */
-public class QueryFutureRowCount<T> extends BaseFuture<Integer> implements FutureRowCount<T> {
+public abstract class AbstractExpression implements SpiExpression {
 
-	private final Query<T> query;
+	private static final long serialVersionUID = 4072786211853856174L;
 	
-	public QueryFutureRowCount(Query<T> query, FutureTask<Integer> futureTask) {
-		super(futureTask);
-		this.query = query;
+	protected final String propertyName;
+	
+	protected AbstractExpression(String propertyName) {
+		this.propertyName = propertyName;
+	}
+
+	public boolean containsMany(BeanDescriptor<?> desc) {
+
+		if (propertyName != null){
+			ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
+			if (elProp != null && elProp.containsMany()){
+				return true;
+			}
+		}
+		return false;
 	}
 	
-	public Query<T> getQuery() {
-		return query;
-	}
-
-	public boolean cancel(boolean mayInterruptIfRunning) {
-		query.cancel();
-		return super.cancel(mayInterruptIfRunning);
-	}
-
 	
 }

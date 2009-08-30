@@ -4,6 +4,7 @@ import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 
 /**
@@ -34,11 +35,11 @@ abstract class LogicExpression implements SpiExpression {
 		}
 	}
 
-	final SpiExpression expOne;
+	private final SpiExpression expOne;
 
-	final SpiExpression expTwo;
+	private final SpiExpression expTwo;
 
-	final String joinType;
+	private final String joinType;
 
 	LogicExpression(String joinType, Expression expOne, Expression expTwo) {
 		this.joinType = joinType;
@@ -46,8 +47,9 @@ abstract class LogicExpression implements SpiExpression {
 		this.expTwo = (SpiExpression)expTwo;
 	}
 
-	public String getPropertyName() {
-		return null;
+	
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		return expOne.containsMany(desc) || expTwo.containsMany(desc);
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {

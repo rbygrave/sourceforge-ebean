@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 class AllEqualsExpression implements SpiExpression {
 
@@ -19,6 +21,20 @@ class AllEqualsExpression implements SpiExpression {
 		this.propMap = propMap;
 	}
 	
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		if (propMap != null){
+			Iterator<String> it = propMap.keySet().iterator();
+			while (it.hasNext()) {
+				String propertyName = it.next();
+				ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
+				if (elProp != null && elProp.containsMany()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public String getPropertyName() {
 		return null;
 	}

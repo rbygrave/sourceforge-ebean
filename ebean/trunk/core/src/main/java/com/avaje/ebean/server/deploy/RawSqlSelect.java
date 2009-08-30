@@ -163,7 +163,7 @@ public class RawSqlSelect {
 		}
 
 		selectProps.setIncludedProperties(includedProps);
-		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(desc, selectProps, null, withId, null);
+		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(false, desc, selectProps, null, withId, null);
 		sqlTree.setRootNode(sqlRoot);
 
 		return sqlTree;

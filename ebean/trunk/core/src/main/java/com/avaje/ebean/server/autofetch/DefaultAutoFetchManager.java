@@ -390,7 +390,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	 */
 	private boolean useAutoFetch(SpiQuery<?> query) {
 
-		if (query.isLoadBeanCache()){
+		if (query.isLoadBeanCache() || query.isSharedInstance()){
 			// when loading the cache don't tune the query
 			// as we want full objects loaded into the cache
 			return false;

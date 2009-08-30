@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,20 +34,21 @@ import javax.management.MBeanServerFactory;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.cache.ServerCacheFactory;
+import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.cache.ServerCacheOptions;
 import com.avaje.ebean.common.BootupEbeanManager;
 import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.internal.BackgroundExecutor;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebean.server.cache.DefaultServerCacheManager;
-import com.avaje.ebean.server.cache.ServerCacheFactory;
-import com.avaje.ebean.server.cache.ServerCacheManager;
-import com.avaje.ebean.server.cache.ServerCacheOptions;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
@@ -99,13 +102,17 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	
 	private BackgroundExecutor createBackgroundExecutor(ServerConfig serverConfig, int uniqueServerId) {
 		
-		String bgThreadPoolPrefix = "ebean-"+serverConfig.getName()+uniqueServerId+"-";
+		String bgThreadPoolPrefix = "ebean-"+serverConfig.getName()+"-uid"+uniqueServerId+"-";
 		
-		int coreSize = GlobalProperties.getInt("backgroundExecutor.poolsize", 20);
+		// the size of the pool for executing periodic tasks (such as cache flushing)
+		int schedulePoolSize = GlobalProperties.getInt("backgroundExecutor.schedulePoolsize", 2);
+		
+		// the side of the main pool for immediate background task execution
+		int poolSize = GlobalProperties.getInt("backgroundExecutor.poolsize", 20);
 		int idleSecs = GlobalProperties.getInt("backgroundExecutor.idlesecs", 60*5);
 		int shutdownSecs = GlobalProperties.getInt("backgroundExecutor.shutdownSecs", 30);
 		
-		return new DefaultBackgroundExecutor(coreSize, idleSecs, shutdownSecs, bgThreadPoolPrefix);
+		return new DefaultBackgroundExecutor(poolSize, schedulePoolSize, idleSecs, shutdownSecs, bgThreadPoolPrefix);
 	}
 	
 	/**
@@ -136,6 +143,8 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		
 		DefaultServer server = new DefaultServer(c, cacheManager);
 		
+		cacheManager.init(server);
+		
 		MBeanServer mbeanServer;
 		ArrayList<?> list = MBeanServerFactory.findMBeanServer(null);
 		if (list.size() == 0){
@@ -148,7 +157,15 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 
 		server.registerMBeans(mbeanServer, uniqueServerId);
 		
+		// generate and run DDL if required
 		executeDDL(server);
+		
+		// warm the cache in 30 seconds 
+		int delaySecs = GlobalProperties.getInt("cacheWarmingDelay", 30);
+		long sleepMillis = 1000 * delaySecs;
+
+		Timer t = new Timer();
+		t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
 		
 		return server;
 	}
@@ -165,8 +182,8 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			// these settings are for a cache per bean type
 			beanOptions = new ServerCacheOptions();
 			beanOptions.setMaxSize(GlobalProperties.getInt("cache.maxSize", 1000));
-			beanOptions.setMaxIdleTime(GlobalProperties.getInt("cache.maxIdleTime", 1000*60*10));//10 minutes
-			beanOptions.setMaxTimeToLive(GlobalProperties.getInt("cache.maxTimeToLive", 1000*60*60*6));//6 hrs
+			beanOptions.setMaxIdleSecs(GlobalProperties.getInt("cache.maxIdleTime", 60*10));//10 minutes
+			beanOptions.setMaxSecsToLive(GlobalProperties.getInt("cache.maxTimeToLive", 60*60*6));//6 hrs
 			//beanOptions.setTrimFrequency(GlobalProperties.getInt("cache.trimFrequency", 1000*60));//1 minute
 		}
 		
@@ -175,8 +192,8 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			// these settings are for a cache per bean type
 			queryOptions = new ServerCacheOptions();
 			queryOptions.setMaxSize(GlobalProperties.getInt("querycache.maxSize", 100));
-			queryOptions.setMaxIdleTime(GlobalProperties.getInt("querycache.maxIdleTime", 1000*60*10));//10 minutes
-			queryOptions.setMaxTimeToLive(GlobalProperties.getInt("querycache.maxTimeToLive", 1000*60*60*6));//6 hrs
+			queryOptions.setMaxIdleSecs(GlobalProperties.getInt("querycache.maxIdleTime", 60*10));//10 minutes
+			queryOptions.setMaxSecsToLive(GlobalProperties.getInt("querycache.maxTimeToLive", 60*60*6));//6 hrs
 			//queryOptions.setTrimFrequency(GlobalProperties.getInt("querycache.trimFrequency", 1000*60));//1 minute
 		}
 		
@@ -375,5 +392,30 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		ClusterManager clusterManager = new ClusterManager();
 		clusterManager.register(PROCESS_KEY, p);
 		return clusterManager;
+	}
+	
+	private static class CacheWarmer extends TimerTask {
+
+		private static final Logger logger = Logger.getLogger(CacheWarmer.class.getName());
+		
+		private final long sleepMillis;
+		private final EbeanServer server;
+		
+		CacheWarmer(long sleepMillis, EbeanServer server){
+			this.sleepMillis = sleepMillis;
+			this.server = server;
+		}
+		
+		public void run() {
+			try {
+				Thread.sleep(sleepMillis);
+			} catch (InterruptedException e) {
+				String msg = "Error while sleeping prior to cache warming";
+				logger.log(Level.SEVERE, msg, e);
+			}
+			server.runCacheWarming();
+		}
+		
+		
 	}
 }

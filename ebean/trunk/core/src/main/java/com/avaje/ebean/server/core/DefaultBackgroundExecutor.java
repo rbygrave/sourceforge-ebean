@@ -19,7 +19,10 @@
  */
 package com.avaje.ebean.server.core;
 
-import com.avaje.ebean.internal.BackgroundExecutor;
+import java.util.concurrent.TimeUnit;
+
+import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.server.lib.DaemonScheduleThreadPool;
 import com.avaje.ebean.server.lib.DaemonThreadPool;
 
 /**
@@ -30,6 +33,7 @@ import com.avaje.ebean.server.lib.DaemonThreadPool;
 public class DefaultBackgroundExecutor implements BackgroundExecutor {
 
 	private final DaemonThreadPool pool;
+	private final DaemonScheduleThreadPool schedulePool;
 
 	/**
 	 * Construct the default implementation of BackgroundExecutor.
@@ -42,8 +46,9 @@ public class DefaultBackgroundExecutor implements BackgroundExecutor {
 	 *            the time in seconds allowed for the pool to shutdown nicely.
 	 *            After this the pool is forced to shutdown.
 	 */
-	public DefaultBackgroundExecutor(int coreSize, long keepAliveSecs,int shutdownWaitSeconds, String namePrefix) {
-		pool = new DaemonThreadPool(coreSize, keepAliveSecs,shutdownWaitSeconds, namePrefix);
+	public DefaultBackgroundExecutor(int mainPoolSize, int schedulePoolSize, long keepAliveSecs,int shutdownWaitSeconds, String namePrefix) {
+		pool = new DaemonThreadPool(mainPoolSize, keepAliveSecs, shutdownWaitSeconds, namePrefix);
+		schedulePool = new DaemonScheduleThreadPool(schedulePoolSize, shutdownWaitSeconds, namePrefix+"periodic-");
 	}
 
 	/**
@@ -53,4 +58,9 @@ public class DefaultBackgroundExecutor implements BackgroundExecutor {
 		pool.execute(r);
 	}
 
+	public void executePeriodically(Runnable r, long delay, TimeUnit unit) {
+		schedulePool.scheduleWithFixedDelay(r, delay, delay, unit);
+	}
+
+	
 }

@@ -68,6 +68,9 @@ public class RefreshHelp {
 		// with PropertyChangeSupport
 		ebi.setIntercepting(false);
 		
+		boolean readOnly = ebi.isReadOnly();
+		boolean sharedInstance = ebi.isSharedInstance();
+		
 		if (isLazyLoad){
 			excludes = ebi.getLoadedProps();
 			if (excludes != null){
@@ -92,8 +95,11 @@ public class RefreshHelp {
 				
 			} else {
 				Object dbVal = prop.getValue(dbBean);
-				prop.setValueIntercept(o, dbVal);
-				
+				if (isLazyLoad) {
+					prop.setValue(o, dbVal);
+				} else {			
+					prop.setValueIntercept(o, dbVal);
+				}
 				if (setOriginalOldValues){
 					// maintain original oldValues for partially loaded bean
 					prop.setValue(originalOldValues, dbVal);
@@ -109,16 +115,29 @@ public class RefreshHelp {
 				
 			} else {
 				Object dbVal = prop.getValue(dbBean);
-				prop.setValueIntercept(o, dbVal);
-				
+				if (isLazyLoad){
+					prop.setValue(o, dbVal);					
+				} else {
+					prop.setValueIntercept(o, dbVal);
+				}
 				if (setOriginalOldValues){
 					// maintain original oldValues for partially loaded bean
 					prop.setValue(originalOldValues, dbVal);
 				}
+				if (dbVal != null){
+					if (sharedInstance){
+						// propagate sharedInstance status to associated beans
+						((EntityBean)dbVal)._ebean_getIntercept().setSharedInstance();
+					} else if (readOnly) {
+						// propagate readOnly status to associated beans
+						((EntityBean)dbVal)._ebean_getIntercept().setReadOnly(true);						
+					}
+				}
+				
 			}
 		}
 
-		refreshEmbedded(o, dbBean, desc, excludes);
+		refreshEmbedded(o, dbBean, desc, excludes, readOnly);
 
 		// set a lazy loading many proxy if required
 		BeanPropertyAssocMany<?>[] manys = desc.propertiesMany();
@@ -129,7 +148,7 @@ public class RefreshHelp {
 				
 			} else {
 				// set a lazy loading proxy
-				prop.createReference(o, null);				
+				prop.createReference(o, null, readOnly, sharedInstance);				
 			}
 		}
 		
@@ -145,7 +164,7 @@ public class RefreshHelp {
 	/**
 	 * Refresh the Embedded beans.
 	 */
-	private void refreshEmbedded(Object o, Object dbBean, BeanDescriptor<?> desc, Set<String> excludes) {
+	private void refreshEmbedded(Object o, Object dbBean, BeanDescriptor<?> desc, Set<String> excludes, boolean propagateReadOnly) {
 
 		BeanPropertyAssocOne<?>[] embeds = desc.propertiesEmbedded();
 		for (int i = 0; i < embeds.length; i++) {
@@ -163,6 +182,10 @@ public class RefreshHelp {
 					// original embedded bean was null
 					// so just replace the entire embedded bean
 					prop.setValueIntercept(o, dbEmb);
+					if (propagateReadOnly && dbEmb != null){
+						// propagate readOnly status to embedded beans
+						((EntityBean)dbEmb)._ebean_getIntercept().setReadOnly(true);
+					}
 					
 				} else {
 					// refresh each property of the original

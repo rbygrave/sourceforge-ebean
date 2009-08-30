@@ -36,6 +36,7 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
@@ -44,7 +45,6 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.TransactionEventTable;
-import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;

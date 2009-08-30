@@ -216,6 +216,14 @@ public class CQueryFetchIds {
 		public int nextRsetIndex() {
 			return ++rsetIndex;
 		}
+		
+		public boolean isSharedInstance() {
+			return false;
+		}
+
+		public boolean isReadOnly() {
+			return false;
+		}
 
 		public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
 			// always null

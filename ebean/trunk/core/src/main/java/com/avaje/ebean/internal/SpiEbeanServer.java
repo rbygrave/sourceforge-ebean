@@ -26,7 +26,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.cache.ServerCacheManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -40,11 +39,6 @@ import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 public interface SpiEbeanServer extends LazyLoadEbeanServer {
 
 	/**
-	 * Return the BackgroundExecutor for asynchronous processing of queries.
-	 */
-	public BackgroundExecutor getBackgroundExecutor();
-
-	/**
 	 * Return the DDL generator.
 	 */
 	public DdlGenerator getDdlGenerator();
@@ -53,11 +47,6 @@ public interface SpiEbeanServer extends LazyLoadEbeanServer {
 	 * Return the AutoFetchListener.
 	 */
 	public AutoFetchManager getAutoFetchManager();
-
-	/**
-	 * Return the server cache.
-	 */
-	public ServerCacheManager getServerCache();
 
 	/**
 	 * Clear the query execution statistics.

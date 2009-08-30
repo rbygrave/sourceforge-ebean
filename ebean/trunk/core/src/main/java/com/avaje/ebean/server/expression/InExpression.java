@@ -3,29 +3,22 @@ package com.avaje.ebean.server.expression;
 import java.util.Collection;
 
 import com.avaje.ebean.event.BeanQueryRequest;
-import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
 
-class InExpression implements SpiExpression {
+class InExpression extends AbstractExpression {
 
 	private static final long serialVersionUID = 3150665801693551260L;
-
-	private final String propertyName;
 	
 	private final Object[] values;
 	
 	InExpression(String propertyName, Collection<?> coll){
-		this.propertyName = propertyName;
+		super(propertyName);
 		values = coll.toArray(new Object[coll.size()]);
 	}
 	
 	InExpression(String propertyName, Object[] array){
-		this.propertyName = propertyName;
+		super(propertyName);
 		this.values = array;
-	}
-
-	public String getPropertyName() {
-		return propertyName;
 	}
 
 	public void addBindValues(SpiExpressionRequest request) {

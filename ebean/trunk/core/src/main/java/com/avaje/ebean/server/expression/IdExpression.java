@@ -3,6 +3,7 @@ package com.avaje.ebean.server.expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpression;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.util.DefaultExpressionRequest;
 
 
@@ -19,11 +20,13 @@ class IdExpression implements SpiExpression {
 		this.value = value;
 	}
 
-	public String getPropertyName() {
-		return null;
+	/**
+	 * Always returns false.
+	 */
+	public boolean containsMany(BeanDescriptor<?> desc) {
+		return false;
 	}
 
-	
 	public void addBindValues(SpiExpressionRequest request) {
 		
 		// 'flatten' EmbeddedId and multiple Id cases
