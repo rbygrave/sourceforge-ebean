@@ -57,10 +57,7 @@ public class TestLimitQuery extends TestCase {
 		hasLimit = sql.indexOf("limit 11") > -1;
 		hasSelectedDetails = sql.indexOf("od.id") > -1;
 		hasDistinct = sql.indexOf("select distinct") > -1;
-		
-		System.out.println(">>");
-		System.out.println(sql);
-		System.out.println("<<");
+	
 		Assert.assertFalse("no join with maxRows",hasDetailsJoin);
 		Assert.assertTrue(hasLimit);
 		Assert.assertFalse(hasSelectedDetails);

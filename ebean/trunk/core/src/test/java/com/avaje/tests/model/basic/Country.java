@@ -5,12 +5,14 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.avaje.ebean.annotation.CacheStrategy;
+import com.avaje.ebean.annotation.CacheTuning;
 import com.avaje.ebean.validation.Length;
 
 /**
  * Country entity bean.
  */
-@CacheStrategy(readOnly=true)
+@CacheStrategy(readOnly=true,warmingQuery="order by name")
+@CacheTuning(maxSize=500)
 @Entity
 @Table(name="o_country")
 public class Country {

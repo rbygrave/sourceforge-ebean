@@ -20,6 +20,8 @@ public class TestQueryWithCache extends TestCase {
 	public void testJoinCache() {
 
 		ResetBasicData.reset();
+
+		Ebean.getServer(null).runCacheWarming();
 		
 		Query<Order> query = Ebean.createQuery(Order.class)
 			.setAutofetch(false)
@@ -29,15 +31,15 @@ public class TestQueryWithCache extends TestCase {
 		Order order = query.findUnique();
 		Customer customer = order.getCustomer();
 		BeanState custState = Ebean.getBeanState(customer);
-		Assert.assertTrue(custState.isReference());
+		Assert.assertTrue(custState.isReadOnly());
 		
-		// invoke lazy loading
-		customer.getName();
-		
-		order = query.findUnique();
-		customer = order.getCustomer();
-		custState = Ebean.getBeanState(customer);
-		Assert.assertFalse(custState.isReference());
+//		// invoke lazy loading
+//		customer.getName();
+//		
+//		order = query.findUnique();
+//		customer = order.getCustomer();
+//		custState = Ebean.getBeanState(customer);
+//		Assert.assertFalse(custState.isReadOnly());
 		
 	}
 	

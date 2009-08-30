@@ -102,11 +102,11 @@ public class TestPaging extends TestCase {
 		List<TOne> asList = pagingList.getAsList();
 		for (int i = 0; i < asList.size(); i++) {
 			if (i % 10 == 0){
-				System.out.println("here");
+				//System.out.println("here");
 			}
 			TOne tOne = asList.get(i);
 			tOne.hashCode();
-			System.out.print(".");
+			//System.out.print(".");
 		}
 	}
 	

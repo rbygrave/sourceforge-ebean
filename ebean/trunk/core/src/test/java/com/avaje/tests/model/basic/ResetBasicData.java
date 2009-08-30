@@ -116,8 +116,8 @@ public class ResetBasicData {
 
 		Ebean.execute(new TxRunnable() {
 			public void run() {
-				Customer cust1 = insertCustomerNoAddress();
-				Customer cust2 = insertCustomer();
+				Customer cust1 = insertCustomer();
+				Customer cust2 = insertCustomerNoAddress();
 			
 				createOrder1(cust1);
 				createOrder2(cust2);
