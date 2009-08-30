@@ -29,6 +29,8 @@ import java.util.logging.Logger;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.annotation.CacheStrategy;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 
@@ -1195,5 +1197,43 @@ public final class Ebean {
 	 */
 	public static BeanState getBeanState(Object bean) {
 		return serverMgr.getPrimaryServer().getBeanState(bean);
+	}
+	
+	/**
+	 * Return the manager of the server cache ("L2" cache).
+	 * 
+	 */
+	public static ServerCacheManager getServerCacheManager(){
+		return serverMgr.getPrimaryServer().getServerCacheManager();
+	}
+	
+	/**
+	 * Return the BackgroundExecutor service for asynchronous processing of queries.
+	 */
+	public static BackgroundExecutor getBackgroundExecutor(){
+		return serverMgr.getPrimaryServer().getBackgroundExecutor();
+	}
+	
+	/**
+	 * Run the cache warming queries on all bean types that have one defined
+	 * for the default/primary EbeanServer.
+	 * <p>
+	 * A cache warming query can be defined via {@link CacheStrategy}.
+	 * </p>
+	 */
+	public static void runCacheWarming(){
+		serverMgr.getPrimaryServer().runCacheWarming();
+	}
+	
+	/**
+	 * Run the cache warming query for a specific bean type for the
+	 * default/primary EbeanServer.
+	 * <p>
+	 * A cache warming query can be defined via {@link CacheStrategy}.
+	 * </p>
+	 */
+	public static void runCacheWarming(Class<?> beanType){
+		
+		serverMgr.getPrimaryServer().runCacheWarming(beanType);
 	}
 }

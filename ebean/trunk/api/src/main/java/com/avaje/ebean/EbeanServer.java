@@ -25,10 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import javax.persistence.OptimisticLockException;
 
+import com.avaje.ebean.annotation.CacheStrategy;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ServerConfig;
 
 /**
@@ -96,6 +97,7 @@ import com.avaje.ebean.config.ServerConfig;
  */
 public interface EbeanServer {
 
+	
 	/**
 	 * Return the AdminLogging which is used to control and
 	 * configure the Transaction logging at runtime. 
@@ -464,7 +466,7 @@ public interface EbeanServer {
 	 *            the transaction (can be null).
 	 * @return a Future object for the row count query
 	 */
-	public <T> Future<Integer> findFutureRowCount(Query<T> query, Transaction t);
+	public <T> FutureRowCount<T> findFutureRowCount(Query<T> query, Transaction t);
 
 	/**
 	 * Execute find Id's query in a background thread.
@@ -802,6 +804,34 @@ public interface EbeanServer {
 	 */
 	public <T> T execute(TxCallable<T> c);
 
+	/**
+	 * Return the manager of the server cache ("L2" cache).
+	 * 
+	 */
+	public ServerCacheManager getServerCacheManager();
+	
+	/**
+	 * Return the BackgroundExecutor service for asynchronous processing of queries.
+	 */
+	public BackgroundExecutor getBackgroundExecutor();
+	
+	/**
+	 * Run the cache warming queries on all bean types that have one defined.
+	 * <p>
+	 * A cache warming query can be defined via {@link CacheStrategy}.
+	 * </p>
+	 */
+	public void runCacheWarming();
+	
+	/**
+	 * Run the cache warming query for a specific bean type.
+	 * <p>
+	 * A cache warming query can be defined via {@link CacheStrategy}.
+	 * </p>
+	 */
+	public void runCacheWarming(Class<?> beanType);
+	
+	
 //	/**
 //	 * Register the BeanPersistController.
 //	 */

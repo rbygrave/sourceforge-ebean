@@ -24,44 +24,34 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.avaje.ebean.Query;
-
 /**
- * Specify the default cache use specific entity type.
+ * Specify cache tuning for a specific entity type.
+ * <p>
+ * If this is not specified then the system default settings are used.
+ * </p>
  */
 @Target( { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CacheStrategy {
+public @interface CacheTuning {
 
 	/**
-	 * Set to true then the bean cache will be used unless explicitly stated
-	 * not to in a query via {@link Query#setUseCache(boolean)}.
+	 * The maximum size for the cache.
 	 */
-	boolean useBeanCache() default true;
+	int maxSize() default 0;
 
 	/**
-	 * Set to true means by the beans returned from the cache will be treated as
-	 * readOnly and this means they can be safely shared by many users.
-	 * <p>
-	 * If this is false then a copy of the bean is given back to the application
-	 * and so the application code that modify that bean.
-	 * </p>
-	 * <p>
-	 * If you try to modify a readOnly bean it will throw an exception.
-	 * </p>
+	 * The maximum time (in seconds) that a cache entry is allowed to stay in
+	 * the cache when it has not been accessed.
 	 */
-	boolean readOnly() default false;
+	int maxIdleSecs() default 0;
 
 	/**
-	 * Specify a query that can be used to warm the cache.
+	 * The maximum time (in seconds) a cache entry is allowed to stay in the
+	 * cache.
 	 * <p>
-	 * All the beans fetch by this query will be loaded into the bean cache and
-	 * the query itself will be loaded into the query cache.
-	 * </p>
-	 * <p>
-	 * The warming query will typically be executed at startup time but can also
-	 * be run later via the ServerCache.
+	 * This is not generally required as the cache entries are automatically
+	 * evicted when related data changes are committed.
 	 * </p>
 	 */
-	String warmingQuery() default "";
+	int maxSecsToLive() default 0;
 };

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 /**
- * The FutureList represents the result of a background query execution that
+ * FutureList represents the result of a background query execution that
  * will return a list of entities.
  * <p>
  * It extends the java.util.concurrent.Future with the ability to cancel the
