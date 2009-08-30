@@ -20,13 +20,12 @@
 package com.avaje.ebean.common;
 
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.LazyLoadEbeanServer;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.SerializeControl;
@@ -34,56 +33,18 @@ import com.avaje.ebean.bean.SerializeControl;
 /**
  * Set capable of lazy loading.
  */
-public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
-    
-	private static final long serialVersionUID = 2435724099234280064L;
-    
-	/**
-	 * The EbeanServer this is associated with. (used for lazy fetch).
-	 */
-	private transient LazyLoadEbeanServer internalEbean;
-    
-	private transient final ObjectGraphNode profilePoint;
-	
-	private transient BeanCollectionTouched beanCollectionTouched;
-
-	/**
-	 * The owning bean (used for lazy fetch).
-	 */
-	private final Object ownerBean;
-
-	/**
-	 * The name of this property in the owning bean (used for lazy fetch).
-	 */
-	private final String propertyName;
-	
+public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E> {
+        	
     /**
      * The underlying Set implementation.
      */
 	private Set<E> set;
-
-    /**
-     * Can be false when a background thread is used to continue the fetch the
-     * rows. It will set this to true when it is finished. If no background
-     * thread is used then this should already be true.
-     */
-	private boolean finishedFetch = true;
-
-    /**
-     * Flag set to true if rows are limited by firstRow maxRows and more rows
-     * exist. For use by client to enable 'next' for paging.
-     */
-	private boolean hasMoreRows;
-
-
+	
     /**
      * Create with a specific Set implementation.
      */
     public BeanSet(Set<E> set) {
         this.set = set;
-        this.profilePoint = null;
-        this.propertyName = null;
-        this.ownerBean = null;
     }
     
     /**
@@ -93,16 +54,10 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         this(new LinkedHashSet<E>());
     }
 
-	public BeanSet(LazyLoadEbeanServer internalEbean, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		this.internalEbean = internalEbean;
-		this.ownerBean = ownerBean;
-		this.propertyName = propertyName;
-		this.profilePoint = profilePoint;
+	public BeanSet(LazyLoadEbeanServer ebeanServer, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
+		super(ebeanServer, ownerBean, propertyName, profilePoint);
 	}
 	
-    public void setBeanCollectionTouched(BeanCollectionTouched notify) {
-		this.beanCollectionTouched = notify;
-	}
     
     Object readResolve() throws ObjectStreamException {
         if (SerializeControl.isVanillaCollections()){
@@ -117,8 +72,8 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         }
         return this;
     }
-    
-    @SuppressWarnings("unchecked")
+
+	@SuppressWarnings("unchecked")
 	public void internalAdd(Object bean) {
 		set.add((E)bean);
 	}
@@ -131,14 +86,11 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
 	private void init() {
-        if (set == null && internalEbean != null) {
-			//InternalEbean eb = (InternalEbean)Ebean.getServer(serverName);
-			internalEbean.lazyLoadMany(ownerBean, propertyName, profilePoint);
-        }
-		if (beanCollectionTouched != null){
-			// only call this once
-			beanCollectionTouched.notifyTouched(this);
-			beanCollectionTouched = null;
+		synchronized (this) {
+	        if (set == null) {
+	        	lazyLoadCollection();
+	        }
+	        touched();
 		}
     }
 
@@ -172,6 +124,11 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("BeanSet ");
+        if (sharedInstance){
+            sb.append("sharedInstance ");
+        } else if (readOnly){
+            sb.append("readOnly ");
+        }
         if (set == null) {
             sb.append("deferred ");
             
@@ -196,55 +153,13 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         return set.hashCode();
     }
     
-
-    //  -----------------------------------------------------//
-    // The additional methods are here
-    // -----------------------------------------------------//
-
-    /**
-     * Set to true if maxRows was hit and there are actually more rows
-     * available.
-     * <p>
-     * Can be used by client code that is paging through results using
-     * setFirstRow() setMaxRows(). If this returns true then the client can
-     * display a 'next' button etc.
-     * </p>
-     */
-    public boolean hasMoreRows() {
-        return hasMoreRows;
-    }
-
-    /**
-     * Set to true when maxRows is hit but there are actually more rows
-     * available. This is set so that client code knows that there is more data
-     * available.
-     */
-    public void setHasMoreRows(boolean hasMoreRows) {
-        this.hasMoreRows = hasMoreRows;
-    }
-
-    /**
-     * Returns true if the fetch has finished. False if the fetch is continuing
-     * in a background thread.
-     */
-    public boolean isFinishedFetch() {
-        return finishedFetch;
-    }
-
-    /**
-     * Set to true when a fetch has finished. Used when a fetch continues in the
-     * background.
-     */
-    public void setFinishedFetch(boolean finishedFetch) {
-        this.finishedFetch = finishedFetch;
-    }
-
-
+	
     // -----------------------------------------------------//
     // proxy method for map
     // -----------------------------------------------------//
     
     public boolean add(E o) {
+    	checkReadOnly();
         init();
         if (modifyListening){
         	if (set.add(o)){
@@ -258,6 +173,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
     public boolean addAll(Collection<? extends E> c) {
+    	checkReadOnly();
         init();
         if (modifyListening){
         	boolean changed = false;
@@ -275,6 +191,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
     public void clear() {
+    	checkReadOnly();
         init();
         set.clear();
     }
@@ -296,6 +213,9 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
 
     public Iterator<E> iterator() {
         init();
+        if (readOnly){
+        	return new ReadOnlyIterator<E>(set.iterator());
+        }
         if (modifyListening){
         	return new ModifyIterator<E>(this, set.iterator());
         }
@@ -303,6 +223,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
     public boolean remove(Object o) {
+    	checkReadOnly();
         init();
         if (modifyListening){
         	if (set.remove(o)){
@@ -313,6 +234,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
     public boolean removeAll(Collection<?> c) {
+    	checkReadOnly();
         init();
         if (modifyListening){
         	boolean changed = false;
@@ -330,6 +252,7 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
     }
 
     public boolean retainAll(Collection<?> c) {
+    	checkReadOnly();
         init();
         if (modifyListening){
         	boolean changed = false;
@@ -361,61 +284,27 @@ public final class BeanSet<E> implements Set<E>, BeanCollection<E> {
         init();
         return set.toArray(a);
     }
-    
-
-	// ---------------------------------------------------------
-	// Support for modify additions deletions etc
-	// ---------------------------------------------------------
-
-	ModifyHolder<E> modifyHolder;
-
-	boolean modifyListening;
-
-	/**
-	 * set modifyListening to be on or off.
-	 */
-	public void setModifyListening(boolean modifyListening) {
-		this.modifyListening = modifyListening;
-		if (modifyListening){
-			// lose any existing modifications
-			modifyHolder = null;
-		}
-	}
-
-	private ModifyHolder<E> getModifyHolder() {
-		if (modifyHolder == null){
-			modifyHolder = new ModifyHolder<E>();
-		}
-		return modifyHolder;
-	}
+   
 	
-	public void modifyAddition(E bean) {
-		getModifyHolder().modifyAddition(bean);
-	}
+	private static class ReadOnlyIterator<E> implements Iterator<E>, Serializable {
 
-	public void modifyRemoval(Object bean) {
-		getModifyHolder().modifyRemoval(bean);
-	}
-	
-	public void modifyReset() {
-		if (modifyHolder != null){
-			modifyHolder.reset();
+		private static final long serialVersionUID = 2577697326745352605L;
+
+		private final Iterator<E> it;
+		
+		ReadOnlyIterator(Iterator<E> it) {
+			this.it = it;
 		}
-	}
-
-	public Set<E> getModifyAdditions() {
-		if (modifyHolder == null){
-			return null;
-		} else {
-			return modifyHolder.getModifyAdditions();
+		public boolean hasNext() {
+			return it.hasNext();
 		}
-	}
 
-	public Set<E> getModifyRemovals() {
-		if (modifyHolder == null){
-			return null;
-		} else {
-			return modifyHolder.getModifyRemovals();
+		public E next() {
+			return it.next();
+		}
+
+		public void remove() {
+			throw new IllegalStateException("This collection is in ReadOnly mode");
 		}
 	}
 

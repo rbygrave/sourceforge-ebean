@@ -30,6 +30,8 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.Ebean;
+
 
 /**
  * This is the object added to every entity bean using byte code enhancement.
@@ -46,6 +48,8 @@ public class EntityBeanIntercept implements Serializable {
 
 	private transient LazyLoadEbeanServer internalEbean;
 
+	private String ebeanServerName;
+	
 	private transient PropertyChangeSupport pcs;
 	
 	private transient PersistenceContext persistenceContext;
@@ -76,6 +80,12 @@ public class EntityBeanIntercept implements Serializable {
 	 * If true calling setters throws an exception.
 	 */
 	private boolean readOnly;
+
+	/**
+	 * This instance is shared and should be always readOnly.
+	 * Typically it is located in the server cache.
+	 */
+	private boolean sharedInstance;
 
 	/**
 	 * set to true if the lazy loading should use the L2 cache.
@@ -112,8 +122,14 @@ public class EntityBeanIntercept implements Serializable {
 	public void copyStateTo(EntityBeanIntercept dest) {
 		dest.internalEbean = internalEbean;
 		dest.loadedProps = loadedProps;
-		dest.useCache = useCache;
-		dest.readOnly = readOnly;
+
+		// Not transferring sharedInstance, readOnly or useCache state. 
+		// Generally copying a sharedInstance from the cache to give
+		// to a user that can be mutated
+		//dest.sharedInstance = sharedInstance;
+		//dest.readOnly = readOnly;
+		//dest.useCache = useCache;
+		
 		if (isLoaded()){
 			dest.setLoaded();
 		}
@@ -197,6 +213,9 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	public void setInternalEbean(LazyLoadEbeanServer internalEbean) {
 		this.internalEbean = internalEbean;
+		if (internalEbean != null){
+			ebeanServerName = internalEbean.getName();
+		}
 	}
 
 	/**
@@ -273,8 +292,29 @@ public class EntityBeanIntercept implements Serializable {
 	/**
 	 * Set to true if this bean should use the cache when lazy loading.
 	 */
-	public void setUseCache(boolean useCache) {
-		this.useCache = useCache;
+	public void setUseCache(boolean loadFromCache) {
+		this.useCache = loadFromCache;
+	}
+	
+	/**
+	 * Return true if this is a shared instance.
+	 * Typically this means this instance exists in the server cache and
+	 * other users/threads could also be using the same instance concurrently.
+	 * <p>
+	 * A shared instance must always be treated as read only.
+	 * </p>
+	 */
+	public boolean isSharedInstance() {
+		return sharedInstance;
+	}
+
+	/**
+	 * Set this called when it is known this is a shared instance.
+	 * This is when this instance is put into the server cache.
+	 */
+	public void setSharedInstance() {
+		this.sharedInstance = true;
+		this.readOnly = true;
 	}
 
 	/**
@@ -290,6 +330,9 @@ public class EntityBeanIntercept implements Serializable {
 	 * an exception.
 	 */
 	public void setReadOnly(boolean readOnly) {
+		if (sharedInstance && !readOnly){
+			throw new IllegalStateException("sharedInstance so must remain readOnly");
+		}
 		this.readOnly = readOnly;
 	}
 	
@@ -398,23 +441,32 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	protected void loadBean(String loadProperty) {
 
-		if (internalEbean == null){
-			String msg = "Lazy loading but InternalEbean is null?"
-				+" The InternalEbean needs to be set after deserialization"
-				+" to support lazy loading.";
-			throw new PersistenceException(msg);
-		}
+		synchronized (this) {
+			// synchronized for when lazy loading invoked 
+			// on cached bean that could be shared 
+			if (lazyLoadProperty == null){
+				if (internalEbean == null){
+					internalEbean = (LazyLoadEbeanServer)Ebean.getServer(ebeanServerName);
+				}
+				if (internalEbean == null){
+					String msg = "Lazy loading but InternalEbean is null?"
+						+" The InternalEbean needs to be set after deserialization"
+						+" to support lazy loading.";
+					throw new PersistenceException(msg);					
+				}
+				
+				lazyLoadProperty = loadProperty;
 		
-		lazyLoadProperty = loadProperty;
-
-		if (nodeUsageCollector != null){
-			nodeUsageCollector.setLoadProperty(lazyLoadProperty);
+				if (nodeUsageCollector != null){
+					nodeUsageCollector.setLoadProperty(lazyLoadProperty);
+				}
+		
+				internalEbean.lazyLoadBean(owner, nodeUsageCollector);			
+		
+				// bean should be loaded and intercepting now with
+				// setLoaded() called by code in internalEbean.lazyLoadBean(...)
+			}
 		}
-
-		internalEbean.lazyLoadBean(owner, nodeUsageCollector);			
-
-		// bean should be loaded and intercepting now with
-		// setLoaded() called by code in internalEbean.lazyLoadBean(...)
 	}
 
 	/**
@@ -542,7 +594,7 @@ public class EntityBeanIntercept implements Serializable {
 			return false;
 		}
 		if (readOnly) {
-			throw new PersistenceException("This bean is readOnly");
+			throw new IllegalStateException("This bean is readOnly");
 		}
 		return (loaded && oldValues == null);
 	}

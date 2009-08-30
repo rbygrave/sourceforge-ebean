@@ -40,7 +40,43 @@ import java.util.Set;
  */
 public interface BeanCollection<E> extends Serializable {
 	
+	/**
+	 * Return true if this collection is owned by a sharedInstance.
+	 * <p>
+	 * That is, return true if it is a Many property of a bean in the cache.
+	 * </p>
+	 */
+	public boolean isSharedInstance();
+	
+	/**
+	 * Set when this collection is owned by a sharedInstance.
+	 * <p>
+	 * That is, it is a Many property on a bean in the cache.
+	 * </p>
+	 */
+	public void setSharedInstance();
+	
+	/**
+	 * Set a listener to be notified when the BeanCollection is first touched.
+	 */
 	public void setBeanCollectionTouched(BeanCollectionTouched notify);
+
+	/**
+	 * Re-attach the EbeanServer after deserialisation to allow lazy loading.
+	 */
+	public void setEbeanServer(LazyLoadEbeanServer ebeanServer);
+
+	/**
+	 * Set to true if you want the BeanCollection to be treated as read only.
+	 * This means no elements can be added or removed etc.
+	 */
+	public void setReadOnly(boolean readOnly);
+	
+	/**
+	 * Return true if the collection should be treated as readOnly and no
+	 * elements can be added or removed etc.
+	 */
+	public boolean isReadOnly();
 	
 	/**
 	 * Add the bean to the collection.
