@@ -142,22 +142,16 @@ public class TestPropertyChangeSupport extends EbeanTestCase implements Property
         // this will lazy load and update the property
         logLazy.setDescription("updated log");
 
-        // which should result in two PCE events
-        assertEquals(2, pces.size());
+        // which should result in one PCE events
+        assertEquals(1, pces.size());
 
-        // the first for updating the property from null to the value in the database
-        PropertyChangeEvent lazyLoadEvent = pces.get(0);
-
-        assertEquals("description", lazyLoadEvent.getPropertyName());
-        assertNull(lazyLoadEvent.getOldValue());
-        assertEquals("log", lazyLoadEvent.getNewValue());
-
-        // the second for the acutal update of the value
-        PropertyChangeEvent propertyChangeEvent = pces.get(1);
+        // test for the acutal update of the value
+        PropertyChangeEvent propertyChangeEvent = pces.get(0);
 
         assertEquals("description", propertyChangeEvent.getPropertyName());
         assertEquals("log", propertyChangeEvent.getOldValue());
         assertEquals("updated log", propertyChangeEvent.getNewValue());
+
     }
 
     private void resetEvent()

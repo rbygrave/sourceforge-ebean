@@ -9,8 +9,6 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.PersistenceException;
-
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
@@ -57,26 +55,32 @@ public class TestSerialization extends TestCase {
 		try {
 			o.setStatus(Status.COMPLETE);
 			Assert.assertTrue("dont get here",false);
-		} catch (PersistenceException e){
+		} catch (IllegalStateException e){
 			Assert.assertTrue("throws exception",true);
 		}
 		
 		Assert.assertTrue(SerializeControl.isVanillaBeans());
 		Assert.assertTrue(SerializeControl.isVanillaCollections());
 		
-		Object vanillaOrder = serialWriteRead(o, true);
-		Assert.assertFalse("should be an EntityBean", (vanillaOrder instanceof EntityBean));			
-		Assert.assertTrue("should be an Order", (vanillaOrder instanceof Order));			
-
-		Order vanOrder = (Order)vanillaOrder;
-		Customer vanCustomer = vanOrder.getCustomer();
-		List<OrderDetail> vanDetails = vanOrder.getDetails();
-		
-		Assert.assertFalse("should NOT be an EntityBean", (vanCustomer instanceof EntityBean));			
-		Assert.assertFalse("should NOT be an BeanList", (vanDetails instanceof BeanList<?>));			
-		Assert.assertTrue("should be an ArrayList", (vanDetails instanceof ArrayList<?>));			
-		Assert.assertTrue("should be an Customer", (vanCustomer instanceof Customer));			
-
+		Order testUsingSubclassing = new Order();
+		if (testUsingSubclassing instanceof EntityBean){
+			System.out.println("Need to run serialisation test with 'subclassing/proxies'");
+			
+		} else {
+			System.out.println("Testing serialisation of 'subclassing/proxies'");
+			Object vanillaOrder = serialWriteRead(o, true);
+			Assert.assertFalse("should be an EntityBean", (vanillaOrder instanceof EntityBean));			
+			Assert.assertTrue("should be an Order", (vanillaOrder instanceof Order));			
+	
+			Order vanOrder = (Order)vanillaOrder;
+			Customer vanCustomer = vanOrder.getCustomer();
+			List<OrderDetail> vanDetails = vanOrder.getDetails();
+			
+			Assert.assertFalse("should NOT be an EntityBean", (vanCustomer instanceof EntityBean));			
+			Assert.assertFalse("should NOT be an BeanList", (vanDetails instanceof BeanList<?>));			
+			Assert.assertTrue("should be an ArrayList", (vanDetails instanceof ArrayList<?>));			
+			Assert.assertTrue("should be an Customer", (vanCustomer instanceof Customer));			
+		}
 		
 		SerializeControl.setVanilla(false);
 		
