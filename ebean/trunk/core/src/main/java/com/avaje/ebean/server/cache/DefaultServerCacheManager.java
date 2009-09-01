@@ -32,6 +32,19 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 		cacheFactory.init(server);
 	}
 
+	/**
+	 * Clear both the bean cache and the query cache for a 
+	 * given bean type.
+	 */
+	public void clear(Class<?> beanType) {
+		if (isBeanCaching(beanType)){
+			getBeanCache(beanType).clear();
+		}
+		if (isQueryCaching(beanType)){
+			getQueryCache(beanType).clear();
+		}
+	}
+
 
 	public void clearAll() {
 		beanCache.clearAll();
@@ -61,5 +74,8 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 		return beanCache.isCaching(beanType);
 	}
 
-	
+	public boolean isQueryCaching(Class<?> beanType) {
+		
+		return queryCache.isCaching(beanType);
+	}
 }
