@@ -53,6 +53,11 @@ public interface ServerCacheManager {
 	public ServerCache getQueryCache(Class<?> beanType);
 
 	/**
+	 * This clears both the bean and query cache for a given type.
+	 */
+	public void clear(Class<?> beanType);
+	
+	/**
 	 * Clear all the caches.
 	 */
 	public void clearAll();

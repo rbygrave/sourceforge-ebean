@@ -74,6 +74,11 @@ public interface ServerCache {
 
 	/**
 	 * Clear all entries from the cache.
+	 * <p>
+	 * NOTE: Be careful using this method in that most of the time application
+	 * code should clear BOTH the bean and query caches at the same time. This
+	 * can be done via {@link ServerCacheManager#clear(Class)}.
+	 * </p>
 	 */
 	public void clear();
 
