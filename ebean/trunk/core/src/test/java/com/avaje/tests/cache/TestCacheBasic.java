@@ -18,8 +18,8 @@ public class TestCacheBasic extends TestCase {
 		
 		ResetBasicData.reset();
 		
+		Ebean.getServerCacheManager().clear(Country.class);
 		ServerCache countryCache = Ebean.getServerCacheManager().getBeanCache(Country.class);
-		countryCache.clear();
 		
 		Ebean.runCacheWarming(Country.class);
 		Assert.assertTrue(countryCache.size() > 0);
@@ -61,7 +61,7 @@ public class TestCacheBasic extends TestCase {
 
 
 		// clear the cache
-		countryCache.clear();
+		Ebean.getServerCacheManager().clear(Country.class);
 		// reset statistics
 		countryCache.getStatistics(true);
 
@@ -128,7 +128,7 @@ public class TestCacheBasic extends TestCase {
 		Assert.assertTrue(Ebean.getBeanState(c10).isReadOnly()); 
 		Assert.assertEquals("1 country in cache", 1, countryCache.size()); 
 		
-		countryCache.clear();
+		Ebean.getServerCacheManager().clear(Country.class);
 		Assert.assertEquals("0 country in cache", 0, countryCache.size()); 
 
 		// reference doesn't load cache yet
