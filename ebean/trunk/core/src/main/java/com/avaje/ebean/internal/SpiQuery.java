@@ -74,13 +74,13 @@ public interface SpiQuery<T> extends Query<T> {
 	 * has finished.
 	 * </p>
 	 */
-	public void setPartialIds(List<Object> ids);
+	public void setIdList(List<Object> ids);
 	
 	/**
 	 * Return the list of Id's that is currently being fetched
 	 * by a background thread.
 	 */
-	public List<Object> getPartialIds();
+	public List<Object> getIdList();
 
 	/**
 	 * Return a copy of the query.
@@ -421,7 +421,7 @@ public interface SpiQuery<T> extends Query<T> {
 	 * This is true for background fetching and when using QueryListener.
 	 * </p>
 	 */
-	public boolean useOwnTransaction();
+	public boolean createOwnTransaction();
 
 	/**
 	 * Set the generated sql for debug purposes.
