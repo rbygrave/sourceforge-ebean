@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.SqlSelect;
@@ -545,6 +544,17 @@ public interface Query<T> extends Serializable {
 	public Query<T> join(String assocProperty);
 
 	/**
+	 * Execute the query returning the list of Id's.
+	 * <p>
+	 * This query will execute against the EbeanServer that was used to create
+	 * it.
+	 * </p>
+	 * 
+	 * @see EbeanServer#findIds(Query, Transaction)
+	 */
+	public List<Object> findIds();
+
+	/**
 	 * Execute the query returning the list of objects.
 	 * <p>
 	 * This query will execute against the EbeanServer that was used to create
@@ -642,7 +652,7 @@ public interface Query<T> extends Serializable {
 	 * 
 	 * @return a Future object for the row count query
 	 */
-	public Future<Integer> findFutureRowCount();
+	public FutureRowCount<T> findFutureRowCount();
 
 	/**
 	 * Execute find Id's query in a background thread.
@@ -1003,13 +1013,18 @@ public interface Query<T> extends Serializable {
 	public Query<T> setMapKey(String mapKey);
 
 	/**
-	 * Set this to true to use the cache.
+	 * Set this to true to use the bean cache.
 	 * <p>
 	 * If the query result is in cache then by default this same instance is
 	 * returned. In this sense it should be treated as a read only object graph.
 	 * </p>
 	 */
-	public Query<T> setUseCache(boolean useCache);
+	public Query<T> setUseCache(boolean useBeanCache);
+
+	/**
+	 * Set this to true to use the query cache.
+	 */
+	public Query<T> setUseQueryCache(boolean useQueryCache);
 
 	/**
 	 * When set to true when you want the returned beans to be read only.
