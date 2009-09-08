@@ -24,6 +24,9 @@ public class TestCacheBasic extends TestCase {
 		Ebean.runCacheWarming(Country.class);
 		Assert.assertTrue(countryCache.size() > 0);
 		
+		// reset the statistics
+		countryCache.getStatistics(true);
+		
 		Country c0 = Ebean.getReference(Country.class, "NZ");
 		ServerCacheStatistics statistics = countryCache.getStatistics(false);
 		int hc = statistics.getHitCount();
@@ -120,13 +123,13 @@ public class TestCacheBasic extends TestCase {
 		// Find loads cache ...
 		Assert.assertFalse(Ebean.getBeanState(c9).isSharedInstance()); 
 		Assert.assertFalse(Ebean.getBeanState(c9).isReadOnly()); 
-		Assert.assertEquals("1 country in cache", 1, countryCache.size()); 
+		Assert.assertTrue(countryCache.size() > 0); 
 
 		Country c10 = Ebean.find(Country.class,"NZ");
 
 		Assert.assertTrue(Ebean.getBeanState(c10).isSharedInstance()); 
 		Assert.assertTrue(Ebean.getBeanState(c10).isReadOnly()); 
-		Assert.assertEquals("1 country in cache", 1, countryCache.size()); 
+		Assert.assertTrue(countryCache.size() > 0); 
 		
 		Ebean.getServerCacheManager().clear(Country.class);
 		Assert.assertEquals("0 country in cache", 0, countryCache.size()); 
@@ -139,7 +142,7 @@ public class TestCacheBasic extends TestCase {
 
 		// will invoke lazy loading..
 		c11.getName();
-		Assert.assertEquals("1 country in cache", 1, countryCache.size());
+		Assert.assertTrue(countryCache.size() > 0);
 
 	}
 }

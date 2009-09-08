@@ -17,7 +17,7 @@ public class TestLoadBeanCache extends TestCase {
 		
 		Map<?, Country> map = Ebean.find(Country.class)
 			.setLoadBeanCache(true)
-			.setUseCache(true)
+			.setUseQueryCache(true)
 			.setReadOnly(true)
 			.orderBy("name")
 			.findMap();
@@ -31,7 +31,7 @@ public class TestLoadBeanCache extends TestCase {
 		
 		Map<?, Country> map2 = Ebean.find(Country.class)
 			.setLoadBeanCache(true)
-			.setUseCache(true)
+			.setUseQueryCache(true)
 			.setReadOnly(true)
 			.orderBy("name")
 			.findMap();
