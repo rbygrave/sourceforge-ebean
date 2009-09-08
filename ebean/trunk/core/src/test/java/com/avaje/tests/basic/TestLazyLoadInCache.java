@@ -8,7 +8,6 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
 import com.avaje.tests.model.basic.Address;
 import com.avaje.tests.model.basic.Country;
 import com.avaje.tests.model.basic.Customer;
@@ -21,17 +20,16 @@ public class TestLazyLoadInCache extends TestCase {
 		
 		ResetBasicData.reset();
 		
-		EbeanServer server = Ebean.getServer(null);
-		
-		Map<?, Customer> map = server.find(Customer.class)
+		Map<?, Customer> map = Ebean.find(Customer.class)
 			.select("id, name")
 			.setLoadBeanCache(true)
+			//.setUseCache(true)
 			.setReadOnly(true)
 			.findMap();
 		
 		Customer cust1 = map.get(1);
 		
-		Customer cust1B = server.find(Customer.class)
+		Customer cust1B = Ebean.find(Customer.class)
 			.setReadOnly(true)
 			.setUseCache(true)
 			.setId(1)

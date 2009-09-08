@@ -11,6 +11,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Page;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.tests.model.basic.TOne;
 
 public class TestPaging extends TestCase {
@@ -41,7 +42,47 @@ public class TestPaging extends TestCase {
 		
 	}
 	
-	public void testInitial() throws InterruptedException {
+	public void test() throws Exception {
+
+		loadData();
+
+		bgFetchOne();
+		pagingOne();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void bgFetchOne() {
+		
+		
+		Query<TOne> query = Ebean.find(TOne.class)
+			.setAutofetch(false)
+			.select("id")
+			.where().gt("name", "2")
+			.setBackgroundFetchAfter(10)
+			//.setMaxRows(20)
+			.orderBy("id");
+
+		//query.findList();
+		//query.findIds();
+
+//		long t1 = System.currentTimeMillis();
+		
+		List<TOne> ids = query.findList();
+		//List<Object> ids = query.findIds();
+		
+//		long t0 = System.currentTimeMillis();
+//		System.out.println("Got: "+ids.size());
+		BeanCollection<TOne> bc = (BeanCollection<TOne>)ids; 
+		bc.backgroundFetchWait();
+		
+//		long ex0 = System.currentTimeMillis() - t0;
+//		long ex1 = System.currentTimeMillis() - t1;
+//		System.out.println("Got: "+ids.size());
+//		System.out.println("exetime t0:"+ex0+" t1:"+ex1);
+		//System.out.println("done "+bc.size());
+	}
+	
+	private void pagingOne() throws InterruptedException {
 		
 		loadData();
 		
