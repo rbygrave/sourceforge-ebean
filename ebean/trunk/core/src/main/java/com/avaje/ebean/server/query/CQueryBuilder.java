@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.query;
 
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
@@ -48,10 +49,15 @@ public class CQueryBuilder implements Constants {
 	
 	private final Binder binder;
 	
+	private final BackgroundExecutor backgroundExecutor;
+	
+	
 	/**
 	 * Create the SqlGenSelect.
 	 */
-	public CQueryBuilder(DatabasePlatform dbPlatform, Binder binder) {
+	public CQueryBuilder(BackgroundExecutor backgroundExecutor, DatabasePlatform dbPlatform, Binder binder) {
+		
+		this.backgroundExecutor = backgroundExecutor;
 		this.binder = binder;
 		this.tableAliasPlaceHolder = GlobalProperties.get("ebean.tableAliasPlaceHolder","${ta}");
 		this.columnAliasPrefix = GlobalProperties.get("ebean.columnAliasPrefix", "c");
@@ -121,7 +127,7 @@ public class CQueryBuilder implements Constants {
 
 		String sql = s.getSql();
 		
-		return new CQueryFetchIds(request, predicates, sql);
+		return new CQueryFetchIds(request, predicates, sql, backgroundExecutor);
 	}
 	
 	/**

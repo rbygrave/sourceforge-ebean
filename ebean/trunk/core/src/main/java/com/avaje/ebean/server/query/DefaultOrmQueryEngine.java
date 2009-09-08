@@ -20,12 +20,13 @@
 package com.avaje.ebean.server.query;
 
 import java.util.Iterator;
-import java.util.List;
 
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.event.BeanFinder;
+import com.avaje.ebean.internal.BeanIdList;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.server.core.CopyBeanCollection;
 import com.avaje.ebean.server.core.OrmQueryEngine;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -54,7 +55,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     	return queryEngine.findRowCount(request);
     }
 
-    public <T> List<Object> findIds(OrmQueryRequest<T> request){
+    public <T> BeanIdList findIds(OrmQueryRequest<T> request){
     	
     	return queryEngine.findIds(request);
     }
@@ -62,6 +63,13 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     
 	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 
+        SpiQuery<T> query = request.getQuery();
+		if (query.isUseQueryCache() || query.isLoadBeanCache()){
+			// by default treat as sharedInstance and copy to 
+			// mutable object later if necessary
+			query.setSharedInstance();
+		}
+		
     	BeanCollection<T> result = null;
  
         SpiTransaction t = request.getTransaction();
@@ -79,26 +87,28 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	result = queryEngine.findMany(request);
         }
 
-        SpiQuery<T> query = request.getQuery();
-        
-        if (query.isUseQueryCache() && !result.isEmpty()){
-        	// load the query result into the query cache
-        	request.putToQueryCache(result);
-        }
-        
-        if (query.isLoadBeanCache()){
+    	if (query.isLoadBeanCache()){
         	// load the individual beans into the bean cache
-        	boolean readOnly = Boolean.TRUE.equals(query.isReadOnly());
         	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
         	Iterator<T> it  = result.getActualDetails();
         	while (it.hasNext()) {
 				T bean = it.next();
-				if (!readOnly){
-					// create a copy as the client can modify these beans
+				if (!query.isSharedInstance()){
 					bean = descriptor.createCopy(bean);
 				}
 				descriptor.cachePut(bean);
 			}
+        }
+
+        if (query.isSharedInstance() && !result.isEmpty()){
+        	if (query.isUseQueryCache()){
+            	// load the query result into the query cache
+            	request.putToQueryCache(result);        		
+        	}
+        	if (Boolean.FALSE.equals(query.isReadOnly())){
+        		// create a copy of the collection and beans that is mutable
+        		result = new CopyBeanCollection<T>(result, request.getBeanDescriptor()).copy();
+        	}
         }
         
         return result;

@@ -20,19 +20,19 @@
 package com.avaje.ebean.server.query;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.internal.BeanIdList;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.jmx.MAdminLogging;
-import com.avaje.ebean.server.lib.thread.ThreadPool;
-import com.avaje.ebean.server.lib.thread.ThreadPoolManager;
 import com.avaje.ebean.server.persist.Binder;
 
 /**
@@ -42,20 +42,18 @@ public class CQueryEngine {
 
 	private static final Logger logger = Logger.getLogger(CQueryEngine.class.getName());
 	
-	/**
-	 * Thread pool used for background fetching.
-	 */
-	private final ThreadPool threadPool;
-
 	private final CQueryBuilder queryBuilder;
 
 	private final MAdminLogging logControl;
 
-	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, Binder binder) {
+	private final BackgroundExecutor backgroundExecutor;
+	
+	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, 
+			Binder binder, BackgroundExecutor backgroundExecutor) {
 
 		this.logControl = logControl;
-		this.queryBuilder = new CQueryBuilder(dbPlatform, binder);
-		this.threadPool = ThreadPoolManager.getThreadPool("BGFetch");
+		this.backgroundExecutor = backgroundExecutor;
+		this.queryBuilder = new CQueryBuilder(backgroundExecutor, dbPlatform, binder);
 	}
 
 	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {
@@ -65,7 +63,7 @@ public class CQueryEngine {
 	/**
 	 * Build and execute the row count query.
 	 */
-	public <T> List<Object> findIds(OrmQueryRequest<T> request) {
+	public <T> BeanIdList findIds(OrmQueryRequest<T> request) {
 
 
 		CQueryFetchIds rcQuery = queryBuilder.buildFetchIdsQuery(request);
@@ -81,13 +79,14 @@ public class CQueryEngine {
 				request.getTransaction().log(sql);
 			}
 
-			List<Object> list = rcQuery.findIds();
+			BeanIdList list = rcQuery.findIds();
 
 			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				request.getTransaction().log(rcQuery.getSummary());
 			}
 
-			if (request.getQuery().isFutureFetch()){
+			if (!list.isFetchingInBackground() && request.getQuery().isFutureFetch()){
+				// end the transaction for futureFindIds (it had it's own one)
 				logger.fine("Future findIds completed!");
 				request.getTransaction().end();
 			}
@@ -132,7 +131,7 @@ public class CQueryEngine {
 
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
+		} 
 	}
 
 	/**
@@ -162,6 +161,10 @@ public class CQueryEngine {
 			}
 
 			BeanCollection<T> beanCollection = cquery.readCollection();
+			if (request.getQuery().isSharedInstance()){
+				// effectively making the collection immutable
+				beanCollection.setSharedInstance();
+			}
 			
 			BeanCollectionTouched collectionTouched = request.getQuery().getBeanCollectionTouched();
 			if (collectionTouched != null){
@@ -177,18 +180,15 @@ public class CQueryEngine {
 				useBackgroundToContinueFetch = true;
 				BackgroundFetch fetch = new BackgroundFetch(cquery);
 
-				threadPool.assign(fetch, true);
+				FutureTask<Integer> future = new FutureTask<Integer>(fetch);
+				beanCollection.setBackgroundFetch(future);
+				backgroundExecutor.execute(future);
 			}
 
 			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				logFindManySummary(cquery);
 			}
 
-			if (request.getQuery().isFutureFetch()){
-				logger.fine("Future fetch completed!");
-				request.getTransaction().end();
-			}
-			
 			return beanCollection;
 
 		} catch (SQLException e) {
@@ -197,12 +197,18 @@ public class CQueryEngine {
 			throw new PersistenceException(m, e);
 
 		} finally {
-			if (!useBackgroundToContinueFetch) {
+			if (useBackgroundToContinueFetch) {
+				// left closing resources to BackgroundFetch...
+			} else {
 				if (cquery != null) {
 					cquery.close();
 				}
-			} else {
-				// left closing resources up to Background process...
+				if (request.getQuery().isFutureFetch()){
+					// end the transaction for futureFindIds 
+					// as it had it's own transaction
+					logger.fine("Future fetch completed!");
+					request.getTransaction().end();
+				}
 			}
 		}
 	}

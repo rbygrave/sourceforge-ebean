@@ -136,7 +136,7 @@ public class InternalConfiguration {
 		this.transactionManager = new TransactionManager(clusterManager, serverConfig, beanDescriptorManager);
 
 		this.logControl = new MAdminLogging(serverConfig, transactionManager);
-		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder);
+		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder, backgroundExecutor);
 		this.refreshHelp = new RefreshHelp(logControl, serverConfig.isDebugLazyLoad());
 
 		

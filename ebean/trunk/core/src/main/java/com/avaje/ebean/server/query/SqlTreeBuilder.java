@@ -51,8 +51,6 @@ public class SqlTreeBuilder {
 
 	private final SpiQuery<?> query;
 	
-	private final boolean sharedInstance;
-	
 	private final OrmQueryDetail queryDetail;
 
 	private final SqlTree clause = new SqlTree();
@@ -85,7 +83,6 @@ public class SqlTreeBuilder {
 		this.request = request;
 		this.subQuery = request.isSubQuery();
         this.query = request.getQuery();
-        this.sharedInstance = query.isSharedInstance();
     	
 		this.queryDetail = query.getDetail();
 		this.predicates = predicates;
@@ -213,17 +210,13 @@ public class SqlTreeBuilder {
 
 		if (prefix == null) {
 			buildExtraJoins(desc, myList);
-			if (query.isReadOnly() != null){
-				// all root level beans are read only
-				props.setReadOnly(query.isReadOnly());
-			}
-			return new SqlTreeNodeRoot(sharedInstance, desc, props, myList, !subQuery, query.getIncludeTableJoin());
+			return new SqlTreeNodeRoot(desc, props, myList, !subQuery, query.getIncludeTableJoin());
 
 		} else if (prop instanceof BeanPropertyAssocMany<?>) {
-			return new SqlTreeNodeManyRoot(sharedInstance, prefix, (BeanPropertyAssocMany<?>)prop, props, myList);
+			return new SqlTreeNodeManyRoot(prefix, (BeanPropertyAssocMany<?>)prop, props, myList);
 
 		} else {
-			return new SqlTreeNodeBean(sharedInstance, prefix, prop, props, myList, true);
+			return new SqlTreeNodeBean(prefix, prop, props, myList, true);
 		}
 	}
 

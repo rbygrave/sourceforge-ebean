@@ -53,10 +53,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 */
 	final SqlTreeNode[] children;
 
-	final boolean readOnly;
+	final boolean readOnlyLeaf;
 	
-//	final boolean sharedInstance;
-
 	/**
 	 * Set to true if this is a partial object fetch.
 	 */
@@ -94,18 +92,17 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	
 	final String prefix;
 
-	public SqlTreeNodeBean(boolean sharedInstance, String prefix, BeanPropertyAssoc<?> beanProp, 
+	public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, 
 			SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
-		this(sharedInstance, prefix, beanProp, beanProp.getTargetDescriptor(),props, myChildren, withId);
+		this(prefix, beanProp, beanProp.getTargetDescriptor(),props, myChildren, withId);
 	}
 	
 	/**
 	 * Create with the appropriate node.
 	 */
-	public SqlTreeNodeBean(boolean sharedInstance, String prefix, BeanPropertyAssoc<?> beanProp, BeanDescriptor<?> desc, 
+	public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, BeanDescriptor<?> desc, 
 			SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId) {
 
-//		this.sharedInstance = sharedInstance;
 		this.prefix = prefix;
 		this.nodeBeanProp = beanProp;
 		this.desc = desc;
@@ -123,7 +120,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		this.partialProps = props.getIncludedProperties();
 		this.partialHash = partialObject ? partialProps.hashCode() : 0;
 		
-		this.readOnly = props.isReadOnly();
+		this.readOnlyLeaf = props.isReadOnly();
 		
 		this.properties = props.getProps();
 		
@@ -170,9 +167,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			localBean = desc.createEntityBean();
 			localIdBinder = idBinder;
 		}
-
-
-
+		
 		Object id = null;
 		if (!readId){
 			// report type bean... or perhaps excluding the id for SqlSelect?
@@ -196,19 +191,6 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 					localBean._ebean_getIntercept().setPersistenceContext(persistenceContext);
 					
 				}
-				
-//				contextBean = persistCtx.get(localBean.getClass(), id);
-//				if (contextBean != null && !((EntityBean)contextBean)._ebean_getIntercept().isReference()) {
-//					// bean already exists in transaction context
-//					localBean = null;
-//
-//				} else {
-//					// load the bean into the TransactionContext
-//					// it may be accessed by other beans in the same jdbc
-//					// resultSet row (detail beans in master/detail query).
-//					persistCtx.set(id, localBean);
-//					contextBean = localBean;
-//				}
 			}
 		} 
 
@@ -268,7 +250,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			}
 			if (ctx.isSharedInstance()){
 				ebi.setSharedInstance();
-			} else if (readOnly) {
+			} else if (readOnlyLeaf || ctx.isReadOnly()) {
 				ebi.setReadOnly(true);
 			}
 			
@@ -312,10 +294,11 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				// it is being loaded with real row data (result[1])
 			} else {
 				// create a proxy for the many (deferred fetching)
+				boolean ro = readOnlyLeaf || ctx.isReadOnly();
 				if (ctx.isAutoFetchProfiling()){
-					manys[i].createReference(localBean, ctx.createAutoFetchNode(manys[i].getName(), prefix), readOnly, ctx.isSharedInstance());					
+					manys[i].createReference(localBean, ctx.createAutoFetchNode(manys[i].getName(), prefix), ro, ctx.isSharedInstance());					
 				} else {
-					manys[i].createReference(localBean, null, readOnly, ctx.isSharedInstance());
+					manys[i].createReference(localBean, null, ro, ctx.isSharedInstance());
 				}
 			}
 		}

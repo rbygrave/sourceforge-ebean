@@ -19,31 +19,51 @@
  */
 package com.avaje.ebean.server.query;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.internal.BeanIdList;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.DbReadContext;
 
 /**
  * Continue the fetch using a Background thread. The client knows when this has
  * finished by checking to see if beanList.finishedFetch() is true.
  */
-public class BackgroundFetch implements Callable<Integer> {
+public class BackgroundIdFetch implements Callable<Integer> {
 
-	private static final Logger logger = Logger.getLogger(BackgroundFetch.class.getName());
+	private static final Logger logger = Logger.getLogger(BackgroundIdFetch.class.getName());
 	
-	private final CQuery<?> cquery;
+	private final ResultSet rset;
     
+	private final PreparedStatement pstmt;
+	
     private final SpiTransaction transaction;
     
+    private final DbReadContext ctx;
+    
+    private final BeanDescriptor<?> beanDescriptor;
+    
+    private final BeanIdList idList;
     /**
      * Create the BackgroundFetch.
      */
-    public BackgroundFetch(CQuery<?> cquery) {
-        this.cquery = cquery;  
-        this.transaction = cquery.getTransaction();
+    public BackgroundIdFetch(SpiTransaction transaction,
+    		ResultSet rset, PreparedStatement pstmt,
+    		DbReadContext ctx, BeanDescriptor<?> beanDescriptor,
+    		BeanIdList idList) {
+    	
+    	this.ctx = ctx;
+        this.transaction = transaction;
+        this.rset = rset;  
+        this.pstmt = pstmt;
+        this.beanDescriptor = beanDescriptor;
+        this.idList = idList;
     }
 
     /**
@@ -51,18 +71,28 @@ public class BackgroundFetch implements Callable<Integer> {
      */
     public Integer call() {
         try {
-            
-        	BeanCollection<?> bc = cquery.continueFetchingInBackground();
+        	int startSize = idList.getIdList().size();
+            int rowsRead = 0;
+        	while (rset.next()){
+				Object idValue = beanDescriptor.getIdBinder().read(ctx);
+				idList.add(idValue);
+				ctx.resetRsetIndex();
+				rowsRead++;				
+			}
         	
-        	return bc.size();
+        	if (logger.isLoggable(Level.INFO)){
+        		logger.info("BG FetchIds read:"+rowsRead+" total:"+(startSize+rowsRead));
+        	}
+        	
+        	return rowsRead;
             
         } catch (Exception e) {
         	logger.log(Level.SEVERE, null, e);
-        	return Integer.valueOf(0);
+        	return 0;
         	
         } finally {
             try {
-            	cquery.close();
+            	close();
             } catch (Exception e) {
             	logger.log(Level.SEVERE, null, e);
             }
@@ -78,10 +108,21 @@ public class BackgroundFetch implements Callable<Integer> {
 
     }
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("BackgroundFetch ").append(cquery);
-        return sb.toString();
-    }
+	private void close() {
+		try {
+			if (rset != null) {
+				rset.close();
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, null, e);
+		}
+		try {
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, null, e);
+		}
+	}
 
 }

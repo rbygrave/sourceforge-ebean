@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import javax.persistence.PersistenceException;
 
@@ -14,6 +13,7 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureIds;
 import com.avaje.ebean.FutureList;
+import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
@@ -152,7 +152,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private boolean loadBeanCache;
 	
-	private Boolean useCache;
+	private Boolean useBeanCache;
+	private Boolean useQueryCache;
 
 	private Boolean readOnly;
 	
@@ -279,7 +280,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.timeout = timeout;
 		copy.mapKey = mapKey;
 		copy.id = id;
-		copy.useCache = useCache;
+		copy.useBeanCache = useBeanCache;
+		copy.useQueryCache = useQueryCache;
 		copy.readOnly = readOnly;
 		copy.sqlSelect = sqlSelect;
 		if (detail != null){
@@ -375,7 +377,9 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 	
 	public boolean isSharedInstance() {
-		return sharedInstance || (Boolean.TRUE.equals(useCache) && Boolean.TRUE.equals(readOnly));
+		return sharedInstance 
+		|| (Boolean.TRUE.equals(readOnly) && Boolean.TRUE.equals(useBeanCache))
+		|| (Boolean.TRUE.equals(useQueryCache));
 	}
 
 	public void setSharedInstance() {
@@ -433,7 +437,6 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
-		hc = hc * 31 + (readOnly == null ? 0 : readOnly.hashCode());
 
 		hc = hc * 31 + attributes.queryPlanHash();
 		hc = hc * 31 + detail.queryPlanHash();
@@ -561,15 +564,20 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 
 	public Boolean isUseBeanCache() {
-		return useCache;
+		return useBeanCache;
 	}
 
 	public boolean isUseQueryCache() {
-		return useCache != null && useCache;
+		return Boolean.TRUE.equals(useQueryCache);
 	}
 
 	public DefaultOrmQuery<T> setUseCache(boolean useCache) {
-		this.useCache = useCache;
+		this.useBeanCache = useCache;
+		return this;
+	}
+	
+	public DefaultOrmQuery<T> setUseQueryCache(boolean useQueryCache) {
+		this.useQueryCache = useQueryCache;
 		return this;
 	}
 
@@ -655,7 +663,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return server.findFutureList(this, null);
 	}
 
-	public Future<Integer> findFutureRowCount() {
+	public FutureRowCount<T> findFutureRowCount() {
 		return server.findFutureRowCount(this, null);
 	}
 	
@@ -955,8 +963,15 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	/**
 	 * Return true if using background fetching or a queryListener.
 	 */
-	public boolean useOwnTransaction() {
-		if (futureFetch || backgroundFetchAfter > 0 || queryListener != null) {
+	public boolean createOwnTransaction() {
+		if (futureFetch){
+			// the future fetches have already created
+			// their own transaction
+			return false;
+		}
+		if (backgroundFetchAfter > 0 || queryListener != null) {
+			// run in own transaction as we can't know how long
+			// the background fetching will continue etc
 			return true;
 		}
 		return false;
@@ -987,11 +1002,11 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return beanCollectionTouched;
 	}
 
-	public List<Object> getPartialIds() {
+	public List<Object> getIdList() {
 		return partialIds;
 	}
 
-	public void setPartialIds(List<Object> partialIds) {
+	public void setIdList(List<Object> partialIds) {
 		this.partialIds = partialIds;
 	}
 
