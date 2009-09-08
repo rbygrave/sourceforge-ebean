@@ -241,6 +241,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final ObjectGraphOrigin autoFetchOriginQueryPoint;
 
 	private final HashMap<String,ReferenceOptions> referenceOptionsMap = new HashMap<String,ReferenceOptions>();
+
+	int executionTimeMicros;
 	
 	/**
 	 * Create the Sql select based on the request.
@@ -253,7 +255,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.queryDetail = query.getDetail();
 		
 		// the objects built should be treated as readOnly
-		this.readOnly = query.isReadOnly() != null && query.isReadOnly();
+		this.readOnly = request.isReadOnly();
+		//this.readOnly = query.isReadOnly() != null && query.isReadOnly();
 		
 		autoFetchManager = query.getAutoFetchManager();
 		autoFetchProfiling = autoFetchManager != null;
@@ -492,6 +495,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		return rset;
 	}
 
+	
+	public void resetRsetIndex() {
+		rsetIndex = 0;
+	}
+
 	public int nextRsetIndex() {
 		return ++rsetIndex;
 	}
@@ -514,12 +522,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 				return false;
 			}
 			rowCount++;
-	
-	//		if (rowCount >= maxRowsLimit) {
-	//			hasHitMaxRows = true;
-	//		} else if (rowCount >= backgroundFetchAfter) {
-	//			hasHitBackgroundFetchAfter = true;
-	//		}
 			rsetIndex = 0;
 	
 			if (rowNumberIncluded) {
@@ -532,8 +534,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			return true;
 		}
 	}
-
-	int executionTimeMicros;
 	
 	public int getQueryExecutionTimeMicros(){
 		return executionTimeMicros;
@@ -614,18 +614,13 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 
-	public void continueFetchingInBackground() throws SQLException {
+	public BeanCollection<T> continueFetchingInBackground() throws SQLException {
 		readTheRows(false);
 		collection.setFinishedFetch(true);
+		return collection;
 	}
 
 	public BeanCollection<T> readCollection() throws SQLException {
-		
-//		if (useResultSetLimit) {
-//			if (!navigateFirst()) {
-//				return collection;
-//			}
-//		}
 
 		readTheRows(true);
 
@@ -674,14 +669,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			}
 		}
 	}
-
-//	private boolean navigateFirst() throws SQLException {
-//		if (query.getFirstRow() > 0 && !rset.absolute(query.getFirstRow())) {
-//			// firstRow has moved us beyond the end of the resultSet
-//			return false;
-//		}
-//		return true;
-//	}
 
 	public String getLoadedRowDetail() {
 		if (!manyIncluded) {

@@ -1091,21 +1091,21 @@ public final class DefaultServer implements SpiEbeanServer {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T findId(Query<T> query, Transaction t) {
+	private <T> T findId(Query<T> query, Transaction t) {
 		
 		OrmQueryRequest<T> request = createQueryRequest(query, t);
 		
-		// if the cache should be used etc try it now before
-		// potentially creating a new transaction
-		T cachedBean = request.getFromBeanCache();
-		if (cachedBean != null){
-			return cachedBean;
+		// First have a look in the persistence context and then
+		// the bean cache (if we are using caching)
+		T bean = request.getFromPersistenceContextOrCache();
+		if (bean != null){
+			return bean;
 		}
-		
+				
 		try {
 			request.initTransIfRequired();
 
-			T bean = (T) request.findId();
+			bean = (T) request.findId();
 			request.endTransIfRequired();
 
 			return bean;
@@ -1143,13 +1143,11 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
 		OrmQueryRequest request = createQueryRequest(query, t);
-		
-        if (request.getQuery().isUseQueryCache()){
-        	Object result = request.getFromQueryCache();
-        	if (result != null){
-        		return (Set<T>)result;
-        	}
-        }
+		    
+    	Object result = request.getFromQueryCache();
+    	if (result != null){
+    		return (Set<T>)result;
+    	}
 		
 		try {
 			request.initTransIfRequired();
@@ -1167,14 +1165,13 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	@SuppressWarnings("unchecked")
 	public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
-		OrmQueryRequest request = createQueryRequest(query, t);
 		
-        if (request.getQuery().isUseQueryCache()){
-        	Object result = request.getFromQueryCache();
-        	if (result != null){
-        		return (Map<?, T>)result;
-        	}
-        }
+		OrmQueryRequest request = createQueryRequest(query, t);
+		    
+    	Object result = request.getFromQueryCache();
+    	if (result != null){
+    		return (Map<?, T>)result;
+    	}
 		
 		try {
 			request.initTransIfRequired();
@@ -1256,7 +1253,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		// it is available for other threads to read while the id query
 		// is still executing (we don't need to wait for it to finish)
 		List<Object> idList = Collections.synchronizedList(new ArrayList<Object>());
-		copy.setPartialIds(idList);
+		copy.setIdList(idList);
 		
 		
 		Transaction newTxn = createTransaction();
@@ -1323,13 +1320,12 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> List<T> findList(Query<T> query, Transaction t) {
 
 		OrmQueryRequest<T> request = createQueryRequest(query, t);
-		
-        if (request.getQuery().isUseQueryCache()){
-        	Object result = request.getFromQueryCache();
-        	if (result != null){
-        		return (List<T>)result;
-        	}
-        }
+		    
+    	Object result = request.getFromQueryCache();
+    	if (result != null){
+    		return (List<T>)result;
+    	}
+    
 		try {
 			request.initTransIfRequired();
 			List<T> list = request.findList();

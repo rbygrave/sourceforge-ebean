@@ -43,7 +43,7 @@ public class QueryFutureIds<T> extends BaseFuture<List<Object>> implements Futur
 	}
 	
 	public List<Object> getPartialIds() {
-		return query.getPartialIds();
+		return query.getIdList();
 	}
 
 	public boolean cancel(boolean mayInterruptIfRunning) {

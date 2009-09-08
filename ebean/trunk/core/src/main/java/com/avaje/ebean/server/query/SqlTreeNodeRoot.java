@@ -17,8 +17,8 @@ public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 	/**
 	 * Specify for SqlSelect to include an Id property or not.
 	 */
-	public SqlTreeNodeRoot(boolean sharedInstance, BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, TableJoin includeJoin) {
-		super(sharedInstance, null, null, desc, props, myList, withId);
+	public SqlTreeNodeRoot(BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, TableJoin includeJoin) {
+		super(null, null, desc, props, myList, withId);
 		this.includeJoin = includeJoin;
 	}
 

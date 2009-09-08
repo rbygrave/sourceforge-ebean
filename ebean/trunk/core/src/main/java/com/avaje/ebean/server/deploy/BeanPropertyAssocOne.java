@@ -346,7 +346,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 				ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
 				if (options != null && options.isUseCache()) {
 					ref = targetDescriptor.cacheGet(id);
-					if (ref != null && !ctx.isReadOnly() && !options.isReadOnly()){
+					if (ref != null && !options.isReadOnly()){
 						// create a copy as the user may mutate it
 						return targetDescriptor.createCopy(ref);
 					}

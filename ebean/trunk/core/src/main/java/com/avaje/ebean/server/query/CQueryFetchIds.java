@@ -26,12 +26,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.internal.BeanIdList;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryRequest;
@@ -57,6 +60,8 @@ public class CQueryFetchIds {
 
 	private final SpiQuery<?> query;
 
+	private final BackgroundExecutor backgroundExecutor;
+	
 	/**
 	 * Where clause predicates.
 	 */
@@ -87,13 +92,21 @@ public class CQueryFetchIds {
 
 	private int rowCount;
 	
+	private final int maxRows;
+	private final int bgFetchAfter;
+	
 	/**
 	 * Create the Sql select based on the request.
 	 */
-	public CQueryFetchIds(OrmQueryRequest<?> request, CQueryPredicates predicates, String sql) {
+	public CQueryFetchIds(OrmQueryRequest<?> request, CQueryPredicates predicates, 
+			String sql, BackgroundExecutor backgroundExecutor) {
+
+		this.backgroundExecutor = backgroundExecutor;
 		this.request = request;
 		this.query = request.getQuery();
 		this.sql = sql;
+		this.maxRows = query.getMaxRows();
+		this.bgFetchAfter = query.getBackgroundFetchAfter();
 
 		query.setGeneratedSql(sql);
 
@@ -130,19 +143,24 @@ public class CQueryFetchIds {
 	/**
 	 * Execute the query returning the row count.
 	 */
-	public List<Object> findIds() throws SQLException {
+	public BeanIdList findIds() throws SQLException {
 
+		boolean useBackgroundToContinueFetch = false;
+		
 		startNano = System.nanoTime();
+		
 		try {
 			// get the list that we are going to put the id's into.
 			// This was already set so that it is available to be 
 			// read by other threads (it is a synchronised list)
-			List<Object> idList = query.getPartialIds();
+			List<Object> idList = query.getIdList();
 			if (idList == null){
 				// running in foreground thread (not FutureIds query)
 				idList = Collections.synchronizedList(new ArrayList<Object>());
-				query.setPartialIds(idList);
+				query.setIdList(idList);
 			}
+			
+			BeanIdList result = new BeanIdList(idList);
 			
 			SpiTransaction t = request.getTransaction();
 			Connection conn = t.getInternalConnection();
@@ -159,25 +177,60 @@ public class CQueryFetchIds {
 			bindLog = predicates.bind(pstmt);
 	
 			rset = pstmt.executeQuery();
-	
+		
+			boolean hitMaxRows = false;
+			boolean hasMoreRows = false;
+			int rowCount = 0;
+			
 			DbReadContext ctx = new DbContext();
 			
 			while (rset.next()){
 				Object idValue = desc.getIdBinder().read(ctx);
-				
 				idList.add(idValue);
-				
 				// reset back to 0
 				rsetIndex = 0;
+				rowCount++;
+				
+				if (maxRows > 0 && rowCount == maxRows) {
+					hitMaxRows = true;
+					hasMoreRows = rset.next();
+					break;
+
+				} else if (bgFetchAfter > 0 && rowCount >= bgFetchAfter) {
+					useBackgroundToContinueFetch = true;
+					break;
+				}
+			}
+			
+			if (hitMaxRows){
+				result.setHasMore(hasMoreRows);
+			}
+			
+			if (useBackgroundToContinueFetch){
+				// tell the request not to end the transaction
+				// as we leave that up to the BackgroundIdFetch
+				request.setBackgroundFetching();
+				
+				// submit background future task
+				BackgroundIdFetch bgFetch = new BackgroundIdFetch(t, rset, pstmt, ctx, desc, result);
+				FutureTask<Integer> future = new FutureTask<Integer>(bgFetch);
+				backgroundExecutor.execute(future);
+				
+				// set on result so we can use the futureTask to wait
+				result.setBackgroundFetch(future);
 			}
 			
 			long exeNano = System.nanoTime() - startNano;
 			executionTimeMicros = (int)exeNano/1000;
-		
-			return idList;
+
+			return result;
 			
 		} finally {
-			close();
+			if (useBackgroundToContinueFetch) {
+				// left closing resources to BackgroundFetch...
+			} else {
+				close();
+			}
 		}
 	}
 
@@ -207,12 +260,17 @@ public class CQueryFetchIds {
 		}
 	}
 
-	private class DbContext implements DbReadContext {
+	
+	class DbContext implements DbReadContext {
 
 		public ResultSet getRset() {
 			return rset;
 		}
 		
+		public void resetRsetIndex() {
+			rsetIndex = 0;
+		}
+
 		public int nextRsetIndex() {
 			return ++rsetIndex;
 		}

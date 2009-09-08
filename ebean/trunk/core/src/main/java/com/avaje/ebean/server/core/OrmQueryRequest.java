@@ -31,6 +31,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.internal.BeanIdList;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
@@ -136,16 +137,18 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * </p>
 	 */
 	public void initTransIfRequired() {
-		if (transaction == null) {
-			// get current transaction
+		// first check if the query requires its own transaction
+		if (query.createOwnTransaction()){
+			// using background fetch or query listener etc
+			transaction = ebeanServer.createQueryTransaction();
+			createdTransaction = true;			
+		
+		} else if (transaction == null) {
+			// maybe a current one
 			transaction = ebeanServer.getCurrentServerTransaction();
-			if (transaction == null || !transaction.isActive() || query.useOwnTransaction()) {
+			if (transaction == null) {
 				// create an implicit transaction to execute this query
-				transaction = ebeanServer.createQueryTransaction();
-
-				// leaving off setReadOnly(true) for performance reasons
-				// TODO: review performance of transaction.setReadOnly(true);
-				// trans.setReadOnly(true);
+				transaction = ebeanServer.createQueryTransaction();	
 				createdTransaction = true;
 			}
 		}
@@ -214,7 +217,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
 	public List<Object> findIds() {
 		query.setType(Query.Type.ID_LIST);
-		return queryEngine.findIds(this);
+		BeanIdList idList = queryEngine.findIds(this);
+		return idList.getIdList();
 	}
 
 	/**
@@ -334,17 +338,36 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		}
 		return useBeanCache;
 	}
-	
+
+	/**
+	 * Try to get the object out of the persistence context.
+	 */
 	@SuppressWarnings("unchecked")
-	public T getFromBeanCache() {
+	public T getFromPersistenceContextOrCache() {
+		
+		SpiTransaction t = transaction;
+		if (t == null){
+			t = ebeanServer.getCurrentServerTransaction();
+		}
+		if (t != null){
+			// first look in the persistence context
+			PersistenceContext context = t.getPersistenceContext();
+			if (context != null){
+				Object o = context.get(beanDescriptor.getBeanType(), query.getId());
+				if (o != null){
+					return (T)o;
+				}
+			}
+		}
+		
 		if (!calculateUseBeanCache()){
+			// not using bean cache
 			return null;
 		} 
-		
-		Object id = query.getId();
-		
-		Object cachedBean = beanDescriptor.cacheGet(id);
+				
+		Object cachedBean = beanDescriptor.cacheGet(query.getId());
 		if (cachedBean == null){
+			// not found in bean cache
 			return null;
 		} 
 		if (useBeanCacheReadOnly){
@@ -363,6 +386,10 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public BeanCollection<T> getFromQueryCache() {
 		
+		if (!query.isUseQueryCache()){
+			return null;
+		}
+		
 		if (query.getType() == null) {
 			// the query plan and bind values must be the same
 			cacheKey = Integer.valueOf(query.queryHash());
@@ -372,7 +399,12 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 			cacheKey = Integer.valueOf(31 * query.queryHash() + query.getType().hashCode());
 		}
 
-		return beanDescriptor.queryCacheGet(cacheKey);
+		BeanCollection<T> bc = beanDescriptor.queryCacheGet(cacheKey);
+		if (bc != null && Boolean.FALSE.equals(query.isReadOnly())){
+			// Explicit readOnly=false for query cache
+			return new CopyBeanCollection<T>(bc, beanDescriptor).copy();
+		}
+		return bc;
 	}
 
 	public void putToQueryCache(BeanCollection<T> queryResult) {

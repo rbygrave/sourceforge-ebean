@@ -65,6 +65,11 @@ public interface DbReadContext {
 	 * Return the next column index in the ResultSet.
 	 */
 	public int nextRsetIndex();
+	
+	/**
+	 * Reset the column index on the ResultSet to 0.
+	 */
+	public void resetRsetIndex();
 
 	/**
 	 * Return the persistence context. 

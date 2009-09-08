@@ -10,8 +10,8 @@ import com.avaje.ebean.server.deploy.DbSqlContext;
 
 public final class SqlTreeNodeManyRoot extends SqlTreeNodeBean {
 
-	public SqlTreeNodeManyRoot(boolean sharedInstance, String prefix, BeanPropertyAssocMany<?> prop, SqlTreeProperties props, List<SqlTreeNode> myList) {
-		super(sharedInstance, prefix, prop, prop.getTargetDescriptor(), props, myList, true);
+	public SqlTreeNodeManyRoot(String prefix, BeanPropertyAssocMany<?> prop, SqlTreeProperties props, List<SqlTreeNode> myList) {
+		super(prefix, prop, prop.getTargetDescriptor(), props, myList, true);
 	}
 
     @Override

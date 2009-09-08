@@ -19,9 +19,8 @@
  */
 package com.avaje.ebean.server.core;
 
-import java.util.List;
-
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.internal.BeanIdList;
 
 /**
  * The Object Relational query execution API.
@@ -46,7 +45,7 @@ public interface OrmQueryEngine {
     /**
      * Execute the find id's query.
      */
-    public <T> List<Object> findIds(OrmQueryRequest<T> request);
+    public <T> BeanIdList findIds(OrmQueryRequest<T> request);
 
 
 }
