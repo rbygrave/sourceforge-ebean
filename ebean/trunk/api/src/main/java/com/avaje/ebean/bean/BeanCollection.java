@@ -22,6 +22,10 @@ package com.avaje.ebean.bean;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import com.avaje.ebean.Query;
 
 /**
  * Lazy loading capable Maps, Lists and Sets.
@@ -40,6 +44,30 @@ import java.util.Set;
  */
 public interface BeanCollection<E> extends Serializable {
 	
+	/**
+	 * Set when this collection is being loaded via a background thread.
+	 * <p>
+	 * Refer to {@link Query#setBackgroundFetchAfter(int)}
+	 * </p>
+	 */
+	public void setBackgroundFetch(Future<Integer> future);
+
+	/**
+	 * Wait for the fetch to complete with a given timeout.
+	 * <p>
+	 * Refer to {@link Query#setBackgroundFetchAfter(int)}
+	 * </p>
+	 */
+	public void backgroundFetchWait(long wait, TimeUnit timeUnit);
+	
+	/**
+	 * Wait for the fetch to complete.
+	 * <p>
+	 * Refer to {@link Query#setBackgroundFetchAfter(int)}
+	 * </p>
+	 */
+	public void backgroundFetchWait();
+		
 	/**
 	 * Return true if this collection is owned by a sharedInstance.
 	 * <p>
