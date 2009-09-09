@@ -13,9 +13,12 @@ public class TestSqlBasedEntity extends TestCase
 	{
 		Topic topic = new Topic();
 		topic.setTitle("ABC");
-		topic.setTitle("123");
-
 		Ebean.save(topic);
+
+		topic = new Topic();
+		topic.setTitle("123");
+		Ebean.save(topic);
+		
 
 		Query<ReportTopic> query = Ebean.createQuery(ReportTopic.class);
 		List<ReportTopic> topics = query.findList();
