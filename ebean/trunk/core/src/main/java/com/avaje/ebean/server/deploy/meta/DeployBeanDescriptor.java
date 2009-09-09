@@ -264,10 +264,20 @@ public class DeployBeanDescriptor<T> {
 		return beanType.getName().startsWith(META_BEAN_PREFIX);
 	}
 
+	/**
+	 * Return true if this entity bean is based on raw SQL (rather than a table or view).
+	 * <p>
+	 * This typically means the bean is more for reporting purposes than OLTP.
+	 * </p>
+	 */
 	public boolean isSqlSelectBased() {
 		DeployNamedQuery defaultQuery = namedQueries.get("default");
 		if (defaultQuery != null) {
 			return defaultQuery.isSqlSelect();
+		}
+		RawSqlMeta rawSql = rawSqlMetas.get("default");
+		if (rawSql != null) {
+			return true;
 		}
 		return false;
 	}
