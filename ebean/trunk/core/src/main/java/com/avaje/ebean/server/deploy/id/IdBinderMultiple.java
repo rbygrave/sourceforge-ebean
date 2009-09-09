@@ -22,12 +22,12 @@ import com.avaje.ebean.server.lib.util.MapFromString;
  */
 public final class IdBinderMultiple implements IdBinder {
 
-	private final BeanProperty[] idProps;
+	private final BeanProperty[] props;
 
 	private final String idProperties;
 	
 	public IdBinderMultiple(BeanProperty[] idProps) {
-		this.idProps = idProps;
+		this.props = idProps;
 		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < idProps.length; i++) {
@@ -50,9 +50,9 @@ public final class IdBinderMultiple implements IdBinder {
 	
 	public BeanProperty findBeanProperty(String dbColumnName) {
 		
-		for (int i = 0; i < idProps.length; i++) {
-			if (dbColumnName.equalsIgnoreCase(idProps[i].getDbColumn())){
-				return idProps[i];
+		for (int i = 0; i < props.length; i++) {
+			if (dbColumnName.equalsIgnoreCase(props[i].getDbColumn())){
+				return props[i];
 			}
 		}
 
@@ -66,31 +66,39 @@ public final class IdBinderMultiple implements IdBinder {
 	public String getDefaultOrderBy() {
 		
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < idProps.length; i++) {
+		for (int i = 0; i < props.length; i++) {
 			if (i > 0){
 				sb.append(",");
 			}
 			
-			sb.append(idProps[i].getName());
+			sb.append(props[i].getName());
 		}
 		
 		return sb.toString();
 	}
 	
 	public BeanProperty[] getProperties() {
-		return idProps;
+		return props;
+	}
+	
+	public Object[] getIdValues(Object bean){
+		Object[] bindvalues = new Object[props.length];
+		for (int i = 0; i < props.length; i++) {
+			bindvalues[i] = props[i].getValue(bean);
+		}
+		return bindvalues;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public Object[] getBindValues(Object idValue){
 		
-		Object[] bindvalues = new Object[idProps.length];
+		Object[] bindvalues = new Object[props.length];
 		// concatenated id as a Map
 		try {
 			Map<String, ?> uidMap = (Map<String, ?>) idValue;
 
-			for (int i = 0; i < idProps.length; i++) {
-				Object value = uidMap.get(idProps[i].getName());
+			for (int i = 0; i < props.length; i++) {
+				Object value = uidMap.get(props[i].getName());
 				bindvalues[i] = value;
 			}
 
@@ -106,10 +114,10 @@ public final class IdBinderMultiple implements IdBinder {
 		
 		LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 		boolean notNull = false;
-		for (int i = 0; i < idProps.length; i++) {
-			Object value = idProps[i].readSet(ctx, bean, null);
+		for (int i = 0; i < props.length; i++) {
+			Object value = props[i].readSet(ctx, bean, null);
 			if (value != null){
-				map.put(idProps[i].getName(), value);
+				map.put(props[i].getName(), value);
 				notNull = true;
 			}
 		}
@@ -124,10 +132,10 @@ public final class IdBinderMultiple implements IdBinder {
 		
 		LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 		boolean notNull = false;
-		for (int i = 0; i < idProps.length; i++) {
-			Object value = idProps[i].read(ctx);
+		for (int i = 0; i < props.length; i++) {
+			Object value = props[i].read(ctx);
 			if (value != null){
-				map.put(idProps[i].getName(), value);
+				map.put(props[i].getName(), value);
 				notNull = true;
 			}
 		}
@@ -146,9 +154,9 @@ public final class IdBinderMultiple implements IdBinder {
 		try {
 			Map<String, ?> uidMap = (Map<String, ?>) idValue;
 
-			for (int i = 0; i < idProps.length; i++) {
-				Object value = uidMap.get(idProps[i].getName());
-				idProps[i].bind(pstmt, ++index, value);
+			for (int i = 0; i < props.length; i++) {
+				Object value = uidMap.get(props[i].getName());
+				props[i].bind(pstmt, ++index, value);
 			}
 			return index;
 		} catch (ClassCastException e) {
@@ -158,21 +166,39 @@ public final class IdBinderMultiple implements IdBinder {
 	}
 	
 	public void appendSelect(DbSqlContext ctx) {
-		for (int i = 0; i < idProps.length; i++) {
-    		idProps[i].appendSelect(ctx);
+		for (int i = 0; i < props.length; i++) {
+    		props[i].appendSelect(ctx);
 		}
+	}
+	
+	public String getAssocOneIdExpr(String prefix, String operator){
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < props.length; i++) {
+			if (i > 0) {
+				sb.append(" and ");
+			}
+			if (prefix != null){
+				sb.append(prefix);
+				sb.append(".");				
+			}
+			sb.append(props[i].getName());
+			sb.append(" ").append(operator);
+			sb.append(" ? ");
+		}
+		return sb.toString();		
 	}
 	
 	public String getBindIdSql(String baseTableAlias) {
 		
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < idProps.length; i++) {
+		for (int i = 0; i < props.length; i++) {
 			if (i > 0) {
 				sb.append(" and ");
 			}
 			sb.append(baseTableAlias);
 			sb.append(".");
-			sb.append(idProps[i].getDbColumn());
+			sb.append(props[i].getDbColumn());
 			sb.append(" = ? ");
 		}
 		return sb.toString();
@@ -191,13 +217,13 @@ public final class IdBinderMultiple implements IdBinder {
 		// Use a new LinkedHashMap to control the order
 		LinkedHashMap<String,Object> newMap = new LinkedHashMap<String, Object>();
 
-		for (int i = 0; i < idProps.length; i++) {
-			BeanProperty prop = idProps[i];
+		for (int i = 0; i < props.length; i++) {
+			BeanProperty prop = props[i];
 
 			Object value = mapVal.get(prop.getName());
 
 			// Convert the property type if required
-			value = idProps[i].getScalarType().toBeanType(value);
+			value = props[i].getScalarType().toBeanType(value);
 			newMap.put(prop.getName(), value);
 			if (bean != null) {
 				// support PropertyChangeSupport

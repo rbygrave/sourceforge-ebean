@@ -64,6 +64,10 @@ public final class IdBinderSimple implements IdBinder {
 		return baseTableAlias+"."+bindIdSql;
 	}
 
+	public Object[] getIdValues(Object bean){
+		return new Object[]{idProperty.getValue(bean)};
+	}
+	
 	public Object[] getBindValues(Object idValue){
 		return new Object[]{idValue};
 	}
@@ -84,6 +88,19 @@ public final class IdBinderSimple implements IdBinder {
 	
 	public void appendSelect(DbSqlContext ctx) {
 		idProperty.appendSelect(ctx);
+	}
+	
+	public String getAssocOneIdExpr(String prefix, String operator){
+
+		StringBuilder sb = new StringBuilder();
+		if (prefix != null){
+			sb.append(prefix);
+			sb.append(".");				
+		}
+		sb.append(idProperty.getName());
+		sb.append(" ").append(operator);
+		sb.append(" ? ");
+		return sb.toString();		
 	}
 	
 	public Object convertSetId(Object idValue, Object bean) {

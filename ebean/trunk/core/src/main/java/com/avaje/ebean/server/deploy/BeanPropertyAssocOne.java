@@ -191,6 +191,26 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	}
 
 	/**
+	 * Return the Id values from the given bean.
+	 */
+	@Override
+	public Object[] getAssocOneIdValues(Object bean) {
+		return targetDescriptor.getIdBinder().getIdValues(bean);
+	}
+
+	/**
+	 * Return the Id expression to add to where clause etc.
+	 */
+	public String getAssocOneIdExpr(String prefix, String operator) {
+		return targetDescriptor.getIdBinder().getAssocOneIdExpr(prefix, operator);
+	}
+
+	@Override
+	public boolean isAssocOneId() {
+		return !embedded;
+	}
+
+	/**
 	 * Create a vanilla bean of the target type to be used as an embeddedId
 	 * value.
 	 */

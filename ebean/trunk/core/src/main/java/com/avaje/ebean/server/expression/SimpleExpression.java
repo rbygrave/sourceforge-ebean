@@ -2,6 +2,7 @@ package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.el.ElPropertyValue;
 
 
 class SimpleExpression extends AbstractExpression {
@@ -54,13 +55,47 @@ class SimpleExpression extends AbstractExpression {
 	public String getPropertyName() {
 		return propertyName;
 	}
+
+	/**
+	 * If this is a ManyToOne or OneToOne bean return the ElPropertyValue else
+	 * return null.
+	 * <p>
+	 * This is used to support the "getAssocOneIdValues" scenario where someone
+	 * goes query.where().eq("customer", customerBean); instead of
+	 * query.where().eq("customer.id", customerBean.getId());
+	 * </p>
+	 */
+	private ElPropertyValue getAssocOneElProp(SpiExpressionRequest request) {
+		
+		ElPropertyValue elGetValue = request.getBeanDescriptor().getElGetValue(propertyName);
+		if (elGetValue != null && elGetValue.isAssocOneId()){
+			return elGetValue;
+		} else {
+			return null;
+		}
+	}
 	
 	public void addBindValues(SpiExpressionRequest request) {
-		request.addBindValue(value);
+		ElPropertyValue assocOne = getAssocOneElProp(request);
+		if (assocOne != null){
+			Object[] ids = assocOne.getAssocOneIdValues(value);
+			if (ids != null){
+				for (int i = 0; i < ids.length; i++) {
+					request.addBindValue(ids[i]);
+				}
+			}
+		} else {
+			request.addBindValue(value);			
+		}
 	}
 	
 	public void addSql(SpiExpressionRequest request) {
-		request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
+		ElPropertyValue el = getAssocOneElProp(request);
+		if (el != null){
+			request.append(el.getAssocOneIdExpr(propertyName,type.toString()));
+		} else {
+			request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
+		}
 	}
 	
 	
