@@ -68,15 +68,19 @@ public final class IdBinderEmbedded implements IdBinder {
 		return props;
 	}
 	
+	public Object[] getIdValues(Object bean){
+		Object[] bindvalues = new Object[props.length];
+		for (int i = 0; i < props.length; i++) {
+			bindvalues[i] = props[i].getValue(bean);
+		}
+		return bindvalues;
+	}
+	
 	public Object[] getBindValues(Object value){
 		
 		Object[] bindvalues = new Object[props.length];
 		for (int i = 0; i < props.length; i++) {
-
-			BeanProperty idField = (BeanProperty) props[i];
-			Object embFieldValue = idField.getValue(value);
-
-			bindvalues[i] = embFieldValue;
+			bindvalues[i] = props[i].getValue(value);
 		}
 		return bindvalues;
 	}
@@ -125,6 +129,24 @@ public final class IdBinderEmbedded implements IdBinder {
     	for (int i = 0; i < props.length; i++) {
     		props[i].appendSelect(ctx);
 		}
+	}
+	
+	public String getAssocOneIdExpr(String prefix, String operator){
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < props.length; i++) {
+			if (i > 0) {
+				sb.append(" and ");
+			}
+			if (prefix != null){
+				sb.append(prefix);
+				sb.append(".");				
+			}
+			sb.append(props[i].getName());
+			sb.append(" ").append(operator);
+			sb.append(" ? ");
+		}
+		return sb.toString();		
 	}
 
 	public String getBindIdSql(String baseTableAlias) {

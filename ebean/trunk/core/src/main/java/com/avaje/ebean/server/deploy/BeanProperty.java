@@ -690,7 +690,22 @@ public class BeanProperty implements ElPropertyValue {
 		return false;
 	}
 
-	
+	public Object[] getAssocOneIdValues(Object bean) {
+		// Returns null as not an AssocOne.
+		return null;
+	}
+
+
+	public String getAssocOneIdExpr(String prefix, String operator) {
+		// Returns null as not an AssocOne.
+		return null;
+	}
+
+	public boolean isAssocOneId() {
+		// Returns false - override in BeanPropertyAssocOne.
+		return false;
+	}
+
 	public String getElPlaceholder() {
 		return elPlaceHolder;
 	}

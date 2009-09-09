@@ -40,16 +40,20 @@ public class ElPropertyChain implements ElPropertyValue {
 	private final String placeHolder;
 	
 	private final String name;
+	
+	private final String expression;
 
 	private final boolean containsMany;
 	
 	private final ElPropertyValue[] chain;
 
+	private final boolean assocOneId;
+	
 	public ElPropertyChain(boolean containsMany, boolean embedded, String expression, ElPropertyValue[] chain) {
 		
 		this.containsMany = containsMany;
 		this.chain = chain;
-		
+		this.expression = expression;
 		int dotPos = expression.lastIndexOf('.');
 		if (dotPos > -1){
 			name = expression.substring(dotPos+1);
@@ -65,7 +69,9 @@ public class ElPropertyChain implements ElPropertyValue {
 			name = expression;
 		}		
 		placeHolder = calcPlaceHolder(prefix,getDbColumn());
-
+		
+		assocOneId = chain[chain.length-1].isAssocOneId();
+		
 	}
 
 	private String calcPlaceHolder(String prefix, String dbColumn){
@@ -98,6 +104,20 @@ public class ElPropertyChain implements ElPropertyValue {
 	
 	public String getElPlaceholder() {
 		return placeHolder;
+	}
+
+	public Object[] getAssocOneIdValues(Object bean) {
+		// Don't navigate the object graph as bean 
+		// is assumed to be the appropriate type
+		return chain[chain.length-1].getAssocOneIdValues(bean);
+	}
+
+	public String getAssocOneIdExpr(String prefix, String operator) {
+		return chain[chain.length-1].getAssocOneIdExpr(expression, operator);
+	}
+
+	public boolean isAssocOneId() {
+		return assocOneId;
 	}
 
 	public String getDbColumn() {

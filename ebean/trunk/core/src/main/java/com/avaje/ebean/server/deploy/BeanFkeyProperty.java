@@ -3,7 +3,7 @@ package com.avaje.ebean.server.deploy;
 import com.avaje.ebean.server.el.ElPropertyValue;
 
 /**
- * Used to evaluate imported foreign keys so as to avoid unnecssary joins.
+ * Used to evaluate imported foreign keys so as to avoid unnecessary joins.
  */
 public final class BeanFkeyProperty implements ElPropertyValue {
 
@@ -62,6 +62,27 @@ public final class BeanFkeyProperty implements ElPropertyValue {
 		return name;
 	}
 	
+	/**
+	 * Returns null as not an AssocOne.
+	 */
+	public Object[] getAssocOneIdValues(Object value) {
+		return null;
+	}
+
+	/**
+	 * Returns null as not an AssocOne.
+	 */
+	public String getAssocOneIdExpr(String prefix, String operator) {
+		return null;
+	}
+
+	/**
+	 * Returns false as not an AssocOne.
+	 */
+	public boolean isAssocOneId() {
+		return false;
+	}
+
 	public String getElPlaceholder() {
 		return placeHolder;
 	}

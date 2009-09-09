@@ -52,7 +52,20 @@ public interface IdBinder {
 	 * </p>
 	 */
 	public Object[] getBindValues(Object idValue);		
+	
+	/**
+	 * Return the id values for a given bean.
+	 */
+	public Object[] getIdValues(Object bean);
 		
+	/**
+	 * Build a string of the logical expressions.
+	 * <p>
+	 * Typically used to build a id = ? string.
+	 * </p>
+	 */
+	public String getAssocOneIdExpr(String prefix, String operator);
+	
 	/**
 	 * Binds an id value to a prepared statement.
 	 */

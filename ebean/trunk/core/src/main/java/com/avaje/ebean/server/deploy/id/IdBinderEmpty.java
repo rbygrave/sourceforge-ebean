@@ -47,7 +47,15 @@ public final class IdBinderEmpty implements IdBinder {
 	public String getBindIdSql(String baseTableAlias) {
 		return bindIdSql;
 	}
-
+	
+	public String getAssocOneIdExpr(String prefix, String operator){
+		return null;
+	}
+	
+	public Object[] getIdValues(Object bean){
+		return null;
+	}
+	
 	public Object[] getBindValues(Object idValue){
 		return new Object[]{idValue};
 	}

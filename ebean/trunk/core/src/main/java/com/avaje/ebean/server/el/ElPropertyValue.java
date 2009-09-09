@@ -28,6 +28,24 @@ import com.avaje.ebean.server.deploy.BeanProperty;
  * </p>
  */
 public interface ElPropertyValue extends ElPropertyDeploy {
+
+	/**
+	 * Return the Id values for the given bean value.
+	 */
+	public Object[] getAssocOneIdValues(Object bean);
+
+	/**
+	 * Return the Id expression string.
+	 * <p>
+	 * Typically used to produce id = ? expression strings.
+	 * </p>
+	 */
+	public String getAssocOneIdExpr(String prefix, String operator);
+
+	/**
+	 * Return true if this is an ManyToOne or OneToOne associated bean property.
+	 */
+	public boolean isAssocOneId();
 	
 	/**
 	 * Return the underlying bean property.

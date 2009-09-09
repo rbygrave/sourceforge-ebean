@@ -3,12 +3,18 @@ package com.avaje.ebean.internal;
 import java.util.ArrayList;
 
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Request object used for gathering expression sql and bind values.
  */
 public interface SpiExpressionRequest {
 
+	/**
+	 * Return the bean descriptor for the root type.
+	 */
+	public BeanDescriptor<?> getBeanDescriptor();
+	
 	/**
 	 * Return the associated QueryRequest.
 	 */

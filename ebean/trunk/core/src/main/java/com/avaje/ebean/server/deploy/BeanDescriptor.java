@@ -1287,11 +1287,7 @@ public class BeanDescriptor<T> {
 			// need to build it potentially navigating the BeanDescriptors
 			elGetValue = buildElGetValue(propName, null, propertyDeploy);
 			if (elGetValue == null){
-				if (propertyDeploy){
-					return null;
-				} else {
-					throw new PersistenceException("No property ["+propName+"] found on "+getFullName());
-				}
+				return null;
 			}
 			if (elGetValue instanceof BeanFkeyProperty){
 				fkeyMap.put(propName, (BeanFkeyProperty)elGetValue);
