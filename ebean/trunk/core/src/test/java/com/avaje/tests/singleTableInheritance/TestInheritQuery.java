@@ -25,8 +25,8 @@ public class TestInheritQuery extends TestCase {
 
 
 		// This line should work too:
-		// List<PalletLocation> locations = Ebean.find(PalletLocation.class).where().eq("zone", zone).findList();
-		List<PalletLocation> locations = Ebean.find(PalletLocation.class).where().eq("zone.id", zone.getId()).findList();
+		 List<PalletLocation> locations = Ebean.find(PalletLocation.class).where().eq("zone", zone).findList();
+//		List<PalletLocation> locations = Ebean.find(PalletLocation.class).where().eq("zone.id", zone.getId()).findList();
 
 		Assert.assertNotNull(locations);
 		Assert.assertEquals(1, locations.size());
