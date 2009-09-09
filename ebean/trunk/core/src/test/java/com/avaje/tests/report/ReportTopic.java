@@ -9,12 +9,12 @@ import javax.persistence.Entity;
 @Sql(select = {
 	@SqlSelect(
 		query =
-			"select t.id, t.title, count(p.id) as score " +
+			"select t.id, t.title, count(t.id) as score " +
 				"from topic t " +
 				"group by t.id, t.title"),
 	@SqlSelect(
 		name = "as.max",
-		query = "select t.id, t.title, max(p.*) as score " +
+		query = "select t.id, t.title, max(t.*) as score " +
 			"from topic t")
 	})
 public class ReportTopic
