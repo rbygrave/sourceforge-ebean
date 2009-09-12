@@ -27,7 +27,7 @@ public class TestNoId extends TestCase {
 		Ebean.save(e0);
 		Ebean.save(e1);
 
-		List<NoIdEntity> list = Ebean.createQuery(NoIdEntity.class,"noid").findList();
+		List<NoIdEntity> list = Ebean.createNamedQuery(NoIdEntity.class,"noid").findList();
 		
 	    Assert.assertEquals(2,list.size());
 	    NoIdEntity noIdEntity0 = list.get(0);

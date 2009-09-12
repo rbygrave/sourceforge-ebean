@@ -23,9 +23,8 @@ public class TestOrderTotalAmountReportBean extends TestCase {
             System.out.println(r0);			
 		}
 		     
-		
 		List<OrderReport> list = 
-		     Ebean.createQuery(OrderReport.class,"total.only")
+		     Ebean.createNamedQuery(OrderReport.class,"total.only")
 		         .where().gt("orderId", 0)
 		         .having().gt("totalAmount", 50)
 		         .findList();
