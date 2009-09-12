@@ -199,6 +199,16 @@ public interface EbeanServer {
 	 * 
 	 * @see Ebean#createQuery(Class, String)
 	 */
+	public <T> Query<T> createNamedQuery(Class<T> beanType, String namedQuery);
+
+	/**
+	 * Please use {@link #createNamedQuery(Class, String)}.
+	 * <p>
+	 * Create a named query for the given bean type.
+	 * Deprecated in favour of {@link #createNamedQuery(Class, String)}.
+	 * </p>
+	 * @deprecated
+	 */
 	public <T> Query<T> createQuery(Class<T> beanType, String namedQuery);
 
 	/**

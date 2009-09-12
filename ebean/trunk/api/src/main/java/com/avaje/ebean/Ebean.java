@@ -791,11 +791,23 @@ public final class Ebean {
 	 * @param namedQuery
 	 *            the name of the query
 	 */
-	public static <T> Query<T> createQuery(Class<T> beanType, String namedQuery) {
+	public static <T> Query<T> createNamedQuery(Class<T> beanType, String namedQuery) {
 
-		return serverMgr.getPrimaryServer().createQuery(beanType, namedQuery);
+		return serverMgr.getPrimaryServer().createNamedQuery(beanType, namedQuery);
 	}
 
+	/**
+	 * Please use {@link #createNamedQuery(Class, String)}.
+	 * <p>
+	 * Create a named query for the given bean type.
+	 * Deprecated in favour of {@link #createNamedQuery(Class, String)}.
+	 * </p>
+	 * @deprecated
+	 */
+	public static <T> Query<T> createQuery(Class<T> beanType, String namedQuery) {
+		return createNamedQuery(beanType, namedQuery);
+	}
+	
 	/**
 	 * Create a named orm update. The update statement (like a named query) is
 	 * specified in the
