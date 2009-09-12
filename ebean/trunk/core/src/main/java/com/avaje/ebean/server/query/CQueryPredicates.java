@@ -14,7 +14,7 @@ import com.avaje.ebean.internal.BindParams.OrderedList;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebean.server.deploy.DeployPropertyParser;
+import com.avaje.ebean.server.deploy.DeployParser;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.DefaultExpressionRequest;
@@ -32,84 +32,84 @@ import com.avaje.ebean.util.DefaultExpressionRequest;
  */
 public class CQueryPredicates {
 
-	static final Logger logger = Logger.getLogger(CQueryPredicates.class.getName());
+	private static final Logger logger = Logger.getLogger(CQueryPredicates.class.getName());
 
-	final Binder binder;
+	private final Binder binder;
 
-	final OrmQueryRequest<?> request;
+	private final OrmQueryRequest<?> request;
 
-	final SpiQuery<?> query;
+	private final SpiQuery<?> query;
 
-	final Object idValue;
+	private final Object idValue;
 
 	/**
 	 * Flag set if this is a SqlSelect type query.
 	 */
-	boolean rawSql;
+	private boolean rawSql;
 
 	/**
 	 * Named bind parameters.
 	 */
-	BindParams bindParams;
+	private BindParams bindParams;
 
 	/**
 	 * Named bind parameters for the having clause.
 	 */
-	OrderedList havingNamedParams;
+	private OrderedList havingNamedParams;
 
 	/**
 	 * Bind values from the where expressions.
 	 */
-	ArrayList<Object> whereExprBindValues;
+	private ArrayList<Object> whereExprBindValues;
 
 	/**
 	 * SQL generated from the where expressions.
 	 */
-	String whereExprSql;
+	private String whereExprSql;
 
 	/**
 	 * SQL generated from where with named parameters.
 	 */
-	String whereRawSql;
+	private String whereRawSql;
 
 	/**
 	 * Bind values for having expression.
 	 */
-	ArrayList<Object> havingExprBindValues;
+	private ArrayList<Object> havingExprBindValues;
 
 	/**
 	 * SQL generated from the having expression.
 	 */
-	String havingExprSql;
+	private String havingExprSql;
 
 	/**
 	 * SQL generated from having with named parameters.
 	 */
-	String havingRawSql;
+	private String havingRawSql;
 
-	String dbHaving;
+	private String dbHaving;
 
 	/**
 	 * logicalWhere with property names converted to db columns.
 	 */
-	String dbWhere;
+	private String dbWhere;
 
 	/**
 	 * The order by clause.
 	 */
-	String logicalOrderBy;
+	private String logicalOrderBy;
 
-	String dbOrderBy;
+	private String dbOrderBy;
 
 	/**
 	 * Includes from where and order by clauses.
 	 */
-	Set<String> predicateIncludes;
+	private Set<String> predicateIncludes;
 	
 
-	DeployPropertyParser deployParser;
+	private DeployParser deployParser;
 
-	public CQueryPredicates(Binder binder, OrmQueryRequest<?> request, DeployPropertyParser deployParser) {
+	public CQueryPredicates(Binder binder, OrmQueryRequest<?> request, DeployParser deployParser) {
 		this.binder = binder;
 		this.request = request;
 		this.query = request.getQuery();

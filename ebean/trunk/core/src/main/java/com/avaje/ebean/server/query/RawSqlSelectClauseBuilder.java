@@ -31,7 +31,7 @@ import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
-import com.avaje.ebean.server.deploy.DeployPropertyParser;
+import com.avaje.ebean.server.deploy.DeployParser;
 import com.avaje.ebean.server.deploy.RawSqlSelect;
 import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.querydefn.OrmQueryLimitRequest;
@@ -72,7 +72,7 @@ public class RawSqlSelectClauseBuilder {
 		
 		// create a parser for this specific SqlSelect... has to be really
 		// as each SqlSelect could have different table alias etc
-		DeployPropertyParser parser = sqlSelect.createDeployPropertyParser();
+		DeployParser parser = sqlSelect.createDeployPropertyParser();
 		
 		CQueryPredicates predicates = new CQueryPredicates(binder, request, parser);
 		// prepare and convert logical property names to dbColumns etc 

@@ -14,134 +14,144 @@ import javax.persistence.Version;
  * Order Detail entity bean.
  */
 @Entity
-@Table(name="o_order_detail")
+@Table(name = "o_order_detail")
 public class OrderDetail implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Id
+    @Id
     Integer id;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    Order order;
 
     Integer orderQty;
 
     Integer shipQty;
+
+    Double unitPrice;
+
+    @ManyToOne
+    Product product;
 
     Timestamp cretime;
 
     @Version
     Timestamp updtime;
 
-    @ManyToOne(cascade=CascadeType.ALL)
-    Order order;
-
-    @ManyToOne
-    Product product;
-
     public OrderDetail() {
     }
-    
-    public OrderDetail(Product product, Integer orderQty){
-    	this.product = product;
-    	this.orderQty = orderQty;
+
+    public OrderDetail(Product product, Integer orderQty, Double unitPrice) {
+        this.product = product;
+        this.orderQty = orderQty;
+        this.unitPrice = unitPrice;
     }
 
     /**
      * Return id.
-     */    
+     */
     public Integer getId() {
-  	    return id;
+        return id;
     }
 
     /**
      * Set id.
-     */    
+     */
     public void setId(Integer id) {
-  	    this.id = id;
+        this.id = id;
     }
 
     /**
      * Return order qty.
-     */    
+     */
     public Integer getOrderQty() {
-  	    return orderQty;
+        return orderQty;
     }
 
     /**
      * Set order qty.
-     */    
+     */
     public void setOrderQty(Integer orderQty) {
-  	    this.orderQty = orderQty;
+        this.orderQty = orderQty;
     }
 
     /**
      * Return ship qty.
-     */    
+     */
     public Integer getShipQty() {
-  	    return shipQty;
+        return shipQty;
     }
 
     /**
      * Set ship qty.
-     */    
+     */
     public void setShipQty(Integer shipQty) {
-  	    this.shipQty = shipQty;
+        this.shipQty = shipQty;
+    }
+
+    public Double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(Double unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     /**
      * Return cretime.
-     */    
+     */
     public Timestamp getCretime() {
-  	    return cretime;
+        return cretime;
     }
 
     /**
      * Set cretime.
-     */    
+     */
     public void setCretime(Timestamp cretime) {
-  	    this.cretime = cretime;
+        this.cretime = cretime;
     }
 
     /**
      * Return updtime.
-     */    
+     */
     public Timestamp getUpdtime() {
-  	    return updtime;
+        return updtime;
     }
 
     /**
      * Set updtime.
-     */    
+     */
     public void setUpdtime(Timestamp updtime) {
-  	    this.updtime = updtime;
+        this.updtime = updtime;
     }
 
     /**
      * Return order.
-     */    
+     */
     public Order getOrder() {
-  	    return order;
+        return order;
     }
 
     /**
      * Set order.
-     */    
+     */
     public void setOrder(Order order) {
-  	    this.order = order;
+        this.order = order;
     }
 
     /**
      * Return product.
-     */    
+     */
     public Product getProduct() {
-  	    return product;
+        return product;
     }
 
     /**
      * Set product.
-     */    
+     */
     public void setProduct(Product product) {
-  	    this.product = product;
+        this.product = product;
     }
-
 
 }

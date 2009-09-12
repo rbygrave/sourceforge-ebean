@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.el;
 
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.lib.util.StringHelper;
 
 
 /**
@@ -75,10 +76,19 @@ public class ElPropertyChain implements ElPropertyValue {
 	}
 
 	private String calcPlaceHolder(String prefix, String dbColumn){
+
+		String p;
 		if (prefix != null){
-			return "${"+prefix+"}"+dbColumn;
+			p = "${"+prefix+"}";
 		} else {
-			return ROOT_ELPREFIX+dbColumn;
+			p = ROOT_ELPREFIX;
+		}
+		
+		if (dbColumn != null && dbColumn.indexOf("${}") > -1){
+			// typically a sql formula
+			return StringHelper.replaceString(dbColumn, "${}", p);
+		} else {
+			return p + dbColumn;
 		}
 	}
 	

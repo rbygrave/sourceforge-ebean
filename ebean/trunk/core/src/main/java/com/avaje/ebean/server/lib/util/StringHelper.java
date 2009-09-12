@@ -402,6 +402,9 @@ public class StringHelper {
 		if (source == null){
 			return null;
 		}
+		if (replace == null){
+			return source;
+		}
 		return replaceString(source, match, replace, 30, 0, source.length());
 	}
 

@@ -270,7 +270,7 @@ public class BeanProperty implements ElPropertyValue {
 		this.getter = deploy.getGetter();
 		this.setter = deploy.getSetter();
 
-		this.dbColumn = InternString.intern(deploy.getDbColumn());
+		this.dbColumn = tableAliasIntern(descriptor,deploy.getDbColumn());
 		this.sqlFormulaJoin = InternString.intern(deploy.getSqlFormulaJoin());
 		this.sqlFormulaSelect = InternString.intern(deploy.getSqlFormulaSelect());
 		this.formula = sqlFormulaSelect != null;
@@ -285,7 +285,15 @@ public class BeanProperty implements ElPropertyValue {
 		this.validators = deploy.getValidators();
 		this.hasLocalValidators = (validators.length > 0);
 		
-		this.elPlaceHolder = InternString.intern(ElPropertyValue.ROOT_ELPREFIX+dbColumn);
+		this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder());
+	}
+	
+	private String tableAliasIntern(BeanDescriptor<?> descriptor, String s) {
+		if (descriptor != null){
+			s = StringHelper.replaceString(s, "${ta}.", "${}");//descriptor.getBaseTableAlias()
+			s = StringHelper.replaceString(s, "${ta}", "${}");//descriptor.getBaseTableAlias()
+		}
+		return InternString.intern(s);
 	}
 
 	/**
@@ -810,26 +818,6 @@ public class BeanProperty implements ElPropertyValue {
 	 */
 	public boolean isVersion() {
 		return version;
-	}
-
-	/**
-	 * Get the full deployment String that goes into a SQL select etc.
-	 * 
-	 * @param tableAlias
-	 *            the alias for the current base table
-	 * @param tableAliasPlaceHolder
-	 *            typically "${ta}" used in formulas.
-	 */
-	public String getDeploymentName(String tableAlias, String tableAliasPlaceHolder) {
-		if (formula) {
-			// replace ${ta} with the actual table alias.
-			// note the table alias is dependent on the depth of the node in the
-			// join tree.
-			return StringHelper.replaceString(sqlFormulaSelect, tableAliasPlaceHolder, tableAlias);
-
-		} else {
-			return tableAlias + "." + dbColumn;
-		}
 	}
 
 	public String getDeployProperty() {

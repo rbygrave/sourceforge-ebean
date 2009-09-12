@@ -1,6 +1,6 @@
 package com.avaje.ebean.server.deploy;
 
-
+import java.util.Set;
 
 /**
  * Converts logical property names to database columns.
@@ -10,43 +10,48 @@ public abstract class DeployParser {
 	/**
 	 * used to identify sql literal.
 	 */
-	static final char SINGLE_QUOTE = '\'';
+	protected static final char SINGLE_QUOTE = '\'';
 
 	/**
 	 * used to identify query named parameters.
 	 */
-	static final char COLON = ':';
+	protected static final char COLON = ':';
 
 	/**
 	 * Used to determine when a column name terminates.
 	 */
-	static final char UNDERSCORE = '_';
+	protected static final char UNDERSCORE = '_';
 
 	/**
 	 * Used to determine when a column name terminates.
 	 */
-	static final char PERIOD = '.';
+	protected static final char PERIOD = '.';
 
-	String source;
+	protected String source;
 
-	StringBuilder sb;
+	protected StringBuilder sb;
 
-	int sourceLength;
+	protected int sourceLength;
 
-	int pos;
+	protected int pos;
 
-	String word;
+	protected String word;
 
-	char wordTerminator;
+	protected char wordTerminator;
 
 	protected abstract String convertWord();
 
+	/**
+	 * Return the join includes.
+	 */
+	public abstract Set<String> getIncludes();
+
 	public String parse(String source) {
-		
-		if (source == null){
+
+		if (source == null) {
 			return source;
 		}
-		
+
 		pos = -1;
 		this.source = source;
 		this.sourceLength = source.length();
@@ -62,7 +67,6 @@ public abstract class DeployParser {
 
 		return sb.toString();
 	}
-
 
 	private boolean nextWord() {
 

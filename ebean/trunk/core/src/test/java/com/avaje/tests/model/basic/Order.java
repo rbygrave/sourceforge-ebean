@@ -15,9 +15,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
+import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.validation.NotNull;
@@ -47,16 +49,33 @@ public class Order implements Serializable {
 		
 	}
 
-//
-//	@Formula(select="c.name",join="join o_customer c on c.id = ${ta}.kcustomer_id")
-//	String custName;
-//
-//	@Formula(select="c.updtime",join="join o_customer c on c.id = ${ta}.kcustomer_id")
-//	Timestamp custUpdtime;
 	
 	@Id
     Integer id;
-    
+
+	/**
+	 * Derived total amount from the order details. Needs to be explicitly included in query as Transient.
+	 * Removing the Transient would mean by default it would be included in a order query.
+	 * <p>
+	 * NOTE: The join clause for totalAmount and totalItems is the same. If your query includes both 
+	 * totalAmount and totalItems only the one join is added to the query.
+	 * </p>
+	 */
+	@Transient
+	@Formula(
+		select="_b${ta}.total_amount",
+		join="join (select order_id, count(*) as total_items, sum(order_qty*unit_price) as total_amount from o_order_detail group by order_id) as _b${ta} on _b${ta}.order_id = ${ta}.id")
+	Double totalAmount;
+
+	/**
+	 * Derived total item count from the order details. Needs to be explicitly included in query as Transient.
+	 */
+	@Transient
+	@Formula(
+		select="_b${ta}.total_items",
+		join="join (select order_id, count(*) as total_items, sum(order_qty*unit_price) as total_amount from o_order_detail group by order_id) as _b${ta} on _b${ta}.order_id = ${ta}.id")
+	Integer totalItems;
+	
 	@Enumerated(value=EnumType.ORDINAL)
     Status status = Status.NEW;
     
@@ -68,7 +87,6 @@ public class Order implements Serializable {
     @ManyToOne
     @JoinColumn(name="kcustomer_id")
     Customer customer;
-
     
     @CreatedTimestamp
     Timestamp cretime;
@@ -81,6 +99,10 @@ public class Order implements Serializable {
     
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
     List<OrderShipment> shipments;
+    
+    public String toString() {
+    	return id+" totalAmount:"+totalAmount+" totalItems:"+totalItems;
+    }
     
 	/**
      * Return id.
@@ -96,7 +118,23 @@ public class Order implements Serializable {
   	    this.id = id;
     }
 
-    /**
+    public Double getTotalAmount() {
+		return totalAmount;
+	}
+
+	public void setTotalAmount(Double totalAmount) {
+		this.totalAmount = totalAmount;
+	}
+	
+	public Integer getTotalItems() {
+		return totalItems;
+	}
+
+	public void setTotalItems(Integer totalItems) {
+		this.totalItems = totalItems;
+	}
+
+	/**
      * Return order date.
      */    
     public Date getOrderDate() {
