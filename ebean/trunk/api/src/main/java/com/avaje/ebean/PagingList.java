@@ -27,8 +27,39 @@ import java.util.concurrent.Future;
  * single query.
  * <p>
  * Has the ability to use background threads to 'fetch ahead' the next page and
- * get the total row count. 
+ * get the total row count.
  * </p>
+ * <p>
+ * Note that instead of PagingList you can just use
+ * {@link Query#setFirstRow(int)} and {@link Query#setMaxRows(int)}. If you are
+ * building a stateless web application and not keeping the PagingList over
+ * multiple requests then there is not much to be gained by using PagingList.
+ * However, if you are keeping the PagingList over multiple requests then it
+ * provides fetch ahead automatically triggering a background thread to fetch
+ * the next page.
+ * </p>
+ * 
+ * <pre>
+ * PagingList&lt;TOne&gt; pagingList = Ebean.find(TOne.class).where().gt(&quot;name&quot;, &quot;2&quot;)
+ * 		.findPagingList(10);
+ * 
+ * // get the row count in the background...
+ * // ... otherwise it is fetched on demand
+ * // ... when getRowCount() or getPageCount() 
+ * // ... is called
+ * pagingList.getFutureRowCount();
+ * 
+ * // use fetch ahead... fetching the next page
+ * // in a background thread when the data in
+ * // the current page is touched
+ * pagingList.setFetchAhead(1);
+ * 
+ * // get the first page
+ * Page&lt;TOne&gt; page = pagingList.getPage(0);
+ * 
+ * // get the beans from the page as a list
+ * List&lt;TOne&gt; list = page.getList();
+ * </pre>
  * 
  * @author rbygrave
  * 
