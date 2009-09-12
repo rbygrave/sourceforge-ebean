@@ -943,8 +943,11 @@ public final class DefaultServer implements SpiEbeanServer {
 		beanDescriptor.sort(list, sortByClause);
 	}
 
-
 	public <T> Query<T> createQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
+		return createNamedQuery(beanType, namedQuery);
+	}
+	
+	public <T> Query<T> createNamedQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
 
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
