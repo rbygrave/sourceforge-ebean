@@ -92,16 +92,6 @@ public class AnnotationFields extends AnnotationParser {
 			util.setEnumScalarType(enumerated, prop);
 		}
 
-		Transient t = get(prop, Transient.class);
-		if (t != null) {
-			// it is not a persistent property.
-			prop.setDbRead(false);
-			prop.setDbInsertable(false);
-			prop.setDbUpdateable(false);
-			prop.setTransient(true);
-			return;
-		}
-
 		// its persistent and assumed to be on the base table
 		// rather than on a secondary table
 		prop.setDbRead(true);
@@ -174,6 +164,16 @@ public class AnnotationFields extends AnnotationParser {
 				// explicitly specify a version column
 				prop.setDbLength(length.max());
 			}
+		}
+		
+		// Want to process last so we can use with @Formula 
+		Transient t = get(prop, Transient.class);
+		if (t != null) {
+			// it is not a persistent property.
+			prop.setDbRead(false);
+			prop.setDbInsertable(false);
+			prop.setDbUpdateable(false);
+			prop.setTransient(true);
 		}
 	}
 

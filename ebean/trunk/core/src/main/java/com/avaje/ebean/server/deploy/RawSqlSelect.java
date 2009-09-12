@@ -1,8 +1,10 @@
 package com.avaje.ebean.server.deploy;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +28,8 @@ public class RawSqlSelect {
 	
 	private final RawSqlColumnInfo[] selectColumns;
 
+	private final Map<String,RawSqlColumnInfo> columnMap;
+	
 	private final String preWhereExprSql;
 
 	private final boolean andWhereExpr;
@@ -71,42 +75,25 @@ public class RawSqlSelect {
 		this.columnMapping = meta.getColumnMapping();
 		
 		this.sqlTree = initialise(desc);
+		this.columnMap = createColumnMap(this.selectColumns);
 	}
 
+	private Map<String,RawSqlColumnInfo> createColumnMap(RawSqlColumnInfo[] selectColumns) {
+	    
+	    HashMap<String,RawSqlColumnInfo> m = new HashMap<String,RawSqlColumnInfo>();
+	    for (int i = 0; i < selectColumns.length; i++) {
+            m.put(selectColumns[i].getPropertyName(), selectColumns[i]);
+        }
+	    
+	    return m;
+	}
+	
 	/**
 	 * Find foreign keys for assoc one types and build SqlTree.
 	 */
 	private SqlTree initialise(BeanDescriptor<?> owner){
 		
 		try {
-//			List<PropertyDeploy> fkAdditions = new ArrayList<PropertyDeploy>();
-//			
-//			Iterator<PropertyDeploy> it = deployPropMap.values().iterator();
-//			while (it.hasNext()) {
-//				PropertyDeploy propertyDeploy = it.next();
-//				if (propertyDeploy.isForeignKey()){
-//					
-//					String logicalFk = propertyDeploy.getLogical();
-//					BeanPropertyAssocOne<?> property = (BeanPropertyAssocOne<?>)owner.getBeanProperty(logicalFk);
-//					IdBinder idBinder = property.getTargetDescriptor().getIdBinder();
-//					if (!idBinder.isComplexId()){
-//						BeanProperty[] ids = idBinder.getProperties();
-//						
-//						String logicalFkImported = logicalFk+"."+ ids[0].getName();
-//						PropertyDeploy fkDeploy = propertyDeploy.createFkey(logicalFkImported);
-//						fkAdditions.add(fkDeploy);
-//					}
-//				}			
-//			}
-//			
-//			for (PropertyDeploy fkDeploy : fkAdditions) {
-//				if (logger.isLoggable(Level.FINER)){
-//					String m = "... adding foreign key  on "+owner+" query "+name+" "+fkDeploy;
-//					logger.finer(m);
-//				}
-//				deployPropMap.put(fkDeploy.getLogical(), fkDeploy);
-//			}
-			
 			return buildSqlTree(owner);
 			
 		} catch (Exception e){
@@ -115,6 +102,13 @@ public class RawSqlSelect {
 		}
 	}
 
+	/**
+	 * Return the RawSqlColumnInfo given it's logical property name.
+	 */
+	public RawSqlColumnInfo getRawSqlColumnInfo(String propertyName){
+	    return columnMap.get(propertyName);
+	}
+	
 	public String getTableAlias() {
 		return tableAlias;
 	}
@@ -275,9 +269,13 @@ public class RawSqlSelect {
 	public String toString() {
 		return Arrays.toString(selectColumns);
 	}
+	
+	public BeanDescriptor<?> getBeanDescriptor() {
+        return desc;
+    }
 
-	public DeployPropertyParser createDeployPropertyParser() {
-		return new DeployPropertyParser(desc);
+    public DeployParser createDeployPropertyParser() {
+		return new DeployPropertyParserRawSql(this);
 	}
 	
 }

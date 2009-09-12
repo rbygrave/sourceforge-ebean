@@ -88,6 +88,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 */
 	final boolean readId;
 	
+	final boolean disableLazyLoad;
+	
 	final InheritInfo inheritInfo;
 	
 	final String prefix;
@@ -113,6 +115,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		
 		// the bean has an Id property and we want to use it
 		this.readId = withId && (desc.propertiesId().length > 0);
+		this.disableLazyLoad = !readId || desc.isSqlSelectBased();
 		
 		this.tableJoins = props.getTableJoins();
 		
@@ -168,6 +171,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			localIdBinder = idBinder;
 		}
 		
+		PersistenceContext persistenceContext = ctx.getPersistenceContext();
+		
 		Object id = null;
 		if (!readId){
 			// report type bean... or perhaps excluding the id for SqlSelect?
@@ -179,17 +184,13 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				localBean = null;
 			} else {
 				// check the PersistenceContext to see if the bean already exists
-				PersistenceContext persistenceContext = ctx.getPersistenceContext();
-
 				contextBean = persistenceContext.putIfAbsent(id, localBean);
 				if (contextBean != null){
 					// bean already exists in persistenceContext
 					localBean = null;					
 				} else {
 					// bean just added to the persistenceContext
-					contextBean = localBean;
-					localBean._ebean_getIntercept().setPersistenceContext(persistenceContext);
-					
+					contextBean = localBean;					
 				}
 			}
 		} 
@@ -244,7 +245,13 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			localDesc.postLoad(localBean, includedProps);
 
 			EntityBeanIntercept ebi = localBean._ebean_getIntercept();
+			ebi.setPersistenceContext(persistenceContext);
 			ebi.setLoaded();
+			if (disableLazyLoad){
+				// bean does not have an Id or is SqlSelect based
+				ebi.setDisableLazyLoad(true);
+			}
+			
 			if (includedProps != null) {
 				ebi.setLoadedProps(includedProps);
 			}

@@ -1,5 +1,7 @@
 package com.avaje.ebean.server.deploy;
 
+import java.util.Set;
+
 import com.avaje.ebean.server.el.ElPropertyDeploy;
 
 /**
@@ -11,6 +13,14 @@ public final class DeployUpdateParser extends DeployParser {
 	
 	public DeployUpdateParser(BeanDescriptor<?> beanDescriptor) {
 		this.beanDescriptor = beanDescriptor;
+	}
+	
+	/**
+	 * Return null as not used for updates.
+	 */
+	@Override
+	public Set<String> getIncludes() {
+		return null;
 	}
 
 	public String convertWord() {

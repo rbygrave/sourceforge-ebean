@@ -174,9 +174,9 @@ public class ResetBasicData {
 		order.setCustomer(customer);
 		
 		List<OrderDetail> details = new ArrayList<OrderDetail>();
-		details.add(new OrderDetail(product1, 5));
-		details.add(new OrderDetail(product2, 3));
-		details.add(new OrderDetail(product3, 1));
+		details.add(new OrderDetail(product1, 5, 10.50));
+		details.add(new OrderDetail(product2, 3, 1.10));
+		details.add(new OrderDetail(product3, 1, 2.00));
 		order.setDetails(details);
 		
 		
@@ -193,7 +193,7 @@ public class ResetBasicData {
 		order.setCustomer(customer);
 		
 		List<OrderDetail> details = new ArrayList<OrderDetail>();
-		details.add(new OrderDetail(product1, 4));
+		details.add(new OrderDetail(product1, 4, 10.50));
 		order.setDetails(details);
 		
 		order.add(new OrderShipment());
@@ -210,8 +210,8 @@ public class ResetBasicData {
 		order.setCustomer(customer);
 		
 		List<OrderDetail> details = new ArrayList<OrderDetail>();
-		details.add(new OrderDetail(product1, 3));
-		details.add(new OrderDetail(product3, 40));
+		details.add(new OrderDetail(product1, 3, 10.50));
+		details.add(new OrderDetail(product3, 40, 2.10));
 		order.setDetails(details);
 		
 		order.add(new OrderShipment());

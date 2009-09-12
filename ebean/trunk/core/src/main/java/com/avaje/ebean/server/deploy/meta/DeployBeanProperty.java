@@ -30,6 +30,7 @@ import java.util.Map;
 
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
+import com.avaje.ebean.server.el.ElPropertyValue;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
@@ -504,10 +505,21 @@ public class DeployBeanProperty {
 		this.dbUpdateable = false;
 	}
 
+	public String getElPlaceHolder() {
+		if (sqlFormulaSelect != null){
+			return sqlFormulaSelect;
+		} else {
+			return ElPropertyValue.ROOT_ELPREFIX+dbColumn;
+		}
+	}
+	
 	/**
 	 * The database column name this is mapped to.
 	 */
 	public String getDbColumn() {
+		if (sqlFormulaSelect != null) {
+			return sqlFormulaSelect;
+		}
 		return dbColumn;
 	}
 
