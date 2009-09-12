@@ -69,6 +69,11 @@ public class EntityBeanIntercept implements Serializable {
 	 * bean (will lazy load etc).
 	 */
 	private boolean loaded;
+	
+	/**
+	 * Flag set to disable lazy loading - typically for SQL "report" type entity beans.
+	 */
+	private boolean disableLazyLoad;
 
 	/**
 	 * Set true when loaded or reference. 
@@ -384,6 +389,23 @@ public class EntityBeanIntercept implements Serializable {
 	}
 
 	/**
+	 * Return true if lazy loading is disabled.
+	 */
+	public boolean isDisableLazyLoad() {
+		return disableLazyLoad;
+	}
+
+	/**
+	 * Set true to turn off lazy loading.
+	 * <p>
+	 * Typically used to disable lazy loading on SQL based report beans.
+	 * </p>
+	 */
+	public void setDisableLazyLoad(boolean disableLazyLoad) {
+		this.disableLazyLoad = disableLazyLoad;
+	}
+
+	/**
 	 * Set the loaded status for the embedded bean.
 	 */
 	public void setEmbeddedLoaded(Object embeddedBean) {
@@ -441,9 +463,12 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	protected void loadBean(String loadProperty) {
 
-		synchronized (this) {
-			// synchronized for when lazy loading invoked 
-			// on cached bean that could be shared 
+		synchronized (this) {			
+			if (disableLazyLoad){
+				loaded = true;
+				return;
+			}
+			
 			if (lazyLoadProperty == null){
 				if (internalEbean == null){
 					internalEbean = (LazyLoadEbeanServer)Ebean.getServer(ebeanServerName);
