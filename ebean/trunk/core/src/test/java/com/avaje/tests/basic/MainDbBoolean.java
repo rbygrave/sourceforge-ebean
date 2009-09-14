@@ -14,8 +14,9 @@ import com.avaje.ebean.config.dbplatform.Postgres83Platform;
 import com.avaje.tests.model.basic.TOne;
 
 public class MainDbBoolean {
-
+	
 	public static void main(String[] args) {
+		
 		MainDbBoolean me = new MainDbBoolean();
 		EbeanServer server = me.createEbeanServer();
 		

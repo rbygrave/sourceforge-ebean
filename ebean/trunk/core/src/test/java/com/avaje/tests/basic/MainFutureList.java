@@ -135,6 +135,7 @@ public class MainFutureList {
 		System.out.println("and... done:"+futureList.isDone());
 		
 		if (!futureList.isCancelled()){
+			//List<Order> l0 = futureList.get(30, TimeUnit.SECONDS);
 			List<Order> list = futureList.get();
 			System.out.println("list:"+list);
 		}

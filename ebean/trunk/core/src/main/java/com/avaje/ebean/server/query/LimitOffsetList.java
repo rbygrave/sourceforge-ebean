@@ -73,7 +73,7 @@ public class LimitOffsetList<T> implements List<T> {
 		if (localCopy != null){
 			return localCopy.isEmpty();
 		} else {
-			return owner.getRowCount() == 0;
+			return owner.getTotalRowCount() == 0;
 		}
 	}
 
@@ -81,7 +81,7 @@ public class LimitOffsetList<T> implements List<T> {
 		if (localCopy != null){
 			return localCopy.size();
 		} else {
-			return owner.getRowCount();
+			return owner.getTotalRowCount();
 		}
 	}
 
@@ -113,8 +113,8 @@ public class LimitOffsetList<T> implements List<T> {
 		if (localCopy != null){
 			return localCopy.subList(fromIndex, toIndex);
 		} else {
-			//FIXME: subList ...
-			return null;
+			//FIXME: subList not implemented ...
+			throw new RuntimeException("Not implemented at this point");
 		}
 	}
 
