@@ -31,8 +31,8 @@ public interface ServerCacheFactory {
 	 * passing the EbeanServer.
 	 * <p>
 	 * This is so that a cache implementation can utilise the EbeanServer to
-	 * populate itself or the BackgroundExecutor service to schedule period
-	 * cache trim/cleanup.
+	 * populate itself or use the BackgroundExecutor service to schedule periodic
+	 * cache trimming/cleanup.
 	 * </p>
 	 */
 	public void init(EbeanServer ebeanServer);

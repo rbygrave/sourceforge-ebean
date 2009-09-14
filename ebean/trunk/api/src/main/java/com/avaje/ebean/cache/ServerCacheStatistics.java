@@ -19,6 +19,15 @@
  */
 package com.avaje.ebean.cache;
 
+/**
+ * The statistics collected per cache.
+ * <p>
+ * These can be monitored to review the effectiveness of a particular cache.
+ * </p>
+ * 
+ * @author rbygrave
+ *
+ */
 public class ServerCacheStatistics {
 
 	protected String cacheName;
@@ -31,42 +40,76 @@ public class ServerCacheStatistics {
 	
 	protected int missCount;
 
+	/**
+	 * Return the name of the cache.
+	 */
 	public String getCacheName() {
 		return cacheName;
 	}
 
+	/**
+	 * Set the name of the cache.
+	 */
 	public void setCacheName(String cacheName) {
 		this.cacheName = cacheName;
 	}
 
+	/**
+	 * Return the hit count. The number of successful gets.
+	 */
 	public int getHitCount() {
 		return hitCount;
 	}
 
+	/**
+	 * Set the hit count.
+	 */
 	public void setHitCount(int hitCount) {
 		this.hitCount = hitCount;
 	}
 
+	/**
+	 * Return the miss count. The number of gets that returned null.
+	 */
 	public int getMissCount() {
 		return missCount;
 	}
 
+	/**
+	 * Set the miss count.
+	 */
 	public void setMissCount(int missCount) {
 		this.missCount = missCount;
 	}
 
+	/**
+	 * Return the size of the cache.
+	 */
 	public int getSize() {
 		return size;
 	}
 
+	/**
+	 * Set the size of the cache.
+	 */
 	public void setSize(int size) {
 		this.size = size;
 	}
 
+	/**
+	 * Return the maximum size of the cache.
+	 * <p>
+	 * Can be used in conjunction with the size to determine if the 
+	 * cache use is being potentially limited by its maximum size.
+	 * </p>
+	 */
 	public int getMaxSize() {
 		return maxSize;
 	}
 
+	/**
+	 * Set the maximum size of the cache.
+	 */
 	public void setMaxSize(int maxSize) {
 		this.maxSize = maxSize;
 	}

@@ -42,23 +42,23 @@ import com.avaje.ebean.Query;
  * <pre class="code">
  * ...
  * &#064;Entity
- * &#064;Sql(select = {
- *  &#064;SqlSelect(query = 
- *  &quot;select t.id, t.title, count(p.id) as score &quot;+
- *  &quot;from f_topic t &quot;+
- *  &quot;join f_topic_post p on p.topic_id = t.id &quot;+
- *  &quot;group by t.id, t.title&quot;),
- *  &#064;SqlSelect(
- *  name = &quot;with.title&quot;,
- *  extend = &quot;default&quot;,
- *  debug = true,
- *  where = &quot;title like :likeTitle&quot;)
+ *   &#064;Sql(select = {
+ *     &#064;SqlSelect(query = 
+ *       &quot;select t.id, t.title, count(p.id) as score &quot;+
+ *       &quot;from f_topic t &quot;+
+ *       &quot;join f_topic_post p on p.topic_id = t.id &quot;+
+ *       &quot;group by t.id, t.title&quot;),
+ *     &#064;SqlSelect(
+ *       name = &quot;with.title&quot;,
+ *       extend = &quot;default&quot;,
+ *       debug = true,
+ *       where = &quot;title like :likeTitle&quot;)
  *  })
  *  public class ReportTopic
- * 	&#064;Id  Integer id;
- *  String title;
- *  Double score;
- *  ...
+ *    &#064;Id Integer id;
+ *    String title;
+ *    Double score;
+ *    ...
  * </pre>
  * 
  * <p>
@@ -67,12 +67,11 @@ import com.avaje.ebean.Query;
  * 
  * <pre class="code">
  * 
- * Query&lt;ReportTopic&gt; query = Ebean.createQuery(ReportTopic.class);
+ * List&lt;ReportTopic&gt; list =
+ *     Ebean.find(ReportTopic.class)
+ *          .having().gt(&quot;score&quot;, 0)
+ *          .findList();
  * 
- * // having score &gt; 0
- * query.having().gt(&quot;score&quot;, 0);
- * 
- * List&lt;ReportTopic&gt; list = query.findList();
  * </pre>
  * 
  * <p>
@@ -92,8 +91,10 @@ import com.avaje.ebean.Query;
  * </p>
  * 
  * <pre class="code">
- * List&lt;ReportTopic&gt; list = Ebean.createQuery(ReportTopic.class, &quot;with.title&quot;).set(&quot;likeTitle&quot;, &quot;a%&quot;)
- * 		.findList();
+ * List&lt;ReportTopic&gt; list = 
+ *     Ebean.find(ReportTopic.class, &quot;with.title&quot;)
+ *          .set(&quot;likeTitle&quot;, &quot;a%&quot;)
+ * 		    .findList();
  * </pre>
  * 
  * <p>
@@ -127,13 +128,13 @@ import com.avaje.ebean.Query;
  * </p>
  * 
  * <pre class="code">
- * 		&#064;SqlSelect(
- *  name = &quot;explicit.where&quot;,
- *  query = 
- *  &quot;select t.id, t.title, count(p.id) as score &quot;+
- *  &quot;from f_topic t, f_topic_post p &quot;+
- *  &quot;where p.topic_id = t.id ${andWhere} &quot;+
- *  &quot;group by t.id, t.title ${having}&quot;),
+ *    &#064;SqlSelect(
+ *          name = &quot;explicit.where&quot;,
+ *          query = 
+ *              &quot;select t.id, t.title, count(p.id) as score &quot;+
+ *              &quot;from f_topic t, f_topic_post p &quot;+
+ *              &quot;where p.topic_id = t.id ${andWhere} &quot;+
+ *              &quot;group by t.id, t.title ${having}&quot;),
  * </pre>
  */
 @Target( { ElementType.TYPE })
