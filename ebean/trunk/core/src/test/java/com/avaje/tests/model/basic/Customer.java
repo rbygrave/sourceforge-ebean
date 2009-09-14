@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.annotation.EnumMapping;
+import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.validation.Length;
 import com.avaje.ebean.validation.NotNull;
 
@@ -53,6 +54,7 @@ public class Customer extends BasicDomain {
     Address shippingAddress;
 
     @OneToMany(mappedBy="customer")
+    @Where(clause="${ta}.order_date is not null")
     List<Order> orders;
 
 

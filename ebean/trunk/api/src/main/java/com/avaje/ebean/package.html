@@ -46,7 +46,7 @@ Provides the main API for fetching and persisting beans with eBean.
 
 	// create a new Order object
 	Order newOrder = new Order();
-	newOrder.setStatus("NEW");
+	newOrder.setStatus(Order.Status.NEW);
 	newOrder.setCustomer(custRef);
 	
 	ArrayList orderLines = new ArrayList();
@@ -77,7 +77,7 @@ Provides the main API for fetching and persisting beans with eBean.
 	// fetch contact 3 from the HR database
 	Contact contact = hrServer.find(Contact.class, 3);
                                         
-	contact.setStatus(&quot;INACTIVE&quot;);
+	contact.setStatus(Contact.Status.INACTIVE);
 	...
                                         
 	// save the contact back to the HR database
