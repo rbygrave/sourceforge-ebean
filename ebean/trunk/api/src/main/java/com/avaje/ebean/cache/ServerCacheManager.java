@@ -22,7 +22,7 @@ package com.avaje.ebean.cache;
 import com.avaje.ebean.EbeanServer;
 
 /**
- * The cache service for server side caching of beans and lookups.
+ * The cache service for server side caching of beans and query results.
  */
 public interface ServerCacheManager {
 

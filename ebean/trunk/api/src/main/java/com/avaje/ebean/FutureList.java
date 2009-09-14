@@ -41,9 +41,7 @@ import java.util.concurrent.Future;
  *  // immediately returning the futureList
  * FutureList&lt;Order&gt; futureList = query.findFutureList();
  * 
- *  // typically you can do something else ... we will sleep
- * Thread.sleep(3000);
- * System.out.println("end of sleep");
+ *  // do something else ... 
  * 
  * if (!futureList.isDone()){
  * 	// we can cancel the query execution. This will cancel
@@ -56,7 +54,6 @@ import java.util.concurrent.Future;
  * if (!futureList.isCancelled()){
  * 	// wait for the query to finish and return the list
  * 	List&lt;Order&gt; list = futureList.get();
- * 	System.out.println("list:"+list);
  * 	...
  * }
  * 

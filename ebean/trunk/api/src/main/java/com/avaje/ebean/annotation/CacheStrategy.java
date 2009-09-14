@@ -34,20 +34,21 @@ import com.avaje.ebean.Query;
 public @interface CacheStrategy {
 
 	/**
-	 * Set to true then the bean cache will be used unless explicitly stated
+	 * When set to true the bean cache will be used unless explicitly stated
 	 * not to in a query via {@link Query#setUseCache(boolean)}.
 	 */
 	boolean useBeanCache() default true;
 
 	/**
-	 * Set to true means by the beans returned from the cache will be treated as
-	 * readOnly and this means they can be safely shared by many users.
+	 * When set to true the beans returned from the cache will be treated as
+	 * readOnly (effectively immutable) and this means they can be safely 
+	 * shared by many users.
 	 * <p>
 	 * If this is false then a copy of the bean is given back to the application
 	 * and so the application code that modify that bean.
 	 * </p>
 	 * <p>
-	 * If you try to modify a readOnly bean it will throw an exception.
+	 * If you try to modify a readOnly bean it will throw an IllegalStateException.
 	 * </p>
 	 */
 	boolean readOnly() default false;
@@ -55,12 +56,12 @@ public @interface CacheStrategy {
 	/**
 	 * Specify a query that can be used to warm the cache.
 	 * <p>
-	 * All the beans fetch by this query will be loaded into the bean cache and
+	 * All the beans fetched by this query will be loaded into the bean cache and
 	 * the query itself will be loaded into the query cache.
 	 * </p>
 	 * <p>
-	 * The warming query will typically be executed at startup time but can also
-	 * be run later via the ServerCache.
+	 * The warming query will typically be executed at startup time after a short delay 
+	 * (defaults to a 30 seconds delay).
 	 * </p>
 	 */
 	String warmingQuery() default "";

@@ -39,9 +39,9 @@ public interface ServerCache {
 	/**
 	 * Just after a cache is created this init method is called. This is so that
 	 * a cache implementation can make use of the BackgroundExecutor service to
-	 * trim itself or the EbeanServer itself to populate itself.
+	 * trim/cleanup itself or use the EbeanServer to populate itself.
 	 * <p>
-	 * This method can be called after the cache is constructed but before the
+	 * This method is called after the cache is constructed but before the
 	 * cache is made available for use.
 	 * </p>
 	 */

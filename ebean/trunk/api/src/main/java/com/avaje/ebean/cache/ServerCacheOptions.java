@@ -30,10 +30,16 @@ public class ServerCacheOptions {
 	private int maxIdleSecs;
 	private int maxSecsToLive;
 
+	/**
+	 * Construct with no set options.
+	 */
 	public ServerCacheOptions() {
 		
 	}
 
+	/**
+	 * Create from the cacheTuning deployment annotation.
+	 */
 	public ServerCacheOptions(CacheTuning cacheTuning) {
 		this.maxSize = cacheTuning.maxSize();
 		this.maxIdleSecs = cacheTuning.maxIdleSecs();
@@ -49,6 +55,10 @@ public class ServerCacheOptions {
 		this.maxSecsToLive = d.getMaxIdleSecs();
 	}
 	
+	/**
+	 * Apply any settings from the default settings that have not
+	 * already been specifically set.
+	 */
 	public void applyDefaults(ServerCacheOptions defaults){
 		if (maxSize == 0) {
 			maxSize = defaults.getMaxSize();
