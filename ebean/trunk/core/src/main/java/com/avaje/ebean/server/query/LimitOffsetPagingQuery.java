@@ -43,7 +43,7 @@ public class LimitOffsetPagingQuery<T> implements PagingList<T> {
 	
 	private final int pageSize;
 
-	private int fetchAhead = 1;
+	private boolean fetchAhead = true;
 	
 	private Future<Integer> futureRowCount;
 	
@@ -65,7 +65,7 @@ public class LimitOffsetPagingQuery<T> implements PagingList<T> {
 		return query;
 	}
 	
-	public PagingList<T> setFetchAhead(int fetchAhead) {
+	public PagingList<T> setFetchAhead(boolean fetchAhead) {
 		this.fetchAhead = fetchAhead;
 		return this;
 	}
@@ -98,8 +98,9 @@ public class LimitOffsetPagingQuery<T> implements PagingList<T> {
 	
 	protected void fetchAheadIfRequired(int pageIndex){
 		synchronized (monitor) {
-			//TODO: check pageIndex < maxPageIndex 
-			if (fetchAhead > 0){
+			// Already checked in LimitOffsetPage that there is another page
+			if (fetchAhead){
+				// fetchAhead is turned on so get the next page and trigger query
 				LimitOffsetPage<T> nextPage = internalGetPage(pageIndex + 1);
 				nextPage.getFutureList();
 			}
@@ -118,7 +119,7 @@ public class LimitOffsetPagingQuery<T> implements PagingList<T> {
 	}
 
 	protected boolean hasNext(int position){
-		return position < getRowCount();
+		return position < getTotalRowCount();
 	}
 	
 	protected T get(int rowIndex){
@@ -129,17 +130,21 @@ public class LimitOffsetPagingQuery<T> implements PagingList<T> {
 		return page.getList().get(offset);
 	}
 	
-	public int getPageCount() {
+	public int getTotalPageCount() {
 		
-		int rowCount = getRowCount();
-		return rowCount / pageSize;
+		int rowCount = getTotalRowCount();
+		if (rowCount == 0){
+			return 0;
+		} else {
+			return ((rowCount-1) / pageSize) + 1;
+		}
 	}
 
 	public int getPageSize() {
 		return pageSize;
 	}
 
-	public int getRowCount() {
+	public int getTotalRowCount() {
 		try {
 			return getFutureRowCount().get();
 		} catch (Exception e) {

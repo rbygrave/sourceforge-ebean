@@ -45,9 +45,31 @@ public class TestPaging extends TestCase {
 	public void test() throws Exception {
 
 		loadData();
-
+		testLastPage();
 		bgFetchOne();
 		pagingOne();
+	}
+	
+	private void testLastPage() {
+		
+		
+		PagingList<TOne> pagingList = 
+			Ebean.find(TOne.class)
+				.where().gt("name", "2")
+				.findPagingList(10);
+		
+		
+		pagingList.setFetchAhead(false);
+
+		Page<TOne> lastPage = pagingList.getPage(pagingList.getTotalPageCount() - 1);
+		String displayLastPage = lastPage.getDisplayXtoYofZ(" to "," of ");
+		System.out.println("LASTPAGE: "+displayLastPage);
+		
+		List<TOne> list = lastPage.getList();
+		list.get(0);
+		
+		Assert.assertFalse(lastPage.hasNext());
+		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -86,12 +108,11 @@ public class TestPaging extends TestCase {
 		
 		loadData();
 		
-
 		int pageSize = 10;
 		
 		PagingList<TOne> pagingList = 
 			Ebean.find(TOne.class)
-				.where().gt("name", "2")
+				//.where().gt("name", "2")
 				.findPagingList(10);
 		
 				
@@ -101,31 +122,36 @@ public class TestPaging extends TestCase {
 		// ... is called
 		pagingList.getFutureRowCount();
 		
-		// use fetch ahead... fetching the next page
-		// in a background thread when the data in
-		// the current page is touched
-		pagingList.setFetchAhead(1);
-		
 		// get the first page
 		Page<TOne> page = pagingList.getPage(0);
+		//String display0 = page.getDisplayXtoYofZ(" to "," of ");
+		//System.out.println("PAGE0: "+display0);
 		
 		// get the beans from the page as a list
 		List<TOne> list = page.getList();
 		
 		Assert.assertTrue("page size ",list.size() == pageSize);
 		
-		int totalRows = pagingList.getRowCount();
+		int totalRows = pagingList.getTotalRowCount();
 		Assert.assertTrue("page size ",totalRows >= list.size());
 		
 		Thread.sleep(300);
 		
 		Page<TOne> next = page.next();
+		//String display1 = next.getDisplayXtoYofZ(" to "," of ");
+		//System.out.println("PAGE1: "+display1);
+		
 		List<TOne> list2 = next.getList();
 		
 		Assert.assertTrue("page size ",list2.size() == pageSize);
 		
-		checkForLoop();
+		Page<TOne> lastPage = pagingList.getPage(pagingList.getTotalPageCount() - 1);
+		//String displayLastPage = lastPage.getDisplayXtoYofZ(" to "," of ");
+		//System.out.println("LASTPAGE: "+displayLastPage);
 		
+		Assert.assertFalse(lastPage.hasNext());
+		
+		checkForLoop();
 	}
 	
 	private void checkForLoop() {
