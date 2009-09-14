@@ -36,6 +36,7 @@ import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
+import com.avaje.ebean.server.lib.util.StringHelper;
 
 /**
  * Property mapped to a List Set or Map.
@@ -311,7 +312,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 
 		if (extraWhere != null){
-			query.where().raw(extraWhere);
+			// replace the table alias place holder
+			String ta = targetDescriptor.getBaseTableAlias();
+			String where = StringHelper.replaceString(extraWhere, "${ta}", ta);
+			query.where().raw(where);
 		}
 
 		if (fetchOrderBy != null){

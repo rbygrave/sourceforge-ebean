@@ -1,7 +1,7 @@
 <html>
 <head>
 	<meta HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
-	<title>eBean API</title>
+	<title>Ebean API</title>
 </head>
 <body BGCOLOR="#ffffff">
 Ebean Object Relational Mapping (start at <a href='com/avaje/ebean/Ebean.html'>Ebean</a>).
@@ -90,7 +90,7 @@ Customer custRef = Ebean.getReference(Customer.class, 7);
 
 // create a new Order object
 Order newOrder = new Order();
-newOrder.setStatus("NEW");
+newOrder.setStatus(Order.Status.NEW);
 newOrder.setCustomer(custRef);
 
 ArrayList orderLines = new ArrayList();
@@ -122,7 +122,7 @@ EbeanServer hrServer = Ebean.getServer(&quot;HR&quot;);
 // fetch contact 3 from the HR database
 Contact contact = hrServer.find(Contact.class, 3);
                                     
-contact.setStatus(&quot;INACTIVE&quot;);
+contact.setStatus(Contact.Status.INACTIVE);
 ...
                                     
 // save the contact back to the HR database
