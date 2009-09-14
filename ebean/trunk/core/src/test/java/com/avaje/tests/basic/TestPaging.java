@@ -45,12 +45,12 @@ public class TestPaging extends TestCase {
 	public void test() throws Exception {
 
 		loadData();
-		testLastPage();
+		checkLastPage();
 		bgFetchOne();
 		pagingOne();
 	}
 	
-	private void testLastPage() {
+	private void checkLastPage() {
 		
 		
 		PagingList<TOne> pagingList = 
