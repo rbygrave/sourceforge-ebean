@@ -37,21 +37,22 @@ public class DeployInheritInfo {
 	 */
 	private static final String JPA_DEFAULT_DISCRIM_COLUMN = "dtype";
 	
-	int discriminatorLength;
+	private int discriminatorLength;
 	
-	int discriminatorType;
+	private int discriminatorType;
 	
-    Object discriminatorValue;
+	private String discriminatorStringValue;
+	private Object discriminatorObjectValue;
     
-    String discriminatorColumn;
+	private String discriminatorColumn;
 
-    String discriminatorWhere;
+	private String discriminatorWhere;
 
-    Class<?> type;
+	private Class<?> type;
 
-    Class<?> parent;
+	private Class<?> parent;
     
-    ArrayList<DeployInheritInfo> children = new ArrayList<DeployInheritInfo>();
+	private ArrayList<DeployInheritInfo> children = new ArrayList<DeployInheritInfo>();
         
     /**
      * Create for a given type.
@@ -85,7 +86,7 @@ public class DeployInheritInfo {
      * Return true if this is abstract node.
      */
     public boolean isAbstract() {
-        return (discriminatorValue == null);
+        return (discriminatorObjectValue == null);
     }
     
     /**
@@ -193,8 +194,12 @@ public class DeployInheritInfo {
 	/**
      * Return the discriminator value for this node.
      */
-    public Object getDiscriminatorValue() {
-        return discriminatorValue;
+    public Object getDiscriminatorObjectValue() {
+        return discriminatorObjectValue;
+    }
+
+    public String getDiscriminatorStringValue() {
+        return discriminatorStringValue;
     }
 
     /**
@@ -206,11 +211,12 @@ public class DeployInheritInfo {
         	if (value.length() == 0){
         		value = null;
         	} else {
+            	discriminatorStringValue = value;
         		// convert the value if desired
 	        	if (discriminatorType == Types.INTEGER){
-	        		this.discriminatorValue = Integer.valueOf(value.toString());
+	        		this.discriminatorObjectValue = Integer.valueOf(value.toString());
 	        	} else {
-	        		this.discriminatorValue = value;
+	        		this.discriminatorObjectValue = value;
 	        	}
         	}
         }
@@ -226,8 +232,8 @@ public class DeployInheritInfo {
     }
 
     private void appendDiscriminator(List<Object> list) {
-    	if (discriminatorValue != null){
-    		list.add(discriminatorValue);
+    	if (discriminatorObjectValue != null){
+    		list.add(discriminatorObjectValue);
     	}
     	for (DeployInheritInfo child : children) {
     		child.appendDiscriminator(list);
@@ -270,7 +276,7 @@ public class DeployInheritInfo {
         StringBuilder sb = new StringBuilder();
         sb.append("InheritInfo[").append(type.getName()).append("]");
         sb.append(" root[").append(parent.getName()).append("]");
-        sb.append(" disValue[").append(discriminatorValue).append("]");
+        sb.append(" disValue[").append(discriminatorStringValue).append("]");
         return sb.toString();
     }
     

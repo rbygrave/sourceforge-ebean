@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -37,34 +38,37 @@ import com.avaje.ebean.server.query.SqlTreeProperties;
  */
 public class InheritInfo {
 
-	final Object discriminatorValue;
+	private final String discriminatorStringValue;
+	private final Object discriminatorValue;
 
-	final String discriminatorColumn;
+	private final String discriminatorColumn;
 
-	final int discriminatorType;
+	private final int discriminatorType;
 
-	final int discriminatorLength;
+	private final int discriminatorLength;
 
-	final String where;
+	private final String where;
 
-	final Class<?> type;
+	private final Class<?> type;
 
-	final ArrayList<InheritInfo> children = new ArrayList<InheritInfo>();
+	private final ArrayList<InheritInfo> children = new ArrayList<InheritInfo>();
 
-	final HashMap<Object, InheritInfo> discMap;
+	private final HashMap<String, InheritInfo> discMap;
 
-	final InheritInfo parent;
+	private final InheritInfo parent;
 
-	final InheritInfo root;
+	private final InheritInfo root;
 
-	BeanDescriptor<?> descriptor;
+	private BeanDescriptor<?> descriptor;
 
 	public InheritInfo(InheritInfo r, InheritInfo parent, DeployInheritInfo deploy) {
 		
 		this.parent = parent;
 		this.type = deploy.getType();
 		this.discriminatorColumn = InternString.intern(deploy.getDiscriminatorColumn(parent));
-		this.discriminatorValue = deploy.getDiscriminatorValue();
+		this.discriminatorValue = deploy.getDiscriminatorObjectValue();
+		this.discriminatorStringValue = deploy.getDiscriminatorStringValue();
+		
 		this.discriminatorType = deploy.getDiscriminatorType(parent);
 		this.discriminatorLength = deploy.getDiscriminatorLength(parent);
 		this.where = InternString.intern(deploy.getWhere());
@@ -72,7 +76,7 @@ public class InheritInfo {
 		if (r == null) {
 			// this is a root node
 			root = this;
-			discMap = new HashMap<Object, InheritInfo>();
+			discMap = new HashMap<String, InheritInfo>();
 			registerWithRoot(this);
 
 		} else {
@@ -144,7 +148,7 @@ public class InheritInfo {
 	public InheritInfo readType(DbReadContext ctx) throws SQLException {
 		
 		String discValue = ctx.getRset().getString(ctx.nextRsetIndex());
-		
+
 		if (discValue == null){
 			return null;
 		}
@@ -206,13 +210,14 @@ public class InheritInfo {
 	/**
 	 * For a discriminator get the inheritance information for this tree.
 	 */
-	public InheritInfo getType(Object discValue) {
-		return (InheritInfo) discMap.get(discValue);
+	public InheritInfo getType(String discValue) {
+		return discMap.get(discValue);
 	}
 
 	private void registerWithRoot(InheritInfo info) {
-		if (info.getDiscriminatorValue() != null) {
-			discMap.put(info.getDiscriminatorValue(), info);
+		if (info.getDiscriminatorStringValue() != null) {
+			String stringDiscValue = info.getDiscriminatorStringValue();
+			discMap.put(stringDiscValue, info);
 		}
 	}
 
@@ -256,12 +261,16 @@ public class InheritInfo {
 	/**
 	 * Return the discriminator value for this node.
 	 */
+	public String getDiscriminatorStringValue() {
+		return discriminatorStringValue;
+	}
+
 	public Object getDiscriminatorValue() {
 		return discriminatorValue;
 	}
-
+	
 	public String toString() {
-		return "InheritInfo[" + type.getName() + "] disc[" + discriminatorValue + "]";
+		return "InheritInfo[" + type.getName() + "] disc[" + discriminatorStringValue + "]";
 	}
 
 }

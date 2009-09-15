@@ -40,11 +40,11 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
  */
 public class DeployInherit {
 
-	final Map<Class<?>, DeployInheritInfo> deployMap = new LinkedHashMap<Class<?>, DeployInheritInfo>();
+	private final Map<Class<?>, DeployInheritInfo> deployMap = new LinkedHashMap<Class<?>, DeployInheritInfo>();
 
-	final Map<Class<?>, InheritInfo> finalMap = new LinkedHashMap<Class<?>, InheritInfo>();
+	private final Map<Class<?>, InheritInfo> finalMap = new LinkedHashMap<Class<?>, InheritInfo>();
 
-	final BootupClasses bootupClasses;
+	private final BootupClasses bootupClasses;
 	
 	/**
 	 * Create the InheritInfoDeploy.
