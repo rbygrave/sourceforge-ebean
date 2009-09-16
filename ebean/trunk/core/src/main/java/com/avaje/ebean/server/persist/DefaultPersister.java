@@ -167,12 +167,8 @@ public final class DefaultPersister implements Persister {
 		}
 	
 		PersistRequestBean<?> req = createPersistRequest(bean, t, parentBean);
-		//if (req.isAlreadySavedVanilla()){
-		//	return;
-		//}
 		try {
 			req.initTransIfRequired();
-			//req.addSavedVanilla();
 			save(req);
 			req.commitTransIfRequired();
 
@@ -470,9 +466,10 @@ public final class DefaultPersister implements Persister {
 		Collection<?> additions = null;
 		Collection<?> deletions = null;
 		
-		if (insertedParent){
-			// if the parent was inserted then everything in the 
-			// list/set/map is treated as an intersection addition  
+		boolean vanillaCollection = (value instanceof BeanCollection<?> == false);
+		
+		if (vanillaCollection || insertedParent){
+			// treat everything in the list/set/map as an intersection addition  
 			if (value instanceof Map<?,?>){
 				additions = ((Map<?,?>)value).values();
 			} else if (value instanceof Collection<?>) {
@@ -482,26 +479,7 @@ public final class DefaultPersister implements Persister {
 				throw new PersistenceException(msg);
 			}
 		} else {
-			// parent bean was updated so expecting a BeanCollection 
-			// that listens for additions/deletions 
-			if (value instanceof BeanCollection<?> == false) {
-				// empty collection or map is OK
-				if (value instanceof Collection<?> && ((Collection<?>)value).isEmpty()){
-					return;
-				}
-				if (value instanceof Map<?,?> && ((Map<?,?>)value).isEmpty()){
-					return;
-				}
-				
-				// we can't determine the additions and removals
-				String m = "Save cascade on ManyToMany [" + prop.getName() + "].";
-				m += " The collection [" + value.getClass().toString() + "]was not a BeanCollection.";
-				m += " The additions and removals can not be determined and";
-				m += " *NO* inserts or deletes to the intersection table occured.";
-				request.getTransaction().log(m);
-				logger.warning(m);
-				return;
-			}
+			// BeanCollection so get the additions/deletions
 			BeanCollection<?> manyValue = (BeanCollection<?>) value;
 			additions = manyValue.getModifyAdditions();
 			deletions = manyValue.getModifyRemovals();

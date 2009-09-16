@@ -2,6 +2,7 @@ package com.avaje.tests.model.basic;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
@@ -14,7 +15,7 @@ public class MUser {
 	
 	String userName;
 
-	@ManyToMany(mappedBy="users")
+	@ManyToMany(mappedBy="users",cascade=CascadeType.ALL)
 	List<MRole> roles;
 	
 	public Integer getUserid() {
