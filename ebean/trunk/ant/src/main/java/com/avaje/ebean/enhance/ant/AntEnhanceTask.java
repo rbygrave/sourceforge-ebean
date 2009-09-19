@@ -1,11 +1,10 @@
 package com.avaje.ebean.enhance.ant;
 
-import java.io.File;
-
+import com.avaje.ebean.enhance.agent.Transformer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import com.avaje.ebean.enhance.agent.Transformer;
+import java.io.File;
 
 /**
  * An ANT task that can enhance entity beans etc for use by Ebean.
@@ -44,6 +43,8 @@ import com.avaje.ebean.enhance.agent.Transformer;
  */
 public class AntEnhanceTask extends Task {
 
+	String classpath;
+
 	String classSource;
 
 	String classDestination;
@@ -57,13 +58,37 @@ public class AntEnhanceTask extends Task {
 
 		File f = new File("");
 		System.out.println("Current Directory: "+f.getAbsolutePath());
-				
-		Transformer t = new Transformer(classSource, transformArgs);
+
+		StringBuilder extraClassPath = new StringBuilder();
+		extraClassPath.append(classSource);
+		if (classpath != null)
+		{
+			if (!extraClassPath.toString().endsWith(";"))
+			{
+				extraClassPath.append(";");
+			}
+			extraClassPath.append(classpath);
+		}
+		Transformer t = new Transformer(extraClassPath.toString(), transformArgs);
 	
 		ClassLoader cl = AntEnhanceTask.class.getClassLoader();
 		OfflineFileTransform ft = new OfflineFileTransform(t, cl, classSource, classDestination);
 
 		ft.process(packages);
+	}
+
+	/**
+	 * the classpath used to search for e.g. inerited classes
+	 */
+	public String getClasspath() {
+		return classpath;
+	}
+
+	/**
+	 * the classpath used to search for e.g. inerited classes
+	 */
+	public void setClasspath(String classpath) {
+		this.classpath = classpath;
 	}
 
 	/**
