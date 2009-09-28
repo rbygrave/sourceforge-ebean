@@ -33,19 +33,25 @@ import com.avaje.ebean.server.persist.BatchControl;
  */
 public interface SpiTransaction extends Transaction {
 
-//	/**
-//	 * Return true if this is a vanilla bean that has already been saved.
-//	 */
-//	public boolean isAlreadySavedVanilla(Object vanillaBean);
-//	
-//	/**
-//	 * If this is a vanilla bean add it to the saved list.
-//	 * <p>
-//	 * This is to handle bi-directional relationships where
-//	 * both sides have cascade.PERSIST.
-//	 * </p>
-//	 */
-//	public void savedVanilla(Object vanillaBean);
+	/**
+	 * Add a bean to the registed list.
+	 * <p>
+	 * This is to handle bi-directional relationships where
+	 * both sides Cascade.
+	 * </p>
+	 */
+	public void registerBean(Integer hash);
+
+	/**
+	 * Unregister the persisted bean.
+	 */
+	public void unregisterBean(Integer hash);
+	
+	/**
+	 * Return true if this is a bean that has already been saved/deleted.
+	 */
+	public boolean isRegisteredBean(Integer hash);
+
 	
     /**
      * Returns a String used to identify the transaction. This id is used for
