@@ -298,15 +298,6 @@ public final class DefaultPersister implements Persister {
 	 * Delete the bean with the explicit transaction.
 	 */
 	public void delete(Object bean, Transaction t) {
-
-//		if (t != null){
-//			if (((SpiTransaction)t).isAlreadyRegistered(bean)) {
-//				// skip deleting bean. Used where cascade is on
-//				// both sides of a relationship
-//				logger.info("skipping delete on alreadyRegistered "+bean);
-//				return;
-//			}
-//		}
 		
 		PersistRequestBean<?> req = createPersistRequest(bean, t, null);
 		if (req.isRegistered()){
