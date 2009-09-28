@@ -299,8 +299,23 @@ public final class DefaultPersister implements Persister {
 	 */
 	public void delete(Object bean, Transaction t) {
 
+//		if (t != null){
+//			if (((SpiTransaction)t).isAlreadyRegistered(bean)) {
+//				// skip deleting bean. Used where cascade is on
+//				// both sides of a relationship
+//				logger.info("skipping delete on alreadyRegistered "+bean);
+//				return;
+//			}
+//		}
+		
 		PersistRequestBean<?> req = createPersistRequest(bean, t, null);
-
+		if (req.isRegistered()){
+			// skip deleting bean. Used where cascade is on
+			// both sides of a relationship
+			logger.info("skipping delete on alreadyRegistered "+bean);
+			return;
+		}
+		
 		req.setType(PersistRequest.Type.DELETE);
 		try {
 			req.initTransIfRequired();
@@ -322,8 +337,11 @@ public final class DefaultPersister implements Persister {
 	private void delete(PersistRequestBean<?> request) {
 
 		if (request.isPersistCascade()) {
-			// delete children first
+			// delete children first ... register the
+			// bean to handle bi-directional cascading
+			request.registerBean();
 			deleteAssocMany(request);
+			request.unregisterBean();
 		}
 
 		request.executeOrQueue();
