@@ -21,6 +21,7 @@ package com.avaje.ebean.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,7 +126,7 @@ public class JdbcTransaction implements SpiTransaction {
 	 */
 	int depth = 0;
 
-//	HashSet<Object> savedVanillaBeans;
+	HashSet<Integer> persistingBeans;
 	
 	/**
 	 * Create a new JdbcTransaction.
@@ -149,30 +150,39 @@ public class JdbcTransaction implements SpiTransaction {
 		return "Trans["+id+"]";
 	}
 
-//	/**
-//	 * Add a vanilla bean to the saved list.
-//	 * <p>
-//	 * This is to handle bi-directional relationships where
-//	 * both sides have cascade.PERSIST.
-//	 * </p>
-//	 */
-//	public void savedVanilla(Object vanillaBean) {
-//		if (savedVanillaBeans == null){
-//			savedVanillaBeans = new HashSet<Object>();
-//		}
-//		savedVanillaBeans.add(vanillaBean);
-//	}
-//	
-//	/**
-//	 * Return true if this is a vanilla bean that has already been saved.
-//	 */
-//	public boolean isAlreadySavedVanilla(Object vanillaBean) {
-//		if (savedVanillaBeans == null){
-//			return false;
-//		} else {
-//			return savedVanillaBeans.contains(vanillaBean);
-//		}
-//	}
+	/**
+	 * Add a bean to the registed list.
+	 * <p>
+	 * This is to handle bi-directional relationships where
+	 * both sides Cascade.
+	 * </p>
+	 */
+	public void registerBean(Integer persistingBean) {
+		if (persistingBeans == null){
+			persistingBeans = new HashSet<Integer>();
+		}
+		persistingBeans.add(persistingBean);
+	}
+
+	/**
+	 * Unregister the persisted bean.
+	 */
+	public void unregisterBean(Integer persistedBean) {
+		if (persistingBeans != null){
+			persistingBeans.remove(persistedBean);
+		}
+	}
+	
+	/**
+	 * Return true if this is a bean that has already been saved/deleted.
+	 */
+	public boolean isRegisteredBean(Integer persistingBean) {
+		if (persistingBeans == null){
+			return false;
+		} else {
+			return persistingBeans.contains(persistingBean);
+		}
+	}
 
 	/**
 	 * Return the depth of the current persist request plus the diff.
