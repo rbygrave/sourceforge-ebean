@@ -85,6 +85,7 @@ public class OrmQueryDetailParser {
 				String firstRowLimit = parser.nextWord();
 				int firstRow = Integer.parseInt(firstRowLimit);
 				attributes.setFirstRow(firstRow);
+				parser.nextWord();
 			}
 		} catch (NumberFormatException e) {
 			String msg = "Expected an integer for maxRows or firstRows in limit offset clause";
