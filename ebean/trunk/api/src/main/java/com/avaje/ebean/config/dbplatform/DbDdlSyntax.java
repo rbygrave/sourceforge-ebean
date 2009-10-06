@@ -30,10 +30,12 @@ public class DbDdlSyntax {
 	 */
 	public String getPrimaryKeyName(String tableName) {
 		
-		if (pkPrefix != null){
-			return pkPrefix + tableName;
+		String pk = pkPrefix + tableName;
+		if (pk.length() > maxConstraintNameLength){
+			// need to trim the primary key name
+			pk = pk.substring(0, maxConstraintNameLength);
 		}
-		return null;
+		return pk;
 	}
 
 	/**
