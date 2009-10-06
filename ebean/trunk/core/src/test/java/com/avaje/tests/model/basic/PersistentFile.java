@@ -7,6 +7,8 @@ import javax.persistence.OneToOne;
 @Entity
 public class PersistentFile extends BasicDomain {
 
+	private static final long serialVersionUID = 1L;
+
 	private String name;
 
 	@OneToOne(mappedBy="persistentFile", cascade=CascadeType.ALL)
