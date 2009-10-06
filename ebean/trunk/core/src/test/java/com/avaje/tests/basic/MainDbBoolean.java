@@ -12,15 +12,61 @@ import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.Postgres83Platform;
 import com.avaje.tests.model.basic.TOne;
+import com.avaje.tests.model.basic.TSDetail;
+import com.avaje.tests.model.basic.TSMaster;
 
+/**
+ * Used to run some tests manually on a specific Database type.
+ */
 public class MainDbBoolean {
 	
 	public static void main(String[] args) {
 		
 		MainDbBoolean me = new MainDbBoolean();
-		EbeanServer server = me.createEbeanServer();
 		
+		EbeanServer server = me.createEbeanServer();
 		me.simpleCheck(server);
+		
+		EbeanServer oraServer = me.createOracleEbeanServer();
+		me.simpleCheck(oraServer);
+	}
+
+	/**
+	 * Create a server for running small oracle specific tests manually.
+	 * DDL generation etc.
+	 */
+	private EbeanServer createOracleEbeanServer() {
+
+		ServerConfig c = new ServerConfig();
+		c.setName("ora");
+
+		// requires oracle driver in class path
+		DataSourceConfig oraDb = new DataSourceConfig();
+		oraDb.setDriver("oracle.jdbc.driver.OracleDriver");
+		oraDb.setUsername("junk");
+		oraDb.setPassword("junk");
+		oraDb.setUrl("jdbc:oracle:thin:junk/junk@localhost:1521:XE");
+		oraDb.setHeartbeatSql("select count(*) from dual");
+		
+		
+		c.loadFromProperties();
+		c.setDdlGenerate(true);
+		c.setDdlRun(true);
+		c.setDefaultServer(false);
+		c.setRegister(false);
+		c.setDataSourceConfig(oraDb);
+		
+		//c.setDatabaseBooleanTrue("1");
+		//c.setDatabaseBooleanFalse("0");
+		c.setDatabaseBooleanTrue("T");
+		c.setDatabaseBooleanFalse("F");
+
+		c.addClass(TOne.class);
+		c.addClass(TSMaster.class);
+		c.addClass(TSDetail.class);
+
+		return EbeanServerFactory.create(c);
+
 	}
 	
 	private EbeanServer createEbeanServer() {
@@ -35,15 +81,6 @@ public class MainDbBoolean {
 		postgresDb.setPassword("test");
 		postgresDb.setUrl("jdbc:postgresql://127.0.0.1:5432/test");
 		postgresDb.setHeartbeatSql("select count(*) from t_one");
-
-//		// requires oracle driver in class path
-//		DataSourceConfig oraDb = new DataSourceConfig();
-//		oraDb.setDriver("oracle.jdbc.driver.OracleDriver");
-//		oraDb.setUsername("junk");
-//		oraDb.setPassword("junk");
-//		oraDb.setUrl("jdbc:oracle:thin:junk/junk@localhost:1521:XE");
-//		oraDb.setHeartbeatSql("select count(*) from dual");
-		
 		
 		c.loadFromProperties();
 		c.setDdlGenerate(true);
@@ -51,7 +88,6 @@ public class MainDbBoolean {
 		c.setDefaultServer(false);
 		c.setRegister(false);
 		c.setDataSourceConfig(postgresDb);
-		//c.setDataSourceConfig(oraDb);
 		
 		//c.setDatabaseBooleanTrue("1");
 		//c.setDatabaseBooleanFalse("0");
