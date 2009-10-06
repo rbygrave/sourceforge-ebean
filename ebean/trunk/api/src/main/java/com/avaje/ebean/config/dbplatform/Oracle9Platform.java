@@ -69,6 +69,7 @@ public class Oracle9Platform extends DatabasePlatform {
 		
 		dbDdlSyntax.setDropTableCascade("cascade constraints purge");
 		dbDdlSyntax.setIdentity(null);
+		dbDdlSyntax.setMaxConstraintNameLength(30);
     }
 
 }
