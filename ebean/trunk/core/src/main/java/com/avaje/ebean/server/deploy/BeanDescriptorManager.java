@@ -226,6 +226,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			readEntityDeploymentInitial();
 			readEntityBeanTable();
 			readEntityDeploymentAssociations();
+			
+			// creates the BeanDescriptors 
 			readEntityRelationships();
 			readRawSqlQueries();
 					
@@ -957,6 +959,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	}
 
 	private void createByteCode(DeployBeanDescriptor<?> deploy) {
+		
 		// check to see if the bean supports EntityBean interface
 		// generate a subclass if required
 		setEntityBeanClass(deploy);
@@ -1114,9 +1117,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 */
 	private void setBeanReflect(DeployBeanDescriptor<?> desc) {
 		
-		if (desc.isAbstract()){
-			return;
-		}
+		// Set the BeanReflectGetter and BeanReflectSetter that typically
+		// use generated code. NB: Due to Bug 166 so now doing this for 
+		// abstract classes as well.
 		
 		Class<?> beanType = desc.getBeanType();
 		Class<?> factType = desc.getFactoryType();
@@ -1129,12 +1132,26 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			while (it.hasNext()) {
 				DeployBeanProperty prop = it.next();
 				String propName = prop.getName();
+				
+				if (desc.isAbstract()){
+					// use reflection in the case of imported abstract class with 
+					// inheritance. Refer Bug 166
+					prop.setGetter(ReflectGetter.create(prop));
+					prop.setSetter(ReflectSetter.create(prop));
+					
+				} else {
+					// use generated code for getting setting property values
+					BeanReflectGetter getter = beanReflect.getGetter(propName);
+					BeanReflectSetter setter = beanReflect.getSetter(propName);
+					prop.setGetter(getter);
+					prop.setSetter(setter);
+					if (getter == null){
+						// should never happen
+						String m = "BeanReflectGetter for "+prop.getFullBeanName()+" was not found?";
+						throw new RuntimeException(m);
+					}
+				}
 	
-				// use reflection or generated code for getting setting
-				BeanReflectGetter getter = beanReflect.getGetter(propName);
-				BeanReflectSetter setter = beanReflect.getSetter(propName);
-				prop.setGetter(getter);
-				prop.setSetter(setter);
 			}
 		} catch (IllegalArgumentException e){
 			Class<?> superClass = desc.getBeanType().getSuperclass();
@@ -1143,8 +1160,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 				+" (You are not allowed to mix enhancement in a single inheritance hierarchy)";
 			throw new PersistenceException(msg, e);
 		}
-		
 	}
+	
 
 	/**
 	 * DevNote: It is assumed that Embedded can contain version properties. It
