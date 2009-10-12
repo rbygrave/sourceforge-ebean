@@ -51,6 +51,11 @@ public interface DbSqlContext {
 	public void appendFormulaJoin(String sqlFormulaJoin, boolean forceOuterJoin);
 
 	/**
+	 * add a join if not already there. Does not check different join types.
+	 */
+	public void addJoin(String type, String table, TableJoinColumn[] cols, String a1, String a2);
+
+	/**
 	 * Return the current content length.
 	 */
 	public int length();

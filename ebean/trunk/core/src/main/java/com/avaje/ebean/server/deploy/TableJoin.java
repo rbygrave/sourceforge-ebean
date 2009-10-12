@@ -19,14 +19,14 @@
  */
 package com.avaje.ebean.server.deploy;
 
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 import com.avaje.ebean.server.query.SplitName;
+
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
 
 /**
  * Represents a join to another table.
@@ -204,33 +204,6 @@ public final class TableJoin {
     }
     
     public void addJoin(boolean forceOuterJoin, String a1, String a2, DbSqlContext ctx) {
-    	
-    	
-    	ctx.append(NEW_LINE);
-    	if (forceOuterJoin){
-    		ctx.append(LEFT_OUTER);
-    	} else {
-    		ctx.append(type);
-    	}
-    	ctx.append(" ").append(table).append(" ");
-    	ctx.append(a2);
-    	
-    	ctx.append(" on ");
-    	
-        TableJoinColumn[] cols = columns();
-        for (int i = 0; i < cols.length; i++) {
-            TableJoinColumn pair = cols[i];
-            if (i > 0) {
-            	ctx.append(" and ");
-            }
-            
-            ctx.append(a2);
-            ctx.append(".").append(pair.getForeignDbColumn());
-            ctx.append(" = ");
-            ctx.append(a1);
-            ctx.append(".").append(pair.getLocalDbColumn());
-        }
-        
-        ctx.append(" ");
+    	ctx.addJoin(forceOuterJoin?LEFT_OUTER:type, table, columns(), a1, a2);
     }
 }
