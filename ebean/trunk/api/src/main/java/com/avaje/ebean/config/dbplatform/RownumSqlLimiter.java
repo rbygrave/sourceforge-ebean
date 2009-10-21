@@ -67,7 +67,7 @@ public class RownumSqlLimiter implements SqlLimiter {
 		sb.append(NEW_LINE).append("     ) ");
 		if (firstRow > 0) {
 			sb.append(NEW_LINE).append("where ");
-			sb.append(rnum).append(" >= ").append(firstRow);
+			sb.append(rnum).append(" > ").append(firstRow);
 		}
 	
 		
