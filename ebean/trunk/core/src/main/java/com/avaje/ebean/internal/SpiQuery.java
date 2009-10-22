@@ -28,7 +28,6 @@ import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
@@ -36,12 +35,42 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.query.CancelableQuery;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
+import com.avaje.ebean.server.querydefn.OrmQueryProperties;
 
 /**
  * Object Relational query - Internal extension to Query object.
  */
 public interface SpiQuery<T> extends Query<T> {
 
+	public enum Mode {
+		NORMAL(false),
+		LAZYLOAD_MANY(false),
+		LAZYLOAD_BEAN(true),
+		REFRESH_BEAN(true) ;
+		Mode(boolean loadContextBean){
+			this.loadContextBean = loadContextBean;
+		}
+		private final boolean loadContextBean;
+		public boolean isLoadContextBean(){
+			return loadContextBean;
+		}
+	}
+	
+	/**
+	 * Set the query mode.
+	 */
+	public void setMode(Mode m);
+	
+	/**
+	 * Return the query mode.
+	 */
+	public Mode getMode();
+	
+	/**
+	 * Check other combinations that can make this a sharedInstance query. 
+	 */
+	public void deriveSharedInstance();
+	
 	/**
 	 * This is a lazy loading query for a shared instance.
 	 * That means all the beans returned by this query will
@@ -53,6 +82,11 @@ public interface SpiQuery<T> extends Query<T> {
 	 * Return true if this is a lazy loading query for a shared instance.
 	 */
 	public boolean isSharedInstance();
+	
+	/**
+	 * Propagate the sharedInstance or readOnly state from a parent.
+	 */
+	public void setParentState(int parentState);
 	
 	/**
 	 * Return a listener that wants to be notified when the 
@@ -92,6 +126,10 @@ public interface SpiQuery<T> extends Query<T> {
 	 */
 	public void setType(Type type);
 	
+	public String getLoadDescription();
+
+	public void setLoadDescription(String loadDescription);
+
 	/**
 	 * Set the BeanDescriptor for the root type of this query.
 	 */
@@ -107,6 +145,10 @@ public interface SpiQuery<T> extends Query<T> {
 	 */
 	public void setSelectId();
 		
+	public List<OrmQueryProperties> removeSecondaryQueries();
+	
+	public List<OrmQueryProperties> removeSecondaryLazyQueries();
+
 	/**
 	 * Remove any many joins from the select. Joins to Manys may still
 	 * be required to support the where or order by clauses and in this 
@@ -156,6 +198,15 @@ public interface SpiQuery<T> extends Query<T> {
 	public void setAutoFetchManager(AutoFetchManager manager);
 
 	/**
+	 * Return the origin point for the query.
+	 * <p>
+	 * This MUST be call prior to a query being changed via tuning. This is
+	 * because the queryPlanHash is used to identify the query point.
+	 * </p>
+	 */
+	public ObjectGraphNode setOrigin(CallStack callStack);
+	
+	/**
 	 * Set the profile point of the bean or collection that is lazy loading.
 	 * <p>
 	 * This enables use to hook this back to the original 'root' query by the
@@ -165,24 +216,6 @@ public interface SpiQuery<T> extends Query<T> {
 	public void setParentNode(ObjectGraphNode node);
 
 	/**
-	 * Return the origin point for the query.
-	 * <p>
-	 * This MUST be call prior to a query being changed via tuning. This is
-	 * because the queryPlanHash is used to identify the query point.
-	 * </p>
-	 */
-	public ObjectGraphOrigin createObjectGraphOrigin(CallStack callStack);
-
-	/**
-	 * Returns the origin query point.
-	 * <p>
-	 * This is the query point of the original query that builds the object
-	 * graph.
-	 * </p>
-	 */
-	public ObjectGraphOrigin getObjectGraphOrigin();
-
-	/**
 	 * Used to hook back a lazy loading query to the original query (query
 	 * point).
 	 * <p>
@@ -190,14 +223,6 @@ public interface SpiQuery<T> extends Query<T> {
 	 * </p>
 	 */
 	public ObjectGraphNode getParentNode();
-
-	/**
-	 * Create a new AutoFetchNode for a given beanIndex and path.
-	 * <p>
-	 * This effectively identifies a single point in an object graph.
-	 * </p>
-	 */
-	public ObjectGraphNode createObjectGraphNode(String beanIndex, String path);
 
 	/**
 	 * Return false when this is a lazy load or refresh query for a bean.

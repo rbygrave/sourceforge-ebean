@@ -30,6 +30,7 @@ import com.avaje.ebean.internal.BindParams;
 import com.avaje.ebean.internal.SpiCallableSql;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
+import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.util.BindParamsParser;
 
 /**
@@ -43,9 +44,10 @@ public class ExeCallableSql {
     
     private final PstmtFactory pstmtFactory;
     
-    public ExeCallableSql(Binder binder) {
+    public ExeCallableSql(Binder binder, PstmtBatch pstmtBatch) {
     	this.binder = binder;
-    	this.pstmtFactory = new PstmtFactory();
+    	// no batch support for CallableStatement in Oracle anyway
+    	this.pstmtFactory = new PstmtFactory(null);
     }
     
     /**

@@ -27,9 +27,10 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.SpiUpdate;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.internal.SpiUpdate;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
+import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.util.BindParamsParser;
 
@@ -47,8 +48,8 @@ public class ExeOrmUpdate {
     /**
      * Create with a given binder.
      */
-    public ExeOrmUpdate(Binder binder) {
-    	this.pstmtFactory = new PstmtFactory();
+    public ExeOrmUpdate(Binder binder, PstmtBatch pstmtBatch) {
+    	this.pstmtFactory = new PstmtFactory(pstmtBatch);
     	this.binder = binder;
     }
     
@@ -67,7 +68,12 @@ public class ExeOrmUpdate {
         	pstmt = bindStmt(request, batchThisRequest);
         	
             if (batchThisRequest){
-            	pstmt.addBatch();
+                PstmtBatch pstmtBatch = request.getPstmtBatch();
+                if (pstmtBatch != null){
+                	pstmtBatch.addBatch(pstmt);
+                } else {
+                	pstmt.addBatch();
+                }
                 // return -1 to indicate batch mode
                 return -1;
                 

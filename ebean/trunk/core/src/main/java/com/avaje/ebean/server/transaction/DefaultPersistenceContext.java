@@ -23,7 +23,6 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.Monitor;
 import com.avaje.ebean.server.subclass.SubClassUtil;
@@ -169,8 +168,9 @@ public final class DefaultPersistenceContext implements PersistenceContext {
         	if (reference != null){
         		existing = reference.get();
         	}
-        	if (existing != null && !((EntityBean)existing)._ebean_getIntercept().isReference()){
+        	if (existing != null){
         		return existing;
+        		
         	} else {
         		map.put(id, new WeakReference<Object>(bean));
         		return null;

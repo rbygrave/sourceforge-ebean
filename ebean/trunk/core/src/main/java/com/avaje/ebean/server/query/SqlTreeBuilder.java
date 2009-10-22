@@ -210,7 +210,7 @@ public class SqlTreeBuilder {
 
 		if (prefix == null) {
 			buildExtraJoins(desc, myList);
-			return new SqlTreeNodeRoot(desc, props, myList, !subQuery, query.getIncludeTableJoin());
+			return new SqlTreeNodeRoot(desc, props, myList, !subQuery, query);
 
 		} else if (prop instanceof BeanPropertyAssocMany<?>) {
 			return new SqlTreeNodeManyRoot(prefix, (BeanPropertyAssocMany<?>)prop, props, myList);
@@ -232,8 +232,7 @@ public class SqlTreeBuilder {
 			return;
 		}
 		
-		IncludesDistiller extraJoinDistill = new IncludesDistiller(desc, queryDetail.getIncludes(),
-				predicateIncludes);
+		IncludesDistiller extraJoinDistill = new IncludesDistiller(desc, queryDetail.getIncludes(), predicateIncludes);
 
 		Collection<SqlTreeNodeExtraJoin> extraJoins = extraJoinDistill.getExtraJoinRootNodes();
 		if (extraJoins.isEmpty()) {
@@ -345,8 +344,7 @@ public class SqlTreeBuilder {
 	}
 	
 
-	private SqlTreeProperties getBaseSelectPartial(BeanDescriptor<?> desc,
-			OrmQueryProperties queryProps) {
+	private SqlTreeProperties getBaseSelectPartial(BeanDescriptor<?> desc, OrmQueryProperties queryProps) {
 
 		SqlTreeProperties selectProps = new SqlTreeProperties();
 		selectProps.setReadOnly(queryProps.isReadOnly());
@@ -359,7 +357,7 @@ public class SqlTreeBuilder {
 		// Also note that this can include transient properties.
 		// This makes sense for transient properties used to
 		// hold sum() count() type values (with SqlSelect)
-		Iterator<String> it = queryProps.getSelectProperties().iterator();
+		Iterator<String> it = queryProps.getSelectProperties();
 		while (it.hasNext()) {
 			String propName = it.next();
 			if (propName.length() > 0){

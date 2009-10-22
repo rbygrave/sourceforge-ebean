@@ -22,10 +22,8 @@ package com.avaje.ebean.server.autofetch;
 import java.util.Iterator;
 
 import com.avaje.ebean.Query;
-import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.NodeUsageListener;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.internal.SpiEbeanServer;
@@ -81,11 +79,6 @@ public interface AutoFetchManager extends NodeUsageListener {
 	 * information.
 	 */
 	public void shutdown();
-
-	/**
-	 * Create a call stack.
-	 */
-	public CallStack createCallStack();
 
 	/**
 	 * Return the current tuned fetch information for a given queryPoint key.
@@ -243,18 +236,14 @@ public interface AutoFetchManager extends NodeUsageListener {
 	 * queries that are required as the object graph is traversed.
 	 * </p>
 	 * 
-	 * @param parentNode
-	 *            this is null for the original query and otherwise the
-	 *            parentNode for lazy loading.
-	 * @param queryPoint
-	 *            the query point
+	 * @param node
+	 *            the node path in the object graph.
 	 * @param beans
 	 *            the number of beans loaded by the query.
 	 * @param micros
 	 *            the query executing time in microseconds
 	 */
-	public void collectQueryInfo(ObjectGraphNode parentNode, ObjectGraphOrigin queryPoint,
-			int beans, int micros);
+	public void collectQueryInfo(ObjectGraphNode node, int beans, int micros);
 
 	
 	/**

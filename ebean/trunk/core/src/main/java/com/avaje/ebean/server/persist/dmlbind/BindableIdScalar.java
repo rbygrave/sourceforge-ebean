@@ -40,6 +40,10 @@ public class BindableIdScalar implements BindableId {
 	public boolean isConcatenated() {
 		return false;
 	}
+	
+	public String getIdentityColumn() {
+		return uidProp.getDbColumn();
+	}
 
 	@Override
 	public String toString() {

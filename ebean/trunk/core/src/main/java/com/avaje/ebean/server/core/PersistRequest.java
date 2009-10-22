@@ -66,7 +66,11 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 	 * Execute the request right now.
 	 */
 	public abstract int executeNow();
-	
+		   
+    public PstmtBatch getPstmtBatch() {
+    	return ebeanServer.getPstmtBatch();
+    }
+ 
 	/**
 	 * Execute the Callable statement.
 	 */

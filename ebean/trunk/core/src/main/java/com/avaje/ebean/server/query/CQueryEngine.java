@@ -47,7 +47,9 @@ public class CQueryEngine {
 	private final MAdminLogging logControl;
 
 	private final BackgroundExecutor backgroundExecutor;
-	
+
+	int defaultSecondaryQueryBatchSize = 100;
+
 	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, 
 			Binder binder, BackgroundExecutor backgroundExecutor) {
 
@@ -188,7 +190,9 @@ public class CQueryEngine {
 			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
 				logFindManySummary(cquery);
 			}
-
+			
+			request.executeSecondaryQueries(defaultSecondaryQueryBatchSize);
+	
 			return beanCollection;
 
 		} catch (SQLException e) {
@@ -212,7 +216,7 @@ public class CQueryEngine {
 			}
 		}
 	}
-
+	
 	/**
 	 * Find and return a single bean using its unique id.
 	 */
@@ -255,13 +259,19 @@ public class CQueryEngine {
 	/**
 	 * Log the generated SQL to the console.
 	 */
-	private void logSqlToConsole(CQuery<?> build) {
+	private void logSqlToConsole(CQuery<?> cquery) {
 
-		String sql = build.getGeneratedSql();
-		String summary = build.getSummary();
+
+		String loadDesc = cquery.getQueryRequest().getQuery().getLoadDescription();
+		String sql = cquery.getGeneratedSql();
+		String summary = cquery.getSummary();
 
 		StringBuilder sb = new StringBuilder(1000);
-		sb.append("<sql summary='").append(summary).append("'>");
+		sb.append("<sql summary='").append(summary);
+		if (loadDesc != null){
+			sb.append("' mode='").append(loadDesc);			
+		}
+		sb.append("' >");
 		sb.append(Constants.NEW_LINE);
 		sb.append(sql);
 		sb.append(Constants.NEW_LINE).append("</sql>");

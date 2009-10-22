@@ -25,6 +25,9 @@ public class DropTableVisitor implements BeanVisitor {
 	
 	protected void writeDropTable(String tableName){
 		ctx.write("drop table ");
+		if (ddlSyntax.getDropIfExists() != null){
+			ctx.write(ddlSyntax.getDropIfExists()).write(" ");
+		}
 		ctx.write(tableName);
 		
 		if (ddlSyntax.getDropTableCascade() != null){

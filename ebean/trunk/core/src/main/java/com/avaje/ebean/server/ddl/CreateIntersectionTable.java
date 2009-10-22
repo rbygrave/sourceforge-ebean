@@ -109,9 +109,14 @@ public class CreateIntersectionTable {
 			String col = !direction ? columns[i].getForeignDbColumn() : columns[i].getLocalDbColumn();
 			fkBuf.append(col);
 		}
-		fkBuf.append(") on delete restrict on update restrict; ");
+		fkBuf.append(")");
 
-		fkBuf.append(NEW_LINE);
+		String fkeySuffix = ctx.getDdlSyntax().getForeignKeySuffix();
+		if (fkeySuffix != null){
+			fkBuf.append(" ");
+			fkBuf.append(fkeySuffix);
+		}
+		fkBuf.append(";").append(NEW_LINE);
 
 		return fkBuf.toString();
 	}

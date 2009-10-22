@@ -28,6 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EmbeddedId;
+import javax.persistence.Id;
+import javax.persistence.Version;
+
+import com.avaje.ebean.annotation.CreatedTimestamp;
+import com.avaje.ebean.annotation.UpdatedTimestamp;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.el.ElPropertyValue;
@@ -43,6 +49,10 @@ import com.avaje.ebean.validation.factory.Validator;
  */
 public class DeployBeanProperty {
 
+	private static final int ID_ORDER = 1000000;
+	private static final int AUDITCOLUMN_ORDER = -1000000;
+	private static final int VERSIONCOLUMN_ORDER = -1000000;
+	
 	/**
 	 * Advanced bean deployment. To exclude this property from update where
 	 * clause.
@@ -69,139 +79,159 @@ public class DeployBeanProperty {
 	/**
 	 * Flag to mark this at part of the unique id.
 	 */
-	boolean id;
+	private boolean id;
 
 	/**
 	 * Flag to mark the property as embedded. This could be on
 	 * BeanPropertyAssocOne rather than here. Put it here for checking Id type
 	 * (embedded or not).
 	 */
-	boolean embedded;
+	private boolean embedded;
 
 	/**
 	 * Flag indicating if this the version property.
 	 */
-	boolean versionColumn;
+	private boolean versionColumn;
 
 	/**
 	 * Set if this property is nullable.
 	 */
-	boolean nullable = true;
+	private boolean nullable = true;
 
-	boolean unique;
+	private boolean unique;
 	
 	/**
 	 * The length or precision of the DB column.
 	 */
-	int dbLength;	
+	private int dbLength;	
 	
-	int dbScale;
+	private int dbScale;
 
-	String dbColumnDefn;
+	private String dbColumnDefn;
 	
-	boolean isTransient;
+	private boolean isTransient;
 
 	/**
 	 * Is this property include in database resultSet.
 	 */
-	boolean dbRead;
+	private boolean dbRead;
 
 	/**
 	 * Include this in DB insert.
 	 */
-	boolean dbInsertable;
+	private boolean dbInsertable;
 	
 	/**
 	 * Include this in a DB update.
 	 */
-	boolean dbUpdateable;
+	private boolean dbUpdateable;
 
 	/**
 	 * Set to true if this property is based on a secondary table.
 	 */
-	boolean secondaryTable;
+	private boolean secondaryTable;
 
 	/**
 	 * The type that owns this property.
 	 */
-	Class<?> owningType;
+	private Class<?> owningType;
 
 	/**
 	 * True if the property is a Clob, Blob LongVarchar or LongVarbinary.
 	 */
-	boolean lob;
+	private boolean lob;
 
 	/**
 	 * The logical bean property name.
 	 */
-	String name;
+	private String name;
 
 	/**
 	 * The reflected field.
 	 */
-	Field field;
+	private Field field;
 
 	/**
 	 * The bean type.
 	 */
-	Class<?> propertyType;
+	private Class<?> propertyType;
 
 	/**
 	 * Set for Non-JDBC types to provide logical to db type conversion.
 	 */
-	ScalarType scalarType;
+	private ScalarType scalarType;
 
 	/**
 	 * The database column. This can include quoted identifiers.
 	 */
-	String dbColumn;
+	private String dbColumn;
 
-	String sqlFormulaSelect;
-	String sqlFormulaJoin;
+	private String sqlFormulaSelect;
+	private String sqlFormulaJoin;
 
 	/**
 	 * The jdbc data type this maps to.
 	 */
-	int dbType;
+	private int dbType;
 
 	/**
 	 * The default value to insert if null.
 	 */
-	Object defaultValue;
+	private Object defaultValue;
 
 	/**
 	 * Extra deployment parameters.
 	 */
-	HashMap<String, String> extraAttributeMap = new HashMap<String, String>();
+	private HashMap<String, String> extraAttributeMap = new HashMap<String, String>();
 
 	/**
 	 * The method used to read the property.
 	 */
-	Method readMethod;
+	private Method readMethod;
 
 	/**
 	 * The method used to write the property.
 	 */
-	Method writeMethod;
+	private Method writeMethod;
 
-	BeanReflectGetter getter;
+	private BeanReflectGetter getter;
 
-	BeanReflectSetter setter;
+	private BeanReflectSetter setter;
 
 	/**
 	 * Generator for insert or update timestamp etc.
 	 */
-	GeneratedProperty generatedProperty;
+	private GeneratedProperty generatedProperty;
 
-	List<Validator> validators = new ArrayList<Validator>();
+	private List<Validator> validators = new ArrayList<Validator>();
 
-	final DeployBeanDescriptor<?> desc;
+	private final DeployBeanDescriptor<?> desc;
 
+	private int sortOrder;
+	
 	public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType) {
 		this.desc = desc;
 		this.propertyType = propertyType;
 	}
-
+	
+	public int getSortOverride() {
+		if (field == null){
+			return 0;
+		}
+		if (field.getAnnotation(Id.class) != null) {
+			return ID_ORDER;
+		} else if (field.getAnnotation(EmbeddedId.class) != null) {
+			return ID_ORDER;
+		} else if (field.getAnnotation(CreatedTimestamp.class) != null) {
+			return AUDITCOLUMN_ORDER;
+		} else if (field.getAnnotation(UpdatedTimestamp.class) != null) {
+			return AUDITCOLUMN_ORDER;
+		} else if (field.getAnnotation(Version.class) != null) {
+			return VERSIONCOLUMN_ORDER;
+		}
+		return 0;
+	}
+	
 	/**
 	 * Return true is this is a simple scalar property.
 	 */
@@ -242,6 +272,20 @@ public class DeployBeanProperty {
 		return dbLength;
 	}
 	
+	/**
+	 * Return the sortOrder for the properties.
+	 */
+	public int getSortOrder() {
+		return sortOrder;
+	}
+
+	/**
+	 * Set the sortOrder for the properties.
+	 */
+	public void setSortOrder(int sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
 	/**
 	 * Set the DB column length for character columns.
 	 */

@@ -40,6 +40,11 @@ public interface BindableId extends Bindable {
 	public boolean isConcatenated();
 	
 	/**
+	 * Return the DB Column to use with genGeneratedKeys.
+	 */
+	public String getIdentityColumn();
+	
+	/**
 	 * Create the concatenated id for inserts with PFK relationships.
 	 * <p>
 	 * Really only where there are ManyToOne assoc beans that make up the

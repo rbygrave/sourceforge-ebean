@@ -143,7 +143,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 			}
 		}
     }
-
+    
     public boolean isNotify() {
     	return notifyCache || isNotifyPersistListener();
     }
@@ -195,20 +195,36 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 		return o == parentBean;
 	}
 	
+	/**
+	 * The hash used to register the bean with the transaction.
+	 * <p>
+	 * Takes into account the class type and id value.
+	 * </p>
+	 */
 	private int getBeanHash(Object b){
 		Object id = beanDescriptor.getId(b);
 		int hc = b.getClass().getName().hashCode();
 		return hc * 31 + id.hashCode();
 	}
 	
+	/**
+	 * Register this bean with the transaction.
+	 * Used to detect Cascade delete on both sides of a relationship.
+	 */
 	public void registerBean(){
 		transaction.registerBean(getBeanHash(bean));
 	}
 	
+	/**
+	 * Unregister the bean from the transaction.
+	 */
 	public void unregisterBean(){
 		transaction.unregisterBean(getBeanHash(bean));		
 	}
 	
+	/**
+	 * Return true if this bean has been registered with the transaction.
+	 */
 	public boolean isRegistered(){
 		if (transaction == null){
 			return false;
@@ -449,20 +465,17 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	}
 	
 	private void logSummary() {
-        // log to the transaction log
-        String typeDesc = beanDescriptor.getFullName();
+       
+        String name = beanDescriptor.getName();
     	switch (type) {
 		case INSERT:
-			String im = "Inserted ["+typeDesc+"] ["+idValue+"]";
-			transaction.log(im);
+			transaction.log("Inserted ["+name+"] ["+idValue+"]");
 			break;
 		case UPDATE:
-			String um = "Updated ["+typeDesc+"] ["+idValue+"]";
-			transaction.log(um);
+			transaction.log("Updated ["+name+"] ["+idValue+"]");
 			break;
 		case DELETE:
-			String dm = "Deleted ["+typeDesc+"] ["+idValue+"]";
-			transaction.log(dm);
+			transaction.log("Deleted ["+name+"] ["+idValue+"]");
 			break;
 		default:
 			break;

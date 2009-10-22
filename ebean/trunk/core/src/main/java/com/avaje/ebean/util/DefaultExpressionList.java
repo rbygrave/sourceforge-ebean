@@ -291,6 +291,11 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 		return this;
 	}
 
+	public ExpressionList<T> idIn(List<?> idList) {
+		add(expr.idIn(idList));
+		return this;
+	}
+
 	public ExpressionList<T> idEq(Object value) {
 		add(expr.idEq(value));
 		return this;

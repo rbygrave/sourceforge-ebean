@@ -3,6 +3,7 @@ package com.avaje.ebean.server.deploy.id;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -13,12 +14,14 @@ import com.avaje.ebean.server.deploy.DbSqlContext;
  * Bind an Id that is an Embedded bean.
  */
 public final class IdBinderEmbedded implements IdBinder {
-
-	BeanProperty[] props;
-		
-	BeanDescriptor<?> idDesc;
 	
 	final BeanPropertyAssocOne<?> embIdProperty;
+
+	BeanProperty[] props;
+	
+	BeanDescriptor<?> idDesc;
+
+	String idInValueSql;
 	
 	public IdBinderEmbedded(BeanPropertyAssocOne<?> embIdProperty) {
 
@@ -28,8 +31,24 @@ public final class IdBinderEmbedded implements IdBinder {
 	public void initialise() {
 		idDesc = embIdProperty.getTargetDescriptor();
 		props = embIdProperty.getProperties();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for (int i = 0; i < props.length; i++) {
+			if (i > 0){
+				sb.append(",");
+			}
+			sb.append("?");
+		}
+		sb.append(")");
+		
+		idInValueSql = sb.toString();
 	}
 	
+	public int getPropertyCount() {
+		return props.length;
+	}
+
 	public String getIdProperty() {
 		return embIdProperty.getName();
 	}
@@ -68,6 +87,16 @@ public final class IdBinderEmbedded implements IdBinder {
 		return props;
 	}
 	
+	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
+		for (int i = 0; i < props.length; i++) {
+			request.addBindValue(props[i].getValue(value));
+		}
+	}
+
+	public void addIdInValueSql(SpiExpressionRequest request) {
+		request.append(idInValueSql);
+	}
+
 	public Object[] getIdValues(Object bean){
 		Object[] bindvalues = new Object[props.length];
 		for (int i = 0; i < props.length; i++) {
@@ -161,6 +190,22 @@ public final class IdBinderEmbedded implements IdBinder {
 			sb.append(props[i].getDbColumn());
 			sb.append(" = ? ");
 		}
+		return sb.toString();
+	}
+	
+	public String getBindIdInSql(String baseTableAlias) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for (int i = 0; i < props.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append(baseTableAlias);
+			sb.append(".");
+			sb.append(props[i].getDbColumn());
+		}
+		sb.append(")");
 		return sb.toString();
 	}
 	

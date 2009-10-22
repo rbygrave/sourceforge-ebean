@@ -3,6 +3,7 @@ package com.avaje.ebean.server.deploy.id;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
@@ -15,7 +16,9 @@ import com.avaje.ebean.server.type.ScalarType;
 public final class IdBinderSimple implements IdBinder {
 
 	private final BeanProperty idProperty;
-	
+
+	private final String idInLHSSql;
+
 	private final String bindIdSql;
 	
 	private final BeanProperty[] properties;
@@ -31,12 +34,20 @@ public final class IdBinderSimple implements IdBinder {
 		this.properties = new BeanProperty[1];
 		properties[0] = idProperty;
 		bindIdSql = InternString.intern(idProperty.getDbColumn()+" = ? ");
+		idInLHSSql = idProperty.getDbColumn();
 	}
 	
 	public void initialise(){
 		// do nothing
 	}
 	
+	/**
+	 * Returns 1.
+	 */
+	public int getPropertyCount() {
+		return 1;
+	}
+
 	public String getIdProperty() {
 		return idProperty.getName();
 	}
@@ -60,6 +71,10 @@ public final class IdBinderSimple implements IdBinder {
 		return properties;
 	}
 
+	public String getBindIdInSql(String baseTableAlias) {
+		return baseTableAlias+"."+idProperty.getDbColumn();
+	}
+
 	public String getBindIdSql(String baseTableAlias) {
 		return baseTableAlias+"."+bindIdSql;
 	}
@@ -72,6 +87,18 @@ public final class IdBinderSimple implements IdBinder {
 		return new Object[]{idValue};
 	}
 	
+	public void addIdInLHSSql(SpiExpressionRequest request) {
+		request.append(idInLHSSql);
+	}
+
+	public void addIdInValueSql(SpiExpressionRequest request) {
+		request.append("?");
+	}
+
+	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
+		request.addBindValue(value);
+	}
+
 	public int bindId(PreparedStatement pstmt, int index, Object value) throws SQLException {
 		value = idProperty.toBeanType(value);
 		idProperty.bind(pstmt, ++index, value);
@@ -83,7 +110,7 @@ public final class IdBinderSimple implements IdBinder {
 	}
 	
 	public Object read(DbReadContext ctx) throws SQLException {
-		return idProperty.read(ctx);
+		return idProperty.read(ctx, 0);
 	}
 	
 	public void appendSelect(DbSqlContext ctx) {

@@ -3,6 +3,7 @@ package com.avaje.ebean.server.deploy.id;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
@@ -21,6 +22,10 @@ public final class IdBinderEmpty implements IdBinder {
 	}
 	public void initialise(){
 		
+	}
+		
+	public int getPropertyCount() {
+		return 0;
 	}
 	
 	public String getIdProperty() {
@@ -49,6 +54,20 @@ public final class IdBinderEmpty implements IdBinder {
 	}
 	
 	public String getAssocOneIdExpr(String prefix, String operator){
+		return null;
+	}
+	
+	
+	
+	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
+		
+	}
+
+	public void addIdInValueSql(SpiExpressionRequest request) {
+	
+	}	
+	
+	public String getBindIdInSql(String baseTableAlias) {
 		return null;
 	}
 	

@@ -23,11 +23,13 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import com.avaje.ebean.server.query.SqlBeanLoad;
 
 /**
  * Property mapped to a joined bean.
@@ -52,6 +54,13 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	private ImportedId importedId;
 
 
+	/**
+	 * Create based on deploy information of an EmbeddedId.
+	 */
+	public BeanPropertyAssocOne(BeanDescriptorMap owner, DeployBeanPropertyAssocOne<T> deploy) {
+		this(owner, null, deploy);
+	}
+	
 	/**
 	 * Create the property.
 	 */
@@ -242,10 +251,19 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 * Read the data from the resultSet effectively ignoring it and returning null.
 	 */
 	@Override
-	public Object read(DbReadContext ctx) throws SQLException {
+	public Object read(DbReadContext ctx, int parentState) throws SQLException {
 		// just read the resultSet incrementing the column index
 		// pass in null for the bean so any data read is ignored
-		return localHelp.readSet(ctx, null, false);
+		return localHelp.read(ctx, parentState);
+	}
+	
+	public void loadIgnore(SqlBeanLoad sqlBeanLoad) {
+		localHelp.loadIgnore(sqlBeanLoad);
+	}
+	
+	@Override
+	public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
+		sqlBeanLoad.load(this);
 	}
 
 	private LocalHelp createHelp(boolean embedded, boolean oneToOneExported) {
@@ -264,6 +282,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 */
 	private abstract class LocalHelp {
 
+		abstract void loadIgnore(SqlBeanLoad sqlBeanLoad);
+		
+		abstract Object read(DbReadContext ctx, int parentState) throws SQLException;
+		
 		abstract Object readSet(DbReadContext ctx, Object bean, boolean assignAble)
 				throws SQLException;
 
@@ -274,9 +296,31 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 	private final class Embedded extends LocalHelp {
 
+		void loadIgnore(SqlBeanLoad sqlBeanLoad) {
+			sqlBeanLoad.loadIgnore(embeddedProps.length);
+		}
+		
 		@Override
 		Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
+			Object dbVal = read(ctx, 0);
+			if (bean != null && assignable){
+				// set back to the parent bean
+				setValue(bean, dbVal);
+				// propagate sharedInstance and readOnly state
+				((EntityBean)bean)._ebean_getIntercept().propagateState((EntityBean)dbVal);
 
+				// Handled by the EntityBean itself now (since 1.2)
+				// make sure it is intercepting setters etc
+				//embeddedBean._ebean_getIntercept().setLoaded();
+				return dbVal;
+
+			} else {
+				return null;
+			}
+		}
+		
+		Object read(DbReadContext ctx, int parentState) throws SQLException {
+			
 			EntityBean embeddedBean = targetDescriptor.createEntityBean();
 
 			boolean notNull = false;
@@ -286,20 +330,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 					notNull = true;
 				}
 			}
-			if (notNull && assignable) {
-				// set back to the parent bean
-				setValue(bean, embeddedBean);
-				if (ctx.isSharedInstance()) {
-					embeddedBean._ebean_getIntercept().setSharedInstance();
-				} else if (ctx.isReadOnly()) {
-					embeddedBean._ebean_getIntercept().setReadOnly(true);
+			if (notNull) {
+				if (parentState != 0){
+					embeddedBean._ebean_getIntercept().propagateParentState(parentState);
 				}
-
-				// Handled by the EntityBean itself now (since 1.2)
-				// make sure it is intercepting setters etc
-				//embeddedBean._ebean_getIntercept().setLoaded();
 				return embeddedBean;
-
 			} else {
 				return null;
 			}
@@ -327,12 +362,25 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		Reference(BeanPropertyAssocOne<?> beanProp){
 			this.beanProp = beanProp;
 		}
-
+		void loadIgnore(SqlBeanLoad sqlBeanLoad) {
+			sqlBeanLoad.loadIgnore(targetIdBinder.getPropertyCount());
+		}
+		
+		Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
+			Object val = read(ctx, 0);
+			if (bean != null && assignable){
+				setValue(bean, val);
+				// propagate sharedInstance and readOnly state
+				((EntityBean)bean)._ebean_getIntercept().propagateState((EntityBean)val);
+			}
+			return val;
+		}
+		
 		/**
 		 * Read and set a Reference bean.
 		 */
 		@Override
-		Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
+		Object read(DbReadContext ctx, int parentState) throws SQLException {
 
 			BeanDescriptor<?> rowDescriptor = null;
 			Class<?> rowType = targetType;
@@ -347,7 +395,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 			// read the foreign key column(s)
 			Object id = targetIdBinder.read(ctx);
-			if (id == null || bean == null || !assignable) {
+			if (id == null) {// || bean == null || !assignable) {
 				return null;
 			}
 
@@ -355,7 +403,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			Object existing = ctx.getPersistenceContext().get(rowType, id);
 
 			if (existing != null) {
-				setValue(bean, existing);
+				//setValue(bean, existing);
 				return existing;
 
 			} else {
@@ -368,21 +416,19 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 					ref = targetDescriptor.cacheGet(id);
 					if (ref != null && !options.isReadOnly()){
 						// create a copy as the user may mutate it
-						return targetDescriptor.createCopy(ref);
+						ref = targetDescriptor.createCopy(ref);
 					}
 				}
 
+				boolean createReference = false;
 				if (ref == null){
 					// create a lazy loading reference/proxy
+					createReference = true;
 					if (targetInheritInfo != null){
 						// for inheritance hierarchy create the correct type for this row...
 						ref = rowDescriptor.createReference(id, parent, options);
 					} else {
 						ref = targetDescriptor.createReference(id, parent, options);
-					}
-					if (ctx.isAutoFetchProfiling()){
-						// add profiling to this reference bean
-						ctx.profileReference(((EntityBean)ref)._ebean_getIntercept(), getName());
 					}
 				}
 
@@ -392,18 +438,16 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 					// build a single object graph, and another thread has since
 					// loaded a matching bean so we will use that instead.
 					ref = existingBean;
+					createReference = false;
 				}
 
-				if (ctx.isSharedInstance()){
-					// propagate sharedInstance status 
-					((EntityBean)ref)._ebean_getIntercept().setSharedInstance();
-					
-				} else if (ctx.isReadOnly()){
-					// propagate readOnly status 
-					((EntityBean)ref)._ebean_getIntercept().setReadOnly(true);
+				EntityBeanIntercept ebi = ((EntityBean)ref)._ebean_getIntercept();
+
+				if (createReference){
+					ebi.propagateParentState(parentState);					
+					ctx.register(name, ebi);
 				}
-				
-				setValue(bean, ref);
+
 				return ref;
 			}
 		}
@@ -412,7 +456,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 		void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
 			if (targetInheritInfo != null){
 				// add join to support the discriminator column
-				String relativePrefix = ctx.getRelativePrefix(getName());
+				String relativePrefix = ctx.getRelativePrefix(name);
 				tableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
 			}
 		}
@@ -438,16 +482,34 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 */
 	private final class ReferenceExported extends LocalHelp {
 
+		
+		@Override
+		void loadIgnore(SqlBeanLoad sqlBeanLoad) {
+			sqlBeanLoad.loadIgnore(targetDescriptor.getIdBinder().getPropertyCount());
+		}
+
 		/**
 		 * Read and set a Reference bean.
 		 */
 		@Override
 		Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
 
+			Object dbVal = read(ctx, 0);
+			if (bean != null && assignable){
+				setValue(bean, dbVal);
+				// propagate sharedInstance and readOnly state
+				((EntityBean)bean)._ebean_getIntercept().propagateState((EntityBean)dbVal);
+
+			}
+			return dbVal;
+		}
+		
+		Object read(DbReadContext ctx, int parentState) throws SQLException {
+			
 			//TODO: Support for Inheritance hierarchy on exported OneToOne ?
 			IdBinder idBinder = targetDescriptor.getIdBinder();
 			Object id = idBinder.read(ctx);
-			if (id == null || bean == null || !assignable) {
+			if (id == null) {// || bean == null || !assignable) {
 				return null;
 			}
 
@@ -455,20 +517,15 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 			Object existing = persistCtx.get(targetType, id);
 
 			if (existing != null) {
-				setValue(bean, existing);
+				//setValue(bean, existing);
 				return existing;
 
 			} else {
 				Object parent = null;
 				Object ref = targetDescriptor.createReference(id, parent, null);
-				
-				if (ctx.isSharedInstance()) {
-					((EntityBean)ref)._ebean_getIntercept().setSharedInstance();
-				} else if (ctx.isReadOnly()) {
-					((EntityBean)ref)._ebean_getIntercept().setReadOnly(true);
+				if (parentState != 0){
+					((EntityBean)ref)._ebean_getIntercept().propagateParentState(parentState);
 				}
-
-				setValue(bean, ref);
 				persistCtx.put(id, ref);
 				return ref;
 			}

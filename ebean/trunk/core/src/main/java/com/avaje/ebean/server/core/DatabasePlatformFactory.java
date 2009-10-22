@@ -36,7 +36,7 @@ import com.avaje.ebean.config.dbplatform.MsSqlServer2005Platform;
 import com.avaje.ebean.config.dbplatform.MySqlPlatform;
 import com.avaje.ebean.config.dbplatform.Oracle10Platform;
 import com.avaje.ebean.config.dbplatform.Oracle9Platform;
-import com.avaje.ebean.config.dbplatform.Postgres83Platform;
+import com.avaje.ebean.config.dbplatform.PostgresPlatform;
 
 /**
  * Create a DatabasePlatform from the configuration.
@@ -77,7 +77,7 @@ public class DatabasePlatformFactory {
 
 		dbName = dbName.toLowerCase();
 		if (dbName.equals("postgres83")){
-			return new Postgres83Platform();
+			return new PostgresPlatform();
 		} 
 		if (dbName.equals("oracle9")){
 			return new Oracle9Platform();
@@ -160,7 +160,7 @@ public class DatabasePlatformFactory {
 			return new H2Platform();
 		}
 		if (dbProductName.indexOf("postgres") > -1) {
-			return new Postgres83Platform();
+			return new PostgresPlatform();
 		}
 		// use the standard one
 		return new DatabasePlatform();

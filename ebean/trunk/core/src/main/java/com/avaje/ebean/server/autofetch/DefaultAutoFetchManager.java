@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +11,6 @@ import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
@@ -30,8 +28,6 @@ import com.avaje.ebean.server.querydefn.OrmQueryDetail;
  * information.
  */
 public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
-
-	private static final String AVAJE_EBEAN = Ebean.class.getName().substring(0,15);
 
 	private static final long serialVersionUID = -6826119882781771722L;
 
@@ -444,11 +440,11 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		}
 
 		// create a query point to identify the query
-		CallStack stack = createCallStack();
-		ObjectGraphOrigin queryPoint = query.createObjectGraphOrigin(stack);
+		CallStack stack = server.createCallStack();
+		ObjectGraphNode origin = query.setOrigin(stack);
 
 		// get current "tuned fetch" for this query point
-		TunedQueryInfo tunedFetch = tunedQueryInfoMap.get(queryPoint.getKey());
+		TunedQueryInfo tunedFetch = tunedQueryInfoMap.get(origin.getOriginQueryPoint().getKey());
 
 		// get the number of times we have collected profiling information
 		int profileCount = tunedFetch == null ? 0 : tunedFetch.getProfileCount();
@@ -486,11 +482,15 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	 * query in which case the parentNode will be null, or a lazy loading query
 	 * resulting from traversal of the object graph.
 	 */
-	public void collectQueryInfo(ObjectGraphNode parentNode, ObjectGraphOrigin queryPoint,
-			int beans, int micros) {
+	public void collectQueryInfo(ObjectGraphNode node, int beans, int micros) {
 
-		Statistics stats = getQueryPointStats(queryPoint);
-		stats.collectQueryInfo(parentNode, beans, micros);
+		if (node != null){
+			ObjectGraphOrigin origin = node.getOriginQueryPoint();
+			if (origin != null){
+				Statistics stats = getQueryPointStats(origin);
+				stats.collectQueryInfo(node, beans, micros);				
+			}
+		}
 	}
 
 	/**
@@ -502,15 +502,9 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	 */
 	public void collectNodeUsage(NodeUsageCollector usageCollector) {
 
-		if (usageCollector.isUnloadedReference()) {
-			// a reference bean that was not lazy loaded
-			// so no real interest in this yet...
-			return;
-		}
+		ObjectGraphOrigin origin = usageCollector.getNode().getOriginQueryPoint();
 
-		ObjectGraphOrigin originQueryPoint = usageCollector.getNode().getOriginQueryPoint();
-
-		Statistics queryPointStats = getQueryPointStats(originQueryPoint);
+		Statistics queryPointStats = getQueryPointStats(origin);
 
 		queryPointStats.collectUsageInfo(usageCollector);
 	}
@@ -530,49 +524,6 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		synchronized (statisticsMonitor) {
 			return statisticsMap.values().toString();
 		}
-	}
-
-	private static final int IGNORE_LEADING_ELEMENTS = 6;
-
-	/**
-	 * Create a CallStack object.
-	 * <p>
-	 * This trims off the avaje ebean part of the stack trace so that 
-	 * the first element in the CallStack should be application code.
-	 * </p>
-	 */
-	public CallStack createCallStack() {
-
-		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-
-		// ignore the first 6 as they are always avaje stack elements
-		int startIndex = IGNORE_LEADING_ELEMENTS;
-		
-		// find the first non-avaje stackElement
-		for (; startIndex < stackTrace.length; startIndex++) {
-			if (!stackTrace[startIndex].getClassName().startsWith(AVAJE_EBEAN)) {
-				break;
-			}
-		}
-		
-		int stackLength = stackTrace.length - startIndex;
-		if (stackLength > 20) {
-			// maximum of 20 stackTrace elements
-			stackLength = 20;
-		}
-		
-		// create the 'interesting' part of the stackTrace
-		StackTraceElement[] finalTrace = new StackTraceElement[stackLength];
-		for (int i = 0; i < stackLength; i++) {
-			finalTrace[i] = stackTrace[i + startIndex];
-		}
-
-		if (stackLength < 1){
-			// this should not really happen
-			throw new RuntimeException("StackTraceElement size 0?  stack: "+Arrays.toString(stackTrace));
-		}
-
-		return new CallStack(finalTrace);
 	}
 
 

@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2006  Robin Bygrave
- *
+ * 
  * This file is part of Ebean.
- *
- * Ebean is free software; you can redistribute it and/or modify it
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- *
- * Ebean is distributed in the hope that it will be useful, but
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
 package com.avaje.ebean.server.core;
 
@@ -43,6 +43,7 @@ import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Filter;
 import com.avaje.ebean.FutureIds;
@@ -63,14 +64,18 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.TxType;
 import com.avaje.ebean.Update;
 import com.avaje.ebean.ValuePair;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.NodeUsageCollector;
-import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.internal.LoadBeanRequest;
+import com.avaje.ebean.internal.LoadManyContext;
+import com.avaje.ebean.internal.LoadManyRequest;
 import com.avaje.ebean.internal.ScopeTrans;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
@@ -83,7 +88,6 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
-import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DNativeQuery;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
@@ -124,15 +128,18 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	private final String serverName;
 
+	private final DatabasePlatform databasePlatform;
+	
 	private final AdminLogging adminLogging;
+	
 	private final AdminAutofetch adminAutofetch;
-
+	
 	private final TransactionManager transactionManager;
 
 	private final TransactionScopeManager transactionScopeManager;
 
 	/**
-	 * Ebean defaults this to true but for EJB compatible behaviour
+	 * Ebean defaults this to true but for EJB compatible behaviour 
 	 * set this to false;
 	 */
 	private final boolean rollbackOnChecked;
@@ -152,33 +159,36 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	private final DiffHelp diffHelp = new DiffHelp();
 
-	private final RefreshHelp refreshHelp;
-
 	private final AutoFetchManager autoFetchManager;
 
-	private final DebugLazyLoad debugLazyHelper;
-
 	private final CQueryEngine cqueryEngine;
-
+	 
 	private final DdlGenerator ddlGenerator;
-
+	
 	private final ExpressionFactory expressionFactory;
-
+	
 	private final BackgroundExecutor backgroundExecutor;
+	
+	private final DefaultBeanLoader beanLoader;
+	
+	private int loadBatchSize = 5;
 
+	private PstmtBatch pstmtBatch;
+	
 	/**
 	 * Create the DefaultServer.
 	 */
 	public DefaultServer(InternalConfiguration config, ServerCacheManager cache) {
-
+		
 		this.serverCacheManager = cache;
+		this.pstmtBatch = config.getPstmtBatch();
+		this.databasePlatform = config.getDatabasePlatform();
 		this.backgroundExecutor = config.getBackgroundExecutor();
 		this.serverName = config.getServerConfig().getName();
 		this.cqueryEngine = config.getCQueryEngine();
 		this.expressionFactory = config.getExpressionFactory();
 		this.adminLogging = config.getLogControl();
-		this.refreshHelp = config.getRefreshHelp();
-		this.debugLazyHelper = config.getDebugLazyLoad();
+
 		this.beanDescriptorManager = config.getBeanDescriptorManager();
 		beanDescriptorManager.setEbeanServer(this);
 		this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
@@ -195,6 +205,24 @@ public final class DefaultServer implements SpiEbeanServer {
 
 		this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
 		ShutdownManager.register(new Shutdown());
+		
+		beanLoader = new DefaultBeanLoader(this, config.getDebugLazyLoad());
+	}
+	
+	public int getLoadBatchSize() {
+		return loadBatchSize;
+	}
+
+	public void setLoadBatchSize(int loadBatchSize) {
+		this.loadBatchSize = loadBatchSize;
+	}
+	
+	public PstmtBatch getPstmtBatch() {
+		return pstmtBatch;
+	}
+
+	public DatabasePlatform getDatabasePlatform() {
+		return databasePlatform;
 	}
 
 	public BackgroundExecutor getBackgroundExecutor() {
@@ -208,7 +236,7 @@ public final class DefaultServer implements SpiEbeanServer {
 	public DdlGenerator getDdlGenerator() {
 		return ddlGenerator;
 	}
-
+	
 	public AdminLogging getAdminLogging() {
 		return adminLogging;
 	}
@@ -224,7 +252,7 @@ public final class DefaultServer implements SpiEbeanServer {
 	}
 
 	public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {
-
+		
 		String mbeanName = "Ebean:server=" + serverName + uniqueServerId;
 
 		try {
@@ -235,9 +263,9 @@ public final class DefaultServer implements SpiEbeanServer {
 			String msg = "Error registering the JMX beans for Ebean server ["+serverName
 				+"]. It seems that the Ebean server name ["+serverName
 				+"] is not unique for this JVM. ";
-
+			
 			logger.log(Level.SEVERE, msg, e);
-
+			
 		} catch (Exception e) {
 			String msg = "Error registering MBean["+mbeanName+"]";
 			logger.log(Level.SEVERE, msg, e);
@@ -267,7 +295,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		return null;
 		// throw new PersistenceException("The bean is not an EntityBean");
 	}
-
+	
 	/**
 	 * Run the cache warming queries on all beans that have them defined.
 	 */
@@ -287,16 +315,16 @@ public final class DefaultServer implements SpiEbeanServer {
 			desc.runCacheWarming();
 		}
 	}
-
+	
 	/**
 	 * Compile a query.
 	 */
 	public <T> CQuery<T> compileQuery(Query<T> query, Transaction t) {
 		OrmQueryRequest<T> qr = createQueryRequest(query, t);
-
+	
 		return cqueryEngine.buildQuery(qr);
 	}
-
+	
 	public CQueryEngine getQueryEngine() {
 		return cqueryEngine;
 	}
@@ -319,177 +347,50 @@ public final class DefaultServer implements SpiEbeanServer {
 		return relationalQueryEngine;
 	}
 
+
+	public void refreshMany(Object parentBean, String propertyName, Transaction t) {		
+	
+		beanLoader.refreshMany(parentBean, propertyName, t);
+	}
+	
 	public void refreshMany(Object parentBean, String propertyName) {
-		refreshMany(parentBean, propertyName, null);
+	
+		beanLoader.refreshMany(parentBean, propertyName);
 	}
 
-	public void lazyLoadMany(Object parentBean, String propertyName, ObjectGraphNode profileNode) {
+	public void loadMany(LoadManyRequest loadRequest) {
 
-		refreshManyInternal(parentBean, propertyName, null, profileNode);
-
-		if (profileNode != null || adminLogging.isDebugLazyLoad()) {
-
-			Class<?> cls = parentBean.getClass();
-			BeanDescriptor<?> desc = getBeanDescriptor(cls);
-			BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) desc.getBeanProperty(propertyName);
-
-			StackTraceElement cause = debugLazyHelper.getStackTraceElement(cls);
-
-			if (adminLogging.isDebugLazyLoad()) {
-				String msg = "debug.lazyLoad " + many.getManyType() + " [" + desc + "][" + propertyName + "]";
-				if (cause != null) {
-					msg += " at: " + cause;
-				}
-				System.err.println(msg);
-			}
-		}
+		beanLoader.loadMany(loadRequest);
+	}
+	
+	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx) {
+		
+		beanLoader.loadMany(bc, ctx);
 	}
 
-	public void refreshMany(Object parentBean, String propertyName, Transaction t) {
-		refreshManyInternal(parentBean, propertyName, t, null);
+	public void loadMany(BeanCollection<?> bc) {
+		
+		loadMany(bc, null);
 	}
 
-	public void refreshManyInternal(Object parentBean, String propertyName, Transaction t, ObjectGraphNode profilePoint) {
 
-		if (parentBean instanceof EntityBean) {
-			EntityBean parent = (EntityBean) parentBean;
-			Class<?> cls = parent.getClass();
-			BeanDescriptor<?> desc = getBeanDescriptor(cls);
-			BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) desc.getBeanProperty(propertyName);
-
-			Class<?> manyTypeCls = many.getTargetType();
-			SpiQuery<?> query = (SpiQuery<?>) createQuery(manyTypeCls);
-
-			PersistenceContext persistenceContext = parent._ebean_getIntercept().getPersistenceContext();
-			if (persistenceContext == null){
-				persistenceContext = new DefaultPersistenceContext();
-				Object parentId = desc.getId(parent);
-				persistenceContext.put(parentId, parent);
-			}
-			query.setPersistenceContext(persistenceContext);
-
-//			// add parentBean to context for bidirectional relationships
-//			query.contextAdd(parent);
-			if (profilePoint != null) {
-				// so we can hook back to the root query
-				query.setParentNode(profilePoint);
-			}
-
-			// build appropriate predicates for the query...
-			many.setPredicates(query, parent);
-
-			if (parent._ebean_getIntercept().isSharedInstance()){
-				// lazy loading for a sharedInstance (bean in the cache)
-				query.setSharedInstance();
-			}
-
-			many.refresh(this, query, t, parent);
-
-		} else {
-			throw new PersistenceException("Can only refresh a previously queried bean");
-		}
-	}
 
 	public void refresh(Object bean) {
-		refreshBeanInternal(bean, null, false);
+		
+		beanLoader.refresh(bean);
+	}
+	
+	public void loadBean(LoadBeanRequest loadRequest) {
+		
+		beanLoader.loadBean(loadRequest);
 	}
 
-	public void lazyLoadBean(Object bean, NodeUsageCollector collector) {
-
-		refreshBeanInternal(bean, collector, true);
+	
+	public void loadBean(EntityBeanIntercept ebi) {
+		
+		beanLoader.loadBean(ebi);
 	}
 
-	private void refreshBeanInternal(Object bean, NodeUsageCollector collector, boolean isLazyLoad) {
-
-		if (!(bean instanceof EntityBean)) {
-			throw new PersistenceException("Can only refresh a previously fetched bean.");
-		}
-		EntityBean eb = (EntityBean) bean;
-		Class<?> beanType = bean.getClass();
-
-		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
-		// get the real POJO type (no $$EntityBean stuff)
-		beanType = desc.getBeanType();
-
-		Object id = desc.getId(bean);
-
-		EntityBeanIntercept ebi = eb._ebean_getIntercept();
-
-		PersistenceContext persistenceContext = null;
-		if (!isLazyLoad){
-			// for refresh we want to run in a new persistenceContext
-			persistenceContext = new DefaultPersistenceContext();
-
-		} else {
-			persistenceContext = eb._ebean_getIntercept().getPersistenceContext();
-			if (persistenceContext == null){
-				// a reference with no existing persistenceContext
-				persistenceContext = new DefaultPersistenceContext();
-				eb._ebean_getIntercept().setPersistenceContext(persistenceContext);
-			} else {
-				// remove the bean from the persistence context temporarily
-				// so that we load a fresh bean from the database
-				persistenceContext.clear(eb.getClass(), id);
-			}
-		}
-
-
-		Object sourceBean =  null;
-		if (ebi.isUseCache() && ebi.isReference()) {
-			// try to use a bean from the cache to load from
-			sourceBean = desc.cacheGet(id);
-		}
-
-		if (sourceBean == null){
-			// query the database
-			Object parentBean = ebi.getParentBean();
-
-			SpiQuery<?> query = (SpiQuery<?>) createQuery(beanType);
-
-			// don't collect autoFetch usage profiling information
-			// as we just copy the data out of these fetched beans
-			// and put the data into the original bean
-			query.setUsageProfiling(false);
-
-			if (parentBean != null) {
-				// Special case for OneToOne
-				BeanDescriptor<?> parentDesc = getBeanDescriptor(parentBean.getClass());
-				Object parentId = parentDesc.getId(parentBean);
-				persistenceContext.put(parentId, parentBean);
-			}
-
-			query.setPersistenceContext(persistenceContext);
-
-			if (collector != null) {
-				query.setParentNode(collector.getNode());
-			}
-
-			// make sure the query doesn't use the cache and
-			// use readOnly in case we put the bean in the cache
-			sourceBean = query.setId(id)
-				.setUseCache(false)
-				.setReadOnly(false)
-				.findUnique();
-
-			if (sourceBean == null) {
-				String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + beanType + "]";
-				throw new PersistenceException(msg);
-			}
-
-			if (ebi.isUseCache()){
-				// put the fresh source bean into the cache
-				// it will be readOnly and a sharedInstance
-				desc.cachePutObject(sourceBean);
-			}
-		}
-
-		// put the refreshed entity into the persistenceContext
-		// after the dbBean (fresh one) has been loaded
-		persistenceContext.put(id, eb);
-
-		// merge the existing and new dbBean bean
-		refreshHelp.refresh(bean, sourceBean, desc, ebi, id, isLazyLoad);
-	}
 
 	public InvalidValue validate(Object bean) {
 		if (bean == null) {
@@ -552,10 +453,10 @@ public final class DefaultServer implements SpiEbeanServer {
 	 * Invalidate the cache etc as required.
 	 */
 	public void externalModification(String tableName, boolean inserts, boolean updates, boolean deletes) {
-
+		
 		TransactionEventTable evt = new TransactionEventTable();
 		evt.add(tableName, inserts, updates, deletes);
-
+		
 		externalModification(evt);
 	}
 
@@ -564,7 +465,7 @@ public final class DefaultServer implements SpiEbeanServer {
 	 */
 	public void clearQueryStatistics() {
 		for (BeanDescriptor<?> desc : getBeanDescriptors()) {
-			desc.clearQueryStatistics();
+			desc.clearQueryStatistics();			
 		}
 	}
 
@@ -581,11 +482,11 @@ public final class DefaultServer implements SpiEbeanServer {
 		BeanDescriptor<T> desc = getBeanDescriptor(type);
 		return (T)desc.createEntityBean();
 	}
-
-
+	
+	
 
 	public ObjectInputStream createProxyObjectInputStream(InputStream is) {
-
+		
 		try {
 			return new ProxyBeanObjectInputStream(is, this);
 		} catch (IOException e) {
@@ -631,7 +532,7 @@ public final class DefaultServer implements SpiEbeanServer {
 				}
 			}
 		}
-
+		
 		if (ref == null) {
 			InheritInfo inheritInfo = desc.getInheritInfo();
 			if (inheritInfo != null) {
@@ -792,7 +693,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
 		boolean newTransaction;
 		if (txScope.getType().equals(TxType.NOT_SUPPORTED)) {
-			// Suspend existing transaction and
+			// Suspend existing transaction and 
 			// run without a transaction in scope
 			newTransaction = false;
 			suspended = t;
@@ -806,7 +707,7 @@ public final class DefaultServer implements SpiEbeanServer {
 				// suspend existing transaction (if there is one)
 				suspended = t;
 
-				// create a new transaction
+				// create a new transaction 
 				int isoLevel = -1;
 				TxIsolation isolation = txScope.getIsolation();
 				if (isolation != null) {
@@ -815,9 +716,9 @@ public final class DefaultServer implements SpiEbeanServer {
 				t = transactionManager.createTransaction(true, isoLevel);
 			}
 		}
-
+		
 		// replace the current transaction ... ScopeTrans.onFinally()
-		// has the job of restoring the suspended transaction
+		// has the job of restoring the suspended transaction 
 		transactionScopeManager.replace(t);
 
 		return new ScopeTrans(rollbackOnChecked, newTransaction, t, txScope, suspended, transactionScopeManager);
@@ -887,21 +788,21 @@ public final class DefaultServer implements SpiEbeanServer {
 	 * </p>
 	 * <p>
 	 * Code example:<br />
-	 *
+	 * 
 	 * <pre><code>
 	 * Ebean.startTransaction();
 	 * try {
 	 * 	// do some fetching and or persisting
-	 *
+	 * 
 	 * 	// commit at the end
 	 * 	Ebean.commitTransaction();
-	 *
+	 * 
 	 * } finally {
 	 * 	// if commit didn't occur then rollback the transaction
 	 * 	Ebean.endTransaction();
 	 * }
 	 * </code></pre>
-	 *
+	 * 
 	 * </p>
 	 */
 	public void endTransaction() {
@@ -919,10 +820,10 @@ public final class DefaultServer implements SpiEbeanServer {
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
 		return desc.nextId();
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	public <T> void sort(List<T> list, String sortByClause){
-
+		
 		if (list == null){
 			throw new NullPointerException("list is null");
 		}
@@ -946,7 +847,7 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> Query<T> createQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
 		return createNamedQuery(beanType, namedQuery);
 	}
-
+	
 	public <T> Query<T> createNamedQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
 
 		BeanDescriptor<?> desc = getBeanDescriptor(beanType);
@@ -961,7 +862,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		// this will parse the query
 		return new DefaultOrmQuery<T>(beanType, this, deployQuery);
 	}
-
+	
 	public <T> Filter<T> filter(Class<T> beanType) {
 		BeanDescriptor<T> desc = getBeanDescriptor(beanType);
 		if (desc == null) {
@@ -1036,7 +937,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		return new DefaultCallableSql(this, sql);
 	}
 
-
+	
 	public SqlUpdate createNamedSqlUpdate(String namedQuery) {
 		DNativeQuery nq = beanDescriptorManager.getNativeQuery(namedQuery);
 		if (nq == null) {
@@ -1066,28 +967,42 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
 		SpiQuery<T> query = (SpiQuery<T>) q;
+		
+		// check other combinations that make this a sharedInstance query
+		query.deriveSharedInstance();
+		
 		BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(query.getBeanType());
 
 		if (desc.isAutoFetchTunable() && !query.isSqlSelect()) {
 			// its a tunable query
 			autoFetchManager.tuneQuery(query);
 		}
+		
+		if (true){
+			// if determine cost and no origin for Autofetch
+			if (query.getParentNode() == null) {
+				CallStack callStack = createCallStack();
+				query.setOrigin(callStack);
+			}
+		}
+		
 		SpiTransaction serverTrans = (SpiTransaction)t;
 		OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);
-
-
+		
+		
 		if (query.hasMaxRowsOrFirstRow()
-				&& !request.isSqlSelect()
+				&& !request.isSqlSelect() 
 				&& query.getBackgroundFetchAfter() == 0) {
-			// ensure there are no joins to Many's so that
+			
+			// ensure there are no joins to Many's so that  
 			// limit offset type SQL clauses work etc
 			query.removeManyJoins();
-
+			
 			if (query.isManyInWhere()){
 				query.setDistinct(true);
 			}
 		}
-
+		
 		// the query hash after an AutoFetch tuning
 		request.calculateQueryPlanHash();
 		return request;
@@ -1095,16 +1010,16 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	@SuppressWarnings("unchecked")
 	private <T> T findId(Query<T> query, Transaction t) {
-
+		
 		OrmQueryRequest<T> request = createQueryRequest(query, t);
-
+		
 		// First have a look in the persistence context and then
 		// the bean cache (if we are using caching)
 		T bean = request.getFromPersistenceContextOrCache();
 		if (bean != null){
 			return bean;
 		}
-
+				
 		try {
 			request.initTransIfRequired();
 
@@ -1146,12 +1061,12 @@ public final class DefaultServer implements SpiEbeanServer {
 	public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
 		OrmQueryRequest request = createQueryRequest(query, t);
-
+		    
     	Object result = request.getFromQueryCache();
     	if (result != null){
     		return (Set<T>)result;
     	}
-
+		
 		try {
 			request.initTransIfRequired();
 			Set<T> set = (Set<T>) request.findSet();
@@ -1168,14 +1083,14 @@ public final class DefaultServer implements SpiEbeanServer {
 
 	@SuppressWarnings("unchecked")
 	public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
-
+		
 		OrmQueryRequest request = createQueryRequest(query, t);
-
+		    
     	Object result = request.getFromQueryCache();
     	if (result != null){
     		return (Map<?, T>)result;
     	}
-
+		
 		try {
 			request.initTransIfRequired();
 			Map<?, T> map = (Map<?, T>) request.findMap();
@@ -1191,9 +1106,9 @@ public final class DefaultServer implements SpiEbeanServer {
 	}
 
 	public <T> int findRowCount(Query<T> query, Transaction t){
-
+		
 		SpiQuery<T> copy = ((SpiQuery<T>)query).copy();
-
+		
 		OrmQueryRequest<T> request = createQueryRequest(copy, t);
 		try {
 			request.initTransIfRequired();
@@ -1201,7 +1116,7 @@ public final class DefaultServer implements SpiEbeanServer {
 			request.endTransIfRequired();
 
 			return rowCount;
-
+			
 		} catch (RuntimeException ex) {
 			request.rollbackTransIfRequired();
 			throw ex;
@@ -1209,14 +1124,14 @@ public final class DefaultServer implements SpiEbeanServer {
 	}
 
 	public <T> List<Object> findIds(Query<T> query, Transaction t){
-
+		
 		SpiQuery<T> copy = ((SpiQuery<T>)query).copy();
 
 		return findIdsWithCopy(copy, t);
 	}
-
+	
 	public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t){
-
+			
 		OrmQueryRequest<T> request = createQueryRequest(query, t);
 		try {
 			request.initTransIfRequired();
@@ -1224,7 +1139,7 @@ public final class DefaultServer implements SpiEbeanServer {
 			request.endTransIfRequired();
 
 			return list;
-
+			
 		} catch (RuntimeException ex) {
 			request.rollbackTransIfRequired();
 			throw ex;
@@ -1235,74 +1150,74 @@ public final class DefaultServer implements SpiEbeanServer {
 
 		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
 		spiQuery.setFutureFetch(true);
-
+				
 		Transaction newTxn = createTransaction();
 		CallableQueryRowCount<T> call = new CallableQueryRowCount<T>(this, query, newTxn);
-
+		
 		FutureTask<Integer> futureTask = new FutureTask<Integer>(call);
-
+		
 		QueryFutureRowCount<T> queryFuture = new QueryFutureRowCount<T>(query, futureTask);
 		backgroundExecutor.execute(futureTask);
-
+		
 		return queryFuture;
 	}
-
+	
 	public <T> FutureIds<T> findFutureIds(Query<T> query, Transaction t) {
 
 		SpiQuery<T> copy = ((SpiQuery<T>)query).copy();
 		copy.setFutureFetch(true);
-
+		
 		// this is the list we will put the id's in ... create it now so
 		// it is available for other threads to read while the id query
 		// is still executing (we don't need to wait for it to finish)
 		List<Object> idList = Collections.synchronizedList(new ArrayList<Object>());
 		copy.setIdList(idList);
-
-
+		
+		
 		Transaction newTxn = createTransaction();
-
+		
 		CallableQueryIds<T> call = new CallableQueryIds<T>(this, copy, newTxn);
 		FutureTask<List<Object>> futureTask = new FutureTask<List<Object>>(call);
-
+		
 		QueryFutureIds<T> queryFuture = new QueryFutureIds<T>(copy, futureTask);
-
+		
 		backgroundExecutor.execute(futureTask);
-
+		
 		return queryFuture;
 	}
-
+	
 	public <T> FutureList<T> findFutureList(Query<T> query, Transaction t) {
 
 		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
 		spiQuery.setFutureFetch(true);
-
+		
 		if (spiQuery.getPersistenceContext() == null){
 			if (t != null){
 				spiQuery.setPersistenceContext(((SpiTransaction)t).getPersistenceContext());
 			} else {
 				SpiTransaction st = getCurrentServerTransaction();
 				if (st != null){
-					spiQuery.setPersistenceContext(st.getPersistenceContext());
+					spiQuery.setPersistenceContext(st.getPersistenceContext());					
 				}
 			}
 		}
-
+		
 		Transaction newTxn = createTransaction();
 		CallableQueryList<T> call = new CallableQueryList<T>(this, query, newTxn);
-
+		
 		FutureTask<List<T>> futureTask = new FutureTask<List<T>>(call);
-
+		
 		backgroundExecutor.execute(futureTask);
-
+		
 		return new QueryFutureList<T>(query, futureTask);
 	}
 
 	public <T> PagingList<T> findPagingList(Query<T> query, Transaction t, int pageSize) {
 
 		SpiQuery<T> spiQuery = (SpiQuery<T>)query;
-
+		
 		// we want to use a single PersistenceContext to be used
-		// for all the paging queries so we make sure there is a
+		// for all the paging queries so we make sure there is a 
 		// PersistenceContext on the query
 		PersistenceContext pc = spiQuery.getPersistenceContext();
 		if (pc == null){
@@ -1315,20 +1230,20 @@ public final class DefaultServer implements SpiEbeanServer {
 			}
 			spiQuery.setPersistenceContext(pc);
 		}
-
+		
 		return new LimitOffsetPagingQuery<T>(this, spiQuery, pageSize);
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	public <T> List<T> findList(Query<T> query, Transaction t) {
 
 		OrmQueryRequest<T> request = createQueryRequest(query, t);
-
+		    
     	Object result = request.getFromQueryCache();
     	if (result != null){
     		return (List<T>)result;
     	}
-
+    
 		try {
 			request.initTransIfRequired();
 			List<T> list = request.findList();
@@ -1364,17 +1279,17 @@ public final class DefaultServer implements SpiEbeanServer {
 
 		SpiSqlQuery spiQuery = (SpiSqlQuery)query;
 		spiQuery.setFutureFetch(true);
-
+				
 		Transaction newTxn = createTransaction();
 		CallableSqlQueryList call = new CallableSqlQueryList(this, query, newTxn);
-
+		
 		FutureTask<List<SqlRow>> futureTask = new FutureTask<List<SqlRow>>(call);
-
+		
 		backgroundExecutor.execute(futureTask);
-
+		
 		return new SqlQueryFutureList(query, futureTask);
 	}
-
+	
 	public List<SqlRow> findList(SqlQuery query, Transaction t) {
 
 		RelationalQueryRequest request = new RelationalQueryRequest(this, relationalQueryEngine, query, t);
@@ -1577,21 +1492,21 @@ public final class DefaultServer implements SpiEbeanServer {
 	public List<BeanDescriptor<?>> getBeanDescriptors() {
 		return beanDescriptorManager.getBeanDescriptorList();
 	}
-
+	
 	public void register(BeanPersistController c) {
 		List<BeanDescriptor<?>> list = beanDescriptorManager.getBeanDescriptorList();
 		for (int i = 0; i < list.size(); i++) {
 			list.get(i).register(c);
 		}
 	}
-
+	
 	public void deregister(BeanPersistController c) {
 		List<BeanDescriptor<?>> list = beanDescriptorManager.getBeanDescriptorList();
 		for (int i = 0; i < list.size(); i++) {
 			list.get(i).deregister(c);
 		}
 	}
-
+	
 	/**
 	 * Return the BeanDescriptor for a given type of bean.
 	 */
@@ -1641,4 +1556,49 @@ public final class DefaultServer implements SpiEbeanServer {
 	public SpiTransaction createQueryTransaction() {
 		return transactionManager.createQueryTransaction();
 	}
+	
+	private static final int IGNORE_LEADING_ELEMENTS = 6;
+	private static final String AVAJE_EBEAN = Ebean.class.getName().substring(0,15);
+
+	/**
+	 * Create a CallStack object.
+	 * <p>
+	 * This trims off the avaje ebean part of the stack trace so that 
+	 * the first element in the CallStack should be application code.
+	 * </p>
+	 */
+	public CallStack createCallStack() {
+
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+		// ignore the first 6 as they are always avaje stack elements
+		int startIndex = IGNORE_LEADING_ELEMENTS;
+		
+		// find the first non-avaje stackElement
+		for (; startIndex < stackTrace.length; startIndex++) {
+			if (!stackTrace[startIndex].getClassName().startsWith(AVAJE_EBEAN)) {
+				break;
+			}
+		}
+		
+		int stackLength = stackTrace.length - startIndex;
+		if (stackLength > 20) {
+			// maximum of 20 stackTrace elements
+			stackLength = 20;
+		}
+		
+		// create the 'interesting' part of the stackTrace
+		StackTraceElement[] finalTrace = new StackTraceElement[stackLength];
+		for (int i = 0; i < stackLength; i++) {
+			finalTrace[i] = stackTrace[i + startIndex];
+		}
+
+		if (stackLength < 1){
+			// this should not really happen
+			throw new RuntimeException("StackTraceElement size 0?  stack: "+Arrays.toString(stackTrace));
+		}
+
+		return new CallStack(finalTrace);
+	}
+
 }

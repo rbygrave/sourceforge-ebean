@@ -26,17 +26,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.BeanIdList;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.internal.SpiQuery.Mode;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -262,6 +264,10 @@ public class CQueryFetchIds {
 
 	
 	class DbContext implements DbReadContext {
+		
+		public Mode getQueryMode() {
+			return Mode.NORMAL;
+		}
 
 		public ResultSet getRset() {
 			return rset;
@@ -269,6 +275,10 @@ public class CQueryFetchIds {
 		
 		public void resetRsetIndex() {
 			rsetIndex = 0;
+		}
+
+		public void incrementRsetIndex(int increment) {
+			rsetIndex += increment;
 		}
 
 		public int nextRsetIndex() {
@@ -283,16 +293,31 @@ public class CQueryFetchIds {
 			return false;
 		}
 
+		public void register(String path, EntityBeanIntercept ebi){
+		}
+
+		public void register(String path, BeanCollection<?> bc){	
+		}
+		
+//		public GraphContext getGraphContext() {
+//			// Always null
+//			return null;
+//		}
+//
+//		public String getPath(String propertyName) {
+//			// Always null
+//			return null;
+//		}
+
 		public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
 			// always null
 			return null;
 		}
 
-		public ObjectGraphNode createAutoFetchNode(String extraPath,
-				String prefix) {
-			// always null
-			return null;
-		}
+//		public ObjectGraphNode createAutoFetchNode(String prefix) {
+//			// always null
+//			return null;
+//		}
 
 		public BeanPropertyAssocMany<?> getManyProperty() {
 			// always null
@@ -308,15 +333,15 @@ public class CQueryFetchIds {
 			return false;
 		}
 
-		public void profileBean(EntityBeanIntercept ebi, String extraPath, String prefix) {
+		public void profileBean(EntityBeanIntercept ebi, String prefix) {
 			// no-op			
 		}
 
-		public void profileReference(EntityBeanIntercept ebi, String extraPath) {
-			// no-op
-		}
+//		public void profileReference(EntityBeanIntercept ebi, String extraPath) {
+//			// no-op
+//		}
 
-		public void setCurrentPrefix(String currentPrefix) {
+		public void setCurrentPrefix(String currentPrefix,Map<String, String> pathMap) {
 			// no-op
 		}
 

@@ -42,6 +42,7 @@ import com.avaje.ebean.cache.ServerCacheOptions;
 import com.avaje.ebean.common.BootupEbeanManager;
 import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.PstmtDelegate;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
@@ -49,9 +50,12 @@ import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.net.Constants;
 import com.avaje.ebean.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebean.server.cache.DefaultServerCacheManager;
+import com.avaje.ebean.server.jdbc.OraclePstmtBatch;
+import com.avaje.ebean.server.jdbc.StandardPstmtDelegate;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.lib.cluster.ClusterManager;
 import com.avaje.ebean.server.lib.sql.DataSourceGlobalManager;
+import com.avaje.ebean.server.lib.sql.DataSourcePool;
 import com.avaje.ebean.server.lib.sql.TransactionIsolation;
 import com.avaje.ebean.server.net.ClusterCommandSecurity;
 import com.avaje.ebean.server.net.ClusterContextManager;
@@ -131,6 +135,28 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		// determine database platform (Oracle etc)
 		setDatabasePlatform(serverConfig);
 		
+		DatabasePlatform dbPlatform = serverConfig.getDatabasePlatform();
+		
+		PstmtBatch pstmtBatch = null;
+		
+		if (dbPlatform.getName().startsWith("oracle")){
+			PstmtDelegate pstmtDelegate = serverConfig.getPstmtDelegate();
+			if (pstmtDelegate == null){
+				// try to provide the 
+				pstmtDelegate = getOraclePstmtDelegate(serverConfig.getDataSource());
+			}
+			if (pstmtDelegate != null){
+				// We can support JDBC batching with Oracle
+				// via OraclePreparedStatement  
+				pstmtBatch = new OraclePstmtBatch(pstmtDelegate);
+			} 
+			if (pstmtBatch == null){
+				// We can not support JDBC batching with Oracle
+				logger.warning("Can not support JDBC batching with Oracle without a PstmtDelegate");
+				serverConfig.setUsePersistBatching(false);
+			}
+		}
+		
 		// inform the NamingConvention of the associated DatabasePlaform 
 		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
 
@@ -139,7 +165,8 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		int uniqueServerId = serverId.incrementAndGet();
 		BackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
 			
-		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, bgExecutor, serverConfig, bootupClasses);
+		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, bgExecutor, 
+			serverConfig, bootupClasses, pstmtBatch);
 		
 		DefaultServer server = new DefaultServer(c, cacheManager);
 		
@@ -161,15 +188,26 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		executeDDL(server);
 		
 		// warm the cache in 30 seconds 
-		int delaySecs = GlobalProperties.getInt("cacheWarmingDelay", 30);
+		int delaySecs = GlobalProperties.getInt("ebean.cacheWarmingDelay", 30);
 		long sleepMillis = 1000 * delaySecs;
 
-		Timer t = new Timer();
-		t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
-		
+		if (sleepMillis > 0){
+			Timer t = new Timer();
+			t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
+		}
 		return server;
 	}
 
+	private PstmtDelegate getOraclePstmtDelegate(DataSource ds) {
+		
+		if (ds instanceof DataSourcePool){
+			// Using Ebean's own DataSource implementation
+			return new StandardPstmtDelegate();
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Create and return the CacheManager.
 	 */
@@ -269,7 +307,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			
 			DatabasePlatform db = factory.create(config);
 			config.setDatabasePlatform(db);
-			logger.info("DatabasePlatform "+config.getName()+" "+db.getName());
+			logger.info("DatabasePlatform name:"+config.getName()+" platform:"+db.getName());
 		}
 	}
 	

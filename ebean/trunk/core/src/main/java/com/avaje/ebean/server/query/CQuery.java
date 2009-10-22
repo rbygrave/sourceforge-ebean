@@ -19,12 +19,14 @@
  */
 package com.avaje.ebean.server.query;
 
+import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,13 +35,16 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
+import com.avaje.ebean.bean.NodeUsageListener;
 import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.internal.LoadContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.internal.SpiQuery.Mode;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ReferenceOptions;
@@ -147,6 +152,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	
 	private final boolean readOnly;
 	
+	private Map<String,String> currentPathMap;
+
 	private String currentPrefix;
 	
 	/**
@@ -232,17 +239,20 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private long startNano;
 	
+	private final Mode queryMode;
+	
 	private final boolean autoFetchProfiling;
 	
 	private final ObjectGraphNode autoFetchParentNode;
 	
 	private final AutoFetchManager autoFetchManager;
+	private final WeakReference<NodeUsageListener> autoFetchManagerRef;
 	
-	private final ObjectGraphOrigin autoFetchOriginQueryPoint;
-
 	private final HashMap<String,ReferenceOptions> referenceOptionsMap = new HashMap<String,ReferenceOptions>();
 
-	int executionTimeMicros;
+	private int executionTimeMicros;
+	
+	private final int parentState;
 	
 	/**
 	 * Create the Sql select based on the request.
@@ -251,18 +261,20 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
-		this.sharedInstance = query.isSharedInstance();
 		this.queryDetail = query.getDetail();
+		this.queryMode = query.getMode();
 		
-		// the objects built should be treated as readOnly
+		this.sharedInstance = query.isSharedInstance();
 		this.readOnly = request.isReadOnly();
-		//this.readOnly = query.isReadOnly() != null && query.isReadOnly();
+		
+		this.parentState = request.getParentState();
 		
 		autoFetchManager = query.getAutoFetchManager();
 		autoFetchProfiling = autoFetchManager != null;
 		autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;
-		autoFetchOriginQueryPoint = autoFetchProfiling ? query.getObjectGraphOrigin() : null;
-
+		
+		autoFetchManagerRef = autoFetchProfiling ? new WeakReference<NodeUsageListener>(autoFetchManager) : null;
+		
 		// set the generated sql back to the query
 		// so its available to the user...
 		query.setGeneratedSql(queryPlan.getSql());
@@ -317,6 +329,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 	
+	
+	public Mode getQueryMode() {
+		return queryMode;
+	}
+
 	/**
 	 * Return true if the query is to a lazy load for a bean in the cache.
 	 */
@@ -333,6 +350,10 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	public CQueryPredicates getPredicates() {
 		return predicates;
+	}
+	
+	public LoadContext getGraphContext() {
+		return request.getGraphContext();
 	}
 
 	public OrmQueryRequest<?> getQueryRequest() {
@@ -500,6 +521,10 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		rsetIndex = 0;
 	}
 
+	public void incrementRsetIndex(int increment){
+		rsetIndex += increment;
+	}
+	
 	public int nextRsetIndex() {
 		return ++rsetIndex;
 	}
@@ -529,7 +554,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 				rset.getInt(++rsetIndex);
 			}
 	
-			rootNode.load(this, null);
+			rootNode.load(this, null, parentState);
 	
 			return true;
 		}
@@ -546,9 +571,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		long exeNano = System.nanoTime() - startNano;
 		executionTimeMicros = (int)exeNano/1000;
 		
-		if (autoFetchProfiling){
-			
-			autoFetchManager.collectQueryInfo(autoFetchParentNode, autoFetchOriginQueryPoint, loadedBeanCount, executionTimeMicros);	
+		if (autoFetchProfiling){			
+			autoFetchManager.collectQueryInfo(autoFetchParentNode, loadedBeanCount, executionTimeMicros);	
 		}		
 		
 		queryPlan.executionTime(loadedBeanCount, executionTimeMicros);
@@ -601,16 +625,27 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		return false;
 	}
 
+	private BeanCollectionAdd currentDetailAdd;
+	
 	private void createNewDetailCollection() {
 		prevDetailCollection = currentDetailCollection;
-		currentDetailCollection = manyProperty.createEmpty();
-		manyProperty.setValue(loadedBean, currentDetailCollection);
+		if (queryMode.equals(Mode.LAZYLOAD_MANY)){
+			// just populate the current collection
+			currentDetailCollection = (BeanCollection<?>)manyProperty.getValue(loadedBean);
+		} else {
+			// create a new collection to populate and assign to the bean
+			currentDetailCollection = manyProperty.createEmpty();
+			manyProperty.setValue(loadedBean, currentDetailCollection);
+		}
+		// the manyKey is always null for this case, just using default mapKey on the property
+		currentDetailAdd = manyProperty.getBeanCollectionAdd(currentDetailCollection, null);
 		addToCurrentDetailCollection();
 	}
 
 	private void addToCurrentDetailCollection() {
 		if (loadedManyBean != null) {
-			manyProperty.add(currentDetailCollection, loadedManyBean);
+			currentDetailAdd.addBean(loadedManyBean);
+			//manyProperty.add(currentDetailCollection, loadedManyBean);
 		}
 	}
 
@@ -628,8 +663,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		executionTimeMicros = (int)exeNano/1000;
 		
 		if (autoFetchProfiling){
-
-			autoFetchManager.collectQueryInfo(autoFetchParentNode, autoFetchOriginQueryPoint, loadedBeanCount, executionTimeMicros);	
+			autoFetchManager.collectQueryInfo(autoFetchParentNode, loadedBeanCount, executionTimeMicros);	
 		}
 		
 		queryPlan.executionTime(loadedBeanCount, executionTimeMicros);
@@ -678,6 +712,19 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 
+	public void register(String path, EntityBeanIntercept ebi){
+		
+		path = getPath(path);
+		request.getGraphContext().register(path, ebi);
+	}
+
+	public void register(String path, BeanCollection<?> bc){
+		
+		path = getPath(path);
+		request.getGraphContext().register(path, bc);
+	}
+	
+	
 	public boolean useBackgroundToContinueFetch() {
 		return hasHitBackgroundFetchAfter;
 	}
@@ -757,36 +804,34 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		// existing beans which are already collecting usage information
 		return autoFetchProfiling && query.isUsageProfiling();
 	}
-	
-	public ObjectGraphNode createAutoFetchNode(String extra, String path) {
-		if (path == null){
-			path = extra;
-		} else {
-			if (extra != null){
-				path = path+"."+extra;				
-			}
+
+	private String getPath(String propertyName) {
+		
+		if (currentPrefix == null){
+			return propertyName;
+		} else if (propertyName == null) {
+			return currentPrefix;
 		}
-		String beanIndex = String.valueOf(loadedBeanCount);
-		return query.createObjectGraphNode(beanIndex, path);
-	}
-	
-	public void profileReference(EntityBeanIntercept ebi, String extraPath) {
-		profileBean(false, ebi, extraPath, currentPrefix);		
-	}
-	
-	public void profileBean(EntityBeanIntercept ebi, String extraPath, String prefix) {
-		profileBean(true, ebi, extraPath, prefix);
-	}
-	
-	private void profileBean(boolean bean, EntityBeanIntercept ebi, String extraPath, String prefix) {
 		
-		ObjectGraphNode node = createAutoFetchNode(extraPath, prefix);
+		String path = currentPathMap.get(propertyName);
+		if (path != null){
+			return path;
+		} else {
+			return currentPrefix+"."+propertyName;
+		}
+	}
+	
+	
+	public void profileBean(EntityBeanIntercept ebi, String prefix) {
 		
-		ebi.setNodeUsageCollector(new NodeUsageCollector(bean, node, autoFetchManager));
+		ObjectGraphNode node = request.getGraphContext().getObjectGraphNode(prefix);
+		
+		ebi.setNodeUsageCollector(new NodeUsageCollector(node, autoFetchManagerRef));
 	}
 
-	public void setCurrentPrefix(String currentPrefix) {
+	public void setCurrentPrefix(String currentPrefix, Map<String,String> currentPathMap) {
 		this.currentPrefix = currentPrefix;
+		this.currentPathMap = currentPathMap;
 	}
 	
 }

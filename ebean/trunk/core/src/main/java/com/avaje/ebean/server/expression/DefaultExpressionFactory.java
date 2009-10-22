@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.expression;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import com.avaje.ebean.ExampleExpression;
@@ -234,6 +235,13 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression idEq(Object value) {
 		return new IdExpression(value);
+	}
+
+	/**
+	 * Id IN a list of id values.
+	 */
+	public Expression idIn(List<?> idList) {
+		return new IdInExpression(idList);
 	}
 
 	/**

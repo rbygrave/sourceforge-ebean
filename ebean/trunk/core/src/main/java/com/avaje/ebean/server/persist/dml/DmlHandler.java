@@ -30,9 +30,9 @@ import java.util.logging.Logger;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
+import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.jmx.MAdminLogging;
-import com.avaje.ebean.server.persist.BatchPostExecute;
 import com.avaje.ebean.server.persist.BatchedPstmt;
 import com.avaje.ebean.server.persist.BatchedPstmtHolder;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
@@ -111,7 +111,12 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Add this for batch execution.
 	 */
 	public void addBatch() throws SQLException {
-		pstmt.addBatch();
+		PstmtBatch pstmtBatch = persistRequest.getPstmtBatch();
+		if (pstmtBatch != null){
+			pstmtBatch.addBatch(pstmt);
+		} else {
+			pstmt.addBatch();
+		}
 	}
 
 	/**
@@ -271,20 +276,27 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	/**
 	 * Return a prepared statement taking into account batch requirements.
 	 */
-	protected PreparedStatement getPstmt(SpiTransaction t, String sql, BatchPostExecute batchExe, boolean genKeys)
+	protected PreparedStatement getPstmt(SpiTransaction t, String sql, PersistRequestBean<?> request, boolean genKeys)
 			throws SQLException {
 
 		BatchedPstmtHolder batch = t.getBatchControl().getPstmtHolder();
-		PreparedStatement stmt = batch.getStmt(sql, batchExe);
+		PreparedStatement stmt = batch.getStmt(sql, request);
 
 		if (stmt != null) {
 			return stmt;
 		}
 
+		t.log(sql);
+		
 		stmt = getPstmt(t, sql, genKeys);
 
-		BatchedPstmt bs = new BatchedPstmt(stmt, genKeys, sql);
-		batch.addStmt(bs, batchExe);
+		PstmtBatch pstmtBatch = request.getPstmtBatch();
+		if (pstmtBatch != null){
+        	pstmtBatch.setBatchSize(stmt, t.getBatchControl().getBatchSize());
+        }
+		
+		BatchedPstmt bs = new BatchedPstmt(stmt, genKeys, sql, request.getPstmtBatch(), true);
+		batch.addStmt(bs, request);
 		return stmt;
 	}
 	

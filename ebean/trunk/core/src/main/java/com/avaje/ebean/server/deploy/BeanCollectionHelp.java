@@ -7,8 +7,9 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 
 /**
  * Helper functions for performing tasks on Lists Sets or Maps.
@@ -18,8 +19,19 @@ public interface BeanCollectionHelp<T> {
 	/**
 	 * Set the EbeanServer that owns the configuration.
 	 */
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer);
+	public void setLoader(BeanCollectionLoader loader);
 	
+	/**
+	 * Return the mechanism to add beans to the underlying collection.
+	 * <p>
+	 * For Map's this needs to take the mapKey.
+	 * </p>
+	 */
+	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc, String mapKey);
+
+	/**
+	 * Create an empty collection of the correct type.
+	 */
 	public BeanCollection<T> createEmpty();
 
 	/**
@@ -30,8 +42,7 @@ public interface BeanCollectionHelp<T> {
 	/**
 	 * Create a lazy loading proxy for a List Set or Map.
 	 */
-	public BeanCollection<T> createReference(Object parentBean, String serverName,
-			String propertyName, ObjectGraphNode profilePoint);
+	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName);
 
 	/**
 	 * Validate the List Set or Map.
@@ -42,4 +53,10 @@ public interface BeanCollectionHelp<T> {
 	 * Refresh the List Set or Map.
 	 */
 	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean);
+	
+	/**
+	 * Apply the new refreshed BeanCollection to the appropriate property of the parent bean.
+	 */
+	public void refresh(BeanCollection<?> bc, Object parentBean);
+
 }

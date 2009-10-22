@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.query;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import com.avaje.ebean.bean.BeanCollection;
@@ -90,7 +91,8 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     	if (query.isLoadBeanCache()){
         	// load the individual beans into the bean cache
         	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
-        	Iterator<T> it  = result.getActualDetails();
+        	Collection<T> c  = result.getActualDetails();
+        	Iterator<T> it = c.iterator();
         	while (it.hasNext()) {
 				T bean = it.next();
 				if (!query.isSharedInstance()){

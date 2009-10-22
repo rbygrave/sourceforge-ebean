@@ -47,6 +47,11 @@ public class BindableIdMap implements BindableId {
 	public boolean isConcatenated() {
 		return true;
 	}
+	
+	public String getIdentityColumn() {
+		// return null for concatenated keys
+		return null;
+	}
 
 	@Override
 	public String toString() {

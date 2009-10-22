@@ -63,6 +63,7 @@ public class DeployCreateProperties {
     public void createProperties(DeployBeanDescriptor<?> desc) {
     	
         createProperties(desc, desc.getBeanType(), 0);
+        desc.sortProperties();
         
         // check the transient properties...
         Iterator<DeployBeanProperty> it = desc.propertiesAll();
@@ -133,7 +134,12 @@ public class DeployCreateProperties {
             		Method getter = findGetter(field, initFieldName, declaredMethods);
             		Method setter = findSetter(field, initFieldName, declaredMethods);
             		
-	                DeployBeanProperty prop = createProp(level, desc, field, beanType, getter, setter);                    
+	                DeployBeanProperty prop = createProp(level, desc, field, beanType, getter, setter);
+	                // set a order that gives priority to inherited properties
+	                // push Id/EmbeddedId up and CreatedTimestamp/UpdatedTimestamp down
+	                int sortOverride = prop.getSortOverride();
+	                prop.setSortOrder((level*10000+100-i + sortOverride));
+	                
 	                DeployBeanProperty replaced = desc.addBeanProperty(prop);
 	                if (replaced != null){
 	                	if (replaced.isTransient()) {

@@ -43,9 +43,6 @@ public class DeleteHandler extends DmlHandler {
 	public void bind() throws SQLException {
 		
 		String sql = meta.getSql(persistRequest);
-
-		// log the sql to transaction log if request
-		logSql(sql);
 		
 		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
@@ -54,6 +51,7 @@ public class DeleteHandler extends DmlHandler {
 			pstmt = getPstmt(t, sql, persistRequest, false);
 
 		} else {
+			logSql(sql);
 			pstmt = getPstmt(t, sql, false);
 		}
 

@@ -2,14 +2,17 @@ package com.avaje.ebean.server.querydefn;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.el.ElPropertyDeploy;
+import com.avaje.ebean.server.query.SplitName;
 
 /**
  * Represents the internal structure of an Object Relational query.
@@ -46,6 +49,7 @@ public class OrmQueryDetail implements Serializable {
 		copy.includes = new HashSet<String>(includes);
 		return copy;
 	}
+	
 	/**
 	 * Calculate the hash for the query plan.
 	 */
@@ -95,11 +99,83 @@ public class OrmQueryDetail implements Serializable {
 		this.baseProps = baseProps;
 	}
 
+	public List<OrmQueryProperties> removeSecondaryQueries() {
+		return removeSecondaryQueries(false);
+	}
+	
+	public List<OrmQueryProperties> removeSecondaryLazyQueries() {
+		return removeSecondaryQueries(true);
+	}
+	
+	private List<OrmQueryProperties> removeSecondaryQueries(boolean lazyQuery) {
+		
+		ArrayList<String> matchingPaths = new ArrayList<String>(2);
+		
+		Iterator<OrmQueryProperties> it = fetchJoins.values().iterator();
+		while (it.hasNext()) {
+			OrmQueryProperties chunk = it.next();
+			boolean match = lazyQuery ? chunk.isLazyJoin() : chunk.isQueryJoin();
+			if (match){
+				matchingPaths.add(chunk.getPath());
+			}
+		}
+		
+		if (matchingPaths.size() == 0){
+			return null;
+		}
+
+		// sort into depth order to remove 
+		Collections.sort(matchingPaths);
+
+		// the list of secondary queries
+		ArrayList<OrmQueryProperties> props = new ArrayList<OrmQueryProperties>(2);
+
+		
+		for (int i = 0; i < matchingPaths.size(); i++) {
+			String path = matchingPaths.get(i);
+			includes.remove(path);
+			OrmQueryProperties secQuery = fetchJoins.remove(path);
+			if (secQuery == null){
+				// the path has already been removed by another
+				// secondary query
+				
+			} else {
+				props.add(secQuery);
+				
+				// remove any child properties for this path
+				Iterator<OrmQueryProperties> pass2It = fetchJoins.values().iterator();
+				while (pass2It.hasNext()) {
+					OrmQueryProperties pass2Prop = pass2It.next();
+					if (secQuery.isChild(pass2Prop)){
+						// remove join to secondary query from the main query 
+						// and add to this secondary query
+						pass2It.remove();
+						secQuery.add(pass2Prop);
+					}
+				}
+			}
+		}
+		
+		// Add the secondary queries as select properties
+		// to the parent chunk to ensure the foreign keys
+		// are included in the query
+		for (int i = 0; i < props.size(); i++) {
+			String path = props.get(i).getPath();
+			// split into parent and property
+			String[] split = SplitName.split(path);
+			// add property to parent chunk
+			OrmQueryProperties chunk = getChunk(split[0], true);
+			chunk.addSecondaryQueryJoin(split[1]);
+		}
+		
+		return props;
+	}
+	
 	/**
 	 * Matches a join() method of the query.
 	 */
 	public void addFetchJoin(OrmQueryProperties chunk) {
-		String property = chunk.getEntity();//.toLowerCase();
+		String property = chunk.getPath();//.toLowerCase();
 		fetchJoins.put(property, chunk);
 		includes.add(property);
 	}

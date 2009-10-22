@@ -48,8 +48,6 @@ public class UpdateHandler extends DmlHandler {
 
 		String sql = meta.getSql(persistRequest);
 
-		logSql(sql);
-
 		updatedProperties = persistRequest.getUpdatedProperties();
 		
 		SpiTransaction t = persistRequest.getTransaction();
@@ -59,6 +57,7 @@ public class UpdateHandler extends DmlHandler {
 			pstmt = getPstmt(t, sql, persistRequest, false);
 
 		} else {
+			logSql(sql);
 			pstmt = getPstmt(t, sql, false);
 		}
 

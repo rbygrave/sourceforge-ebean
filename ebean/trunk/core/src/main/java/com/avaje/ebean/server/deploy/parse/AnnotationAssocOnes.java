@@ -42,7 +42,6 @@ import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.validation.NotNull;
 
@@ -51,7 +50,7 @@ import com.avaje.ebean.validation.NotNull;
  */
 public class AnnotationAssocOnes extends AnnotationParser {
 
-	final BeanDescriptorManager factory;
+	private final BeanDescriptorManager factory;
 
 	/**
 	 * Create with the deploy Info.
@@ -160,10 +159,7 @@ public class AnnotationAssocOnes extends AnnotationParser {
 							.getColumnFromProperty(beanType, prop.getName());
 				}
 				
-				DeployTableJoinColumn join = beanTable.createJoinColumn(fkeyPrefix);
-				if (join != null){
-					prop.getTableJoin().addJoinColumn(join.reverse());
-				}
+				beanTable.createJoinColumn(fkeyPrefix, prop.getTableJoin(), true);
 			}
 		}
     }

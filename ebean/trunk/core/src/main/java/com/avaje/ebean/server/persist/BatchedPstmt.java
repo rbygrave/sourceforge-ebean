@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import com.avaje.ebean.server.core.PstmtBatch;
+
 /**
  * A batched statement that is held in BatchedPstmtHolder. It has a list of
  * BatchPostExecute which it will process after the statement is executed.
@@ -36,28 +38,36 @@ public class BatchedPstmt {
     /**
      * The underlying statement.
      */
-    PreparedStatement pstmt;
+    private PreparedStatement pstmt;
     
     /**
      * True if an insert that uses generated keys.
      */
-    boolean isGenKeys;
+    private final boolean isGenKeys;
     
     /**
      * The list of BatchPostExecute used to perform post processing.
      */
-    ArrayList<BatchPostExecute> list = new ArrayList<BatchPostExecute>();
+    private final ArrayList<BatchPostExecute> list = new ArrayList<BatchPostExecute>();
     
-    String sql;
+    private final String sql;
+    
+    private final PstmtBatch pstmtBatch;
+    
+    private final boolean occCheck;
+    
     
     /**
      * Create with a given statement.
      * @param isGenKeys true if an insert that uses generatedKeys
      */
-    public BatchedPstmt(PreparedStatement pstmt, boolean isGenKeys, String sql) {
+    public BatchedPstmt(PreparedStatement pstmt, boolean isGenKeys, String sql, PstmtBatch pstmtBatch, boolean occCheck) {
+    
         this.pstmt = pstmt;
         this.isGenKeys = isGenKeys;
         this.sql = sql;
+        this.pstmtBatch = pstmtBatch;
+        this.occCheck = occCheck;
     }
     
     /**
@@ -93,6 +103,7 @@ public class BatchedPstmt {
      * Run any post processing including getGeneratedKeys.
      */
     public void executeBatch(boolean getGeneratedKeys) throws SQLException {
+    	
     	executeAndCheckRowCounts();
         if (isGenKeys && getGeneratedKeys){
             getGeneratedKeys();
@@ -113,15 +124,27 @@ public class BatchedPstmt {
     
     private void postExecute() throws SQLException {
     	for (int i = 0; i < list.size(); i++) {
-            BatchPostExecute batchExecute = (BatchPostExecute)list.get(i);
-            batchExecute.postExecute();
+            list.get(i).postExecute();
         }
     }
     
     private void executeAndCheckRowCounts() throws SQLException {
 
-        int[] results = pstmt.executeBatch();
-        
+    	if (pstmtBatch != null){
+    		// oracle specific JDBC batch processing
+    		int rc = pstmtBatch.executeBatch(pstmt, list.size(), sql, occCheck);
+    		if (list.size() == 1){
+    			list.get(0).checkRowCount(rc);
+    		}
+			// the optimistic concurrency row count check
+			// has already been done by pstmtBatch so just return
+			return;
+			
+    	}
+    	
+    	// normal JDBC batch processing
+    	int[] results = pstmt.executeBatch();
+    	        
         if (results.length != list.size()){
             String s = "results array error "+results.length+" "+list.size();
             throw new SQLException(s);
@@ -129,7 +152,7 @@ public class BatchedPstmt {
         
         // check for concurrency exceptions...
         for (int i = 0; i < results.length; i++) {
-            getBatchExecute(i).checkRowCount(results[i]);
+        	list.get(i).checkRowCount(results[i]);
         }
     }
     
@@ -140,7 +163,7 @@ public class BatchedPstmt {
         try {
             while(rset.next()) {
                 Object idValue = rset.getObject(1);
-                getBatchExecute(index).setGeneratedKey(idValue);
+                list.get(index).setGeneratedKey(idValue);
                 index++;
             } 
         } finally {
@@ -150,8 +173,4 @@ public class BatchedPstmt {
         }
     }
     
-    
-    private BatchPostExecute getBatchExecute(int i) {
-        return (BatchPostExecute)list.get(i);
-    }
 }

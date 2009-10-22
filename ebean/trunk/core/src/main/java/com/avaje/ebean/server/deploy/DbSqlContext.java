@@ -6,6 +6,11 @@ package com.avaje.ebean.server.deploy;
  */
 public interface DbSqlContext {
 	
+	/**
+	 * Add a join to the sql query.
+	 */
+	public void addJoin(String type, String table, TableJoinColumn[] cols, String a1, String a2);
+
 	public void pushSecondaryTableAlias(String alias);
 	
 	/**
@@ -51,11 +56,6 @@ public interface DbSqlContext {
 	public void appendFormulaJoin(String sqlFormulaJoin, boolean forceOuterJoin);
 
 	/**
-	 * add a join if not already there. Does not check different join types.
-	 */
-	public void addJoin(String type, String table, TableJoinColumn[] cols, String a1, String a2);
-
-	/**
 	 * Return the current content length.
 	 */
 	public int length();
@@ -79,22 +79,7 @@ public interface DbSqlContext {
 	public String getTableAlias(String prefix);
 	
 	public String getRelativePrefix(String propName);
+	
 	public String getRelativeAlias(String propName);
 	
-//	/**
-//	 * Return the current join node.
-//	 */
-//	public JoinNode peekJoinNode();
-//	
-//	/**
-//	 * Push a join node onto the stack.
-//	 */
-//	public void pushJoinNode(JoinNode currentJoinNode);
-//	
-//
-//	/**
-//	 * Pop a join node off the stack.
-//	 */
-//	public void popJoinNode();
-
 }

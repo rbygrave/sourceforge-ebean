@@ -26,6 +26,7 @@ import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
+import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.deploy.BeanManager;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 
@@ -61,12 +62,12 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * Construct this DmlPersistExecute.
      */
-    public DefaultPersistExecute(MAdminLogging logControl, Binder binder) {
+    public DefaultPersistExecute(MAdminLogging logControl, Binder binder, PstmtBatch pstmtBatch) {
     
         this.logControl = logControl;
-        this.exeOrmUpdate = new ExeOrmUpdate(binder);
-        this.exeUpdateSql = new ExeUpdateSql(binder);
-        this.exeCallableSql = new ExeCallableSql(binder);
+        this.exeOrmUpdate = new ExeOrmUpdate(binder, pstmtBatch);
+        this.exeUpdateSql = new ExeUpdateSql(binder, pstmtBatch);
+        this.exeCallableSql = new ExeCallableSql(binder, pstmtBatch);
         
 		this.defaultBatchGenKeys = GlobalProperties.getBoolean("batch.getgeneratedkeys", true);
 		this.defaultBatchSize = GlobalProperties.getInt("batch.size", 20);

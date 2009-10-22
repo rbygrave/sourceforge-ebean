@@ -249,6 +249,16 @@ public class JdbcTransaction implements SpiTransaction {
 		}
 	}
 
+	/**
+	 * Return the batchSize specifically set for this transaction or 0.
+	 * <p>
+	 * Returning 0 implies to use the system wide default batch size.
+	 * </p>
+	 */
+	public int getBatchSize() {
+		return batchSize;
+	}
+	
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
 		if (batchControl != null){
@@ -283,7 +293,7 @@ public class JdbcTransaction implements SpiTransaction {
 	}
 	
 	/**
-	 * Set the BatchQueue to the transaction.
+	 * Set the BatchControl to the transaction.
 	 * This is done once per transaction on the first persist request.  
 	 */
 	public void setBatchControl(BatchControl batchControl){
