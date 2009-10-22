@@ -1,13 +1,14 @@
 package com.avaje.tests.idkeys;
 
-import com.avaje.ebean.Transaction;
-import com.avaje.tests.idkeys.db.GenKeyIdentity;
-import com.avaje.tests.idkeys.db.GenKeySequence;
-import com.avaje.tests.lib.EbeanTestCase;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import com.avaje.ebean.Transaction;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.tests.idkeys.db.GenKeyIdentity;
+import com.avaje.tests.idkeys.db.GenKeySequence;
+import com.avaje.tests.lib.EbeanTestCase;
 
 /**
  * Test various key generation strategies.
@@ -22,23 +23,32 @@ public class TestGeneratedKeys extends EbeanTestCase
      * This should increment the used sequence by one.
      * EBean should construct a select statement which uses the configured sequence to get the next value
      * <p/>
-     * Notice: Acutally, this test depends on H2 as used database as we are going to fetch the current value from the sequence
+     * Notice: Actually, this test depends on H2 as used database as we are going to fetch the current value from the sequence
      */
     public void testSequence() throws SQLException
     {
+    	SpiEbeanServer server = (SpiEbeanServer)getServer();
+    	boolean h2Db = "h2".equals(server.getDatabasePlatform().getName());
+    	
+    	if (!h2Db){
+    		return;
+    	}
+    	
         Transaction tx = getServer().beginTransaction();
 
-        long sequenceStart = readSequenceValue(tx, GenKeySequence.SEQUENCE_NAME);
-
+        long sequenceStart = readSequenceValue(tx, GenKeySequence.SEQUENCE_NAME);        
+        
         GenKeySequence al = new GenKeySequence();
         al.setDescription("my description");
         getServer().save(al);
 
+        
         long sequenceCurrent = readSequenceValue(tx, GenKeySequence.SEQUENCE_NAME);
 
         assertNotNull(al.getId());
         assertFalse("sequence advanced", sequenceStart == sequenceCurrent);
         assertEquals("sequence advanced by one", sequenceStart + 1, sequenceCurrent);
+        
     }
 
     private long readSequenceValue(Transaction tx, String sequence) throws SQLException
@@ -74,15 +84,28 @@ public class TestGeneratedKeys extends EbeanTestCase
      */
     public void testIdentity() throws SQLException
     {
+    	
+    	SpiEbeanServer server = (SpiEbeanServer)getServer();
+    	boolean h2Db = "h2".equals(server.getDatabasePlatform().getName());
+    	
+    	if (!h2Db){
+    		// skip this test for Oracle and Postgres
+    		return;
+    	}
         Transaction tx = getServer().beginTransaction();
 
         GenKeyIdentity al = new GenKeyIdentity();
         al.setDescription("my description");
         getServer().save(al);
 
-        assertNotNull(al.getId());
+        // For JDBC batching we won't get the id until after
+        // the batch has been flushed explicitly or via commit
+        //assertNotNull(al.getId());
 
         tx.commit();
+        
+        assertNotNull(al.getId());
+
     }
 
     /**

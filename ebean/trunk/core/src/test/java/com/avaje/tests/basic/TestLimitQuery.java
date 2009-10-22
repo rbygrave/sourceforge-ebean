@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
 
@@ -22,6 +23,9 @@ public class TestLimitQuery extends TestCase {
 	}
 	private void rob() {
 		ResetBasicData.reset();
+		
+		SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(null);
+		boolean h2Db = "h2".equals(server.getDatabasePlatform().getName());
 		
 		Query<Order> query = Ebean.find(Order.class)
 			.setAutofetch(false)
@@ -41,9 +45,11 @@ public class TestLimitQuery extends TestCase {
 		boolean hasDistinct = sql.indexOf("select distinct") > -1;
 		
 		Assert.assertTrue(hasDetailsJoin);
-		Assert.assertTrue(hasLimit);
 		Assert.assertFalse(hasSelectedDetails);
 		Assert.assertTrue(hasDistinct);
+		if (h2Db){
+			Assert.assertTrue(hasLimit);
+		}
 		
 		query = Ebean.find(Order.class)
 			.setAutofetch(false)
@@ -59,9 +65,10 @@ public class TestLimitQuery extends TestCase {
 		hasDistinct = sql.indexOf("select distinct") > -1;
 	
 		Assert.assertFalse("no join with maxRows",hasDetailsJoin);
-		Assert.assertTrue(hasLimit);
 		Assert.assertFalse(hasSelectedDetails);
 		Assert.assertFalse(hasDistinct);
-			
+		if (h2Db){
+			Assert.assertTrue(hasLimit);			
+		}
 	}
 }

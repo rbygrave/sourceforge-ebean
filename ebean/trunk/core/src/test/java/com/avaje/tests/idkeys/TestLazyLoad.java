@@ -3,8 +3,8 @@ package com.avaje.tests.idkeys;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.avaje.tests.idkeys.db.AuditLog;
 import com.avaje.tests.lib.EbeanTestCase;
+import com.avaje.tests.model.basic.TOne;
 
 /**
  * Test lazy loading
@@ -17,14 +17,15 @@ public class TestLazyLoad extends EbeanTestCase
      */
     public void testPartialLoad() throws SQLException
     {
-        AuditLog log = new AuditLog();
+        TOne log = new TOne();
+        log.setName("test partial");
         log.setDescription("log");
 
         getServer().save(log);
 
         assertNotNull(log.getId());
 
-        List<AuditLog> logs = getServer().find(AuditLog.class)
+        List<TOne> logs = getServer().find(TOne.class)
                 .select("id")
                 .where().eq("id", log.getId())
                 .findList();
@@ -32,7 +33,7 @@ public class TestLazyLoad extends EbeanTestCase
         assertNotNull(logs);
         assertEquals(1, logs.size());
 
-        AuditLog logLazy = logs.get(0);
+        TOne logLazy = logs.get(0);
 
         String description = logLazy.getDescription();
         assertEquals(log.getDescription(), description);

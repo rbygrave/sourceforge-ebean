@@ -35,6 +35,9 @@ public class ResetBasicData {
 	public void deleteAll() {
 		Ebean.execute(new TxRunnable() {
 			public void run() {
+				
+				//Ebean.currentTransaction().setBatchMode(false);
+				
 				// orm update use bean name and bean properties
 				Ebean.createUpdate(OrderShipment.class, "delete from orderShipment")
 					.execute();
@@ -43,6 +46,9 @@ public class ResetBasicData {
 					.execute();
 				
 				Ebean.createUpdate(Order.class,"delete from order")
+					.execute();
+
+				Ebean.createUpdate(Contact.class,"delete from contact")
 					.execute();
 	
 				Ebean.createUpdate(Customer.class,"delete from Customer")
@@ -131,6 +137,7 @@ public class ResetBasicData {
 		Customer c = new Customer();
 		c.setName("Cust NoAddress");
 		c.setStatus(Customer.Status.NEW);
+		c.addContact(new Contact("Jack","Black"));
 
 		Ebean.save(c);
 		return c;
@@ -141,6 +148,9 @@ public class ResetBasicData {
 		Customer c = new Customer();
 		c.setName("Rob");
 		c.setStatus(Customer.Status.NEW);
+		c.addContact(new Contact("Jim","Cricket"));
+		c.addContact(new Contact("Fred","Blue"));
+		c.addContact(new Contact("Bugs","Bunny"));
 		
 		Address shippingAddr = new Address();
 		shippingAddr.setLine1("1 Banana St");

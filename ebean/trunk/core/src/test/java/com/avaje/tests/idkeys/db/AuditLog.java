@@ -1,17 +1,15 @@
 package com.avaje.tests.idkeys.db;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 
 @Entity
-@SequenceGenerator(name = "AD_SEQ_NAME", sequenceName = "AD_SEQ")
+// Just let Ebean define Identity mechanism for testing across all DB types
+//@SequenceGenerator(name = "AD_SEQ_NAME", sequenceName = "AD_SEQ")
 public class AuditLog
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AD_SEQ_NAME")
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AD_SEQ_NAME")
     private Long id;
 
     private String description;

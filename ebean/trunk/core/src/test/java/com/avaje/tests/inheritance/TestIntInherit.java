@@ -31,13 +31,13 @@ public class TestIntInherit extends TestCase {
 		Ebean.save(c1);
 		Ebean.save(c2);
 		
-		TIntRoot result1 = Ebean.find(TIntRoot.class, 1);
+		TIntRoot result1 = Ebean.find(TIntRoot.class, r.getId());
 		Assert.assertTrue(result1 instanceof TIntRoot);
 		
-		TIntRoot ref3 = Ebean.getReference(TIntRoot.class, 3);
+		TIntRoot ref3 = Ebean.getReference(TIntRoot.class, c1.getId());
 		Assert.assertTrue(ref3 instanceof TIntChild);
 		
-		TIntRoot result3 = Ebean.find(TIntRoot.class, 3);
+		TIntRoot result3 = Ebean.find(TIntRoot.class, c1.getId());
 		Assert.assertTrue(result3 instanceof TIntChild);
 		
 	}

@@ -12,7 +12,7 @@ import com.avaje.tests.model.basic.OrderShipment;
 import com.avaje.tests.model.basic.ResetBasicData;
 
 public class TestJoinQuery extends TestCase {
-
+	
 	public void test() {
 		
 		ResetBasicData.reset();

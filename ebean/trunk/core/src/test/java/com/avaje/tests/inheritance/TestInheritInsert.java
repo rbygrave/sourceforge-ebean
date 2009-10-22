@@ -11,18 +11,18 @@ import java.util.List;
 
 public class TestInheritInsert extends TestCase {
 
-	public void test() {
-		
-		VehicleDriver d = new VehicleDriver();
-		d.setName("Rob");
-		
-		Ebean.save(d);
-		
-		VehicleDriver driver = Ebean.find(VehicleDriver.class, d.getId());
-		
-		Assert.assertNotNull(driver);
-		
-	}
+//	public void test() {
+//		
+//		VehicleDriver d = new VehicleDriver();
+//		d.setName("Rob");
+//		
+//		Ebean.save(d);
+//		
+//		VehicleDriver driver = Ebean.find(VehicleDriver.class, d.getId());
+//		
+//		Assert.assertNotNull(driver);
+//		
+//	}
 
 	public void testQuery()
 	{
@@ -33,7 +33,7 @@ public class TestInheritInsert extends TestCase {
 
 		VehicleDriver driver = new VehicleDriver();
 		driver.setName("Mario");
-		// driver.setVehicle(car);
+		driver.setVehicle(car);
 		Ebean.save(driver);
 
 		Query<VehicleDriver> query = Ebean.find(VehicleDriver.class);
@@ -41,10 +41,11 @@ public class TestInheritInsert extends TestCase {
 		List<VehicleDriver> drivers = query.findList();
 		
 		Assert.assertNotNull(drivers);
-		// Assert.assertEquals(1, drivers.size());
-		// Assert.assertNotNull(drivers.get(0));
+		Assert.assertEquals(1, drivers.size());
+		Assert.assertNotNull(drivers.get(0));
 
-		// Assert.assertEquals("Mario", drivers.get(0).getName());
-		// Assert.assertEquals("MARIOS_CAR_LICENSE", drivers.get(0).getVehicle().getLicenseNumber());
+		Assert.assertEquals("Mario", drivers.get(0).getName());
+		Assert.assertEquals("MARIOS_CAR_LICENSE", drivers.get(0).getVehicle()
+				.getLicenseNumber());
 	}
 }
