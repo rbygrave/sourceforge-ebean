@@ -985,6 +985,12 @@ public class ServerConfig {
 			}
 		}
 		
+		
+		usePersistBatching = p.getBoolean("batch.mode", false);
+		persistBatchSize = p.getInt("batch.size", 20);
+		
+		databaseSequenceBatchSize = p.getInt("databaseSequenceBatchSize", 20);
+			
 		databaseBooleanTrue = p.get("databaseBooleanTrue", null);
 		databaseBooleanFalse = p.get("databaseBooleanFalse", null);
 		

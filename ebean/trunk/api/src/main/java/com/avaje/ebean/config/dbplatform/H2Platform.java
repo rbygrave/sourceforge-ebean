@@ -19,6 +19,10 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
+import javax.sql.DataSource;
+
+import com.avaje.ebean.BackgroundExecutor;
+
 
 
 /**
@@ -54,6 +58,17 @@ public class H2Platform extends DatabasePlatform {
         this.dbDdlSyntax.setDisableReferentialIntegrity("SET REFERENTIAL_INTEGRITY FALSE");
         this.dbDdlSyntax.setEnableReferentialIntegrity("SET REFERENTIAL_INTEGRITY TRUE");
         this.dbDdlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
-    }    
+    }
 
+    /**
+     * Return a H2 specific sequence IdGenerator that supports batch fetching
+     * sequence values.
+     */
+	@Override
+	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be,
+			DataSource ds, String seqName, int batchSize) {
+		
+		return new H2SequenceIdGenerator(be, ds, seqName, batchSize);
+	}    
+    
 }
