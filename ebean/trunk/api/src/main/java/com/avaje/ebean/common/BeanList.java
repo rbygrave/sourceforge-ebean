@@ -28,14 +28,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.SerializeControl;
 
 /**
  * List capable of lazy loading.
  */
-public final class BeanList<E> extends AbstractBeanCollection<E> implements List<E> {
+public final class BeanList<E> extends AbstractBeanCollection<E> implements List<E>, BeanCollectionAdd {
 
 	/**
 	 * The underlying List implementation.
@@ -60,8 +61,8 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	/**
 	 * Used to create deferred fetch proxy.
 	 */	
-	public BeanList(LazyLoadEbeanServer ebeanServer, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		super(ebeanServer, ownerBean, propertyName, profilePoint);
+	public BeanList(BeanCollectionLoader loader, EntityBean ownerBean, String propertyName) {
+		super(loader, ownerBean, propertyName);
 	}
 	
 	Object readResolve() throws ObjectStreamException {
@@ -77,7 +78,14 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 		}
 		return this;
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	public void addBean(Object bean) {
+//		if (list == null){
+//			list = new ArrayList<E>();
+//		}
+		list.add((E) bean);
+	}
 
 	@SuppressWarnings("unchecked")
 	public void internalAdd(Object bean) {
@@ -111,8 +119,8 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 		return list;
 	}
 
-	public Iterator<E> getActualDetails() {
-		return list.iterator();
+	public Collection<E> getActualDetails() {
+		return list;
 	}
 
 	/**

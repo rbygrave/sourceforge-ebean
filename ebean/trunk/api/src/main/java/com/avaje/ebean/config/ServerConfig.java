@@ -109,6 +109,13 @@ public class ServerConfig {
 	/** The database platform. */
 	private DatabasePlatform databasePlatform;
 
+	/** For DB's using sequences this is the number of sequence values prefetched */
+	private int databaseSequenceBatchSize = 20;
+	
+	private boolean usePersistBatching;
+	
+	private int persistBatchSize = 20;
+	
 	/** The ddl generate. */
 	private boolean ddlGenerate;
 
@@ -145,7 +152,9 @@ public class ServerConfig {
 	/** The find many log level. */
 	private StmtLogLevel sqlQueryLogLevel = StmtLogLevel.SQL;
 
-
+	/** Used to unwrap PreparedStatements to perform JDBC Driver specific functions */
+	private PstmtDelegate pstmtDelegate;
+	
 	/** The data source. */
 	private DataSource dataSource;
 
@@ -231,6 +240,55 @@ public class ServerConfig {
 		this.defaultServer = defaultServer;
 	}
 
+	
+	/**
+	 * Returns true if by default JDBC batching is used for persisting or deleting beans.
+	 * <p>
+	 * With this Ebean will batch up persist requests and use the JDBC batch api. This is
+	 * a performance optimisation designed to reduce the network chatter. 
+	 * </p>
+	 */
+	public boolean isUsePersistBatching() {
+		return usePersistBatching;
+	}
+
+	/**
+	 * Set to true if you what to use JDBC batching for persisting and deleting beans.
+	 * <p>
+	 * With this Ebean will batch up persist requests and use the JDBC batch api. This is
+	 * a performance optimisation designed to reduce the network chatter. 
+	 * </p>
+	 */
+	public void setUsePersistBatching(boolean usePersistBatching) {
+		this.usePersistBatching = usePersistBatching;
+	}
+
+	/**
+	 * Return the batch size used for JDBC batching.
+	 * This defaults to 20.
+	 */
+	public int getPersistBatchSize() {
+		return persistBatchSize;
+	}
+
+	/**
+	 * Set the batch size used for JDBC batching. If unset this defaults to 20.
+	 */
+	public void setPersistBatchSize(int persistBatchSize) {
+		this.persistBatchSize = persistBatchSize;
+	}
+
+	/**
+	 * Set the number of sequences to fetch/preallocate when using DB sequences.
+	 * <p>
+	 * This is a performance optimisation to reduce the number times Ebean requests
+	 * a sequence to be used as an Id for a bean (aka reduce network chatter).
+	 * </p>
+	 */
+	public void setDatabaseSequenceBatchSize(int databaseSequenceBatchSize) {
+		this.databaseSequenceBatchSize = databaseSequenceBatchSize;
+	}
+
 	/**
 	 * Return the external transaction manager.
 	 */
@@ -305,6 +363,24 @@ public class ServerConfig {
 	 */
 	public void setAutofetchConfig(AutofetchConfig autofetchConfig) {
 		this.autofetchConfig = autofetchConfig;
+	}
+
+	
+	/**
+	 * Return the PreparedStatementDelegate.
+	 */
+	public PstmtDelegate getPstmtDelegate() {
+		return pstmtDelegate;
+	}
+
+	/**
+	 * Set the PstmtDelegate which can be used to support JDBC driver specific features.
+	 * <p>
+	 * Typically this means Oracle JDBC driver specific workarounds.
+	 * </p>
+	 */
+	public void setPstmtDelegate(PstmtDelegate pstmtDelegate) {
+		this.pstmtDelegate = pstmtDelegate;
 	}
 
 	/**
@@ -406,6 +482,33 @@ public class ServerConfig {
 	 */
 	public void setDatabaseBooleanFalse(String databaseFalse) {
 		this.databaseBooleanFalse = databaseFalse;
+	}
+
+	
+	/**
+	 * Return the number of DB sequence values that should be preallocated.
+	 */
+	public int getDatabaseSequenceBatchSize() {
+		return databaseSequenceBatchSize;
+	}
+
+	/**
+	 * Set the number of DB sequence values that should be preallocated
+	 * and cached by Ebean.
+	 * <p>
+	 * This is only used for DB's that use sequences and is a performance
+	 * optimisation. This reduces the number of times Ebean needs to get
+	 * a sequence value from the Database reducing network chatter.
+	 * </p>
+	 * <p>
+	 * By default this value is 10 so when we need another Id (and don't have
+	 * one in our cache) Ebean will fetch 10 id's from the database. Note that
+	 * when the cache drops to have full (which is 5 by default) Ebean will fetch 
+	 * another batch of Id's in a background thread.
+	 * </p>
+	 */
+	public void setDatabaseSequenceBatch(int databaseSequenceBatchSize) {
+		this.databaseSequenceBatchSize = databaseSequenceBatchSize;
 	}
 
 	/**

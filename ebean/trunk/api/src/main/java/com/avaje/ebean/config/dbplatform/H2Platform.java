@@ -36,7 +36,7 @@ public class H2Platform extends DatabasePlatform {
     public H2Platform(){
         super();
         this.name = "h2";
-
+        
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         this.dbIdentity.setIdType(IdType.IDENTITY);
         
@@ -50,6 +50,7 @@ public class H2Platform extends DatabasePlatform {
         // H2 data types match default JDBC types
         // so no changes to dbTypeMap required
         
+        this.dbDdlSyntax.setDropIfExists("if exists");
         this.dbDdlSyntax.setDisableReferentialIntegrity("SET REFERENTIAL_INTEGRITY FALSE");
         this.dbDdlSyntax.setEnableReferentialIntegrity("SET REFERENTIAL_INTEGRITY TRUE");
         this.dbDdlSyntax.setForeignKeySuffix("on delete restrict on update restrict");

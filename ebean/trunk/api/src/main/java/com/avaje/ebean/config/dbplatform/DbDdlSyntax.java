@@ -8,11 +8,14 @@ public class DbDdlSyntax {
 
 	private boolean renderIndexForFkey = true;
 	
+	private boolean addOneToOneUniqueContraint = false;
+	
 	private int maxConstraintNameLength= 32;
 	
 	private int columnNameWidth = 25;
 	
 	private String dropTableCascade;
+	private String dropIfExists;
 	
 	private String newLine = "\r\n";
 	
@@ -135,6 +138,22 @@ public class DbDdlSyntax {
 	public void setRenderIndexForFkey(boolean renderIndexForFkey) {
 		this.renderIndexForFkey = renderIndexForFkey;
 	}
+	
+	/**
+	 * Typically returns IF EXISTS (if that is supported by the database
+	 * platform) or null.
+	 */
+	public String getDropIfExists() {
+		return dropIfExists;
+	}
+
+	/**
+	 * Set the IF EXISTS clause for dropping tables if that is supported by the
+	 * database platform.
+	 */
+	public void setDropIfExists(String dropIfExists) {
+		this.dropIfExists = dropIfExists;
+	}
 
 	/**
 	 * Return the cascade option for the drop table command.
@@ -176,6 +195,22 @@ public class DbDdlSyntax {
 	 */
 	public void setMaxConstraintNameLength(int maxFkeyLength) {
 		this.maxConstraintNameLength = maxFkeyLength;
+	}
+
+	
+	/**
+	 * Return true if imported side of OneToOne's should have unique constraints
+	 * generated.
+	 */
+	public boolean isAddOneToOneUniqueContraint() {
+		return addOneToOneUniqueContraint;
+	}
+
+	/**
+	 * Set to false for DB's that don't want both a unique and index on the imported OneToOne.
+	 */
+	public void setAddOneToOneUniqueContraint(boolean addOneToOneUniqueContraint) {
+		this.addOneToOneUniqueContraint = addOneToOneUniqueContraint;
 	}
 
 	public String getIndexName(String table, String propName, int ixCount){

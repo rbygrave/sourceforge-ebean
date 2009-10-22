@@ -42,17 +42,24 @@ import com.avaje.ebean.Ebean;
  */
 public class EntityBeanIntercept implements Serializable {
 
+	public static final int NORMAL = 0;
+	public static final int SHARED = 2;
+	public static final int READONLY = 1;
+	
+	
 	private static final long serialVersionUID = -3664031775464862647L;
 	
 	private transient NodeUsageCollector nodeUsageCollector;
 
-	private transient LazyLoadEbeanServer internalEbean;
-
-	private String ebeanServerName;
-	
 	private transient PropertyChangeSupport pcs;
 	
 	private transient PersistenceContext persistenceContext;
+	
+	private transient BeanLoader beanLoader;
+	
+	private int beanLoaderIndex;
+	
+	private String ebeanServerName;
 	
 	/**
 	 * The actual entity bean that 'owns' this intercept.
@@ -121,13 +128,45 @@ public class EntityBeanIntercept implements Serializable {
 		this.owner = (EntityBean)owner;
 	}
 
+	public void propagateParentState(int parentState){
+		switch (parentState) {
+		case NORMAL: 
+			break;
+		case READONLY: 
+			setReadOnly(true);
+			break;
+		case SHARED: 
+			setSharedInstance();
+			break;
+
+		default:
+			throw new RuntimeException("Invalid state "+parentState);
+		}
+	}
+	
+	/**
+	 * Propagate the sharedInstance and readOnly state to 
+	 * the child entity.
+	 */
+	public void propagateState(EntityBean child){
+		if (sharedInstance){
+			child._ebean_getIntercept().setSharedInstance();
+		} else if (readOnly){
+			child._ebean_getIntercept().setReadOnly(true);
+		}
+	}
+	
 	/**
 	 * Copy the internal state of the intercept to another intercept.
 	 */
 	public void copyStateTo(EntityBeanIntercept dest) {
-		dest.internalEbean = internalEbean;
 		dest.loadedProps = loadedProps;
-
+		dest.ebeanServerName = ebeanServerName;
+		
+		// Don't copy beanLoader as likely batch loading 
+		// instead set the SpiEbeanServer as the beanLoader
+		//dest.beanLoader = beanLoader;
+		
 		// Not transferring sharedInstance, readOnly or useCache state. 
 		// Generally copying a sharedInstance from the cache to give
 		// to a user that can be mutated
@@ -214,16 +253,6 @@ public class EntityBeanIntercept implements Serializable {
 	}
 
 	/**
-	 * Set the EbeanServer for lazy loading support.
-	 */
-	public void setInternalEbean(LazyLoadEbeanServer internalEbean) {
-		this.internalEbean = internalEbean;
-		if (internalEbean != null){
-			ebeanServerName = internalEbean.getName();
-		}
-	}
-
-	/**
 	 * Return the parent bean (by relationship).
 	 */
 	public Object getParentBean() {
@@ -236,6 +265,16 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	public void setParentBean(Object parentBean) {
 		this.parentBean = parentBean;
+	}
+
+	public int getBeanLoaderIndex() {
+		return beanLoaderIndex;
+	}
+
+	public void setBeanLoader(int index, BeanLoader ctx) {
+		this.beanLoaderIndex = index;
+		this.beanLoader = ctx;
+		this.ebeanServerName = ctx.getName();
 	}
 
 	/**
@@ -354,7 +393,7 @@ public class EntityBeanIntercept implements Serializable {
 	/**
 	 * Turn interception off or on.
 	 * <p>
-	 * This is to support custom serialization mechanisms that just read all
+	 * This is to support custom serialisation mechanisms that just read all
 	 * the properties on the bean.
 	 * </p>
 	 * 
@@ -470,10 +509,11 @@ public class EntityBeanIntercept implements Serializable {
 			}
 			
 			if (lazyLoadProperty == null){
-				if (internalEbean == null){
-					internalEbean = (LazyLoadEbeanServer)Ebean.getServer(ebeanServerName);
+				if (beanLoader == null){
+					beanLoader = (BeanLoader)Ebean.getServer(ebeanServerName);
 				}
-				if (internalEbean == null){
+							
+				if (beanLoader == null){
 					String msg = "Lazy loading but InternalEbean is null?"
 						+" The InternalEbean needs to be set after deserialization"
 						+" to support lazy loading.";
@@ -486,10 +526,10 @@ public class EntityBeanIntercept implements Serializable {
 					nodeUsageCollector.setLoadProperty(lazyLoadProperty);
 				}
 		
-				internalEbean.lazyLoadBean(owner, nodeUsageCollector);			
-		
+				beanLoader.loadBean(this);
+				
 				// bean should be loaded and intercepting now with
-				// setLoaded() called by code in internalEbean.lazyLoadBean(...)
+				// setLoaded() called by code in internalEbean.lazyLoadBean(...)	
 			}
 		}
 	}
@@ -572,14 +612,15 @@ public class EntityBeanIntercept implements Serializable {
 		if (!intercepting){
 			return;
 		}
-		if (nodeUsageCollector != null && loaded){
-			nodeUsageCollector.addUsed(propertyName);
-		}
 		
 		if (!loaded) {
 			loadBean(propertyName);
 		} else if (loadedProps != null && !loadedProps.contains(propertyName)) {
 			loadBean(propertyName);
+		}
+
+		if (nodeUsageCollector != null && loaded){
+			nodeUsageCollector.addUsed(propertyName);
 		}
 	}
 

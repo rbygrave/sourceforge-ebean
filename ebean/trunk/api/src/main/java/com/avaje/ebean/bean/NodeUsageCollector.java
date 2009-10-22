@@ -41,11 +41,6 @@ public final class NodeUsageCollector {
 	private final ObjectGraphNode node;
 	
 	/**
-	 * true if bean false if reference.
-	 */
-	private final boolean bean;
-
-	/**
 	 * Weak to allow garbage collection.
 	 */
 	private final WeakReference<NodeUsageListener> managerRef;
@@ -65,11 +60,10 @@ public final class NodeUsageCollector {
 	 */
 	private String loadProperty;
 
-	public NodeUsageCollector(boolean bean, ObjectGraphNode node, NodeUsageListener manager) {
+	public NodeUsageCollector(ObjectGraphNode node, WeakReference<NodeUsageListener> managerRef) {
 		this.node = node;
-		this.bean = bean;
 		// weak to allow garbage collection.
-		this.managerRef = new WeakReference<NodeUsageListener>(manager);
+		this.managerRef = managerRef;
 	}
 
 	/**
@@ -118,13 +112,6 @@ public final class NodeUsageCollector {
 	public ObjectGraphNode getNode() {
 		return node;
 	}
-
-	/**
-	 * A reference/proxy bean that was never loaded.
-	 */
-	public boolean isUnloadedReference() {
-		return !bean && used.isEmpty();
-	}
 	
 	/**
 	 * Return true if no properties where used.
@@ -138,13 +125,6 @@ public final class NodeUsageCollector {
 	 */
 	public HashSet<String> getUsed() {
 		return used;
-	}
-
-	/**
-	 * Return true if a bean and false if a reference/proxy.
-	 */
-	public boolean isBean() {
-		return bean;
 	}
 
 	/**

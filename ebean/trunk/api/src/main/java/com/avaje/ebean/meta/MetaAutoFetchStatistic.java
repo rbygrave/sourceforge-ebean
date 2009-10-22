@@ -100,17 +100,20 @@ public class MetaAutoFetchStatistic implements Serializable {
 		return nodeUsageStats;
 	}
 	
+	/**
+	 * FIXME: This will likely be deprecated in favour of a separate object graph cost.
+	 */
 	public static class QueryStats implements Serializable {
 
 		private static final long serialVersionUID = -5517935732867671387L;
 
-		final String path;
+		private final String path;
 
-		final int exeCount;
+		private final int exeCount;
 
-		final int totalBeanLoaded;
+		private final int totalBeanLoaded;
 
-		final int totalMicros;
+		private final int totalMicros;
 
 		public QueryStats(String path, int exeCount, int totalBeanLoaded, int totalMicros) {
 			this.path = path;
@@ -164,18 +167,18 @@ public class MetaAutoFetchStatistic implements Serializable {
 
 		private static final long serialVersionUID = 1786787832374844739L;
 
-		final String path;
+		private final String path;
 
-		final int loadCount;
+		private final int profileCount;
 
-		final int usedCount;
+		private final int profileUsedCount;
 
-		final String[] usedProperties;
+		private final String[] usedProperties;
 
-		public NodeUsageStats(String path, int loadCount, int usedCount, String[] usedProperties) {
+		public NodeUsageStats(String path, int profileCount, int profileUsedCount, String[] usedProperties) {
 			this.path = path == null ? "" : path;
-			this.loadCount = loadCount;
-			this.usedCount = usedCount;
+			this.profileCount = profileCount;
+			this.profileUsedCount = profileUsedCount;
 			this.usedProperties = usedProperties;
 		}
 
@@ -188,22 +191,22 @@ public class MetaAutoFetchStatistic implements Serializable {
 		}
 
 		/**
-		 * The number of loaded beans for this node.
+		 * The number of profiled beans for this node.
 		 */
-		public int getLoadCount() {
-			return loadCount;
+		public int getProfileCount() {
+			return profileCount;
 		}
 
 		/**
-		 * The number of beans actually used for this node.
+		 * The number of profiled beans that where actually used for this node.
 		 * <p>
-		 * The difference between loaded and used could show uneven traversal of the
+		 * The difference between profiled and used could show uneven traversal of the
 		 * object graph. UI paging through results means the traversal for the first
 		 * x beans can be much higher than the last x beans.
 		 * </p>
 		 */
-		public int getUsedCount() {
-			return usedCount;
+		public int getProfileUsedCount() {
+			return profileUsedCount;
 		}
 
 		/**
@@ -225,7 +228,7 @@ public class MetaAutoFetchStatistic implements Serializable {
 		}
 		
 		public String toString() {
-			return "path[" + path + "] load[" + loadCount + "] used[" + usedCount + "] props"+ Arrays.toString(usedProperties);
+			return "path[" + path + "] profileCount[" + profileCount + "] used[" + profileUsedCount + "] props"+ Arrays.toString(usedProperties);
 		}
 	}
 }

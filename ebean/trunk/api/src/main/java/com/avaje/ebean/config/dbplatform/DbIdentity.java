@@ -28,6 +28,9 @@ public class DbIdentity {
 	 * Return the sequence nextval SQL given the sequence name.
 	 */
 	public String getSequenceNextVal(String sequence){
+		if (sequenceNextValTemplate == null){
+			return null;
+		} 
 		return sequenceNextValTemplate.replace("{sequence}", sequence);
 	}
 
@@ -35,6 +38,9 @@ public class DbIdentity {
 	 * Return the sequence nextval SQL given the sequence name.
 	 */
 	public String getSelectSequenceNextValSql(String sequenceNextVal){
+		if (selectSequenceNextValSqlTemplate == null){
+			return null;
+		}
 		return selectSequenceNextValSqlTemplate.replace("{sequencenextval}", sequenceNextVal);
 	}
 

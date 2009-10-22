@@ -21,6 +21,9 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
+import javax.sql.DataSource;
+
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.config.GlobalProperties;
 
 
@@ -30,13 +33,15 @@ import com.avaje.ebean.config.GlobalProperties;
  * No support for getGeneratedKeys.
  * </p>
  */
-public class Postgres83Platform extends DatabasePlatform {
+public class PostgresPlatform extends DatabasePlatform {
 
-    public Postgres83Platform() {
+    public PostgresPlatform() {
         super();
-        this.name = "postgres83";    
+        this.name = "postgres";   
+        
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
-        this.dbIdentity.setSupportsSequence(true, IdType.SEQUENCE);
+        this.dbIdentity.setSupportsSequence(true, IdType.GENERATOR);//IdType.SEQUENCE);
+
         this.dbIdentity.setSequenceNextValTemplate("nextval('{sequence}')");
         this.dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} ");
 
@@ -51,6 +56,7 @@ public class Postgres83Platform extends DatabasePlatform {
         
         //dbTypeMap.put(Types.BOOLEAN, new DbType("bit default 0"));
 
+        dbTypeMap.put(Types.INTEGER, new DbType("integer",false));
         dbTypeMap.put(Types.DOUBLE, new DbType("float"));
         dbTypeMap.put(Types.TINYINT, new DbType("smallint"));
         dbTypeMap.put(Types.DECIMAL, new DbType("decimal", 38));
@@ -59,6 +65,22 @@ public class Postgres83Platform extends DatabasePlatform {
         dbTypeMap.put(Types.CLOB, new DbType("text"));
         dbTypeMap.put(Types.LONGVARBINARY, new DbType("bytea"));
         dbTypeMap.put(Types.LONGVARCHAR, new DbType("text"));
+        
+		dbDdlSyntax.setDropTableCascade("cascade");
+		dbDdlSyntax.setDropIfExists("if exists");
+
     }
 
+    /**
+     * Create a Postgres specific sequence IdGenerator.
+     */
+	@Override
+	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be,
+			DataSource ds, String seqName, int batchSize) {
+		
+		return new PostgresSequenceIdGenerator(be, ds, seqName, batchSize);
+	}
+
+    
+    
 }

@@ -24,6 +24,11 @@ public class DbType {
 	private final int defaultScale;
 
 	/**
+	 * Set to true if the type should never have a length or scale.
+	 */
+	private final boolean canHaveLength;
+	
+	/**
 	 * Construct with no length or scale.
 	 */
 	public DbType(String name) {
@@ -44,6 +49,22 @@ public class DbType {
 		this.name = name;
 		this.defaultLength = defaultPrecision;
 		this.defaultScale = defaultScale;
+		this.canHaveLength = true;
+	}
+
+	/**
+	 * Use with canHaveLength=false for types that should never have a length.
+	 * 
+	 * @param name
+	 *            the type name
+	 * @param canHaveLength
+	 *            set this to false for type that should never have a length
+	 */
+	public DbType(String name, boolean canHaveLength) {
+		this.name = name;
+		this.defaultLength = 0;
+		this.defaultScale = 0;
+		this.canHaveLength = canHaveLength;
 	}
 
 	/**
@@ -65,17 +86,20 @@ public class DbType {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name);
 
-		int len = deployLength != 0 ? deployLength : defaultLength;
-
-		if (len > 0) {
-			sb.append("(");
-			sb.append(len);
-			int scale = deployScale != 0 ? deployScale : defaultScale;
-			if (scale > 0) {
-				sb.append(",");
-				sb.append(scale);
+		if (canHaveLength){
+			// see if there is a precision/scale to add (or not)
+			int len = deployLength != 0 ? deployLength : defaultLength;
+	
+			if (len > 0) {
+				sb.append("(");
+				sb.append(len);
+				int scale = deployScale != 0 ? deployScale : defaultScale;
+				if (scale > 0) {
+					sb.append(",");
+					sb.append(scale);
+				}
+				sb.append(")");
 			}
-			sb.append(")");
 		}
 
 		return sb.toString();
