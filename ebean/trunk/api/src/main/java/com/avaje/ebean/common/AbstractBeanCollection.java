@@ -27,9 +27,10 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.BeanCollectionTouched;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 
 /**
  * Base class for List Set and Map implementations of BeanCollection.
@@ -47,7 +48,9 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	/**
 	 * The EbeanServer this is associated with. (used for lazy fetch).
 	 */
-	protected transient LazyLoadEbeanServer ebeanServer;
+	protected transient BeanCollectionLoader loader;
+	
+	protected int loaderIndex;
 	
 	protected String ebeanServerName;
 	
@@ -55,12 +58,12 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	
 	protected transient Future<Integer> fetchFuture;
 
-	protected final transient ObjectGraphNode profilePoint;
+	//protected final transient ObjectGraphNode profilePoint;
 	
 	/**
 	 * The owning bean (used for lazy fetch).
 	 */
-	protected final Object ownerBean;
+	protected final EntityBean ownerBean;
 
 	/**
 	 * The name of this property in the owning bean (used for lazy fetch).
@@ -91,32 +94,56 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	public AbstractBeanCollection() {
 		this.ownerBean = null;
 		this.propertyName = null;
-		this.profilePoint = null;
+		//this.profilePoint = null;
 	}
 	
 	/**
 	 * Used to create deferred fetch proxy.
 	 */	
-	public AbstractBeanCollection(LazyLoadEbeanServer ebeanServer, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		this.ebeanServer = ebeanServer;
-		this.ebeanServerName = ebeanServer.getName();
+	public AbstractBeanCollection(BeanCollectionLoader loader, EntityBean ownerBean, String propertyName) {
+		this.loader = loader;
+		this.ebeanServerName = loader.getName();
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
-		this.profilePoint = profilePoint;
+		//this.profilePoint = profilePoint;
+		
+		EntityBeanIntercept ebi = ownerBean._ebean_getIntercept();
+		
+		if (ebi.isSharedInstance()){
+			setSharedInstance();
+		} else if (ebi.isReadOnly()){
+			setReadOnly(true);
+		}
 	}
 	
+//	public ObjectGraphNode getProfilePoint() {
+//		return profilePoint;
+//	}
+
+	public Object getOwnerBean() {
+		return ownerBean;
+	}
+
+	public String getPropertyName() {
+		return propertyName;
+	}
+
+	public int getLoaderIndex() {
+		return loaderIndex;
+	}
+
 	protected void lazyLoadCollection() {
-		if (ebeanServer == null){
-			ebeanServer = (LazyLoadEbeanServer)Ebean.getServer(ebeanServerName);
+		if (loader == null){
+			loader = (BeanCollectionLoader)Ebean.getServer(ebeanServerName);
 		}
-		if (ebeanServer == null){
+		if (loader == null){
 			String msg = "Lazy loading but LazyLoadEbeanServer is null?"
 				+" The LazyLoadEbeanServer needs to be set after deserialization"
 				+" to support lazy loading.";
 			throw new PersistenceException(msg);									
 		}
 	
-		ebeanServer.lazyLoadMany(ownerBean, propertyName, profilePoint);
+		loader.loadMany(this);
 	}
 	
 	protected void touched() {
@@ -131,9 +158,10 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		this.beanCollectionTouched = notify;
 	}
 	
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer) {
-		this.ebeanServer = ebeanServer;
-		this.ebeanServerName = ebeanServer.getName();
+	public void setLoader(int beanLoaderIndex, BeanCollectionLoader loader) {
+		this.loaderIndex = beanLoaderIndex;
+		this.loader = loader;
+		this.ebeanServerName = loader.getName();
 	}
 	
 	

@@ -20,7 +20,7 @@
 package com.avaje.ebean.bean;
 
 import java.io.Serializable;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +44,24 @@ import com.avaje.ebean.Query;
  */
 public interface BeanCollection<E> extends Serializable {
 	
+	/**
+	 * Return the bean that owns this collection.
+	 */
+	public Object getOwnerBean();
+
+	/**
+	 * Return the bean property name this collection represents.
+	 */
+	public String getPropertyName();
+	
+	/**
+	 * Return the index position of this collection in the lazy/query loader.
+	 * <p>
+	 * Used for batch loading of collections.
+	 * </p>
+	 */
+	public int getLoaderIndex();
+
 	/**
 	 * Set when this collection is being loaded via a background thread.
 	 * <p>
@@ -90,10 +108,10 @@ public interface BeanCollection<E> extends Serializable {
 	public void setBeanCollectionTouched(BeanCollectionTouched notify);
 
 	/**
-	 * Re-attach the EbeanServer after deserialisation to allow lazy loading.
+	 * Set the loader that will be used to lazy/query load this collection.
 	 */
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer);
-
+	public void setLoader(int beanLoaderIndex, BeanCollectionLoader beanLoader);
+	
 	/**
 	 * Set to true if you want the BeanCollection to be treated as read only.
 	 * This means no elements can be added or removed etc.
@@ -136,7 +154,7 @@ public interface BeanCollection<E> extends Serializable {
 	 * map.
 	 * </p>
 	 */
-	public Iterator<E> getActualDetails();
+	public Collection<E> getActualDetails();
 
 	/**
 	 * Set to true if maxRows was hit and there are actually more rows

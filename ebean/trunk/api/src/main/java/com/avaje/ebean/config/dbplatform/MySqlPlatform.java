@@ -39,6 +39,7 @@ public class MySqlPlatform extends DatabasePlatform {
     public MySqlPlatform(){
         super();
         this.name = "mysql";
+        
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         

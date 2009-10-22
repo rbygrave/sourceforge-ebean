@@ -11,24 +11,43 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 /**
- * Database sequence based IdGenerator.
+ * A very simple Database sequence based IdGenerator.
+ * <p>
+ * One which batch requests sequence Id's would be better for performance.
+ * </p>
  */
-public class DbSequenceIdGenerator implements IdGenerator {
+public class SimpleSequenceIdGenerator implements IdGenerator {
 
-	private static final Logger logger = Logger.getLogger(DbSequenceIdGenerator.class.getName());
+	private static final Logger logger = Logger.getLogger(SimpleSequenceIdGenerator.class.getName());
 	
 	private final String sql;
 	
 	private final DataSource dataSource;
 	
+	private final String seqName;
+	
 	/**
 	 * Construct given a dataSource and sql to return the next sequence value.
 	 */
-	public DbSequenceIdGenerator(DataSource dataSource, String sql) {
+	public SimpleSequenceIdGenerator(DataSource dataSource, String sql, String seqName) {
 		this.dataSource = dataSource;
 		this.sql = sql;
+		this.seqName = seqName;
 	}
 	
+	public String getName() {
+		return seqName;
+	}
+
+	public boolean isDbSequence() {
+		return true;
+	}
+
+	public void preAllocateIds(int batchSize) {
+		// just ignore this 
+	}
+
+
 	public Object nextId() {
 		
 		Connection c = null;

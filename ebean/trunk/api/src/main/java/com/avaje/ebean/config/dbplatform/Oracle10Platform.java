@@ -21,6 +21,10 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
+import javax.sql.DataSource;
+
+import com.avaje.ebean.BackgroundExecutor;
+
 
 /**
  * Oracle10 and greater specific platform.
@@ -39,9 +43,10 @@ public class Oracle10Platform extends DatabasePlatform {
         
         this.sqlLimiter = new RownumSqlLimiter();
 
-        // use Sequence as default IdType
-        dbIdentity.setSupportsGetGeneratedKeys(true);
-        dbIdentity.setSupportsSequence(true, IdType.SEQUENCE);
+        // Not using getGeneratedKeys as instead we will
+        // batch load sequences and have JDBC batch execution
+        dbIdentity.setSupportsGetGeneratedKeys(false);
+        dbIdentity.setSupportsSequence(true, IdType.GENERATOR);
         dbIdentity.setSequenceNextValTemplate("{sequence}.nextval");
         dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} from dual");
 
@@ -76,4 +81,13 @@ public class Oracle10Platform extends DatabasePlatform {
 
     }
 
+	@Override
+	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be, DataSource ds,
+			String seqName, int batchSize) {
+		
+		return new OracleSequenceIdGenerator(be, ds, seqName, batchSize);
+	}
+
+    
+    
 }

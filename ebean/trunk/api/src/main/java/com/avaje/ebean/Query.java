@@ -411,7 +411,7 @@ public interface Query<T> extends Serializable {
 	 * Returns true if this query was tuned by autoFetch.
 	 */
 	public boolean isAutofetchTuned();
-
+	
 	/**
 	 * Explicitly specify whether to use Autofetch for this query.
 	 * <p>

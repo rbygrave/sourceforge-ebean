@@ -366,6 +366,11 @@ public interface ExpressionList<T> extends Serializable {
 	public ExpressionList<T> in(String propertyName, Collection<?> values);
 
 	/**
+	 * Id IN a list of id values.
+	 */
+	public ExpressionList<T> idIn(List<?> idValues);
+
+	/**
 	 * Id Equal to - ID property is equal to the value.
 	 */
 	public ExpressionList<T> idEq(Object value);

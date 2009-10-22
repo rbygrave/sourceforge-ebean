@@ -23,6 +23,10 @@ import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.sql.DataSource;
+
+import com.avaje.ebean.BackgroundExecutor;
+
 /**
  * Database platform specific settings.
  */
@@ -55,9 +59,6 @@ public class DatabasePlatform {
 	/** For Oracle treat empty strings as null. */
 	protected boolean treatEmptyStringsAsNull;
 
-	/** By default support JDBC batching for bean insert update and delete. */
-	protected boolean defaultBatching;
-
 	/** The name. */
 	protected String name = "generic";
 
@@ -83,6 +84,27 @@ public class DatabasePlatform {
 		return name;
 	}
 
+	/**
+	 * Return a DB Sequence based IdGenerator.
+	 * 
+	 * @param be
+	 *            the BackgroundExecutor that can be used to load the sequence
+	 *            if desired
+	 * @param ds
+	 *            the DataSource
+	 * @param seqName
+	 *            the name of the sequence
+	 * @param batchSize
+	 *            the number of sequences that should be loaded
+	 */
+	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be, DataSource ds, 
+			String seqName, int batchSize) {
+		
+		String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
+		String sql = dbIdentity.getSelectSequenceNextValSql(dbSeqNextVal);
+		
+		return new SimpleSequenceIdGenerator(ds, sql, seqName);
+	}
 
 
 	/**
@@ -119,15 +141,6 @@ public class DatabasePlatform {
 	 */
 	public String getOpenQuote() {
 		return openQuote;
-	}
-
-	/**
-	 * Return true if by default JDBC batching should be used.
-	 *
-	 * @return true, if checks if is default batching
-	 */
-	public boolean isDefaultBatching() {
-		return defaultBatching;
 	}
 
 	/**
@@ -168,8 +181,8 @@ public class DatabasePlatform {
 	 */
 	public SqlLimiter getSqlLimiter() {
 		return sqlLimiter;
-	}
-
+	}	
+	
 	/**
 	 * Convert backticks to the platform specific open quote and close quote
 	 *

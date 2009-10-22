@@ -27,8 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.SerializeControl;
 
 /**
@@ -55,8 +55,8 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 		this(new LinkedHashMap<K, E>());
 	}
 
-	public BeanMap(LazyLoadEbeanServer ebeanServer, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		super(ebeanServer, ownerBean, propertyName, profilePoint);
+	public BeanMap(BeanCollectionLoader ebeanServer, EntityBean ownerBean, String propertyName) {
+		super(ebeanServer, ownerBean, propertyName);
 	}
 
 	Object readResolve() throws ObjectStreamException {
@@ -116,8 +116,8 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	 * they don't need to be set twice).
 	 * </p>
 	 */
-	public Iterator<E> getActualDetails() {
-		return map.values().iterator();
+	public Collection<E> getActualDetails() {
+		return map.values();
 	}
 
 	/**

@@ -50,7 +50,7 @@ public final class ObjectGraphOrigin implements Serializable {
 		this.queryPlanHash = queryPlanHash;
 		this.callStack = callStack;
 		this.beanType = beanType;
-		this.key = queryPlanHash + ":" + callStack.getHash();
+		this.key = "s"+callStack.getHash()+":q"+queryPlanHash;
 	}
 
 	/**

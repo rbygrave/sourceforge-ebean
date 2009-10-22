@@ -31,17 +31,12 @@ import java.io.Serializable;
  */
 public final class ObjectGraphNode implements Serializable {
 
-	private static final long serialVersionUID = 2087081778650228995L;
+	private static final long serialVersionUID = 2087081778650228996L;
 
 	/**
 	 * Identifies the origin.
 	 */
 	private final ObjectGraphOrigin originQueryPoint;
-	
-	/**
-	 * The relative bean index.
-	 */
-	private final String beanIndex;
 	
 	/**
 	 * The path relative to the root.
@@ -51,18 +46,16 @@ public final class ObjectGraphNode implements Serializable {
 	/**
 	 * Create at a sub level.
 	 */
-	public ObjectGraphNode(ObjectGraphNode parent, String beanIndex, String path) {
+	public ObjectGraphNode(ObjectGraphNode parent, String path) {
 		this.originQueryPoint = parent.getOriginQueryPoint();
-		this.beanIndex = parent.getBeanIndex()+"."+beanIndex;
 		this.path = parent.getChildPath(path);
 	}
 	
 	/**
 	 * Create an the root level.
 	 */
-	public ObjectGraphNode(ObjectGraphOrigin originQueryPoint, String beanIndex, String path) {
+	public ObjectGraphNode(ObjectGraphOrigin originQueryPoint, String path) {
 		this.originQueryPoint = originQueryPoint;
-		this.beanIndex = beanIndex;
 		this.path = path;
 	}
 	
@@ -71,13 +64,6 @@ public final class ObjectGraphNode implements Serializable {
 	 */
 	public ObjectGraphOrigin getOriginQueryPoint() {
 		return originQueryPoint;
-	}
-
-	/**
-	 * Return the bean index.
-	 */
-	public String getBeanIndex() {
-		return beanIndex;
 	}
 
 	private String getChildPath(String childPath) {
@@ -98,6 +84,6 @@ public final class ObjectGraphNode implements Serializable {
 	}
 
 	public String toString() {
-		return "originQueryPoint:"+originQueryPoint+" "+":"+path+":"+beanIndex;
+		return "origin:"+originQueryPoint+" "+":"+path+":"+path;
 	}
 }

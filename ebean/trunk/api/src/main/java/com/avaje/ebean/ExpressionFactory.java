@@ -20,6 +20,7 @@
 package com.avaje.ebean;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 
@@ -176,6 +177,11 @@ public interface ExpressionFactory {
 	 * Id Equal to - ID property is equal to the value.
 	 */
 	public Expression idEq(Object value);
+
+	/**
+	 * Id IN a list of Id values.
+	 */
+	public Expression idIn(List<?> idList);
 
 	/**
 	 * All Equal - Map containing property names and their values.

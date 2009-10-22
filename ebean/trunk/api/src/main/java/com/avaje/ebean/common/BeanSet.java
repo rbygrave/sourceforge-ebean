@@ -26,14 +26,15 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.SerializeControl;
 
 /**
  * Set capable of lazy loading.
  */
-public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E> {
+public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E>, BeanCollectionAdd {
         	
     /**
      * The underlying Set implementation.
@@ -54,8 +55,8 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
         this(new LinkedHashSet<E>());
     }
 
-	public BeanSet(LazyLoadEbeanServer ebeanServer, Object ownerBean, String propertyName, ObjectGraphNode profilePoint) {
-		super(ebeanServer, ownerBean, propertyName, profilePoint);
+	public BeanSet(BeanCollectionLoader loader, EntityBean ownerBean, String propertyName) {
+		super(loader, ownerBean, propertyName);
 	}
 	
     
@@ -72,6 +73,14 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
         }
         return this;
     }
+    
+	@SuppressWarnings("unchecked")
+	public void addBean(Object bean) {
+//		if (set == null){
+//			set = new LinkedHashSet<E>();
+//		}
+		set.add((E)bean);
+	}
 
 	@SuppressWarnings("unchecked")
 	public void internalAdd(Object bean) {
@@ -109,8 +118,8 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
         return set;
     }
     
-	public Iterator<E> getActualDetails() {
-		return set.iterator();
+	public Collection<E> getActualDetails() {
+		return set;
 	}
 	
 	/**
