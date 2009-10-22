@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
@@ -26,6 +27,8 @@ public final class IdBinderMultiple implements IdBinder {
 
 	private final String idProperties;
 	
+	private final String idInValueSql;
+	
 	public IdBinderMultiple(BeanProperty[] idProps) {
 		this.props = idProps;
 		
@@ -37,12 +40,28 @@ public final class IdBinderMultiple implements IdBinder {
 			sb.append(idProps[i].getName());
 		}
 		idProperties = InternString.intern(sb.toString());
+		
+		sb = new StringBuilder();
+		sb.append("(");
+		for (int i = 0; i < props.length; i++) {
+			if (i > 0){
+				sb.append(",");
+			}
+			sb.append("?");
+		}
+		sb.append(")");
+		
+		idInValueSql = sb.toString();
 	}
 	
 	public void initialise(){
 		// do nothing
 	}
 	
+	public int getPropertyCount() {
+		return props.length;
+	}
+
 	public String getIdProperty() {
 		return idProperties;
 	}
@@ -81,6 +100,31 @@ public final class IdBinderMultiple implements IdBinder {
 		return props;
 	}
 	
+	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
+		for (int i = 0; i < props.length; i++) {
+			request.addBindValue(props[i].getValue(value));
+		}
+	}
+
+	public void addIdInValueSql(SpiExpressionRequest request) {
+		request.append(idInValueSql);
+	}
+
+	public String getBindIdInSql(String baseTableAlias) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for (int i = 0; i < props.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append(baseTableAlias);
+			sb.append(".");
+			sb.append(props[i].getDbColumn());
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
 	public Object[] getIdValues(Object bean){
 		Object[] bindvalues = new Object[props.length];
 		for (int i = 0; i < props.length; i++) {
@@ -133,7 +177,7 @@ public final class IdBinderMultiple implements IdBinder {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 		boolean notNull = false;
 		for (int i = 0; i < props.length; i++) {
-			Object value = props[i].read(ctx);
+			Object value = props[i].read(ctx, 0);
 			if (value != null){
 				map.put(props[i].getName(), value);
 				notNull = true;

@@ -62,6 +62,8 @@ public final class InsertMeta {
 
 	private final Bindable shadowFKey;
 	
+	private final String[] identityDbColumns;
+	
 	public InsertMeta(DatabasePlatform dbPlatform, BeanDescriptor<?> desc, Bindable shadowFKey, BindableId id, Bindable all) {
 
 		// only get sequenceNextVal if we are going to use it
@@ -79,6 +81,7 @@ public final class InsertMeta {
 		if (id.isConcatenated()) {
 			// concatenated key
 			this.concatinatedKey = true;
+			this.identityDbColumns = null;
 			this.sqlNullId = null;
 			this.supportsGetGeneratedKeys = false;
 			this.selectLastInsertedId = null;
@@ -86,6 +89,7 @@ public final class InsertMeta {
 		} else {
 			// insert sql for db identity or sequence insert
 			this.concatinatedKey = false;
+			this.identityDbColumns = new String[]{id.getIdentityColumn()};
 			this.sqlNullId = genSql(true, null);
 			this.supportsGetGeneratedKeys = dbPlatform.getDbIdentity().isSupportsGetGeneratedKeys();
 			this.selectLastInsertedId = desc.getSelectLastInsertedId();
@@ -106,6 +110,10 @@ public final class InsertMeta {
 	 */
 	public boolean isConcatinatedKey() {
 		return concatinatedKey;
+	}
+
+	public String[] getIdentityDbColumns() {
+		return identityDbColumns;
 	}
 
 	/**

@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -59,7 +60,7 @@ import com.avaje.ebean.validation.ValidatorMeta;
  */
 public class AnnotationFields extends AnnotationParser {
 
-	GeneratedPropertyFactory generatedPropFactory = new GeneratedPropertyFactory();
+	private GeneratedPropertyFactory generatedPropFactory = new GeneratedPropertyFactory();
 
 	public AnnotationFields(DeployBeanInfo<?> info) {
 		super(info);
@@ -74,7 +75,7 @@ public class AnnotationFields extends AnnotationParser {
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
 			if (prop instanceof DeployBeanPropertyAssoc<?>) {
-
+				readAssocOne(prop);
 			} else {
 				readField(prop);
 			}
@@ -83,6 +84,26 @@ public class AnnotationFields extends AnnotationParser {
 		}
 	}
 
+	/**
+	 * Read the Id marker annotations on EmbeddedId properties.
+	 */
+	private void readAssocOne(DeployBeanProperty prop) {
+
+		Id id = get(prop, Id.class);
+		if (id != null) {
+			prop.setId(true);
+			prop.setNullable(false);
+		}
+
+		EmbeddedId embeddedId = get(prop, EmbeddedId.class);
+		if (embeddedId != null) {
+			prop.setId(true);
+			prop.setNullable(false);
+			prop.setEmbedded(true);
+		}
+		
+	}
+	
 	private void readField(DeployBeanProperty prop) {
 
 		// all Enums will have a ScalarType assigned...
@@ -212,7 +233,7 @@ public class AnnotationFields extends AnnotationParser {
 		} else if (strategy == GenerationType.SEQUENCE) {
 			descriptor.setIdType(IdType.SEQUENCE);
 			if (genName != null && genName.length() > 0) {
-				descriptor.setSequenceName(genName);
+				descriptor.setIdGeneratorName(genName);
 			}
 
 		} else if (strategy == GenerationType.AUTO) {

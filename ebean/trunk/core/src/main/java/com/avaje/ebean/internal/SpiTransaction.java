@@ -52,12 +52,19 @@ public interface SpiTransaction extends Transaction {
 	 */
 	public boolean isRegisteredBean(Integer hash);
 
-	
     /**
      * Returns a String used to identify the transaction. This id is used for
      * Transaction logging.
      */
     public String getId();
+	
+	/**
+	 * Return the batchSize specifically set for this transaction or 0.
+	 * <p>
+	 * Returning 0 implies to use the system wide default batch size.
+	 * </p>
+	 */
+	public int getBatchSize();
 	
     /**
      * Modify and return the current 'depth' of the transaction.

@@ -2,6 +2,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.avaje.ebean.EbeanServer;
@@ -9,8 +10,9 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.common.BeanSet;
 
 /**
@@ -20,7 +22,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	
 	private final BeanPropertyAssocMany<T> many;
 	private final BeanDescriptor<T> targetDescriptor;
-	private LazyLoadEbeanServer ebeanServer;
+	private BeanCollectionLoader loader;
 	
 	/**
 	 * When attached to a specific many property.
@@ -38,10 +40,17 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		this.targetDescriptor = null;
 	}
 	
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
-		this.ebeanServer = ebeanServer;
+	public void setLoader(BeanCollectionLoader loader){
+		this.loader = loader;
 	}
 	
+	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc,String mapKey) {
+		BeanSet<?> beanSet = (BeanSet<?>)bc;
+		if (beanSet.getActualSet() == null){
+			beanSet.setActualSet(new LinkedHashSet<Object>());
+		}
+		return beanSet;
+	}
 	
 	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
@@ -51,10 +60,9 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		return new BeanSet<T>();
 	}
 
-	public BeanCollection<T> createReference(Object parentBean, String serverName,
-			String propertyName, ObjectGraphNode profilePoint) {
+	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName) {
 		
-		return new BeanSet<T>(ebeanServer, parentBean, propertyName, profilePoint);
+		return new BeanSet<T>(loader, parentBean, propertyName);
 	}
 	
 	public ArrayList<InvalidValue> validate(Object manyValue) {
@@ -75,10 +83,16 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		}
 		return errs;
 	}
-	
+
 	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
 		
 		BeanSet<?> newBeanSet = (BeanSet<?>)server.findSet(query, t);
+		refresh(newBeanSet, parentBean);
+	}
+	
+	public void refresh(BeanCollection<?> bc, Object parentBean) {
+		
+		BeanSet<?> newBeanSet = (BeanSet<?>)bc;
 		
 		Set<?> current = (Set<?>)many.getValue(parentBean);
 		

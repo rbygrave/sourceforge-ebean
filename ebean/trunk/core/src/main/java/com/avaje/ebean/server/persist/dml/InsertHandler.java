@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Level;
 
 import javax.persistence.PersistenceException;
@@ -38,11 +39,11 @@ import com.avaje.ebean.server.persist.DmlUtil;
  */
 public class InsertHandler extends DmlHandler {
 
-	/**
-	 * Always the first column is Id that can be generated via Identity (or
-	 * sometimes sequences).
-	 */
-	private static final int[] GENERATED_ID_COLUMNS = { 1 };
+//	/**
+//	 * Always the first column is Id that can be generated via Identity (or
+//	 * sometimes sequences).
+//	 */
+//	private static final int[] GENERATED_ID_COLUMNS = { 1 };
 
 	/**
 	 * The associated InsertMeta data.
@@ -52,18 +53,18 @@ public class InsertHandler extends DmlHandler {
 	/**
 	 * Set to true when the key is concatenated.
 	 */
-	final boolean concatinatedKey;
+	private final boolean concatinatedKey;
 
 	/**
 	 * Flag set when using getGeneratedKeys.
 	 */
-	boolean useGeneratedKeys;
+	private boolean useGeneratedKeys;
 
 	/**
 	 * A SQL Select used to fetch back the Id where generatedKeys is not
 	 * supported.
 	 */
-	String selectLastInsertedId;
+	private String selectLastInsertedId;
 
 	/**
 	 * Create to handle the insert execution.
@@ -101,18 +102,18 @@ public class InsertHandler extends DmlHandler {
 				selectLastInsertedId = meta.getSelectLastInsertedId();
 			}
 		}
+		
+		SpiTransaction t = persistRequest.getTransaction();
+		boolean isBatch = t.isBatchThisRequest();
 
 		// get the appropriate sql
 		String sql = meta.getSql(withId);
-		logSql(sql);
-
-		SpiTransaction t = persistRequest.getTransaction();
-		boolean isBatch = t.isBatchThisRequest();
 
 		if (isBatch) {
 			pstmt = getPstmt(t, sql, persistRequest, useGeneratedKeys);
 
 		} else {
+			logSql(sql);
 			pstmt = getPstmt(t, sql, useGeneratedKeys);
 		}
 
@@ -130,14 +131,17 @@ public class InsertHandler extends DmlHandler {
 	/**
 	 * Check with useGeneratedKeys to get appropriate PreparedStatement.
 	 */
-	protected PreparedStatement getPstmt(SpiTransaction t, String sql) throws SQLException {
+	@Override
+	protected PreparedStatement getPstmt(SpiTransaction t, String sql, boolean useGeneratedKeys) throws SQLException {
 		Connection conn = t.getInternalConnection();
 		if (useGeneratedKeys) {
 			// the Id generated is always the first column
 			// Required to stop Oracle10 giving us Oracle rowId??
 			// Other jdbc drivers seem fine without this hint.
 
-			return conn.prepareStatement(sql, GENERATED_ID_COLUMNS);
+			return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			//return conn.prepareStatement(sql, GENERATED_ID_COLUMNS);
+			//return conn.prepareStatement(sql, meta.getIdentityDbColumns());
 
 		} else {
 			return conn.prepareStatement(sql);

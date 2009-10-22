@@ -30,13 +30,15 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.lib.util.StringHelper;
+import com.avaje.ebean.server.query.SqlBeanLoad;
 
 /**
  * Property mapped to a List Set or Map.
@@ -139,9 +141,9 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 * Set the lazy load server to help create reference collections (that lazy
 	 * load on demand).
 	 */
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
+	public void setLoader(BeanCollectionLoader loader){
 		if (help != null){
-			help.setEbeanServer(ebeanServer);
+			help.setLoader(loader);
 		}
 	}
 
@@ -157,12 +159,17 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
 	@Override
+	public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
+		sqlBeanLoad.loadAssocMany(this);
+	}
+	
+	@Override
 	public Object readSet(DbReadContext ctx, Object bean, Class<?> type) throws SQLException {
 		return null;
 	}
 
 	@Override
-	public Object read(DbReadContext ctx) throws SQLException {
+	public Object read(DbReadContext ctx, int parentState) throws SQLException {
 		return null;
 	}
 
@@ -196,6 +203,13 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 */
 	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
 		help.refresh(server, query, t, parentBean);
+	}
+
+	/**
+	 * Apply the refreshed BeanCollection to the property of the parentBean.
+	 */
+	public void refresh(BeanCollection<?> bc, Object parentBean) {
+		help.refresh(bc, parentBean);
 	}
 
 	/**
@@ -263,33 +277,33 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public String getMapKey() {
 		return mapKey;
 	}
+		
+	public BeanCollection<?> createReference(EntityBean parentBean) {
 
-	public void createReference(Object parentBean, ObjectGraphNode profilePoint, boolean readOnly, boolean sharedInstance) {
-
-		BeanCollection<?> ref = help.createReference(parentBean, serverName, name, profilePoint);
-		if (sharedInstance){
-			// a Many property of a bean in the cache
-			ref.setSharedInstance();
-		} else if (readOnly){
-			ref.setReadOnly(true);
-		}
-
+		BeanCollection<?> ref = help.createReference(parentBean, name);
 		setValue(parentBean, ref);
+		return ref;
 	}
 
 	public BeanCollection<?> createEmpty() {
-
 		return help.createEmpty();
 	}
-
-	public void setPredicates(Query<?> query, Object parentBean) {
+	
+	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc, String mapKey) {
+		return help.getBeanCollectionAdd(bc, mapKey);		
+	}
+	
+	public Object getParentId(Object parentBean) {
+		return descriptor.getId(parentBean);
+	}
+	
+	public void setPredicates(SpiQuery<?> query, Object parentBean) {
 
 		if (manyToMany){
 			// for ManyToMany lazy loading we need to include a
 			// join to the intersection table. The predicate column
 			// is not on the 'destination many table'.
-			SpiQuery<?> iq = (SpiQuery<?>)query;
-			iq.setIncludeTableJoin(inverseJoin);
+			query.setIncludeTableJoin(inverseJoin);
 		}
 
 		ExportedProperty[] expProps = getExported();
@@ -345,9 +359,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			BeanPropertyAssocOne<?> one = (BeanPropertyAssocOne<?>) uids[0];
 			BeanDescriptor<?> targetDesc = one.getTargetDescriptor();
 			BeanProperty[] emIds = targetDesc.propertiesBaseScalar();
-			for (int i = 0; i < emIds.length; i++) {
-				ExportedProperty expProp = findMatch(true, emIds[i]);
-				list.add(expProp);
+			try {
+				for (int i = 0; i < emIds.length; i++) {
+					ExportedProperty expProp = findMatch(true, emIds[i]);
+					list.add(expProp);
+				}
+			} catch (PersistenceException e){
+				// not found as individual scalar properties
+				e.printStackTrace();
 			}
 
 		} else {

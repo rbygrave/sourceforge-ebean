@@ -20,15 +20,12 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
 	private final DbDdlSyntax ddl;
 
-	//private final int columnNameWidth;
-
 	private final CreateTableVisitor parent;
 
 	public CreateTableColumnVisitor(CreateTableVisitor parent, DdlGenContext ctx) {
 		this.parent = parent;
 		this.ctx = ctx;
 		this.ddl = ctx.getDdlSyntax();
-		//this.columnNameWidth = ddl.getColumnNameWidth();
 	}
 
 	
@@ -67,11 +64,22 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		ImportedId importedId = p.getImportedId();
 
 		TableJoinColumn[] columns = p.getTableJoin().columns();
-
+		if (columns.length == 0){
+			String msg = "No join columns for "+p.getFullBeanName();
+			throw new RuntimeException(msg);
+		}
+		
+		String uqConstraintName = "uq_"
+			+ p.getBeanDescriptor().getBaseTable()
+			+ "_"+columns[0].getLocalDbColumn();
+		
+		if (uqConstraintName.length() > ddl.getMaxConstraintNameLength()){
+			uqConstraintName = uqConstraintName.substring(0, ddl.getMaxConstraintNameLength());
+		}
+		
 		StringBuilder constraintExpr = new StringBuilder();
-		constraintExpr.append("constraint uq_")
-			.append(p.getBeanDescriptor().getBaseTable())
-			.append("_"+columns[0].getLocalDbColumn())
+		constraintExpr.append("constraint ")
+			.append(uqConstraintName)
 			.append(" unique (");
 		
 		for (int i = 0; i < columns.length; i++) {
@@ -108,7 +116,9 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		constraintExpr.append(")");
 		
 		if (p.isOneToOne()){
-			parent.writeConstraint( constraintExpr.toString());
+			if (ddl.isAddOneToOneUniqueContraint()){
+				parent.writeConstraint( constraintExpr.toString());
+			}
 		}
 		
 	}

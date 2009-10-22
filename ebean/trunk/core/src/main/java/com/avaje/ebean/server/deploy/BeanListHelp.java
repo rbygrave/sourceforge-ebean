@@ -8,8 +8,9 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.common.BeanList;
 
 /**
@@ -19,7 +20,7 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 	
 	private final BeanPropertyAssocMany<T> many;
 	private final BeanDescriptor<T> targetDescriptor;
-	private LazyLoadEbeanServer ebeanServer;
+	private BeanCollectionLoader loader;
 	
 	public BeanListHelp(BeanPropertyAssocMany<T> many){
 		this.many = many;
@@ -31,22 +32,31 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 		this.targetDescriptor = null;
 	}
 	
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
-		this.ebeanServer = ebeanServer;
+	public void setLoader(BeanCollectionLoader loader){
+		this.loader = loader;
 	}
 	
 	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
 	}
 
+	
+	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc,String mapKey) {
+		
+		BeanList<?> bl = (BeanList<?>)bc;
+		if (bl.getActualList() == null){
+			bl.setActualList(new ArrayList<Object>());
+		}
+		return bl;
+	}
+
 	public BeanCollection<T> createEmpty() {
 		return new BeanList<T>();
 	}
 
-	public BeanCollection<T> createReference(Object parentBean, String serverName,
-			String propertyName, ObjectGraphNode profilePoint) {
+	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName) {
 		
-		return new BeanList<T>(ebeanServer, parentBean, propertyName, profilePoint);
+		return new BeanList<T>(loader, parentBean, propertyName);
 	}
 	
 	public ArrayList<InvalidValue> validate(Object manyValue) {
@@ -68,8 +78,14 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 	}
 	
 	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
-		
+
 		BeanList<?> newBeanList = (BeanList<?>)server.findList(query, t);
+		refresh(newBeanList, parentBean);
+	}
+	
+	public void refresh(BeanCollection<?> bc, Object parentBean) {
+
+		BeanList<?> newBeanList = (BeanList<?>)bc;
 		
 		List<?> currentList = (List<?>)many.getValue(parentBean);
 		

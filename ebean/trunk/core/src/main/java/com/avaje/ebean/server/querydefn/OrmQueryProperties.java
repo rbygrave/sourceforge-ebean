@@ -1,11 +1,15 @@
 package com.avaje.ebean.server.querydefn;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.lib.util.StringHelper;
 
@@ -14,56 +18,119 @@ import com.avaje.ebean.server.lib.util.StringHelper;
  */
 public class OrmQueryProperties implements Serializable {
 
-	private static final long serialVersionUID = -8785582703966455657L;
+	private static final long serialVersionUID = -8785582703966455658L;
 
-	String entity;
+	private String path;
 
-	String queryPlanProperties;
+	private String properties;
 	
-	boolean cache;
+	private String trimmedProperties;
 	
-	boolean readOnly;
+	private boolean queryJoin;
 
-	boolean allProperties;
+	private int queryJoinBatch;
+
+	private boolean lazyJoin;
+
+	private int lazyJoinBatch;
+
+	private boolean cache;
+	
+	private boolean readOnly;
+
+	private boolean allProperties;
 
 	/**
 	 * Note this SHOULD be a LinkedHashSet to preserve order of the 
 	 * properties. This is to make using SqlSelect easier with 
 	 * predictable property/column ordering.
 	 */
-	Set<String> included;
+	private Set<String> included;
 	
 	/**
 	 * Included bean joins.
 	 */
-	Set<String> includedBeanJoin;
+	private Set<String> includedBeanJoin;
+	
+	/**
+	 * Add these properties to the select so that the foreign key columns
+	 * are included in the query.
+	 */
+	private Set<String> secondaryQueryJoins;
+
+	private List<OrmQueryProperties> secondaryChildren;
 	
 	public OrmQueryProperties() {
 		this(null,null);
 	}
 	
-	public OrmQueryProperties(String entity, String properties) {
-		this.entity = entity;
-		this.queryPlanProperties = properties;
-		String parsedProps = parseProperties(properties);
+	public OrmQueryProperties(String path, String properties) {
+		this.path = path;
+		this.properties = properties;
 		
-		this.allProperties = parsedProps == null || "*".equals(parsedProps);
+		this.trimmedProperties = properties;
+		parseProperties();
+		
+		this.allProperties = trimmedProperties == null || "*".equals(trimmedProperties);
 		if (!allProperties){
-			this.included = parseIncluded(parsedProps);
+			this.included = parseIncluded(trimmedProperties);
 		} else {
 			this.included = null;
 		}
 	}
 	
 	/**
+	 * Define the select and joins for this query.
+	 */
+	public void configureBeanQuery(SpiQuery<?> query){
+		
+		if (trimmedProperties != null && trimmedProperties.length() > 0){
+			query.select(trimmedProperties);
+		}
+		
+		if (secondaryChildren != null){
+			int trimPath = path.length()+1;
+			for (int i = 0; i < secondaryChildren.size(); i++) {
+				OrmQueryProperties p = secondaryChildren.get(i);
+				String path = p.getPath();
+				path = path.substring(trimPath);
+				query.join(path, p.getProperties());
+			}
+		}
+	}
+
+	/**
+	 * Define the select and joins for this query.
+	 */
+	public void configureManyQuery(SpiQuery<?> query){
+		
+		if (trimmedProperties != null && trimmedProperties.length() > 0){
+			query.join(path, trimmedProperties);
+		}
+		
+		if (secondaryChildren != null){
+			//int trimPath = path.length()+1;
+			for (int i = 0; i < secondaryChildren.size(); i++) {
+				OrmQueryProperties p = secondaryChildren.get(i);
+				String path = p.getPath();
+				//path = path.substring(trimPath);
+				query.join(path, p.getProperties());
+			}
+		}
+	}
+	/**
 	 * Creates a copy of the OrmQueryProperties.
 	 */
 	public OrmQueryProperties copy() {
 		OrmQueryProperties copy = new OrmQueryProperties();
-		copy.entity = entity;
-		copy.queryPlanProperties = queryPlanProperties;
+		copy.path = path;
+		copy.properties = properties;
 		copy.cache = cache;
 		copy.readOnly = readOnly;
+		copy.queryJoin = queryJoin;
+		copy.queryJoinBatch = queryJoinBatch;
+		copy.lazyJoin = lazyJoin;
+		copy.lazyJoinBatch = lazyJoinBatch;
 		copy.allProperties = allProperties;
 		if (included != null){
 			copy.included = new HashSet<String>(included);			
@@ -76,24 +143,42 @@ public class OrmQueryProperties implements Serializable {
 	
 	public String toString() {
 		String s = "";
-		if (entity != null){
-			s += entity+" ";
+		if (path != null){
+			s += path+" ";
 		}
-		if (queryPlanProperties != null){
-			s += "("+queryPlanProperties+") ";
+		if (properties != null){
+			s += "("+properties+") ";
 		}
 		return s;
+	}
+	
+	public boolean isChild(OrmQueryProperties possibleChild){
+		return possibleChild.getPath().startsWith(path+".");			
+	}
+	
+	/**
+	 * For secondary queries add a child element.
+	 */
+	public void add(OrmQueryProperties child){
+		if (secondaryChildren == null){
+			secondaryChildren = new ArrayList<OrmQueryProperties>();
+		}
+		secondaryChildren.add(child);
 	}
 	
 	/**
 	 * Calculate the query plan hash.
 	 */
 	public int queryPlanHash() {
-		int hc = (entity != null ? entity.hashCode() : 1);
-		hc = hc * 31 + (queryPlanProperties != null ? queryPlanProperties.hashCode() : 1);
+		int hc = (path != null ? path.hashCode() : 1);
+		hc = hc * 31 + (properties != null ? properties.hashCode() : 1);
 		return hc;
 	}
 	
+	public String getProperties() {
+		return properties;
+	}
+
 	public ReferenceOptions getReferenceOptions(){
 		if (cache || readOnly){
 			return new ReferenceOptions(cache, readOnly, null); 
@@ -114,7 +199,7 @@ public class OrmQueryProperties implements Serializable {
 	 * Return true if this has properties.
 	 */
 	public boolean hasProperties() {
-		return queryPlanProperties != null;
+		return properties != null;
 	}
 	
 	/**
@@ -152,10 +237,25 @@ public class OrmQueryProperties implements Serializable {
 	 * This is because bean joins will have there own node in the SqlTree.
 	 * </p>
 	 */
-	public Set<String> getSelectProperties() {
-		return included;
+	public Iterator<String> getSelectProperties() {
+		
+		if (secondaryQueryJoins == null){
+			return included.iterator();			
+		}
+		
+		LinkedHashSet<String> temp = new LinkedHashSet<String>(secondaryQueryJoins.size()+ included.size());
+		temp.addAll(included);
+		temp.addAll(secondaryQueryJoins);
+		return temp.iterator();
 	}
-
+	
+	public void addSecondaryQueryJoin(String property){
+		if (secondaryQueryJoins == null){
+			secondaryQueryJoins = new HashSet<String>(4);
+		}
+		secondaryQueryJoins.add(property);
+	}
+	
 	/**
 	 * Return all the properties including the bean joins. This is the
 	 * set that will be used by EntityBeanIntercept to determine if a 
@@ -186,7 +286,22 @@ public class OrmQueryProperties implements Serializable {
 		return included.contains(propName);
 	}
 
-    
+	public boolean isQueryJoin() {
+		return queryJoin;
+	}
+
+	public int getQueryJoinBatch() {
+		return queryJoinBatch;
+	}
+
+	public boolean isLazyJoin() {
+		return lazyJoin;
+	}
+
+	public int getLazyJoinBatch() {
+		return lazyJoinBatch;
+	}
+
 	public boolean isReadOnly() {
 		return readOnly;
 	}
@@ -195,23 +310,73 @@ public class OrmQueryProperties implements Serializable {
 		return cache;
 	}
 
-	public String getEntity() {
-		return entity;
+	public String getPath() {
+		return path;
 	}
 	
-	private String parseProperties(String props){
-		if (props == null){
-			return null;
+	private void parseProperties(){
+		if (trimmedProperties == null){
+			return;
 		}
-		if (props.indexOf("+readonly") >-1){
-			props = StringHelper.replaceString(props, "+readonly","");
+		int pos = trimmedProperties.indexOf("+readonly");
+		if (pos > -1){
+			trimmedProperties = StringHelper.replaceString(trimmedProperties, "+readonly","");
 			this.readOnly = true;
 		}
-		if (props.indexOf("+cache") >-1){
-			props = StringHelper.replaceString(props, "+cache","");
+		pos = trimmedProperties.indexOf("+cache");
+		if (pos > -1){
+			trimmedProperties = StringHelper.replaceString(trimmedProperties, "+cache","");
 			this.cache = true;
 		}
-		return props.trim();
+		pos = trimmedProperties.indexOf("+query");
+		if (pos > -1){
+			queryJoin = true;
+			queryJoinBatch = parseBatchHint(pos,"+query");		
+		} 
+		pos = trimmedProperties.indexOf("+lazy");
+		if (pos > -1){
+			lazyJoin = true;
+			lazyJoinBatch = parseBatchHint(pos,"+lazy");		
+		}
+	
+		trimmedProperties = trimmedProperties.trim();
+	}
+		
+	private int parseBatchHint(int pos, String option) {
+		
+		int startPos = pos+option.length();
+		
+		int endPos = findEndPos(startPos, trimmedProperties);
+		if (endPos == -1){
+			trimmedProperties = StringHelper.replaceString(trimmedProperties, option, "");
+			return 0;
+			
+		} else {
+			
+			String batchParam = trimmedProperties.substring(startPos+1, endPos);
+			
+			if (endPos+1 >= trimmedProperties.length()){
+				trimmedProperties = trimmedProperties.substring(0, pos);
+			} else {
+				trimmedProperties = trimmedProperties.substring(0, pos) + trimmedProperties.substring(endPos+1);
+			}
+			return Integer.parseInt(batchParam);
+		}
+	}
+	
+	private int findEndPos(int pos, String props) {
+		
+		if (pos < props.length()){
+			if (props.charAt(pos) == '('){
+				int endPara = props.indexOf(')', pos+1);
+				if (endPara == -1){
+					String m = "Error could not find ')' in "+props+" after position "+pos;
+					throw new RuntimeException(m);
+				}
+				return endPara;
+			}
+		}
+		return -1;
 	}
 	
     /**

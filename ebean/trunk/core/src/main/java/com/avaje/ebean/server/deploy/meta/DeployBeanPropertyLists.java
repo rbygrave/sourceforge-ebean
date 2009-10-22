@@ -333,6 +333,7 @@ public class DeployBeanPropertyLists {
 			
 			return new BeanPropertyAssocMany(owner, desc, (DeployBeanPropertyAssocMany)deployProp);
 		}
+
 		return new BeanProperty(owner, desc, deployProp);
 	}
 }

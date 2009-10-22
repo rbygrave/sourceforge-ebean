@@ -1,10 +1,12 @@
 package com.avaje.ebean.server.deploy;
 
 import java.sql.ResultSet;
+import java.util.Map;
 
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.ReferenceOptions;
 
 /**
@@ -33,34 +35,28 @@ public interface DbReadContext {
 	/**
 	 * Set the JoinNode - used by proxy/reference beans for profiling.
 	 */
-	public void setCurrentPrefix(String currentPrefix);
+	public void setCurrentPrefix(String currentPrefix, Map<String,String> pathMap);
 
-		
 	/**
 	 * Return true if we are profiling this query.
 	 */
 	public boolean isAutoFetchProfiling();
-
-	/**
-	 * Create a AutoFetchNode for a given path.
-	 */
-	public ObjectGraphNode createAutoFetchNode(String extraPath, String prefix);
 	
 	/**
 	 * Add autoFetch profiling for a loaded entity bean.
 	 */
-	public void profileBean(EntityBeanIntercept ebi, String extraPath, String prefix);
-
-	/**
-	 * Add autoFetch profiling for a proxy/reference bean.
-	 */
-	public void profileReference(EntityBeanIntercept ebi, String extraPath);
+	public void profileBean(EntityBeanIntercept ebi, String prefix);
 	
 	/**
 	 * Return the ResultSet being read from.
 	 */
 	public ResultSet getRset();
 
+	/**
+	 * Increment the resultSet index effectively ignoring/skipping columns.
+	 */
+	public void incrementRsetIndex(int increment);
+	
 	/**
 	 * Return the next column index in the ResultSet.
 	 */
@@ -77,6 +73,16 @@ public interface DbReadContext {
 	public PersistenceContext getPersistenceContext();
 
 	/**
+	 * Register a reference for lazy loading.
+	 */
+	public void register(String path, EntityBeanIntercept ebi);
+
+	/**
+	 * Register a collection for lazy loading.
+	 */
+	public void register(String path, BeanCollection<?> bc);
+
+	/**
 	 * Return the property that is associated with the many. There can only be
 	 * one. This can be null.
 	 */
@@ -91,4 +97,9 @@ public interface DbReadContext {
 	 * Set back the 'detail' bean that has just been loaded.
 	 */
 	public void setLoadedManyBean(Object loadedBean);
+	
+	/**
+	 * Return the query mode.
+	 */
+	public SpiQuery.Mode getQueryMode();
 }

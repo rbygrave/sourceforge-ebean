@@ -38,6 +38,7 @@ import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.el.ElPropertyValue;
 import com.avaje.ebean.server.lib.util.StringHelper;
+import com.avaje.ebean.server.query.SqlBeanLoad;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
@@ -268,6 +269,10 @@ public class BeanProperty implements ElPropertyValue {
 		this.readMethod = deploy.getReadMethod();
 		this.writeMethod = deploy.getWriteMethod();
 		this.getter = deploy.getGetter();
+		if (descriptor != null && getter == null){
+			String m = "Null Getter for: "+getFullBeanName();
+			throw new RuntimeException(m);
+		}
 		this.setter = deploy.getSetter();
 
 		this.dbColumn = tableAliasIntern(descriptor,deploy.getDbColumn());
@@ -432,16 +437,26 @@ public class BeanProperty implements ElPropertyValue {
 		}
 	}
 	
+	public void loadIgnore(SqlBeanLoad sqlBeanLoad) throws SQLException {
+		sqlBeanLoad.loadIgnore(1);
+	}
+	
+	public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
+		sqlBeanLoad.load(this);
+	}
+	
+	public Object read(DbReadContext ctx, int parentState) throws SQLException {
+		return scalarType.read(ctx.getRset(), ctx.nextRsetIndex());
+	}
+	
 	public Object readSet(DbReadContext ctx, Object bean, Class<?> type) throws SQLException {
 
 		try {
 			Object value = scalarType.read(ctx.getRset(), ctx.nextRsetIndex());
-			if (value == null || bean == null) {
+			if (bean == null || (type != null && !owningType.isAssignableFrom(type))) {
 				// not setting the value...
 			} else {
-				if (type == null || owningType.isAssignableFrom(type)) {
-					setValue(bean, value);
-				}
+				setValue(bean, value);
 			}
 			return value;
 		} catch (Exception e) {
@@ -459,10 +474,6 @@ public class BeanProperty implements ElPropertyValue {
 	 */
 	public Object toBeanType(Object value) {
 		return scalarType.toBeanType(value);
-	}
-
-	public Object read(DbReadContext ctx) throws SQLException {
-		return scalarType.read(ctx.getRset(), ctx.nextRsetIndex());
 	}
 
 	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
@@ -631,6 +642,8 @@ public class BeanProperty implements ElPropertyValue {
 		return scalarType.isDbNull(value);
 	}
 	
+	private static Object[] NO_ARGS = new Object[0];
+	
 	/**
 	 * Return the value of the property method.
 	 */
@@ -639,8 +652,7 @@ public class BeanProperty implements ElPropertyValue {
 			if (bean instanceof EntityBean){
 				return getter.get(bean);
 			} else {
-				Object[] args = new Object[0];
-				return readMethod.invoke(bean, args);
+				return readMethod.invoke(bean, NO_ARGS);
 			}
 		} catch (Exception ex) {
 			String beanType = bean==null?"null":bean.getClass().getName();
@@ -654,8 +666,7 @@ public class BeanProperty implements ElPropertyValue {
 			if (bean instanceof EntityBean){
 				return getter.getIntercept(bean);
 			} else {
-				Object[] args = new Object[0];
-				return readMethod.invoke(bean, args);
+				return readMethod.invoke(bean, NO_ARGS);
 			}
 		} catch (Exception ex) {
 			String beanType = bean==null?"null":bean.getClass().getName();

@@ -36,8 +36,8 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.internal.SpiEbeanServer;
-import com.avaje.ebean.internal.SpiUpdate;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.internal.SpiUpdate;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
@@ -45,6 +45,7 @@ import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.Persister;
+import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanManager;
@@ -85,14 +86,18 @@ public final class DefaultPersister implements Persister {
 
 	private final BeanDescriptorManager beanDescriptorManager;
 	
-	public DefaultPersister(SpiEbeanServer server, boolean validate, MAdminLogging logControl, Binder binder, BeanDescriptorManager descMgr) {
+	public DefaultPersister(SpiEbeanServer server, boolean validate, MAdminLogging logControl, 
+			Binder binder, BeanDescriptorManager descMgr, PstmtBatch pstmtBatch) {
 
 		this.server = server;
 		this.beanDescriptorManager = descMgr;
-		this.persistExecute = new DefaultPersistExecute(logControl, binder);
+		
+		this.persistExecute = new DefaultPersistExecute(logControl, binder, pstmtBatch);
 		this.validation = validate;
 	}
 
+	
+	
 	/**
 	 * Execute the CallableSql.
 	 */
@@ -303,7 +308,9 @@ public final class DefaultPersister implements Persister {
 		if (req.isRegistered()){
 			// skip deleting bean. Used where cascade is on
 			// both sides of a relationship
-			logger.info("skipping delete on alreadyRegistered "+bean);
+			if (logger.isLoggable(Level.FINE)){
+				logger.fine("skipping delete on alreadyRegistered "+bean);
+			}
 			return;
 		}
 		
@@ -381,12 +388,12 @@ public final class DefaultPersister implements Persister {
 		for (int i = 0; i < manys.length; i++) {
 			if (manys[i].isManyToMany()) {
 				// save the beans that are in the manyToMany
-				saveAssocManyDetails(request, manys[i], false);
+				saveAssocManyDetails(insertedParent, request, manys[i], false);
 				// create inserts and deletes into the intersection table
 				saveAssocManyIntersection(insertedParent, request, manys[i]);
 
 			} else {
-				saveAssocManyDetails(request, manys[i], true);
+				saveAssocManyDetails(insertedParent, request, manys[i], true);
 			}
 		}
 	}
@@ -394,18 +401,23 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Save the details from a OneToMany collection.
 	 */
-	private void saveAssocManyDetails(PersistRequestBean<?> request, BeanPropertyAssocMany<?> prop,
-			boolean oneToMany) {
+	private void saveAssocManyDetails(boolean insertedParent, PersistRequestBean<?> request, 
+			BeanPropertyAssocMany<?> prop, boolean oneToMany) {
 
 		Object parentBean = request.getBean();
 		Object details = prop.getValue(parentBean);
 
 		// check that the list is not null and if it is a BeanCollection
 		// check that is has been populated (don't trigger lazy loading)
-		Iterator<?> detailIt = getDetailsIterator(details);
+		Collection<?> collection = getDetailsIterator(details);
 
-		if (detailIt != null) {
+		if (collection != null) {
 
+			if (insertedParent){
+				// performance optimisation for large collections
+				prop.getTargetDescriptor().preAllocateIds(collection.size());
+			}
+			
 			// increase depth for batching order
 			SpiTransaction t = request.getTransaction();
 			t.depth(+1);
@@ -418,6 +430,7 @@ public final class DefaultPersister implements Persister {
 			boolean saveSkippable = prop.isSaveRecurseSkippable();
 			boolean skipSavingThisBean = false;
 
+			Iterator<?> detailIt = collection.iterator();
 			while (detailIt.hasNext()) {
 				Object detailBean = detailIt.next();
 				if (isMap) {
@@ -582,13 +595,15 @@ public final class DefaultPersister implements Persister {
 				// cascade the delete
 				Object details = manys[i].getValue(parentBean);
 
-				Iterator<?> it = getDetailsIterator(details);
-				if (it != null) {
+				Collection<?> collection = getDetailsIterator(details);
+				 
+				if (collection != null) {
 					// decrease depth for batched processing
 					// lowest depth executes first
 					SpiTransaction t = request.getTransaction();
 					t.depth(-1);
 
+					Iterator<?> it = collection.iterator();
 					while (it.hasNext()) {
 						Object detailBean = it.next();
 						if (manys[i].hasId(detailBean)) {
@@ -649,6 +664,9 @@ public final class DefaultPersister implements Persister {
 		for (int i = 0; i < ones.length; i++) {
 			BeanPropertyAssocOne<?> prop = ones[i];
 
+			// TODO: Review this treatment for references and partial objects
+			// as a cascade delete can potentially get skipped here.
+			
 			// check for partial object
 			if (request.isLoadedProperty(prop)) {
 
@@ -700,7 +718,7 @@ public final class DefaultPersister implements Persister {
 	 * Return the details of the collection or map taking care to avoid
 	 * unnecessary fetching of the data.
 	 */
-	private Iterator<?> getDetailsIterator(Object o) {
+	private Collection<?> getDetailsIterator(Object o) {
 		if (o == null) {
 			return null;
 		}
@@ -714,11 +732,10 @@ public final class DefaultPersister implements Persister {
 
 		if (o instanceof Map<?,?>) {
 			// yes, we want the entrySet (to set the keys)
-			return ((Map<?, ?>) o).entrySet().iterator();
+			return ((Map<?, ?>) o).entrySet();
 
 		} else if (o instanceof Collection<?>) {
-			return ((Collection<?>) o).iterator();
-
+			return ((Collection<?>) o);
 		}
 		String m = "expecting a Map or Collection but got [" + o.getClass().getName() + "]";
 		throw new PersistenceException(m);

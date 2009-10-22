@@ -41,7 +41,7 @@ class IdExpression implements SpiExpression {
 	public void addSql(SpiExpressionRequest request) {
 		
 		DefaultExpressionRequest r = (DefaultExpressionRequest)request;
-		String idSql = r.getBeanDescriptor().getBindIdSql();
+		String idSql = r.getBeanDescriptor().getIdBinderIdSql();
 		
 		request.append(idSql).append(" ");
 	}

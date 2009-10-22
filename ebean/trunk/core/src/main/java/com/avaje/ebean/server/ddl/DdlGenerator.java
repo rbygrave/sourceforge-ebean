@@ -221,7 +221,7 @@ public class DdlGenerator {
 			t.commit();
 
 		} catch (Exception e){
-			String msg = "Error runing script";
+			String msg = "Error: "+e.getMessage();
 			throw new PersistenceException(msg, e);
 		} finally {
 			t.end();
@@ -265,9 +265,10 @@ public class DdlGenerator {
 		} catch (Exception e) {
 			if (expectErrors){
 				out.println(" ... ignoring error executing "+getSummary(stmt)+"  error: "+e.getMessage());
+				e.printStackTrace();
 				out.flush();
 			} else {
-				String msg = "Error executing " + stmt;
+				String msg = "Error executing stmt[" + stmt+"] error["+e.getMessage()+"]";
 				throw new RuntimeException(msg, e);
 			}
 		}

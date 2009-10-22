@@ -40,32 +40,32 @@ public class DeployTableJoin {
      * Flag set when the imported key maps to the primary key.
      * This occurs for intersection tables (ManyToMany).
      */
-    boolean importedPrimaryKey;
+    private boolean importedPrimaryKey;
     
     /**
      * The joined table.
      */
-    String table;
+    private String table;
     
     /**
      * The type of join. LEFT OUTER etc.
      */
-    String type = TableJoin.JOIN;
+    private String type = TableJoin.JOIN;
 
     /**
      * The list of properties mapped to this joined table.
      */
-    ArrayList<DeployBeanProperty> properties = new ArrayList<DeployBeanProperty>();
+    private ArrayList<DeployBeanProperty> properties = new ArrayList<DeployBeanProperty>();
 
     /**
      * The list of join column pairs. Used to generate the on clause.
      */
-    ArrayList<DeployTableJoinColumn> columns = new ArrayList<DeployTableJoinColumn>();
+    private ArrayList<DeployTableJoinColumn> columns = new ArrayList<DeployTableJoinColumn>();
 
     /**
      * The persist cascade info.
      */
-    BeanCascadeInfo cascadeInfo = new BeanCascadeInfo();
+    private BeanCascadeInfo cascadeInfo = new BeanCascadeInfo();
     
 
     /**

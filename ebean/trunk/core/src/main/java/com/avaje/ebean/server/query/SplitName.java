@@ -9,10 +9,18 @@ public class SplitName {
 			return name;
 		}
 	}
-	
+
 	public static String[] split(String name){
+		return split(name, true);
+	}
+	
+	public static String[] splitBegin(String name){
+		return split(name, false);
+	}
+	
+	private static String[] split(String name, boolean last){
 		
-		int pos = name.lastIndexOf('.');
+		int pos =  last ? name.lastIndexOf('.') : name.indexOf('.');
 		if (pos == -1){
 			return new String[]{null, name};
 		} else {
@@ -21,5 +29,5 @@ public class SplitName {
 			return new String[]{s0,s1};
 		}
 	}
-	
+
 }

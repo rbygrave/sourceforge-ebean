@@ -25,6 +25,7 @@ import java.util.HashMap;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Holds all the batched beans.
@@ -47,6 +48,8 @@ public class BatchedBeanControl {
 	private final BatchControl batchControl;
 
 	private int maxSize;
+	
+	private int topOrder;
 
 	public BatchedBeanControl(SpiTransaction t, BatchControl batchControl) {
 		this.transaction = t;
@@ -57,8 +60,7 @@ public class BatchedBeanControl {
 	 * Add the request to the batch.
 	 */
 	public void add(PersistRequestBean<?> request) {
-		String typeDescription = request.getFullName();
-		BatchedBeanHolder beanHolder = getBeanHolder(typeDescription);
+		BatchedBeanHolder beanHolder = getBeanHolder(request);
 
 		ArrayList<PersistRequest> list = beanHolder.getList(request.getType());
 		list.add(request);
@@ -75,12 +77,20 @@ public class BatchedBeanControl {
 	 * Return an entry for the given type description. The type description is
 	 * typically the bean class name (or table name for MapBeans).
 	 */
-	private BatchedBeanHolder getBeanHolder(String typeDesc) {
-		BatchedBeanHolder list = (BatchedBeanHolder) beanHoldMap.get(typeDesc);
+	private BatchedBeanHolder getBeanHolder(PersistRequestBean<?> request) {
+		
+		BeanDescriptor<?> beanDescriptor = request.getBeanDescriptor();
+		BatchedBeanHolder list = beanHoldMap.get(beanDescriptor.getFullName());
 		if (list == null) {
-			int depth = transaction.depth(0);
-			list = new BatchedBeanHolder(batchControl, typeDesc, depth);
-			beanHoldMap.put(typeDesc, list);
+			int relativeDepth = transaction.depth(0);
+			
+			if (relativeDepth == 0){
+				topOrder++;
+			}
+			int stmtOrder = topOrder*100 + relativeDepth;
+			
+			list = new BatchedBeanHolder(batchControl, beanDescriptor, stmtOrder);
+			beanHoldMap.put(beanDescriptor.getFullName(), list);
 		}
 		return list;
 	}

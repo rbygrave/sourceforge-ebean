@@ -16,5 +16,27 @@ public class UuidIdGenerator implements IdGenerator {
 		return UUID.randomUUID();
 	}
 
+	/**
+	 * Returns "uuid".
+	 */
+	public String getName() {
+		return "uuid";
+	}
+
+	/**
+	 * Returns false.
+	 */
+	public boolean isDbSequence() {
+		return false;
+	}
+
+	/**
+	 * Ignored for UUID as not required as a performance optimisation.
+	 */
+	public void preAllocateIds(int allocateSize) {
+		// ignored
+	}
+
+	
 	
 }

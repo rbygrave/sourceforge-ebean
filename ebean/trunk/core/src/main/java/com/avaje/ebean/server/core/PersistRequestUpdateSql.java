@@ -119,14 +119,13 @@ public final class PersistRequestUpdateSql extends PersistRequest {
 
 		if (transaction.isLoggingOn()) {
 
-			String label = updateSql.getLabel();
+			//String label = updateSql.getLabel();
 
-			String m = description + " label[" + label + "] table[" + tableName + "] rows["
+			String m = description + " table[" + tableName + "] rows["
 					+ rowCount + "] bind[" + bindLog + "]";
 
 			// log the summary of the sql to the transaction log
 			transaction.log(m);
-
 		}
 
 		if (updateSql.isAutoTableMod()) {

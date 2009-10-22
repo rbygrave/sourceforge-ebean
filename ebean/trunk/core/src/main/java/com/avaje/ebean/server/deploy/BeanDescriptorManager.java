@@ -35,12 +35,13 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
-import com.avaje.ebean.config.dbplatform.DbSequenceIdGenerator;
+import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.internal.SpiEbeanServer;
@@ -148,6 +149,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	
 	private final ServerCacheManager cacheManager;
 	
+	private final BackgroundExecutor backgroundExecutor;
+	
+	private final int dbSequenceBatchSize;
+	
 	/**
 	 * Create for a given database dbConfig.
 	 */
@@ -155,6 +160,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		this.serverName = InternString.intern(config.getServerConfig().getName());
 		this.cacheManager = config.getCacheManager();
+		this.dbSequenceBatchSize = config.getServerConfig().getDatabaseSequenceBatchSize();
+		this.backgroundExecutor = config.getBackgroundExecutor();
 		this.dataSource = config.getServerConfig().getDataSource();
 		this.databasePlatform = config.getServerConfig().getDatabasePlatform();
 		this.bootupClasses = config.getBootupClasses();
@@ -177,7 +184,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		this.reflectFactory = createReflectionFactory();
 		this.transientProperties = new TransientProperties();
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -226,6 +232,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			readEntityDeploymentInitial();
 			readEntityBeanTable();
 			readEntityDeploymentAssociations();
+			readInheritedIdGenerators();
 			
 			// creates the BeanDescriptors 
 			readEntityRelationships();
@@ -484,6 +491,23 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		}
 	}
 	
+	private void readInheritedIdGenerators(){
+		
+		Iterator<DeployBeanInfo<?>> it = deplyInfoMap.values().iterator();
+		while (it.hasNext()) {
+			DeployBeanInfo<?> info = it.next();
+			DeployBeanDescriptor<?> descriptor = info.getDescriptor();
+			InheritInfo inheritInfo = descriptor.getInheritInfo();
+			if (inheritInfo != null && !inheritInfo.isRoot()){
+				DeployBeanInfo<?> rootBeanInfo = deplyInfoMap.get(inheritInfo.getRoot().getType());
+				IdGenerator rootIdGen = rootBeanInfo.getDescriptor().getIdGenerator();
+				if (rootIdGen != null){
+					descriptor.setIdGenerator(rootIdGen);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Create the BeanTable from the deployment information gathered so far.
 	 */
@@ -491,7 +515,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		DeployBeanDescriptor<?> deployDescriptor = info.getDescriptor();
 		DeployBeanTable beanTable = deployDescriptor.createDeployBeanTable();
-		return new BeanTable(beanTable);
+		return new BeanTable(beanTable, this);
 	}
 
 	/**
@@ -912,26 +936,46 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 				}
 			}
 
-			String genName = desc.getIdGeneratorName();
-			if (UuidIdGenerator.AUTO_UUID.equals(genName)) {
-				desc.setIdGenerator(uuidIdGenerator);
+			if (IdType.IDENTITY.equals(desc.getIdType())){
+				// explicitly specified we want to use Identity column
+				// .. only do this is the DB supports Identity/autoincrement
+			} 
+			if (IdType.GENERATOR.equals(desc.getIdType())){
+				String genName = desc.getIdGeneratorName();
+				if (UuidIdGenerator.AUTO_UUID.equals(genName)) {
+					desc.setIdGenerator(uuidIdGenerator);
+				}				
+			} 
+			
+			boolean autoSequenceId = false;
+			
+			if (desc.getIdType() == null) {
+				// IdType not already defined .. check for sequence support
+				if (dbIdentity.isSupportsSequence() && desc.getBaseTable() != null){
+					// Has sequence support with base table
+					autoSequenceId = true;
+				}
+			}
 				
-			} else if (dbIdentity.isSupportsSequence() && (desc.getBaseTable() != null)) {
-				// define the sequence 
-				String seqName = desc.getSequenceName();
-				if (seqName == null && dbIdentity.getIdType().equals(IdType.SEQUENCE)){
-					// sequence not explicitly defined ... but it is the default IdType
-					// so we will automatically define a sequence
+			if (autoSequenceId || IdType.SEQUENCE.equals(desc.getIdType())){
+				// define the sequence based IdGenerator
+				
+				String seqName = desc.getIdGeneratorName();
+				if (seqName != null){
+					logger.fine("explicit sequence "+seqName);
+				} else {
+					// sequence not explicitly defined ... but we are not using 
+					// IDENTITY so we will automatically define a sequence
 					seqName = namingConvention.getSequenceName(desc.getBaseTable());
 				}
-				if (seqName != null){
-					String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
-					String sql = databasePlatform.getDbIdentity().getSelectSequenceNextValSql(dbSeqNextVal);
-	
-					desc.setIdGenerator(new DbSequenceIdGenerator(dataSource, sql));
-					desc.setSequenceNextVal(dbSeqNextVal);
-					desc.setSequenceName(seqName);
-				}
+				
+				// create the sequence based IdGenerator
+				IdGenerator seqIdGen = createSequenceIdGenerator(seqName);
+				desc.setIdGenerator(seqIdGen);
+				
+				// for old SQL Server
+				String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
+				desc.setSequenceNextVal(dbSeqNextVal);
 			}
 			
 			if (desc.getBaseTable() != null){
@@ -939,9 +983,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 				String selectLastInsertedId = dbIdentity.getSelectLastInsertedId(desc.getBaseTable());
 				desc.setSelectLastInsertedId(selectLastInsertedId);
 			}
+			
 
 			if (desc.getIdType() == null){
-				// set the default IdType. SEQUENCE or IDENTITY hopefully.
+				// set the default IdType. IDENTITY probably.
 				desc.setIdType(dbIdentity.getIdType());
 			}
 			
@@ -958,6 +1003,11 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		createByteCode(desc);
 	}
 
+	private IdGenerator createSequenceIdGenerator(String seqName) {
+		return databasePlatform.createSequenceIdGenerator(backgroundExecutor, dataSource, seqName, dbSequenceBatchSize);
+	}
+			
+	
 	private void createByteCode(DeployBeanDescriptor<?> deploy) {
 		
 		// check to see if the bean supports EntityBean interface

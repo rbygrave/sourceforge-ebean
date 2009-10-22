@@ -157,7 +157,7 @@ public class RawSqlSelect {
 		}
 
 		selectProps.setIncludedProperties(includedProps);
-		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(desc, selectProps, null, withId, null);
+		SqlTreeNode sqlRoot = new SqlTreeNodeRoot(desc, selectProps, null, withId);
 		sqlTree.setRootNode(sqlRoot);
 
 		return sqlTree;
@@ -182,7 +182,7 @@ public class RawSqlSelect {
 			BeanDescriptor<?> descriptor = request.getBeanDescriptor();
 			//FIXME: I think this is broken... needs to be logical 
 			// and then parsed for RawSqlSelect...
-			dynamicWhere = descriptor.getBindIdSql();
+			dynamicWhere = descriptor.getIdBinderIdSql();
 		}
 
 		String dbWhere = predicates.getDbWhere();

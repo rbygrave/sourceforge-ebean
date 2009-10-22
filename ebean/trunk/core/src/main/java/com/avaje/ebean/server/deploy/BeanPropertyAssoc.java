@@ -298,7 +298,6 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 		TableJoinColumn[] cols = join.columns();
 
-
 		if (props.length == 1) {
 			if (!props[0].isEmbedded()) {
 				// simple single scalar id
@@ -340,7 +339,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 		String matchColumn = col.getForeignDbColumn();
 		String localColumn = col.getLocalDbColumn();
-
+		
 		for (int j = 0; j < props.length; j++) {
 			if (props[j].getDbColumn().equalsIgnoreCase(matchColumn)) {
 				return new ImportedIdSimple(owner, localColumn, props[j]);

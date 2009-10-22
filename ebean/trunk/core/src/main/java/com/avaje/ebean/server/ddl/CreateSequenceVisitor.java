@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.ddl;
 
-import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
+import java.util.logging.Logger;
+
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 
@@ -9,13 +10,15 @@ import com.avaje.ebean.server.deploy.BeanProperty;
  */
 public class CreateSequenceVisitor implements BeanVisitor {
 
-	final DdlGenContext ctx;
+	private static final Logger logger = Logger.getLogger(DropSequenceVisitor.class.getName());
 	
-	final DbDdlSyntax ddlSyntax;
+	private final DdlGenContext ctx;
+	
+	private final boolean supportsSequence;
 
 	public CreateSequenceVisitor(DdlGenContext ctx) {
 		this.ctx = ctx;
-		this.ddlSyntax = ctx.getDdlSyntax();
+		this.supportsSequence = ctx.getDbPlatform().getDbIdentity().isSupportsSequence();
 	}
 	
 	public boolean visitBean(BeanDescriptor<?> descriptor) {
@@ -23,6 +26,14 @@ public class CreateSequenceVisitor implements BeanVisitor {
 		if (!descriptor.isInheritanceRoot()){
 			return false;
 		}
+		
+		if (!supportsSequence){
+			// Hopefully a generic test case
+			String msg = "Not creating sequence "+descriptor.getSequenceName()+" on Bean "+descriptor.getName()
+				+" as DatabasePlatform does not support sequences";
+			logger.warning(msg);
+			return false;
+		} 
 
 		if (descriptor.getSequenceName() != null) {
 			ctx.write("create sequence ");

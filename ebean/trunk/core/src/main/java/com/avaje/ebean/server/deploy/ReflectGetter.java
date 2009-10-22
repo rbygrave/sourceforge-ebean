@@ -36,7 +36,7 @@ public class ReflectGetter {
 
 	/**
 	 * Create a reflection based BeanReflectGetter for getting the
-	 * id from abstract inhertitance hierarchy object.
+	 * id from abstract inheritance hierarchy object.
 	 */
 	public static BeanReflectGetter create(DeployBeanProperty prop) {
 			

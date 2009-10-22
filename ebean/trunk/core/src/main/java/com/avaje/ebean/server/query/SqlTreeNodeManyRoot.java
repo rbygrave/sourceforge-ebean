@@ -23,11 +23,11 @@ public final class SqlTreeNodeManyRoot extends SqlTreeNodeBean {
 	}
 
     @Override
-	public void load(DbReadContext cquery, EntityBean parentBean) throws SQLException {
+	public void load(DbReadContext cquery, EntityBean parentBean, int parentState) throws SQLException {
 		// pass in null for parentBean because the localBean
     	// that is built is added to a collection rather than
     	// being set to the parentBean directly
-    	super.load(cquery, null);
+    	super.load(cquery, null, parentState);
     }
 
     /**

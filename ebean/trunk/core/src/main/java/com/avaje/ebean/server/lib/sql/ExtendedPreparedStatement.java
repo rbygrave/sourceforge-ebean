@@ -64,6 +64,10 @@ public class ExtendedPreparedStatement extends ExtendedStatement implements Prep
 		this.sql = sql;
 		this.cacheKey = cacheKey;
 	}
+	
+	public PreparedStatement getDelegate() {
+		return pstmt;
+	}
 
 	/**
 	 * Return the key used to cache this on the Connection.

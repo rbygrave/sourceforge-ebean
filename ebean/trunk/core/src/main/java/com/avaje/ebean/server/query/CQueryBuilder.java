@@ -279,7 +279,7 @@ public class CQueryBuilder implements Constants {
 			}
 			
 			BeanDescriptor<?> desc = request.getBeanDescriptor();
-			String idSql = desc.getBindIdSql();
+			String idSql = desc.getIdBinderIdSql();
 			sb.append(idSql).append(" ");
 			hasWhere = true;
 		}

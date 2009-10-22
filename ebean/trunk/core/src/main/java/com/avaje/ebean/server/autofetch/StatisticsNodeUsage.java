@@ -19,7 +19,7 @@ import com.avaje.ebean.server.querydefn.OrmQueryDetail;
  */
 public class StatisticsNodeUsage implements Serializable {
 
-	private static final long serialVersionUID = -1663951463963779545L;
+	private static final long serialVersionUID = -1663951463963779547L;
 
 	private static final Logger logger = Logger.getLogger(StatisticsNodeUsage.class.getName());
 
@@ -27,13 +27,13 @@ public class StatisticsNodeUsage implements Serializable {
 	
 	private final String path;
 	
-	private int loadCount;
+	private int profileCount;
 	
-	private int usedCount;
+	private int profileUsedCount;
+	
+	private boolean modified;
 	
 	private Set<String> aggregateUsed = new LinkedHashSet<String>();
-
-	private Set<String> unusedBeanIndex = new LinkedHashSet<String>();
 
 	public StatisticsNodeUsage(String path) {
 		this.path = path;
@@ -42,7 +42,7 @@ public class StatisticsNodeUsage implements Serializable {
 	public NodeUsageStats createPublicMeta() {
 		synchronized(monitor){
 			String[] usedProps = aggregateUsed.toArray(new String[aggregateUsed.size()]);
-			return new NodeUsageStats(path, loadCount, usedCount, usedProps);
+			return new NodeUsageStats(path, profileCount, profileUsedCount, usedProps);
 		}
 	}
 	
@@ -65,7 +65,7 @@ public class StatisticsNodeUsage implements Serializable {
 					}
 				}
 			}
-			if (desc != null){
+			if (modified && desc != null){
 				BeanProperty[] versionProps = desc.propertiesVersion();
 				if (versionProps.length > 0){
 					aggregateUsed.add(versionProps[0].getName());
@@ -90,21 +90,18 @@ public class StatisticsNodeUsage implements Serializable {
 			
 			HashSet<String> used = profile.getUsed();
 			
-			loadCount++;
+			profileCount++;
 			if (!used.isEmpty()){
-				usedCount++;
+				profileUsedCount++;
 				aggregateUsed.addAll(used);
-			} else {
-				// perhaps use this later... object graph use is probably
-				// top heavy meaning the first x beans are traversed and then
-				// then after that they are unused... 
-				String beanIndex = profile.getNode().getBeanIndex();
-				unusedBeanIndex.add(beanIndex);
+			}
+			if (profile.isModified()){
+				modified = true;
 			}
 		}
 	}
 	
 	public String toString() {
-		return "path["+path+"] load["+loadCount+"] used["+usedCount+"] props"+aggregateUsed;
+		return "path["+path+"] profileCount["+profileCount+"] used["+profileUsedCount+"] props"+aggregateUsed;
 	}
 }

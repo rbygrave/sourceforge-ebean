@@ -17,7 +17,7 @@ import com.avaje.ebean.util.ValueUtil;
 /**
  * Single scalar imported id.
  */
-public class ImportedIdSimple implements ImportedId {
+public final class ImportedIdSimple implements ImportedId {
 
 	protected final BeanPropertyAssoc<?> owner;
 
@@ -34,6 +34,7 @@ public class ImportedIdSimple implements ImportedId {
 		this.logicalName = InternString.intern(owner.getName()+"."+foreignProperty.getName());
 	}
 
+	
 	public void addFkeys(String name) {
 		BeanFkeyProperty fkey = new BeanFkeyProperty(null, name+"."+foreignProperty.getName(), localDbColumn);
 		owner.getBeanDescriptor().add(fkey);

@@ -51,6 +51,11 @@ public class BindableIdEmbedded implements BindableId {
 		return true;
 	}
 
+	public String getIdentityColumn() {
+		// return null for concatenated keys
+		return null;
+	}
+
 	@Override
 	public String toString() {
 		return embId + " props:" + Arrays.toString(props);

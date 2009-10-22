@@ -20,6 +20,7 @@ import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
@@ -78,6 +79,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private Type type;
 	
+	private Mode mode = Mode.NORMAL;
+	
 	/**
 	 * Holds query in structured form.
 	 */
@@ -85,6 +88,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private OrmQueryAttributes attributes;
 
+	private String loadDescription;
+	
 	private String generatedSql;
 
 	/**
@@ -100,7 +105,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 * Set to true if you want a DISTINCT query.
 	 */
 	private boolean distinct;
-
+	
 	/**
 	 * Set to true if this is a future fetch using background threads.
 	 */
@@ -151,8 +156,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	private boolean usageProfiling = true;
 
 	private boolean loadBeanCache;
-	
 	private Boolean useBeanCache;
+	
 	private Boolean useQueryCache;
 
 	private Boolean readOnly;
@@ -175,8 +180,6 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 * lazy loading query to the "original" query point.
 	 */
 	private ObjectGraphNode parentNode;
-
-	private ObjectGraphOrigin objectGraphOrigin;
 
 	/**
 	 * Hash of final query after AutoFetch tuning.
@@ -228,6 +231,14 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public ExpressionFactory getExpressionFactory() {
 		return expressionFactory;
 	}
+	
+	public void setParentState(int parentState) {
+		if (parentState == EntityBeanIntercept.SHARED){
+			setSharedInstance();
+		} else if (parentState == EntityBeanIntercept.READONLY){
+			setReadOnly(true);
+		} 
+	}
 
 	/**
 	 * Return true if the where expressions contains a many property.
@@ -241,6 +252,14 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
     	}
 	}
 
+	public List<OrmQueryProperties> removeSecondaryQueries() {
+		return detail.removeSecondaryQueries();
+	}
+	
+	public List<OrmQueryProperties> removeSecondaryLazyQueries() {
+		return detail.removeSecondaryLazyQueries();
+	}
+	
 	/**
 	 * Remove any many joins from the select. Joins to Manys may still
 	 * be required to support the where or order by clauses and in this 
@@ -280,6 +299,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.timeout = timeout;
 		copy.mapKey = mapKey;
 		copy.id = id;
+		copy.loadBeanCache = loadBeanCache;
 		copy.useBeanCache = useBeanCache;
 		copy.useQueryCache = useQueryCache;
 		copy.readOnly = readOnly;
@@ -302,7 +322,6 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.usageProfiling = usageProfiling;
 		copy.autoFetch = autoFetch;
 		copy.parentNode = parentNode;
-		copy.objectGraphOrigin = objectGraphOrigin;
 		//copy.autoFetchTuned = autoFetchTuned;
 		//copy.autoFetchQueryPlanHash = autoFetchQueryPlanHash;
 		
@@ -316,6 +335,14 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	public void setType(Type type) {
 		this.type = type;
+	}
+
+	public String getLoadDescription() {
+		return loadDescription;
+	}
+
+	public void setLoadDescription(String loadDescription) {
+		this.loadDescription = loadDescription;
 	}
 
 	/**
@@ -376,14 +403,34 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.autoFetchManager = autoFetchManager;
 	}
 	
+	/**
+	 * Check other combinations that can make this a sharedInstance query. 
+	 */
+	public void deriveSharedInstance() {
+		if (!sharedInstance){
+			if (Boolean.TRUE.equals(useQueryCache)
+				|| (Boolean.TRUE.equals(readOnly) && 
+						(Boolean.TRUE.equals(useBeanCache) || Boolean.TRUE.equals(loadBeanCache)))) {
+				// these combinations also producing shared instance beans 
+				sharedInstance = true;
+			}
+		}
+	}
+	
 	public boolean isSharedInstance() {
-		return sharedInstance 
-		|| (Boolean.TRUE.equals(readOnly) && Boolean.TRUE.equals(useBeanCache))
-		|| (Boolean.TRUE.equals(useQueryCache));
+		return sharedInstance;
 	}
 
 	public void setSharedInstance() {
 		this.sharedInstance = true;
+	}
+
+	public Mode getMode() {
+		return mode;
+	}
+
+	public void setMode(Mode mode) {
+		this.mode = mode;
 	}
 
 	public boolean isUsageProfiling() {
@@ -396,32 +443,20 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public void setParentNode(ObjectGraphNode parentNode) {
 		this.parentNode = parentNode;
-		this.objectGraphOrigin = parentNode.getOriginQueryPoint();
 	}
 
 	public ObjectGraphNode getParentNode() {
 		return parentNode;
 	}
 
-	public ObjectGraphOrigin getObjectGraphOrigin(){
-		return objectGraphOrigin;
-	}
 	
-	public ObjectGraphOrigin createObjectGraphOrigin(CallStack callStack) {
+	public ObjectGraphNode setOrigin(CallStack callStack) {
 
 		// calculate base query hash prior to it being tuned
-		objectGraphOrigin = new ObjectGraphOrigin(queryAutofetchHash(), callStack, beanType.getName());
-		return objectGraphOrigin;
+		ObjectGraphOrigin o =  new ObjectGraphOrigin(queryAutofetchHash(), callStack, beanType.getName());
+		parentNode = new ObjectGraphNode(o, null);
+		return parentNode;
 	}
-
-	public ObjectGraphNode createObjectGraphNode(String beanIndex, String path) {
-		if (parentNode != null) {
-			return new ObjectGraphNode(parentNode, beanIndex, path);
-		} else {
-			return new ObjectGraphNode(objectGraphOrigin, beanIndex, path);
-		}
-	}
-
 	
 	/**
 	 * Calculate the query hash for either AutoFetch query tuning or Query Plan caching.
@@ -571,8 +606,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return Boolean.TRUE.equals(useQueryCache);
 	}
 
-	public DefaultOrmQuery<T> setUseCache(boolean useCache) {
-		this.useBeanCache = useCache;
+	public DefaultOrmQuery<T> setUseCache(boolean useBeanCache) {
+		this.useBeanCache = useBeanCache;
 		return this;
 	}
 	
@@ -1039,6 +1074,5 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		}
 	}
 	
-	
-	
+
 }

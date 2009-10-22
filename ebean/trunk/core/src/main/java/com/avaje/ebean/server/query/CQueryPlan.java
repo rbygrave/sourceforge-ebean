@@ -1,5 +1,6 @@
 package com.avaje.ebean.server.query;
 
+import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebean.server.core.OrmQueryRequest;
@@ -49,7 +50,8 @@ public class CQueryPlan {
 	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree selectClause, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
-		this.objectGraphOrigin = request.getQuery().getObjectGraphOrigin();
+		ObjectGraphNode node = request.getQuery().getParentNode();
+		this.objectGraphOrigin = node != null ? node.getOriginQueryPoint() : null;
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
 		this.sql = sql;

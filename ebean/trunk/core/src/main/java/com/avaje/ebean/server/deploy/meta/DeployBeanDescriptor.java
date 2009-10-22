@@ -22,6 +22,8 @@ package com.avaje.ebean.server.deploy.meta;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -50,6 +52,17 @@ import com.avaje.ebean.server.reflect.BeanReflect;
  * Describes Beans including their deployment information.
  */
 public class DeployBeanDescriptor<T> {
+	
+	static class PropOrder implements Comparator<DeployBeanProperty> {
+
+		public int compare(DeployBeanProperty o1, DeployBeanProperty o2) {
+			
+			int v2 = o1.getSortOrder();
+			int v1 = o2.getSortOrder();
+			return (v1<v2 ? -1 : (v1==v2 ? 0 : 1));
+		}
+	}
+	private static final PropOrder PROP_ORDER = new PropOrder();
 
 	private static final Logger logger = Logger.getLogger(DeployBeanDescriptor.class.getName());
 	
@@ -58,7 +71,7 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Map of BeanProperty Linked so as to preserve order.
 	 */
-	private final LinkedHashMap<String, DeployBeanProperty> propMap = new LinkedHashMap<String, DeployBeanProperty>();
+	private LinkedHashMap<String, DeployBeanProperty> propMap = new LinkedHashMap<String, DeployBeanProperty>();
 
 	/**
 	 * The type of bean this describes.
@@ -521,6 +534,19 @@ public class DeployBeanDescriptor<T> {
 		this.baseTable = baseTable;
 	}
 
+	public void sortProperties() {
+		
+		ArrayList<DeployBeanProperty> list = new ArrayList<DeployBeanProperty>();
+		list.addAll(propMap.values());
+		
+		Collections.sort(list,PROP_ORDER);
+		
+		propMap = new LinkedHashMap<String, DeployBeanProperty>(list.size());
+		for (int i = 0; i < list.size(); i++) {
+			addBeanProperty(list.get(i));
+		}
+	}
+	
 	/**
 	 * Add a bean property.
 	 */
@@ -674,6 +700,9 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setIdGenerator(IdGenerator idGenerator) {
 		this.idGenerator = idGenerator;
+		if (idGenerator != null && idGenerator.isDbSequence()){
+			setSequenceName(idGenerator.getName());
+		}
 	}
 
 	/**
@@ -720,7 +749,7 @@ public class DeployBeanDescriptor<T> {
 	}
 
 	/**
-	 * Return the BeanProperty that make up the unqiue id.
+	 * Return the BeanProperty that make up the unique id.
 	 * <p>
 	 * The order of these properties can be relied on to be consistent if the
 	 * bean itself doesn't change or the xml deployment order does not change.

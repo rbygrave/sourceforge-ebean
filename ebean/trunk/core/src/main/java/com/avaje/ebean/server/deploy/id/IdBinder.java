@@ -3,6 +3,7 @@ package com.avaje.ebean.server.deploy.id;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
@@ -30,6 +31,11 @@ public interface IdBinder {
 	 * Find a BeanProperty that is mapped to the database column.
 	 */
 	public BeanProperty findBeanProperty(String dbColumnName);
+	
+	/**
+	 * Return the number of scalar properties for this id.
+	 */
+	public int getPropertyCount();
 	
 	/**
 	 * Return false if the id is a simple scalar and false if it is embedded or concatenated.
@@ -71,6 +77,15 @@ public interface IdBinder {
 	 */
 	public int bindId(PreparedStatement pstmt, int index, Object value) throws SQLException;
 
+	public void addIdInBindValue(SpiExpressionRequest request, Object value);
+	
+	/**
+	 * Return the sql for binding the id using an IN clause.
+	 */
+	public String getBindIdInSql(String baseTableAlias);
+	
+	public void addIdInValueSql(SpiExpressionRequest request);
+	
 	/**
 	 * Read the id value from the result set and set it to the bean also returning it.
 	 */

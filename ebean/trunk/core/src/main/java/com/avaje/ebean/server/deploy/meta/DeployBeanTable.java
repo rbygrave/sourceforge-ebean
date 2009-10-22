@@ -21,7 +21,9 @@ package com.avaje.ebean.server.deploy.meta;
 
 import java.util.List;
 
+import com.avaje.ebean.server.deploy.BeanDescriptorMap;
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 
 
 /**
@@ -35,14 +37,14 @@ import com.avaje.ebean.server.deploy.BeanProperty;
  */
 public class DeployBeanTable {
 
-    Class<?> beanType;
+    private final Class<?> beanType;
 
     /**
      * The base table.
      */
-    String baseTable;
+    private String baseTable;
 
-    List<DeployBeanProperty> idProperties;
+    private List<DeployBeanProperty> idProperties;
     
     /**
      * Create the BeanTable.
@@ -70,13 +72,25 @@ public class DeployBeanTable {
     /**
      * Return the id properties.
      */
-    public BeanProperty[] getIdProperties() {
+    public BeanProperty[] createIdProperties(BeanDescriptorMap owner) {
     	BeanProperty[] props = new BeanProperty[idProperties.size()];
     	for (int i = 0; i < idProperties.size(); i++) {
-    		props[i] = new BeanProperty(idProperties.get(i));
+    		props[i] = createProperty(owner, idProperties.get(i));
 		}
 		return props;
 	}
+    
+    @SuppressWarnings("unchecked")
+	private BeanProperty createProperty(BeanDescriptorMap owner, DeployBeanProperty prop){
+    	
+    	if (prop instanceof DeployBeanPropertyAssocOne<?>){
+    		return new BeanPropertyAssocOne(owner, (DeployBeanPropertyAssocOne<?>)prop);
+    		
+    	} else {
+    		return new BeanProperty(prop);
+    	}
+    	
+    }
 
     /**
      * Set the Id properties.

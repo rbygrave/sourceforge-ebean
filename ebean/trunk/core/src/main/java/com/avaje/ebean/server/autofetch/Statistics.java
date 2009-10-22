@@ -99,19 +99,17 @@ public class Statistics implements Serializable {
 	}
 
 	
-	public void collectQueryInfo(ObjectGraphNode parentNode, int beansLoaded, int micros) {
+	public void collectQueryInfo(ObjectGraphNode node, int beansLoaded, int micros) {
 		
 		synchronized (monitor) {
-			String key;
-			if (parentNode == null){
+			String key = node.getPath();
+			if (key == null){
 				key = "";
 				// this is basically the number of times the root query
 				// has executed which gives us an indication of how
 				// much profiling information we have gathered.
 				counter++;
-			} else {
-				key = parentNode.getPath();
-			}
+			} 
 			
 			StatisticsQuery stats = queryStatsMap.get(key);
 			if (stats == null){

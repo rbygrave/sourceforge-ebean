@@ -1,12 +1,11 @@
 package com.avaje.ebean.server.query;
 
+import java.util.HashSet;
+import java.util.Stack;
+
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.deploy.TableJoinColumn;
 import com.avaje.ebean.server.lib.util.StringHelper;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
 
 public class DefaultDbSqlContext implements DbSqlContext {
 
@@ -34,8 +33,8 @@ public class DefaultDbSqlContext implements DbSqlContext {
 	 * A Set used to make sure formula joins are only added once to a query.
 	 */
 	private HashSet<String> formulaJoins;
-
-	private Set<String> tableJoins;
+	
+	private HashSet<String> tableJoins;
 
 	private SqlTreeAlias alias;
 
@@ -73,6 +72,42 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		joinStack.push(node);
 	}
 
+	public void addJoin(String type, String table, TableJoinColumn[] cols, String a1, String a2) {
+	
+		if (tableJoins == null) {
+			tableJoins = new HashSet<String>();
+		}
+
+		String joinKey = table + "-" + a1 + "-" + a2;
+		if (tableJoins.contains(joinKey)) {
+			return;
+		}
+
+		tableJoins.add(joinKey);
+		
+		sb.append(NEW_LINE);
+		sb.append(type);
+
+		sb.append(" ").append(table).append(" ");
+		sb.append(a2);
+
+		sb.append(" on ");
+
+		for (int i = 0; i < cols.length; i++) {
+			TableJoinColumn pair = cols[i];
+			if (i > 0) {
+				sb.append(" and ");
+			}
+
+			sb.append(a2);
+			sb.append(".").append(pair.getForeignDbColumn());
+			sb.append(" = ");
+			sb.append(a1);
+			sb.append(".").append(pair.getLocalDbColumn());
+		}
+
+		sb.append(" ");		
+	}
 	
 //	public JoinNode peekJoinNode() {
 //		return joinStack.peek();
@@ -202,40 +237,4 @@ public class DefaultDbSqlContext implements DbSqlContext {
 		return s;
 	}
 
-	public void addJoin(String type, String table, TableJoinColumn[] cols, String a1, String a2) {
-
-		if (tableJoins == null) {
-			tableJoins = new HashSet<String>();
-		}
-
-		String joinKey = table + "-" + a1 + "-" + a2;
-		if (tableJoins.contains(joinKey)) {
-			return;
-		}
-
-		tableJoins.add(joinKey);
-		
-		sb.append(NEW_LINE);
-		sb.append(type);
-
-		sb.append(" ").append(table).append(" ");
-		sb.append(a2);
-
-		sb.append(" on ");
-
-		for (int i = 0; i < cols.length; i++) {
-			TableJoinColumn pair = cols[i];
-			if (i > 0) {
-				sb.append(" and ");
-			}
-
-			sb.append(a2);
-			sb.append(".").append(pair.getForeignDbColumn());
-			sb.append(" = ");
-			sb.append(a1);
-			sb.append(".").append(pair.getLocalDbColumn());
-		}
-
-		sb.append(" ");
-	}
 }

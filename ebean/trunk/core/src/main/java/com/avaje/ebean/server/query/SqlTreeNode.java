@@ -20,6 +20,10 @@ public interface SqlTreeNode {
 
 	public static final String COMMA = ", ";
 
+	public static final int NORMAL = 0;
+	public static final int SHARED = 1;
+	public static final int READONLY = 2;
+	
 	/**
 	 * Append the required column information to the SELECT part of the sql
 	 * statement.
@@ -44,6 +48,6 @@ public interface SqlTreeNode {
 	 * </p>
 	 * 
 	 */
-	public void load(DbReadContext ctx, EntityBean parentBean) throws SQLException;
+	public void load(DbReadContext ctx, EntityBean parentBean, int parentState) throws SQLException;
 
 }

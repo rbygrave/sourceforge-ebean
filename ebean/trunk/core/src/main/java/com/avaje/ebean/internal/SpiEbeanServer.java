@@ -21,12 +21,18 @@ package com.avaje.ebean.internal;
 
 import java.util.List;
 
+import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
+import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.BeanLoader;
+import com.avaje.ebean.bean.CallStack;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.query.CQuery;
@@ -36,8 +42,30 @@ import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 /**
  * Service Provider extension to EbeanServer.
  */
-public interface SpiEbeanServer extends LazyLoadEbeanServer {
+public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionLoader {
 
+	/**
+	 * Return the DatabasePlatform for this server.
+	 */
+	public DatabasePlatform getDatabasePlatform();
+	
+	/**
+	 * Return a JDBC driver specific handler for batching.
+	 * <p>
+	 * Required for Oracle specific batch handling.
+	 * </p>
+	 */
+	public PstmtBatch getPstmtBatch();
+	
+	/**
+	 * Create an object to represent the current CallStack.
+	 * <p>
+	 * Typically used to identify the origin of queries for Autofetch
+	 * and object graph costing.
+	 * </p>
+	 */
+	public CallStack createCallStack();
+	
 	/**
 	 * Return the DDL generator.
 	 */
@@ -128,4 +156,28 @@ public interface SpiEbeanServer extends LazyLoadEbeanServer {
 	 */
 	public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t);
 
+	/**
+	 * Load a batch of Associated One Beans.
+	 */
+	public void loadBean(LoadBeanRequest loadRequest);
+
+	/**
+	 * Lazy load a batch of Many's.
+	 */
+	public void loadMany(LoadManyRequest loadRequest);
+
+	/**
+	 * Lazy load a Many not using batch loading.
+	 */
+	public void loadMany(BeanCollection<?> batch, LoadManyContext ctx);
+
+	/**
+	 * Return the default batch size for lazy loading.
+	 */
+	public int getLoadBatchSize();
+	
+	/**
+	 * Set the default batch size for lazy loading.
+	 */
+	public void setLoadBatchSize(int loadBatchSize);
 }

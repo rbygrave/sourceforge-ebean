@@ -19,8 +19,13 @@
  */
 package com.avaje.ebean.server.deploy;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.meta.DeployBeanTable;
+import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
 
 
@@ -35,6 +40,8 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
  */
 public class BeanTable {
 
+	private static final Logger logger = Logger.getLogger(BeanTable.class.getName());
+	
     private final Class<?> beanType;
 
     /**
@@ -43,13 +50,14 @@ public class BeanTable {
     private final String baseTable;
 
     private final BeanProperty[] idProperties;
+    
     /**
      * Create the BeanTable.
      */
-    public BeanTable(DeployBeanTable mutable) {
+    public BeanTable(DeployBeanTable mutable, BeanDescriptorMap owner) {
         this.beanType = mutable.getBeanType();
         this.baseTable = InternString.intern(mutable.getBaseTable());
-        this.idProperties = mutable.getIdProperties();
+        this.idProperties = mutable.createIdProperties(owner);
     }
     
     public String toString(){
@@ -79,13 +87,43 @@ public class BeanTable {
         return beanType;
     }
     
-	public DeployTableJoinColumn createJoinColumn(String foreignKeyPrefix) {
-    	if (idProperties.length == 1){
-    		String fk = foreignKeyPrefix+"_"+idProperties[0].getDbColumn();
-    		String lc = idProperties[0].getDbColumn();
-    		return new DeployTableJoinColumn(lc, fk);
-    	}
-    	return null;
+	public void createJoinColumn(String foreignKeyPrefix, DeployTableJoin join, boolean reverse) {
+		
+		boolean complexKey = false;
+		BeanProperty[] props = idProperties;
+		
+		if (idProperties.length == 1){
+			if (idProperties[0] instanceof BeanPropertyAssocOne<?>) {
+				BeanPropertyAssocOne<?> assocOne = (BeanPropertyAssocOne<?>)idProperties[0];
+				props = assocOne.getProperties();
+				complexKey = true;
+			}
+		}
+		
+		for (int i = 0; i < props.length; i++) {
+				
+    		String fk = foreignKeyPrefix+"_"+props[i].getDbColumn();
+    		String lc = props[i].getDbColumn();
+    		
+    		if (complexKey){
+    			// check to see if we want prefixes by default with complex keys
+    			boolean usePrefix = GlobalProperties.getBoolean("ebean.prefixComplexKeys", false);
+    			if (!usePrefix){
+	    			// just to copy the column name rather than prefix with the foreignKeyPrefix. 
+    				// I think that with complex keys this is the more common approach.
+	    			String msg = "On table["+baseTable+"] foreign key column ["+lc+"]";
+	    			logger.log(Level.FINE, msg);
+	    			fk = lc;
+    			}
+    		} 
+    		
+    		DeployTableJoinColumn joinCol = new DeployTableJoinColumn(lc, fk);
+    		if (reverse){
+    			joinCol = joinCol.reverse();
+    		}
+    		join.addJoinColumn(joinCol);
+		}
+		
 	}
     
 }

@@ -40,10 +40,10 @@ public class BatchDepthComparator implements Comparator<BatchedBeanHolder>, Seri
 		BatchedBeanHolder b1 = o1;
 		BatchedBeanHolder b2 = o2;
 
-		if (b1.getDepth() < b2.getDepth()) {
+		if (b1.getOrder() < b2.getOrder()) {
 			return -1;
 		}
-		if (b1.getDepth() == b2.getDepth()) {
+		if (b1.getOrder() == b2.getOrder()) {
 			return 0;
 		}
 		return 1;

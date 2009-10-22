@@ -87,8 +87,6 @@ public class InternalConfiguration {
 	
 	private final MAdminLogging logControl;
 	
-	private final RefreshHelp refreshHelp;
-	
 	private final DebugLazyLoad debugLazyLoad;
 	
 	private final TransactionManager transactionManager;
@@ -104,10 +102,14 @@ public class InternalConfiguration {
 	private final ExpressionFactory expressionFactory;
 	
 	private final BackgroundExecutor backgroundExecutor;
+
+	private final PstmtBatch pstmtBatch;
 	
 	public InternalConfiguration(ClusterManager clusterManager, ServerCacheManager cacheManager, 
-			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, BootupClasses bootupClasses) {
+			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, 
+			BootupClasses bootupClasses, PstmtBatch pstmtBatch) {
 		
+		this.pstmtBatch = pstmtBatch;
 		this.clusterManager = clusterManager;
 		this.backgroundExecutor = backgroundExecutor;
 		this.cacheManager = cacheManager;
@@ -137,7 +139,6 @@ public class InternalConfiguration {
 
 		this.logControl = new MAdminLogging(serverConfig, transactionManager);
 		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder, backgroundExecutor);
-		this.refreshHelp = new RefreshHelp(logControl, serverConfig.isDebugLazyLoad());
 
 		
 		ExternalTransactionManager externalTransactionManager = serverConfig.getExternalTransactionManager();
@@ -166,7 +167,11 @@ public class InternalConfiguration {
 	}
 	
 	public Persister createPersister(SpiEbeanServer server) {
-		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager);
+		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager, pstmtBatch);
+	}
+
+	public PstmtBatch getPstmtBatch() {
+		return pstmtBatch;
 	}
 
 	public ServerCacheManager getCacheManager() {
@@ -229,16 +234,13 @@ public class InternalConfiguration {
 		return logControl;
 	}
 
-
 	public TransactionManager getTransactionManager() {
 		return transactionManager;
 	}
 
-
 	public TransactionScopeManager getTransactionScopeManager() {
 		return transactionScopeManager;
 	}
-
 
 	public CQueryEngine getCQueryEngine() {
 		return cQueryEngine;
@@ -248,12 +250,6 @@ public class InternalConfiguration {
 	public ClusterManager getClusterManager() {
 		return clusterManager;
 	}
-
-
-	public RefreshHelp getRefreshHelp() {
-		return refreshHelp;
-	}
-
 
 	public DebugLazyLoad getDebugLazyLoad() {
 		return debugLazyLoad;

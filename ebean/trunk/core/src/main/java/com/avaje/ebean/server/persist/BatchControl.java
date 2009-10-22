@@ -103,6 +103,13 @@ public final class BatchControl {
 	public void setBatchFlushOnMixed(boolean flushBatchOnMixed) {
 		this.batchFlushOnMixed = flushBatchOnMixed;
 	}
+	
+	/**
+	 * Return the batchSize.
+	 */
+	public int getBatchSize() {
+		return batchSize;
+	}
 
 	/**
 	 * Set the size of batch execution.
@@ -197,8 +204,6 @@ public final class BatchControl {
 	 * Flush any batched PreparedStatements.
 	 */
 	protected void flushPstmtHolder() {
-		String m = "Batch flush";
-		transaction.log(m);
 		pstmtHolder.flush(getGeneratedKeys);
 	}
 
@@ -232,17 +237,10 @@ public final class BatchControl {
 		// sort the entries by depth
 		Arrays.sort(bsArray, depthComparator);
 
-		String m = "BatchControl flush";
-		transaction.log(m);
+		transaction.log("BatchControl flush "+Arrays.toString(bsArray));
 
 		for (int i = 0; i < bsArray.length; i++) {
-			BatchedBeanHolder bs = (BatchedBeanHolder) bsArray[i];
-			if (true) {
-				int depth = bs.getDepth();
-				String typeDesc = bs.getTypeDescription();
-				m = "Batched Beans depth[" + depth + "] type[" + typeDesc + "] executing";
-				transaction.log(m);
-			}
+			BatchedBeanHolder bs = bsArray[i];
 			bs.executeNow();
 			// flush all the batched Pstmts
 			flushPstmtHolder();

@@ -22,6 +22,7 @@ package com.avaje.ebean.server.persist;
 import java.util.ArrayList;
 
 import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Holds lists of persist requests for beans of a given typeDescription.
@@ -42,71 +43,43 @@ public class BatchedBeanHolder {
 	 */
 	private final BatchControl control;
 
-	/**
-	 * The type of all the requests.
-	 */
-	private final String typeDesc;
+	private final String shortDesc;
 
 	/**
 	 * The 'depth' which is used to determine the execution order.
 	 */
-	private final int depth;
+	private final int order;
 
 	/**
 	 * The list of bean insert requests.
 	 */
-	ArrayList<PersistRequest> inserts;
+	private ArrayList<PersistRequest> inserts;
 
 	/**
 	 * The list of bean update requests.
 	 */
-	ArrayList<PersistRequest> updates;
+	private ArrayList<PersistRequest> updates;
 
 	/**
 	 * The list of bean delete requests.
 	 */
-	ArrayList<PersistRequest> deletes;
+	private ArrayList<PersistRequest> deletes;
 
 	/**
 	 * Create a new entry with a given type and depth.
 	 */
-	public BatchedBeanHolder(BatchControl control, String typeDesc, int depth) {
+	public BatchedBeanHolder(BatchControl control, BeanDescriptor<?> beanDescriptor, int order) {
 		this.control = control;
-		this.typeDesc = typeDesc;
-		this.depth = depth;
+		this.shortDesc = beanDescriptor.getName() + ":" + order;
+		this.order = order;
 	}
 
 	/**
 	 * Return the depth.
 	 */
-	public int getDepth() {
-		return depth;
+	public int getOrder() {
+		return order;
 	}
-
-	/**
-	 * Return the type description.
-	 * <p>
-	 * This is the for Beans the bean class name, for MapBeans the baseTable,
-	 * for updateSql the class name and label, for callableSql the class name
-	 * and label.
-	 * </p>
-	 */
-	public String getTypeDescription() {
-		return typeDesc;
-	}
-
-//	/**
-//	 * Add the request to the appropriate list returning the size of the list.
-//	 */
-//	public boolean queue(PersistRequest request, int batchSize) {
-//		ArrayList<PersistRequest> list = getList(request.getType());
-//		if (list.size() >= batchSize){
-//			return false;
-//		} else {
-//			list.add(request);
-//			return true;
-//		}
-//	}
 	
 	/**
 	 * Execute all the persist requests in this entry.
@@ -136,7 +109,7 @@ public class BatchedBeanHolder {
 	}
 
 	public String toString() {
-		return typeDesc + " depth:" + depth;
+		return shortDesc;
 	}
 
 	/**

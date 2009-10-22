@@ -100,11 +100,6 @@ public class BeanDescriptor<T> {
 	private final IdGenerator idGenerator;
 	
 	/**
-	 * The name of an IdGenerator (optional).
-	 */
-	private final String idGeneratorName;
-
-	/**
 	 * The database sequence next value (optional).
 	 */
 	private final String sequenceNextVal;
@@ -346,6 +341,10 @@ public class BeanDescriptor<T> {
 	private final TypeManager typeManager;
 
 	private final IdBinder idBinder;
+	
+	private String idBinderInLHSSql;
+	
+	private String idBinderIdSql;
 
 	private final String name;
 	
@@ -391,7 +390,6 @@ public class BeanDescriptor<T> {
 		this.referenceOptions = deploy.getReferenceOptions();
 
 		this.idType = deploy.getIdType();
-		this.idGeneratorName = InternString.intern(deploy.getIdGeneratorName());
 		this.idGenerator = deploy.getIdGenerator();
 		this.sequenceName = deploy.getSequenceName();
 		this.sequenceNextVal = deploy.getSequenceNextVal();
@@ -472,7 +470,7 @@ public class BeanDescriptor<T> {
 		this.ebeanServer = ebeanServer;
 		for (int i = 0; i < propertiesMany.length; i++) {
 			// used for creating lazy loading lists etc 
-			propertiesMany[i].setEbeanServer(ebeanServer);
+			propertiesMany[i].setLoader(ebeanServer);
 		}		
 	}
 	
@@ -485,12 +483,15 @@ public class BeanDescriptor<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public T createCopy(Object bean) {
+		
 		EntityBean orig = ((EntityBean)bean);
 		EntityBean copy = (EntityBean)orig._ebean_createCopy();
 		EntityBeanIntercept origEbi = orig._ebean_getIntercept();
 		EntityBeanIntercept copyEbi = copy._ebean_getIntercept();
 		
 		origEbi.copyStateTo(copyEbi);		
+		
+		copyEbi.setBeanLoader(0, ebeanServer);
 		
 		return (T)copy;
 	}
@@ -557,7 +558,9 @@ public class BeanDescriptor<T> {
 		}
 
 		idBinder.initialise();
-
+		idBinderInLHSSql = idBinder.getBindIdInSql(baseTableAlias);
+		idBinderIdSql = idBinder.getBindIdSql(baseTableAlias);
+		
 		if (tableGenerated || embedded){
 			
 		} else {
@@ -764,7 +767,40 @@ public class BeanDescriptor<T> {
 		return baseTableAlias;
 	}
 
+	/**
+	 * Try to refresh the bean from the cache returning true if successful.
+	 */
+	public boolean refreshFromCache(EntityBeanIntercept ebi, Object id) {
+		if (ebi.isUseCache() && ebi.isReference()) {
+			// try to use a bean from the cache to load from
+			Object cacheBean = cacheGet(id);
+			if (cacheBean != null){
+				// check that the cached bean contains the property we need to read
+				String lazyLoadProperty = ebi.getLazyLoadProperty();
+				Set<String> loadedProps = ((EntityBean)cacheBean)._ebean_getIntercept().getLoadedProps();
+				if (loadedProps == null || loadedProps.contains(lazyLoadProperty)) {
+					// refresh using the cached bean
+					refreshFromCacheBean(ebi, cacheBean, true);
+					return true;					
+				} 
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Take the values from the dbBean and copy them into the ebi's owner bean.
+	 */
+	private void refreshFromCacheBean(EntityBeanIntercept ebi, Object cacheBean, boolean isLazyLoad) {
+		new BeanRefreshFromCacheHelp(this, ebi, cacheBean, isLazyLoad).refresh();
+	}
 
+	public void preAllocateIds(int batchSize){
+		if (idGenerator != null){
+			idGenerator.preAllocateIds(batchSize);
+		}		
+	}
+	
 	public Object nextId() {
 		if (idGenerator != null){
 			return idGenerator.nextId();
@@ -963,10 +999,18 @@ public class BeanDescriptor<T> {
 	 * Return the sql for binding an id. This is the columns with table alias
 	 * that make up the id.
 	 */
-	public String getBindIdSql() {
-		return idBinder.getBindIdSql(baseTableAlias);
+	public String getIdBinderIdSql() {
+		return idBinderIdSql;
 	}
-		
+	
+	
+	/**
+	 * Return the sql for binding id's using an IN clause.
+	 */
+	public String getIdBinderInLHSSql() {
+		return idBinderInLHSSql;
+	}
+
 	/**
 	 * Bind the idValue to the preparedStatement.
 	 * <p>
@@ -1023,9 +1067,9 @@ public class BeanDescriptor<T> {
 		try {
 			// Note factoryType is used indirectly via beanReflect
 			EntityBean eb = (EntityBean) beanReflect.createEntityBean();
-			EntityBeanIntercept ebi = eb._ebean_getIntercept();
+			//EntityBeanIntercept ebi = eb._ebean_getIntercept();
 			//ebi.setServerName(serverName);
-			ebi.setInternalEbean(ebeanServer);
+			//ebi.setInternalEbean(ebeanServer);
 
 			return eb;
 
@@ -1045,8 +1089,9 @@ public class BeanDescriptor<T> {
 			EntityBean eb = (EntityBean) beanReflect.createEntityBean();
 
 			EntityBeanIntercept ebi = eb._ebean_getIntercept();
+			ebi.setBeanLoader(0, ebeanServer);
 			//ebi.setServerName(serverName);
-			ebi.setInternalEbean(ebeanServer);
+			//ebi.setInternalEbean(ebeanServer);
 			if (parent != null) {
 				// Special case for a OneToOne ... parent
 				// needs to be added to context prior to query
@@ -1096,13 +1141,6 @@ public class BeanDescriptor<T> {
 		return getBeanProperty(property).getValue(bean);
 	}
 
-//	/**
-//	 * Set a property value to a bean of this type.
-//	 */
-//	public void setValue(Object bean, String property, Object value) {
-//		getBeanProperty(property).setValue(bean, value);
-//	}
-
 	/**
 	 * Return true if this bean type should use IdGeneration.
 	 * <p>
@@ -1111,7 +1149,7 @@ public class BeanDescriptor<T> {
 	 * </p>
 	 */
 	public boolean isUseIdGenerator() {
-		return idType == IdType.GENERATOR;
+		return idGenerator != null;
 	}
 
 	/**
@@ -1607,13 +1645,12 @@ public class BeanDescriptor<T> {
 	public String getSelectLastInsertedId() {
 		return selectLastInsertedId;
 	}
-
+	
 	/**
-	 * Return the name of the IdGenerator that should be used with this type of
-	 * bean. A null value could be used to specify the 'default' IdGenerator.
+	 * Return the IdGenerator.
 	 */
-	public String getIdGeneratorName() {
-		return idGeneratorName;
+	public IdGenerator getIdGenerator() {
+		return idGenerator;
 	}
 
 	/**

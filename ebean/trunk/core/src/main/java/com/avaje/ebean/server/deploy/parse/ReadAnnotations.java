@@ -27,6 +27,13 @@ import com.avaje.ebean.server.deploy.BeanDescriptorManager;
  */
 public class ReadAnnotations {
 
+	/**
+	 * Read the initial non-relationship annotations included Id and EmbeddedId.
+	 * <p>
+	 * We then have enough to create BeanTables which are used in readAssociations
+	 * to resolve the relationships etc.
+	 * </p>
+	 */
     public void readInitial(DeployBeanInfo<?> info){
 
     	try { 		

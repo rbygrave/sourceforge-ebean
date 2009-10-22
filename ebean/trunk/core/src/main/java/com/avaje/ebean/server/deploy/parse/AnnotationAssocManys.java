@@ -45,7 +45,7 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
  */
 public class AnnotationAssocManys extends AnnotationParser {
 
-	final BeanDescriptorManager factory;
+	private final BeanDescriptorManager factory;
 
 	/**
 	 * Create with the DeployInfo.
@@ -140,10 +140,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 			// Use the owning bean table to define the join
 			BeanTable owningBeanTable = factory.getBeanTable(descriptor.getBeanType());
-			DeployTableJoinColumn join = owningBeanTable.createJoinColumn(fkeyPrefix);
-			if (join != null){
-				prop.getTableJoin().addJoinColumn(join);
-			}
+			owningBeanTable.createJoinColumn(fkeyPrefix, prop.getTableJoin(), false);
 		}
 	}
 

@@ -235,7 +235,18 @@ public class DefaultServerCache implements ServerCache {
 		}
 	}
 
-	
+	/**
+	 * Put a value into the cache but only if absent.
+	 */
+	public Object putIfAbsent(Object key, Object value) {
+		CacheEntry entry = map.putIfAbsent(key, new CacheEntry(key, value));
+		if (entry == null){
+			return null;
+		} else {
+			return entry.getValue();
+		}
+	}
+
 	/**
 	 * Remove an entry from the cache.
 	 */

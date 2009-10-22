@@ -44,19 +44,23 @@ public class BatchedPstmtHolder {
 	 * A Map of the statements using a String key. This is used so that the same
 	 * Statement,Prepared,Callable is reused.
 	 */
-	LinkedHashMap<String,BatchedPstmt> stmtMap = new LinkedHashMap<String,BatchedPstmt>();
+	private LinkedHashMap<String,BatchedPstmt> stmtMap = new LinkedHashMap<String,BatchedPstmt>();
 
 	/**
 	 * The Max size across all the BatchedPstmt.
 	 */
-	int maxSize;
+	private int maxSize;
+	
+	public BatchedPstmtHolder() {
+		
+	}
 	
 	/**
 	 * Return the PreparedStatement if it has already been used in this Batch.
 	 * This will return null if no matching PreparedStatement is found.
 	 */
 	public PreparedStatement getStmt(String stmtKey, BatchPostExecute postExecute) {
-		BatchedPstmt bs = (BatchedPstmt) stmtMap.get(stmtKey);
+		BatchedPstmt bs = stmtMap.get(stmtKey);
 		if (bs == null) {
 			// the PreparedStatement has need been created
 			return null;
@@ -100,6 +104,8 @@ public class BatchedPstmtHolder {
 	public void flush(boolean getGeneratedKeys) throws PersistenceException {
 
 		SQLException firstError = null;
+		SQLException nextError = null;
+		String errorSql = null;
 
 		// flag set if something fails. Will not execute
 		// but still need to close PreparedStatements.
@@ -107,7 +113,7 @@ public class BatchedPstmtHolder {
 
 		Iterator<BatchedPstmt> it = stmtMap.values().iterator();
 		while (it.hasNext()) {
-			BatchedPstmt bs = (BatchedPstmt) it.next();
+			BatchedPstmt bs = it.next();
 			try {
 				if (!isError) {
 					bs.executeBatch(getGeneratedKeys);
@@ -115,6 +121,8 @@ public class BatchedPstmtHolder {
 			} catch (SQLException ex) {
 				if (firstError == null) {
 					firstError = ex;
+					nextError = ex.getNextException();
+					errorSql = bs.getSql();
 				} else {
 		        	logger.log(Level.SEVERE, null, ex);
 				}
@@ -135,7 +143,12 @@ public class BatchedPstmtHolder {
 		maxSize = 0;
 
 		if (firstError != null) {
-			throw new PersistenceException(firstError);
+			String msg = "Error when batch flush on sql: "+errorSql;
+			if (nextError != null){
+				logger.log(Level.SEVERE, "Also got SQLException.getNextException() as", nextError);
+			}
+			
+			throw new PersistenceException(msg, firstError);
 		}
 	}
 

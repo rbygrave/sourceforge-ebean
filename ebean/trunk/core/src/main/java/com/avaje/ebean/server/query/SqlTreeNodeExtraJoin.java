@@ -113,7 +113,7 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 	/**
 	 * Does nothing.
 	 */
-	public void load(DbReadContext ctx, EntityBean parentBean) throws SQLException {
+	public void load(DbReadContext ctx, EntityBean parentBean, int parentState) throws SQLException {
 	}
 
 	

@@ -2,6 +2,7 @@ package com.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.avaje.ebean.EbeanServer;
@@ -9,8 +10,9 @@ import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.LazyLoadEbeanServer;
-import com.avaje.ebean.bean.ObjectGraphNode;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.common.BeanMap;
 
 /**
@@ -21,7 +23,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	private final BeanPropertyAssocMany<T> many;
 	private final BeanDescriptor<T> targetDescriptor;
 	private final BeanProperty beanProperty;
-	private LazyLoadEbeanServer ebeanServer;
+	private BeanCollectionLoader loader;
 	//private final String mapKey;
 	
 	/**
@@ -46,8 +48,43 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 	
 	
-	public void setEbeanServer(LazyLoadEbeanServer ebeanServer){
-		this.ebeanServer = ebeanServer;
+	public void setLoader(BeanCollectionLoader loader){
+		this.loader = loader;
+	}
+	
+
+	@SuppressWarnings("unchecked")
+	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc, String mapKey) {
+		
+		if(mapKey == null){
+			mapKey = many.getMapKey();
+		}
+		BeanProperty beanProperty = targetDescriptor.getBeanProperty(mapKey);
+		
+		BeanMap<Object, Object> bm = (BeanMap<Object, Object>)bc;
+		Map<Object, Object> actualMap = bm.getActualMap();
+		if (actualMap == null){
+			actualMap = new LinkedHashMap<Object, Object>();
+			bm.setActualMap(actualMap);
+		}
+		return new Adder(beanProperty, actualMap);
+	}
+
+	static class Adder implements BeanCollectionAdd {
+		
+		private final BeanProperty beanProperty;
+		
+		private final Map<Object, Object> map;
+		
+		Adder(BeanProperty beanProperty, Map<Object, Object> map) {
+			this.beanProperty = beanProperty;
+			this.map = map;
+		}
+		
+		public void addBean(Object bean) {
+			Object keyValue = beanProperty.getValue(bean);
+			map.put(keyValue, bean);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -65,10 +102,9 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public BeanCollection<T> createReference(Object parentBean, String serverName,
-			String propertyName, ObjectGraphNode profilePoint) {
+	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName) {
 
-		return new BeanMap(ebeanServer, parentBean, propertyName, profilePoint);
+		return new BeanMap(loader, parentBean, propertyName);
 	}
 
 	public ArrayList<InvalidValue> validate(Object manyValue) {
@@ -92,9 +128,13 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 
 	public void refresh(EbeanServer server, Query<?> query, Transaction t, Object parentBean) {
-
 		BeanMap<?, ?> newBeanMap = (BeanMap<?, ?>) server.findMap(query, t);
+		refresh(newBeanMap, parentBean);
+	}
+	
+	public void refresh(BeanCollection<?> bc, Object parentBean) {
 
+		BeanMap<?, ?> newBeanMap = (BeanMap<?, ?>) bc;
 		Map<?, ?> current = (Map<?, ?>) many.getValue(parentBean);
 
 		if (many.isManyToMany()) {

@@ -40,16 +40,6 @@ public class ExportedProperty {
 		this.foreignDbColumn = InternString.intern(foreignDbColumn);
 		this.property = property;
 	}
-
-	/**
-	 * Return the property from the local bean.
-	 * <p>
-	 * This is typically the local uids properties.
-	 * </p>
-	 */
-	public BeanProperty getProperty() {
-		return property;
-	}
 	
 	/**
 	 * Return true if this is part of an embedded concatinated key.
