@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -57,6 +58,8 @@ public class Customer extends BasicDomain {
     @Where(clause="${ta}.order_date is not null")
     List<Order> orders;
 
+    @OneToMany(mappedBy="customer", cascade=CascadeType.ALL)
+    List<Contact> contacts;
 
     /**
      * Return name.
@@ -139,6 +142,19 @@ public class Customer extends BasicDomain {
 	public ReentrantLock getLock() {
 		return lock;
 	}
+
+	public List<Contact> getContacts() {
+		return contacts;
+	}
+
+	public void setContacts(List<Contact> contacts) {
+		this.contacts = contacts;
+	}
 	
-	
+	public void addContact(Contact contact){
+		if (contacts == null){
+			contacts = new ArrayList<Contact>();
+		}
+		contacts.add(contact);
+	}
 }

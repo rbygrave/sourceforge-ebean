@@ -10,7 +10,7 @@ import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.config.dbplatform.Postgres83Platform;
+import com.avaje.ebean.config.dbplatform.PostgresPlatform;
 import com.avaje.tests.model.basic.TOne;
 import com.avaje.tests.model.basic.TSDetail;
 import com.avaje.tests.model.basic.TSMaster;
@@ -94,7 +94,7 @@ public class MainDbBoolean {
 		c.setDatabaseBooleanTrue("T");
 		c.setDatabaseBooleanFalse("F");
 
-		c.setDatabasePlatform(new Postgres83Platform());
+		c.setDatabasePlatform(new PostgresPlatform());
 
 		c.addClass(TOne.class);
 
