@@ -61,12 +61,14 @@ class IdInExpression implements SpiExpression {
 	}
 
 	/**
-	 * No properties so this is just a unique static number.
+	 * Incorporates the number of Id values to bind.
 	 */
 	public int queryAutoFetchHash() {
 		// this number is unique for a given bean type
 		// which is all that is required
-		return IdInExpression.class.getName().hashCode();
+		int hc = IdInExpression.class.getName().hashCode();
+		hc = hc * 31 + idList.size();
+		return hc;
 	}
 
 	public int queryPlanHash(BeanQueryRequest<?> request) {
