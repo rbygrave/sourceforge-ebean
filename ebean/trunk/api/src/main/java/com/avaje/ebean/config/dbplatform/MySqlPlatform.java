@@ -50,8 +50,9 @@ public class MySqlPlatform extends DatabasePlatform {
         
         dbTypeMap.put(Types.BIT, new DbType("tinyint(1) default 0"));
         dbTypeMap.put(Types.BOOLEAN, new DbType("tinyint(1) default 0"));
-        dbTypeMap.put(Types.CLOB, new DbType("text"));
         dbTypeMap.put(Types.TIMESTAMP, new DbType("datetime"));
+        dbTypeMap.put(Types.CLOB, new MySqlClob());
+        dbTypeMap.put(Types.BLOB, new MySqlBlob());
         
         dbDdlSyntax.setDisableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=0");
         dbDdlSyntax.setEnableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=1");
