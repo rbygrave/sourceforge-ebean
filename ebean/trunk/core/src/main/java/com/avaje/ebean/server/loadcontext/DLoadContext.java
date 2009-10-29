@@ -38,7 +38,6 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.el.ElPropertyValue;
-import com.avaje.ebean.server.query.SplitName;
 import com.avaje.ebean.server.querydefn.OrmQueryProperties;
 
 /**
@@ -285,14 +284,7 @@ public class DLoadContext implements LoadContext {
 	
 	private BeanProperty getBeanProperty(BeanDescriptor<?> desc, String path){
 		
-		String[] split = SplitName.splitBegin(path);
-		if (split[0] == null){
-			return desc.getBeanProperty(split[1]);
-		}
-		BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>)desc.getBeanProperty(split[0]);
-		BeanDescriptor<?> targetDesc = assocProp.getTargetDescriptor();
-
-		return getBeanProperty(targetDesc, split[1]);
+		return desc.getBeanPropertyFromPath(path);
 	}
 	
 }

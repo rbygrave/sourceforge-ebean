@@ -32,7 +32,7 @@ public interface LoadBeanContext extends LoadSecondaryQuery {
 	/**
 	 * Configure the query to load beans for this node/path.
 	 */
-	public void configureQuery(SpiQuery<?> query);
+	public void configureQuery(SpiQuery<?> query, String lazyLoadProperty);
 	
 	/**
 	 * Return the full path of this node from the root object.

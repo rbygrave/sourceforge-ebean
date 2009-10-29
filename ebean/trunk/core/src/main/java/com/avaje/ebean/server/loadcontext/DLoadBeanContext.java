@@ -67,15 +67,16 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		}
 	}
 	
-	public void configureQuery(SpiQuery<?> query){
+	public void configureQuery(SpiQuery<?> query, String lazyLoadProperty){
 		
 		// propagate the sharedInstance/ReadOnly state
 		query.setParentState(parent.getParentState());
 		query.setParentNode(getObjectGraphNode());
+		query.setLazyLoadProperty(lazyLoadProperty);
 		
 		if (queryProps != null){
 			queryProps.configureBeanQuery(query);
-		}
+		} 
 	}
 
 	public String getFullPath() {
@@ -127,22 +128,22 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		
 		int position = ebi.getBeanLoaderIndex();
 		
-		Object id = desc.getId(ebi.getOwner());
-		if (desc.refreshFromCache(ebi, id)) {
-			// we hit the cache... so not even bother with 
-			// querying the DB. Just null out the appropriate
-			// weak reference entry out of the list...
-			EntityBeanIntercept removeEntry = weakList.removeEntry(position);
-			if (removeEntry != ebi){
-				throw new RuntimeException("Different instance returned?");
-			}
-			return;
-		}
+//		Object id = desc.getId(ebi.getOwner());
+//		if (desc.refreshFromCache(ebi, id)) {
+//			// we hit the cache... so not even bother with 
+//			// querying the DB. Just null out the appropriate
+//			// weak reference entry out of the list...
+//			EntityBeanIntercept removeEntry = weakList.removeEntry(position);
+//			if (removeEntry != ebi){
+//				throw new RuntimeException("Different instance returned?");
+//			}
+//			return;
+//		}
 		
 		// determine the set of beans to lazy load
 		List<EntityBeanIntercept> batch = weakList.getLoadBatch(position, batchSize);
 
-		LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true);
+		LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty());
 
 		parent.getEbeanServer().loadBean(req);
 	}
@@ -152,7 +153,7 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		// determine the set of beans to load
 		List<EntityBeanIntercept> batch = weakList.getLoadBatch(0, requestedBatchSize);
 		
-		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false);
+		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null);
 		
 		parent.getEbeanServer().loadBean(req);
 	}

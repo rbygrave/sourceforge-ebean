@@ -27,8 +27,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -748,6 +750,59 @@ public class DeployBeanDescriptor<T> {
 		return propMap.values().iterator();
 	}
 
+	/**
+	 * Return the defaultSelectClause using FetchType.LAZY and FetchType.EAGER.
+	 */
+	public String getDefaultSelectClause() {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		boolean hasLazyFetch = false;
+		
+		Iterator<DeployBeanProperty> it  = propMap.values().iterator();
+		while (it.hasNext()) {
+			DeployBeanProperty prop = it.next();
+			if (prop instanceof DeployBeanPropertyAssocMany<?>){
+				// ignore the associated many properties
+			} else {
+				if (prop.isFetchEager()){
+					sb.append(prop.getName()).append(",");
+				} else {
+					hasLazyFetch = true;
+				}
+			}
+		}
+		
+		if (!hasLazyFetch){
+			return null;
+		}
+		String selectClause = sb.toString();
+		return selectClause.substring(0, selectClause.length()-1);
+	}
+	
+    /**
+     * Parse the include separating by comma or semicolon.
+     */
+    public Set<String> parseDefaultSelectClause(String rawList) {
+            	
+    	if (rawList == null){
+    		return null;
+    	}
+    	
+        String[] res = rawList.split(",");
+    	
+        LinkedHashSet<String> set = new LinkedHashSet<String>(res.length+3);
+
+        String temp = null;
+        for (int i = 0; i < res.length; i++) {
+            temp = res[i].trim();
+            if (temp.length() > 0){
+            	set.add(temp);
+            }
+        }
+        return Collections.unmodifiableSet(set);
+    }
+	
 	/**
 	 * Return the BeanProperty that make up the unique id.
 	 * <p>

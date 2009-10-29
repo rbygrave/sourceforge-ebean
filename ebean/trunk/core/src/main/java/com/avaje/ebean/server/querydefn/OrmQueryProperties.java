@@ -80,6 +80,16 @@ public class OrmQueryProperties implements Serializable {
 	}
 	
 	/**
+	 * Set the properties from deployment default FetchTypes.
+	 */
+	public void setProperties(String properties, Set<String> included) {
+		this.properties = properties;
+		this.trimmedProperties = properties;
+		this.included = included;
+		this.allProperties = false;
+	}
+	
+	/**
 	 * Define the select and joins for this query.
 	 */
 	public void configureBeanQuery(SpiQuery<?> query){
@@ -139,6 +149,15 @@ public class OrmQueryProperties implements Serializable {
 			copy.includedBeanJoin = new HashSet<String>(includedBeanJoin);	
 		}
 		return copy;
+	}
+	
+	public boolean hasSelectClause() {
+		if ("*".equals(trimmedProperties)) {
+			// explicitly selected all properties
+			return true;
+		}
+		// explicitly selected some properties
+		return included != null;
 	}
 	
 	public String toString() {

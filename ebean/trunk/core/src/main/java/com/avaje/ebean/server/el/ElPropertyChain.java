@@ -76,11 +76,6 @@ public class ElPropertyChain implements ElPropertyValue {
 	}
 
 	private String calcPlaceHolder(String prefix, String dbColumn){
-
-		if (dbColumn == null){
-			System.out.println("here");
-			//return null;
-		}
 		
 		String p;
 		if (prefix != null){

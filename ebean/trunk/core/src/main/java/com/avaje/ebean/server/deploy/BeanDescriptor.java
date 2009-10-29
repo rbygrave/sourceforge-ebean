@@ -64,6 +64,7 @@ import com.avaje.ebean.server.el.ElPropertyChainBuilder;
 import com.avaje.ebean.server.el.ElPropertyDeploy;
 import com.avaje.ebean.server.el.ElPropertyValue;
 import com.avaje.ebean.server.query.CQueryPlan;
+import com.avaje.ebean.server.query.SplitName;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 import com.avaje.ebean.server.reflect.BeanReflect;
 import com.avaje.ebean.server.type.TypeManager;
@@ -359,6 +360,9 @@ public class BeanDescriptor<T> {
 	
 	private final ReferenceOptions referenceOptions;
 	
+	private final String defaultSelectClause;
+	private final Set<String> defaultSelectClauseSet;
+	
 	private SpiEbeanServer ebeanServer;
 	
 	private ServerCache beanCache;
@@ -389,6 +393,9 @@ public class BeanDescriptor<T> {
 		this.persistListener = deploy.getPersistListener();
 		this.referenceOptions = deploy.getReferenceOptions();
 
+		this.defaultSelectClause = deploy.getDefaultSelectClause();
+		this.defaultSelectClauseSet = deploy.parseDefaultSelectClause(defaultSelectClause);
+		
 		this.idType = deploy.getIdType();
 		this.idGenerator = deploy.getIdGenerator();
 		this.sequenceName = deploy.getSequenceName();
@@ -641,7 +648,29 @@ public class BeanDescriptor<T> {
 			}
 		}
 	}
+
+	/**
+	 * Return true if this bean type has a default select clause 
+	 * that is not simply select all properties.
+	 */
+	public boolean hasDefaultSelectClause() {
+		return defaultSelectClause != null;
+	}
 	
+	/**
+	 * Return the default select clause.
+	 */
+	public String getDefaultSelectClause() {
+		return defaultSelectClause;
+	}
+
+	/**
+	 * Return the default select clause already parsed into an ordered Set.
+	 */
+	public Set<String> getDefaultSelectClauseSet() {
+		return defaultSelectClauseSet;
+	}
+
 	/**
 	 * Return true if this object is the root level object in its
 	 * entity inheritance.
@@ -1115,6 +1144,37 @@ public class BeanDescriptor<T> {
 		}
 	}
 
+	public BeanProperty getBeanPropertyFromPath(String path){
+		
+		String[] split = SplitName.splitBegin(path);
+		if (split[1] == null){
+			return getBeanProperty(split[0]);
+		}
+		BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>)getBeanProperty(split[0]);
+		BeanDescriptor<?> targetDesc = assocProp.getTargetDescriptor();
+
+		return targetDesc.getBeanPropertyFromPath(split[1]);
+	}
+	
+	/**
+	 * Return the BeanDescriptor for a given path of Associated One or Many beans.
+	 */
+	public BeanDescriptor<?> getBeanDescriptor(String path) {
+		if (path == null){
+			return this;
+		}
+		String[] splitBegin = SplitName.splitBegin(path);
+		
+		BeanProperty beanProperty = propMap.get(splitBegin[0]);
+		if (beanProperty instanceof BeanPropertyAssoc<?>){
+			BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>)beanProperty;
+			return assocProp.getTargetDescriptor().getBeanDescriptor(splitBegin[1]);
+			
+		} else {
+			throw new RuntimeException("Error getting BeanDescriptor for path "+path+" from "+getFullName());
+		}
+	}
+	
 	/**
 	 * Return the BeanDescriptor of another bean type.
 	 */

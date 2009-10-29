@@ -94,7 +94,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		super(server, t);
 		
 		this.beanDescriptor = desc;
-		query.setBeanDescriptor(desc);
 		
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;

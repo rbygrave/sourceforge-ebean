@@ -66,7 +66,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 	/**
 	 * Return true if one of the expressions is related to a Many property.
 	 */
-	public boolean containsMany(BeanDescriptor<T> desc){
+	public boolean containsMany(BeanDescriptor<?> desc){
 		
 		for (int i = 0; i < list.size(); i++) {
 			

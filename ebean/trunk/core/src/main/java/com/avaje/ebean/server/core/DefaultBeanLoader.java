@@ -62,7 +62,13 @@ public class DefaultBeanLoader {
 		if (batchListSize == requestedBatchSize){
 			return batchListSize;
 		}
-		if (batchListSize < 10 && requestedBatchSize == 10){
+		if (batchListSize == 1) {
+			return 1;
+		}
+		if (requestedBatchSize == 5 && batchListSize < 5){
+			return 5;
+		}
+		if (requestedBatchSize == 10 && batchListSize < 10){
 			return 10;
 		}
 		if (batchListSize < 20){
@@ -278,7 +284,7 @@ public class DefaultBeanLoader {
 		
 		query.setLoadDescription(loadRequest.getDescription());
 		
-		ctx.configureQuery(query);
+		ctx.configureQuery(query, loadRequest.getLazyLoadProperty());
 		
 		// make sure the query doesn't use the cache
 		query.setUseCache(false);

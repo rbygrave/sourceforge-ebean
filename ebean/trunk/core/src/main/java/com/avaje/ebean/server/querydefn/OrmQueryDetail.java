@@ -91,6 +91,14 @@ public class OrmQueryDetail implements Serializable {
 	public void select(String columns) {
 		baseProps = new OrmQueryProperties(null, columns);
 	}
+	
+	public boolean containsProperty(String property){
+		if (baseProps == null){
+			return true;
+		} else {
+			return baseProps.isIncluded(property);
+		}
+	}
 
 	/**
 	 * Set the base / root query properties.
@@ -223,6 +231,39 @@ public class OrmQueryDetail implements Serializable {
 		
 	}
 
+	/**
+	 * Set any default select clauses for the main bean and any joins that have
+	 * not explicitly defined a select clause.
+	 * <p>
+	 * That is this will use FetchType.LAZY to exclude some properties by default.
+	 * </p>
+	 */
+	public void setDefaultSelectClause(BeanDescriptor<?> desc){
+		
+		if (desc.hasDefaultSelectClause() && !hasSelectClause()){
+			if (baseProps == null){
+				baseProps = new OrmQueryProperties();
+			}
+			baseProps.setProperties(desc.getDefaultSelectClause(), desc.getDefaultSelectClauseSet());
+		}
+		
+		Iterator<OrmQueryProperties> it = fetchJoins.values().iterator();
+		while (it.hasNext()) {
+			OrmQueryProperties joinProps = it.next();
+			if (!joinProps.hasSelectClause()){
+				BeanDescriptor<?> assocDesc = desc.getBeanDescriptor(joinProps.getPath());
+				if (assocDesc.hasDefaultSelectClause()){
+					// use the default select clause 
+					joinProps.setProperties(assocDesc.getDefaultSelectClause(), assocDesc.getDefaultSelectClauseSet());
+				}
+			}
+		}
+	}
+	
+	public boolean hasSelectClause() {
+		return (baseProps != null && baseProps.hasSelectClause());
+	}
+	
 	/**
 	 * Return true if the query detail has neither select properties specified
 	 * or any joins defined.
