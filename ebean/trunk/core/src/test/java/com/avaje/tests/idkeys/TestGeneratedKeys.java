@@ -47,7 +47,7 @@ public class TestGeneratedKeys extends EbeanTestCase
 
         assertNotNull(al.getId());
         assertFalse("sequence advanced", sequenceStart == sequenceCurrent);
-        assertEquals("sequence advanced by one", sequenceStart + 1, sequenceCurrent);
+        assertEquals("sequence advanced by 20", sequenceStart + 20, sequenceCurrent);
         
     }
 
