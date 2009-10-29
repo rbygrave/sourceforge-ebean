@@ -22,7 +22,11 @@ public class SplitName {
 		
 		int pos =  last ? name.lastIndexOf('.') : name.indexOf('.');
 		if (pos == -1){
-			return new String[]{null, name};
+			if (last){
+				return new String[]{null, name};
+			} else {
+				return new String[]{name, null};
+			}
 		} else {
 			String s0 = name.substring(0, pos);
 			String s1 = name.substring(pos+1);

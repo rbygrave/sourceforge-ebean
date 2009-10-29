@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EmbeddedId;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Version;
 
@@ -93,6 +94,8 @@ public class DeployBeanProperty {
 	 */
 	private boolean versionColumn;
 
+	private boolean fetchEager = true;
+	
 	/**
 	 * Set if this property is nullable.
 	 */
@@ -525,6 +528,20 @@ public class DeployBeanProperty {
 	 */
 	public void setVersionColumn(boolean isVersionColumn) {
 		this.versionColumn = isVersionColumn;
+	}
+	
+	/**
+	 * Return true if this should be eager fetched by default.
+	 */
+	public boolean isFetchEager() {
+		return fetchEager;
+	}
+
+	/**
+	 * Set the default fetch type for this property.
+	 */
+	public void setFetchType(FetchType fetchType) {
+		this.fetchEager = FetchType.EAGER.equals(fetchType);;
 	}
 
 	/**

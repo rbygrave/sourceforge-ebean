@@ -227,7 +227,7 @@ public interface AutoFetchManager extends NodeUsageListener {
 	 * This will also determine if the query should be profiled.
 	 * </p>
 	 */
-	public void tuneQuery(SpiQuery<?> query);
+	public boolean tuneQuery(SpiQuery<?> query);
 
 	/**
 	 * Collect query profiling information.

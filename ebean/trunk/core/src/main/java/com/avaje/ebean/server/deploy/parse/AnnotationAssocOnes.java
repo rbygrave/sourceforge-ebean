@@ -181,12 +181,14 @@ public class AnnotationAssocOnes extends AnnotationParser {
         }
         beanProp.setBeanTable(assoc);
         beanProp.setNullable(propAnn.optional());
+        beanProp.setFetchType(propAnn.fetch());
     }
 
     private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
     	prop.setOneToOne(true);
         prop.setNullable(propAnn.optional());
+        prop.setFetchType(propAnn.fetch());
         prop.setMappedBy(propAnn.mappedBy());
         if (!"".equals(propAnn.mappedBy())){
         	prop.setOneToOneExported(true);

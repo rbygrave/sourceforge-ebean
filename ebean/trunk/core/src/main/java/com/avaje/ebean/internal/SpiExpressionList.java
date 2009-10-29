@@ -19,7 +19,7 @@ public interface SpiExpressionList<T> extends ExpressionList<T> {
 	/**
 	 * Returns true if the expression list contains a many property.
 	 */
-	public boolean containsMany(BeanDescriptor<T> desc);
+	public boolean containsMany(BeanDescriptor<?> desc);
 	
 	/**
 	 * Return true if this list is empty.

@@ -57,6 +57,12 @@ public interface SpiQuery<T> extends Query<T> {
 	}
 	
 	/**
+	 * Return true if select all properties was used to ensure the
+	 * property invoking a lazy load was included in the query.
+	 */
+	public boolean selectAllForLazyLoadProperty();
+	
+	/**
 	 * Set the query mode.
 	 */
 	public void setMode(Mode m);
@@ -133,7 +139,7 @@ public interface SpiQuery<T> extends Query<T> {
 	/**
 	 * Set the BeanDescriptor for the root type of this query.
 	 */
-	public void setBeanDescriptor(BeanDescriptor<T> desc);
+	public void setBeanDescriptor(BeanDescriptor<?> desc);
 	
 	/**
 	 * Return true if the where expressions contains a many.
@@ -215,6 +221,12 @@ public interface SpiQuery<T> extends Query<T> {
 	 */
 	public void setParentNode(ObjectGraphNode node);
 
+	/**
+	 * Set the property that invoked the lazy load and MUST be included in the 
+	 * lazy loading query.
+	 */
+	public void setLazyLoadProperty(String lazyLoadProperty);
+	
 	/**
 	 * Used to hook back a lazy loading query to the original query (query
 	 * point).
@@ -420,6 +432,11 @@ public interface SpiQuery<T> extends Query<T> {
 	 */
 	public boolean isDistinct();
 
+	/**
+	 * Set default select clauses where none have been explicitly defined.
+	 */
+	public void setDefaultSelectClause();
+		
 	/**
 	 * Return the order by clause.
 	 */

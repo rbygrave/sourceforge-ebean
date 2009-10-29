@@ -418,15 +418,15 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	/**
 	 * Auto tune the query and enable profiling.
 	 */
-	public void tuneQuery(SpiQuery<?> query) {
+	public boolean tuneQuery(SpiQuery<?> query) {
 
 		if (!queryTuning && !profiling) {
-			return;
+			return false;
 		}
 
 		if (!useAutoFetch(query)) {
 			// not using autoFetch for this query
-			return;
+			return false;
 		}
 
 		ObjectGraphNode parentAutoFetchNode = query.getParentNode();
@@ -436,7 +436,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 			query.setAutoFetchManager(this);
 
 			// TODO: Future feature - tune a lazy loading query?
-			return;
+			return false;
 		}
 
 		// create a query point to identify the query
@@ -448,20 +448,6 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 		// get the number of times we have collected profiling information
 		int profileCount = tunedFetch == null ? 0 : tunedFetch.getProfileCount();
-
-		if (queryTuning) {
-			if (tunedFetch != null && profileCount >= profilingMin) {
-				// deemed to have enough profiling 
-				// information for automatic tuning
-				if (tunedFetch.autoFetchTune(query)){
-					// tunedQueryCount++ not thread-safe, could use AtomicInteger.
-					// But I'm happy if this statistic is a little wrong
-					// and this is a VERY HOT method
-					tunedQueryCount++;
-				}
-					
-			}
-		}
 
 		if (profiling) {
 			// we want more profiling information?
@@ -475,6 +461,22 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 				query.setAutoFetchManager(this);
 			}
 		}
+		
+		if (queryTuning) {
+			if (tunedFetch != null && profileCount >= profilingMin) {
+				// deemed to have enough profiling 
+				// information for automatic tuning
+				if (tunedFetch.autoFetchTune(query)){
+					// tunedQueryCount++ not thread-safe, could use AtomicInteger.
+					// But I'm happy if this statistic is a little wrong
+					// and this is a VERY HOT method
+					tunedQueryCount++;
+				}	
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

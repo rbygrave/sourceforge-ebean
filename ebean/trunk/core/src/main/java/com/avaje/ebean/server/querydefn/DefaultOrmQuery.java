@@ -66,7 +66,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private transient AutoFetchManager autoFetchManager;
 
-	private transient BeanDescriptor<T> beanDescriptor;
+	private transient BeanDescriptor<?> beanDescriptor;
 	
 	private boolean cancelled;
 	
@@ -101,6 +101,8 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private String additionalHaving;
 
+	private String lazyLoadProperty;
+	
 	/**
 	 * Set to true if you want a DISTINCT query.
 	 */
@@ -224,10 +226,28 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	/**
 	 * Set the BeanDescriptor for the root type of this query.
 	 */
-	public void setBeanDescriptor(BeanDescriptor<T> beanDescriptor) {
+	public void setBeanDescriptor(BeanDescriptor<?> beanDescriptor) {
 		this.beanDescriptor = beanDescriptor;
 	}
 	
+	/**
+	 * Return true if select all properties was used to ensure the
+	 * property invoking a lazy load was included in the query.
+	 */
+	public boolean selectAllForLazyLoadProperty() {
+		if (lazyLoadProperty != null){
+			if (!detail.containsProperty(lazyLoadProperty)){
+				detail.select("*");
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void setLazyLoadProperty(String lazyLoadProperty) {
+		this.lazyLoadProperty = lazyLoadProperty;
+	}
+
 	public ExpressionFactory getExpressionFactory() {
 		return expressionFactory;
 	}
@@ -644,6 +664,10 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> setProperties(String columns) {
 		return select(columns);
+	}
+	
+	public void setDefaultSelectClause(){
+		detail.setDefaultSelectClause(beanDescriptor);
 	}
 
 	public DefaultOrmQuery<T> select(String columns) {

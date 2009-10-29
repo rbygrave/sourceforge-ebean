@@ -972,11 +972,26 @@ public final class DefaultServer implements SpiEbeanServer {
 		query.deriveSharedInstance();
 		
 		BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(query.getBeanType());
-
+		query.setBeanDescriptor(desc);
+		
 		if (desc.isAutoFetchTunable() && !query.isSqlSelect()) {
 			// its a tunable query
-			autoFetchManager.tuneQuery(query);
+			if (autoFetchManager.tuneQuery(query)) {
+				// was automatically tuned by Autofetch
+			} else {
+				// use FetchType.LAZY/EAGER to define default select clause
+				query.setDefaultSelectClause();
+			}
 		}
+		
+		if (query.selectAllForLazyLoadProperty()){
+			// we need to select all properties to ensure the lazy load property
+			// was included (was not included by default or via autofetch).
+			if (logger.isLoggable(Level.FINE)){
+				logger.log(Level.FINE, "Using selectAllForLazyLoadProperty");
+			}
+		}
+		
 		
 		if (true){
 			// if determine cost and no origin for Autofetch

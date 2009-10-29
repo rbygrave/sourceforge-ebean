@@ -33,12 +33,15 @@ public class LoadBeanRequest extends LoadRequest {
 
 	private final LoadBeanContext loadContext;
 		
+	private final String lazyLoadProperty;
+	
 	public LoadBeanRequest(LoadBeanContext loadContext, List<EntityBeanIntercept> batch, 
-			Transaction transaction, int batchSize, boolean lazy) {
+			Transaction transaction, int batchSize, boolean lazy, String lazyLoadProperty) {
 	
 		super(transaction, batchSize, lazy);
 		this.loadContext = loadContext;
 		this.batch = batch;
+		this.lazyLoadProperty = lazyLoadProperty;
 	}
 	
 	public String getDescription() {
@@ -60,5 +63,13 @@ public class LoadBeanRequest extends LoadRequest {
 	 */
 	public LoadBeanContext getLoadContext() {
 		return loadContext;
+	}
+
+	/**
+	 * Return the property that invoked the lazy loading.
+	 */
+	public String getLazyLoadProperty() {
+		return lazyLoadProperty;
 	}	
+	
 }

@@ -248,6 +248,8 @@ public class AnnotationAssocManys extends AnnotationParser {
 	private void readToMany(ManyToMany propAnn, DeployBeanPropertyAssocMany<?> manyProp) {
 
 		manyProp.setMappedBy(propAnn.mappedBy());
+		manyProp.setFetchType(propAnn.fetch());
+		
 		setCascadeTypes(propAnn.cascade(), manyProp.getCascadeInfo());
 
 		Class<?> targetType = propAnn.targetEntity();
@@ -273,6 +275,8 @@ public class AnnotationAssocManys extends AnnotationParser {
 	private void readToOne(OneToMany propAnn, DeployBeanPropertyAssocMany<?> manyProp) {
 
 		manyProp.setMappedBy(propAnn.mappedBy());
+        manyProp.setFetchType(propAnn.fetch());
+
 		setCascadeTypes(propAnn.cascade(), manyProp.getCascadeInfo());
 
 		Class<?> targetType = propAnn.targetEntity();

@@ -26,6 +26,7 @@ import java.sql.Types;
 import java.util.Iterator;
 import java.util.UUID;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Enumerated;
@@ -163,6 +164,13 @@ public class AnnotationFields extends AnnotationParser {
 			generatedPropFactory.setVersion(prop);
 		}
 
+		Basic basic = get(prop, Basic.class);
+		if (basic != null) {
+			prop.setFetchType(basic.fetch());
+		} else if (prop.isLob()){
+			//FIXME: default load for Lob types...
+		}
+		
 		CreatedTimestamp ct = get(prop, CreatedTimestamp.class);
 		if (ct != null) {
 			generatedPropFactory.setInsertTimestamp(prop);
