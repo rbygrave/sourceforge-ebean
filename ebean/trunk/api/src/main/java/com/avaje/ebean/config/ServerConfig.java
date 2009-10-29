@@ -116,6 +116,9 @@ public class ServerConfig {
 	
 	private int persistBatchSize = 20;
 	
+	/** The default batch size for lazy loading */
+	private int loadBatchSize = 1;
+	
 	/** The ddl generate. */
 	private boolean ddlGenerate;
 
@@ -276,6 +279,31 @@ public class ServerConfig {
 	 */
 	public void setPersistBatchSize(int persistBatchSize) {
 		this.persistBatchSize = persistBatchSize;
+	}
+	
+	/**
+	 * Return the default batch size for lazy loading of beans and collections.
+	 */
+	public int getLoadBatchSize() {
+		return loadBatchSize;
+	}
+
+	/**
+	 * Set the default batch size for lazy loading.
+	 * <p>
+	 * This is the number of beans or collections loaded when
+	 * lazy loading is invoked by default.
+	 * </p>
+	 * <p>
+	 * The default value is for this is 1 (load 1 bean or collection).
+	 * </p>
+	 * <p>
+	 * You can explicitly control the lazy loading batch size for a 
+	 * given join on a query using +lazy(batchSize).
+	 * </p>
+	 */
+	public void setLoadBatchSize(int loadBatchSize) {
+		this.loadBatchSize = loadBatchSize;
 	}
 
 	/**
