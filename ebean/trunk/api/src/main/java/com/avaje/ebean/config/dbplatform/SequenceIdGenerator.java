@@ -133,8 +133,8 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 			
 			if (currentlyBackgroundLoading > 0){
 				// skip as already background loading 
-				if (logger.isLoggable(Level.INFO)){
-					logger.log(Level.INFO, "... skip background sequence load (another load in progress)");
+				if (logger.isLoggable(Level.FINE)){
+					logger.log(Level.FINE, "... skip background sequence load (another load in progress)");
 				}
 				return;
 			}
@@ -156,8 +156,8 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 		
 		ArrayList<Integer> newIds = getMoreIds(numberToLoad);
 		
-		if (logger.isLoggable(Level.INFO)){
-			logger.log(Level.INFO, "... seq:"+seqName+" loaded:"+numberToLoad+" ids:"+newIds);
+		if (logger.isLoggable(Level.FINE)){
+			logger.log(Level.FINE, "... seq:"+seqName+" loaded:"+numberToLoad+" ids:"+newIds);
 		}
 
 		synchronized (monitor) {
