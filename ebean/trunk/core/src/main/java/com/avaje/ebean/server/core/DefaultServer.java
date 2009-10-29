@@ -171,8 +171,14 @@ public final class DefaultServer implements SpiEbeanServer {
 	
 	private final DefaultBeanLoader beanLoader;
 	
-	private int loadBatchSize = 5;
+	/**
+	 * The default batch size for lazy loading beans or collections.
+	 */
+	private int loadBatchSize;
 
+	/**
+	 * JDBC driver specific handling for JDBC batch execution.
+	 */
 	private PstmtBatch pstmtBatch;
 	
 	/**
@@ -185,14 +191,15 @@ public final class DefaultServer implements SpiEbeanServer {
 		this.databasePlatform = config.getDatabasePlatform();
 		this.backgroundExecutor = config.getBackgroundExecutor();
 		this.serverName = config.getServerConfig().getName();
+		this.loadBatchSize = config.getServerConfig().getLoadBatchSize();
 		this.cqueryEngine = config.getCQueryEngine();
 		this.expressionFactory = config.getExpressionFactory();
 		this.adminLogging = config.getLogControl();
 
 		this.beanDescriptorManager = config.getBeanDescriptorManager();
 		beanDescriptorManager.setEbeanServer(this);
+		
 		this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
-
 		this.transactionManager = config.getTransactionManager();
 		this.transactionScopeManager = config.getTransactionScopeManager();
 
@@ -200,13 +207,13 @@ public final class DefaultServer implements SpiEbeanServer {
 		this.queryEngine = config.createOrmQueryEngine();
 		this.relationalQueryEngine = config.createRelationalQueryEngine();
 
-		autoFetchManager = config.createAutoFetchManager(this);
-		adminAutofetch = new MAdminAutofetch(autoFetchManager);
+		this.autoFetchManager = config.createAutoFetchManager(this);
+		this.adminAutofetch = new MAdminAutofetch(autoFetchManager);
 
 		this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
+		this.beanLoader = new DefaultBeanLoader(this, config.getDebugLazyLoad());
+
 		ShutdownManager.register(new Shutdown());
-		
-		beanLoader = new DefaultBeanLoader(this, config.getDebugLazyLoad());
 	}
 	
 	public int getLoadBatchSize() {

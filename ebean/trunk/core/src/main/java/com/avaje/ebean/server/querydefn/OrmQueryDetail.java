@@ -158,6 +158,7 @@ public class OrmQueryDetail implements Serializable {
 						// remove join to secondary query from the main query 
 						// and add to this secondary query
 						pass2It.remove();
+						includes.remove(pass2Prop.getPath());
 						secQuery.add(pass2Prop);
 					}
 				}

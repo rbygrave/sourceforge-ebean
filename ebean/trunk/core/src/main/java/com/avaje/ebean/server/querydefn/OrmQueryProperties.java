@@ -281,16 +281,25 @@ public class OrmQueryProperties implements Serializable {
 	 * property needs to be lazy loaded.
 	 */
 	public Set<String> getAllIncludedProperties() {
-		
-		if (includedBeanJoin == null){
-			return new LinkedHashSet<String>(included);
-		} 
+
 		if (included == null){
 			return null;
 		}
-		LinkedHashSet<String> s = new LinkedHashSet<String>(2*(included.size()+includedBeanJoin.size()));
-		s.addAll(included);
-		s.addAll(includedBeanJoin);
+
+		if (includedBeanJoin == null && secondaryQueryJoins == null){
+			return new LinkedHashSet<String>(included);
+		} 
+		
+		LinkedHashSet<String> s = new LinkedHashSet<String>(2*(included.size()+5));
+		if (included != null){
+			s.addAll(included);
+		}
+		if (includedBeanJoin != null){
+			s.addAll(includedBeanJoin);
+		}
+		if (secondaryQueryJoins != null){
+			s.addAll(secondaryQueryJoins);
+		}
 		return s;
 	}
 	
