@@ -5,8 +5,11 @@ import java.util.List;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
+import com.avaje.tests.model.basic.Address;
+import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
 
@@ -36,8 +39,29 @@ public class TestQueryJoin extends TestCase {
 	
 		//list.get(0).getShipDate();
 		
+		Order order = list.get(0);
+		BeanState beanStateOrder = Ebean.getBeanState(order);
+		Assert.assertNotNull(beanStateOrder.getLoadedProps());
+		//Assert.assertTrue(beanStateOrder.getLoadedProps().contains("id"));
+		Assert.assertTrue(beanStateOrder.getLoadedProps().contains("status"));
+		Assert.assertTrue(beanStateOrder.getLoadedProps().contains("shipments"));
+		Assert.assertTrue(beanStateOrder.getLoadedProps().contains("customer"));
 		
-		//list.get(0).getCustomer().getBillingAddress().getLine1();
+		Customer customer = order.getCustomer();
+		BeanState beanStateCustomer = Ebean.getBeanState(customer);
+		Assert.assertNull(beanStateCustomer.getLoadedProps());
+		
+		customer.getName();
+		Assert.assertNotNull(beanStateCustomer.getLoadedProps());
+		Assert.assertTrue(beanStateCustomer.getLoadedProps().contains("name"));
+		Assert.assertTrue(beanStateCustomer.getLoadedProps().contains("status"));
+		Assert.assertFalse(beanStateCustomer.getLoadedProps().contains("billingAddress"));
+		
+		customer.getName();
+		
+		Address billingAddress = customer.getBillingAddress();
+		System.out.println(billingAddress);
+		billingAddress.getLine1();
 		
 		Assert.assertTrue(list.size() > 0);
 		
