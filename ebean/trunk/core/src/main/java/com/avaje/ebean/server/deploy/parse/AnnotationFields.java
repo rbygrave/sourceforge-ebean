@@ -30,6 +30,7 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -44,6 +45,7 @@ import javax.persistence.Version;
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -61,10 +63,19 @@ import com.avaje.ebean.validation.ValidatorMeta;
  */
 public class AnnotationFields extends AnnotationParser {
 
+	/**
+	 * By default we lazy load Lob properties.
+	 */
+	private FetchType defaultLobFetchType = FetchType.LAZY;
+	
 	private GeneratedPropertyFactory generatedPropFactory = new GeneratedPropertyFactory();
 
 	public AnnotationFields(DeployBeanInfo<?> info) {
 		super(info);
+		
+		if (GlobalProperties.getBoolean("ebean.lobEagerFetch", false)) {
+			defaultLobFetchType = FetchType.EAGER;
+		}
 	}
 
 	/**
@@ -168,7 +179,8 @@ public class AnnotationFields extends AnnotationParser {
 		if (basic != null) {
 			prop.setFetchType(basic.fetch());
 		} else if (prop.isLob()){
-			//FIXME: default load for Lob types...
+			// use the default Lob fetchType
+			prop.setFetchType(defaultLobFetchType);
 		}
 		
 		CreatedTimestamp ct = get(prop, CreatedTimestamp.class);
