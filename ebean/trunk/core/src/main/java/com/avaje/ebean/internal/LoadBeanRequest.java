@@ -46,7 +46,7 @@ public class LoadBeanRequest extends LoadRequest {
 	
 	public String getDescription() {
 		String fullPath = loadContext.getFullPath();
-		String s = " path:" + fullPath + " batch:" + batchSize + " actual:"
+		String s = "path:" + fullPath + " batch:" + batchSize + " actual:"
 				+ batch.size();
 		return s;
 	}

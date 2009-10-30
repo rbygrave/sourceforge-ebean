@@ -97,12 +97,12 @@ public class SqlTreeBuilder {
 	public SqlTree build() {
 
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
-		summary.append("[");
+
 		if (desc.isTableGenerated()) {
 			summary.append(desc.getBaseTable());
 
 		} else {
-			summary.append(desc.getBeanType().getName());
+			summary.append(desc.getName());
 		}
 
 		// build the appropriate chain of SelectAdapter's
@@ -115,7 +115,6 @@ public class SqlTreeBuilder {
 		clause.setFromSql(buildFromClause(rootNode));
 		clause.setInheritanceWhereSql(buildWhereClause(rootNode));
 
-		summary.append("]");
 		if (query.isAutofetchTuned()){
 			summary.append(" autoFetchTuned[true]");
 		}
@@ -435,7 +434,7 @@ public class SqlTreeBuilder {
 			}
 
 			manyProperty = manyProp;
-			summary.append("] +many[").append(propName);
+			summary.append(" +many:").append(propName);
 			return true;
 		}
 		return false;

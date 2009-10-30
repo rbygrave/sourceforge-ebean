@@ -30,6 +30,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.internal.BeanIdList;
+import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.jmx.MAdminLogging;
@@ -256,20 +257,38 @@ public class CQueryEngine {
 		}
 	}
 
+	private String getMode(SpiQuery.Mode mode) {
+		switch (mode) {
+		case NORMAL:
+			return "normal";
+		case LAZYLOAD_BEAN:
+			return "lazyLoad";
+		case LAZYLOAD_MANY:
+			return "lazyLoad";
+		case REFRESH_BEAN:
+			return "refresh";
+
+		default:
+			return "";
+		}
+	}
+	
 	/**
 	 * Log the generated SQL to the console.
 	 */
 	private void logSqlToConsole(CQuery<?> cquery) {
 
-
-		String loadDesc = cquery.getQueryRequest().getQuery().getLoadDescription();
+		SpiQuery<?> query = cquery.getQueryRequest().getQuery();
+		String modeDesc = getMode(query.getMode());
+		String loadDesc = query.getLoadDescription();
+		
 		String sql = cquery.getGeneratedSql();
 		String summary = cquery.getSummary();
 
 		StringBuilder sb = new StringBuilder(1000);
-		sb.append("<sql summary='").append(summary);
+		sb.append("<sql mode='").append(modeDesc).append("' summary='").append(summary);
 		if (loadDesc != null){
-			sb.append("' mode='").append(loadDesc);			
+			sb.append("' load='").append(loadDesc);			
 		}
 		sb.append("' >");
 		sb.append(Constants.NEW_LINE);

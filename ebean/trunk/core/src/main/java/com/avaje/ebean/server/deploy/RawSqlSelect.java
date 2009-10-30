@@ -124,7 +124,7 @@ public class RawSqlSelect {
 
 
 		SqlTree sqlTree = new SqlTree();
-		sqlTree.setSummary("[" + desc.getFullName() + "]");
+		sqlTree.setSummary(desc.getName());
 
 		LinkedHashSet<String> includedProps = new LinkedHashSet<String>();
 		SqlTreeProperties selectProps = new SqlTreeProperties();
