@@ -31,6 +31,7 @@ import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.event.BeanQueryAdapter;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -181,6 +182,7 @@ public class ServerConfig {
 	
 	private List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
 	private List<BeanPersistListener<?>> persistListeners = new ArrayList<BeanPersistListener<?>>();
+	private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
 	
 	/**
 	 * Return the name of the EbeanServer.
@@ -912,6 +914,35 @@ public class ServerConfig {
 	 */
 	public void setResourceDirectory(String resourceDirectory) {
 		this.resourceDirectory = resourceDirectory;
+	}
+
+	/**
+	 * Register a BeanQueryAdapter instance.
+	 * <p>
+	 * Note alternatively you can use {@link #setBeanQueryAdapter(List)} to 
+	 * set all the BeanQueryAdapter instances.
+	 * </p>
+	 */
+	public void add(BeanQueryAdapter beanQueryAdapter){
+		queryAdapters.add(beanQueryAdapter);
+	}
+	
+	/**
+	 * Return the BeanQueryAdapter instances.
+	 */
+	public List<BeanQueryAdapter> getQueryAdapters() {
+		return queryAdapters;
+	}
+
+	/**
+	 * Register all the BeanQueryAdapter instances.
+	 * <p>
+	 * Note alternatively you can use {@link #add(BeanQueryAdapter)} to 
+	 * add BeanQueryAdapter instances one at a time.
+	 * </p>
+	 */
+	public void setQueryAdapters(List<BeanQueryAdapter> queryAdapters) {
+		this.queryAdapters = queryAdapters;
 	}
 
 	/**
