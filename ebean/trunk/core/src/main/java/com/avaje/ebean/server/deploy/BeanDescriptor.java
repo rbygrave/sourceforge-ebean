@@ -47,6 +47,7 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
@@ -197,6 +198,8 @@ public class BeanDescriptor<T> {
 	 * Listens for post commit insert update and delete events.
 	 */
 	private volatile BeanPersistListener<T> persistListener;
+
+	private volatile BeanQueryAdapter queryAdapter;
 
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -391,6 +394,7 @@ public class BeanDescriptor<T> {
 		this.beanFinder = deploy.getBeanFinder();
 		this.persistController = deploy.getPersistController();
 		this.persistListener = deploy.getPersistListener();
+		this.queryAdapter = deploy.getQueryAdapter();
 		this.referenceOptions = deploy.getReferenceOptions();
 
 		this.defaultSelectClause = deploy.getDefaultSelectClause();
@@ -1538,6 +1542,13 @@ public class BeanDescriptor<T> {
 	 */
 	public BeanFinder<T> getBeanFinder() {
 		return beanFinder;
+	}
+	
+	/**
+	 * Return the BeanQueryAdapter or null if none is defined.
+	 */
+	public BeanQueryAdapter getQueryAdapter() {
+		return queryAdapter;
 	}
 
 	/**

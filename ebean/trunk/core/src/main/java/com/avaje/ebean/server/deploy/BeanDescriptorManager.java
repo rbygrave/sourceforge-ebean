@@ -107,6 +107,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 	private final PersistListenerManager persistListenerManager;
 
+	private final BeanQueryAdapterManager beanQueryAdapterManager;
+	
 	private final SubClassManager subClassManager;
 
 	private final NamingConvention namingConvention;
@@ -180,6 +182,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		this.persistControllerManager = new PersistControllerManager(bootupClasses);
 		this.persistListenerManager = new PersistListenerManager(bootupClasses);
+		this.beanQueryAdapterManager = new BeanQueryAdapterManager(bootupClasses);
+		
 		this.beanFinderManager = new DefaultBeanFinderManager();
 
 		this.reflectFactory = createReflectionFactory();
@@ -385,11 +389,12 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 	 */
 	private void createListeners() {
 
+		int qa = beanQueryAdapterManager.getRegisterCount();
 		int cc = persistControllerManager.getRegisterCount();
 		int lc = persistListenerManager.getRegisterCount();
 		int fc = beanFinderManager.createBeanFinders(bootupClasses.getBeanFinders());
 
-		logger.fine("BeanPersistControllers[" + cc + "] BeanFinders[" + fc + "] BeanPersistListeners[" + lc + "] ");
+		logger.fine("BeanPersistControllers[" + cc + "] BeanFinders[" + fc + "] BeanPersistListeners[" + lc + "] BeanQueryAdapters[" + qa + "]");
 	}
 
 	/**
@@ -876,6 +881,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
 		persistControllerManager.addPersistControllers(descriptor);
 		persistListenerManager.addPersistListeners(descriptor);		
+		beanQueryAdapterManager.addQueryAdapter(descriptor);
 		
 		BeanFinder<T> beanFinder = beanFinderManager.getBeanFinder(beanType);
 		if (beanFinder != null) {

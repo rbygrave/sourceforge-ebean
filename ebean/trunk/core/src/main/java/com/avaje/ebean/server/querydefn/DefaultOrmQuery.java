@@ -229,7 +229,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public void setBeanDescriptor(BeanDescriptor<?> beanDescriptor) {
 		this.beanDescriptor = beanDescriptor;
 	}
-	
+
 	/**
 	 * Return true if select all properties was used to ensure the
 	 * property invoking a lazy load was included in the query.
