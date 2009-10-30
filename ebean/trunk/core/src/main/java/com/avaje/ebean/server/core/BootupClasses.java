@@ -33,6 +33,7 @@ import javax.persistence.Table;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.util.ClassPathSearchMatcher;
 
@@ -55,9 +56,12 @@ public class BootupClasses implements ClassPathSearchMatcher {
 	ArrayList<Class<?>> beanFinderList = new ArrayList<Class<?>>();
 
 	ArrayList<Class<?>> beanListenerList = new ArrayList<Class<?>>();
+	
+	ArrayList<Class<?>> beanQueryAdapterList = new ArrayList<Class<?>>();
 
 	List<BeanPersistController> persistControllerInstances = new ArrayList<BeanPersistController>();
 	List<BeanPersistListener<?>> persistListenerInstances = new ArrayList<BeanPersistListener<?>>();
+	List<BeanQueryAdapter> queryAdapterInstances = new ArrayList<BeanQueryAdapter>();
 	
 	public BootupClasses(){
 	}
@@ -75,6 +79,7 @@ public class BootupClasses implements ClassPathSearchMatcher {
 		this.beanControllerList.addAll(parent.beanControllerList);
 		this.beanFinderList.addAll(parent.beanFinderList);
 		this.beanListenerList.addAll(parent.beanListenerList);
+		this.beanQueryAdapterList.addAll(parent.beanQueryAdapterList);
 	}
 	
 	private void process(Iterator<Class<?>> it){
@@ -91,6 +96,12 @@ public class BootupClasses implements ClassPathSearchMatcher {
 		return new BootupClasses(this);
 	}
 	
+	public void addQueryAdapters(List<BeanQueryAdapter> queryAdapterInstances) {
+		if (queryAdapterInstances != null){
+			this.queryAdapterInstances.addAll(queryAdapterInstances);
+		}
+	}
+	
 	/**
 	 * Add BeanPersistController instances.
 	 */
@@ -104,6 +115,22 @@ public class BootupClasses implements ClassPathSearchMatcher {
 		if (listenerInstances != null){
 			this.persistListenerInstances.addAll(listenerInstances);
 		}
+	}
+
+	public List<BeanQueryAdapter> getBeanQueryAdapters() {
+		// add class registered BeanQueryAdapter to the
+		// already created instances
+		for (Class<?> cls: beanQueryAdapterList) {
+			try {
+				BeanQueryAdapter newInstance = (BeanQueryAdapter)cls.newInstance();
+				queryAdapterInstances.add(newInstance);
+			} catch (Exception e){
+				String msg = "Error creating BeanQueryAdapter "+cls;
+				logger.log(Level.SEVERE, msg, e);
+			}
+		}
+		
+		return queryAdapterInstances;
 	}
 	
 	public List<BeanPersistListener<?>> getBeanPersistListeners() {
@@ -235,6 +262,11 @@ public class BootupClasses implements ClassPathSearchMatcher {
 			interesting = true;
 		}
 
+		if (BeanQueryAdapter.class.isAssignableFrom(cls)) {
+			beanQueryAdapterList.add(cls);
+			interesting = true;
+		}
+		
 		return interesting;
 	}
 

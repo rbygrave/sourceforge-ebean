@@ -73,6 +73,7 @@ import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.event.BeanPersistController;
+import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.internal.LoadBeanRequest;
 import com.avaje.ebean.internal.LoadManyContext;
 import com.avaje.ebean.internal.LoadManyRequest;
@@ -986,7 +987,8 @@ public final class DefaultServer implements SpiEbeanServer {
 			if (autoFetchManager.tuneQuery(query)) {
 				// was automatically tuned by Autofetch
 			} else {
-				// use FetchType.LAZY/EAGER to define default select clause
+				// use deployment FetchType.LAZY/EAGER annotations
+				// to define the 'default' select clause
 				query.setDefaultSelectClause();
 			}
 		}
@@ -1025,8 +1027,16 @@ public final class DefaultServer implements SpiEbeanServer {
 			}
 		}
 		
-		// the query hash after an AutoFetch tuning
+		BeanQueryAdapter queryAdapter = desc.getQueryAdapter();
+		if (queryAdapter != null){
+			// adaption of the query probably based on the
+			// current user 
+			queryAdapter.preQuery(request);
+		}
+
+		// the query hash after any tuning
 		request.calculateQueryPlanHash();
+		
 		return request;
 	}
 

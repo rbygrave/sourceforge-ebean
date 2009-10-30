@@ -39,11 +39,13 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
+import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.ChainedBeanPersistController;
 import com.avaje.ebean.server.deploy.ChainedBeanPersistListener;
+import com.avaje.ebean.server.deploy.ChainedBeanQueryAdapter;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
@@ -163,6 +165,7 @@ public class DeployBeanDescriptor<T> {
 
 	private List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
 	private List<BeanPersistListener<T>> persistListeners = new ArrayList<BeanPersistListener<T>>();
+	private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
 
 	private ReferenceOptions referenceOptions;
 	
@@ -498,6 +501,16 @@ public class DeployBeanDescriptor<T> {
 			return new ChainedBeanPersistListener<T>(persistListeners);			
 		}
 	}
+
+	public BeanQueryAdapter getQueryAdapter() {
+		if (queryAdapters.size() == 0){
+			return null;
+		} else if (queryAdapters.size() == 1) {
+			return queryAdapters.get(0);
+		} else {
+			return new ChainedBeanQueryAdapter(queryAdapters);			
+		}
+	}
 	
 	/**
 	 * Set the Controller.
@@ -509,6 +522,11 @@ public class DeployBeanDescriptor<T> {
 	public void addPersistListener(BeanPersistListener<T> listener) {
 		persistListeners.add(listener);
 	}
+	
+	public void addQueryAdapter(BeanQueryAdapter queryAdapter) {
+		queryAdapters.add(queryAdapter);
+	}
+	
 	/**
 	 * Return true if this bean type should use IdGeneration.
 	 * <p>
