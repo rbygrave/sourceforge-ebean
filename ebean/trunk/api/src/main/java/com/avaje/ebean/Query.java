@@ -531,6 +531,11 @@ public interface Query<T> extends Serializable {
 	public Query<T> join(String assocProperty, String fetchProperties);
 
 	/**
+	 * Additionally specify a JoinConfig.
+	 */
+	public Query<T> join(String assocProperty, String fetchProperties, JoinConfig joinConfig);
+
+	/**
 	 * Specify a property (associated bean) to join including all its
 	 * properties.
 	 * <p>
@@ -542,6 +547,11 @@ public interface Query<T> extends Serializable {
 	 *            the property of an associated (1-1,1-M,M-1,M-M) bean.
 	 */
 	public Query<T> join(String assocProperty);
+
+	/**
+	 * Additionally specify a joinConfig.
+	 */
+	public Query<T> join(String assocProperty, JoinConfig joinConfig);
 
 	/**
 	 * Execute the query returning the list of Id's.
