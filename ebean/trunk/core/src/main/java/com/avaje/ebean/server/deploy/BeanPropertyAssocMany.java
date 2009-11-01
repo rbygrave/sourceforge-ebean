@@ -333,7 +333,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 
 		if (fetchOrderBy != null){
-			query.orderBy(fetchOrderBy);
+			query.order(fetchOrderBy);
 		}
 	}
 

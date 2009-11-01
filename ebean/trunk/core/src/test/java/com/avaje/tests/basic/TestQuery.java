@@ -16,9 +16,15 @@ public class TestQuery extends TestCase {
 		
 		Query<Order> query = Ebean.find(Order.class)
 			.setAutofetch(false)
-			.orderBy("orderDate");
+			.order().asc("orderDate")
+			.order().desc("id");
+			//.orderBy("orderDate");
 		
-		int rc = query.findRowCount();
+		int rc = query.findList().size();
+		//int rc = query.findRowCount();
 		Assert.assertTrue(rc > 0);
+		//String generatedSql = query.getGeneratedSql();
+		//Assert.assertFalse(generatedSql.contains("order by"));
+		
 	}
 }

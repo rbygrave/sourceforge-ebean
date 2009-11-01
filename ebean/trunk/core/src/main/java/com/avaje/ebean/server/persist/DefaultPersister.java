@@ -96,8 +96,6 @@ public final class DefaultPersister implements Persister {
 		this.validation = validate;
 	}
 
-	
-	
 	/**
 	 * Execute the CallableSql.
 	 */

@@ -14,6 +14,7 @@ import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureIds;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.FutureRowCount;
+import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
@@ -86,7 +87,16 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private OrmQueryDetail detail;
 
-	private OrmQueryAttributes attributes;
+	private int maxRows;
+
+	private int firstRow;
+
+	/**
+	 * The where clause from a parsed query string.
+	 */
+	private String rawWhereClause;
+	
+	private OrderBy<T> orderBy;
 
 	private String loadDescription;
 	
@@ -195,7 +205,6 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.server = server;
 		this.expressionFactory = server.getExpressionFactory();
 		this.detail = new OrmQueryDetail();
-		this.attributes = new OrmQueryAttributes();
 		this.name = "";
 	}
 
@@ -212,7 +221,6 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.sqlSelect = namedQuery.isSqlSelect();
 		if (sqlSelect) {
 			this.detail = new OrmQueryDetail();
-			this.attributes = new OrmQueryAttributes();
 			// potentially with where and having clause...
 			RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
 			additionalWhere = sqlSelect.getWhereClause();
@@ -327,8 +335,12 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		if (detail != null){
 			copy.detail = detail.copy();
 		}
-		if (attributes != null){
-			copy.attributes = attributes.copy();
+
+		copy.firstRow = firstRow;
+		copy.maxRows = maxRows;
+		copy.rawWhereClause = rawWhereClause;
+		if (orderBy != null){
+			copy.orderBy = orderBy.copy();			
 		}
 		if (bindParams != null){
 			copy.bindParams = bindParams.copy();
@@ -493,7 +505,12 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
 
-		hc = hc * 31 + attributes.queryPlanHash();
+		hc = hc * 31 + (firstRow == 0 ? 0 : firstRow);
+		hc = hc * 31 + (maxRows == 0 ? 0 : maxRows);
+		hc = hc * 31 + (orderBy == null ? 0 : orderBy.hash());
+		hc = hc * 31 + (rawWhereClause == null ? 0 : rawWhereClause.hashCode());
+
+		
 		hc = hc * 31 + detail.queryPlanHash();
 		hc = hc * 31 + (query == null ? 0 : query.hashCode());
 
@@ -605,7 +622,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 
 	public boolean hasMaxRowsOrFirstRow() {
-		return attributes.hasMaxRowsOrFirstRow();
+		return maxRows > 0 || firstRow > 0;
 	}
 
 	
@@ -650,16 +667,22 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return this;
 	}
 
-	public DefaultOrmQuery<T> setQuery(String query) throws PersistenceException {
+	public DefaultOrmQuery<T> setQuery(String queryString) throws PersistenceException {
 
-		this.query = query;
+		this.query = queryString;
 
-		OrmQueryDetailParser parser = new OrmQueryDetailParser(query);
+		OrmQueryDetailParser parser = new OrmQueryDetailParser(queryString);
 		parser.parse();
-
-		detail = parser.getDetail();
-		attributes = parser.getAttributes();
+		parser.assign(this);
+	
 		return this;
+	}
+	
+	protected void setOrmQueryDetail(OrmQueryDetail detail){
+		this.detail = detail;
+	}
+	protected void setRawWhereClause(String rawWhereClause){
+		this.rawWhereClause = rawWhereClause;
 	}
 
 	public DefaultOrmQuery<T> setProperties(String columns) {
@@ -770,32 +793,66 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		bindParams.setParameter(name, value);
 		return this;
 	}
-
+	
 	/**
-	 * Return the order by clause.
+	 * Return the order by clause in a string format.
+	 * This will return null if no order by has been specified.
 	 */
-	public String getOrderBy() {
-		return attributes.getOrderBy();
+	public String getOrderByStringFormat() {
+		if (orderBy == null){
+			return null;
+		} else {
+			return orderBy.toStringFormat();
+		}
 	}
 
 	/**
 	 * Return the order by clause.
 	 */
-	public String getWhere() {
-		return attributes.getWhere();
+	public String getRawWhereClause() {
+		return rawWhereClause;
 	}
 
-	/**
-	 * Set the order by clause.
-	 */
-	public DefaultOrmQuery<T> orderBy(String orderBy) {
-		attributes.setOrderBy(orderBy);
+	public OrderBy<T> orderBy() {
+		return order();
+	}
+	
+	public OrderBy<T> order() {
+		if (orderBy == null){
+			orderBy = new OrderBy<T>(this, null);
+		}
+		return orderBy;
+	}
+
+	public DefaultOrmQuery<T> setOrderBy(String orderByClause) {
+		return order(orderByClause);
+	}
+	
+	public DefaultOrmQuery<T> orderBy(String orderByClause) {
+		return order(orderByClause);
+	}
+
+	public DefaultOrmQuery<T> order(String orderByClause) {
+		if (orderByClause == null || orderByClause.trim().length() == 0){
+			this.orderBy = null;
+		} else {
+			this.orderBy = new OrderBy<T>(this, orderByClause);
+		}
 		return this;
 	}
 
-	public DefaultOrmQuery<T> setOrderBy(String orderBy) {
-		return orderBy(orderBy);
+	public DefaultOrmQuery<T> setOrderBy(OrderBy<T> orderBy) {
+		return setOrder(orderBy);
 	}
+	
+	public DefaultOrmQuery<T> setOrder(OrderBy<T> orderBy) {
+		this.orderBy = orderBy;
+		if (orderBy != null){
+			orderBy.setQuery(this);
+		}
+		return this;
+	}
+
 
 	/**
 	 * return true if this query uses DISTINCT.
@@ -878,20 +935,20 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 
 	public int getFirstRow() {
-		return attributes.getFirstRow();
+		return firstRow;
 	}
 
 	public DefaultOrmQuery<T> setFirstRow(int firstRow) {
-		attributes.setFirstRow(firstRow);
+		this.firstRow = firstRow;
 		return this;
 	}
 
 	public int getMaxRows() {
-		return attributes.getMaxRows();
+		return maxRows;
 	}
 
 	public DefaultOrmQuery<T> setMaxRows(int maxRows) {
-		attributes.setMaxRows(maxRows);
+		this.maxRows = maxRows;
 		return this;
 	}
 

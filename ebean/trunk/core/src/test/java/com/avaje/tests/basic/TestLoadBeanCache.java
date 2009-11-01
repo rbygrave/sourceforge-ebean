@@ -19,7 +19,7 @@ public class TestLoadBeanCache extends TestCase {
 			.setLoadBeanCache(true)
 			.setUseQueryCache(true)
 			.setReadOnly(true)
-			.orderBy("name")
+			.order("name")
 			.findMap();
 		
 		Country loadedNz = map.get("NZ");
@@ -33,7 +33,7 @@ public class TestLoadBeanCache extends TestCase {
 			.setLoadBeanCache(true)
 			.setUseQueryCache(true)
 			.setReadOnly(true)
-			.orderBy("name")
+			.order("name")
 			.findMap();
 		
 		Assert.assertTrue("same instance", map == map2);

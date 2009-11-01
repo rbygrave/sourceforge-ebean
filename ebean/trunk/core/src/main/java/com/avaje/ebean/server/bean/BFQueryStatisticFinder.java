@@ -40,7 +40,7 @@ public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 		SpiEbeanServer server = (SpiEbeanServer) request.getEbeanServer();
 		build(list, server);
 		
-		String orderBy = request.getQuery().getOrderBy();
+		String orderBy = request.getQuery().order().toStringFormat();
 		if (orderBy == null){
 			orderBy = "beanType, origQueryPlanHash, autofetchTuned";
 		}

@@ -86,11 +86,11 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 	}
 	
 	public Query<T> orderBy(String orderBy) {
-		return query.orderBy(orderBy);
+		return query.order(orderBy);
 	}
 
 	public Query<T> setOrderBy(String orderBy) {
-		return query.orderBy(orderBy);
+		return query.order(orderBy);
 	}
 		
 	public FutureList<T> findFutureList() {

@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.query;
 
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
@@ -138,7 +139,7 @@ public class CQueryBuilder implements Constants {
     	SpiQuery<T> query = request.getQuery();
 
     	// always set the order by to null for row count query
-    	query.setOrderBy(null);
+    	query.setOrder(null);
     	
     	boolean hasMany = query.isManyInWhere();
     	
