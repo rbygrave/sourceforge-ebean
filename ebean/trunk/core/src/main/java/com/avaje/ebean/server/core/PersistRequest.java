@@ -78,7 +78,6 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 
 		initTransIfRequired();
 		
-		//ServerTransaction t = request.getTransaction();
 		boolean batch = transaction.isBatchThisRequest();
 
 		int rows;

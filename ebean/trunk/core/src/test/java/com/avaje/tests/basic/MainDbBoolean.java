@@ -121,7 +121,7 @@ public class MainDbBoolean {
 		
 		List<TOne> list = server.find(TOne.class)
 			.setAutofetch(false)
-			.orderBy("id")
+			.order("id")
 			.findList();
 		
 		Assert.assertTrue(list.size() == 2);
@@ -141,7 +141,7 @@ public class MainDbBoolean {
 
 		Query<TOne> query = server.find(TOne.class)
 			.setAutofetch(false)
-			.orderBy("id");
+			.order("id");
 	
 		int rc = query.findRowCount();
 		Assert.assertTrue(rc > 0);

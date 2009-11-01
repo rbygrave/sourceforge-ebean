@@ -13,11 +13,17 @@ import javax.persistence.PersistenceException;
  */
 public class OrmQueryDetailParser {
 
-	final OrmQueryDetail detail = new OrmQueryDetail();
+	private final OrmQueryDetail detail = new OrmQueryDetail();
 
-	final OrmQueryAttributes attributes = new OrmQueryAttributes();
+	private int maxRows;
 
-	final SimpleTextParser parser;
+	private int firstRow;
+
+	private String rawWhereClause;
+
+	private String rawOrderBy;
+	
+	private final SimpleTextParser parser;
 
 	public OrmQueryDetailParser(String oql) {
 		this.parser = new SimpleTextParser(oql);
@@ -27,15 +33,16 @@ public class OrmQueryDetailParser {
 
 		parser.nextWord();
 		processInitial();
+	}	
+	
+	protected void assign(DefaultOrmQuery<?> query){
+		query.setOrmQueryDetail(detail);
+		query.setFirstRow(firstRow);
+		query.setMaxRows(maxRows);
+		query.setRawWhereClause(rawWhereClause);
+		query.order(rawOrderBy);
 	}
 
-	public OrmQueryDetail getDetail() {
-		return detail;
-	}
-
-	public OrmQueryAttributes getAttributes() {
-		return attributes;
-	}
 
 	private void processInitial() {
 		if (parser.isMatch("find")) {
@@ -73,9 +80,8 @@ public class OrmQueryDetailParser {
 	private void readLimit() {
 		try {
 			String maxLimit = parser.nextWord();
-			int maxRows = Integer.parseInt(maxLimit);
-			attributes.setMaxRows(maxRows);
-
+			maxRows = Integer.parseInt(maxLimit);
+			
 			String offsetKeyword = parser.nextWord();
 			if (offsetKeyword != null) {
 				if (!parser.isMatch("offset")) {
@@ -83,8 +89,7 @@ public class OrmQueryDetailParser {
 							+ parser.getWord());
 				}
 				String firstRowLimit = parser.nextWord();
-				int firstRow = Integer.parseInt(firstRowLimit);
-				attributes.setFirstRow(firstRow);
+				firstRow = Integer.parseInt(firstRowLimit);
 				parser.nextWord();
 			}
 		} catch (NumberFormatException e) {
@@ -105,9 +110,8 @@ public class OrmQueryDetailParser {
 				sb.append(" ").append(parser.getWord());
 			}
 		}
-		String orderBy = sb.toString().trim();
-		attributes.setOrderBy(orderBy);
-
+		rawOrderBy = sb.toString().trim();
+		
 		if (!parser.isFinished()) {
 			readLimit();
 		}
@@ -132,7 +136,7 @@ public class OrmQueryDetailParser {
 		}
 		String whereClause = sb.toString().trim();
 		if (whereClause.length() > 0) {
-			attributes.setWhere(whereClause);
+			rawWhereClause = whereClause;
 		}
 
 		if (nextMode == 1) {

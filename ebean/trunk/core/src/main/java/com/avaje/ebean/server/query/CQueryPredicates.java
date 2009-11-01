@@ -206,7 +206,7 @@ public class CQueryPredicates {
 	private String buildWhereRawSql() {
 		// this is the where part of a OQL query which
 		// may contain bind parameters...
-		String whereRaw = query.getWhere();
+		String whereRaw = query.getRawWhereClause();
 		if (whereRaw == null) {
 			whereRaw = "";
 		}
@@ -338,10 +338,10 @@ public class CQueryPredicates {
 	private String deriveOrderByWithMany(BeanPropertyAssocMany<?> manyProp) {
 
 		if (manyProp == null) {
-			return query.getOrderBy();
+			return query.getOrderByStringFormat();
 		}
 
-		String orderBy = query.getOrderBy();
+		String orderBy = query.getOrderByStringFormat();
 
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		String orderById = desc.getDefaultOrderBy();

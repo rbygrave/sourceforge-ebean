@@ -1475,15 +1475,15 @@ public final class DefaultServer implements SpiEbeanServer {
 	/**
 	 * Execute the CallableSql with an explicit transaction.
 	 */
-	public void execute(CallableSql callSql, Transaction t) {
-		persister.executeCallable(callSql, t);
+	public int execute(CallableSql callSql, Transaction t) {
+		return persister.executeCallable(callSql, t);
 	}
 
 	/**
 	 * Execute the CallableSql.
 	 */
-	public void execute(CallableSql callSql) {
-		execute(callSql, null);
+	public int execute(CallableSql callSql) {
+		return execute(callSql, null);
 	}
 
 	/**

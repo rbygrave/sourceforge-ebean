@@ -297,6 +297,11 @@ public interface SpiQuery<T> extends Query<T> {
 	public boolean isSqlSelect();
 
 	/**
+	 * Return the Order By clause or null if there is none defined.
+	 */
+	public String getOrderByStringFormat();
+	
+	/**
 	 * Return additional where clause. This should be added to any where clause
 	 * that was part of the original query.
 	 */
@@ -436,16 +441,11 @@ public interface SpiQuery<T> extends Query<T> {
 	 * Set default select clauses where none have been explicitly defined.
 	 */
 	public void setDefaultSelectClause();
-		
-	/**
-	 * Return the order by clause.
-	 */
-	public String getOrderBy();
 
 	/**
-	 * Return the where clause.
+	 * Return the where clause from a parsed string query.
 	 */
-	public String getWhere();
+	public String getRawWhereClause();
 
 	/**
 	 * Return the Id value.
