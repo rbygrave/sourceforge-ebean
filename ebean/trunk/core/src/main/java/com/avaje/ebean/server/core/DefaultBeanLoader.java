@@ -117,13 +117,19 @@ public class DefaultBeanLoader {
 		String idProperty = desc.getIdBinder().getIdProperty();
 
 		SpiQuery<?> query = (SpiQuery<?>)server.createQuery(desc.getBeanType());
-		query.select(idProperty);
-		query.join(many.getName());
-		query.where().idIn(idList);
 		query.setMode(Mode.LAZYLOAD_MANY);
 		query.setPersistenceContext(pc);
+		query.select(idProperty);
+		query.join(many.getName());
+		if (idList.size() == 1){
+			query.where().idEq(idList.get(0));
+		} else {
+			query.where().idIn(idList);			
+		}
 		
-		query.setLoadDescription(loadRequest.getDescription());
+		
+		String mode = loadRequest.isLazy() ? "+lazy" : "+query";
+		query.setLoadDescription(mode, loadRequest.getDescription());
 		
 		ctx.configureQuery(query);
 		
@@ -281,14 +287,18 @@ public class DefaultBeanLoader {
 		query.setMode(Mode.LAZYLOAD_BEAN);
 		query.setPersistenceContext(persistenceContext);
 		
-		
-		query.setLoadDescription(loadRequest.getDescription());
+		String mode = loadRequest.isLazy() ? "+lazy" : "+query";
+		query.setLoadDescription(mode, loadRequest.getDescription());
 		
 		ctx.configureQuery(query, loadRequest.getLazyLoadProperty());
 		
 		// make sure the query doesn't use the cache
 		query.setUseCache(false);
-		query.where().idIn(idList);
+		if (idList.size() == 1){
+			query.where().idEq(idList.get(0));
+		} else {
+			query.where().idIn(idList);
+		}
 		
 		List<?> list = server.findList(query, loadRequest.getTransaction());
 		

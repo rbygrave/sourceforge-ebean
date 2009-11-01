@@ -20,7 +20,6 @@
 package com.avaje.ebean.server.query;
 
 import com.avaje.ebean.BackgroundExecutor;
-import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;

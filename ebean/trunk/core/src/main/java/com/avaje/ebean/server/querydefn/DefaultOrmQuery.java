@@ -14,6 +14,7 @@ import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureIds;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.FutureRowCount;
+import com.avaje.ebean.JoinConfig;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
@@ -98,6 +99,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private OrderBy<T> orderBy;
 
+	private String loadMode;
 	private String loadDescription;
 	
 	private String generatedSql;
@@ -373,7 +375,12 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return loadDescription;
 	}
 
-	public void setLoadDescription(String loadDescription) {
+	public String getLoadMode() {
+		return loadMode;
+	}
+
+	public void setLoadDescription(String loadMode, String loadDescription) {
+		this.loadMode = loadMode;
 		this.loadDescription = loadDescription;
 	}
 
@@ -699,11 +706,19 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 
 	public DefaultOrmQuery<T> join(String property) {
-		return join(property, null);
+		return join(property, null, null);
+	}
+	
+	public DefaultOrmQuery<T> join(String property, JoinConfig joinConfig) {
+		return join(property, null, joinConfig);
 	}
 
 	public DefaultOrmQuery<T> join(String property, String columns) {
-		detail.addFetchJoin(property, columns);
+		return join(property, columns, null);
+	}
+	
+	public DefaultOrmQuery<T> join(String property, String columns, JoinConfig joinConfig) {
+		detail.addFetchJoin(property, columns, joinConfig);
 		return this;
 	}
 	

@@ -131,10 +131,23 @@ public interface SpiQuery<T> extends Query<T> {
 	 * Set the query type (List, Set etc).
 	 */
 	public void setType(Type type);
-	
+
+	/**
+	 * Return a more detailed description of the lazy or query load.
+	 */
 	public String getLoadDescription();
 
-	public void setLoadDescription(String loadDescription);
+	/**
+	 * Return the load mode (+lazy or +query).
+	 */
+	public String getLoadMode();
+
+	/**
+	 * Set the load mode (+lazy or +query) and the load description.
+	 * @param loadMode
+	 * @param loadDescription
+	 */
+	public void setLoadDescription(String loadMode, String loadDescription);
 
 	/**
 	 * Set the BeanDescriptor for the root type of this query.

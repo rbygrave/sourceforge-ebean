@@ -178,7 +178,7 @@ public class OrmQueryDetailParser {
 		if (props != null) {
 			props = props.substring(1, props.length() - 1);
 		}
-		return new OrmQueryProperties(entity, props);
+		return new OrmQueryProperties(entity, props, null);
 	}
 
 	private boolean isFindJoinEnd() {

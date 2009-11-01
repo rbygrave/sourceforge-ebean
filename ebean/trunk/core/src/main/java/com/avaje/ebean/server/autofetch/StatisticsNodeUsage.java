@@ -79,7 +79,7 @@ public class StatisticsNodeUsage implements Serializable {
 			if (path == null){
 				detail.select(propList);
 			} else {
-				detail.addFetchJoin(path, propList);
+				detail.addFetchJoin(path, propList, null);
 			}
 		}
 	}
