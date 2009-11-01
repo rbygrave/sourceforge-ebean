@@ -781,7 +781,7 @@ public final class Ebean {
 	 * 
 	 * <pre class="code">
 	 * // example 
-	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class, &quot;new.for.customer&quot;);
+	 * Query&lt;Order&gt; query = Ebean.createNamedQuery(Order.class, &quot;new.for.customer&quot;);
 	 * query.setParameter(&quot;customerId&quot;, 23);
 	 * List&lt;Order&gt; newOrders = query.findList();
 	 * </pre>
@@ -1051,8 +1051,8 @@ public final class Ebean {
 	 * @see CallableSql
 	 * @see Ebean#execute(SqlUpdate)
 	 */
-	public static void execute(CallableSql callableSql) {
-		serverMgr.getPrimaryServer().execute(callableSql);
+	public static int execute(CallableSql callableSql) {
+		return serverMgr.getPrimaryServer().execute(callableSql);
 	}
 
 	/**

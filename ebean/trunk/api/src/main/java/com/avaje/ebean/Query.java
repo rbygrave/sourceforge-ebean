@@ -926,21 +926,91 @@ public interface Query<T> extends Serializable {
 	 */
 	public Query<T> having(Expression addExpressionToHaving);
 
-	/**
-	 * Return the orderBy clause.
-	 */
-	public String getOrderBy();
 
 	/**
 	 * Set the order by clause.
+	 * <p>
+	 * Deprecated in favour of {@link #order(String)}
+	 * </p>
+	 * @deprecated
 	 */
-	public Query<T> setOrderBy(String orderBy);
+	public Query<T> setOrderBy(String orderByClause);
 
 	/**
-	 * Set the order by clause.
+	 * Set the order by clause replacing the existing
+	 * order by clause if there is one. 
+	 * <p>
+	 * This follows SQL syntax using commas between each 
+	 * property with the optional asc and desc keywords representing
+	 * ascending and descending order respectively.
+	 * </p>
+	 * <p>
+	 * This is EXACTLY the same as {@link #order(String)}.
+	 * </p>
 	 */
-	public Query<T> orderBy(String orderBy);
+	public Query<T> orderBy(String orderByClause);
 
+	/**
+	 * Set the order by clause replacing the existing
+	 * order by clause if there is one. 
+	 * <p>
+	 * This follows SQL syntax using commas between each 
+	 * property with the optional asc and desc keywords representing
+	 * ascending and descending order respectively.
+	 * </p>
+	 * <p>
+	 * This is EXACTLY the same as {@link #orderBy(String)}.
+	 * </p>
+	 */
+	public Query<T> order(String orderByClause);
+
+	/**
+	 * Return the OrderBy so that you can append 
+	 * an ascending or descending property to the order by
+	 * clause.
+	 * <p>
+	 * This will never return a null. If no order by clause exists
+	 * then an 'empty' OrderBy object is returned.
+	 * </p>
+	 * <p>
+	 * This is EXACTLY the same as {@link #orderBy()}.
+	 * </p>
+	 */
+	public OrderBy<T> order();
+
+	/**
+	 * Return the OrderBy so that you can append 
+	 * an ascending or descending property to the order by
+	 * clause.
+	 * <p>
+	 * This will never return a null. If no order by clause exists
+	 * then an 'empty' OrderBy object is returned.
+	 * </p>
+	 * <p>
+	 * This is EXACTLY the same as {@link #order()}.
+	 * </p>
+	 */
+	public OrderBy<T> orderBy();
+
+	/**
+	 * Set an OrderBy object to replace any existing 
+	 * OrderBy clause.
+	 * <p>
+	 * This is EXACTLY the same as {@link #setOrderBy(OrderBy)}.
+	 * </p>
+	 */
+	public Query<T> setOrder(OrderBy<T> orderBy);
+
+
+	/**
+	 * Set an OrderBy object to replace any existing 
+	 * OrderBy clause.
+	 * <p>
+	 * This is EXACTLY the same as {@link #setOrder(OrderBy)}.
+	 * </p>
+	 */
+	public Query<T> setOrderBy(OrderBy<T> orderBy);
+	
 	/**
 	 * Set whether this query uses DISTINCT.
 	 */

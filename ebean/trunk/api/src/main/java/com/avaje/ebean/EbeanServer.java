@@ -719,7 +719,7 @@ public interface EbeanServer {
 	 * 
 	 * @see Ebean#execute(CallableSql)
 	 */
-	public void execute(CallableSql callableSql);
+	public int execute(CallableSql callableSql);
 
 	/**
 	 * Process committed changes from another framework.
@@ -776,7 +776,7 @@ public interface EbeanServer {
 	/**
 	 * Execute explicitly passing a transaction.
 	 */
-	public void execute(CallableSql callableSql, Transaction t);
+	public int execute(CallableSql callableSql, Transaction t);
 
 	/**
 	 * Execute a TxRunnable in a Transaction with an explicit scope.
