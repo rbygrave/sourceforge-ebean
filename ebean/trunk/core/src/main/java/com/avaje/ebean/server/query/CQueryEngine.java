@@ -245,6 +245,8 @@ public class CQueryEngine {
 				logFindSummary(cquery);
 			}
 
+			request.executeSecondaryQueries(defaultSecondaryQueryBatchSize);
+			
 			return bean;
 
 		} catch (SQLException e) {
@@ -256,22 +258,6 @@ public class CQueryEngine {
 			cquery.close();
 		}
 	}
-
-	private String getMode(SpiQuery.Mode mode) {
-		switch (mode) {
-		case NORMAL:
-			return "normal";
-		case LAZYLOAD_BEAN:
-			return "lazyLoad";
-		case LAZYLOAD_MANY:
-			return "lazyLoad";
-		case REFRESH_BEAN:
-			return "refresh";
-
-		default:
-			return "";
-		}
-	}
 	
 	/**
 	 * Log the generated SQL to the console.
@@ -279,14 +265,18 @@ public class CQueryEngine {
 	private void logSqlToConsole(CQuery<?> cquery) {
 
 		SpiQuery<?> query = cquery.getQueryRequest().getQuery();
-		String modeDesc = getMode(query.getMode());
+		String loadMode = query.getLoadMode();
 		String loadDesc = query.getLoadDescription();
 		
 		String sql = cquery.getGeneratedSql();
 		String summary = cquery.getSummary();
 
 		StringBuilder sb = new StringBuilder(1000);
-		sb.append("<sql mode='").append(modeDesc).append("' summary='").append(summary);
+		sb.append("<sql ");
+		if (loadMode != null) {
+			sb.append("mode='").append(loadMode).append("' ");
+		}
+		sb.append("summary='").append(summary);
 		if (loadDesc != null){
 			sb.append("' load='").append(loadDesc);			
 		}

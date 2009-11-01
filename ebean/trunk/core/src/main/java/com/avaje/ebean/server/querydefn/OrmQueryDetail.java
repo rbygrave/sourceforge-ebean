@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.avaje.ebean.JoinConfig;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.el.ElPropertyDeploy;
 import com.avaje.ebean.server.query.SplitName;
@@ -89,7 +90,7 @@ public class OrmQueryDetail implements Serializable {
 	 * set the properties to include on the base / root entity.
 	 */
 	public void select(String columns) {
-		baseProps = new OrmQueryProperties(null, columns);
+		baseProps = new OrmQueryProperties(null, columns, null);
 	}
 	
 	public boolean containsProperty(String property){
@@ -205,8 +206,8 @@ public class OrmQueryDetail implements Serializable {
 	 * @param property the property to join
 	 * @param partialProps the properties on the join property to include
 	 */
-	public OrmQueryProperties addFetchJoin(String property, String partialProps) {
-		OrmQueryProperties chunk = new OrmQueryProperties(property, partialProps);
+	public OrmQueryProperties addFetchJoin(String property, String partialProps, JoinConfig joinConfig) {
+		OrmQueryProperties chunk = new OrmQueryProperties(property, partialProps, joinConfig);
 		addFetchJoin(chunk);
 		return chunk;
 	}
@@ -299,7 +300,7 @@ public class OrmQueryDetail implements Serializable {
 		}
 		OrmQueryProperties props = fetchJoins.get(propertyName);
 		if (create && props == null) {
-			return addFetchJoin(propertyName, null);
+			return addFetchJoin(propertyName, null, null);
 		} else {
 			return props;
 		}

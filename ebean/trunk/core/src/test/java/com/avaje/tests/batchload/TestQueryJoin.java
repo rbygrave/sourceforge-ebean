@@ -28,14 +28,14 @@ public class TestQueryJoin extends TestCase {
 //		List<Order> list = query.findList();
 
 		
-Query<Order> query = Ebean.find(Order.class)
-	.select("status")
-	//.join("details","+query(10)")
-	.join("customer","+lazy(10) name, status")
-	.join("customer.contacts");
-	//.join("customer.billingAddress");
-
-List<Order> list = query.findList();
+		Query<Order> query = Ebean.find(Order.class)
+			.select("status")
+			//.join("details","+query(10)")
+			.join("customer","+lazy(10) name, status")
+			.join("customer.contacts");
+			//.join("customer.billingAddress");
+		
+		List<Order> list = query.findList();
 	
 		//list.get(0).getShipDate();
 		

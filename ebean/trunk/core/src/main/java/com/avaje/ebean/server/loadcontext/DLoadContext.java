@@ -262,11 +262,8 @@ public class DLoadContext implements LoadContext {
 	private DLoadManyContext createManyContext(String path, int batchSize, OrmQueryProperties queryProps) {
 
 		BeanPropertyAssocMany<?> p = (BeanPropertyAssocMany<?>)getBeanProperty(rootDescriptor, path);
-		if (batchSize < 2 || p.getBeanDescriptor().isComplexId()) {
-			return new DLoadManyContextNoBatch(this, p, path, queryProps);
-		} else {
-			return new DLoadManyContext(this, p, path, batchSize, queryProps);			
-		}
+
+		return new DLoadManyContext(this, p, path, batchSize, queryProps);
 	}
 
 	
@@ -274,12 +271,8 @@ public class DLoadContext implements LoadContext {
 
 		BeanPropertyAssoc<?> p = (BeanPropertyAssoc<?>)getBeanProperty(rootDescriptor, path);
 		BeanDescriptor<?> targetDescriptor = p.getTargetDescriptor();
-		
-		if (batchSize < 2 || targetDescriptor.isComplexId()) {
-			return new DLoadBeanContextNoBatch(this, targetDescriptor, path, queryProps);
-		} else {
-			return new DLoadBeanContext(this, targetDescriptor, path, batchSize, queryProps);			
-		}
+
+		return new DLoadBeanContext(this, targetDescriptor, path, batchSize, queryProps);			
 	}
 	
 	private BeanProperty getBeanProperty(BeanDescriptor<?> desc, String path){
