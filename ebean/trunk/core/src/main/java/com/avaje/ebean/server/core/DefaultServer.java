@@ -175,7 +175,7 @@ public final class DefaultServer implements SpiEbeanServer {
 	/**
 	 * The default batch size for lazy loading beans or collections.
 	 */
-	private int loadBatchSize;
+	private int lazyLoadBatchSize;
 
 	/**
 	 * JDBC driver specific handling for JDBC batch execution.
@@ -192,7 +192,7 @@ public final class DefaultServer implements SpiEbeanServer {
 		this.databasePlatform = config.getDatabasePlatform();
 		this.backgroundExecutor = config.getBackgroundExecutor();
 		this.serverName = config.getServerConfig().getName();
-		this.loadBatchSize = config.getServerConfig().getLoadBatchSize();
+		this.lazyLoadBatchSize = config.getServerConfig().getLazyLoadBatchSize();
 		this.cqueryEngine = config.getCQueryEngine();
 		this.expressionFactory = config.getExpressionFactory();
 		this.adminLogging = config.getLogControl();
@@ -217,13 +217,13 @@ public final class DefaultServer implements SpiEbeanServer {
 		ShutdownManager.register(new Shutdown());
 	}
 	
-	public int getLoadBatchSize() {
-		return loadBatchSize;
+	public int getLazyLoadBatchSize() {
+		return lazyLoadBatchSize;
 	}
 
-	public void setLoadBatchSize(int loadBatchSize) {
-		this.loadBatchSize = loadBatchSize;
-	}
+//	public void setLazyLoadBatchSize(int loadBatchSize) {
+//		this.lazyLoadBatchSize = loadBatchSize;
+//	}
 	
 	public PstmtBatch getPstmtBatch() {
 		return pstmtBatch;

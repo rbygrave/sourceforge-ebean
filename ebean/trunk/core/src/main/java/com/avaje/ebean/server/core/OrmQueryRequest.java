@@ -102,7 +102,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		
 		this.parentState = determineParentState(query);
 		
-		int defaultBatchSize = server.getLoadBatchSize();
+		int defaultBatchSize = server.getLazyLoadBatchSize();
 		this.graphContext = new DLoadContext(ebeanServer, beanDescriptor, defaultBatchSize, parentState, query);
 		
 		graphContext.registerSecondaryQueries(query);
