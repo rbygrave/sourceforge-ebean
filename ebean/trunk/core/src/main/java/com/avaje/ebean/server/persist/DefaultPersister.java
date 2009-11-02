@@ -386,8 +386,12 @@ public final class DefaultPersister implements Persister {
 		for (int i = 0; i < manys.length; i++) {
 			if (manys[i].isManyToMany()) {
 				// save the beans that are in the manyToMany
-				saveAssocManyDetails(insertedParent, request, manys[i], false);
-				// create inserts and deletes into the intersection table
+				if (manys[i].getCascadeInfo().isSave()){
+					// Need explicit Cascade to save the beans on other side 
+					saveAssocManyDetails(insertedParent, request, manys[i], false);
+				}
+				// for ManyToMany always save the 'relationship' via inserts/deletes
+				// into/from the intersection table
 				saveAssocManyIntersection(insertedParent, request, manys[i]);
 
 			} else {
