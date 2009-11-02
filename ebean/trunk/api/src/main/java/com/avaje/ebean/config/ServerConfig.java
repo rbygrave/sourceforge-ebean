@@ -118,7 +118,7 @@ public class ServerConfig {
 	private int persistBatchSize = 20;
 	
 	/** The default batch size for lazy loading */
-	private int loadBatchSize = 1;
+	private int lazyLoadBatchSize = 1;
 	
 	/** The ddl generate. */
 	private boolean ddlGenerate;
@@ -286,8 +286,8 @@ public class ServerConfig {
 	/**
 	 * Return the default batch size for lazy loading of beans and collections.
 	 */
-	public int getLoadBatchSize() {
-		return loadBatchSize;
+	public int getLazyLoadBatchSize() {
+		return lazyLoadBatchSize;
 	}
 
 	/**
@@ -301,11 +301,11 @@ public class ServerConfig {
 	 * </p>
 	 * <p>
 	 * You can explicitly control the lazy loading batch size for a 
-	 * given join on a query using +lazy(batchSize).
+	 * given join on a query using +lazy(batchSize) or JoinConfig.
 	 * </p>
 	 */
-	public void setLoadBatchSize(int loadBatchSize) {
-		this.loadBatchSize = loadBatchSize;
+	public void setLazyLoadBatchSize(int lazyLoadBatchSize) {
+		this.lazyLoadBatchSize = lazyLoadBatchSize;
 	}
 
 	/**
@@ -1049,10 +1049,11 @@ public class ServerConfig {
 		persistBatchSize = p.getInt("batch.size", 20);
 		
 		databaseSequenceBatchSize = p.getInt("databaseSequenceBatchSize", 20);
-			
 		databaseBooleanTrue = p.get("databaseBooleanTrue", null);
 		databaseBooleanFalse = p.get("databaseBooleanFalse", null);
-		
+
+		lazyLoadBatchSize = p.getInt("lazyLoadBatchSize", 1);
+
 		ddlGenerate = p.getBoolean("ddl.generate", false);
 		ddlRun = p.getBoolean("ddl.run", false);
 
