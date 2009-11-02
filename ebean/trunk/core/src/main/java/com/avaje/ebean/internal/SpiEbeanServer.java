@@ -174,10 +174,10 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	/**
 	 * Return the default batch size for lazy loading.
 	 */
-	public int getLoadBatchSize();
+	public int getLazyLoadBatchSize();
 	
-	/**
-	 * Set the default batch size for lazy loading.
-	 */
-	public void setLoadBatchSize(int loadBatchSize);
+//	/**
+//	 * Set the default batch size for lazy loading.
+//	 */
+//	public void setLazyLoadBatchSize(int loadBatchSize);
 }

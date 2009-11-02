@@ -49,7 +49,7 @@ public class CQueryEngine {
 
 	private final BackgroundExecutor backgroundExecutor;
 
-	int defaultSecondaryQueryBatchSize = 100;
+	private final int defaultSecondaryQueryBatchSize = 100;
 
 	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, 
 			Binder binder, BackgroundExecutor backgroundExecutor) {
