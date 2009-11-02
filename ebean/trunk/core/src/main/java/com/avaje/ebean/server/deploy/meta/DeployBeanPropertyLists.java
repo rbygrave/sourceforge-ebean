@@ -299,7 +299,9 @@ public class DeployBeanPropertyLists {
 			
 			switch (mode) {
 			case Save:
-				if (prop.getCascadeInfo().isSave()){
+				if (prop.getCascadeInfo().isSave() || prop.isManyToMany()){
+					// Note ManyToMany always included as we always 'save'
+					// the relationship via insert/delete of intersection table
 					list.add(prop);	
 				}
 				break;
