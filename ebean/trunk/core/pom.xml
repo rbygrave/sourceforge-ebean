@@ -70,8 +70,6 @@
 			<groupId>com.oracle</groupId>
 			<artifactId>oracle</artifactId>
             <version>10.2.0.2.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/syslib/oracle-jdbc.jar</systemPath>
 		</dependency>
 	</dependencies>
 
