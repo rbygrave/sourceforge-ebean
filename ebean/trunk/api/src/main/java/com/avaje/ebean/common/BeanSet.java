@@ -76,9 +76,6 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     
 	@SuppressWarnings("unchecked")
 	public void addBean(Object bean) {
-//		if (set == null){
-//			set = new LinkedHashSet<E>();
-//		}
 		set.add((E)bean);
 	}
 
@@ -93,11 +90,24 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean isPopulated() {
         return set != null;
     }
-
+	
+	private void initClear() {
+		synchronized (this) {
+			if (set == null) {
+				if (modifyListening){
+					lazyLoadCollection(true);						
+				} else {
+					set = new LinkedHashSet<E>();
+				}
+			}
+			touched();
+		}
+	}
+	
 	private void init() {
 		synchronized (this) {
 	        if (set == null) {
-	        	lazyLoadCollection();
+	        	lazyLoadCollection(true);
 	        }
 	        touched();
 		}
@@ -170,7 +180,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean add(E o) {
     	checkReadOnly();
         init();
-        if (modifyListening){
+        if (modifyAddListening){
         	if (set.add(o)){
         		modifyAddition(o);
         		return true;
@@ -184,7 +194,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean addAll(Collection<? extends E> c) {
     	checkReadOnly();
         init();
-        if (modifyListening){
+        if (modifyAddListening){
         	boolean changed = false;
         	Iterator<? extends E> it = c.iterator();
         	while (it.hasNext()) {
@@ -201,7 +211,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
 
     public void clear() {
     	checkReadOnly();
-        init();
+        initClear();
         set.clear();
     }
 
@@ -234,7 +244,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean remove(Object o) {
     	checkReadOnly();
         init();
-        if (modifyListening){
+        if (modifyRemoveListening){
         	if (set.remove(o)){
         		modifyRemoval(o);
         	}
@@ -245,7 +255,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean removeAll(Collection<?> c) {
     	checkReadOnly();
         init();
-        if (modifyListening){
+        if (modifyRemoveListening){
         	boolean changed = false;
         	Iterator<?> it = c.iterator();
         	while (it.hasNext()) {
@@ -263,7 +273,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean retainAll(Collection<?> c) {
     	checkReadOnly();
         init();
-        if (modifyListening){
+        if (modifyRemoveListening){
         	boolean changed = false;
         	Iterator<?> it = set.iterator();
         	while (it.hasNext()) {

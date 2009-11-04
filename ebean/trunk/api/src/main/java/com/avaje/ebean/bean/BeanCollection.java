@@ -44,6 +44,15 @@ import com.avaje.ebean.Query;
  */
 public interface BeanCollection<E> extends Serializable {
 	
+	public enum ModifyListenMode {
+		/** The common mode */
+		NONE,
+		/** Mode used for PrivateOwned */
+		REMOVALS,
+		/** Mode used for ManyToMany relationships */
+		ALL
+	}
+	
 	/**
 	 * Return the bean that owns this collection.
 	 */
@@ -202,7 +211,7 @@ public interface BeanCollection<E> extends Serializable {
 	 * table. Otherwise modifyListening is false.
 	 * </p>
 	 */
-	public void setModifyListening(boolean modifyListening);
+	public void setModifyListening(ModifyListenMode modifyListenMode);
 
 	/**
 	 * Add an object to the additions list.

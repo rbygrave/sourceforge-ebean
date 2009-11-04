@@ -17,26 +17,27 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.bean;
+package com.avaje.ebean.annotation;
 
-
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Loads a entity bean collection.
+ * Specify that the elements of a OneToMany are private owned.
  * <p>
- * Typically invokes lazy loading for a single or batch of collections. 
+ * This means that if they are removed from the List/Set/Map they
+ * will be deleted when their parent object is saved.
+ * </p>
+ * <p>
+ * This could also be described as deleting orphans - in that beans
+ * removed from the List/Set/Map will be deleted automatically when
+ * the parent bean is saved.
  * </p>
  */
-public interface BeanCollectionLoader {
+@Target( { ElementType.FIELD, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PrivateOwned {
 
-	/**
-	 * Return the name of the associated EbeanServer.
-	 */
-	public String getName();
-	
-	/**
-	 * Invoke the lazy loading for this bean collection.
-	 */
-	public void loadMany(BeanCollection<?> collection, boolean onlyIds);
-
-}
+};

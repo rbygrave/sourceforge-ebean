@@ -85,10 +85,23 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 		return map != null;
 	}
 
+	private void initClear() {
+		synchronized (this) {
+			if (map == null) {
+				if (modifyListening){
+					lazyLoadCollection(true);						
+				} else {
+					map = new LinkedHashMap<K,E>();
+				}
+			}
+			touched();
+		}
+	}
+	
 	private void init() {
 		synchronized (this) {
 			if (map == null) {
-				lazyLoadCollection();
+				lazyLoadCollection(false);
 			}
 			touched();
 		}
@@ -161,7 +174,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 
 	public void clear() {
 		checkReadOnly();
-		init();
+		initClear();
 		map.clear();
 	}
 
@@ -237,7 +250,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	public E remove(Object key) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyRemoveListening) {
 			E o = map.remove(key);
 			modifyRemoval(o);
 			return o;

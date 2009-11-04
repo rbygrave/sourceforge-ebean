@@ -58,8 +58,6 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	
 	protected transient Future<Integer> fetchFuture;
 
-	//protected final transient ObjectGraphNode profilePoint;
-	
 	/**
 	 * The owning bean (used for lazy fetch).
 	 */
@@ -86,6 +84,8 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 
 	protected ModifyHolder<E> modifyHolder;
 
+	protected boolean modifyAddListening;
+	protected boolean modifyRemoveListening;
 	protected boolean modifyListening;
 	
 	/**
@@ -94,7 +94,6 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	public AbstractBeanCollection() {
 		this.ownerBean = null;
 		this.propertyName = null;
-		//this.profilePoint = null;
 	}
 	
 	/**
@@ -105,7 +104,6 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		this.ebeanServerName = loader.getName();
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
-		//this.profilePoint = profilePoint;
 		
 		EntityBeanIntercept ebi = ownerBean._ebean_getIntercept();
 		
@@ -115,10 +113,6 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 			setReadOnly(true);
 		}
 	}
-	
-//	public ObjectGraphNode getProfilePoint() {
-//		return profilePoint;
-//	}
 
 	public Object getOwnerBean() {
 		return ownerBean;
@@ -132,7 +126,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		return loaderIndex;
 	}
 
-	protected void lazyLoadCollection() {
+	protected void lazyLoadCollection(boolean onlyIds) {
 		if (loader == null){
 			loader = (BeanCollectionLoader)Ebean.getServer(ebeanServerName);
 		}
@@ -143,7 +137,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 			throw new PersistenceException(msg);									
 		}
 	
-		loader.loadMany(this);
+		loader.loadMany(this, onlyIds);
 	}
 	
 	protected void touched() {
@@ -267,8 +261,11 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	/**
 	 * set modifyListening to be on or off.
 	 */
-	public void setModifyListening(boolean modifyListening) {
-		this.modifyListening = modifyListening;
+	public void setModifyListening(ModifyListenMode mode) {
+		
+		this.modifyAddListening = ModifyListenMode.ALL.equals(mode);
+		this.modifyRemoveListening = modifyAddListening || ModifyListenMode.REMOVALS.equals(mode);
+		this.modifyListening = modifyRemoveListening || modifyAddListening;
 		if (modifyListening){
 			// lose any existing modifications
 			modifyHolder = null;
@@ -283,11 +280,15 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	}
 	
 	public void modifyAddition(E bean) {
-		getModifyHolder().modifyAddition(bean);
+		if (modifyAddListening){
+			getModifyHolder().modifyAddition(bean);
+		}
 	}
 
 	public void modifyRemoval(Object bean) {
-		getModifyHolder().modifyRemoval(bean);
+		if (modifyRemoveListening){
+			getModifyHolder().modifyRemoval(bean);
+		}
 	}
 
 	public void modifyReset() {

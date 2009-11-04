@@ -21,6 +21,10 @@ package com.avaje.ebean.config.dbplatform;
 
 import java.sql.Types;
 
+import javax.sql.DataSource;
+
+import com.avaje.ebean.BackgroundExecutor;
+
 
 
 
@@ -58,6 +62,18 @@ public class MySqlPlatform extends DatabasePlatform {
         dbDdlSyntax.setEnableReferentialIntegrity("SET FOREIGN_KEY_CHECKS=1");
         dbDdlSyntax.setForeignKeySuffix("on delete restrict on update restrict");
 
-    }    
+    }
+
+    /**
+     * Return null in case there is a sequence annotation.
+     */
+	@Override
+	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be,
+			DataSource ds, String seqName, int batchSize) {
+		
+		return null;
+	}
+    
+    
 
 }

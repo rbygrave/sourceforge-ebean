@@ -81,9 +81,6 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	
 	@SuppressWarnings("unchecked")
 	public void addBean(Object bean) {
-//		if (list == null){
-//			list = new ArrayList<E>();
-//		}
 		list.add((E) bean);
 	}
 
@@ -92,10 +89,23 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 		list.add((E) bean);
 	}
 
+	private void initClear() {
+		synchronized (this) {
+			if (list == null) {
+				if (modifyListening){
+					lazyLoadCollection(true);						
+				} else {
+					list = new ArrayList<E>();
+				}
+			}
+			touched();
+		}
+	}	
+	
 	private void init() {
 		synchronized (this) {
 			if (list == null) {
-				lazyLoadCollection();
+				lazyLoadCollection(false);					
 			}
 			touched();
 		}
@@ -188,7 +198,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public void add(int index, E element) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyAddListening) {
 			modifyAddition(element);
 		}
 		list.add(index, element);
@@ -197,7 +207,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean add(E o) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyAddListening) {
 			if (list.add(o)){
 				modifyAddition(o);				
 				return true;
@@ -211,7 +221,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean addAll(Collection<? extends E> c) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyAddListening) {
 			// all elements in c are added (no contains checking)
 			getModifyHolder().modifyAdditionAll(c);
 		}
@@ -221,7 +231,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean addAll(int index, Collection<? extends E> c) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyAddListening) {
 			// all elements in c are added (no contains checking)
 			getModifyHolder().modifyAdditionAll(c);
 		}
@@ -230,7 +240,14 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 
 	public void clear() {
 		checkReadOnly();
-		init();
+		// TODO: when clear() and not initialised could be more clever
+		// and fetch just the Id's
+		initClear();
+		if (modifyRemoveListening){
+			for (int i = 0; i < list.size(); i++) {
+				getModifyHolder().modifyRemoval(list.get(i));				
+			}
+		} 
 		list.clear();
 	}
 
@@ -303,7 +320,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public E remove(int index) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyRemoveListening) {
 			E o = list.remove(index);
 			modifyRemoval(o);
 			return o;
@@ -314,7 +331,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean remove(Object o) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyRemoveListening) {
 			boolean isRemove = list.remove(o);
 			if (isRemove) {
 				modifyRemoval(o);
@@ -327,7 +344,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean removeAll(Collection<?> c) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyRemoveListening) {
 			boolean changed = false;
 			Iterator<?> it = c.iterator();
 			while (it.hasNext()) {
@@ -345,7 +362,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean retainAll(Collection<?> c) {
 		checkReadOnly();
 		init();
-		if (modifyListening) {
+		if (modifyRemoveListening) {
 			boolean changed = false;
 			Iterator<E> it = list.iterator();
 			while (it.hasNext()) {
