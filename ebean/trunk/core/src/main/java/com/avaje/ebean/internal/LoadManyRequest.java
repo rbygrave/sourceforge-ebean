@@ -34,19 +34,21 @@ public class LoadManyRequest extends LoadRequest {
 
 	private final LoadManyContext loadContext;
 
-
+	private final boolean onlyIds;
+	
 	public LoadManyRequest(LoadManyContext loadContext,
 			List<BeanCollection<?>> batch, Transaction transaction,
-			int batchSize, boolean lazy) {
+			int batchSize, boolean lazy, boolean onlyIds) {
 
 		super(transaction, batchSize, lazy);
 		this.loadContext = loadContext;
 		this.batch = batch;
+		this.onlyIds = onlyIds;
 	}
 
 	public String getDescription() {
 		String fullPath = loadContext.getFullPath();
-		String s = " path:" + fullPath + " batch:" + batchSize + " actual:"
+		String s = "path:" + fullPath + " batch:" + batchSize + " actual:"
 				+ batch.size();
 		return s;
 	}
@@ -65,5 +67,17 @@ public class LoadManyRequest extends LoadRequest {
 		return loadContext;
 	}
 
+	/**
+	 * Return true if lazy loading should only load the id values.
+	 * <p>
+	 * This for use when lazy loading is invoked on methods such
+	 * as clear() and removeAll() where it generally makes sense to
+	 * only fetch the Id values as the other property information is 
+	 * not used.
+	 * </p>
+	 */
+	public boolean isOnlyIds() {
+		return onlyIds;
+	}
 
 }

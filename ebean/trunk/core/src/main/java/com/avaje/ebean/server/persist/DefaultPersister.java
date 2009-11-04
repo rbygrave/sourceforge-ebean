@@ -22,6 +22,7 @@ package com.avaje.ebean.server.persist;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,7 @@ import com.avaje.ebean.Update;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.SpiUpdate;
@@ -395,11 +397,42 @@ public final class DefaultPersister implements Persister {
 				saveAssocManyIntersection(insertedParent, request, manys[i]);
 
 			} else {
-				saveAssocManyDetails(insertedParent, request, manys[i], true);
+				if (manys[i].getCascadeInfo().isSave()){
+					saveAssocManyDetails(insertedParent, request, manys[i], true);
+				}
+				if (ModifyListenMode.REMOVALS.equals(manys[i].getModifyListenMode())) {
+					removeAssocManyPrivateOwned(request, manys[i]);
+				}
 			}
 		}
 	}
 
+	private void removeAssocManyPrivateOwned(PersistRequestBean<?> request, BeanPropertyAssocMany<?> prop) {
+
+		Object parentBean = request.getBean();
+		Object details = prop.getValue(parentBean);
+
+		// check that the list is not null and if it is a BeanCollection
+		// check that is has been populated (don't trigger lazy loading)
+		if (details instanceof BeanCollection<?>) {
+			BeanCollection<?> c = (BeanCollection<?>)details;
+			Set<?> modifyRemovals = c.getModifyRemovals();
+			if (modifyRemovals != null && !modifyRemovals.isEmpty()) {
+				// increase depth for batching order
+				SpiTransaction t = request.getTransaction();
+				t.depth(+1);
+				
+				Iterator<?> it = modifyRemovals.iterator();
+				while (it.hasNext()) {
+					Object removedBean = it.next();
+					deleteRecurse(removedBean, t);
+				}
+				
+				t.depth(-1);
+			}
+		}
+	}
+	
 	/**
 	 * Save the details from a OneToMany collection.
 	 */
@@ -559,6 +592,7 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void deleteAssocMany(PersistRequestBean<?> request) {
 
+		SpiTransaction t = request.getTransaction();
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
 
 		Object parentBean = request.getBean();
@@ -572,7 +606,6 @@ public final class DefaultPersister implements Persister {
 			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(parentBean);
 				if (detailBean != null) {
-					SpiTransaction t = request.getTransaction();
 					t.depth(-1);
 					deleteRecurse(detailBean, t);
 					t.depth(+1);
@@ -594,15 +627,37 @@ public final class DefaultPersister implements Persister {
 				throw new RuntimeException(m);
 
 			} else {
-				// cascade the delete
 				Object details = manys[i].getValue(parentBean);
+				
+				if (ModifyListenMode.REMOVALS.equals(manys[i].getModifyListenMode())) {
+					// PrivateOwned ...
+					if (details instanceof BeanCollection<?>){
+						BeanCollection<?> bc = (BeanCollection<?>)details;
+						Set<?> modifyRemovals = bc.getModifyRemovals();
+						if (modifyRemovals != null && !modifyRemovals.isEmpty()){
+							// delete the orphans that have been removed from the collection
+							t.depth(-1);
 
+							Iterator<?> it = modifyRemovals.iterator();
+							while (it.hasNext()) {
+								Object detailBean = it.next();
+								if (manys[i].hasId(detailBean)) {
+									deleteRecurse(detailBean, t);
+								} else {
+									// bean that had not been inserted
+								}
+							}
+							t.depth(+1);
+						}
+					}
+				}
+				
+				// cascade delete the beans in the collection
 				Collection<?> collection = getDetailsIterator(details);
 				 
 				if (collection != null) {
 					// decrease depth for batched processing
 					// lowest depth executes first
-					SpiTransaction t = request.getTransaction();
 					t.depth(-1);
 
 					Iterator<?> it = collection.iterator();

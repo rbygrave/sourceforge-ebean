@@ -497,11 +497,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	 */
 	@SuppressWarnings("unchecked")
 	public T getLoadedBean() {
-		if (manyIncluded && manyProperty.isManyToMany()) {
+		if (manyIncluded) {
 			if (prevDetailCollection != null) {
-				prevDetailCollection.setModifyListening(true);
+				prevDetailCollection.setModifyListening(manyProperty.getModifyListenMode());
 			} else {
-				currentDetailCollection.setModifyListening(true);
+				currentDetailCollection.setModifyListening(manyProperty.getModifyListenMode());
 			}
 		}
 

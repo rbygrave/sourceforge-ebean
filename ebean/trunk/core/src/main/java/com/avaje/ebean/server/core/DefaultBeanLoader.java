@@ -32,8 +32,8 @@ import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.LoadBeanContext;
-import com.avaje.ebean.internal.LoadManyContext;
 import com.avaje.ebean.internal.LoadBeanRequest;
+import com.avaje.ebean.internal.LoadManyContext;
 import com.avaje.ebean.internal.LoadManyRequest;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiQuery.Mode;
@@ -121,6 +121,7 @@ public class DefaultBeanLoader {
 		query.setPersistenceContext(pc);
 		query.select(idProperty);
 		query.join(many.getName());
+
 		if (idList.size() == 1){
 			query.where().idEq(idList.get(0));
 		} else {
@@ -130,8 +131,14 @@ public class DefaultBeanLoader {
 		
 		String mode = loadRequest.isLazy() ? "+lazy" : "+query";
 		query.setLoadDescription(mode, loadRequest.getDescription());
-		
+
+		// potentially changes the joins and selected properties
 		ctx.configureQuery(query);
+
+		if (loadRequest.isOnlyIds()){
+			// override to just select the Id values
+			query.join(many.getName(), many.getTargetIdProperty());
+		}
 		
 		List<?> list = server.findList(query, loadRequest.getTransaction());
 		
@@ -142,14 +149,14 @@ public class DefaultBeanLoader {
 		}
 	}
 	
-	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx) {
+	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx, boolean onlyIds) {
 		
 		Object parentBean = bc.getOwnerBean();
 		String propertyName = bc.getPropertyName();
 
 		ObjectGraphNode node =  ctx == null ? null : ctx.getObjectGraphNode();
 	
-		loadManyInternal(parentBean, propertyName, null, false, node);
+		loadManyInternal(parentBean, propertyName, null, false, node, onlyIds);
 
 		if (server.getAdminLogging().isDebugLazyLoad()) {
 
@@ -168,10 +175,10 @@ public class DefaultBeanLoader {
 	}
 
 	public void refreshMany(Object parentBean, String propertyName, Transaction t) {
-		loadManyInternal(parentBean, propertyName, t, true, null);
+		loadManyInternal(parentBean, propertyName, t, true, null, false);
 	}
 
-	private void loadManyInternal(Object parentBean, String propertyName, Transaction t, boolean refresh, ObjectGraphNode node) {
+	private void loadManyInternal(Object parentBean, String propertyName, Transaction t, boolean refresh, ObjectGraphNode node, boolean onlyIds) {
 
 		if (parentBean instanceof EntityBean == false) {
 			throw new PersistenceException("Can only refresh a previously queried bean");			
@@ -214,8 +221,17 @@ public class DefaultBeanLoader {
 		Object parentId = parentDesc.getId(parentBean);
 		String idProperty = parentDesc.getIdBinder().getIdProperty();
 
+		
+
 		query.select(idProperty);
-		query.join(many.getName());
+		
+		if (onlyIds){
+			query.join(many.getName(), many.getTargetIdProperty());
+			
+		} else {
+			query.join(many.getName());
+		}
+		
 		query.where().idEq(parentId);
 		query.setMode(Mode.LAZYLOAD_MANY);
 		query.setPersistenceContext(pc);

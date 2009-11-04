@@ -29,7 +29,9 @@ import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
+import com.avaje.ebean.annotation.PrivateOwned;
 import com.avaje.ebean.annotation.Where;
+import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -73,6 +75,10 @@ public class AnnotationAssocManys extends AnnotationParser {
 		OneToMany oneToMany = get(prop, OneToMany.class);
 		if (oneToMany != null) {
 			readToOne(oneToMany, prop);
+			PrivateOwned privateOwned = get(prop, PrivateOwned.class);
+			if (privateOwned != null){
+				prop.setModifyListenMode(ModifyListenMode.REMOVALS);
+			}
 		}
 		ManyToMany manyToMany = get(prop, ManyToMany.class);
 		if (manyToMany != null) {

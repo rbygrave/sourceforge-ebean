@@ -96,9 +96,10 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		
 		Set<?> current = (Set<?>)many.getValue(parentBean);
 		
-		if (many.isManyToMany()){
-			newBeanSet.setModifyListening(true);
-		}
+		newBeanSet.setModifyListening(many.getModifyListenMode());
+		//if (many.isManyToMany()){
+		//	newBeanSet.setModifyListening(true);
+		//}
 		if (current == null){
 			// the currentList is null?  Not really expecting this...
 			many.setValue(parentBean,newBeanSet);
@@ -107,9 +108,10 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 			// normally this case, replace just the underlying list
 			BeanSet<?> currentBeanSet = (BeanSet<?>)current;
 			currentBeanSet.setActualSet(newBeanSet.getActualSet());
-			if (many.isManyToMany()){
-				currentBeanSet.setModifyListening(true);
-			}
+			currentBeanSet.setModifyListening(many.getModifyListenMode());
+			//if (many.isManyToMany()){
+			//	currentBeanSet.setModifyListening(true);
+			//}
 		} else {
 			// replace the entire set 
 			many.setValue(parentBean, newBeanSet);

@@ -75,7 +75,6 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.internal.LoadBeanRequest;
-import com.avaje.ebean.internal.LoadManyContext;
 import com.avaje.ebean.internal.LoadManyRequest;
 import com.avaje.ebean.internal.ScopeTrans;
 import com.avaje.ebean.internal.SpiEbeanServer;
@@ -371,14 +370,14 @@ public final class DefaultServer implements SpiEbeanServer {
 		beanLoader.loadMany(loadRequest);
 	}
 	
-	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx) {
-		
-		beanLoader.loadMany(bc, ctx);
-	}
+//	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx) {
+//		
+//		beanLoader.loadMany(bc, ctx);
+//	}
 
-	public void loadMany(BeanCollection<?> bc) {
+	public void loadMany(BeanCollection<?> bc, boolean onlyIds) {
 		
-		loadMany(bc, null);
+		beanLoader.loadMany(bc, null, onlyIds);
 	}
 
 

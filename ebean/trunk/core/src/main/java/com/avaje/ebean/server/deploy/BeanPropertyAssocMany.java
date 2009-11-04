@@ -33,6 +33,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -44,6 +45,7 @@ import com.avaje.ebean.server.query.SqlBeanLoad;
  * Property mapped to a List Set or Map.
  */
 public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
+
 
 	/**
 	 * Join for manyToMany intersection table.
@@ -94,6 +96,8 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	ImportedId importedId;
 
+	final ModifyListenMode modifyListenMode;
+	
 	/**
 	 * Create this property.
 	 */
@@ -108,6 +112,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 		this.intersectionJoin = deploy.createIntersectionTableJoin();
 		this.inverseJoin = deploy.createInverseTableJoin();
+		this.modifyListenMode = deploy.getModifyListenMode();
 	}
 
 	public void initialise() {
@@ -147,6 +152,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 	}
 
+	/**
+	 * Return the mode for listening to modifications to collections for this
+	 * association.
+	 */
+	public ModifyListenMode getModifyListenMode() {
+		return modifyListenMode;
+	}
+	
 	/**
 	 * Ignore changes for Many properties.
 	 */

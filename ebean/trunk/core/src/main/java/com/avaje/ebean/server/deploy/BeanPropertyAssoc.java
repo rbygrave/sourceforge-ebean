@@ -50,6 +50,8 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	IdBinder targetIdBinder;
 
 	InheritInfo targetInheritInfo;
+	
+	String targetIdProperty;
 
 	/**
 	 * Persist settings.
@@ -99,7 +101,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 		this.targetType = deploy.getTargetType();
 		this.cascadeInfo = deploy.getCascadeInfo();
 	}
-
+	
 	/**
 	 * Initialise post construction.
 	 */
@@ -117,6 +119,9 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 			cascadeValidate = cascadeInfo.isValidate();
 
+			if (!targetIdBinder.isComplexId()){
+				targetIdProperty = targetIdBinder.getIdProperty();
+			}
 		}
 	}
 	
@@ -148,6 +153,16 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	 */
 	public String getMappedBy() {
 		return mappedBy;
+	}
+
+	/**
+	 * Return the Id property of the target entity type.
+	 * <p>
+	 * This will return null for multiple Id properties.
+	 * </p>
+	 */
+	public String getTargetIdProperty() {
+		return targetIdProperty;
 	}
 
 	/**

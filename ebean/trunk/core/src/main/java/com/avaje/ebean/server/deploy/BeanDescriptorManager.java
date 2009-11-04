@@ -964,24 +964,29 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			}
 				
 			if (autoSequenceId || IdType.SEQUENCE.equals(desc.getIdType())){
-				// define the sequence based IdGenerator
-				
-				String seqName = desc.getIdGeneratorName();
-				if (seqName != null){
-					logger.fine("explicit sequence "+seqName);
+				// define the sequence based IdGenerator					
+				if (!dbIdentity.isSupportsSequence()){
+					// not supported by the DatabasePlatform
+					logger.info("Explicit sequence on "+desc.getFullName()+" but not supported by platform");
+					desc.setIdType(null);
+					
 				} else {
-					// sequence not explicitly defined ... but we are not using 
-					// IDENTITY so we will automatically define a sequence
-					seqName = namingConvention.getSequenceName(desc.getBaseTable());
+					String seqName = desc.getIdGeneratorName();
+					if (seqName != null){
+						logger.fine("explicit sequence "+seqName);
+					} else {
+						// use namingConvention to define sequence name
+						seqName = namingConvention.getSequenceName(desc.getBaseTable());
+					}
+					
+					// create the sequence based IdGenerator
+					IdGenerator seqIdGen = createSequenceIdGenerator(seqName);
+					desc.setIdGenerator(seqIdGen);
+					
+					// for old SQL Server
+					String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
+					desc.setSequenceNextVal(dbSeqNextVal);
 				}
-				
-				// create the sequence based IdGenerator
-				IdGenerator seqIdGen = createSequenceIdGenerator(seqName);
-				desc.setIdGenerator(seqIdGen);
-				
-				// for old SQL Server
-				String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
-				desc.setSequenceNextVal(dbSeqNextVal);
 			}
 			
 			if (desc.getBaseTable() != null){

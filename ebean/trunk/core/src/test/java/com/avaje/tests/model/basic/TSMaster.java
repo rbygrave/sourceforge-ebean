@@ -1,13 +1,17 @@
 package com.avaje.tests.model.basic;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.avaje.ebean.annotation.PrivateOwned;
 
 /**
  * A basic entity to test simple things.
@@ -26,7 +30,8 @@ public class TSMaster {
 
 	boolean active;
 	
-	@OneToMany
+	@OneToMany(cascade=CascadeType.ALL,mappedBy="master")
+	@PrivateOwned
 	List<TSDetail> details;
 
 	public Integer getId() {
@@ -67,5 +72,12 @@ public class TSMaster {
 
 	public void setDetails(List<TSDetail> details) {
 		this.details = details;
+	}
+	
+	public void addDetail(TSDetail detail) {
+		if (details == null){
+			details = new ArrayList<TSDetail>();
+		}
+		details.add(detail);
 	}
 }
