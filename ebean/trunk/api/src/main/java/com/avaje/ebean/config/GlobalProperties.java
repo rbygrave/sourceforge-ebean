@@ -1,5 +1,7 @@
 package com.avaje.ebean.config;
 
+import java.util.Map;
+
 import javax.servlet.ServletContext;
 
 /**
@@ -57,27 +59,45 @@ public final class GlobalProperties {
 		return PropertyMapLoader.getServletContext();
 	}
 	
+	private static void initPropertyMap() {
+		
+		String fileName = System.getenv("EBEAN_PROPS_FILE");
+		if (fileName == null) {
+			fileName = System.getProperty("ebean.props.file");
+			if (fileName == null) {
+				fileName = "ebean.properties";
+			}
+		}
+		
+		globalMap = PropertyMapLoader.load(null, fileName);
+		if (globalMap == null){
+			// ebean.properties file was not found... but that 
+			// is ok because we are likely doing programmatic config
+			globalMap = new PropertyMap();
+		}
+		
+		String loaderCn = globalMap.get("ebean.properties.loader");
+		if (loaderCn != null){
+			// a Runnable that can be used to customise the initialisation
+			// of the GlobalProperties
+			try {
+				Class<?> cls = Class.forName(loaderCn);
+				Runnable r = (Runnable)cls.newInstance();
+				r.run();
+			} catch (Exception e){
+				String m = "Error creating or running properties loader "+loaderCn;
+				throw new RuntimeException(m, e);
+			}
+		}
+	}
+	
 	/**
 	 * Return the property map loading it if required.
 	 */
 	private static synchronized PropertyMap getPropertyMap() {
 		
 		if (globalMap == null){
-			
-			String fileName = System.getenv("EBEAN_PROPS_FILE");
-			if (fileName == null) {
-				fileName = System.getProperty("ebean.props.file");
-				if (fileName == null) {
-					fileName = "ebean.properties";
-				}
-			}
-			
-			globalMap = PropertyMapLoader.load(null, fileName);
-			if (globalMap == null){
-				// ebean.properties file was not found... but that 
-				// is ok because we are likely doing programmatic config
-				globalMap = new PropertyMap();
-			}
+			initPropertyMap();
 		}
 		
 		return globalMap;
@@ -109,5 +129,12 @@ public final class GlobalProperties {
 	 */
 	public static synchronized String put(String key, String defaultValue) {
 		return getPropertyMap().put(key, defaultValue);
+	}
+
+	/**
+	 * Set a Map of key value properties.
+	 */
+	public static synchronized void putAll(Map<String,String> keyValueMap) {
+		getPropertyMap().putAll(keyValueMap);
 	}
 }
