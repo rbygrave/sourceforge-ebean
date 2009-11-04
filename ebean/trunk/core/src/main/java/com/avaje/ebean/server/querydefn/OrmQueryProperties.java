@@ -127,15 +127,15 @@ public class OrmQueryProperties implements Serializable {
 		}
 		
 		if (secondaryChildren != null){
-			//int trimPath = path.length()+1;
+			
 			for (int i = 0; i < secondaryChildren.size(); i++) {
 				OrmQueryProperties p = secondaryChildren.get(i);
 				String path = p.getPath();
-				//path = path.substring(trimPath);
 				query.join(path, p.getProperties());
 			}
 		}
 	}
+	
 	/**
 	 * Creates a copy of the OrmQueryProperties.
 	 */

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanDescriptorMap;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -299,14 +300,19 @@ public class DeployBeanPropertyLists {
 			
 			switch (mode) {
 			case Save:
-				if (prop.getCascadeInfo().isSave() || prop.isManyToMany()){
+				if (prop.getCascadeInfo().isSave() 
+						|| prop.isManyToMany() 
+						|| ModifyListenMode.REMOVALS.equals(prop.getModifyListenMode())) {
 					// Note ManyToMany always included as we always 'save'
 					// the relationship via insert/delete of intersection table
+					// REMOVALS means including PrivateOwned relationships
 					list.add(prop);	
 				}
 				break;
 			case Delete:
-				if (prop.getCascadeInfo().isDelete()){
+				if (prop.getCascadeInfo().isDelete() 
+						|| ModifyListenMode.REMOVALS.equals(prop.getModifyListenMode())){
+					// REMOVALS means including PrivateOwned relationships
 					list.add(prop);	
 				}	
 				break;

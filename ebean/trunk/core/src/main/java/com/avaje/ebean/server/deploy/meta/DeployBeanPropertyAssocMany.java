@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy.meta;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.server.deploy.TableJoin;
 
 /**
@@ -27,6 +28,8 @@ import com.avaje.ebean.server.deploy.TableJoin;
  */
 public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 
+	ModifyListenMode modifyListenMode = ModifyListenMode.NONE;
+	
 	/**
 	 * Flag to indicate manyToMany relationship.
 	 */
@@ -76,6 +79,7 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 		this.targetType = (Class<T>)cls;
 	}
 	
+	
 	/**
 	 * Return the many type.
 	 */
@@ -95,6 +99,20 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	 */
 	public void setManyToMany(boolean isManyToMany) {
 		this.manyToMany = isManyToMany;
+	}
+
+	/**
+	 * Return the mode for listening to changes to the List Set or Map.
+	 */
+	public ModifyListenMode getModifyListenMode() {
+		return modifyListenMode;
+	}
+
+	/**
+	 * Set the mode for listening to changes to the List Set or Map.
+	 */
+	public void setModifyListenMode(ModifyListenMode modifyListenMode) {
+		this.modifyListenMode = modifyListenMode;
 	}
 
 	/**

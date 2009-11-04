@@ -28,6 +28,13 @@ public class TSDetail {
 	@ManyToOne
 	TSMaster master;
 
+	public TSDetail(String name){
+		this.name = name;
+	}
+	
+	public TSDetail() {
+		
+	}
 	public Integer getId() {
 		return id;
 	}

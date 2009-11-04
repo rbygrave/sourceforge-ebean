@@ -137,9 +137,10 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 		BeanMap<?, ?> newBeanMap = (BeanMap<?, ?>) bc;
 		Map<?, ?> current = (Map<?, ?>) many.getValue(parentBean);
 
-		if (many.isManyToMany()) {
-			newBeanMap.setModifyListening(true);
-		}
+		newBeanMap.setModifyListening(many.getModifyListenMode());
+		//if (many.isManyToMany()) {
+		//	newBeanMap.setModifyListening(true);
+		//}
 		if (current == null) {
 			// the currentMap is null? Not really expecting this...
 			many.setValue(parentBean, newBeanMap);
@@ -148,9 +149,10 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 			// normally this case, replace just the underlying list
 			BeanMap<?, ?> currentBeanMap = (BeanMap<?, ?>) current;
 			currentBeanMap.setActualMap(newBeanMap.getActualMap());
-			if (many.isManyToMany()) {
-				currentBeanMap.setModifyListening(true);
-			}
+			currentBeanMap.setModifyListening(many.getModifyListenMode());
+			//if (many.isManyToMany()) {
+			//	currentBeanMap.setModifyListening(true);
+			//}
 		} else {
 			// replace the entire set
 			many.setValue(parentBean, newBeanMap);

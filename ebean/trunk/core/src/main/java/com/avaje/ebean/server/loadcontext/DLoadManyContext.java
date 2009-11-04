@@ -132,13 +132,13 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 		bc.setLoader(pos, this);
 	}
 
-	public void loadMany(BeanCollection<?> bc) {
+	public void loadMany(BeanCollection<?> bc, boolean onlyIds) {
 				
 		int position = bc.getLoaderIndex();
 			
 		List<BeanCollection<?>> loadBatch = weakList.getLoadBatch(position, batchSize);
 				
-		LoadManyRequest req = new LoadManyRequest(this, loadBatch, null, batchSize, true);
+		LoadManyRequest req = new LoadManyRequest(this, loadBatch, null, batchSize, true, onlyIds);
 		
 		parent.getEbeanServer().loadMany(req);
 	}
@@ -148,7 +148,7 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 		List<BeanCollection<?>> loadBatch = weakList.getLoadBatch(0, requestedBatchSize);
 		
 		
-		LoadManyRequest req = new LoadManyRequest(this, loadBatch, parentRequest.getTransaction(), requestedBatchSize, false);
+		LoadManyRequest req = new LoadManyRequest(this, loadBatch, parentRequest.getTransaction(), requestedBatchSize, false, false);
 		
 		parent.getEbeanServer().loadMany(req);	
 	}

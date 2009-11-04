@@ -25,7 +25,6 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
-import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.BeanLoader;
 import com.avaje.ebean.bean.CallStack;
@@ -166,10 +165,10 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 */
 	public void loadMany(LoadManyRequest loadRequest);
 
-	/**
-	 * Lazy load a Many not using batch loading.
-	 */
-	public void loadMany(BeanCollection<?> batch, LoadManyContext ctx);
+//	/**
+//	 * Lazy load a Many not using batch loading.
+//	 */
+//	public void loadMany(BeanCollection<?> batch, LoadManyContext ctx);
 
 	/**
 	 * Return the default batch size for lazy loading.
