@@ -531,7 +531,7 @@ public interface Query<T> extends Serializable {
 	public Query<T> join(String assocProperty, String fetchProperties);
 
 	/**
-	 * Additionally specify a JoinConfig.
+	 * Additionally specify a JoinConfig to specify a "query join" and or define the lazy loading query.
 	 */
 	public Query<T> join(String assocProperty, String fetchProperties, JoinConfig joinConfig);
 
@@ -549,7 +549,7 @@ public interface Query<T> extends Serializable {
 	public Query<T> join(String assocProperty);
 
 	/**
-	 * Additionally specify a joinConfig.
+	 * Additionally specify a JoinConfig to specify a "query join" and or define the lazy loading query.
 	 */
 	public Query<T> join(String assocProperty, JoinConfig joinConfig);
 
