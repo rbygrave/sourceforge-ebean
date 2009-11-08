@@ -26,6 +26,9 @@ public class CreateSequenceVisitor implements BeanVisitor {
 		if (!descriptor.isInheritanceRoot()){
 			return false;
 		}
+		if (descriptor.getSequenceName() == null) {
+			return false;
+		}
 		
 		if (!supportsSequence){
 			// Hopefully a generic test case

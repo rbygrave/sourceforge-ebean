@@ -747,10 +747,7 @@ public final class DefaultPersister implements Persister {
 			return;
 		}
 
-		// assumed that the Id is set to the unique property and
-		// there is only one in this case
 		BeanProperty idProp = desc.getSingleIdProperty();
-
 		if (idProp == null || idProp.isEmbedded()) {
 			// not supporting IdGeneration for concatenated or Embedded
 			return;
@@ -759,10 +756,8 @@ public final class DefaultPersister implements Persister {
 		Object bean = request.getBean();
 		Object uid = idProp.getValue(bean);
 
-		if (uid != null) {
-			// the value is not null, ignore
-
-		} else {
+		if (DmlUtil.isNullOrZero(uid)) {
+			
 			// generate the nextId and set it to the property
 			Object nextId = desc.nextId();
 

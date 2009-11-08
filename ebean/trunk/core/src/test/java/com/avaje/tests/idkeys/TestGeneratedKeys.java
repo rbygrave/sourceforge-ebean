@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.avaje.ebean.Transaction;
+import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.tests.idkeys.db.GenKeyIdentity;
 import com.avaje.tests.idkeys.db.GenKeySequence;
@@ -28,9 +29,14 @@ public class TestGeneratedKeys extends EbeanTestCase
     public void testSequence() throws SQLException
     {
     	SpiEbeanServer server = (SpiEbeanServer)getServer();
-    	boolean h2Db = "h2".equals(server.getDatabasePlatform().getName());
-    	
-    	if (!h2Db){
+    	IdType idType = server.getDatabasePlatform().getDbIdentity().getIdType();
+    	String platformName = server.getDatabasePlatform().getName();
+    	if (!IdType.SEQUENCE.equals(idType)){
+    		// only run this test when SEQUENCE is being used
+    		return;
+    	}
+    	if (!"h2".equals(platformName)){
+    		// readSequenceValue is H2 specific
     		return;
     	}
     	
@@ -84,14 +90,15 @@ public class TestGeneratedKeys extends EbeanTestCase
      */
     public void testIdentity() throws SQLException
     {
-    	
+
     	SpiEbeanServer server = (SpiEbeanServer)getServer();
-    	boolean h2Db = "h2".equals(server.getDatabasePlatform().getName());
+    	IdType idType = server.getDatabasePlatform().getDbIdentity().getIdType();
     	
-    	if (!h2Db){
-    		// skip this test for Oracle and Postgres
+    	if (!IdType.IDENTITY.equals(idType)){
+    		// only run this test when SEQUENCE is being used
     		return;
     	}
+
         Transaction tx = getServer().beginTransaction();
 
         GenKeyIdentity al = new GenKeyIdentity();
