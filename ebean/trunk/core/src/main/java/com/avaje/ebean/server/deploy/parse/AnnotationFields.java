@@ -178,6 +178,9 @@ public class AnnotationFields extends AnnotationParser {
 		Basic basic = get(prop, Basic.class);
 		if (basic != null) {
 			prop.setFetchType(basic.fetch());
+			if (!basic.optional()) {
+				prop.setNullable(false);
+			}
 		} else if (prop.isLob()){
 			// use the default Lob fetchType
 			prop.setFetchType(defaultLobFetchType);

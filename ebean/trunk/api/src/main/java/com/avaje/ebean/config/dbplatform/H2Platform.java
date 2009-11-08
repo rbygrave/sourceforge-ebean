@@ -41,13 +41,11 @@ public class H2Platform extends DatabasePlatform {
         super();
         this.name = "h2";
         
+        // only support getGeneratedKeys with non-batch JDBC 
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
-        this.dbIdentity.setIdType(IdType.IDENTITY);
-        
-        this.dbIdentity.setSupportsSequence(true, IdType.IDENTITY);
-        this.dbIdentity.setSequenceNextValTemplate("{sequence}.nextval");
-        this.dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval}");
-        
+        this.dbIdentity.setIdType(IdType.SEQUENCE);        
+        this.dbIdentity.setSupportsSequence(true);
+
         this.openQuote = "\"";
         this.closeQuote = "\"";
         

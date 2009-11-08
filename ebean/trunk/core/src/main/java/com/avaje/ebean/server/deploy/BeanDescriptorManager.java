@@ -932,78 +932,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		setScalarType(desc);
 
 		if (!desc.isEmbedded()) {
-			// check to make sure bean has a Id
-			if (desc.propertiesId().size() == 0 && !desc.isSqlSelectBased()) {
-				if (desc.getBeanFinder() != null) {
-					// using BeanFinder so perhaps valid without an id
-				} else {
-					// expecting at least one id property
-					logger.warning(Message.msg("deploy.nouid", desc.getFullName()));
-				}
-			}
-
-			if (IdType.IDENTITY.equals(desc.getIdType())){
-				// explicitly specified we want to use Identity column
-				// .. only do this is the DB supports Identity/autoincrement
-			} 
-			if (IdType.GENERATOR.equals(desc.getIdType())){
-				String genName = desc.getIdGeneratorName();
-				if (UuidIdGenerator.AUTO_UUID.equals(genName)) {
-					desc.setIdGenerator(uuidIdGenerator);
-				}				
-			} 
+			// Set IdGenerator or use DB Identity
+			setIdGeneration(desc);
 			
-			boolean autoSequenceId = false;
-			
-			if (desc.getIdType() == null) {
-				// IdType not already defined .. check for sequence support
-				if (dbIdentity.isSupportsSequence() && desc.getBaseTable() != null){
-					// Has sequence support with base table
-					autoSequenceId = true;
-				}
-			}
-				
-			if (autoSequenceId || IdType.SEQUENCE.equals(desc.getIdType())){
-				// define the sequence based IdGenerator					
-				if (!dbIdentity.isSupportsSequence()){
-					// not supported by the DatabasePlatform
-					logger.info("Explicit sequence on "+desc.getFullName()+" but not supported by platform");
-					desc.setIdType(null);
-					
-				} else {
-					String seqName = desc.getIdGeneratorName();
-					if (seqName != null){
-						logger.fine("explicit sequence "+seqName);
-					} else {
-						// use namingConvention to define sequence name
-						seqName = namingConvention.getSequenceName(desc.getBaseTable());
-					}
-					
-					// create the sequence based IdGenerator
-					IdGenerator seqIdGen = createSequenceIdGenerator(seqName);
-					desc.setIdGenerator(seqIdGen);
-					
-					// for old SQL Server
-					String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
-					desc.setSequenceNextVal(dbSeqNextVal);
-				}
-			}
-			
-			if (desc.getBaseTable() != null){
-				// used only with Identity columns and getGeneratedKeys is not supported
-				String selectLastInsertedId = dbIdentity.getSelectLastInsertedId(desc.getBaseTable());
-				desc.setSelectLastInsertedId(selectLastInsertedId);
-			}
-			
-
-			if (desc.getIdType() == null){
-				// set the default IdType. IDENTITY probably.
-				desc.setIdType(dbIdentity.getIdType());
-			}
-			
-		}
-
-		if (!desc.isEmbedded()) {
 			// find the appropriate default concurrency mode
 			setConcurrencyMode(desc);
 		}
@@ -1014,6 +945,65 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 		createByteCode(desc);
 	}
 
+	/**
+	 * Set the Identity generation mechanism.
+	 */
+	private <T> IdType setIdGeneration(DeployBeanDescriptor<T> desc) {
+		
+		if (desc.propertiesId().size() == 0) {
+			// bean doen't have an Id property
+			if (!desc.isSqlSelectBased() || desc.getBeanFinder() != null) {
+				// using BeanFinder so perhaps valid without an id
+			} else {
+				// expecting an id property
+				logger.warning(Message.msg("deploy.nouid", desc.getFullName()));
+			}
+			return null;
+		}
+
+		if (IdType.SEQUENCE.equals(desc.getIdType()) && !dbIdentity.isSupportsSequence()){
+			// explicit sequence but not supported by the DatabasePlatform
+			logger.info("Explicit sequence on "+desc.getFullName()+" but not supported by DB Platform");
+			desc.setIdType(null);
+		}
+		
+		if (desc.getIdType() == null){
+			// use the default. IDENTITY or SEQUENCE.
+			desc.setIdType(dbIdentity.getIdType());
+		}		
+
+		if (IdType.IDENTITY.equals(desc.getIdType())){
+			if (desc.getBaseTable() != null){
+				// used when getGeneratedKeys is not supported (SQL Server 2000)
+				String selectLastInsertedId = dbIdentity.getSelectLastInsertedId(desc.getBaseTable());
+				desc.setSelectLastInsertedId(selectLastInsertedId);
+			}
+			return IdType.IDENTITY;
+		} 
+		
+		if (IdType.GENERATOR.equals(desc.getIdType())){
+			String genName = desc.getIdGeneratorName();
+			if (UuidIdGenerator.AUTO_UUID.equals(genName)) {
+				desc.setIdGenerator(uuidIdGenerator);
+				return IdType.GENERATOR;
+			}
+		} 
+		
+		String seqName = desc.getIdGeneratorName();
+		if (seqName != null){
+			logger.fine("explicit sequence "+seqName+" on "+desc.getFullName());
+		} else {
+			// use namingConvention to define sequence name
+			seqName = namingConvention.getSequenceName(desc.getBaseTable());
+		}
+		
+		// create the sequence based IdGenerator
+		IdGenerator seqIdGen = createSequenceIdGenerator(seqName);
+		desc.setIdGenerator(seqIdGen);
+		
+		return IdType.SEQUENCE;
+	}
+	
 	private IdGenerator createSequenceIdGenerator(String seqName) {
 		return databasePlatform.createSequenceIdGenerator(backgroundExecutor, dataSource, seqName, dbSequenceBatchSize);
 	}

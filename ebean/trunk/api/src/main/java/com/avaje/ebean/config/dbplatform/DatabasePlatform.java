@@ -100,10 +100,7 @@ public class DatabasePlatform {
 	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be, DataSource ds, 
 			String seqName, int batchSize) {
 		
-		String dbSeqNextVal = dbIdentity.getSequenceNextVal(seqName);
-		String sql = dbIdentity.getSelectSequenceNextValSql(dbSeqNextVal);
-		
-		return new SimpleSequenceIdGenerator(ds, sql, seqName);
+		return null;
 	}
 
 

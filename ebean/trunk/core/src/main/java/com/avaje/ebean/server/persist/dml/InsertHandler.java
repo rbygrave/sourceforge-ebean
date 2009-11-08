@@ -39,12 +39,6 @@ import com.avaje.ebean.server.persist.DmlUtil;
  */
 public class InsertHandler extends DmlHandler {
 
-//	/**
-//	 * Always the first column is Id that can be generated via Identity (or
-//	 * sometimes sequences).
-//	 */
-//	private static final int[] GENERATED_ID_COLUMNS = { 1 };
-
 	/**
 	 * The associated InsertMeta data.
 	 */
@@ -95,7 +89,7 @@ public class InsertHandler extends DmlHandler {
 				withId = meta.deriveConcatenatedId(persistRequest);
 
 			} else if (meta.supportsGetGeneratedKeys()) {
-				// Identity or sequence with getGeneratedKeys
+				// Identity with getGeneratedKeys
 				useGeneratedKeys = true;
 			} else {
 				// use a query to get the last inserted id
@@ -135,13 +129,7 @@ public class InsertHandler extends DmlHandler {
 	protected PreparedStatement getPstmt(SpiTransaction t, String sql, boolean useGeneratedKeys) throws SQLException {
 		Connection conn = t.getInternalConnection();
 		if (useGeneratedKeys) {
-			// the Id generated is always the first column
-			// Required to stop Oracle10 giving us Oracle rowId??
-			// Other jdbc drivers seem fine without this hint.
-
 			return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			//return conn.prepareStatement(sql, GENERATED_ID_COLUMNS);
-			//return conn.prepareStatement(sql, meta.getIdentityDbColumns());
 
 		} else {
 			return conn.prepareStatement(sql);

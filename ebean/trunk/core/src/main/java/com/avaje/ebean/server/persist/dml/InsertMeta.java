@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.InheritInfo;
@@ -47,8 +46,6 @@ public final class InsertMeta {
 
 	private final Bindable all;
 
-	private final String sequenceNextVal;
-
 	private final boolean supportsGetGeneratedKeys;
 
 	private final boolean concatinatedKey;
@@ -66,9 +63,6 @@ public final class InsertMeta {
 	
 	public InsertMeta(DatabasePlatform dbPlatform, BeanDescriptor<?> desc, Bindable shadowFKey, BindableId id, Bindable all) {
 
-		// only get sequenceNextVal if we are going to use it
-		// (for DB's which support both sequence and identity)
-		this.sequenceNextVal = desc.getIdType() != IdType.SEQUENCE ? null : desc.getSequenceNextVal();
 		this.tableName = desc.getBaseTable();
 		this.discriminator = getDiscriminator(desc);
 		this.id = id;
@@ -172,28 +166,6 @@ public final class InsertMeta {
 		}
 	}
 
-	/**
-	 * For DB Sequence add the db column. For Identity leave the column out all
-	 * together.
-	 */
-	protected void addNullUidColumn(GenerateDmlRequest request) {
-		// Using Identity or Sequence
-		if (sequenceNextVal != null) {
-			id.dmlAppend(request, false);
-		}
-	}
-
-	/**
-	 * For DB Sequence add the sequence name. For Identity leave the column out
-	 * all together.
-	 */
-	protected void addNullUidValue(GenerateDmlRequest request) {
-		// Using Identity or Sequence
-		if (sequenceNextVal != null) {
-			request.appendRaw(sequenceNextVal);
-		}
-	}
-
 	private String genSql(boolean nullId, Set<String> loadedProps) {
 
 		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps, null);
@@ -202,11 +174,9 @@ public final class InsertMeta {
 		request.append("insert into ").append(tableName);
 		request.append(" (");
 
-		if (nullId) {
-			addNullUidColumn(request);
-		} else {
+		if (!nullId) {
 			id.dmlAppend(request, false);
-		}
+		} 
 		
 		if (shadowFKey != null){
 			shadowFKey.dmlAppend(request, false);
@@ -226,13 +196,7 @@ public final class InsertMeta {
 		// the number of scalar properties being bound
 		int bindCount = request.getBindCount();
 
-		if (nullId) {
-			addNullUidValue(request);
-		}
-
-		int bindStart = (!nullId || sequenceNextVal==null) ? 0 : 1;
-		
-		for (int i = bindStart; i < bindCount; i++) {
+		for (int i = 0; i < bindCount; i++) {
 			if (i > 0) {
 				request.append(", ");
 			}
