@@ -23,17 +23,8 @@ import javax.sql.DataSource;
 
 import com.avaje.ebean.BackgroundExecutor;
 
-
-
 /**
  * H2 specific platform.
- * <p>
- * <ul>
- * <li>supportsGetGeneratedKeys = true</li>
- * <li>Uses LIMIT OFFSET clause</li>
- * <li>Uses double quotes for quoted identifiers</li>
- * </ul>
- * </p>
  */
 public class H2Platform extends DatabasePlatform {
 
@@ -42,6 +33,7 @@ public class H2Platform extends DatabasePlatform {
         this.name = "h2";
         
         // only support getGeneratedKeys with non-batch JDBC 
+        // so generally use SEQUENCE instead for H2
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         this.dbIdentity.setIdType(IdType.SEQUENCE);        
         this.dbIdentity.setSupportsSequence(true);
