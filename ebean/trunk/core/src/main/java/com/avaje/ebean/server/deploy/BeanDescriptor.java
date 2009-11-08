@@ -100,11 +100,6 @@ public class BeanDescriptor<T> {
 	private final IdType idType;
 
 	private final IdGenerator idGenerator;
-	
-	/**
-	 * The database sequence next value (optional).
-	 */
-	private final String sequenceNextVal;
 
 	/**
 	 * The database sequence name (optional).
@@ -403,7 +398,6 @@ public class BeanDescriptor<T> {
 		this.idType = deploy.getIdType();
 		this.idGenerator = deploy.getIdGenerator();
 		this.sequenceName = deploy.getSequenceName();
-		this.sequenceNextVal = deploy.getSequenceNextVal();
 		this.selectLastInsertedId = deploy.getSelectLastInsertedId();
 		this.tableGenerated = deploy.isTableGenerated();
 		this.embedded = deploy.isEmbedded();
@@ -1100,9 +1094,6 @@ public class BeanDescriptor<T> {
 		try {
 			// Note factoryType is used indirectly via beanReflect
 			EntityBean eb = (EntityBean) beanReflect.createEntityBean();
-			//EntityBeanIntercept ebi = eb._ebean_getIntercept();
-			//ebi.setServerName(serverName);
-			//ebi.setInternalEbean(ebeanServer);
 
 			return eb;
 
@@ -1123,8 +1114,7 @@ public class BeanDescriptor<T> {
 
 			EntityBeanIntercept ebi = eb._ebean_getIntercept();
 			ebi.setBeanLoader(0, ebeanServer);
-			//ebi.setServerName(serverName);
-			//ebi.setInternalEbean(ebeanServer);
+
 			if (parent != null) {
 				// Special case for a OneToOne ... parent
 				// needs to be added to context prior to query
@@ -1691,13 +1681,6 @@ public class BeanDescriptor<T> {
 	 */
 	public IdType getIdType() {
 		return idType;
-	}
-
-	/**
-	 * Return the sequence name with nextval wrapping.
-	 */
-	public String getSequenceNextVal() {
-		return sequenceNextVal;
 	}
 
 	/**

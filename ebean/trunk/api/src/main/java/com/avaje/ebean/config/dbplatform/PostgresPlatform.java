@@ -40,10 +40,8 @@ public class PostgresPlatform extends DatabasePlatform {
         this.name = "postgres";   
         
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
-        this.dbIdentity.setSupportsSequence(true, IdType.GENERATOR);//IdType.SEQUENCE);
-
-        this.dbIdentity.setSequenceNextValTemplate("nextval('{sequence}')");
-        this.dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} ");
+        this.dbIdentity.setIdType(IdType.SEQUENCE);
+        this.dbIdentity.setSupportsSequence(true);
 
         String colAlias = GlobalProperties.get("ebean.columnAliasPrefix", null);
         if (colAlias == null){

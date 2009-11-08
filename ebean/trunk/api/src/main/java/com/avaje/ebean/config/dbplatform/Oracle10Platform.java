@@ -28,12 +28,6 @@ import com.avaje.ebean.BackgroundExecutor;
 
 /**
  * Oracle10 and greater specific platform.
- * <p>
- * <ul>
- * <li>supportsGetGeneratedKeys = true</li>
- * <li>Uses ROW_NUMBER to limit results</li>
- * </ul>
- * </p>
  */
 public class Oracle10Platform extends DatabasePlatform {
 
@@ -44,11 +38,10 @@ public class Oracle10Platform extends DatabasePlatform {
         this.sqlLimiter = new RownumSqlLimiter();
 
         // Not using getGeneratedKeys as instead we will
-        // batch load sequences and have JDBC batch execution
+        // batch load sequences which enables JDBC batch execution
         dbIdentity.setSupportsGetGeneratedKeys(false);
-        dbIdentity.setSupportsSequence(true, IdType.GENERATOR);
-        dbIdentity.setSequenceNextValTemplate("{sequence}.nextval");
-        dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} from dual");
+        dbIdentity.setIdType(IdType.SEQUENCE);
+        dbIdentity.setSupportsSequence(true);
 
         this.treatEmptyStringsAsNull = true;
     
@@ -78,7 +71,6 @@ public class Oracle10Platform extends DatabasePlatform {
 		dbDdlSyntax.setDropTableCascade("cascade constraints purge");
 		dbDdlSyntax.setIdentity(null);
 		dbDdlSyntax.setMaxConstraintNameLength(30);
-
     }
 
 	@Override

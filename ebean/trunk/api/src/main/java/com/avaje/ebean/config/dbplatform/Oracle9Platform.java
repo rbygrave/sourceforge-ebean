@@ -19,57 +19,18 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
 
 
 /**
- * Oracle9 specific platform.
+ * Since Ebean v2.2.0 Oracle9 is no different from Oracle10.
  * <p>
- * No support for getGeneratedKeys.
+ * This will be removed in the future.
  * </p>
  */
-public class Oracle9Platform extends DatabasePlatform {
+public class Oracle9Platform extends Oracle10Platform {
 
     public Oracle9Platform() {
         super();
-        this.name = "oracle9";
-        this.sqlLimiter = new RowNumberSqlLimiter("");
-        
-        this.treatEmptyStringsAsNull = true;
-        
-        // use Sequence as default IdType
-        dbIdentity.setSupportsGetGeneratedKeys(false);
-        // Oracle9 doesn't support getGeneratedKeys so use IdType.GENERATOR
-        dbIdentity.setSupportsSequence(true, IdType.SEQUENCE);
-        dbIdentity.setSequenceNextValTemplate("{sequence}.nextval");
-        dbIdentity.setSelectSequenceNextValSqlTemplate("select {sequencenextval} from dual");
-                
-        this.openQuote = "\"";
-        this.closeQuote = "\"";
-       
-        booleanDbType = Types.INTEGER;
-		dbTypeMap.put(Types.BOOLEAN, new DbType("number(1) default 0"));
-
-		dbTypeMap.put(Types.INTEGER, new DbType("number", 10));
-		dbTypeMap.put(Types.BIGINT, new DbType("number", 19));
-		dbTypeMap.put(Types.REAL, new DbType("number", 19, 4));
-		dbTypeMap.put(Types.DOUBLE, new DbType("number", 19, 4));
-		dbTypeMap.put(Types.SMALLINT, new DbType("number", 5));
-		dbTypeMap.put(Types.TINYINT, new DbType("number", 3));
-		dbTypeMap.put(Types.DECIMAL, new DbType("number", 38));
-		
-		dbTypeMap.put(Types.VARCHAR, new DbType("varchar2", 255));
-
-		dbTypeMap.put(Types.LONGVARBINARY, new DbType("blob"));
-		dbTypeMap.put(Types.LONGVARCHAR, new DbType("clob"));
-		dbTypeMap.put(Types.VARBINARY, new DbType("blob"));
-
-		dbTypeMap.put(Types.TIME, new DbType("timestamp"));
-
-		
-		dbDdlSyntax.setDropTableCascade("cascade constraints purge");
-		dbDdlSyntax.setIdentity(null);
-		dbDdlSyntax.setMaxConstraintNameLength(30);
     }
 
 }

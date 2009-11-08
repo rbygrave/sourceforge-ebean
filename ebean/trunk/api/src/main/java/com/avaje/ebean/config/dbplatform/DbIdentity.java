@@ -12,36 +12,12 @@ public class DbIdentity {
 	private boolean supportsSequence;
 	
 	private boolean supportsGetGeneratedKeys;
-	
-	private String sequenceNextValTemplate;
-	
+		
 	private String selectLastInsertedIdTemplate;
 
-	private String selectSequenceNextValSqlTemplate;
-	
 	private IdType idType = IdType.IDENTITY;
 	
 	public DbIdentity() {
-	}
-	
-	/**
-	 * Return the sequence nextval SQL given the sequence name.
-	 */
-	public String getSequenceNextVal(String sequence){
-		if (sequenceNextValTemplate == null){
-			return null;
-		} 
-		return sequenceNextValTemplate.replace("{sequence}", sequence);
-	}
-
-	/**
-	 * Return the sequence nextval SQL given the sequence name.
-	 */
-	public String getSelectSequenceNextValSql(String sequenceNextVal){
-		if (selectSequenceNextValSqlTemplate == null){
-			return null;
-		}
-		return selectSequenceNextValSqlTemplate.replace("{sequencenextval}", sequenceNextVal);
 	}
 
 	/**
@@ -60,17 +36,7 @@ public class DbIdentity {
 	public void setSupportsGetGeneratedKeys(boolean supportsGetGeneratedKeys) {
 		this.supportsGetGeneratedKeys = supportsGetGeneratedKeys;
 	}
-
-	/**
-	 * Set the template used to get the sequence next val SQL.
-	 * <p>
-	 * Set a string that contains "{sequence}" where the sequence name goes.
-	 * </p>
-	 */
-	public void setSequenceNextValTemplate(String sequenceNextValTemplate) {
-		this.sequenceNextValTemplate = sequenceNextValTemplate;
-	}
-
+	
 	/**
 	 * Return the SQL query to find the SelectLastInsertedId.
 	 * <p>
@@ -112,9 +78,8 @@ public class DbIdentity {
 	 * Generally this also means you want to set the default IdType
 	 * to sequence (some DB's support both sequences and identity).
 	 */
-	public void setSupportsSequence(boolean supportsSequence, IdType idType) {
+	public void setSupportsSequence(boolean supportsSequence) {
 		this.supportsSequence = supportsSequence;
-		this.idType = idType;
 	}
 
 	/**
@@ -135,17 +100,5 @@ public class DbIdentity {
 	public void setIdType(IdType idType) {
 		this.idType = idType;
 	}
-
-	/**
-	 * Set a template used to create the SQL to fetch the sequence nextval.
-	 * <p>
-	 * {sequencenextval} is replaced in the template with the actual sequence 
-	 * nextval expression.
-	 * </p>
-	 */
-	public void setSelectSequenceNextValSqlTemplate(String selectSequenceNextValSqlTemplate) {
-		this.selectSequenceNextValSqlTemplate = selectSequenceNextValSqlTemplate;
-	}
-	
 	
 }

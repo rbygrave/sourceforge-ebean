@@ -106,11 +106,6 @@ public class DeployBeanDescriptor<T> {
 	 * The database sequence name (optional).
 	 */
 	private String sequenceName;
-
-	/**
-	 * The database sequence nextval (optional).
-	 */
-	private String sequenceNextVal;
 	
 	/**
 	 * Used with Identity columns but no getGeneratedKeys support.
@@ -659,20 +654,6 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public void setSequenceName(String sequenceName) {
 		this.sequenceName = sequenceName;
-	}
-
-	/**
-	 * Return the sequence name with nextval wrapping.
-	 */
-	public String getSequenceNextVal() {
-		return sequenceNextVal;
-	}
-
-	/**
-	 * Set the sequence name with nextval wrapping.
-	 */
-	public void setSequenceNextVal(String sequenceNextVal) {
-		this.sequenceNextVal = sequenceNextVal;
 	}
 	
 	/**
