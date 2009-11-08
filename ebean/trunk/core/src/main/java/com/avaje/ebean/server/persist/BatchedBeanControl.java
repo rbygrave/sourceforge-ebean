@@ -113,6 +113,7 @@ public class BatchedBeanControl {
 		beanHoldMap.values().toArray(bsArray);
 		beanHoldMap.clear();
 		maxSize = 0;
+		topOrder = 0;
 		return bsArray;
 	}
 

@@ -972,21 +972,25 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			desc.setIdType(dbIdentity.getIdType());
 		}		
 
-		if (IdType.IDENTITY.equals(desc.getIdType())){
-			if (desc.getBaseTable() != null){
-				// used when getGeneratedKeys is not supported (SQL Server 2000)
-				String selectLastInsertedId = dbIdentity.getSelectLastInsertedId(desc.getBaseTable());
-				desc.setSelectLastInsertedId(selectLastInsertedId);
-			}
-			return IdType.IDENTITY;
-		} 
-		
 		if (IdType.GENERATOR.equals(desc.getIdType())){
 			String genName = desc.getIdGeneratorName();
 			if (UuidIdGenerator.AUTO_UUID.equals(genName)) {
 				desc.setIdGenerator(uuidIdGenerator);
 				return IdType.GENERATOR;
 			}
+		} 
+		
+		if (desc.getBaseTable() == null){
+			// no base table so not going to set Identity
+			// of sequence information
+			return null;
+		}
+		
+		if (IdType.IDENTITY.equals(desc.getIdType())){
+			// used when getGeneratedKeys is not supported (SQL Server 2000)
+			String selectLastInsertedId = dbIdentity.getSelectLastInsertedId(desc.getBaseTable());
+			desc.setSelectLastInsertedId(selectLastInsertedId);
+			return IdType.IDENTITY;
 		} 
 		
 		String seqName = desc.getIdGeneratorName();
