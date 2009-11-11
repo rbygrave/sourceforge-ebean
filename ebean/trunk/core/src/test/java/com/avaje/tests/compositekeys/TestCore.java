@@ -1,16 +1,19 @@
 package com.avaje.tests.compositekeys;
 
-import java.util.List;
-
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.tests.compositekeys.db.Item;
 import com.avaje.tests.compositekeys.db.ItemKey;
 import com.avaje.tests.compositekeys.db.Region;
 import com.avaje.tests.compositekeys.db.RegionKey;
+import com.avaje.tests.compositekeys.db.SubType;
+import com.avaje.tests.compositekeys.db.SubTypeKey;
 import com.avaje.tests.compositekeys.db.Type;
 import com.avaje.tests.compositekeys.db.TypeKey;
 import com.avaje.tests.lib.EbeanTestCase;
+
+import java.util.List;
 
 /**
  * Test some of the Avaje core functionality in conjunction with composite keys like
@@ -21,10 +24,24 @@ import com.avaje.tests.lib.EbeanTestCase;
  */
 public class TestCore extends EbeanTestCase
 {
+	private boolean setup;
+
     @Override
     public void setUp() throws Exception
     {
+		Ebean.createUpdate(Item.class, "delete from Item").execute();
+		Ebean.createUpdate(Region.class, "delete from Region").execute();
+		Ebean.createUpdate(Type.class, "delete from Type").execute();
+		Ebean.createUpdate(SubType.class, "delete from SubType").execute();
+
         Transaction tx = getServer().beginTransaction();
+
+		SubType subType = new SubType();
+		SubTypeKey subTypeKey = new SubTypeKey();
+		subTypeKey.setSubTypeId(1);
+		subType.setKey(subTypeKey);
+		subType.setDescription("ANY SUBTYPE");
+		getServer().save(subType);
 
         Type type = new Type();
         TypeKey typeKey = new TypeKey();
@@ -32,6 +49,7 @@ public class TestCore extends EbeanTestCase
         typeKey.setType(10);
         type.setKey(typeKey);
         type.setDescription("Type Old-Item - Customer 1");
+		type.setSubType(subType);
         getServer().save(type);
 
         type = new Type();
@@ -40,6 +58,7 @@ public class TestCore extends EbeanTestCase
         typeKey.setType(10);
         type.setKey(typeKey);
         type.setDescription("Type Old-Item - Customer 2");
+		type.setSubType(subType);
         getServer().save(type);
 
         Region region = new Region();
@@ -63,6 +82,7 @@ public class TestCore extends EbeanTestCase
         itemKey.setCustomer(1);
         itemKey.setItemNumber("ITEM1");
         item.setKey(itemKey);
+		item.setUnits("P");
         item.setDescription("Fancy Car - Customer 1");
         item.setRegion(500);
         item.setType(10);
@@ -73,6 +93,7 @@ public class TestCore extends EbeanTestCase
         itemKey.setCustomer(2);
         itemKey.setItemNumber("ITEM1");
         item.setKey(itemKey);
+		item.setUnits("P");
         item.setDescription("Another Fancy Car - Customer 2");
         item.setRegion(500);
         item.setType(10);
@@ -98,4 +119,27 @@ public class TestCore extends EbeanTestCase
         assertNotNull(items);
         assertEquals(1, items.size());
     }
+
+	/**
+	 * This partially loads the item and then lazy loads the ManyToOne assoc
+	 */
+	public void testDoubleLazyLoad()
+	{
+		ItemKey itemKey = new ItemKey();
+		itemKey.setCustomer(2);
+		itemKey.setItemNumber("ITEM1");
+		
+		Item item = getServer().find(Item.class).select("description").where().idEq(itemKey).findUnique();
+		assertNotNull(item);
+		assertNotNull(item.getUnits());
+		assertEquals("P", item.getUnits());
+
+		Type type = item.getEType();
+		assertNotNull(type);
+		assertNotNull(type.getDescription());
+
+		SubType subType = type.getSubType();
+		assertNotNull(subType);
+		assertNotNull(subType.getDescription());
+	}
 }

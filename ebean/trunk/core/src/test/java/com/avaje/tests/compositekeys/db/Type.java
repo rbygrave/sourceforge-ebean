@@ -20,7 +20,10 @@ public class Type
         @JoinColumn(name = "type", referencedColumnName = "type", insertable = false, updatable = false)
     })
     private List<Item> items;
-    
+
+	@ManyToOne
+	private SubType subType;
+
     public TypeKey getKey() {
         return key;
     }
@@ -48,4 +51,12 @@ public class Type
     public List<Item> getItems() {
         return items;
     }
+
+	public SubType getSubType() {
+		return subType;
+	}
+
+	public void setSubType(SubType subType) {
+		this.subType = subType;
+	}
 }
