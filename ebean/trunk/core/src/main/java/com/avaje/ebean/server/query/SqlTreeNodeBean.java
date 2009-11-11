@@ -97,7 +97,6 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	final InheritInfo inheritInfo;
 	
 	final String prefix;
-	final String registerPrefix;
 	
 	final Set<String> includedProps;
 
@@ -120,14 +119,6 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		this.desc = desc;
 		this.inheritInfo = desc.getInheritInfo();
 		this.extraWhere = (beanProp == null) ? null : beanProp.getExtraWhere();
-		
-		if (beanProp != null && beanProp instanceof BeanPropertyAssocMany<?>){
-			String[] split = SplitName.split(prefix);
-			registerPrefix = split[0];
-		} else {
-			registerPrefix = prefix;
-		}
-		
 		
 		this.idBinder = desc.getIdBinder();
 		
@@ -316,7 +307,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			ebi.setLoaded();
 			
 			if (partialObject){
-				ctx.register(registerPrefix, ebi);
+				ctx.register(null, ebi);					
 			}
 			
 			if (disableLazyLoad){
