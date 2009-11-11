@@ -8,7 +8,9 @@ public class Item
     @Id
     private ItemKey key;
 
-    private String description;
+	private String description;
+
+    private String units;
 
     private int type;
 
@@ -39,7 +41,17 @@ public class Item
         this.key = key;
     }
 
-    public String getDescription() {
+	public String getUnits()
+	{
+		return units;
+	}
+
+	public void setUnits(String units)
+	{
+		this.units = units;
+	}
+
+	public String getDescription() {
         return description;
     }
 
