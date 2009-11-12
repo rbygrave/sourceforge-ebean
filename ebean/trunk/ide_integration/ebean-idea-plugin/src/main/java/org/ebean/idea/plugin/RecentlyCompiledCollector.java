@@ -27,7 +27,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +37,7 @@ import java.util.List;
  */
 public class RecentlyCompiledCollector implements TranslatingCompiler
 {
-    public final static Key<List<OutputItem>> RECENTLY_COMPILED = new Key<List<OutputItem>>(RecentlyCompiledCollector.class.getName() + ".RECENTLY_COMPILED");
+    public final static Key<List<RecentlyCompiledSink.CompiledItem>> RECENTLY_COMPILED = new Key<List<RecentlyCompiledSink.CompiledItem>>(RecentlyCompiledCollector.class.getName() + ".RECENTLY_COMPILED");
 
     private final TranslatingCompiler delegate;
 
@@ -52,23 +51,22 @@ public class RecentlyCompiledCollector implements TranslatingCompiler
         return delegate.isCompilableFile(virtualFile, compileContext);
     }
 
-    public ExitStatus compile(CompileContext compileContext, VirtualFile[] virtualFiles)
-    {
+	public void compile(CompileContext context, VirtualFile[] files, OutputSink sink)
+	{
+		RecentlyCompiledSink sinkWrapper = new RecentlyCompiledSink(sink);
+
         // Perform actual compilation
-        ExitStatus exitStatus = delegate.compile(compileContext, virtualFiles);
+        delegate.compile(context, files, sinkWrapper);
 
         // Collect all files which have been compiled
-        List<OutputItem> recentlyCompiled = compileContext.getUserData(RECENTLY_COMPILED);
+        List<RecentlyCompiledSink.CompiledItem> recentlyCompiled = context.getUserData(RECENTLY_COMPILED);
         if (recentlyCompiled == null)
         {
-            recentlyCompiled = new ArrayList<OutputItem>();
-            compileContext.putUserData(RECENTLY_COMPILED, recentlyCompiled);
+            recentlyCompiled = new ArrayList<RecentlyCompiledSink.CompiledItem>();
+            context.putUserData(RECENTLY_COMPILED, recentlyCompiled);
         }
 
-        OutputItem[] compiled = exitStatus.getSuccessfullyCompiled();
-        recentlyCompiled.addAll(Arrays.asList(compiled));
-
-        return exitStatus;
+        recentlyCompiled.addAll(sinkWrapper.getCompiledItems());
     }
 
     @NotNull
@@ -82,9 +80,9 @@ public class RecentlyCompiledCollector implements TranslatingCompiler
         return delegate.validateConfiguration(compileScope);
     }
 
-    public static List<OutputItem> getRecentlyCompiled(final CompileContext compileContext)
+    public static List<RecentlyCompiledSink.CompiledItem> getRecentlyCompiled(final CompileContext compileContext)
     {
-        final List<OutputItem> list = compileContext.getUserData(RecentlyCompiledCollector.RECENTLY_COMPILED);
+        final List<RecentlyCompiledSink.CompiledItem> list = compileContext.getUserData(RecentlyCompiledCollector.RECENTLY_COMPILED);
         if (list == null)
         {
             return Collections.emptyList();

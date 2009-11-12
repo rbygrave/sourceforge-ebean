@@ -24,17 +24,15 @@ import com.avaje.ebean.enhance.agent.Transformer;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileTask;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
-import com.intellij.openapi.compiler.TranslatingCompiler;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.util.ActionRunner;
-import com.intellij.compiler.CompilerConfiguration;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -66,7 +64,7 @@ public class EbeanWeaveTask implements CompileTask
         return (extensionPos != -1) ? relativePath.substring(0, extensionPos).replace('/', '.') : null;
     }
 
-    private boolean processItems(final CompileContext compileContext, final List<TranslatingCompiler.OutputItem> processingItems)
+    private boolean processItems(final CompileContext compileContext, final List<RecentlyCompiledSink.CompiledItem> compiledItems)
     {
         try
         {
@@ -102,13 +100,13 @@ public class EbeanWeaveTask implements CompileTask
 
                             InputStreamTransform isTransform = new InputStreamTransform(transformer, this.getClass().getClassLoader());
 
-                            for (int i = 0; i<processingItems.size(); i++)
+                            for (int i = 0; i<compiledItems.size(); i++)
                             {
-								TranslatingCompiler.OutputItem processingItem = processingItems.get(i);
+								RecentlyCompiledSink.CompiledItem processingItem = compiledItems.get(i);
 
 								// create a className from the compiled filename
                                 String className = resolveClassName(
-                                        processingItem.getOutputRootDirectory(),
+                                        processingItem.getOutputRoot(),
                                         processingItem.getOutputPath());
                                 if (className == null)
                                 {

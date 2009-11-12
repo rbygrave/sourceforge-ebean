@@ -22,10 +22,11 @@
     <description>Post-compile Ebean weaving</description>
     <version>1.0</version>
     <vendor url="http://www.avaje.org" >Mario Ivankovits</vendor>
-    <idea-version since-build="9886"/>
+    <idea-version since-build="90.193"/>
 
     <change-notes>
     <![CDATA[
+      <b>1.1</b> Made IDEA 9.0 compatible<br>
       <b>1.0</b> Initial version. Using Ebean agent version 2.0.2<br>
     ]]>
     </change-notes>
