@@ -16,4 +16,19 @@ public class SubTypeKey
 	{
 		this.subTypeId = subTypeId;
 	}
+	
+	public int hashCode() {
+		return 31 * 7 + subTypeId;
+	}
+	
+	public boolean equals(Object o){
+		if (this == o){
+			return true;
+		}
+		if (!(o instanceof SubTypeKey)) {
+			return false;
+		}
+		return subTypeId == ((SubTypeKey)o).subTypeId;
+	}
+	
 }
