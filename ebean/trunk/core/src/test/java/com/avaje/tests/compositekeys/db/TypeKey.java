@@ -24,4 +24,21 @@ public class TypeKey
     public void setType(int type) {
         this.type = type;
     }
+    
+    public int hashCode() {
+    	int hc = 31+customer;
+    	hc = hc * 31 + type;
+    	return hc;
+    }
+    
+    public boolean equals(Object o){
+    	if (this == o){
+    		return true;
+    	}
+    	if (o instanceof TypeKey){
+    		TypeKey k = (TypeKey)o;
+    		return k.customer == customer && k.type == type;
+    	}
+    	return false;
+    }
 }

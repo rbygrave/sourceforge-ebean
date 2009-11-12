@@ -1,5 +1,7 @@
 package com.avaje.tests.compositekeys;
 
+import java.util.List;
+
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
@@ -13,8 +15,6 @@ import com.avaje.tests.compositekeys.db.Type;
 import com.avaje.tests.compositekeys.db.TypeKey;
 import com.avaje.tests.lib.EbeanTestCase;
 
-import java.util.List;
-
 /**
  * Test some of the Avaje core functionality in conjunction with composite keys like
  * <ul>
@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class TestCore extends EbeanTestCase
 {
-	private boolean setup;
+	//private boolean setup;
 
     @Override
     public void setUp() throws Exception

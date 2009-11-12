@@ -15,13 +15,13 @@ import com.avaje.ebean.server.deploy.DbSqlContext;
  */
 public final class IdBinderEmbedded implements IdBinder {
 	
-	final BeanPropertyAssocOne<?> embIdProperty;
+	private final BeanPropertyAssocOne<?> embIdProperty;
 
-	BeanProperty[] props;
+	private BeanProperty[] props;
 	
-	BeanDescriptor<?> idDesc;
+	private BeanDescriptor<?> idDesc;
 
-	String idInValueSql;
+	private String idInValueSql;
 	
 	public IdBinderEmbedded(BeanPropertyAssocOne<?> embIdProperty) {
 
@@ -45,6 +45,10 @@ public final class IdBinderEmbedded implements IdBinder {
 		idInValueSql = sb.toString();
 	}
 	
+	public BeanDescriptor<?> getIdBeanDescriptor() {
+		return idDesc;
+	}
+
 	public int getPropertyCount() {
 		return props.length;
 	}

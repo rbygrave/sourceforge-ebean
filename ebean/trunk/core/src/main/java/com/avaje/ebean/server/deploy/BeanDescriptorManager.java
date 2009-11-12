@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
@@ -51,6 +52,8 @@ import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.InternalConfiguration;
 import com.avaje.ebean.server.core.Message;
+import com.avaje.ebean.server.deploy.id.IdBinder;
+import com.avaje.ebean.server.deploy.id.IdBinderEmbedded;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
@@ -345,7 +348,36 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 			if (!d.isEmbedded()){
 				BeanManager<?> m = beanManagerFactory.create(d);
 				beanManagerMap.put(d.getFullName(), m);
+				
+				checkForValidEmbeddedId(d);
 			}
+		}
+	}
+	
+	private void checkForValidEmbeddedId(BeanDescriptor<?> d) {
+		IdBinder idBinder = d.getIdBinder();
+		if (idBinder != null && idBinder instanceof IdBinderEmbedded){
+			IdBinderEmbedded embId = (IdBinderEmbedded)idBinder;
+			BeanDescriptor<?> idBeanDescriptor = embId.getIdBeanDescriptor();
+			Class<?> idType = idBeanDescriptor.getBeanType();
+			try {
+				idType.getDeclaredMethod("hashCode", new Class[]{});
+				idType.getDeclaredMethod("equals", new Class[]{Object.class});
+			} catch (NoSuchMethodException e) {
+				checkMissingHashCodeOrEquals(e, idType, d.getBeanType());
+			}
+		}
+	}
+	
+	private void checkMissingHashCodeOrEquals(Exception source, Class<?> idType, Class<?> beanType) {
+		
+		String msg = "SERIOUS ERROR: The hashCode() and equals() methods *MUST* be implemented ";
+		msg += "on Embedded bean "+idType+" as it is used as an Id for "+beanType;
+		
+		if (GlobalProperties.getBoolean("ebean.strict", true)){
+			throw new PersistenceException(msg, source);
+		} else {
+			logger.log(Level.SEVERE, msg, source);
 		}
 	}
 	
