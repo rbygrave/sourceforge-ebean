@@ -191,7 +191,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public Expression iendsWith(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeType.ENDS_WITH);
+		return new LikeExpression(propertyName, value, true, LikeType.ENDS_WITH);
 	}
 
 	/**
@@ -206,7 +206,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public Expression icontains(String propertyName, String value) {
-		return new LikeExpression(propertyName, value, false, LikeType.CONTAINS);
+		return new LikeExpression(propertyName, value, true, LikeType.CONTAINS);
 	}
 
 	/**
