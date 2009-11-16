@@ -5,7 +5,7 @@ import javax.sql.DataSource;
 import com.avaje.ebean.BackgroundExecutor;
 
 /**
- * Oracle specific sequence Id Generator.
+ * H2 specific sequence Id Generator.
  */
 public class H2SequenceIdGenerator extends SequenceIdGenerator {
 	
