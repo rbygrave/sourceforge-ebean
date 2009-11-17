@@ -17,6 +17,7 @@ public class TestBasicLazy extends TestCase {
 		Order order = Ebean.find(Order.class)
 			.select("totalAmount")
 			.setMaxRows(1)
+			.order("id")
 			.findUnique();
 
 		Assert.assertNotNull(order);
