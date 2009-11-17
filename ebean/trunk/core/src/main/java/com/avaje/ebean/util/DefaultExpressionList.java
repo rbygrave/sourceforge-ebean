@@ -11,6 +11,7 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.Junction;
+import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
@@ -84,7 +85,15 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 	public ExpressionList<T> where() {
 		return query.where();
 	}
-	
+		
+	public OrderBy<T> order() {
+		return query.order();
+	}
+
+	public Query<T> order(String orderByClause) {
+		return query.order(orderByClause);
+	}
+
 	public Query<T> orderBy(String orderBy) {
 		return query.order(orderBy);
 	}
