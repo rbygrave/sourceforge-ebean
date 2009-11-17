@@ -91,7 +91,7 @@ public final class BackgroundThread {
 
 	private BackgroundThread() {
 
-		thread = new Thread(new Runner(), "BackgroundThread");
+		thread = new Thread(new Runner(), "EbeanBackgroundThread");
 		thread.setDaemon(true);
 		thread.start();
 	}
