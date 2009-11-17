@@ -192,7 +192,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		long sleepMillis = 1000 * delaySecs;
 
 		if (sleepMillis > 0){
-			Timer t = new Timer();
+			Timer t = new Timer("EbeanCacheWarmer", true);
 			t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
 		}
 		return server;
