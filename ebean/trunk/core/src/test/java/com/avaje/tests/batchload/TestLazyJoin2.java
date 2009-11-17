@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.Query;
 import com.avaje.tests.model.basic.Address;
 import com.avaje.tests.model.basic.Contact;
 import com.avaje.tests.model.basic.Customer;
@@ -20,16 +21,16 @@ public class TestLazyJoin2 extends TestCase {
 		ResetBasicData.reset();
 
 		 // This will use 3 SQL queries to build this object graph
-		 List<Order> l0 = Ebean.find(Order.class)
-		   .select("status, shipDate")
-		   
-		   .join("details", "orderQty, unitPrice", new JoinConfig().query())
-		   .join("details.product", "sku, name")
-		   
-		   .join("customer", "name", new JoinConfig().query(10))
-		   .join("customer.contacts","firstName, lastName, mobile")
-		   .join("customer.shippingAddress","line1, city")
-		   .findList();
+ List<Order> l0 = Ebean.find(Order.class)
+   .select("status, shipDate")
+   
+   .join("details", "orderQty, unitPrice", new JoinConfig().query())
+   .join("details.product", "sku, name")
+   
+   .join("customer", "name", new JoinConfig().query(10))
+   .join("customer.contacts","firstName, lastName, mobile")
+   .join("customer.shippingAddress","line1, city")
+   .findList();
 		 
 		 
 		 Order o0 = l0.get(0);
@@ -63,6 +64,35 @@ public class TestLazyJoin2 extends TestCase {
 		Address billingAddress = customer.getBillingAddress();
 
 		Assert.assertNotNull(billingAddress);
+		
+				
+		 List<Order> list = Ebean.find(Order.class)
+		   .join("customer","name", new JoinConfig().lazy(5))
+		   .join("customer.contacts","contactName, phone, email")
+		   .join("customer.shippingAddress")
+		   .where().eq("status",Order.Status.NEW)
+		   .findList();
+				 
+		Order order2 = list.get(0);
+		Customer customer2 = order2.getCustomer();
+		//customer2.getStatus();
+		String name = customer2.getName();
+		Assert.assertNotNull(name);
+		
+		String q = "find order join customer (+query(1) +lazy(10) name, status) join customer.contacts ";
+		Query<Order> query = Ebean.createQuery(Order.class);
+		query.setQuery(q);
+		
+		List<Order> list3 = query.findList();
+		Order order3 = list3.get(0);
+		String n3 = order3.getCustomer().getName();
+		
+		for (Order o3 : list3) {
+			o3.getCustomer().getName();
+		}
+		
+		Assert.assertNotNull(n3);
+		
 	}
 	
 }
