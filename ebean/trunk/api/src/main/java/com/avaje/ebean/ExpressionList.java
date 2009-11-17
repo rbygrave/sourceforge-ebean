@@ -60,6 +60,34 @@ public interface ExpressionList<T> extends Serializable {
 	public Query<T> query();
 
 	/**
+	 * Set the order by clause replacing the existing
+	 * order by clause if there is one. 
+	 * <p>
+	 * This follows SQL syntax using commas between each 
+	 * property with the optional asc and desc keywords representing
+	 * ascending and descending order respectively.
+	 * </p>
+	 * <p>
+	 * This is EXACTLY the same as {@link #orderBy(String)}.
+	 * </p>
+	 */
+	public Query<T> order(String orderByClause);
+
+	/**
+	 * Return the OrderBy so that you can append 
+	 * an ascending or descending property to the order by
+	 * clause.
+	 * <p>
+	 * This will never return a null. If no order by clause exists
+	 * then an 'empty' OrderBy object is returned.
+	 * </p>
+	 * <p>
+	 * This is EXACTLY the same as {@link #orderBy()}.
+	 * </p>
+	 */
+	public OrderBy<T> order();
+	
+	/**
 	 * Add an orderBy clause to the query.
 	 * @see Query#orderBy(String)
 	 */
