@@ -82,8 +82,6 @@ public final class DefaultPersister implements Persister {
 	 */
 	private final PersistExecute persistExecute;
 
-	private final boolean validation;
-
 	private final SpiEbeanServer server;
 
 	private final BeanDescriptorManager beanDescriptorManager;
@@ -94,8 +92,7 @@ public final class DefaultPersister implements Persister {
 		this.server = server;
 		this.beanDescriptorManager = descMgr;
 		
-		this.persistExecute = new DefaultPersistExecute(logControl, binder, pstmtBatch);
-		this.validation = validate;
+		this.persistExecute = new DefaultPersistExecute(validate, logControl, binder, pstmtBatch);
 	}
 
 	/**
@@ -254,10 +251,7 @@ public final class DefaultPersister implements Persister {
 
 		// set the IDGenerated value if required
 		setIdGenValue(request);
-		if (validation) {
-			// run the local validation rules
-			request.validate();
-		}
+		
 		request.executeOrQueue();
 
 		if (request.isPersistCascade()) {
@@ -280,10 +274,6 @@ public final class DefaultPersister implements Persister {
 		}
 
 		if (request.isDirty()) {
-			// run the local validation rules
-			if (validation) {
-				request.validate();
-			}
 			request.executeOrQueue();
 
 		} else {
