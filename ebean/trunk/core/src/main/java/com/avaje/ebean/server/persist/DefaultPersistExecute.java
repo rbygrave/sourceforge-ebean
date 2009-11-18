@@ -59,11 +59,14 @@ public final class DefaultPersistExecute implements PersistExecute {
 	 */
 	private final boolean defaultBatchGenKeys;
 	
+	private final boolean validate;
+	
     /**
      * Construct this DmlPersistExecute.
      */
-    public DefaultPersistExecute(MAdminLogging logControl, Binder binder, PstmtBatch pstmtBatch) {
+    public DefaultPersistExecute(boolean validate, MAdminLogging logControl, Binder binder, PstmtBatch pstmtBatch) {
     
+    	this.validate = validate;
         this.logControl = logControl;
         this.exeOrmUpdate = new ExeOrmUpdate(binder, pstmtBatch);
         this.exeUpdateSql = new ExeUpdateSql(binder, pstmtBatch);
@@ -91,7 +94,9 @@ public final class DefaultPersistExecute implements PersistExecute {
     	
     	BeanPersistController controller = request.getBeanController();
 		if (controller == null || controller.preInsert(request)) {
-
+			if (validate){
+				request.validate();
+			}
 			persister.insert(request);
 			// NOTE: the persister fires the postInsert so that this 
 			// occurs before ebeanIntercept.setLoaded(true)
@@ -110,7 +115,9 @@ public final class DefaultPersistExecute implements PersistExecute {
     	
     	BeanPersistController controller = request.getBeanController();
 		if (controller == null || controller.preUpdate(request)) {
-			
+			if (validate){
+				request.validate();
+			}
 			persister.update(request);
 			// NOTE: the persister fires the postUpdate so that this 
 			// occurs before ebeanIntercept.setLoaded(true)
