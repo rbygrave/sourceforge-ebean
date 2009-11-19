@@ -1044,7 +1044,7 @@ public class ServerConfig {
 			}
 		}
 		
-		
+		updateChangesOnly = p.getBoolean("updateChangesOnly", true);
 		usePersistBatching = p.getBoolean("batch.mode", false);
 		persistBatchSize = p.getInt("batch.size", 20);
 		
