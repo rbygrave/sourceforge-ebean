@@ -292,32 +292,21 @@ public class CQueryFetchIds {
 		public boolean isReadOnly() {
 			return false;
 		}
+		
+		public boolean isRawSql() {
+			return false;
+		}
 
 		public void register(String path, EntityBeanIntercept ebi){
 		}
 
 		public void register(String path, BeanCollection<?> bc){	
 		}
-		
-//		public GraphContext getGraphContext() {
-//			// Always null
-//			return null;
-//		}
-//
-//		public String getPath(String propertyName) {
-//			// Always null
-//			return null;
-//		}
 
 		public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
 			// always null
 			return null;
 		}
-
-//		public ObjectGraphNode createAutoFetchNode(String prefix) {
-//			// always null
-//			return null;
-//		}
 
 		public BeanPropertyAssocMany<?> getManyProperty() {
 			// always null
@@ -336,10 +325,6 @@ public class CQueryFetchIds {
 		public void profileBean(EntityBeanIntercept ebi, String prefix) {
 			// no-op			
 		}
-
-//		public void profileReference(EntityBeanIntercept ebi, String extraPath) {
-//			// no-op
-//		}
 
 		public void setCurrentPrefix(String currentPrefix,Map<String, String> pathMap) {
 			// no-op

@@ -410,7 +410,7 @@ public class BeanProperty implements ElPropertyValue {
 		if (formula) {
 			ctx.appendFormulaSelect(sqlFormulaSelect);
 
-		} else {
+		} else if (!isTransient) {
 			ctx.appendColumn(dbColumn);
 		}
 	}

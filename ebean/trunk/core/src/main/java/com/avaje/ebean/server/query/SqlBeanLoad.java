@@ -52,10 +52,13 @@ public class SqlBeanLoad {
 	private final Set<String> excludes;
 	private final boolean setOriginalOldValues;
 	
+	private final boolean rawSql;
+	
 	public SqlBeanLoad(DbReadContext ctx, Class<?> type, EntityBean bean, Mode queryMode, int parentState) {
 	
 		this.parentState = parentState;
 		this.ctx = ctx;
+		this.rawSql = ctx.isRawSql();
 		this.type = type;
 		this.isLazyLoad = queryMode.equals(Mode.LAZYLOAD_BEAN);
 		this.bean = bean;
@@ -87,37 +90,11 @@ public class SqlBeanLoad {
 		ctx.incrementRsetIndex(increment);
 	}
 	
-//	public void loadScalar(BeanProperty prop) throws SQLException {
-//
-//		if (bean == null){
-//			//prop.loadIgnore(this);
-//			ctx.incrementRsetIndex(1);
-//			return;
-//		}
-//		try {
-//			Object dbVal = prop.read(ctx, parentState);
-//				
-//			if (type != null && !prop.isAssignableFrom(type)) {
-//				// not setting the value...
-//			} else {
-//				if (isLazyLoad) {
-//					prop.setValue(bean, dbVal);
-//				} else {			
-//					prop.setValueIntercept(bean, dbVal);
-//				}
-//				if (setOriginalOldValues){
-//					// maintain original oldValues for partially loaded bean
-//					prop.setValue(originalOldValues, dbVal);
-//				}
-//			}
-//			
-//		} catch (Exception e) {
-//			String msg = "Error readSet on " + prop.getFullBeanName();
-//			throw new PersistenceException(msg, e);
-//		}
-//	}
-	
 	public void load(BeanProperty prop) throws SQLException {
+		
+		if (!rawSql && prop.isTransient()){
+			return;
+		}
 		
 		if ((bean == null) 
 			|| (excludes != null && excludes.contains(prop.getName()))
