@@ -46,8 +46,8 @@ final class PropertyMapLoader {
 
 		InputStream is = findInputStream(fileName);
 		if (is == null){
-			logger.fine(fileName+" not found");
-			return null;
+			logger.severe(fileName+" not found");
+			return p;
 		} else {
 			return load(p, is);
 		}
