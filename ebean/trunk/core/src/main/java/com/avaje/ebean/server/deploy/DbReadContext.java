@@ -28,6 +28,11 @@ public interface DbReadContext {
 	public boolean isReadOnly();
 	
 	/**
+	 * Return true if the query is using supplied SQL rather than generated SQL.
+	 */
+	public boolean isRawSql();
+
+	/**
 	 * Return the reference options for a given bean property.
 	 */
 	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProperty);

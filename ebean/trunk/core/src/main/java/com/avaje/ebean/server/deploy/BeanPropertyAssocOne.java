@@ -233,12 +233,16 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
 	@Override
 	public void appendSelect(DbSqlContext ctx) {
-		localHelp.appendSelect(ctx);
+		if (!isTransient){
+			localHelp.appendSelect(ctx);
+		}
 	}
 
 	@Override
 	public void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
-		localHelp.appendFrom(ctx, forceOuterJoin);
+		if (!isTransient){
+			localHelp.appendFrom(ctx, forceOuterJoin);
+		}
 	}
 
 	@Override

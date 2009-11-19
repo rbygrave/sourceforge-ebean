@@ -1319,7 +1319,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 					if (!marker.equals(className)){
 						String msg = "Error with ["+desc.getFullName()
 							+"] It has not been enhanced but it's superClass ["+beanClass.getSuperclass()+"] is?"
-							+" (You are not allowed to mix enhancement in a single inheritance hierarchy)";
+							+" (You are not allowed to mix enhancement in a single inheritance hierarchy)"
+							+" marker["+marker+"] className["+className+"]";
 						throw new PersistenceException(msg);
 					}
 				} catch (AbstractMethodError e){
