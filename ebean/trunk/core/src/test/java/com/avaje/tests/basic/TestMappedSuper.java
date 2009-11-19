@@ -39,6 +39,13 @@ public class TestMappedSuper extends TestCase {
 		TMapSuperEntity e3 = list.get(0);
 		Integer myint = e3.getMyint();
 		Assert.assertEquals(Integer.valueOf(12), myint);
+		
+		TMapSuperEntity eSaveDelete = new TMapSuperEntity();
+		eSaveDelete.setName("babana");
+		
+		Ebean.save(eSaveDelete);
+		
+		Ebean.delete(eSaveDelete);
 	}
 	
 }

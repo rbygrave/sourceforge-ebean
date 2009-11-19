@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
@@ -114,7 +115,7 @@ public final class UpdateMeta {
 			if (oldValues == null) {
 				throw new PersistenceException("OldValues are null?");
 			}
-			return genDynamicWhere(oldValues);
+			return genDynamicWhere(request.getLoadedProperties(), oldValues);
 
 		default:
 			throw new RuntimeException("Invalid mode "+mode);
@@ -166,12 +167,12 @@ public final class UpdateMeta {
 	/**
 	 * Generate the sql dynamically for where using IS NULL for binding null values.
 	 */
-	private String genDynamicWhere(Object oldBean) {
+	private String genDynamicWhere(Set<String> loadedProps, Object oldBean) {
 
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(null, oldBean);
+		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps, oldBean);
 		
 		//request.setBean(oldBean);
 		request.append(sqlNone);
