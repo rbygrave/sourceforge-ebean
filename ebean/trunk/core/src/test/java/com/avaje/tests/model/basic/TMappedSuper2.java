@@ -3,11 +3,15 @@ package com.avaje.tests.model.basic;
 
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 @MappedSuperclass
 public class TMappedSuper2 {
 
 	String something;
+	
+	@Version
+	int version;
 	
 	@Transient
 	SomeObject someObject;
@@ -37,6 +41,14 @@ public class TMappedSuper2 {
 
 	public void setMyint(Integer myint) {
 		this.myint = myint;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 
 }

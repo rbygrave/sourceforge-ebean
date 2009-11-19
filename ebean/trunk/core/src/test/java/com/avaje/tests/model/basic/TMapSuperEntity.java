@@ -6,6 +6,7 @@ import javax.persistence.Table;
 
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.annotation.UpdateMode;
 
 @Entity
 @Table(name="t_mapsuper1")
@@ -15,6 +16,7 @@ import com.avaje.ebean.annotation.SqlSelect;
 		query="select id, name, 12 as myint from t_mapsuper1"
 	)}
 )
+@UpdateMode(updateChangesOnly=true)
 public class TMapSuperEntity extends TMappedSuper2 {
 
 	private static final long serialVersionUID = 1L;

@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.PersistRequestBean;
@@ -100,8 +101,7 @@ public final class DeleteMeta {
 			return sqlVersion;
 			
 		case ALL:
-			Object oldValues = request.getOldValues();
-			return genDynamicWhere(oldValues);
+			return genDynamicWhere(request.getLoadedProperties(), request.getOldValues());
 
 		default:
 			throw new RuntimeException("Invalid mode " + request.determineConcurrencyMode());
@@ -137,12 +137,12 @@ public final class DeleteMeta {
 	 * Generate the sql dynamically for where using IS NULL for binding null
 	 * values.
 	 */
-	private String genDynamicWhere(Object oldBean) throws SQLException {
+	private String genDynamicWhere(Set<String> includedProps, Object oldBean) throws SQLException {
 
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(null, oldBean);
+		GenerateDmlRequest request = new GenerateDmlRequest(includedProps, oldBean);
 
 		request.append(sqlNone);
 
