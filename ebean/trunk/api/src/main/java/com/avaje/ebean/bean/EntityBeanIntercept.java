@@ -26,6 +26,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.PersistenceException;
@@ -40,7 +41,7 @@ import com.avaje.ebean.Ebean;
  * and oldValues generation for concurrency checking.
  * </p>
  */
-public class EntityBeanIntercept implements Serializable {
+public final class EntityBeanIntercept implements Serializable {
 
 	public static final int NORMAL = 0;
 	public static final int SHARED = 2;
@@ -114,7 +115,12 @@ public class EntityBeanIntercept implements Serializable {
 	 * Used when a bean is partially filled.
 	 */
 	private Set<String> loadedProps;
-	
+
+	/**
+	 * Set of changed properties.
+	 */
+	private HashSet<String> changedProps;
+
 	private String lazyLoadProperty;
 
 	
@@ -492,6 +498,13 @@ public class EntityBeanIntercept implements Serializable {
 	}
 	
 	/**
+	 * Return the set of property names for changed properties.
+	 */
+	public Set<String> getChangedProps() {
+		return changedProps;
+	}
+
+	/**
 	 * Return the property read or write that triggered the lazy load.
 	 */
 	public String getLazyLoadProperty() {
@@ -651,20 +664,7 @@ public class EntityBeanIntercept implements Serializable {
 	}
 
 	
-	/**
-	 * Return true if a modification check should be performed. That is, return
-	 * true if we need to compare the new and old values to see if they have
-	 * changed.
-	 */
-	public boolean preSetterIsModifyCheck() {
-		if (!intercepting){
-			return false;
-		}
-		if (readOnly) {
-			throw new IllegalStateException("This bean is readOnly");
-		}
-		return (loaded && oldValues == null);
-	}
+
 
 	/**
 	 * OneToMany and ManyToMany don't have any interception so just check for PropertyChangeSupport.
@@ -678,23 +678,38 @@ public class EntityBeanIntercept implements Serializable {
 			return null;
 		}		
 	}
-
+	
+	private final void addDirty(String propertyName) {
+		
+		if (!intercepting){
+			return;
+		}
+		if (readOnly) {
+			throw new IllegalStateException("This bean is readOnly");
+		}
+		
+		if (loaded) {
+			if (oldValues == null){
+				// first time this bean is being made dirty
+				createOldValues();
+			}
+			if (changedProps == null){
+				changedProps = new HashSet<String>();
+			}
+			changedProps.add(propertyName);						
+		}
+	}
 	
 	/**
 	 * Check to see if the values are not equal. If they are not equal then
 	 * create the old values for use with ConcurrencyMode.ALL.
 	 */
-	public PropertyChangeEvent preSetter(boolean interceptField, String propertyName, Object oldValue, Object newValue) {
-		
-		if (pcs == null && (!interceptField || !preSetterIsModifyCheck())){
-			// skip propertyChangeSupport && creating oldValues when value has changed
-			return null;
-		}
+	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, Object oldValue, Object newValue) {
 		
 		boolean changed = !areEqual(oldValue, newValue);
 
-		if (interceptField && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -711,8 +726,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 
 		if (changed && pcs != null){
@@ -729,8 +744,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -746,8 +761,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -763,8 +778,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -780,8 +795,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -797,8 +812,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -814,8 +829,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -831,8 +846,8 @@ public class EntityBeanIntercept implements Serializable {
 		
 		boolean changed = oldValue != newValue;
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -846,10 +861,10 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, char[] oldValue, char[] newValue) {
 		
-		boolean changed = !areEqual(oldValue, newValue);
+		boolean changed = !areEqualChars(oldValue, newValue);
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed){
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -863,10 +878,10 @@ public class EntityBeanIntercept implements Serializable {
 	 */
 	public PropertyChangeEvent preSetter(boolean intercept, String propertyName, byte[] oldValue, byte[] newValue) {
 		
-		boolean changed = !areEqual(oldValue, newValue);
+		boolean changed = !areEqualBytes(oldValue, newValue);
 
-		if (intercept && changed && preSetterIsModifyCheck()){
-			createOldValues();			
+		if (intercept && changed) {
+			addDirty(propertyName);
 		}
 		
 		if (changed && pcs != null){
@@ -874,5 +889,48 @@ public class EntityBeanIntercept implements Serializable {
 		}
 		return null; 
 	}
+	
 
+	
+	private static boolean areEqualBytes(byte[] b1, byte[] b2) {
+		if (b1 == null) {
+			return (b2 == null);
+		
+		} else if (b2 == null) {
+			return false;
+			
+		} else if (b1 == b2) {
+			return true;
+		
+		} else if (b1.length != b2.length){
+			return false;
+		}
+		for (int i = 0; i < b1.length; i++) {
+			if (b1[i] != b2[i]){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private static boolean areEqualChars(char[] b1, char[] b2) {
+		if (b1 == null) {
+			return (b2 == null);
+		
+		} else if (b2 == null) {
+			return false;
+			
+		} else if (b1 == b2) {
+			return true;
+		
+		} else if (b1.length != b2.length){
+			return false;
+		}
+		for (int i = 0; i < b1.length; i++) {
+			if (b1[i] != b2[i]){
+				return false;
+			}
+		}
+		return true;
+	}
 }
