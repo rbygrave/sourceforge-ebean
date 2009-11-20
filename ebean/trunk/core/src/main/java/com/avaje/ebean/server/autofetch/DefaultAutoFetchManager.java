@@ -66,6 +66,8 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 	private transient boolean queryTuning;
 
+	private transient boolean queryTuningAddVersion;
+
 	private transient AutofetchMode mode;
 
 	/**
@@ -92,6 +94,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		AutofetchConfig autofetchConfig = serverConfig.getAutofetchConfig();
 		
 		queryTuning = autofetchConfig.isQueryTuning();
+		queryTuningAddVersion = autofetchConfig.isQueryTuningAddVersion();
 		profiling = autofetchConfig.isProfiling();
 		profilingMin = autofetchConfig.getProfilingMin();
 		profilingBase = autofetchConfig.getProfilingBase();
@@ -515,7 +518,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		synchronized (statisticsMonitor) {
 			Statistics stats = statisticsMap.get(originQueryPoint.getKey());
 			if (stats == null) {
-				stats = new Statistics(originQueryPoint);
+				stats = new Statistics(originQueryPoint, queryTuningAddVersion);
 				statisticsMap.put(originQueryPoint.getKey(), stats);
 			}
 			return stats;

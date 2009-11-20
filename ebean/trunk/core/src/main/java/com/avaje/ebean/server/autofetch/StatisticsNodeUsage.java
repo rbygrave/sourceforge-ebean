@@ -27,6 +27,8 @@ public class StatisticsNodeUsage implements Serializable {
 	
 	private final String path;
 	
+	private final boolean queryTuningAddVersion;
+	
 	private int profileCount;
 	
 	private int profileUsedCount;
@@ -35,8 +37,9 @@ public class StatisticsNodeUsage implements Serializable {
 	
 	private Set<String> aggregateUsed = new LinkedHashSet<String>();
 
-	public StatisticsNodeUsage(String path) {
+	public StatisticsNodeUsage(String path, boolean queryTuningAddVersion) {
 		this.path = path;
+		this.queryTuningAddVersion = queryTuningAddVersion;
 	}
 	
 	public NodeUsageStats createPublicMeta() {
@@ -65,7 +68,7 @@ public class StatisticsNodeUsage implements Serializable {
 					}
 				}
 			}
-			if (modified && desc != null){
+			if ((modified || queryTuningAddVersion) && desc != null){
 				BeanProperty[] versionProps = desc.propertiesVersion();
 				if (versionProps.length > 0){
 					aggregateUsed.add(versionProps[0].getName());

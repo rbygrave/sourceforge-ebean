@@ -23,6 +23,8 @@ public class Statistics implements Serializable {
 
 	private final ObjectGraphOrigin origin;
 
+	private final boolean queryTuningAddVersion;
+	
 	private int counter;
 	
 	private Map<String, StatisticsQuery> queryStatsMap = new LinkedHashMap<String, StatisticsQuery>();
@@ -31,8 +33,9 @@ public class Statistics implements Serializable {
 
 	private final String monitor = new String();
 
-	public Statistics(ObjectGraphOrigin origin) {
+	public Statistics(ObjectGraphOrigin origin, boolean queryTuningAddVersion) {
 		this.origin = origin;
+		this.queryTuningAddVersion = queryTuningAddVersion;
 	}
 	
 	public ObjectGraphOrigin getOrigin() {
@@ -137,7 +140,7 @@ public class Statistics implements Serializable {
 		synchronized (monitor) {
 			StatisticsNodeUsage nodeStats = nodeUsageMap.get(path);
 			if (nodeStats == null) {
-				nodeStats = new StatisticsNodeUsage(path);
+				nodeStats = new StatisticsNodeUsage(path, queryTuningAddVersion);
 				nodeUsageMap.put(path, nodeStats);
 			}
 			return nodeStats;
