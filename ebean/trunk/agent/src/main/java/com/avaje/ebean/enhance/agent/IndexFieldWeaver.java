@@ -316,6 +316,9 @@ public class IndexFieldWeaver implements Opcodes {
 		mv.visitInsn(ARETURN);
 		Label l5 = new Label();
 		mv.visitLabel(l5);
+		if (l1 == null){
+			l1 = l4;
+		}
 		mv.visitLocalVariable("this", "L" + className + ";", null, l0, l5, 0);
 		mv.visitLocalVariable("p", "L" + copyClassName + ";", null, l1, l5, 1);
 		mv.visitMaxs(2, 2);
