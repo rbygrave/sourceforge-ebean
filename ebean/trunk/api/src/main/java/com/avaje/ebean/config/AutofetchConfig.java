@@ -5,25 +5,27 @@ package com.avaje.ebean.config;
  */
 public class AutofetchConfig {
 
-	AutofetchMode mode = AutofetchMode.DEFAULT_ONIFEMPTY;
+	private AutofetchMode mode = AutofetchMode.DEFAULT_ONIFEMPTY;
 	
-	boolean queryTuning = true;
+	private boolean queryTuning = true;
 	
-	boolean profiling = true;
+	private boolean queryTuningAddVersion = false;
 	
-	int profilingMin = 1;
+	private boolean profiling = true;
 	
-	int profilingBase = 10;
+	private int profilingMin = 1;
 	
-	double profilingRate = 0.05; 
+	private int profilingBase = 10;
 	
-	boolean useFileLogging = true;
+	private double profilingRate = 0.05; 
 	
-	String logDirectory;
+	private boolean useFileLogging = true;
 	
-	int profileUpdateFrequency = 60;
+	private String logDirectory;
 	
-	int garbageCollectionWait = 100;
+	private int profileUpdateFrequency = 60;
+	
+	private int garbageCollectionWait = 100;
 	
 	public AutofetchConfig() {
 	}
@@ -56,6 +58,30 @@ public class AutofetchConfig {
 	 */
 	public void setQueryTuning(boolean queryTuning) {
 		this.queryTuning = queryTuning;
+	}
+	
+	/**
+	 * Return true if the version property should be added when the query is
+	 * tuned.
+	 * <p>
+	 * If this is false then the version property will be added when profiling
+	 * detects that the bean is possibly going to be modified.
+	 * </p>
+	 */
+	public boolean isQueryTuningAddVersion() {
+		return queryTuningAddVersion;
+	}
+
+	/**
+	 * Set to true to force the version property to be always added by the query
+	 * tuning.
+	 * <p>
+	 * If this is false then the version property will be added when profiling
+	 * detects that the bean is possibly going to be modified.
+	 * </p>
+	 */
+	public void setQueryTuningAddVersion(boolean queryTuningAddVersion) {
+		this.queryTuningAddVersion = queryTuningAddVersion;
 	}
 
 	/**
@@ -206,8 +232,9 @@ public class AutofetchConfig {
 	 */
 	public void loadSettings(ConfigPropertyMap p){
 		
-
 		queryTuning = p.getBoolean("autofetch.querytuning", true);
+		queryTuningAddVersion = p.getBoolean("autofetch.queryTuningAddVersion", false);
+		
 		profiling = p.getBoolean("autofetch.profiling", true);
 		mode = p.getEnum(AutofetchMode.class, "implicitmode", AutofetchMode.DEFAULT_ONIFEMPTY);
 		
