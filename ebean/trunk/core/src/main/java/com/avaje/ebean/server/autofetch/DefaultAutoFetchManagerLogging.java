@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.AutofetchConfig;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.lib.BackgroundThread;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
@@ -20,11 +21,13 @@ public class DefaultAutoFetchManagerLogging {
 
 	private static final Logger logger = Logger.getLogger(DefaultAutoFetchManagerLogging.class.getName());
 
-	final DefaultTransactionLogger fileLogger;
+	private final DefaultTransactionLogger fileLogger;
 
-	final DefaultAutoFetchManager manager;
+	private final DefaultAutoFetchManager manager;
 
-	final boolean useFileLogger;
+	private final boolean useFileLogger;
+
+	private final boolean traceUsageCollection;
 
 	public DefaultAutoFetchManagerLogging(ServerConfig serverConfig, DefaultAutoFetchManager profileListener) {
 
@@ -32,6 +35,7 @@ public class DefaultAutoFetchManagerLogging {
 
 		AutofetchConfig autofetchConfig = serverConfig.getAutofetchConfig();
 
+		traceUsageCollection = GlobalProperties.getBoolean("ebean.autofetch.traceUsageCollection", false);
 		useFileLogger = autofetchConfig.isUseFileLogging();
 
 		if (!useFileLogger) {
@@ -100,4 +104,8 @@ public class DefaultAutoFetchManagerLogging {
 		}
 	}
 
+	public boolean isTraceUsageCollection() {
+		return traceUsageCollection;
+	}
+	
 }

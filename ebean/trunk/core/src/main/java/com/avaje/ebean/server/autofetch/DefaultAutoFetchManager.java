@@ -511,6 +511,10 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 		Statistics queryPointStats = getQueryPointStats(origin);
 
+		if (logging.isTraceUsageCollection()){
+			System.out.println("... NodeUsageCollector "+usageCollector);
+		}
+		
 		queryPointStats.collectUsageInfo(usageCollector);
 	}
 

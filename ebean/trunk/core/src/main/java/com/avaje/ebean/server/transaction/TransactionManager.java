@@ -159,7 +159,7 @@ public class TransactionManager implements Constants {
 			this.debugLevel = debug;	
 		}
 		
-		this.defaultBatchMode = config.isUsePersistBatching();
+		this.defaultBatchMode = config.isPersistBatching();
 		
 		this.prefix = GlobalProperties.get("transaction.prefix", "");
 		this.externalTransPrefix = GlobalProperties.get("transaction.prefix", "e");
