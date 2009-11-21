@@ -153,7 +153,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			if (pstmtBatch == null){
 				// We can not support JDBC batching with Oracle
 				logger.warning("Can not support JDBC batching with Oracle without a PstmtDelegate");
-				serverConfig.setUsePersistBatching(false);
+				serverConfig.setPersistBatching(false);
 			}
 		}
 		
