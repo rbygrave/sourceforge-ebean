@@ -113,7 +113,7 @@ public class ServerConfig {
 	/** For DB's using sequences this is the number of sequence values prefetched */
 	private int databaseSequenceBatchSize = 20;
 	
-	private boolean usePersistBatching;
+	private boolean persistBatching;
 	
 	private int persistBatchSize = 20;
 	
@@ -253,10 +253,17 @@ public class ServerConfig {
 	 * a performance optimisation designed to reduce the network chatter. 
 	 * </p>
 	 */
-	public boolean isUsePersistBatching() {
-		return usePersistBatching;
+	public boolean isPersistBatching() {
+		return persistBatching;
 	}
 
+	/**
+	 * Use isPersistBatching() instead.
+	 * @deprecated
+	 */
+	public boolean isUsePersistBatching() {
+		return persistBatching;
+	}
 	/**
 	 * Set to true if you what to use JDBC batching for persisting and deleting beans.
 	 * <p>
@@ -264,8 +271,16 @@ public class ServerConfig {
 	 * a performance optimisation designed to reduce the network chatter. 
 	 * </p>
 	 */
-	public void setUsePersistBatching(boolean usePersistBatching) {
-		this.usePersistBatching = usePersistBatching;
+	public void setPersistBatching(boolean persistBatching) {
+		this.persistBatching = persistBatching;
+	}
+
+	/**
+	 * Use setPersistBatching() instead.
+	 * @deprecated
+	 */
+	public void setUsePersistBatching(boolean persistBatching) {
+		this.persistBatching = persistBatching;
 	}
 
 	/**
@@ -1045,8 +1060,12 @@ public class ServerConfig {
 		}
 		
 		updateChangesOnly = p.getBoolean("updateChangesOnly", true);
-		usePersistBatching = p.getBoolean("batch.mode", false);
-		persistBatchSize = p.getInt("batch.size", 20);
+		
+		boolean batchMode = p.getBoolean("batch.mode", false);
+		persistBatching = p.getBoolean("persistBatching", batchMode);
+		
+		int batchSize = p.getInt("batch.size", 20);
+		persistBatchSize = p.getInt("persistBatchSize", batchSize);
 		
 		databaseSequenceBatchSize = p.getInt("databaseSequenceBatchSize", 20);
 		databaseBooleanTrue = p.get("databaseBooleanTrue", null);
