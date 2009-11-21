@@ -75,7 +75,7 @@ import com.avaje.ebean.config.ServerConfig;
  * List&lt;Order&gt; list = Ebean.find(Order.class)
  * 	.join(&quot;customer&quot;)
  * 	.where() 
- * 	.eq(&quot;status.code&quot;, &quot;SHIPPED&quot;) 
+ * 	.eq(&quot;status.code&quot;, Order.Status.SHIPPED) 
  * 	.findList();
  * 
  * // read/use the order list ... 
@@ -128,7 +128,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "2.2.0-20091117";
+	private static final String EBVERSION = "2.2.0-20091121";
 
 	static {
 		String version = System.getProperty("java.version");
