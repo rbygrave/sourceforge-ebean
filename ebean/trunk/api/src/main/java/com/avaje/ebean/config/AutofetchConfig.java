@@ -236,7 +236,7 @@ public class AutofetchConfig {
 		queryTuningAddVersion = p.getBoolean("autofetch.queryTuningAddVersion", false);
 		
 		profiling = p.getBoolean("autofetch.profiling", true);
-		mode = p.getEnum(AutofetchMode.class, "implicitmode", AutofetchMode.DEFAULT_ONIFEMPTY);
+		mode = p.getEnum(AutofetchMode.class, "autofetch.implicitmode", AutofetchMode.DEFAULT_ONIFEMPTY);
 		
 		profilingMin = p.getInt("autofetch.profiling.min", 1);
 		profilingBase = p.getInt("autofetch.profiling.base", 10);		
