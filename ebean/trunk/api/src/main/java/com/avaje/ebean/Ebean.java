@@ -807,10 +807,10 @@ public final class Ebean {
 	public static <T> Query<T> createQuery(Class<T> beanType, String namedQuery) {
 		return createNamedQuery(beanType, namedQuery);
 	}
-	
+
 	/**
-	 * Create a named orm update. The update statement (like a named query) is
-	 * specified in the
+	 * Create a named orm update. The update statement is specified via the
+	 * NamedUpdate annotation.
 	 * <p>
 	 * The orm update differs from the SqlUpdate in that it uses the bean name
 	 * and bean property names rather than table and column names.
@@ -852,10 +852,10 @@ public final class Ebean {
 	 * 
 	 * <pre class="code">
 	 * Update&lt;Topic&gt; update = Ebean.createNamedUpdate(Topic.class, &quot;setPostCount&quot;);
-	 * update.setParameter(&quot;postCount&quot;, 10); 
+	 * update.setParameter(&quot;postCount&quot;, 10);
 	 * update.setParameter(&quot;id&quot;, 3);
 	 * 
-	 * int rows = update.execute(); 
+	 * int rows = update.execute();
 	 * System.out.println(&quot;rows updated: &quot; + rows);
 	 * </pre>
 	 */
