@@ -22,6 +22,7 @@ package com.avaje.ebean.server.persist.dmlbind;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.persistence.PersistenceException;
 
@@ -61,7 +62,7 @@ public class BindableIdMap implements BindableId {
 	/**
 	 * Does nothing for BindableId. 
 	 */
-	public void determineChangedProperties(PersistRequestBean<?> request) {
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
 		// do nothing (id not changing)
 	}
 	

@@ -22,6 +22,7 @@ package com.avaje.ebean.server.persist.dml;
 import java.sql.SQLException;
 import java.util.Set;
 
+import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -40,15 +41,17 @@ public class UpdateHandler extends DmlHandler {
 		super(persist);
 		this.meta = meta;
 	}
-
+	
 	/**
 	 * Generate and bind the update statement.
 	 */
 	public void bind() throws SQLException {
 
-		String sql = meta.getSql(persistRequest);
+		SpiUpdatePlan updatePlan = meta.getUpdatePlan(persistRequest);
 
-		updatedProperties = persistRequest.getUpdatedProperties();
+		updatedProperties = updatePlan.getProperties();
+
+		String sql  = updatePlan.getSql();
 		
 		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
@@ -65,7 +68,7 @@ public class UpdateHandler extends DmlHandler {
 		bindLogAppend(meta.getTableName());
 		bindLogAppend("] ");
 		
-		meta.bind(persistRequest, this);
+		meta.bind(persistRequest, this, updatePlan);
 		
 		setUpdateGenValues();
 		

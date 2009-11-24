@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.persistence.PersistenceException;
 
@@ -54,8 +55,8 @@ public class BindableUnidirectional implements Bindable {
 	public String toString() {
 		return "BindableShadowFKey " + unidirectional;
 	}
-
-	public void determineChangedProperties(PersistRequestBean<?> request) {
+	
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
 		throw new PersistenceException("Never called (for insert only)");
 	}
 

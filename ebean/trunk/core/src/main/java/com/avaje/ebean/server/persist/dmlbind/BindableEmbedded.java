@@ -33,7 +33,7 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableEmbedded implements Bindable {
 
-	final Bindable[] items;
+	private final Bindable[] items;
 
 	private final BeanPropertyAssocOne<?> embProp;
 
@@ -72,9 +72,10 @@ public class BindableEmbedded implements Bindable {
 		}
 	}
 	
-	
-	public void determineChangedProperties(PersistRequestBean<?> request) {
-		request.hasChanged(embProp);
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+		if (request.hasChanged(embProp)) {
+			list.add(this);
+		}
 	}
 
 	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException{
