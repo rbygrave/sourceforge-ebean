@@ -432,6 +432,7 @@ public final class EntityBeanIntercept implements Serializable {
 		this.intercepting = true;
 		this.owner._ebean_setEmbeddedLoaded();
 		this.lazyLoadProperty = null;
+		this.changedProps = null;
 	}
 
 	/**
