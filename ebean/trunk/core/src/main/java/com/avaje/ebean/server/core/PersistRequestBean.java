@@ -21,7 +21,6 @@ package com.avaje.ebean.server.core;
 
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
@@ -126,6 +125,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 			}
 			// this is ok to not use isNewOrDirty() as used for updates only
 			isDirty = intercept.isDirty();
+			changedProps = intercept.getChangedProps();
 			loadedProps = intercept.getLoadedProps();
 			oldValues = (T)intercept.getOldValues();
 			vanilla = false;
@@ -535,7 +535,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	 * </p>
 	 */
 	public GenerateDmlRequest createGenerateDmlRequest() {
-		if (changedProps != null){
+		if (beanDescriptor.isUpdateChangesOnly()) {
 			return new GenerateDmlRequest(changedProps, oldValues);	
 		} else {
 			return new GenerateDmlRequest(loadedProps, oldValues);
@@ -554,27 +554,11 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	}
 	
 	/**
-	 * Return true if we only want to include changed properties in an update.
-	 */
-	public boolean isUpdateChangesOnly() {
-		if (beanDescriptor.isUpdateChangesOnly()){
-			changedProps = new LinkedHashSet<String>();
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	/**
 	 * Test if the property value has changed and if so include it in the update.
 	 */
 	public boolean hasChanged(BeanProperty prop) {
-		if (isLoadedProperty(prop) && prop.hasChanged(bean, oldValues)) {
-			changedProps.add(prop.getName());
-			return true;
-		} else {
-			return false;
-		}
+
+		return changedProps.contains(prop.getName());
 	}
 	
 	private RemoteBeanPersist createRemoteBeanPersist() {

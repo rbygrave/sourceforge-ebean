@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.persistence.PersistenceException;
 
@@ -49,11 +50,11 @@ public class BindableIdScalar implements BindableId {
 	public String toString() {
 		return uidProp.toString();
 	}
-	
+
 	/**
 	 * Does nothing for BindableId. 
 	 */
-	public void determineChangedProperties(PersistRequestBean<?> request) {
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
 		// do nothing (id not changing)
 	}
 	

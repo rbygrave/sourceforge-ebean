@@ -20,14 +20,18 @@
 package com.avaje.ebean.server.persist.dml;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
+import com.avaje.ebean.server.persist.dmlbind.BindableList;
 
 /**
  * Meta data for update handler. The meta data is for a particular bean type. It
@@ -47,6 +51,9 @@ public final class UpdateMeta {
 	
 	private final String tableName;
 	
+	private final UpdatePlan modeNoneUpdatePlan;
+	private final UpdatePlan modeVersionUpdatePlan;
+	
 	public UpdateMeta(BeanDescriptor<?> desc, Bindable set, Bindable id, Bindable version, Bindable all) {
 		this.tableName = desc.getBaseTable();
 		this.set = set;
@@ -54,8 +61,12 @@ public final class UpdateMeta {
 		this.version = version;
 		this.all = all;
 		
-		sqlNone = genSql(ConcurrencyMode.NONE, null);
-		sqlVersion = genSql(ConcurrencyMode.VERSION, null);
+		this.sqlNone = genSql(ConcurrencyMode.NONE, null, null);
+		this.sqlVersion = genSql(ConcurrencyMode.VERSION, null, null);
+		
+		this.modeNoneUpdatePlan = new UpdatePlan(ConcurrencyMode.NONE, sqlNone, set);
+		this.modeVersionUpdatePlan = new UpdatePlan(ConcurrencyMode.VERSION, sqlVersion, set);
+
 	}
 	
 	/**
@@ -68,12 +79,12 @@ public final class UpdateMeta {
 	/**
 	 * Bind the request based on the concurrency mode.
 	 */
-	public void bind(PersistRequestBean<?> persist, DmlHandler bind) throws SQLException {
+	public void bind(PersistRequestBean<?> persist, DmlHandler bind, SpiUpdatePlan updatePlan) throws SQLException {
 
 		Object bean = persist.getBean();
 		
 		bind.bindLogAppend(" set[");
-		set.dmlBind(bind, true, bean, true);
+		updatePlan.bindSet(bind, bean);
 
 		bind.bindLogAppend("] where[");
 		id.dmlBind(bind, false, bean, true);
@@ -95,34 +106,75 @@ public final class UpdateMeta {
 	/**
 	 * get or generate the sql based on the concurrency mode.
 	 */
-	public String getSql(PersistRequestBean<?> request) {
+	public SpiUpdatePlan getUpdatePlan(PersistRequestBean<?> request) {
 
 		ConcurrencyMode mode = request.determineConcurrencyMode();
 		if (request.isDynamicUpdateSql()){
-			return genSql(mode, request);
+			return getDynamicUpdatePlan(mode, request);
 		}
 		
 		// 'full bean' update...
 		switch (mode) {
 		case NONE:
-			return sqlNone;
+			return modeNoneUpdatePlan;
 			
 		case VERSION:
-			return sqlVersion;
+			return modeVersionUpdatePlan;
 			
 		case ALL:
 			Object oldValues = request.getOldValues();
 			if (oldValues == null) {
 				throw new PersistenceException("OldValues are null?");
 			}
-			return genDynamicWhere(request.getLoadedProperties(), oldValues);
+			String sql = genDynamicWhere(request.getLoadedProperties(), oldValues);
+			return new UpdatePlan(ConcurrencyMode.ALL, sql, set);
 
 		default:
 			throw new RuntimeException("Invalid mode "+mode);
 		}
 	}
+
+	private SpiUpdatePlan getDynamicUpdatePlan(ConcurrencyMode mode, PersistRequestBean<?> persistRequest) {
+
+		Set<String> updatedProps = persistRequest.getUpdatedProperties();
+		
+		if (ConcurrencyMode.ALL.equals(mode)){
+			// due to is null in where clause we won't bother trying to 
+			// cache plans for ConcurrencyMode.ALL
+			String sql = genSql(mode, persistRequest, null);
+			return new UpdatePlan(null, mode, sql, set, updatedProps);
+		}
+		
+		// we can use a cached UpdatePlan for the changed properties
+				
+		int hash =  31 * mode.hashCode() + 31 * updatedProps.hashCode();
+		Integer key = Integer.valueOf(hash);
+		
+		BeanDescriptor<?> beanDescriptor = persistRequest.getBeanDescriptor();
+		SpiUpdatePlan updatePlan = beanDescriptor.getUpdatePlan(key);
+		if (updatePlan != null){
+			return updatePlan;
+		}
+		
+		// build a new UpdatePlan and cache it
+		
+		// build a bindableList that only contains the changed properties
+		List<Bindable> list = new ArrayList<Bindable>();
+		set.addChanged(persistRequest, list);
+		BindableList bindableList = new BindableList(list);
+		
+		// build the SQL for this update statement
+		String sql = genSql(mode, persistRequest, bindableList);
+		
+		updatePlan = new UpdatePlan(key, mode, sql, bindableList, null);
+		
+		// add the UpdatePlan to the cache
+		beanDescriptor.putUpdatePlan(key, updatePlan);
+		
+		return updatePlan;
+	}
 	
-	private String genSql(ConcurrencyMode conMode, PersistRequestBean<?> persistRequest) {
+	private String genSql(ConcurrencyMode conMode, PersistRequestBean<?> persistRequest, BindableList bindableList) {
 
 		// update  set col0=?, col1=?, col2=? where bcol=? and bc1=? and bc2=?
 
@@ -131,17 +183,17 @@ public final class UpdateMeta {
 			// For generation of None and Version DML/SQL
 			request = new GenerateDmlRequest();
 		} else {
-			if (persistRequest.isUpdateChangesOnly()){
-				set.determineChangedProperties(persistRequest);
-			}
 			request = persistRequest.createGenerateDmlRequest();
 		}
 				
 		request.append("update ").append(tableName).append(" set ");
 		
 		request.setUpdateSetMode();
-		set.dmlAppend(request, true);
-		
+		if (bindableList != null){
+			bindableList.dmlAppend(request, false);
+		} else {
+			set.dmlAppend(request, true);
+		}
 		request.append(" where ");
 		
 		request.setWhereIdMode();
@@ -174,7 +226,6 @@ public final class UpdateMeta {
 		
 		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps, oldBean);
 		
-		//request.setBean(oldBean);
 		request.append(sqlNone);
 		
 		request.setWhereMode();

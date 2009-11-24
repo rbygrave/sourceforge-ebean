@@ -30,15 +30,15 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableList implements Bindable {
 
-	final Bindable[] items;
+	private final Bindable[] items;
 
 	public BindableList(List<Bindable> list) {
 		items = list.toArray(new Bindable[list.size()]);
 	}
 	
-	public void determineChangedProperties(PersistRequestBean<?> request){
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
 		for (int i = 0; i < items.length; i++) {
-			items[i].determineChangedProperties(request);
+			items[i].addChanged(request, list);
 		}
 	}
 	

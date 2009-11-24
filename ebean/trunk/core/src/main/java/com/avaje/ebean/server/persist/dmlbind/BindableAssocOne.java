@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -44,9 +45,10 @@ public class BindableAssocOne implements Bindable {
 		return "BindableAssocOne "+assocOne;
 	}
 	
-	
-	public void determineChangedProperties(PersistRequestBean<?> request) {
-		request.hasChanged(assocOne);
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+		if (request.hasChanged(assocOne)) {
+			list.add(this);
+		}
 	}
 
 	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {

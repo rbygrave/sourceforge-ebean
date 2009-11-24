@@ -20,7 +20,9 @@
 package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
+import java.util.List;
 
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
@@ -39,6 +41,15 @@ public class BindablePropertyUpdateGenerated extends BindableProperty {
 		super(prop);
 		this.gen = gen;
 	}
+	
+	/**
+	 * Always add BindablePropertyUpdateGenerated properties.
+	 */
+	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+		
+		list.add(this);
+	}
+
 	
     /**
      * Bind a value in a Insert SET clause.

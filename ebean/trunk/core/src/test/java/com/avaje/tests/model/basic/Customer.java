@@ -21,6 +21,7 @@ import com.avaje.ebean.validation.NotNull;
  */
 @Entity
 @Table(name="o_customer")
+//@UpdateMode(updateChangesOnly=false)
 public class Customer extends BasicDomain { 
 
 	private static final long serialVersionUID = 1L;
@@ -47,6 +48,9 @@ public class Customer extends BasicDomain {
     @Length(max=40)
     //@Column(length=39,nullable=false)
     String name;
+    
+    @Length(max=100)
+    String smallnote;
 
     @ManyToOne(cascade=CascadeType.ALL)
     Address billingAddress;
@@ -141,6 +145,14 @@ public class Customer extends BasicDomain {
 
 	public ReentrantLock getLock() {
 		return lock;
+	}
+
+	public String getSmallnote() {
+		return smallnote;
+	}
+
+	public void setSmallnote(String smallnote) {
+		this.smallnote = smallnote;
 	}
 
 	public List<Contact> getContacts() {

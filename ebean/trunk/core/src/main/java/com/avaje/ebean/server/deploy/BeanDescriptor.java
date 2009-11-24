@@ -48,6 +48,7 @@ import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
@@ -80,6 +81,8 @@ import com.avaje.ebean.validation.factory.Validator;
 public class BeanDescriptor<T> {
 
 	private static final Logger logger = Logger.getLogger(BeanDescriptor.class.getName());
+
+	private final ConcurrentHashMap<Integer, SpiUpdatePlan> updatePlanCache = new ConcurrentHashMap<Integer, SpiUpdatePlan>();
 
 	private final ConcurrentHashMap<Integer, CQueryPlan> queryPlanCache = new ConcurrentHashMap<Integer, CQueryPlan>();
 
@@ -885,6 +888,20 @@ public class BeanDescriptor<T> {
 		queryPlanCache.put(key, plan);
 	}
 
+	/**
+	 * Get a UpdatePlan for a given hash.
+	 */
+	public SpiUpdatePlan getUpdatePlan(Integer key) {
+		return updatePlanCache.get(key);
+	}
+
+	/**
+	 * Add a UpdatePlan to the cache with a given hash.
+	 */
+	public void putUpdatePlan(Integer key, SpiUpdatePlan plan) {
+		updatePlanCache.put(key, plan);
+	}
+	
 	/**
 	 * Return the TypeManager.
 	 */
