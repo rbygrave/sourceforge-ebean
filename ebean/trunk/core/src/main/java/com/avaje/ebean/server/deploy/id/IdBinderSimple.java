@@ -106,7 +106,11 @@ public final class IdBinderSimple implements IdBinder {
 	}
 	
 	public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
-		return idProperty.readSet(ctx, bean, null);
+		Object id = idProperty.read(ctx, 0);
+		if (id != null){
+		    idProperty.setValue(bean, id);
+		}
+		return id;
 	}
 	
 	public Object read(DbReadContext ctx) throws SQLException {
