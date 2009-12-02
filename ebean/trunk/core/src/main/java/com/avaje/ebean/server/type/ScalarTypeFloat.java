@@ -60,4 +60,16 @@ public class ScalarTypeFloat extends ScalarTypeBase {
 		return BasicTypeConverter.toFloat(value);
 	}
 
+	public Object parse(String value) {
+		return Float.valueOf(value);
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		return Float.valueOf(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

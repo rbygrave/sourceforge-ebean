@@ -57,4 +57,16 @@ public class ScalarTypeTime extends ScalarTypeBase {
 		return BasicTypeConverter.toTime(value);
 	}
 
+	public Object parse(String value) {
+		return Time.valueOf(value);
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		return new Time(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

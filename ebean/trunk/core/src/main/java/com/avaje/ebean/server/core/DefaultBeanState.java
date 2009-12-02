@@ -60,4 +60,15 @@ public class DefaultBeanState implements BeanState {
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		entityBean.removePropertyChangeListener(listener);
 	}
+
+	public void setLoaded(Set<String> loadedProperties) {
+		intercept.setLoadedProps(loadedProperties);
+		intercept.setLoaded();
+	}
+
+	public void setReference() {
+		intercept.setReference();
+	}
+	
+	
 }

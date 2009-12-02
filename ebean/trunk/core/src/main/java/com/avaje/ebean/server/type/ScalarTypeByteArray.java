@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import com.avaje.ebean.text.TextException;
+
 /**
  * ScalarType for byte[].
  */
@@ -62,4 +64,15 @@ public class ScalarTypeByteArray extends ScalarTypeBase {
 		return value;
 	}
 
+	public Object parse(String value) {
+		throw new TextException("Not supported");
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new TextException("Not Supported");
+	}
+
+	public boolean isDateTimeCapable() {
+		return false;
+	}
 }

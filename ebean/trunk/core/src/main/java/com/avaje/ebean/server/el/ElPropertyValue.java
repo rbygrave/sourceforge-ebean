@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.el;
 
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.text.StringParser;
 
 /**
  * The expression language object that can get values.
@@ -46,16 +47,54 @@ public interface ElPropertyValue extends ElPropertyDeploy {
 	 * Return true if this is an ManyToOne or OneToOne associated bean property.
 	 */
 	public boolean isAssocOneId();
-	
+
 	/**
 	 * Return the underlying bean property.
 	 */
 	public BeanProperty getBeanProperty();
-	
+
+	/**
+	 * Return the default StringParser for the scalar property.
+	 */
+	public StringParser getStringParser();
+
+	/**
+	 * Return true if the last type is "DateTime capable" - can support
+	 * {@link #parseDateTime(long)}.
+	 */
+	public boolean isDateTimeCapable();
+
+	/**
+	 * For DateTime capable scalar types convert the long systemTimeMillis into
+	 * an appropriate java time (Date,Timestamp,Time,Calendar, JODA type etc).
+	 */
+	public Object parseDateTime(long systemTimeMillis);
+
 	/**
 	 * Return the value from a given entity bean.
 	 */
 	public Object elGetValue(Object bean);
+
+	/**
+	 * Return the value ensuring objects prior to the top
+	 * scalar property are automatically populated.
+	 */
+	public Object elGetReference(Object bean);
+
+	/**
+	 * Set a value given a root level bean.
+	 * <p>
+	 * If populate then 
+	 * </p>
+	 * @param bean
+	 * @param value
+	 * @param populate
+	 * @param reference
+	 */
+	public void elSetValue(Object bean, Object value, boolean populate,
+			boolean reference);
+
+	public void elSetReference(Object bean);
 
 	/**
 	 * Convert the value to the expected type.

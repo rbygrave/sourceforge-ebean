@@ -19,9 +19,10 @@
  */
 package com.avaje.ebean.server.transaction;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.WeakHashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.Monitor;
@@ -45,7 +46,6 @@ import com.avaje.ebean.server.subclass.SubClassUtil;
  */
 public final class DefaultPersistenceContext implements PersistenceContext {
 
-   
     /**
      * Map used hold caches. One cache per bean type.
      */
@@ -57,29 +57,6 @@ public final class DefaultPersistenceContext implements PersistenceContext {
      * Create a new PersistanceContext.
      */
     public DefaultPersistenceContext() {
-    }
-
-    /**
-     * Add the bean to the PersistanceContext. If forceReplace is true then this
-     * bean is added even if a matching bean is already loaded into the
-     * PersistanceContext.
-     * 
-     * <p>
-     * Returns true if the bean was added and false if a matching bean was
-     * already loaded into the PersistanceContext.
-     * </p>
-     */
-    public boolean add(Object id, Object entityBean) {//, boolean forceReplace) {
-
-    	synchronized (monitor) {
-	    	ClassContext classMap = getClassContext(entityBean.getClass());
-	        if (!classMap.containsKey(id)) {
-	            classMap.put(id, entityBean);
-	            return true;
-	        }
-	    	
-	        return false;
-    	}
     }
 
     /**
@@ -109,6 +86,16 @@ public final class DefaultPersistenceContext implements PersistenceContext {
     }
 
     /**
+     * Return the number of beans of the given type in the persistence context.
+     */
+    public int size(Class<?> beanType) {
+        synchronized (monitor) {
+            ClassContext classMap = typeCache.get(beanType.getName());
+            return classMap == null ? 0 : classMap.size();
+        }
+    }
+    
+    /**
      * Clear the PersistenceContext.
      */
     public void clear() {
@@ -135,6 +122,20 @@ public final class DefaultPersistenceContext implements PersistenceContext {
 	        }
     	}
     }
+    
+    public String toString() {
+        synchronized (monitor) {
+            StringBuilder sb = new StringBuilder();
+            Iterator<Entry<String, ClassContext>> it = typeCache.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, ClassContext> entry = it.next();
+                if (entry.getValue().size() > 0){
+                    sb.append(entry.getKey()+":"+entry.getValue().size()+"; ");
+                }
+            }
+            return sb.toString();
+        }
+    }
    
     private ClassContext getClassContext(Class<?> beanType) {
 
@@ -151,38 +152,50 @@ public final class DefaultPersistenceContext implements PersistenceContext {
 
     private static class ClassContext {
     	
-    	private final WeakHashMap<Object,WeakReference<Object>> map = new WeakHashMap<Object, WeakReference<Object>>();
+    	//private final WeakHashMap<Object,WeakReference<Object>> map = new WeakHashMap<Object, WeakReference<Object>>();
+//        private final HashMap<Object,WeakReference<Object>> map = new HashMap<Object, WeakReference<Object>>();
+        private final WeakValueMap<Object, Object> map = new WeakValueMap<Object, Object>();
         
     	private Object get(Object id){
-    		WeakReference<Object> reference = map.get(id);
-    		if (reference != null){
-    			return reference.get();
-    		} else {
-    			return null;
-    		}
+    	    return map.get(id);
+    	    
+//    		WeakReference<Object> reference = map.get(id);
+//    		if (reference != null){
+//    			return reference.get();
+//    		} else {
+//    			return null;
+//    		}
     	}
     	
         private Object putIfAbsent(Object id, Object bean){
-        	Object existing = null;
-        	WeakReference<Object> reference = map.get(id);
-        	if (reference != null){
-        		existing = reference.get();
-        	}
-        	if (existing != null){
-        		return existing;
-        		
-        	} else {
-        		map.put(id, new WeakReference<Object>(bean));
-        		return null;
-        	}
+            
+            return map.putIfAbsent(id, bean);
+            
+//        	Object existing = null;
+//        	WeakReference<Object> reference = map.get(id);
+//        	if (reference != null){
+//        		existing = reference.get();
+//        	}
+//        	if (existing != null){
+//        		return existing;
+//        		
+//        	} else {
+//        		map.put(id, new WeakReference<Object>(bean));
+//        		return null;
+//        	}
         }
         
     	private void put(Object id, Object b){
-    		map.put(id, new WeakReference<Object>(b));
+    	    map.put(id, b);
+//    		map.put(id, new WeakReference<Object>(b));
     	}
     	
-    	private boolean containsKey(Object id){
-    		return map.containsKey(id);
+//    	private boolean containsKey(Object id){
+//    		return map.containsKey(id);
+//    	}
+    	
+    	private int size() {
+    	    return map.size();
     	}
     	
     	private void clear(){

@@ -57,4 +57,16 @@ public class ScalarTypeBigDecimal extends ScalarTypeBase {
 		return BasicTypeConverter.toBigDecimal(value);
 	}
 
+	public Object parse(String value) {
+		return new BigDecimal(value);
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return BigDecimal.valueOf(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}	
+	
 }

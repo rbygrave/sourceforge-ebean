@@ -16,8 +16,9 @@ public class TestWhereAnnotation extends TestCase {
 	public void testWhere() {
 		
 		ResetBasicData.reset();
+		Customer custTest = ResetBasicData.createCustAndOrder("testWhereAnn");
 		
-		Customer customer = Ebean.find(Customer.class, 1);
+		Customer customer = Ebean.find(Customer.class, custTest.getId());
 		List<Order> orders = customer.getOrders();
 		
 		Assert.assertTrue(orders.size() > 0);

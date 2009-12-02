@@ -146,11 +146,14 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 	public void load(OrmQueryRequest<?> parentRequest, int requestedBatchSize){
 
 		List<BeanCollection<?>> loadBatch = weakList.getLoadBatch(0, requestedBatchSize);
+		if (loadBatch.size() == 0){
+		    // there are no rows to read
+		} else {
 		
-		
-		LoadManyRequest req = new LoadManyRequest(this, loadBatch, parentRequest.getTransaction(), requestedBatchSize, false, false);
-		
-		parent.getEbeanServer().loadMany(req);	
+    		LoadManyRequest req = new LoadManyRequest(this, loadBatch, parentRequest.getTransaction(), requestedBatchSize, false, false);
+    		
+    		parent.getEbeanServer().loadMany(req);	
+		}
 	}
 
 }

@@ -139,6 +139,9 @@ public class SimpleTextParser {
 		if (isOperator(c)) {
 			return !isOperator;
 		}
+		if (c == '('){
+		    return true;
+		}
 
 		return isOperator;
 	}

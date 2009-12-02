@@ -72,4 +72,17 @@ public class ScalarTypeJodaDateTime extends ScalarTypeBase {
 		return value;
 	}
 
+	public Object parse(String value) {
+		Timestamp ts = Timestamp.valueOf(value);
+		return new DateTime(ts.getTime());
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return new DateTime(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

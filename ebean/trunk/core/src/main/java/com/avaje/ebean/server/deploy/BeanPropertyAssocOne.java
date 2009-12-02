@@ -226,7 +226,32 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	public Object createEmbeddedId() {
 		return getTargetDescriptor().createVanillaBean();
 	}
+	
+	/**
+	 * Return an empty reference object.
+	 */
+	public Object createEmptyReference() {
+		return targetDescriptor.createEntityBean();
+	}
 
+	public void elSetReference(Object bean) {
+		Object value = getValueIntercept(bean);
+		if (value != null){
+			((EntityBean)value)._ebean_getIntercept().setReference();
+		}
+	}
+
+	@Override
+	public Object elGetReference(Object bean){
+		Object value = getValueIntercept(bean);
+		if (value == null){
+			value = targetDescriptor.createEntityBean();
+			setValueIntercept(bean, value);
+		}
+		return value;
+	}
+
+	
 	public ImportedId getImportedId() {
 		return importedId;
 	}

@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.avaje.ebean.text.StringParser;
+
 /**
  * Describes a scalar type.
  * <p>
@@ -45,22 +47,21 @@ import java.sql.SQLException;
  * other databases.
  * </p>
  */
-public interface ScalarType {
+public interface ScalarType extends StringParser {
 
 	/**
 	 * Return the default DB column length for this type.
 	 * <p>
-	 * If a BeanProperty has no explicit length defined then
-	 * this length should be assigned.
+	 * If a BeanProperty has no explicit length defined then this length should
+	 * be assigned.
 	 * </p>
 	 * <p>
-	 * This is primarily to support defining a length on
-	 * Enum types (to supplement defining the length on the
-	 * BeanProperty directly).
+	 * This is primarily to support defining a length on Enum types (to
+	 * supplement defining the length on the BeanProperty directly).
 	 * </p>
 	 */
 	public int getLength();
-	
+
 	/**
 	 * Return true if the type is native to JDBC.
 	 * <p>
@@ -101,7 +102,8 @@ public interface ScalarType {
 	 * JDBC type.
 	 * </p>
 	 */
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException;
+	public void bind(PreparedStatement pstmt, int index, Object value)
+			throws SQLException;
 
 	/**
 	 * Convert the value as necessary to the JDBC type.
@@ -127,6 +129,36 @@ public interface ScalarType {
 	 * </p>
 	 */
 	public Object toBeanType(Object value);
+
+	/**
+	 * Convert the string value to the appropriate java object.
+	 * <p>
+	 * Mostly used to support CSV, JSON and XML parsing.
+	 * </p>
+	 */
+	public Object parse(String value);
+
+	/**
+	 * Convert the systemTimeMillis into the appropriate java object.
+	 * <p>
+	 * For non dateTime types this will throw an exception.
+	 * </p>
+	 */
+	public Object parseDateTime(long systemTimeMillis);
+
+	/**
+	 * Return true if the type can accept long systemTimeMillis input.
+	 * <p>
+	 * This is used to determine if is is sensible to use the
+	 * {@link #parseDateTime(long)} method.
+	 * </p>
+	 * <p>
+	 * This includes the Date, Calendar, sql Date, Time, Timestamp, JODA types
+	 * as well as Long, BigDecimal and String (although it generally is not
+	 * expected to parse systemTimeMillis to a String or BigDecimal).
+	 * </p>
+	 */
+	public boolean isDateTimeCapable();
 
 	/**
 	 * Return true if the value is considered null by the Database.

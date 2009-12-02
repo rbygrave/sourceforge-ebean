@@ -28,14 +28,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import com.avaje.ebean.text.TextException;
+
 /**
  * ScalarType for String.
  */
 public class ScalarTypeBlob extends ScalarTypeBase {
 
-	static final int bufferSize = 512;
+	private static final int bufferSize = 512;
 	
-	static final int initialSize = 512;
+	//private static final int initialSize = 512;
 	
 	protected ScalarTypeBlob(Class<?> type, boolean jdbcNative, int jdbcType) {
 		super(type, jdbcNative, jdbcType);
@@ -61,6 +63,18 @@ public class ScalarTypeBlob extends ScalarTypeBase {
 		return value;
 	}
 
+	public Object parse(String value) {
+		throw new TextException("Not supported");
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new TextException("Not supported");
+	}
+
+	public boolean isDateTimeCapable() {
+		return false;
+	}
+	
 	public Object read(ResultSet rset, int index) throws SQLException {
 
 		Blob blob = rset.getBlob(index);

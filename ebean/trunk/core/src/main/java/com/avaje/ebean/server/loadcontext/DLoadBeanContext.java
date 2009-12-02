@@ -152,10 +152,12 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		
 		// determine the set of beans to load
 		List<EntityBeanIntercept> batch = weakList.getLoadBatch(0, requestedBatchSize);
-		
-		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null);
-		
-		parent.getEbeanServer().loadBean(req);
+		if (batch.size() == 0){
+		    // there are no beans to load
+		} else {
+    		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null);
+    		parent.getEbeanServer().loadBean(req);
+		}
 	}
 	
 }

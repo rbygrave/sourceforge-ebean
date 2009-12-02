@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.server.core.BasicTypeConverter;
+import com.avaje.ebean.text.TextException;
 
 /**
  * ScalarType for Boolean and boolean.
@@ -52,6 +53,18 @@ public class ScalarTypeBoolean {
 			return BasicTypeConverter.convert(value, jdbcType);
 		}
 		
+		public Object parse(String value) {
+			return Boolean.valueOf(value);
+		}
+		
+		public Object parseDateTime(long systemTimeMillis) {
+			throw new TextException("Not Supported");
+		}
+		
+		public boolean isDateTimeCapable() {
+			return false;
+		}
+
 		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
 			if (value == null) {
 				pstmt.setNull(index, Types.BOOLEAN);
@@ -94,6 +107,18 @@ public class ScalarTypeBoolean {
 		public Object toJdbcType(Object value) {
 			// use JDBC driver to convert boolean to bit
 			return BasicTypeConverter.toBoolean(value);
+		}
+
+		public Object parse(String value) {
+			return Boolean.valueOf(value);
+		}
+		
+		public Object parseDateTime(long systemTimeMillis) {
+			throw new TextException("Not Supported");
+		}
+
+		public boolean isDateTimeCapable() {
+			return false;
 		}
 		
 		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
@@ -189,6 +214,17 @@ public class ScalarTypeBoolean {
 				return Boolean.FALSE;
 			}
 		}
+		
+		public Object parse(String value) {
+			return Boolean.valueOf(value);
+		}
+		public Object parseDateTime(long systemTimeMillis) {
+			throw new TextException("Not Supported");
+		}
+
+		public boolean isDateTimeCapable() {
+			return false;
+		}
 	}
 	
 	/**
@@ -269,5 +305,18 @@ public class ScalarTypeBoolean {
 				return Boolean.FALSE;
 			}
 		}
+		
+		public Object parse(String value) {
+			return Boolean.valueOf(value);
+		}
+		
+		public Object parseDateTime(long systemTimeMillis) {
+			throw new TextException("Not Supported");
+		}
+		
+		public boolean isDateTimeCapable() {
+			return false;
+		}
+
 	}
 }

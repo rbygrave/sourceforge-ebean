@@ -22,6 +22,7 @@ package com.avaje.ebean.server.type;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.joda.time.LocalDate;
@@ -69,6 +70,19 @@ public class ScalarTypeJodaLocalDate extends ScalarTypeBase {
 			return new LocalDate(((java.util.Date)value).getTime());
 		}
 		return value;
+	}
+
+	public Object parse(String value) {
+		Timestamp ts = Timestamp.valueOf(value);
+		return new LocalDate(ts.getTime());
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		return new LocalDate(systemTimeMillis);
+	}
+	
+	public boolean isDateTimeCapable() {
+		return true;
 	}
 
 }

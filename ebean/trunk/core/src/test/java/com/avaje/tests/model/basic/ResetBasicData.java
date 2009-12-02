@@ -122,7 +122,7 @@ public class ResetBasicData {
 
 		Ebean.execute(new TxRunnable() {
 			public void run() {
-				Customer cust1 = insertCustomer();
+				Customer cust1 = insertCustomer("Rob");
 				Customer cust2 = insertCustomerNoAddress();
 				insertCustomerFiona();
 				
@@ -132,6 +132,22 @@ public class ResetBasicData {
 			}
 		});	
 	}
+	
+	public static Customer createCustAndOrder(String custName) {
+	    
+	    ResetBasicData me = new ResetBasicData();
+	    Customer cust1 = me.insertCustomer(custName);
+	    me.createOrder1(cust1);
+	    return cust1;
+	}
+	
+    public static Order createOrderCustAndOrder(String custName) {
+
+        ResetBasicData me = new ResetBasicData();
+        Customer cust1 = me.insertCustomer(custName);
+        Order o = me.createOrder1(cust1);
+        return o;
+    }
 
 	private Customer insertCustomerFiona() {
 		
@@ -156,10 +172,10 @@ public class ResetBasicData {
 		return c;
 	}
 	
-	private Customer insertCustomer() {
+	private Customer insertCustomer(String name) {
 		
 		Customer c = new Customer();
-		c.setName("Rob");
+		c.setName(name);
 		c.setStatus(Customer.Status.NEW);
 		c.addContact(new Contact("Jim","Cricket"));
 		c.addContact(new Contact("Fred","Blue"));
@@ -186,7 +202,7 @@ public class ResetBasicData {
 		return c;
 	}
 	
-	private void createOrder1(Customer customer) {
+	private Order createOrder1(Customer customer) {
 		
 		Product product1 = Ebean.getReference(Product.class, 1);
 		Product product2 = Ebean.getReference(Product.class, 2);
@@ -206,6 +222,7 @@ public class ResetBasicData {
 		order.add(new OrderShipment());
 		
 		Ebean.save(order);
+		return order;
 	}
 
 	private void createOrder2(Customer customer) {

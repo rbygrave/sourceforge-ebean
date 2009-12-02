@@ -23,6 +23,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.joda.time.DateMidnight;
@@ -41,9 +42,6 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
 		super(DateMidnight.class, false, Types.DATE);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.server.type.ScalarType#bind(java.sql.PreparedStatement, int, java.lang.Object)
-	 */
 	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
 		if (value == null){
 			pstmt.setNull(index, Types.DATE);
@@ -53,9 +51,6 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.server.type.ScalarType#read(java.sql.ResultSet, int)
-	 */
 	public Object read(ResultSet rset, int index) throws SQLException {
 		
 		final Date date = rset.getDate(index);
@@ -66,9 +61,6 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.server.type.ScalarType#toJdbcType(java.lang.Object)
-	 */
 	public Object toJdbcType(Object value) {
 		if (value instanceof DateMidnight){
 			return new Date(((DateMidnight)value).getMillis());
@@ -76,14 +68,24 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
 		return BasicTypeConverter.toDate(value);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.server.type.ScalarType#toBeanType(java.lang.Object)
-	 */
 	public Object toBeanType(Object value) {
 		if (value instanceof java.util.Date){
 			return new DateMidnight(((java.util.Date)value).getTime());
 		}
 		return value;
+	}
+	
+	public Object parse(String value) {
+		Timestamp ts = Timestamp.valueOf(value);
+		return new DateMidnight(ts.getTime());
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return new DateMidnight(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
 	}
 
 }

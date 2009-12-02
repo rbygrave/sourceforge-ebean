@@ -90,4 +90,16 @@ public final class ScalarTypeStringOracle extends ScalarTypeBase {
 		return convertEmptyString(value);
 	}
 
+	public Object parse(String value) {
+		return value;
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return String.valueOf(systemTimeMillis);
+	}
+	
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

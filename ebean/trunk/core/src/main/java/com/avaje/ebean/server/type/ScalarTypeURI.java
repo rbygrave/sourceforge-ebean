@@ -26,6 +26,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import com.avaje.ebean.text.TextException;
+
 /**
  * ScalarType for java.net.URI which converts to and from a VARCHAR database column.
  */
@@ -70,5 +72,21 @@ public class ScalarTypeURI extends ScalarTypeBase {
 	
 	public Object toJdbcType(Object value) {
 		return value.toString();
+	}
+
+	public Object parse(String value) {
+		try {
+			return new URI(value);
+		} catch (URISyntaxException e) {
+			throw new TextException("Error with URI ["+value+"] ", e);
+		}
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new TextException("Not Supported");
+	}
+
+	public boolean isDateTimeCapable() {
+		return false;
 	}
 }

@@ -60,4 +60,16 @@ public class ScalarTypeDouble extends ScalarTypeBase {
 		return BasicTypeConverter.toDouble(value);
 	}
 
+	public Object parse(String value) {
+		return Double.valueOf(value);
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return Double.valueOf(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

@@ -58,4 +58,16 @@ public class ScalarTypeDate extends ScalarTypeBase {
 		return BasicTypeConverter.toDate(value);
 	}
 
+	public Object parse(String value) {
+		return java.sql.Date.valueOf(value);
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return new java.sql.Date(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

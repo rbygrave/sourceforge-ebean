@@ -76,6 +76,18 @@ public class ScalarTypeClob extends ScalarTypeBase {
 		return BasicTypeConverter.toString(value);
 	}
 
+	public Object parse(String value) {
+		return value;
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return String.valueOf(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+	
 	protected String readStringLob(Reader reader) throws SQLException {
 
 		char[] buffer = new char[clobBufferSize];
