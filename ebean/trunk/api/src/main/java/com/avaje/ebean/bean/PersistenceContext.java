@@ -62,5 +62,10 @@ public interface PersistenceContext {
 	 * Clear the reference to a specific entity bean.
 	 */
 	public void clear(Class<?> beanType, Object uid);
+	
+    /**
+     * Return the number of beans of the given type in the persistence context.
+     */
+    public int size(Class<?> beanType);
 
 }

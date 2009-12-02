@@ -251,11 +251,21 @@ public interface Transaction {
 	 * </p>
 	 * <ul>
 	 * <li>the batch size is reached</li>
-	 * <li>A query is executed (FindBy) on the same transaction</li>
+	 * <li>A query is executed on the same transaction</li>
 	 * <li>UpdateSql or CallableSql are mixed with bean save and delete</li>
 	 * </ul>
 	 */
-	public void batchFlush() throws PersistenceException, OptimisticLockException;
+	public void flushBatch() throws PersistenceException, OptimisticLockException;
+
+    /**
+     * Deprecated in favour of {@link #flushBatch()}.
+     * <p>
+     * Exactly the same as flushBatch. Deprecated as a name change.
+     * </p>
+     * 
+     * @deprecated Please use flushBatch
+     */
+    public void batchFlush() throws PersistenceException, OptimisticLockException;
 
 	/**
 	 * Return the underlying Connection object.
