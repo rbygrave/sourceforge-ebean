@@ -195,8 +195,14 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 			return newIds;
 			
 		} catch (SQLException e){
-			throw new PersistenceException("Error getting sequence nextval", e);
-			
+		    if (e.getMessage().contains("Database is already closed")){
+		        String msg = "Error getting SEQ when DB shutting down "+e.getMessage();
+		        logger.info(msg);
+		        System.out.println(msg);
+		        return newIds;
+		    } else {
+		        throw new PersistenceException("Error getting sequence nextval", e);
+		    }
 		} finally {
 			closeResources(c, pstmt, rset);
 		}

@@ -23,19 +23,19 @@ import java.beans.PropertyChangeListener;
 import java.util.Set;
 
 /**
- * Provides access to the internal state of an entity bean. 
+ * Provides access to the internal state of an entity bean.
  */
 public interface BeanState {
 
 	/**
 	 * Return true if this is a lazy loading reference bean.
 	 * <p>
-	 * If so the this bean only holds the Id property and will 
-	 * invoke lazy loading if any other property is get or set.
+	 * If so the this bean only holds the Id property and will invoke lazy
+	 * loading if any other property is get or set.
 	 * </p>
 	 */
 	public boolean isReference();
-	
+
 	/**
 	 * Return true if the bean is new (and not yet saved).
 	 */
@@ -52,7 +52,8 @@ public interface BeanState {
 	public boolean isDirty();
 
 	/**
-	 * For partially populated beans returns the properties that are loaded on the bean.
+	 * For partially populated beans returns the properties that are loaded on
+	 * the bean.
 	 * <p>
 	 * Accessing another property will cause lazy loading to occur.
 	 * </p>
@@ -71,7 +72,7 @@ public interface BeanState {
 	 * Set the readOnly status for the bean.
 	 */
 	public void setReadOnly(boolean readOnly);
-	
+
 	/**
 	 * Return true if this is a shared instance.
 	 * <p>
@@ -79,9 +80,9 @@ public interface BeanState {
 	 * concurrently and must always be read only.
 	 * </p>
 	 * <p>
-	 * Typically this instance has come from the server cache. If a 'readOnly' object
-	 * is request by a query etc and the cache is used then Ebean can return the
-	 * shared instance rather than creating and returning a copy.
+	 * Typically this instance has come from the server cache. If a 'readOnly'
+	 * object is request by a query etc and the cache is used then Ebean can
+	 * return the shared instance rather than creating and returning a copy.
 	 * </p>
 	 */
 	public boolean isSharedInstance();
@@ -96,4 +97,26 @@ public interface BeanState {
 	 */
 	public void removePropertyChangeListener(PropertyChangeListener listener);
 
+	/**
+	 * Advanced - Used to programmatically build a reference object.
+	 * <p>
+	 * You can create a new EntityBean (
+	 * {@link EbeanServer#createEntityBean(Class)}, set its Id property and then
+	 * call this setReference() method.
+	 * </p>
+	 */
+	public void setReference();
+
+	/**
+	 * Advanced - Used to programmatically build a partially or fully loaded
+	 * entity bean. First create an entity bean via
+	 * {@link EbeanServer#createEntityBean(Class)}, then populate its properties
+	 * and then call this method specifying which properties where loaded or
+	 * null for a fully loaded entity bean.
+	 * 
+	 * @param loadedProperties
+	 *            the properties that where loaded or null for a fully loaded
+	 *            entity bean.
+	 */
+	public void setLoaded(Set<String> loadedProperties);
 }

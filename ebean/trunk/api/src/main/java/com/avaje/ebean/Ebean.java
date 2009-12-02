@@ -33,6 +33,7 @@ import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.text.csv.CsvReader;
 
 /**
  * This Ebean object is effectively a singleton that holds a map of registered
@@ -897,6 +898,14 @@ public final class Ebean {
 		return serverMgr.getPrimaryServer().createUpdate(beanType, ormUpdate);
 	}
 
+    /**
+     * Create a CsvReader for a given beanType.
+     */
+    public static <T> CsvReader<T> createCsvReader(Class<T> beanType) {
+
+        return serverMgr.getPrimaryServer().createCsvReader(beanType);
+    }
+	
 	/**
 	 * Create a query for a type of entity bean.
 	 * <p>
