@@ -57,4 +57,17 @@ public class ScalarTypeTimestamp extends ScalarTypeBase {
 		return BasicTypeConverter.toTimestamp(value);
 	}
 
+	public Object parse(String value) {
+		return Timestamp.valueOf(value);
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return new Timestamp(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
+	
 }

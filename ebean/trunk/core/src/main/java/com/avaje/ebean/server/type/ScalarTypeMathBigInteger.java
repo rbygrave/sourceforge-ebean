@@ -62,4 +62,16 @@ public class ScalarTypeMathBigInteger extends ScalarTypeBase {
 		return BasicTypeConverter.toMathBigInteger(value);
 	}
 
+	public Object parse(String value) {
+		return new BigInteger(value);
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return BigInteger.valueOf(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
 }

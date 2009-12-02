@@ -51,18 +51,25 @@ public class TestPersistenceContext extends TestCase {
 		Assert.assertTrue(oAfter != oBefore);
 		Assert.assertTrue(oAfter != order);
 		
+		
+		Order testOrder = ResetBasicData.createOrderCustAndOrder("testPC");
+		Integer id = testOrder.getCustomer().getId();
+		Integer orderId = testOrder.getId();
 
 		// start a persistence context
 		Ebean.beginTransaction();
 		try {
 			Customer customer = Ebean.find(Customer.class)
 				.setUseCache(false)
-				.setId(1)
+				.setId(id)
 				.findUnique();
 		
-			Order order2 = Ebean.find(Order.class, 1);
+			System.gc();
+			Order order2 = Ebean.find(Order.class, orderId);
 			Customer customer2 = order2.getCustomer();
-			
+
+	        Assert.assertEquals(customer.getId(),customer2.getId());
+
 			Assert.assertTrue(customer == customer2);
 			
 		} finally {

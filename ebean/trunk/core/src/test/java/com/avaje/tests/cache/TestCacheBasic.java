@@ -48,11 +48,15 @@ public class TestCacheBasic extends TestCase {
 		Assert.assertEquals(0, countryCache.getStatistics(false).getHitRatio());
 
 		// hit the country cache automatically via join
-		Customer customer = Ebean.find(Customer.class, 1);
+		
+		Customer custTest = ResetBasicData.createCustAndOrder("cacheBasic");
+		Integer id = custTest.getId();
+		Customer customer = Ebean.find(Customer.class, id);
+		
 		Address billingAddress = customer.getBillingAddress();
 		Country c2 = billingAddress.getCountry();
 
-		Assert.assertEquals(1,countryCache.getStatistics(false).getHitCount());
+		Assert.assertTrue(countryCache.getStatistics(false).getHitCount() > 0);
 
 		Country c3 = Ebean.getReference(Country.class, "NZ");
 		Country c4 = Ebean.find(Country.class, "NZ");
@@ -69,7 +73,7 @@ public class TestCacheBasic extends TestCase {
 		countryCache.getStatistics(true);
 
 		// try to hit the country cache automatically via join
-		customer = Ebean.find(Customer.class, 1);
+		customer = Ebean.find(Customer.class, id);
 		billingAddress = customer.getBillingAddress();
 		Country c5 = billingAddress.getCountry();
 		// but cache is empty so c5 is reference that will load cache

@@ -26,6 +26,7 @@ import java.sql.Types;
 import java.util.UUID;
 
 import com.avaje.ebean.server.core.BasicTypeConverter;
+import com.avaje.ebean.text.TextException;
 
 /**
  * ScalarType for java.util.UUID which converts to and from a VARCHAR database column.
@@ -67,4 +68,17 @@ public class ScalarTypeUUID extends ScalarTypeBase {
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.convert(value, jdbcType);
 	}
+	
+	public Object parse(String value) {
+		return UUID.fromString(value);
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new TextException("Not Supported");
+	}
+	
+	public boolean isDateTimeCapable() {
+		return false;
+	}
+
 }

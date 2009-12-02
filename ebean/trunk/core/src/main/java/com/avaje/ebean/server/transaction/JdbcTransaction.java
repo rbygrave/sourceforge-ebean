@@ -319,7 +319,7 @@ public class JdbcTransaction implements SpiTransaction {
 	 * PreparedStatements executing.
 	 * </p>
 	 */
-	public void batchFlush() {
+	public void flushBatch() {
 		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
@@ -327,6 +327,11 @@ public class JdbcTransaction implements SpiTransaction {
 			batchControl.flush();
 		}
 	}
+	
+	public void batchFlush() {
+	    flushBatch();
+	}
+	
 
 	/**
 	 * Return the persistence context associated with this transaction.

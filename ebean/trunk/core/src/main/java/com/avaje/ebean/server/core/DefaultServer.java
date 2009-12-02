@@ -109,10 +109,12 @@ import com.avaje.ebean.server.query.SqlQueryFutureList;
 import com.avaje.ebean.server.querydefn.DefaultOrmQuery;
 import com.avaje.ebean.server.querydefn.DefaultOrmUpdate;
 import com.avaje.ebean.server.querydefn.DefaultRelationalQuery;
+import com.avaje.ebean.server.text.csv.TCsvReader;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
+import com.avaje.ebean.text.csv.CsvReader;
 
 /**
  * The default server side implementation of EbeanServer.
@@ -879,7 +881,13 @@ public final class DefaultServer implements SpiEbeanServer {
 		return new ElFilter<T>(desc);
 	}
 
-	public <T> Query<T> find(Class<T> beanType) {
+	
+	public <T> CsvReader<T> createCsvReader(Class<T> beanType) {
+        BeanDescriptor<T> descriptor = getBeanDescriptor(beanType);
+	    return new TCsvReader<T>(this, descriptor);
+    }
+
+    public <T> Query<T> find(Class<T> beanType) {
 		return createQuery(beanType);
 	}
 

@@ -21,6 +21,8 @@ package com.avaje.ebean.server.persist;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
@@ -44,6 +46,8 @@ import com.avaje.ebean.server.core.PersistRequestBean;
  */
 public final class BatchControl {
 
+    private static final Logger logger = Logger.getLogger(BatchControl.class.getName());
+    
 	/**
 	 * Used to sort queue entries by depth.
 	 */
@@ -169,7 +173,7 @@ public final class BatchControl {
 	 * flushed according to the depth (object graph depth).
 	 */
 	public int executeOrQueue(PersistRequestBean<?> request, boolean batch) {
-
+	    
 		if (!batch || (batchFlushOnMixed && !pstmtHolder.isEmpty())) {
 			// flush when mixing beans and updateSql
 			flush();
@@ -178,11 +182,28 @@ public final class BatchControl {
 			return request.executeNow();
 		}
 
-		if (beanControl.getMaxSize() >= batchSize) {
-			flush();
+		// get the list we will add this request to 
+		ArrayList<PersistRequest> persistList = beanControl.getPersistList(request);
+		if (persistList == null){
+		    // special case where the same bean instance has been added
+		    // to the batch more than once
+		    if (logger.isLoggable(Level.FINE)){
+		        logger.fine("Bean instance already in this batch: "+request.getBean());
+		    }
+		    return -1;
 		}
-		beanControl.add(request);
-
+		
+        if (persistList.size() >= batchSize) {
+            // flush everything that has been batched 
+			flush();
+			
+			// we need to get the persistList again after the
+			// flush as the flush clears out the bean holders
+	        persistList = beanControl.getPersistList(request);
+		}
+        
+        persistList.add(request);
+	        
 		return -1;
 	}
 

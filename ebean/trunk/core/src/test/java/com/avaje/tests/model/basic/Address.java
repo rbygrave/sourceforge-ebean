@@ -40,6 +40,10 @@ public class Address {
     @ManyToOne
     Country country;
 
+    
+    public String toString() {
+    	return id+" "+line1+" "+line2+" "+city+" "+country;
+    }
 
     /**
      * Return id.

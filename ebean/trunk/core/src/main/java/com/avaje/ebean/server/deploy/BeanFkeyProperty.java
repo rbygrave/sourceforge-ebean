@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.deploy;
 
 import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.text.StringParser;
 
 /**
  * Used to evaluate imported foreign keys so as to avoid unnecessary joins.
@@ -90,12 +91,38 @@ public final class BeanFkeyProperty implements ElPropertyValue {
 	public String getElPrefix() {
 		return prefix;
 	}
+	
+	
+	
+	public boolean isDateTimeCapable() {
+		return false;
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new RuntimeException("ElPropertyDeploy only - not implemented");
+	}
+
+	public StringParser getStringParser() {
+		throw new RuntimeException("ElPropertyDeploy only - not implemented");
+	}
+	
+	public void elSetReference(Object bean) {
+		throw new RuntimeException("ElPropertyDeploy only - not implemented");
+	}
 
 	public Object elConvertType(Object value) {
 		throw new RuntimeException("ElPropertyDeploy only - not implemented");
 	}
+	
+	public void elSetValue(Object bean, Object value, boolean populate, boolean reference) {
+		throw new RuntimeException("ElPropertyDeploy only - not implemented");
+	}
 
 	public Object elGetValue(Object bean) {
+		throw new RuntimeException("ElPropertyDeploy only - not implemented");
+	}
+
+	public Object elGetReference(Object bean) {
 		throw new RuntimeException("ElPropertyDeploy only - not implemented");
 	}
 

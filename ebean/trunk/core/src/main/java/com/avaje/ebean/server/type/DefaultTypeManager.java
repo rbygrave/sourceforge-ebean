@@ -28,9 +28,12 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
+import java.util.Currency;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -57,49 +60,52 @@ public final class DefaultTypeManager implements TypeManager {
 
 	private static final Logger logger = Logger.getLogger(DefaultTypeManager.class.getName());
 
-	final ConcurrentHashMap<Class<?>, ScalarType> typeMap;
+	private final ConcurrentHashMap<Class<?>, ScalarType> typeMap;
 
-	final ConcurrentHashMap<Integer, ScalarType> nativeMap;
+	private final ConcurrentHashMap<Integer, ScalarType> nativeMap;
 
-	final DefaultTypeFactory extraTypeFactory;
+	private final DefaultTypeFactory extraTypeFactory;
 
-	final ScalarType charType = new ScalarTypeChar();
+	private final ScalarType charType = new ScalarTypeChar();
 
-	final ScalarType charArrayType = new ScalarTypeCharArray();
+	private final ScalarType charArrayType = new ScalarTypeCharArray();
 
-	final ScalarType longVarcharType = new ScalarTypeLongVarchar();
+	private final ScalarType longVarcharType = new ScalarTypeLongVarchar();
 
-	final ScalarType clobType = new ScalarTypeClob();
+	private final ScalarType clobType = new ScalarTypeClob();
 
-	final ScalarType byteType = new ScalarTypeByte();
+	private final ScalarType byteType = new ScalarTypeByte();
 
-	final ScalarType byteArrayType = new ScalarTypeByteArray();
+	private final ScalarType byteArrayType = new ScalarTypeByteArray();
 
-	final ScalarType blobType = new ScalarTypeBlob();
+	private final ScalarType blobType = new ScalarTypeBlob();
 
-	final ScalarType longVarbinaryType = new ScalarTypeLongVarbinary();
+	private final ScalarType longVarbinaryType = new ScalarTypeLongVarbinary();
 
-	final ScalarType shortType = new ScalarTypeShort();
+	private final ScalarType shortType = new ScalarTypeShort();
 
-	final ScalarType integerType = new ScalarTypeInteger();
+	private final ScalarType integerType = new ScalarTypeInteger();
 
-	final ScalarType longType = new ScalarTypeLong();
+	private final ScalarType longType = new ScalarTypeLong();
 
-	final ScalarType doubleType = new ScalarTypeDouble();
+	private final ScalarType doubleType = new ScalarTypeDouble();
 
-	final ScalarType floatType = new ScalarTypeFloat();
+	private final ScalarType floatType = new ScalarTypeFloat();
 
-	final ScalarType bigDecimalType = new ScalarTypeBigDecimal();
+	private final ScalarType bigDecimalType = new ScalarTypeBigDecimal();
 
-	final ScalarType timeType = new ScalarTypeTime();
+	private final ScalarType timeType = new ScalarTypeTime();
 
-	final ScalarType dateType = new ScalarTypeDate();
+	private final ScalarType dateType = new ScalarTypeDate();
 
-	final ScalarType timestampType = new ScalarTypeTimestamp();
+	private final ScalarType timestampType = new ScalarTypeTimestamp();
 
-	final ScalarType uuidType = new ScalarTypeUUID();
-	final ScalarType urlType = new ScalarTypeURL();
-	final ScalarType uriType = new ScalarTypeURI();
+	private final ScalarType uuidType = new ScalarTypeUUID();
+	private final ScalarType urlType = new ScalarTypeURL();
+	private final ScalarType uriType = new ScalarTypeURI();
+    private final ScalarType localeType = new ScalarTypeLocale();
+    private final ScalarType currencyType = new ScalarTypeCurrency();
+    private final ScalarType timeZoneType = new ScalarTypeTimeZone();
 
 	/**
 	 * Create the DefaultTypeManager.
@@ -375,6 +381,9 @@ public final class DefaultTypeManager implements TypeManager {
 			// boolean mapping to Types.Integer, Types.VARCHAR or Types.Boolean
 		}
 		
+        typeMap.put(Locale.class, localeType);
+        typeMap.put(Currency.class, currencyType);
+        typeMap.put(TimeZone.class, timeZoneType);
 		typeMap.put(UUID.class, uuidType);
 		typeMap.put(URL.class, urlType);
 		typeMap.put(URI.class, uriType);

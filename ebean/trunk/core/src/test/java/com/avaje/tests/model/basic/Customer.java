@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,6 +53,8 @@ public class Customer extends BasicDomain {
     @Length(max=100)
     String smallnote;
 
+    Date anniversary;
+    
     @ManyToOne(cascade=CascadeType.ALL)
     Address billingAddress;
 
@@ -64,6 +67,10 @@ public class Customer extends BasicDomain {
 
     @OneToMany(mappedBy="customer", cascade=CascadeType.ALL)
     List<Contact> contacts;
+
+	public String toString() {
+		return id+" "+status+" "+name+" "+anniversary;
+	}
 
     /**
      * Return name.
@@ -153,6 +160,14 @@ public class Customer extends BasicDomain {
 
 	public void setSmallnote(String smallnote) {
 		this.smallnote = smallnote;
+	}
+
+	public Date getAnniversary() {
+		return anniversary;
+	}
+
+	public void setAnniversary(Date anniversary) {
+		this.anniversary = anniversary;
 	}
 
 	public List<Contact> getContacts() {

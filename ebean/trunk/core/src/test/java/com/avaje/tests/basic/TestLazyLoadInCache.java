@@ -27,12 +27,16 @@ public class TestLazyLoadInCache extends TestCase {
 			.setReadOnly(true)
 			.findMap();
 		
-		Customer cust1 = map.get(1);
+		Assert.assertTrue(map.size() > 0);
+		
+		Object id = map.keySet().iterator().next();
+		
+		Customer cust1 = map.get(id);
 		
 		Customer cust1B = Ebean.find(Customer.class)
 			.setReadOnly(true)
 			.setUseCache(true)
-			.setId(1)
+			.setId(id)
 			.findUnique();
 		
 		Assert.assertTrue(cust1 == cust1B);

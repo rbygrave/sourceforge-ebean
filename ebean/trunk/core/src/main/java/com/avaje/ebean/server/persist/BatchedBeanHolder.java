@@ -20,8 +20,10 @@
 package com.avaje.ebean.server.persist;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
@@ -65,6 +67,8 @@ public class BatchedBeanHolder {
 	 */
 	private ArrayList<PersistRequest> deletes;
 
+	private HashSet<Integer> beanHashCodes = new HashSet<Integer>();
+	
 	/**
 	 * Create a new entry with a given type and depth.
 	 */
@@ -106,6 +110,7 @@ public class BatchedBeanHolder {
 			control.executeNow(deletes);
 			deletes.clear();
 		}
+		beanHashCodes.clear();
 	}
 
 	public String toString() {
@@ -115,8 +120,18 @@ public class BatchedBeanHolder {
 	/**
 	 * Return the list for the typeCode.
 	 */
-	protected ArrayList<PersistRequest> getList(PersistRequest.Type type) {
-		switch (type) {
+	public ArrayList<PersistRequest> getList(PersistRequestBean<?> request) {
+	    
+	    Integer objHashCode = Integer.valueOf(System.identityHashCode(request.getBean()));
+	    
+	    if (!beanHashCodes.add(objHashCode)) {
+	        // special case where the same bean instance has already been
+	        // added to the batch (doesn't really occur with non-batching
+	        // as the bean gets changed from dirty to loaded earlier)
+	        return null;
+	    }
+	    
+		switch (request.getType()) {
 		case INSERT:
 			if (inserts == null) {
 				inserts = new ArrayList<PersistRequest>();
@@ -136,7 +151,7 @@ public class BatchedBeanHolder {
 			return deletes;
 
 		default:
-			throw new RuntimeException("Invalid type code " + type);
+			throw new RuntimeException("Invalid type code " + request.getType());
 		}
 	}
 }

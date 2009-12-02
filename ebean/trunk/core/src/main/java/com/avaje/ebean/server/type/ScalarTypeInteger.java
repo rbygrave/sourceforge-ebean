@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.server.core.BasicTypeConverter;
+import com.avaje.ebean.text.TextException;
 
 /**
  * ScalarType for Integer and int.
@@ -58,6 +59,18 @@ public class ScalarTypeInteger extends ScalarTypeBase {
 
 	public Object toBeanType(Object value) {
 		return BasicTypeConverter.toInteger(value);
+	}
+
+	public Object parse(String value) {
+		return Integer.valueOf(value);
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new TextException("Not Supported");
+	}
+
+	public boolean isDateTimeCapable() {
+		return false;
 	}
 
 }

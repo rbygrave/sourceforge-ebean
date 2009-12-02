@@ -42,6 +42,7 @@ import com.avaje.ebean.server.query.SqlBeanLoad;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
 import com.avaje.ebean.server.type.ScalarType;
+import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.util.ValueUtil;
 import com.avaje.ebean.validation.factory.Validator;
 
@@ -684,11 +685,26 @@ public class BeanProperty implements ElPropertyValue {
 		return convertToLogicalType(value);
 	}
 
+	
+	public void elSetReference(Object bean) {
+		throw new RuntimeException("Should not be called");
+	}
+
+	public void elSetValue(Object bean, Object value, boolean populate, boolean reference) {
+		if (bean != null){
+			setValueIntercept(bean, value);
+		}
+	}
+
 	public Object elGetValue(Object bean) {
 		if (bean == null){
 			return null;
 		}
 		return getValueIntercept(bean);
+	}
+
+	public Object elGetReference(Object bean) {
+		throw new RuntimeException("Not expected to call this");
 	}
 
 	/**
@@ -747,6 +763,18 @@ public class BeanProperty implements ElPropertyValue {
 		return scalarType;
 	}
 	
+	public StringParser getStringParser() {
+		return scalarType;
+	}
+	
+	public boolean isDateTimeCapable() {
+		return scalarType != null && scalarType.isDateTimeCapable();
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return scalarType.parseDateTime(systemTimeMillis);
+	}
+
 	/**
 	 * Return the DB max length (varchar) or precision (decimal).
 	 */

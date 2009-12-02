@@ -17,10 +17,14 @@ public class TestSecondaryQueries extends TestCase {
 		
 		ResetBasicData.reset();
 		
+		Order testOrder = ResetBasicData.createOrderCustAndOrder("testSecQry10");
+		Integer custId = testOrder.getCustomer().getId();
+		
+		
 		Customer cust  = Ebean.find(Customer.class)
 			.select("name")
 			.join("contacts","+query")
-			.setId(1)
+			.setId(custId)
 			.findUnique();
 		
 		Assert.assertNotNull(cust);

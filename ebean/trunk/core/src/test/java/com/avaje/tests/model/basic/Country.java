@@ -24,6 +24,10 @@ public class Country {
     @Length(max=60)
     String name;
     
+    public String toString() {
+    	return code;
+    }
+    
     /**
      * Return code.
      */    

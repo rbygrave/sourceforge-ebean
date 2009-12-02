@@ -22,7 +22,7 @@ public class BasicDomain implements Serializable {
 	
 	@Version
 	Timestamp updtime;
-
+	
 	public Integer getId() {
 		return id;
 	}

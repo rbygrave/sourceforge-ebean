@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.EnumSet;
 
+import com.avaje.ebean.text.TextException;
+
 
 /**
  * JPA standard based Enum scalar type.
@@ -138,6 +140,19 @@ public class ScalarTypeEnumStandard {
 			
 			return Enum.valueOf(enumType, (String)dbValue);
 		}
+
+		@SuppressWarnings("unchecked")
+		public Object parse(String value) {	
+			return Enum.valueOf(enumType, value);
+		}
+		
+		public Object parseDateTime(long systemTimeMillis) {
+			throw new TextException("Not Supported");
+		}
+
+		public boolean isDateTimeCapable() {
+			return false;
+		}
 	}
 	
 	public static class OrdinalEnum extends ScalarTypeBase implements ScalarTypeEnum {
@@ -145,12 +160,16 @@ public class ScalarTypeEnumStandard {
 
 		private final Object[] enumArray;
 		
+		@SuppressWarnings("unchecked")
+		private Class enumType;
+		
 		/**
 		 * Create a ScalarTypeEnum.
 		 */
 		@SuppressWarnings("unchecked")
 		public OrdinalEnum(Class enumType) {
 			super(enumType, false, Types.INTEGER);
+			this.enumType = enumType;
 			this.enumArray = EnumSet.allOf(enumType).toArray();
 		}
 
@@ -224,6 +243,19 @@ public class ScalarTypeEnumStandard {
 				throw new IllegalStateException(m);
 			}
 			return enumArray[ordinal];
+		}
+		
+		@SuppressWarnings("unchecked")
+		public Object parse(String value) {	
+			return Enum.valueOf(enumType, value);
+		}
+		
+		public Object parseDateTime(long systemTimeMillis) {
+			throw new TextException("Not Supported");
+		}
+
+		public boolean isDateTimeCapable() {
+			return false;
 		}
 	}
 }

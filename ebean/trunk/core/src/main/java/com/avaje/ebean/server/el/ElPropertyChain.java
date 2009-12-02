@@ -19,8 +19,11 @@
  */
 package com.avaje.ebean.server.el;
 
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.lib.util.StringHelper;
+import com.avaje.ebean.server.type.ScalarType;
+import com.avaje.ebean.text.StringParser;
 
 
 /**
@@ -49,6 +52,11 @@ public class ElPropertyChain implements ElPropertyValue {
 	private final ElPropertyValue[] chain;
 
 	private final boolean assocOneId;
+	private final int last;
+	private final BeanProperty lastBeanProperty;
+	private final ScalarType scalarType;
+	
+	private final ElPropertyValue lastElPropertyValue;
 	
 	public ElPropertyChain(boolean containsMany, boolean embedded, String expression, ElPropertyValue[] chain) {
 		
@@ -57,21 +65,26 @@ public class ElPropertyChain implements ElPropertyValue {
 		this.expression = expression;
 		int dotPos = expression.lastIndexOf('.');
 		if (dotPos > -1){
-			name = expression.substring(dotPos+1);
+			this.name = expression.substring(dotPos+1);
 			if (embedded){
 				int embPos = expression.lastIndexOf('.',dotPos-1);				
-				prefix = embPos == -1 ? null : expression.substring(0, embPos);
+				this.prefix = embPos == -1 ? null : expression.substring(0, embPos);
 				
 			} else {
-				prefix = expression.substring(0, dotPos);
+				this.prefix = expression.substring(0, dotPos);
 			}
 		} else {
-			prefix = null;
-			name = expression;
+			this.prefix = null;
+			this.name = expression;
 		}		
-		placeHolder = calcPlaceHolder(prefix,getDbColumn());
 		
-		assocOneId = chain[chain.length-1].isAssocOneId();
+		this.assocOneId = chain[chain.length-1].isAssocOneId();
+		
+		this.last = chain.length-1;
+		this.lastBeanProperty = chain[chain.length-1].getBeanProperty();
+		this.scalarType = lastBeanProperty.getScalarType();
+		this.lastElPropertyValue = chain[chain.length-1];
+		this.placeHolder = calcPlaceHolder(prefix,getDbColumn());
 		
 	}
 
@@ -119,11 +132,11 @@ public class ElPropertyChain implements ElPropertyValue {
 	public Object[] getAssocOneIdValues(Object bean) {
 		// Don't navigate the object graph as bean 
 		// is assumed to be the appropriate type
-		return chain[chain.length-1].getAssocOneIdValues(bean);
+		return lastElPropertyValue.getAssocOneIdValues(bean);
 	}
 
 	public String getAssocOneIdExpr(String prefix, String operator) {
-		return chain[chain.length-1].getAssocOneIdExpr(expression, operator);
+		return lastElPropertyValue.getAssocOneIdExpr(expression, operator);
 	}
 
 	public boolean isAssocOneId() {
@@ -131,16 +144,29 @@ public class ElPropertyChain implements ElPropertyValue {
 	}
 
 	public String getDbColumn() {
-		return chain[chain.length-1].getDbColumn();
+		return lastElPropertyValue.getDbColumn();
 	}
 	
 	public BeanProperty getBeanProperty() {
-		return chain[chain.length-1].getBeanProperty();
+		return lastBeanProperty; 
 	}
 
+	
+	public boolean isDateTimeCapable() {
+		return scalarType != null && scalarType.isDateTimeCapable();
+	}
+
+	public Object parseDateTime(long systemTimeMillis) {
+		return scalarType.parseDateTime(systemTimeMillis);
+	}
+
+	public StringParser getStringParser() {
+		return scalarType;
+	}
+	
 	public Object elConvertType(Object value){
 		// just convert using the last one in the chain
-		return chain[chain.length-1].elConvertType(value);
+		return lastElPropertyValue.elConvertType(value);
 	}
 	
 	public Object elGetValue(Object bean) {
@@ -148,10 +174,77 @@ public class ElPropertyChain implements ElPropertyValue {
 		for (int i = 0; i < chain.length; i++) {
 			bean = chain[i].elGetValue(bean);
 			if (bean == null) {
-				return bean;
+				return null;
 			}
 		}
 
 		return bean;
 	}
+
+	public Object elGetReference(Object bean) {
+		
+		Object prevBean = bean;
+		for (int i = 0; i < last; i++) {
+			// always return non null prevBean
+			prevBean = chain[i].elGetReference(prevBean);
+		}
+		// try the last step in the chain
+		bean = chain[last].elGetValue(prevBean);
+		
+		return bean;
+	}
+	
+
+	public void elSetLoaded(Object bean) {
+		
+		for (int i = 0; i < last; i++) {
+			bean = chain[i].elGetValue(bean);
+			if (bean == null){
+				break;
+			}
+		}				
+		if (bean != null){
+			((EntityBean)bean)._ebean_getIntercept().setLoaded();
+		}
+	}
+	
+	public void elSetReference(Object bean) {
+
+		for (int i = 0; i < last; i++) {
+			bean = chain[i].elGetValue(bean);
+			if (bean == null){
+				break;
+			}
+		}				
+		if (bean != null){
+			((EntityBean)bean)._ebean_getIntercept().setReference();
+		}
+	}
+	
+	public void elSetValue(Object bean, Object value, boolean populate, boolean reference){
+
+		Object prevBean = bean;
+		if (populate){
+			for (int i = 0; i < last; i++) {
+				// always return non null prevBean
+				prevBean = chain[i].elGetReference(prevBean);
+			}	
+		} else {
+			for (int i = 0; i < last; i++) {
+				// always return non null prevBean
+				prevBean = chain[i].elGetValue(prevBean);
+				if (prevBean == null){
+					break;
+				}
+			}				
+		}
+		if (prevBean != null){
+			lastBeanProperty.setValueIntercept(prevBean, value);
+			if (reference){
+				((EntityBean)prevBean)._ebean_getIntercept().setReference();
+			}
+		}
+	}
+
+	
 }

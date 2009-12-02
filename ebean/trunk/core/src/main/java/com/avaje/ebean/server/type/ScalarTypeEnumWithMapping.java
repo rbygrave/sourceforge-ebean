@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import com.avaje.ebean.text.TextException;
+
 
 
 /**
@@ -119,10 +121,22 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 	
 	@SuppressWarnings("unchecked")
 	public Object toBeanType(Object dbValue) {
-		
 		return beanDbMap.getBeanValue(dbValue);
 	}
 
+	@SuppressWarnings("unchecked")
+	public Object parse(String value) {
+		return Enum.valueOf(enumType, value);
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		throw new TextException("Not Supported");
+	}
+
+	public boolean isDateTimeCapable() {
+		return false;
+	}
+	
 	public Object toJdbcType(Object beanValue) {
 		
 		return beanDbMap.getDbValue(beanValue);

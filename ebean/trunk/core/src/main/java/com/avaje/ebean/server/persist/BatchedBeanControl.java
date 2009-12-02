@@ -42,13 +42,11 @@ public class BatchedBeanControl {
 	 * sorted by their depth to get the execution order.
 	 */
 	private final HashMap<String, BatchedBeanHolder> beanHoldMap = new HashMap<String, BatchedBeanHolder>();
-
+	
 	private final SpiTransaction transaction;
 
 	private final BatchControl batchControl;
 
-	private int maxSize;
-	
 	private int topOrder;
 
 	public BatchedBeanControl(SpiTransaction t, BatchControl batchControl) {
@@ -56,23 +54,11 @@ public class BatchedBeanControl {
 		this.batchControl = batchControl;
 	}
 
-	/**
-	 * Add the request to the batch.
-	 */
-	public void add(PersistRequestBean<?> request) {
-		BatchedBeanHolder beanHolder = getBeanHolder(request);
-
-		ArrayList<PersistRequest> list = beanHolder.getList(request.getType());
-		list.add(request);
-
-		// Maintain the max size across all the BeanHolders
-		// This is used to determine when to flush the batch
-		int bhSize = list.size();
-		if (bhSize > maxSize) {
-			maxSize = bhSize;
-		}
-	}
-
+	public ArrayList<PersistRequest> getPersistList(PersistRequestBean<?> request) {
+        BatchedBeanHolder beanHolder = getBeanHolder(request);
+        return beanHolder.getList(request);
+    }
+	
 	/**
 	 * Return an entry for the given type description. The type description is
 	 * typically the bean class name (or table name for MapBeans).
@@ -80,8 +66,8 @@ public class BatchedBeanControl {
 	private BatchedBeanHolder getBeanHolder(PersistRequestBean<?> request) {
 		
 		BeanDescriptor<?> beanDescriptor = request.getBeanDescriptor();
-		BatchedBeanHolder list = beanHoldMap.get(beanDescriptor.getFullName());
-		if (list == null) {
+		BatchedBeanHolder batchBeanHolder = beanHoldMap.get(beanDescriptor.getFullName());
+		if (batchBeanHolder == null) {
 			int relativeDepth = transaction.depth(0);
 			
 			if (relativeDepth == 0){
@@ -89,10 +75,10 @@ public class BatchedBeanControl {
 			}
 			int stmtOrder = topOrder*100 + relativeDepth;
 			
-			list = new BatchedBeanHolder(batchControl, beanDescriptor, stmtOrder);
-			beanHoldMap.put(beanDescriptor.getFullName(), list);
+			batchBeanHolder = new BatchedBeanHolder(batchControl, beanDescriptor, stmtOrder);
+			beanHoldMap.put(beanDescriptor.getFullName(), batchBeanHolder);
 		}
-		return list;
+		return batchBeanHolder;
 	}
 
 	/**
@@ -112,16 +98,8 @@ public class BatchedBeanControl {
 		BatchedBeanHolder[] bsArray = new BatchedBeanHolder[beanHoldMap.size()];
 		beanHoldMap.values().toArray(bsArray);
 		beanHoldMap.clear();
-		maxSize = 0;
 		topOrder = 0;
 		return bsArray;
-	}
-
-	/**
-	 * Return the size of the biggest batch of beans (by type).
-	 */
-	public int getMaxSize() {
-		return maxSize;
 	}
 
 }

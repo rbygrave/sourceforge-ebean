@@ -60,4 +60,17 @@ public class ScalarTypeLong extends ScalarTypeBase {
 		return BasicTypeConverter.toLong(value);
 	}
 
+	public Object parse(String value) {
+		return Long.valueOf(value);
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		return Long.valueOf(systemTimeMillis);
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
+
 }

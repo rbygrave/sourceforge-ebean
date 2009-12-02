@@ -72,4 +72,22 @@ public class ScalarTypeCalendar extends ScalarTypeBase {
 		return BasicTypeConverter.toCalendar(value);
 	}
 
+	public Object parse(String value) {
+		Timestamp ts = Timestamp.valueOf(value);
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(ts.getTime());
+		return calendar;
+	}
+	
+	public Object parseDateTime(long systemTimeMillis) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(systemTimeMillis);
+		return calendar;
+	}
+
+	public boolean isDateTimeCapable() {
+		return true;
+	}
+
+	
 }
