@@ -274,6 +274,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 		}
 
 		manyProp.setManyToMany(true);
+		manyProp.setModifyListenMode(ModifyListenMode.ALL);
 		manyProp.setBeanTable(assoc);
 		manyProp.getTableJoin().setType(TableJoin.LEFT_OUTER);
 	}
