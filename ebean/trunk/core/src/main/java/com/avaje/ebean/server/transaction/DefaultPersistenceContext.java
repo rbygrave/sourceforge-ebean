@@ -152,48 +152,21 @@ public final class DefaultPersistenceContext implements PersistenceContext {
 
     private static class ClassContext {
     	
-    	//private final WeakHashMap<Object,WeakReference<Object>> map = new WeakHashMap<Object, WeakReference<Object>>();
-//        private final HashMap<Object,WeakReference<Object>> map = new HashMap<Object, WeakReference<Object>>();
         private final WeakValueMap<Object, Object> map = new WeakValueMap<Object, Object>();
         
     	private Object get(Object id){
     	    return map.get(id);
-    	    
-//    		WeakReference<Object> reference = map.get(id);
-//    		if (reference != null){
-//    			return reference.get();
-//    		} else {
-//    			return null;
-//    		}
     	}
     	
         private Object putIfAbsent(Object id, Object bean){
             
             return map.putIfAbsent(id, bean);
-            
-//        	Object existing = null;
-//        	WeakReference<Object> reference = map.get(id);
-//        	if (reference != null){
-//        		existing = reference.get();
-//        	}
-//        	if (existing != null){
-//        		return existing;
-//        		
-//        	} else {
-//        		map.put(id, new WeakReference<Object>(bean));
-//        		return null;
-//        	}
         }
         
     	private void put(Object id, Object b){
     	    map.put(id, b);
-//    		map.put(id, new WeakReference<Object>(b));
     	}
-    	
-//    	private boolean containsKey(Object id){
-//    		return map.containsKey(id);
-//    	}
-    	
+    	    	
     	private int size() {
     	    return map.size();
     	}
