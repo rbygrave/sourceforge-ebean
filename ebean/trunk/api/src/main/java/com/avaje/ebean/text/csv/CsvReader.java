@@ -19,10 +19,11 @@
  */
 package com.avaje.ebean.text.csv;
 
+import com.avaje.ebean.text.StringParser;
+
 import java.io.IOException;
 import java.io.Reader;
-
-import com.avaje.ebean.text.StringParser;
+import java.util.Locale;
 
 /**
  * Reads CSV data turning it into object graphs that you can be saved (inserted)
@@ -182,7 +183,7 @@ public interface CsvReader<T> {
      * convert the string into the appropriate java type for the given property
      * (Date, Calendar, SQL Date, Time, Timestamp, JODA etc).
      */
-    public void addDateTime(String propertyName, String dateTimeFormat);
+    public void addDateTime(String propertyName, String dateTimeFormat, Locale locale);
 
     /**
      * Automatically create a transaction if required to process all the CSV
