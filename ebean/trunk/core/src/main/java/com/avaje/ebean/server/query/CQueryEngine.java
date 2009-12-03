@@ -304,14 +304,10 @@ public class CQueryEngine {
 	private void logFindSummary(CQuery<?> q) {
 
 		StringBuilder msg = new StringBuilder(200);
-		msg.append("FindById");
-		msg.append(" exeMicros[").append("" + q.getQueryExecutionTimeMicros()).append("]");
-		msg.append(" rows[").append(q.getLoadedRowDetail());
-		msg.append("]");
-
-		String beanType = q.getBeanType();
-		msg.append(" type[").append(beanType).append("]");
-		msg.append(" bind[").append(q.getBindLog()).append("]");
+		msg.append("FindById exeMicros[").append("" + q.getQueryExecutionTimeMicros());
+		msg.append("] rows[").append(q.getLoadedRowDetail());
+		msg.append("] type[").append(q.getBeanName());
+		msg.append("] bind[").append(q.getBindLog()).append("]");
 
 		q.getTransaction().log(msg.toString());
 	}
@@ -322,16 +318,12 @@ public class CQueryEngine {
 	private void logFindManySummary(CQuery<?> q) {
 
 		StringBuilder msg = new StringBuilder(200);
-		msg.append("FindMany");
-		msg.append(" exeMicros[").append(q.getQueryExecutionTimeMicros()).append("]");
-		msg.append(" rows[").append(q.getLoadedRowDetail());
-		msg.append("] type[");
-		String beanType = q.getBeanType();
-		msg.append(beanType).append("]");
-		msg.append(" name[").append(q.getName()).append("]");
-
-		msg.append(" predicates[").append(q.getLogWhereSql()).append("]");
-		msg.append(" bind[").append(q.getBindLog()).append("]");
+		msg.append("FindMany exeMicros[").append(q.getQueryExecutionTimeMicros());
+		msg.append("] rows[").append(q.getLoadedRowDetail());
+		msg.append("] type[").append(q.getBeanName());
+		msg.append("] name[").append(q.getName());
+		msg.append("] predicates[").append(q.getLogWhereSql());
+		msg.append("] bind[").append(q.getBindLog()).append("]");
 
 		q.getTransaction().log(msg.toString());
 	}

@@ -786,6 +786,13 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	}
 
 	/**
+	 * Return the short bean name.
+	 */
+	public String getBeanName() {
+        return desc.getName();
+    }
+	
+	/**
 	 * Return the generated sql.
 	 */
 	public String getGeneratedSql() {
