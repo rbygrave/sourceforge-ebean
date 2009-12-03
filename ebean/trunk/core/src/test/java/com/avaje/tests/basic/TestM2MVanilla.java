@@ -44,7 +44,7 @@ public class TestM2MVanilla extends TestCase {
         MUser checkUser = Ebean.find(MUser.class, u0.getUserid());
         List<MRole> checkRoles = checkUser.getRoles();
         Assert.assertNotNull(checkRoles);
-        Assert.assertTrue(checkRoles.size() == 2);
+        Assert.assertEquals(2, checkRoles.size());
 
         checkRoles.add(r3);
         
