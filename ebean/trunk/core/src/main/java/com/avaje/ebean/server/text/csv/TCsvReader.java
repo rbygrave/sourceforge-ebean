@@ -19,17 +19,6 @@
  */
 package com.avaje.ebean.server.text.csv;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.EntityBean;
@@ -39,6 +28,18 @@ import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.csv.CsvCallback;
 import com.avaje.ebean.text.csv.CsvReader;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -114,14 +115,14 @@ public class TCsvReader<T> implements CsvReader<T> {
         addProperty(propertyName, parser, false);
     }
 
-    public void addDateTime(String propertyName, String dateTimeFormat) {
+    public void addDateTime(String propertyName, String dateTimeFormat, Locale locale) {
 
         ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
         if (!elProp.isDateTimeCapable()) {
             throw new TextException("Property " + propertyName + " is not DateTime capable");
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat);
+        SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat, locale);
         DateTimeParser parser = new DateTimeParser(sdf, dateTimeFormat, elProp);
 
         CsvColumn column = new CsvColumn(elProp, parser, false);
