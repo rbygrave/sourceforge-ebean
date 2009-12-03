@@ -179,6 +179,13 @@ public interface CsvReader<T> {
     public void addProperty(String propertyName, StringParser parser);
 
     /**
+     * Add a property with a custom Date/Time/Timestamp format using the default
+     * Locale. This will convert the string into the appropriate java type for
+     * the given property (Date, Calendar, SQL Date, Time, Timestamp, JODA etc).
+     */
+    public void addDateTime(String propertyName, String dateTimeFormat);
+
+    /**
      * Add a property with a custom Date/Time/Timestamp format. This will
      * convert the string into the appropriate java type for the given property
      * (Date, Calendar, SQL Date, Time, Timestamp, JODA etc).

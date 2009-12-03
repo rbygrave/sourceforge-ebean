@@ -115,6 +115,10 @@ public class TCsvReader<T> implements CsvReader<T> {
         addProperty(propertyName, parser, false);
     }
 
+    public void addDateTime(String propertyName, String dateTimeFormat) {
+        addDateTime(propertyName, dateTimeFormat, Locale.getDefault());
+    }
+    
     public void addDateTime(String propertyName, String dateTimeFormat, Locale locale) {
 
         ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
