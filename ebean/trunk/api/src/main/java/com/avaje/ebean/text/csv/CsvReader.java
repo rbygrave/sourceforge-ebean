@@ -19,11 +19,10 @@
  */
 package com.avaje.ebean.text.csv;
 
-import com.avaje.ebean.text.StringParser;
-
-import java.io.IOException;
 import java.io.Reader;
 import java.util.Locale;
+
+import com.avaje.ebean.text.StringParser;
 
 /**
  * Reads CSV data turning it into object graphs that you can be saved (inserted)
@@ -61,66 +60,6 @@ import java.util.Locale;
  * }
  * </pre>
  * 
- * <p>
- * This second example uses the {@link CsvCallback}. When we use CsvCallback
- * then we need to create and manage the transaction explicitly and save the
- * beans as part of the callback processing.
- * </p>
- * 
- * <pre class="code">
- * File f = new File(&quot;src/test/resources/test1.csv&quot;);
- * 
- * FileReader reader = new FileReader(f);
- * 
- * final EbeanServer server = Ebean.getServer(null);
- * 
- * CsvReader&lt;Customer&gt; csvReader = server.createCsvReader(Customer.class);
- * 
- * csvReader.setPersistBatchSize(20);
- * csvReader.setLogInfoFrequency(100);
- * 
- * csvReader.addProperty(&quot;status&quot;);
- * csvReader.addProperty(&quot;name&quot;);
- * csvReader.addDateTime(&quot;anniversary&quot;, &quot;dd-MMM-yyyy&quot;);
- * csvReader.addProperty(&quot;billingAddress.line1&quot;);
- * csvReader.addProperty(&quot;billingAddress.city&quot;);
- * csvReader.addProperty(&quot;billingAddress.country.code&quot;);
- * 
- * // when using CsvCallback we have to manage the transaction
- * // and must save the bean(s) explicitly 
- * final Transaction transaction = Ebean.beginTransaction();
- * 
- * // use JDBC statement batching
- * transaction.setBatchMode(true);
- * transaction.setBatchSize(5);
- * 
- * // you can turn off persist cascade if that is desired
- * //transaction.setPersistCascade(false);
- * 
- * // add a comment to the transaction log
- * transaction.log(&quot;CsvReader loading test1.csv&quot;);
- * try {
- *     csvReader.process(reader, new CsvCallback&lt;Customer&gt;() {
- * 
- *         public void processBean(int row, Customer cust, String[] lineContent) {
- * 
- *             System.out.println(row + &quot;&gt; &quot; + cust + &quot; &quot; + cust.getBillingAddress());
- * 
- *             // if there was no Cascade.SAVE then we could explicitly
- *             // save the billingAddress bean as well as the customer bean
- *             // server.save(cust.getBillingAddress(), transaction);
- *             server.save(cust, transaction);
- *         }
- * 
- *     });
- *     transaction.commit();
- * 
- * } finally {
- *     transaction.end();
- * }
- * 
- * </pre>
- * 
  * @author rbygrave
  * 
  * @param <T>
@@ -140,7 +79,7 @@ public interface CsvReader<T> {
     /**
      * Set to true if there is a header row that should be ignored.
      */
-    public void setIgnoreHeader(boolean ignoreHeader);
+    public void setHasHeader(boolean hasHeader);
 
     /**
      * Set the frequency with which a INFO message will be logged showing the
@@ -202,7 +141,7 @@ public interface CsvReader<T> {
      * transaction.
      * </p>
      */
-    public void process(Reader reader) throws IOException;
+    public void process(Reader reader) throws Exception;
 
     /**
      * Process the CSV content passing the bean to the CsvCallback after each
@@ -216,6 +155,6 @@ public interface CsvReader<T> {
      * create your own transaction and save the bean(s) yourself.
      * </p>
      */
-    public void process(Reader reader, CsvCallback<T> callback) throws IOException;
+    public void process(Reader reader, CsvCallback<T> callback) throws Exception;
 
 }

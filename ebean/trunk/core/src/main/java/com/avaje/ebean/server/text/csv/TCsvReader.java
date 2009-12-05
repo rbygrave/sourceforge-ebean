@@ -19,17 +19,6 @@
  */
 package com.avaje.ebean.server.text.csv;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.server.deploy.BeanDescriptor;
-import com.avaje.ebean.server.el.ElPropertyValue;
-import com.avaje.ebean.text.StringParser;
-import com.avaje.ebean.text.TextException;
-import com.avaje.ebean.text.csv.CsvCallback;
-import com.avaje.ebean.text.csv.CsvReader;
-
-import java.io.IOException;
 import java.io.Reader;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -39,7 +28,16 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
+
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.text.StringParser;
+import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.csv.CsvCallback;
+import com.avaje.ebean.text.csv.CsvReader;
+import com.avaje.ebean.text.csv.DefaultCsvCallback;
 
 /**
  * 
@@ -47,8 +45,8 @@ import java.util.logging.Logger;
  */
 public class TCsvReader<T> implements CsvReader<T> {
 
-    private static final Logger logger = Logger.getLogger(TCsvReader.class.getName());
-    
+    //private static final Logger logger = Logger.getLogger(TCsvReader.class.getName());
+
     private final EbeanServer server;
 
     private final BeanDescriptor<T> descriptor;
@@ -59,27 +57,15 @@ public class TCsvReader<T> implements CsvReader<T> {
 
     private boolean treatEmptyStringAsNull = true;
 
-    private boolean ignoreHeader;
-    
-    private int logInfoFrequency = 0;
-    
-    /**
-     * The transaction to use (if not using CsvCallback).
-     */
-    protected Transaction transaction;
-    
-    /**
-     * Flag set when we created the transaction.
-     */
-    protected boolean createdTransaction;
+    private boolean hasHeader;
+
+    private int logInfoFrequency = 1000;
 
     /**
      * The batch size used for JDBC statement batching.
      */
-    protected int persistBatchSize = 20;
-    
-    
-    
+    protected int persistBatchSize = 30;
+
     public TCsvReader(EbeanServer server, BeanDescriptor<T> descriptor) {
         this.server = server;
         this.descriptor = descriptor;
@@ -89,11 +75,9 @@ public class TCsvReader<T> implements CsvReader<T> {
         this.persistBatchSize = persistBatchSize;
     }
 
-    public void setIgnoreHeader(boolean ignoreHeader) {
-        this.ignoreHeader = ignoreHeader;
+    public void setHasHeader(boolean hasHeader) {
+        this.hasHeader = hasHeader;
     }
-    
-    
 
     public void setLogInfoFrequency(int logInfoFrequency) {
         this.logInfoFrequency = logInfoFrequency;
@@ -118,7 +102,7 @@ public class TCsvReader<T> implements CsvReader<T> {
     public void addDateTime(String propertyName, String dateTimeFormat) {
         addDateTime(propertyName, dateTimeFormat, Locale.getDefault());
     }
-    
+
     public void addDateTime(String propertyName, String dateTimeFormat, Locale locale) {
 
         ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
@@ -143,112 +127,69 @@ public class TCsvReader<T> implements CsvReader<T> {
         columnList.add(column);
     }
 
-    public void process(Reader reader) throws IOException {
-        process(reader, null);
+    public void process(Reader reader) throws Exception {
+        DefaultCsvCallback<T> callback = new DefaultCsvCallback<T>(persistBatchSize, logInfoFrequency);
+        process(reader, callback);
     }
-    
-    public void process(Reader reader, CsvCallback<T> callback) throws IOException {
 
-        long startTime = System.currentTimeMillis();
-        
+    public void process(Reader reader, CsvCallback<T> callback) throws Exception {
+
+        if (reader == null){
+            throw new NullPointerException("reader is null?");
+        }
+        if (callback == null){
+            throw new NullPointerException("callback is null?");
+        }
+
         CsvUtilReader utilReader = new CsvUtilReader(reader);
 
-        if (callback == null){
-            initTransactionIfRequired();
-        }
+        callback.begin(server);
+
         int row = 0;
-        
-        if (ignoreHeader){
+
+        if (hasHeader) {
             String[] line = utilReader.readNext();
-            logger.fine("... ignoring header "+Arrays.toString(line));
+            callback.readHeader(line);
         }
-        
+
         try {
             do {
                 ++row;
                 String[] line = utilReader.readNext();
                 if (line == null) {
+                    --row;
                     break;
-    
-                } else if (line.length != columnList.size()) {
-                    // we have not got the expected number of columns
-                    String msg = "Error at line " + row + ". Expected [" + columnList.size() + "] columns "
-                            + "but instead we have [" + line.length + "].  Line[" + Arrays.toString(line) + "]";
-                    throw new TextException(msg);
-    
-                } else {
-                    T bean = processLine(line);
-                    if (callback != null) {
-                        callback.processBean(row, bean, line);
-                    } else {
-                        server.save(bean, transaction);
+                }
+                
+                if (callback.processLine(row, line)) {
+                    // the line content is expected to be ok for processing
+                    if (line.length != columnList.size()) {
+                        // we have not got the expected number of columns
+                        String msg = "Error at line " + row + ". Expected [" + columnList.size() + "] columns "
+                                + "but instead we have [" + line.length + "].  Line[" + Arrays.toString(line) + "]";
+                        throw new TextException(msg);
                     }
-                    if (logInfoFrequency > 0 && (row % logInfoFrequency == 0)){
-                        logger.info("processed "+row+" rows");
-                    }
-                    
+
+                    T bean = buildBeanFromLineContent(line);
+
+                    callback.processBean(row, line, bean);
+
                 }
             } while (true);
-            
-            commitTransactionIfCreated();
-            
-            long exeTime = System.currentTimeMillis() - startTime;
-            
-            logger.info("CsvReader finished, rows["+(row-1)+"] exeMillis["+exeTime+"]");
-            
-        } finally {
-            endTransactionIfCreated();
-        }
-        
-        
-    }
-        
-    /**
-     * Create a transaction if one is not already active and set its batch mode and batch size.
-     */
-    protected void initTransactionIfRequired() {
-        
-        transaction = server.currentTransaction();
-        if (transaction == null || !transaction.isActive()){
-            
-            transaction = server.beginTransaction();
-            createdTransaction = true;
-            if (persistBatchSize > 1){
-                logger.info("CsvReader creating transaction, batchSize["+persistBatchSize+"]");
-                transaction.setBatchMode(true);
-                transaction.setBatchSize(persistBatchSize);
-                
-            } else {
-                // explicitly turn off JDBC batching in case
-                // is has been turned on globally
-                transaction.setBatchMode(false);
-                logger.info("CsvReader creating transaction for CsvReader with no JDBC batching");
-            }
-        }
-    }
-    
-    /**
-     * If we created a transaction commit it.
-     * We have successfully processed all the rows.
-     */
-    protected void commitTransactionIfCreated() {
-        if (createdTransaction){
-            transaction.commit();
-            logger.info("CsvReader Committed transaction");
+
+            callback.end(row);
+
+
+        } catch (Exception e) {
+            // notify that an error occured so that any 
+            // transaction can be rolled back if required 
+            callback.endWithError(row, e);
+            throw e;
         }
     }
 
-    /**
-     * Rollback the transaction if we where not successful in processing all the rows.
-     */
-    protected void endTransactionIfCreated() {
-        if (createdTransaction){
-            transaction.end();
-        }
-    }
-    
     @SuppressWarnings("unchecked")
-    protected T processLine(String[] line) {
+    protected T buildBeanFromLineContent(String[] line) {
 
         EntityBean entityBean = descriptor.createEntityBean();
         T bean = (T) entityBean;
