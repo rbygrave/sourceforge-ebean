@@ -8,7 +8,9 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Trip extends BasicDomain {
 	
-	@ManyToOne
+    private static final long serialVersionUID = 1L;
+
+    @ManyToOne
 	private VehicleDriver vehicleDriver;
 	
 	private String destination;

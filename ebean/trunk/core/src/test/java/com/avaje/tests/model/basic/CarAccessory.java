@@ -6,7 +6,9 @@ import javax.persistence.ManyToOne;
 @Entity
 public class CarAccessory extends BasicDomain{
 	
-	private String name;
+    private static final long serialVersionUID = 1L;
+
+    private String name;
 	
 	@ManyToOne
 	private Car car;
