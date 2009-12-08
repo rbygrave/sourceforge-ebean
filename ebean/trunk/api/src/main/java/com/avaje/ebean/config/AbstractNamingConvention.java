@@ -29,7 +29,7 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 
 /**
  * Provides some base implementation for NamingConventions.
- * 
+ *
  * @author emcgreal
  */
 public abstract class AbstractNamingConvention implements NamingConvention {
@@ -54,14 +54,14 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 	/** The max length of constraint names. */
 	protected int maxConstraintNameLength;
-	
+
 	/** Used to trim off extra prefix for M2M. */
 	protected int rhsPrefixLength = 3;
 
 	// Constructors -------------------------------------------------
 	/**
 	 * Instantiates a new default naming convention.
-	 * 
+	 *
 	 * @param sequenceFormat
 	 *            the sequence format
 	 */
@@ -130,7 +130,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 	 * The format should include "{table}". When generating the sequence name
 	 * {table} is replaced with the actual table name.
 	 * </p>
-	 * 
+	 *
 	 * @param sequenceFormat
 	 *            string containing "{table}" which is replaced with the actual
 	 *            table name to generate the sequence name.
@@ -158,7 +158,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
 		TableName tableName = getTableNameFromAnnotation(beanClass);
 		if (tableName == null) {
-			
+
 			Class<?> supCls = beanClass.getSuperclass();
 			Inheritance inheritance = supCls.getAnnotation(Inheritance.class);
 			if (inheritance != null) {
@@ -166,7 +166,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 				// is not a table annotation in the inheritance hierarchy
 				return getTableName(supCls);
 			}
-			
+
 			tableName = getTableNameByConvention(beanClass);
 		}
 		return tableName;
@@ -177,7 +177,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(lhsTable.getName());
 		buffer.append("_");
-		
+
 		String rhsTableName = rhsTable.getName();
 		if (rhsTableName.indexOf('_') < rhsPrefixLength){
 			// trim off a xx_ prefix if there is one
@@ -185,7 +185,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 		}
 		buffer.append(rhsTableName);
 
-		int maxConstraintNameLength = 54;//databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
+		int maxConstraintNameLength = databasePlatform.getDbDdlSyntax().getMaxConstraintNameLength();
 
 		// maxConstraintNameLength is used as the max table name length.
 		if (buffer.length() > maxConstraintNameLength) {

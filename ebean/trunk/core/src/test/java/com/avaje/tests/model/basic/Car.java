@@ -1,9 +1,13 @@
 package com.avaje.tests.model.basic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 @Inheritance
@@ -16,6 +20,9 @@ public class Car extends Vehicle {
 
 	@ManyToOne
 	TruckRef carRef;
+	
+	@OneToMany(mappedBy="car")
+	private Set<CarAccessory> accessories = new HashSet<CarAccessory>();
 	
 	public String getDriver() {
 		return driver;
@@ -31,5 +38,13 @@ public class Car extends Vehicle {
 
 	public void setCarRef(TruckRef carRef) {
 		this.carRef = carRef;
+	}
+
+	public Set<CarAccessory> getAccessories() {
+		return accessories;
+	}
+
+	public void setAccessories(Set<CarAccessory> accessories) {
+		this.accessories = accessories;
 	}
 }
