@@ -31,8 +31,8 @@ public class TestPersistContextClear extends TestCase {
         System.out.println("pc0:"+pc.toString());
 
         // no orders or customers in the PC
-        Assert.assertEquals(pc.size(Order.class), 0);
-        Assert.assertEquals(pc.size(Customer.class), 0);
+        Assert.assertEquals(0, pc.size(Order.class));
+        Assert.assertEquals(0, pc.size(Customer.class));
 
         Order order0 = null;
         try {
@@ -50,10 +50,10 @@ public class TestPersistContextClear extends TestCase {
             order0 = list.get(0);
             
             System.out.println("pc1:"+pc.toString());
-            Assert.assertEquals(pc.size(Order.class), orderSize);
+            Assert.assertEquals(orderSize, pc.size(Order.class));
 
             System.gc();
-            Assert.assertEquals(pc.size(Order.class), orderSize);
+            Assert.assertEquals(orderSize, pc.size(Order.class));
             Assert.assertTrue(pc.size(Customer.class) > 0);
 
             list = null;
@@ -75,9 +75,11 @@ public class TestPersistContextClear extends TestCase {
         // we still have the order
         Assert.assertNotNull(order0);
         // its likely the only one in the PC now
-        // due to the System.gc(); 
-        Assert.assertEquals(pc.size(Order.class), 1);
-        Assert.assertEquals(pc.size(Customer.class), 1);
+        // due to the System.gc(); but can't garuntee it 
+        // so removing these asserts... can put them back
+        // to manually test.
+//        Assert.assertEquals(pc.size(Order.class), 1);
+//        Assert.assertEquals(pc.size(Customer.class), 1);
         
 
     }
