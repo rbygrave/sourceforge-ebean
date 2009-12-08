@@ -211,6 +211,10 @@ public class Transformer implements ClassFileTransformer {
 	 */
 	public static URL[] parseClassPaths(String extraClassPath){
 
+	    if (extraClassPath == null){
+	        return new URL[0];
+	    }
+	    
 		String[] stringPaths = extraClassPath.split(";");
 		return UrlPathHelper.convertToUrl(stringPaths);
 	}

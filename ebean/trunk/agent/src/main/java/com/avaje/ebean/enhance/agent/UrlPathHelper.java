@@ -19,7 +19,10 @@ public class UrlPathHelper {
 	public static URL[] convertToUrl(String[] paths){
 		ArrayList<URL> list = new ArrayList<URL>();
 		for (int i = 0; i < paths.length; i++) {
-			list.add(convertToUrl(paths[i]));
+	        URL url = convertToUrl(paths[i]);
+	        if (url != null){
+	            list.add(url);
+	        }
 		}
 		return list.toArray(new URL[list.size()]);
 	}
@@ -28,6 +31,9 @@ public class UrlPathHelper {
 	 * Convert string path into URL class path.
 	 */
 	public static URL convertToUrl(String path) {
+	    if (isEmpty(path)){
+	        return null;
+	    }
 		try {
 			return new URL(PROTOCAL_PREFIX + convertUrlString(path));
 		} catch (MalformedURLException e) {
@@ -39,7 +45,15 @@ public class UrlPathHelper {
 	 * Convert a string path to be used in URL class path entry.
 	 */
 	public static String convertUrlString(String classpath) {
+	    
+	    if (isEmpty(classpath)) {
+	        return "";
+	    }
+	    
 		classpath = classpath.trim();
+		if (classpath.length() < 2){
+		    return "";
+		}
 		if (classpath.charAt(0) != '/' && classpath.charAt(1) == ':'){
 			// add leading slash for windows platform
 			// assuming drive letter path
@@ -52,5 +66,9 @@ public class UrlPathHelper {
 			}
 		}
 		return classpath;
+	}
+	
+	private static boolean isEmpty(String s){
+	    return s == null || s.trim().length() ==0;
 	}
 }
