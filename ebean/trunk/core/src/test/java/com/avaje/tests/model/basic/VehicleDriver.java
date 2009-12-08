@@ -1,5 +1,7 @@
 package com.avaje.tests.model.basic;
 
+import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
@@ -12,6 +14,11 @@ public class VehicleDriver extends BasicDomain {
 		
 	@ManyToOne(optional=true)
 	private Vehicle vehicle;
+	
+	@ManyToOne(optional=true)
+	private Address address;
+	
+	private Date licenseIssuedOn;
 
 	public String getName() {
 		return name;
@@ -27,6 +34,22 @@ public class VehicleDriver extends BasicDomain {
 
 	public void setVehicle(Vehicle vehicle) {
 		this.vehicle = vehicle;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public Date getLicenseIssuedOn() {
+		return licenseIssuedOn;
+	}
+
+	public void setLicenseIssuedOn(Date licenseIssuedOn) {
+		this.licenseIssuedOn = licenseIssuedOn;
 	}
 
 }

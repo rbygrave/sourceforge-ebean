@@ -288,6 +288,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	
 	public void loadIgnore(SqlBeanLoad sqlBeanLoad) {
 		localHelp.loadIgnore(sqlBeanLoad);
+		
+		if (targetInheritInfo != null){
+			// Need to skip the discriminator column
+			sqlBeanLoad.loadIgnore(1);
+		}
 	}
 	
 	@Override

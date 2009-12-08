@@ -1,5 +1,7 @@
 package com.avaje.tests.model.basic;
 
+import java.util.Date;
+
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
@@ -13,12 +15,22 @@ public abstract class Vehicle extends BasicDomain {
 	
 	private String licenseNumber;
 
+	private Date registrationDate; 
+	
 	public String getLicenseNumber() {
 		return licenseNumber;
 	}
 
 	public void setLicenseNumber(String licenseNumber) {
 		this.licenseNumber = licenseNumber;
+	}
+
+	public Date getRegistrationDate() {
+		return registrationDate;
+	}
+
+	public void setRegistrationDate(Date registrationDate) {
+		this.registrationDate = registrationDate;
 	}
 
 }
