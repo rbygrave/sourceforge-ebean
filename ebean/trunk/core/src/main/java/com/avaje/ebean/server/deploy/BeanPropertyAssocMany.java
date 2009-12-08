@@ -171,6 +171,16 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public void appendSelect(DbSqlContext ctx) {
 	}
 
+    @Override
+    public void loadIgnore(SqlBeanLoad sqlBeanLoad) {
+        // nothing to ignore for Many
+    }
+
+    @Override
+    public void loadIgnore(DbReadContext ctx) {
+        // nothing to ignore for Many
+    }
+	
 	@Override
 	public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
 		sqlBeanLoad.loadAssocMany(this);
