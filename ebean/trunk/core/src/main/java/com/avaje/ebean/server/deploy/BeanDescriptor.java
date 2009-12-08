@@ -1155,13 +1155,12 @@ public class BeanDescriptor<T> {
 		}
 	}
 
-	public BeanProperty getBeanPropertyFromPath(String path){
-		
+	public BeanProperty getBeanPropertyFromPath(String path) {
 		String[] split = SplitName.splitBegin(path);
-		if (split[1] == null){
-			return getBeanProperty(split[0]);
+		if (split[1] == null) {
+			return _findBeanProperty(split[0]);
 		}
-		BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>)getBeanProperty(split[0]);
+		BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>) _findBeanProperty(split[0]);
 		BeanDescriptor<?> targetDesc = assocProp.getTargetDescriptor();
 
 		return targetDesc.getBeanPropertyFromPath(split[1]);
