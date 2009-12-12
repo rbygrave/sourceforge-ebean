@@ -19,68 +19,63 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.sql.Clob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.server.core.BasicTypeConverter;
-import com.avaje.ebean.server.core.Message;
 
 /**
  * ScalarType for String.
  */
-public class ScalarTypeClob extends ScalarTypeBase {
+public class ScalarTypeClob extends ScalarTypeBase<String> {
 
 	static final int clobBufferSize = 512;
 	
 	static final int stringInitialSize = 512;
 	
-	protected ScalarTypeClob(Class<?> type, boolean jdbcNative, int jdbcType) {
-		super(type, jdbcNative, jdbcType);
+	protected ScalarTypeClob(boolean jdbcNative, int jdbcType) {
+		super(String.class, jdbcNative, jdbcType);
 	}
 	
 	public ScalarTypeClob() {
 		super(String.class, true, Types.CLOB);
 	}
 
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, String value) throws SQLException {
 		if (value == null) {
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
-			pstmt.setString(index, (String) value);
+			b.setString(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public String read(DataReader dataReader) throws SQLException {
 
-		Clob clob = rset.getClob(index);
-		if (clob == null) {
-			return null;
-		}
-		Reader reader = clob.getCharacterStream();
-		if (reader == null) {
-			return null;
-		}
-		return readStringLob(reader);
+	    return dataReader.getStringClob();
+//		Clob clob = rset.getClob(index);
+//		if (clob == null) {
+//			return null;
+//		}
+//		Reader reader = clob.getCharacterStream();
+//		if (reader == null) {
+//			return null;
+//		}
+//		return readStringLob(reader);
 	}
 
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public String toBeanType(Object value) {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public Object parse(String value) {
+	public String parse(String value) {
 		return value;
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public String parseDateTime(long systemTimeMillis) {
 		return String.valueOf(systemTimeMillis);
 	}
 
@@ -88,20 +83,20 @@ public class ScalarTypeClob extends ScalarTypeBase {
 		return true;
 	}
 	
-	protected String readStringLob(Reader reader) throws SQLException {
-
-		char[] buffer = new char[clobBufferSize];
-		int readLength = 0;
-		StringBuilder out = new StringBuilder(stringInitialSize);
-		try {
-			while ((readLength = reader.read(buffer)) != -1) {
-				out.append(buffer, 0, readLength);
-			}
-			reader.close();
-		} catch (IOException e) {
-			throw new SQLException(Message.msg("persist.clob.io", e.getMessage()));
-		}
-
-		return out.toString();
-	}
+//	protected String readStringLob(Reader reader) throws SQLException {
+//
+//		char[] buffer = new char[clobBufferSize];
+//		int readLength = 0;
+//		StringBuilder out = new StringBuilder(stringInitialSize);
+//		try {
+//			while ((readLength = reader.read(buffer)) != -1) {
+//				out.append(buffer, 0, readLength);
+//			}
+//			reader.close();
+//		} catch (IOException e) {
+//			throw new SQLException(Message.msg("persist.clob.io", e.getMessage()));
+//		}
+//
+//		return out.toString();
+//	}
 }

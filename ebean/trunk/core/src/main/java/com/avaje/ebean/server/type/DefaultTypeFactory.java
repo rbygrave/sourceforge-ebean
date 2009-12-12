@@ -19,7 +19,9 @@
  */
 package com.avaje.ebean.server.type;
 
+import java.math.BigInteger;
 import java.sql.Types;
+import java.util.Calendar;
 
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.core.BasicTypeConverter;
@@ -36,7 +38,7 @@ public class DefaultTypeFactory {
 		this.serverConfig = serverConfig;
 	}
 
-	private ScalarType createBoolean(String trueValue, String falseValue) {
+	private ScalarType<Boolean> createBoolean(String trueValue, String falseValue) {
 		
 		try {
 			// first try Integer based boolean
@@ -58,7 +60,7 @@ public class DefaultTypeFactory {
 	 * native data type and for others Booleans will be converted to Y/N or 0/1
 	 * etc.
 	 */
-	public ScalarType createBoolean() {
+	public ScalarType<Boolean> createBoolean() {
 
 		String trueValue = serverConfig.getDatabaseBooleanTrue();
 		String falseValue = serverConfig.getDatabaseBooleanFalse();
@@ -94,7 +96,7 @@ public class DefaultTypeFactory {
 	/**
 	 * Create the default ScalarType for java.util.Date.
 	 */
-	public ScalarType createUtilDate() {
+	public ScalarType<java.util.Date> createUtilDate() {
 		// by default map anonymous java.util.Date to java.sql.Timestamp.
 		//String mapType = properties.getProperty("type.mapping.java.util.Date","timestamp");
 		int utilDateType = getTemporalMapType("timestamp");
@@ -106,7 +108,7 @@ public class DefaultTypeFactory {
 	 * Create a ScalarType for java.util.Date explicitly specifying the type to
 	 * map to.
 	 */
-	public ScalarType createUtilDate(int utilDateType) {
+	public ScalarType<java.util.Date> createUtilDate(int utilDateType) {
 
 		switch (utilDateType) {
 		case Types.DATE:
@@ -123,7 +125,7 @@ public class DefaultTypeFactory {
 	/**
 	 * Create the default ScalarType for java.util.Calendar.
 	 */
-	public ScalarType createCalendar() {
+	public ScalarType<Calendar> createCalendar() {
 		// by default map anonymous java.util.Calendar to java.sql.Timestamp.
 		//String mapType = properties.getProperty("type.mapping.java.util.Calendar", "timestamp");
 		int jdbcType = getTemporalMapType("timestamp");
@@ -135,7 +137,7 @@ public class DefaultTypeFactory {
 	 * Create a ScalarType for java.util.Calendar explicitly specifying the type
 	 * to map to.
 	 */
-	public ScalarType createCalendar(int jdbcType) {
+	public ScalarType<Calendar> createCalendar(int jdbcType) {
 
 		return new ScalarTypeCalendar(jdbcType);
 	}
@@ -150,7 +152,7 @@ public class DefaultTypeFactory {
 	/**
 	 * Create a ScalarType for java.math.BigInteger.
 	 */
-	public ScalarType createMathBigInteger() {
+	public ScalarType<BigInteger> createMathBigInteger() {
 
 		return new ScalarTypeMathBigInteger();
 	}

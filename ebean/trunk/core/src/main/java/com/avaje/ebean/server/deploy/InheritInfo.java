@@ -147,7 +147,7 @@ public class InheritInfo {
 
 	public InheritInfo readType(DbReadContext ctx) throws SQLException {
 		
-		String discValue = ctx.getRset().getString(ctx.nextRsetIndex());
+	    String discValue = ctx.getDataReader().getString();
 
 		if (discValue == null){
 			return null;

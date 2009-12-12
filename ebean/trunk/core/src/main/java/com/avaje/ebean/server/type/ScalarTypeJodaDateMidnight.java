@@ -20,8 +20,6 @@
 package com.avaje.ebean.server.type;
 
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -33,7 +31,7 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for Joda DateMidnight. This maps to a JDBC Date.
  */
-public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
+public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
 
 	/**
 	 * Instantiates a new scalar type joda date midnight.
@@ -42,18 +40,17 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
 		super(DateMidnight.class, false, Types.DATE);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, DateMidnight value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.DATE);
+			b.setNull(Types.DATE);
 		} else {
-			DateMidnight dateMidnight = (DateMidnight)value;
-			pstmt.setDate(index, new Date(dateMidnight.getMillis()));
+		    b.setDate(new Date(value.getMillis()));
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public DateMidnight read(DataReader dataReader) throws SQLException {
 		
-		final Date date = rset.getDate(index);
+		final Date date = dataReader.getDate();
 		if (date == null){
 			return null;
 		} else {
@@ -68,19 +65,19 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase {
 		return BasicTypeConverter.toDate(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public DateMidnight toBeanType(Object value) {
 		if (value instanceof java.util.Date){
 			return new DateMidnight(((java.util.Date)value).getTime());
 		}
-		return value;
+		return (DateMidnight)value;
 	}
 	
-	public Object parse(String value) {
+	public DateMidnight parse(String value) {
 		Timestamp ts = Timestamp.valueOf(value);
 		return new DateMidnight(ts.getTime());
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public DateMidnight parseDateTime(long systemTimeMillis) {
 		return new DateMidnight(systemTimeMillis);
 	}
 

@@ -1,6 +1,5 @@
 package com.avaje.ebean.server.query;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
@@ -16,6 +15,7 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DeployParser;
 import com.avaje.ebean.server.persist.Binder;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.DefaultExpressionRequest;
 
@@ -118,32 +118,26 @@ public class CQueryPredicates {
 		idValue = query.getId();
 	}
 
-	public String bind(PreparedStatement pstmt) throws SQLException {
+	public String bind(DataBind dataBind) throws SQLException {
 
 		StringBuilder bindLog = new StringBuilder();
 
-		int index = 0;
-
 		if (idValue != null) {
 			// this is a find by id type query...
-			index = request.getBeanDescriptor().bindId(pstmt, index, idValue);
+			request.getBeanDescriptor().bindId(dataBind, idValue);
 			bindLog.append(idValue);
 		}
 
 		if (bindParams != null) {
 			// bind named and positioned parameters...
-			binder.bind(bindParams, index, pstmt, bindLog);
-		}
-
-		if (bindParams != null) {
-			index = index + bindParams.size();
+			binder.bind(bindParams, dataBind, bindLog);
 		}
 
 		if (whereExprBindValues != null) {
 
 			for (int i = 0; i < whereExprBindValues.size(); i++) {
 				Object bindValue = whereExprBindValues.get(i);
-				binder.bindObject(++index, bindValue, pstmt);
+				binder.bindObject(dataBind, bindValue);
 				if (i > 0 || idValue != null) {
 					bindLog.append(", ");
 				}
@@ -154,8 +148,7 @@ public class CQueryPredicates {
 		if (havingNamedParams != null) {
 			// bind named parameters in having...
 			bindLog.append(" havingNamed ");
-			binder.bind(havingNamedParams.list(), index, pstmt, bindLog);
-			index = index + havingNamedParams.size();
+			binder.bind(havingNamedParams.list(), dataBind, bindLog);
 		}
 
 		if (havingExprBindValues != null) {
@@ -163,7 +156,7 @@ public class CQueryPredicates {
 			bindLog.append(" having ");
 			for (int i = 0; i < havingExprBindValues.size(); i++) {
 				Object bindValue = havingExprBindValues.get(i);
-				binder.bindObject(++index, bindValue, pstmt);
+				binder.bindObject(dataBind, bindValue);
 				if (i > 0) {
 					bindLog.append(", ");
 				}

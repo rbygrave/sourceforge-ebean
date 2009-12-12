@@ -1,6 +1,5 @@
 package com.avaje.ebean.server.deploy.id;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,6 +12,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 import com.avaje.ebean.server.lib.util.MapFromString;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Bind an Id that is made up of multiple separate properties.
@@ -154,7 +154,14 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 	
-	public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
+	
+	public void loadIgnore(DbReadContext ctx) {
+        for (int i = 0; i < props.length; i++) {
+            props[i].loadIgnore(ctx);
+        }
+    }
+
+    public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
 		
 		LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 		boolean notNull = false;
@@ -191,8 +198,7 @@ public final class IdBinderMultiple implements IdBinder {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public int bindId(PreparedStatement pstmt, int index,
-			Object idValue) throws SQLException {
+	public void bindId(DataBind bind, Object idValue) throws SQLException {
 
 		// concatenated id as a Map
 		try {
@@ -200,9 +206,9 @@ public final class IdBinderMultiple implements IdBinder {
 
 			for (int i = 0; i < props.length; i++) {
 				Object value = uidMap.get(props[i].getName());
-				props[i].bind(pstmt, ++index, value);
+				props[i].bind(bind, value);
 			}
-			return index;
+			
 		} catch (ClassCastException e) {
 			String msg = "Expecting concatinated idValue to be a Map";
 			throw new PersistenceException(msg, e);

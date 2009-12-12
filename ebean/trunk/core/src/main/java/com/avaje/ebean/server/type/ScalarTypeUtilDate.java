@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -33,14 +31,14 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
  */
 public class ScalarTypeUtilDate {
 
-	public static class TimestampType extends ScalarTypeBase {
+	public static class TimestampType extends ScalarTypeBase<java.util.Date> {
 
 		public TimestampType() {
 			super(java.util.Date.class, false, Types.TIMESTAMP);
 		}
 
-		public Object read(ResultSet rset, int index) throws SQLException {
-			Timestamp timestamp = rset.getTimestamp(index);
+		public java.util.Date read(DataReader dataReader) throws SQLException {
+			Timestamp timestamp = dataReader.getTimestamp();
 			if (timestamp == null) {
 				return null;
 			} else {
@@ -48,15 +46,14 @@ public class ScalarTypeUtilDate {
 			}
 		}
 
-		public void bind(PreparedStatement pstmt, int index, Object value)
+		public void bind(DataBind b, java.util.Date value)
 				throws SQLException {
 			if (value == null) {
-				pstmt.setNull(index, Types.TIMESTAMP);
+				b.setNull(Types.TIMESTAMP);
 			} else {
-				java.util.Date date = (java.util.Date) value;
 
-				Timestamp timestamp = new Timestamp(date.getTime());
-				pstmt.setTimestamp(index, timestamp);
+				Timestamp timestamp = new Timestamp(value.getTime());
+				b.setTimestamp(timestamp);
 			}
 		}
 
@@ -64,16 +61,16 @@ public class ScalarTypeUtilDate {
 			return BasicTypeConverter.toTimestamp(value);
 		}
 
-		public Object toBeanType(Object value) {
+		public java.util.Date toBeanType(Object value) {
 			return BasicTypeConverter.toUtilDate(value);
 		}
 
-		public Object parse(String value) {
+		public java.util.Date parse(String value) {
 			Timestamp ts = Timestamp.valueOf(value);
 			return new java.util.Date(ts.getTime());
 		}
 
-		public Object parseDateTime(long systemTimeMillis) {
+		public java.util.Date parseDateTime(long systemTimeMillis) {
 			return new java.util.Date(systemTimeMillis);
 		}
 
@@ -82,14 +79,14 @@ public class ScalarTypeUtilDate {
 		}
 	}
 
-	public static class DateType extends ScalarTypeBase {
+	public static class DateType extends ScalarTypeBase<java.util.Date> {
 
 		public DateType() {
 			super(Date.class, false, Types.DATE);
 		}
 
-		public Object read(ResultSet rset, int index) throws SQLException {
-			java.sql.Date d = rset.getDate(index);
+		public java.util.Date read(DataReader dataReader) throws SQLException {
+			java.sql.Date d = dataReader.getDate();
 			if (d != null) {
 				return new java.util.Date(d.getTime());
 			}
@@ -97,15 +94,14 @@ public class ScalarTypeUtilDate {
 			return null;
 		}
 
-		public void bind(PreparedStatement pstmt, int index, Object value)
+		public void bind(DataBind b, java.util.Date value)
 				throws SQLException {
 			if (value == null) {
-				pstmt.setNull(index, Types.TIMESTAMP);
+				b.setNull(Types.TIMESTAMP);
 			} else {
-				java.util.Date date = (java.util.Date) value;
 
-				java.sql.Date d = new java.sql.Date(date.getTime());
-				pstmt.setDate(index, d);
+				java.sql.Date d = new java.sql.Date(value.getTime());
+				b.setDate(d);
 			}
 		}
 
@@ -113,16 +109,16 @@ public class ScalarTypeUtilDate {
 			return BasicTypeConverter.toDate(value);
 		}
 
-		public Object toBeanType(Object value) {
+		public java.util.Date toBeanType(Object value) {
 			return BasicTypeConverter.toUtilDate(value);
 		}
 
-		public Object parse(String value) {
+		public java.util.Date parse(String value) {
 			java.sql.Date ts = java.sql.Date.valueOf(value);
 			return new java.util.Date(ts.getTime());
 		}
 
-		public Object parseDateTime(long systemTimeMillis) {
+		public java.util.Date parseDateTime(long systemTimeMillis) {
 			return new java.util.Date(systemTimeMillis);
 		}
 

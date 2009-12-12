@@ -45,6 +45,9 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbReadContext;
+import com.avaje.ebean.server.type.DataBind;
+import com.avaje.ebean.server.type.DataReader;
+import com.avaje.ebean.server.type.RsetDataReader;
 
 /**
  * Executes the select row count query.
@@ -74,12 +77,7 @@ public class CQueryFetchIds {
 	 */
 	private final String sql;
 
-	/**
-	 * The resultSet that is read and converted to objects.
-	 */
-	private ResultSet rset;
-
-	private int rsetIndex;
+	private RsetDataReader dataReader;
 	
 	/**
 	 * The statement used to create the resultSet.
@@ -176,9 +174,10 @@ public class CQueryFetchIds {
 				pstmt.setQueryTimeout(query.getTimeout());
 			}
 	
-			bindLog = predicates.bind(pstmt);
+			bindLog = predicates.bind(new DataBind(pstmt));
 	
-			rset = pstmt.executeQuery();
+			ResultSet rset = pstmt.executeQuery();
+			dataReader = new RsetDataReader(rset);
 		
 			boolean hitMaxRows = false;
 			boolean hasMoreRows = false;
@@ -190,7 +189,7 @@ public class CQueryFetchIds {
 				Object idValue = desc.getIdBinder().read(ctx);
 				idList.add(idValue);
 				// reset back to 0
-				rsetIndex = 0;
+				dataReader.resetColumnPosition();
 				rowCount++;
 				
 				if (maxRows > 0 && rowCount == maxRows) {
@@ -245,9 +244,9 @@ public class CQueryFetchIds {
 	 */
 	private void close() {
 		try {
-			if (rset != null) {
-				rset.close();
-				rset = null;
+			if (dataReader != null) {
+			    dataReader.close();
+			    dataReader = null;
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, null, e);
@@ -268,24 +267,12 @@ public class CQueryFetchIds {
 		public Mode getQueryMode() {
 			return Mode.NORMAL;
 		}
-
-		public ResultSet getRset() {
-			return rset;
-		}
 		
-		public void resetRsetIndex() {
-			rsetIndex = 0;
-		}
+		public DataReader getDataReader() {
+            return dataReader;
+        }
 
-		public void incrementRsetIndex(int increment) {
-			rsetIndex += increment;
-		}
-
-		public int nextRsetIndex() {
-			return ++rsetIndex;
-		}
-		
-		public boolean isSharedInstance() {
+        public boolean isSharedInstance() {
 			return false;
 		}
 

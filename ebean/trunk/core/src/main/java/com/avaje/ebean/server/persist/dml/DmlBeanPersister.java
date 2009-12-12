@@ -49,6 +49,7 @@ public final class DmlBeanPersister implements BeanPersister {
 
 	private final DeleteMeta deleteMeta;
 
+	
 	public DmlBeanPersister(UpdateMeta updateMeta, InsertMeta insertMeta, DeleteMeta deleteMeta) {
 
 		this.updateMeta = updateMeta;

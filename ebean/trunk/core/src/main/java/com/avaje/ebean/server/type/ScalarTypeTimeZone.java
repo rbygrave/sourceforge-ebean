@@ -24,7 +24,7 @@ import java.util.TimeZone;
 /**
  * ScalarType for java.util.TimeZone which converts to and from a VARCHAR database column.
  */
-public class ScalarTypeTimeZone extends ScalarTypeBaseVarchar {
+public class ScalarTypeTimeZone extends ScalarTypeBaseVarchar<TimeZone> {
 
 	public ScalarTypeTimeZone() {
 		super(TimeZone.class);
@@ -36,16 +36,16 @@ public class ScalarTypeTimeZone extends ScalarTypeBaseVarchar {
     }
     
 	@Override
-    public Object convertFromDbString(String dbValue) {
+    public TimeZone convertFromDbString(String dbValue) {
         return TimeZone.getTimeZone(dbValue);
     }
 
     @Override
-    public String convertToDbString(Object beanValue) {
+    public String convertToDbString(TimeZone beanValue) {
         return ((TimeZone)beanValue).getID();
     }
 
-	public Object parse(String value) {
+	public TimeZone parse(String value) {
 		return TimeZone.getTimeZone(value);
 	}
 		

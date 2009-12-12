@@ -45,8 +45,11 @@ public final class DeleteMeta {
 
 	private final String tableName;
 
-	public DeleteMeta(BeanDescriptor<?> desc, Bindable id, Bindable version, Bindable all) {
-		this.tableName = desc.getBaseTable();
+	private final boolean emptyStringAsNull;
+	
+	public DeleteMeta(boolean emptyStringAsNull, BeanDescriptor<?> desc, Bindable id, Bindable version, Bindable all) {
+		this.emptyStringAsNull = emptyStringAsNull;
+	    this.tableName = desc.getBaseTable();
 		this.id = id;
 		this.version = version;
 		this.all = all;
@@ -54,8 +57,12 @@ public final class DeleteMeta {
 		sqlNone = genSql(ConcurrencyMode.NONE);
 		sqlVersion = genSql(ConcurrencyMode.VERSION);
 	}
+	
+	public boolean isEmptyStringAsNull() {
+        return emptyStringAsNull;
+    }
 
-	/**
+    /**
 	 * Return the table name.
 	 */
 	public String getTableName() {
@@ -112,7 +119,7 @@ public final class DeleteMeta {
 
 		// delete ... where bcol=? and bc1=? and bc2 is null and ...
 
-		GenerateDmlRequest request = new GenerateDmlRequest();
+		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull);
 				
 		request.append("delete from ").append(tableName);
 		request.append(" where ");
@@ -142,7 +149,7 @@ public final class DeleteMeta {
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(includedProps, oldBean);
+		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull, includedProps, oldBean);
 
 		request.append(sqlNone);
 

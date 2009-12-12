@@ -57,6 +57,9 @@ import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 import com.avaje.ebean.server.querydefn.OrmQueryProperties;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
+import com.avaje.ebean.server.type.DataBind;
+import com.avaje.ebean.server.type.DataReader;
+import com.avaje.ebean.server.type.RsetDataReader;
 
 /**
  * An object that represents a SqlSelect statement.
@@ -75,8 +78,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private static final Logger logger = Logger.getLogger(CQuery.class.getName());
 
 	private static final int GLOBAL_ROW_LIMIT = 1000000;
-
-	private int rsetIndex;
 
 	/**
 	 * The resultSet rows read.
@@ -215,10 +216,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private final PersistenceContext persistenceContext;
 
-	/**
-	 * The resultSet that is read and converted to objects.
-	 */
-	private ResultSet rset;
+	private RsetDataReader dataReader;
 
 	/**
 	 * The statement used to create the resultSet.
@@ -328,9 +326,12 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			return BeanCollectionHelpFactory.create(request);
 		}
 	}
-	
-	
-	public Mode getQueryMode() {
+		
+	public DataReader getDataReader() {
+        return dataReader;
+    }
+
+    public Mode getQueryMode() {
 		return queryMode;
 	}
 
@@ -398,10 +399,12 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			}
 			
 			// bind
-			bindLog = predicates.bind(pstmt);
+			DataBind dataBind = new DataBind(pstmt);
+			bindLog = predicates.bind(dataBind);
 	
 			// executeQuery
-			rset = pstmt.executeQuery();
+			ResultSet rset = pstmt.executeQuery();
+			dataReader = new RsetDataReader(rset);
 			return true;
 		}
 	}
@@ -415,9 +418,9 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	 */
 	public void close() {
 		try {
-			if (rset != null) {
-				rset.close();
-				rset = null;
+			if (dataReader != null) {
+	            dataReader.close();
+	            dataReader = null;
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, null, e);
@@ -512,23 +515,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 
-	public ResultSet getRset() {
-		return rset;
-	}
-
-	
-	public void resetRsetIndex() {
-		rsetIndex = 0;
-	}
-
-	public void incrementRsetIndex(int increment){
-		rsetIndex += increment;
-	}
-	
-	public int nextRsetIndex() {
-		return ++rsetIndex;
-	}
-
 	/**
 	 * Read a row from the result set returning a bean.
 	 * <p>
@@ -543,15 +529,16 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 				return false;
 			}
 		
-			if (!rset.next()) {
-				return false;
+			if (!dataReader.next()){
+			    return false;
 			}
+
 			rowCount++;
-			rsetIndex = 0;
-	
+			dataReader.resetColumnPosition();
+			
 			if (rowNumberIncluded) {
 				// row_number() column used for limit features
-				rset.getInt(++rsetIndex);
+			    dataReader.incrementPos(1);
 			}
 	
 			rootNode.load(this, null, parentState);

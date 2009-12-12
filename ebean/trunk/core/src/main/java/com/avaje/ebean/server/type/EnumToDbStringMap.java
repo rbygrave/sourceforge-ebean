@@ -1,7 +1,5 @@
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -24,19 +22,19 @@ public class EnumToDbStringMap extends EnumToDbValueMap<String> {
 	}
 
 	@Override
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Object value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
 			String s = getDbValue(value);
-			pstmt.setString(index, s);
+			b.setString(s);
 		}
 		
 	}
 
 	@Override
-	public Object read(ResultSet rset, int index) throws SQLException {
-		String s = rset.getString(index);
+	public Object read(DataReader dataReader) throws SQLException {
+		String s = dataReader.getString();
 		if (s == null){
 			return null;
 		} else {

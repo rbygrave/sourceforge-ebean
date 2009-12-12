@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -98,12 +96,12 @@ public abstract class EnumToDbValueMap<T> {
 	/**
 	 * Bind using the correct database type.
 	 */
-	public abstract void bind(PreparedStatement pstmt, int index, Object value) throws SQLException;
+	public abstract void bind(DataBind b, Object value) throws SQLException;
 
 	/**
 	 * Read using the correct database type.
 	 */
-	public abstract Object read(ResultSet rset, int index) throws SQLException;
+	public abstract Object read(DataReader dataReader) throws SQLException;
 
 	/**
 	 * Return the database type.

@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -31,6 +29,7 @@ import com.avaje.ebean.text.TextException;
 /**
  * Additional control over mapping to DB values.
  */
+@SuppressWarnings("unchecked")
 public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 
 	/**
@@ -38,10 +37,8 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 	 */
 	private final int dbType;
 
-	@SuppressWarnings("unchecked")
 	private final Class enumType;
 	
-	@SuppressWarnings("unchecked")
 	private final EnumToDbValueMap beanDbMap;
 	
 	private final int length;
@@ -98,8 +95,6 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 		return length;
 	}
 
-
-
 	public int getJdbcType() {
 		return dbType;
 	}
@@ -112,19 +107,22 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 		return enumType;
 	}
 
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
-		beanDbMap.bind(pstmt, index, value);		
+	public void bind(DataBind b, Object value) throws SQLException {
+		beanDbMap.bind(b, value);		
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
-		return beanDbMap.read(rset, index);	}
+	public void loadIgnore(DataReader dataReader) {
+        dataReader.incrementPos(1);
+    }
+
+    public Object read(DataReader dataReader) throws SQLException {
+		return beanDbMap.read(dataReader);
+	}
 	
-	@SuppressWarnings("unchecked")
 	public Object toBeanType(Object dbValue) {
 		return beanDbMap.getBeanValue(dbValue);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Object parse(String value) {
 		return Enum.valueOf(enumType, value);
 	}
@@ -155,5 +153,14 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 	public Object getDbNullValue(Object value) {
 		return value;
 	}
+
+
+    public void accumulateScalarTypes(String propName, CtCompoundTypeScalarList list) {
+        list.addScalarType(propName, this);
+    }
+
+    public ScalarType<?> getScalarType() {
+        return this;
+    }
 
 }

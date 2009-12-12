@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.EnumSet;
@@ -41,9 +39,9 @@ import com.avaje.ebean.text.TextException;
  */
 public class ScalarTypeEnumStandard {
 	
-	public static class StringEnum extends ScalarTypeBase implements ScalarTypeEnum {
+	@SuppressWarnings("unchecked")
+    public static class StringEnum extends ScalarTypeBase implements ScalarTypeEnum {
 
-		@SuppressWarnings("unchecked")
 		private final Class enumType;
 		
 		private final int length;
@@ -51,7 +49,6 @@ public class ScalarTypeEnumStandard {
 		/**
 		 * Create a ScalarTypeEnum.
 		 */
-		@SuppressWarnings("unchecked")
 		public StringEnum(Class enumType) {
 			super(enumType, false, Types.VARCHAR);
 			this.enumType = enumType;
@@ -98,18 +95,17 @@ public class ScalarTypeEnumStandard {
 			return length;
 		}
 
-		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+		public void bind(DataBind b, Object value) throws SQLException {
 			if (value == null){
-				pstmt.setNull(index, Types.VARCHAR);
+				b.setNull(Types.VARCHAR);
 			} else {
-				pstmt.setString(index, value.toString());
+				b.setString(value.toString());
 			}
 		}
 	
-		@SuppressWarnings("unchecked")
-		public Object read(ResultSet rset, int index) throws SQLException {
+		public Object read(DataReader dataReader) throws SQLException {
 			
-			String string = rset.getString(index);
+			String string = dataReader.getString();
 			if (string == null){
 				return null;
 			} else {
@@ -120,7 +116,6 @@ public class ScalarTypeEnumStandard {
 		/**
 		 * Convert the Boolean value to the db value.
 		 */
-		@SuppressWarnings("unchecked")
 		public Object toJdbcType(Object beanValue) {
 			if (beanValue == null) {
 				return null;
@@ -129,10 +124,6 @@ public class ScalarTypeEnumStandard {
 			return e.toString();
 		}
 	
-		/**
-		 * Convert the db value to the Boolean value.
-		 */
-		@SuppressWarnings("unchecked")
 		public Object toBeanType(Object dbValue) {
 			if (dbValue == null) {
 				return null;
@@ -141,7 +132,6 @@ public class ScalarTypeEnumStandard {
 			return Enum.valueOf(enumType, (String)dbValue);
 		}
 
-		@SuppressWarnings("unchecked")
 		public Object parse(String value) {	
 			return Enum.valueOf(enumType, value);
 		}
@@ -155,18 +145,17 @@ public class ScalarTypeEnumStandard {
 		}
 	}
 	
-	public static class OrdinalEnum extends ScalarTypeBase implements ScalarTypeEnum {
+	@SuppressWarnings("unchecked")
+    public static class OrdinalEnum extends ScalarTypeBase implements ScalarTypeEnum {
 
 
 		private final Object[] enumArray;
 		
-		@SuppressWarnings("unchecked")
 		private Class enumType;
 		
 		/**
 		 * Create a ScalarTypeEnum.
 		 */
-		@SuppressWarnings("unchecked")
 		public OrdinalEnum(Class enumType) {
 			super(enumType, false, Types.INTEGER);
 			this.enumType = enumType;
@@ -194,19 +183,19 @@ public class ScalarTypeEnumStandard {
 		}
 
 		
-		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+		public void bind(DataBind b, Object value) throws SQLException {
 			if (value == null){
-				pstmt.setNull(index, Types.INTEGER);
+				b.setNull(Types.INTEGER);
 			} else {
 				Enum<?> e = (Enum<?>)value;
-				pstmt.setInt(index, e.ordinal());
+				b.setInt(e.ordinal());
 			}
 		}
 	
-		public Object read(ResultSet rset, int index) throws SQLException {
+		public Object read(DataReader dataReader) throws SQLException {
 			
-			int ordinal = rset.getInt(index);
-			if (rset.wasNull()){
+			Integer ordinal = dataReader.getInt();
+			if (ordinal == null){
 				return null;
 			} else {
 				if (ordinal < 0 || ordinal >= enumArray.length){
@@ -220,7 +209,6 @@ public class ScalarTypeEnumStandard {
 		/**
 		 * Convert the Boolean value to the db value.
 		 */
-		@SuppressWarnings("unchecked")
 		public Object toJdbcType(Object beanValue) {
 			if (beanValue == null) {
 				return null;
@@ -245,7 +233,6 @@ public class ScalarTypeEnumStandard {
 			return enumArray[ordinal];
 		}
 		
-		@SuppressWarnings("unchecked")
 		public Object parse(String value) {	
 			return Enum.valueOf(enumType, value);
 		}

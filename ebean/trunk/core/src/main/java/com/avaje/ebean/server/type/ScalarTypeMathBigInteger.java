@@ -20,8 +20,6 @@
 package com.avaje.ebean.server.type;
 
 import java.math.BigInteger;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,25 +28,24 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for java.math.BigInteger.
  */
-public class ScalarTypeMathBigInteger extends ScalarTypeBase {
+public class ScalarTypeMathBigInteger extends ScalarTypeBase<BigInteger> {
 
 	public ScalarTypeMathBigInteger() {
 		super(BigInteger.class, false, Types.BIGINT);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, BigInteger value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.BIGINT);
+			b.setNull(Types.BIGINT);
 		} else {
-			BigInteger bigInt = (BigInteger)value;
-			pstmt.setLong(index, bigInt.longValue());
+			b.setLong(value.longValue());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public BigInteger read(DataReader dataReader) throws SQLException {
 		
-		long l = rset.getLong(index);
-		if (rset.wasNull()){
+		Long l = dataReader.getLong();
+		if (l == null){
 			return null;
 		}
 		return new BigInteger(String.valueOf(l));
@@ -58,15 +55,15 @@ public class ScalarTypeMathBigInteger extends ScalarTypeBase {
 		return BasicTypeConverter.toLong(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public BigInteger toBeanType(Object value) {
 		return BasicTypeConverter.toMathBigInteger(value);
 	}
 
-	public Object parse(String value) {
+	public BigInteger parse(String value) {
 		return new BigInteger(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public BigInteger parseDateTime(long systemTimeMillis) {
 		return BigInteger.valueOf(systemTimeMillis);
 	}
 

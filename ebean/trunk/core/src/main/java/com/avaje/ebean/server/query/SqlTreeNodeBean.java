@@ -267,7 +267,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				if (p != null){
 					p.load(sqlBeanLoad);
 				} else {
-					properties[i].loadIgnore(sqlBeanLoad);
+                    properties[i].loadIgnore(ctx);
 				}
 			}	
 		} 

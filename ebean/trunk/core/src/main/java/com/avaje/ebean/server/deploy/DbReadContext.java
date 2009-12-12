@@ -1,6 +1,5 @@
 package com.avaje.ebean.server.deploy;
 
-import java.sql.ResultSet;
 import java.util.Map;
 
 import com.avaje.ebean.bean.BeanCollection;
@@ -8,6 +7,7 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.ReferenceOptions;
+import com.avaje.ebean.server.type.DataReader;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.
@@ -17,6 +17,8 @@ import com.avaje.ebean.server.core.ReferenceOptions;
  */
 public interface DbReadContext {
 	
+    public DataReader getDataReader();
+    
 	/**
 	 * Return true if this is a lazy loading query for a shared instance.
 	 */
@@ -52,26 +54,6 @@ public interface DbReadContext {
 	 */
 	public void profileBean(EntityBeanIntercept ebi, String prefix);
 	
-	/**
-	 * Return the ResultSet being read from.
-	 */
-	public ResultSet getRset();
-
-	/**
-	 * Increment the resultSet index effectively ignoring/skipping columns.
-	 */
-	public void incrementRsetIndex(int increment);
-	
-	/**
-	 * Return the next column index in the ResultSet.
-	 */
-	public int nextRsetIndex();
-	
-	/**
-	 * Reset the column index on the ResultSet to 0.
-	 */
-	public void resetRsetIndex();
-
 	/**
 	 * Return the persistence context. 
 	 */

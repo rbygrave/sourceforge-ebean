@@ -32,6 +32,7 @@ import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Executes the select row count query.
@@ -133,7 +134,7 @@ public class CQueryRowCount {
 				pstmt.setQueryTimeout(query.getTimeout());
 			}
 	
-			bindLog = predicates.bind(pstmt);
+			bindLog = predicates.bind(new DataBind(pstmt));
 	
 			rset = pstmt.executeQuery();
 			

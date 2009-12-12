@@ -1,12 +1,12 @@
 package com.avaje.ebean.server.deploy.id;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Binds id values to prepared statements.
@@ -75,7 +75,7 @@ public interface IdBinder {
 	/**
 	 * Binds an id value to a prepared statement.
 	 */
-	public int bindId(PreparedStatement pstmt, int index, Object value) throws SQLException;
+	public void bindId(DataBind dataBind, Object value) throws SQLException;
 
 	public void addIdInBindValue(SpiExpressionRequest request, Object value);
 	
@@ -91,6 +91,8 @@ public interface IdBinder {
 	 */
 	public Object readSet(DbReadContext ctx, Object bean) throws SQLException;
 
+	public void loadIgnore(DbReadContext ctx);
+	
 	/**
 	 * Read the id value from the result set and return it.
 	 */

@@ -3,6 +3,7 @@ package com.avaje.ebean.server.ddl;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.TableJoinColumn;
 
@@ -58,8 +59,6 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 		public void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded) {
 			// not interested
 		}
-
-
 
 		@Override
 		public void visitOneImported(BeanPropertyAssocOne<?> p) {
@@ -132,6 +131,17 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 		public void visitScalar(BeanProperty p) {
 			// not interested
 		}
+
+		@Override
+        public void visitCompound(BeanPropertyCompound p) {
+            // not interested
+        }
+
+        @Override
+        public void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p) {
+            // not interested
+        }
+		
 	}
 
 }

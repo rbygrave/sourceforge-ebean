@@ -1,6 +1,5 @@
 package com.avaje.ebean.server.deploy.id;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
@@ -8,6 +7,7 @@ import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.type.ScalarType;
 
 /**
@@ -25,7 +25,8 @@ public final class IdBinderSimple implements IdBinder {
 	
 	private final Class<?> expectedType;
 	
-	private final ScalarType scalarType;
+	@SuppressWarnings("unchecked")
+    private final ScalarType scalarType;
 	
 	public IdBinderSimple(BeanProperty idProperty) {
 		this.idProperty = idProperty;
@@ -99,13 +100,17 @@ public final class IdBinderSimple implements IdBinder {
 		request.addBindValue(value);
 	}
 
-	public int bindId(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bindId(DataBind dataBind, Object value) throws SQLException {
 		value = idProperty.toBeanType(value);
-		idProperty.bind(pstmt, ++index, value);
-		return index;
+		idProperty.bind(dataBind, value);
 	}
 	
-	public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
+	
+	public void loadIgnore(DbReadContext ctx) {
+        idProperty.loadIgnore(ctx);
+    }
+
+    public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
 		Object id = idProperty.read(ctx, 0);
 		if (id != null){
 		    idProperty.setValue(bean, id);

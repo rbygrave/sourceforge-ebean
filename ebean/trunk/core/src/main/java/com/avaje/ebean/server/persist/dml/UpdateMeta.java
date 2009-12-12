@@ -54,8 +54,11 @@ public final class UpdateMeta {
 	private final UpdatePlan modeNoneUpdatePlan;
 	private final UpdatePlan modeVersionUpdatePlan;
 	
-	public UpdateMeta(BeanDescriptor<?> desc, Bindable set, Bindable id, Bindable version, Bindable all) {
-		this.tableName = desc.getBaseTable();
+	private final boolean emptyStringAsNull;
+	
+	public UpdateMeta(boolean emptyStringAsNull, BeanDescriptor<?> desc, Bindable set, Bindable id, Bindable version, Bindable all) {
+		this.emptyStringAsNull = emptyStringAsNull;
+	    this.tableName = desc.getBaseTable();
 		this.set = set;
 		this.id = id;
 		this.version = version;
@@ -68,8 +71,15 @@ public final class UpdateMeta {
 		this.modeVersionUpdatePlan = new UpdatePlan(ConcurrencyMode.VERSION, sqlVersion, set);
 
 	}
-	
+		
 	/**
+	 * Return true if empty strings should be treated as null.
+	 */
+	public boolean isEmptyStringAsNull() {
+        return emptyStringAsNull;
+    }
+
+    /**
 	 * Return the base table name.
 	 */
 	public String getTableName() {
@@ -181,9 +191,9 @@ public final class UpdateMeta {
 		GenerateDmlRequest request;
 		if (persistRequest == null){
 			// For generation of None and Version DML/SQL
-			request = new GenerateDmlRequest();
+			request = new GenerateDmlRequest(emptyStringAsNull);
 		} else {
-			request = persistRequest.createGenerateDmlRequest();
+			request = persistRequest.createGenerateDmlRequest(emptyStringAsNull);
 		}
 				
 		request.append("update ").append(tableName).append(" set ");
@@ -224,7 +234,7 @@ public final class UpdateMeta {
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps, oldBean);
+		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull, loadedProps, oldBean);
 		
 		request.append(sqlNone);
 		

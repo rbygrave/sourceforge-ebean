@@ -19,12 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -33,13 +27,13 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for String.
  */
-public class ScalarTypeBlob extends ScalarTypeBase {
+public class ScalarTypeBlob extends ScalarTypeBase<byte[]> {
 
-	private static final int bufferSize = 512;
+//	private static final int bufferSize = 512;
 	
 	//private static final int initialSize = 512;
 	
-	protected ScalarTypeBlob(Class<?> type, boolean jdbcNative, int jdbcType) {
+	protected ScalarTypeBlob(Class<byte[]> type, boolean jdbcNative, int jdbcType) {
 		super(type, jdbcNative, jdbcType);
 	}
 	
@@ -47,11 +41,11 @@ public class ScalarTypeBlob extends ScalarTypeBase {
 		super(byte[].class, true, Types.BLOB);
 	}
 
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, byte[] value) throws SQLException {
 		if (value == null) {
-			pstmt.setNull(index, Types.BLOB);
+			b.setNull(Types.BLOB);
 		} else {
-			pstmt.setBytes(index, (byte[])value);
+			b.setBytes(value);
 		}
 	}
 
@@ -59,15 +53,15 @@ public class ScalarTypeBlob extends ScalarTypeBase {
 		return value;
 	}
 
-	public Object toBeanType(Object value) {
-		return value;
+	public byte[] toBeanType(Object value) {
+		return (byte[])value;
 	}
 
-	public Object parse(String value) {
+	public byte[] parse(String value) {
 		throw new TextException("Not supported");
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public byte[] parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not supported");
 	}
 
@@ -75,40 +69,35 @@ public class ScalarTypeBlob extends ScalarTypeBase {
 		return false;
 	}
 	
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public byte[] read(DataReader dataReader) throws SQLException {
 
-		Blob blob = rset.getBlob(index);
-		if (blob == null) {
-			return null;
-		}
-		InputStream in = blob.getBinaryStream();
-		return getBinaryLob(in);
+	    return dataReader.getBlobBytes();
 	}
 	
-	protected byte[] getBinaryLob(InputStream in) throws SQLException {
-
-		try {
-			if (in == null) {
-				return null;
-			}
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-		
-			byte[] buf = new byte[bufferSize];
-			int len;
-			while ((len = in.read(buf, 0, buf.length)) != -1) {
-				out.write(buf, 0, len);
-			}
-			byte[] data = out.toByteArray();
-		
-			if (data.length == 0) {
-				data = null;
-			}
-			in.close();
-			out.close();
-			return data;
-		
-		} catch (IOException e) {
-			throw new SQLException(e.getClass().getName() + ":" + e.getMessage());
-		}
-	}
+//	protected byte[] getBinaryLob(InputStream in) throws SQLException {
+//
+//		try {
+//			if (in == null) {
+//				return null;
+//			}
+//			ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		
+//			byte[] buf = new byte[bufferSize];
+//			int len;
+//			while ((len = in.read(buf, 0, buf.length)) != -1) {
+//				out.write(buf, 0, len);
+//			}
+//			byte[] data = out.toByteArray();
+//		
+//			if (data.length == 0) {
+//				data = null;
+//			}
+//			in.close();
+//			out.close();
+//			return data;
+//		
+//		} catch (IOException e) {
+//			throw new SQLException(e.getClass().getName() + ":" + e.getMessage());
+//		}
+//	}
 }

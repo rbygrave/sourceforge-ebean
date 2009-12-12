@@ -37,6 +37,8 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
+import com.avaje.ebean.server.type.CtCompoundType;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 
@@ -255,36 +257,45 @@ public class DeployCreateProperties {
     }
     
     @SuppressWarnings("unchecked")
-	private DeployBeanProperty createProp(int level, DeployBeanDescriptor<?> desc, Field field, Class<?> beanType, Method getter, Method setter) {
-    	
-        DeployBeanProperty prop = null;
-
+    private DeployBeanProperty createProp(DeployBeanDescriptor<?> desc, Field field) {
+        
         Class<?> propertyType = field.getType();
+        
+        // check for Collection type (list, set or map)
         Query.Type queryType = DetermineQueryType.getQueryType(propertyType);
-       // ManyType manyType = ManyType.getManyType(propertyType);
 
         if (queryType != null) {
             // List, Set or Map based object
-        	Class<?> targetType = determineTargetType(field);
-        	if (targetType == null){
-        		logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
-        	}
-            prop = new DeployBeanPropertyAssocMany(desc, targetType, queryType);
-
-        } else if (propertyType.isEnum() || propertyType.isPrimitive()){
-            prop = new DeployBeanProperty(desc, propertyType);
-            
-        } else if (isScalarType(propertyType)) {
-        	prop = new DeployBeanProperty(desc, propertyType);
+            Class<?> targetType = determineTargetType(field);
+            if (targetType == null){
+                logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
+            }
+            return new DeployBeanPropertyAssocMany(desc, targetType, queryType);
+        } 
         
-        } else {
-        	prop = new DeployBeanPropertyAssocOne(desc, propertyType);
+        if (propertyType.isEnum() || propertyType.isPrimitive()){
+            return new DeployBeanProperty(desc, propertyType, null);
         }
         
-        //field.setAccessible(true);
+        ScalarType<?> scalarType = typeManager.getScalarType(propertyType);
+        if (scalarType != null) {
+            return new DeployBeanProperty(desc, propertyType, scalarType);
+        }
         
-        prop.setOwningType(beanType);
+        CtCompoundType<?> compoundType = typeManager.getCompoundType(propertyType);
+        if (compoundType != null) {
+            return new DeployBeanPropertyCompound(desc, propertyType, compoundType);
+        }
+        
+        return new DeployBeanPropertyAssocOne(desc, propertyType);
+    }
+    
+	private DeployBeanProperty createProp(int level, DeployBeanDescriptor<?> desc, Field field, Class<?> beanType, Method getter, Method setter) {
+    	
+        DeployBeanProperty prop = createProp(desc, field);
 
+        //field.setAccessible(true);        
+        prop.setOwningType(beanType);
         prop.setName(field.getName());
         
         // the getter or setter could be null if we are using
@@ -297,13 +308,7 @@ public class DeployCreateProperties {
         
         return prop;
     }
-    
-    private boolean isScalarType(Class<?> propertyType) {
-    	
-    	ScalarType scalarType = typeManager.getScalarType(propertyType);
-    	return scalarType != null;
-    }
-    
+
 	/**
 	 * Determine the type of the List,Set or Map. Not been set explicitly so
 	 * determine this from ParameterizedType.

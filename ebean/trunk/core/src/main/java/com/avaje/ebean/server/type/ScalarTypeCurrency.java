@@ -24,7 +24,7 @@ import java.util.Currency;
 /**
  * ScalarType for java.util.Currency which converts to and from a VARCHAR database column.
  */
-public class ScalarTypeCurrency extends ScalarTypeBaseVarchar {
+public class ScalarTypeCurrency extends ScalarTypeBaseVarchar<Currency> {
 
 	public ScalarTypeCurrency() {
 		super(Currency.class);
@@ -36,16 +36,16 @@ public class ScalarTypeCurrency extends ScalarTypeBaseVarchar {
     }
 
     @Override
-    public Object convertFromDbString(String dbValue) {
+    public Currency convertFromDbString(String dbValue) {
 	    return Currency.getInstance(dbValue);
     }
 
     @Override
-    public String convertToDbString(Object beanValue) {
+    public String convertToDbString(Currency beanValue) {
         return ((Currency)beanValue).getCurrencyCode();
     }
 
-	public Object parse(String value) {
+	public Currency parse(String value) {
 		return Currency.getInstance(value);
 	}
 		

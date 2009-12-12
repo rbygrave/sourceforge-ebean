@@ -18,6 +18,8 @@ import com.avaje.ebean.validation.NotNull;
 @Table(name = "PHONES")
 public class Phone implements Serializable {
 
+    private static final long serialVersionUID = -326610269092956952L;
+
     private Long id;
     private String phoneNumber;
     private Person person;

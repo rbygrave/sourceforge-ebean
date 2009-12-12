@@ -19,10 +19,12 @@
  */
 package com.avaje.ebean.server.persist.dml;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Delete bean handler.
@@ -33,7 +35,7 @@ public class DeleteHandler extends DmlHandler {
 	private final DeleteMeta meta;
 
 	public DeleteHandler(PersistRequestBean<?> persist, DeleteMeta meta) {
-		super(persist);
+		super(persist, meta.isEmptyStringAsNull());
 		this.meta = meta;
 	}
 
@@ -47,6 +49,7 @@ public class DeleteHandler extends DmlHandler {
 		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
 
+		PreparedStatement pstmt;
 		if (isBatch) {
 			pstmt = getPstmt(t, sql, persistRequest, false);
 
@@ -54,6 +57,7 @@ public class DeleteHandler extends DmlHandler {
 			logSql(sql);
 			pstmt = getPstmt(t, sql, false);
 		}
+		dataBind = new DataBind(pstmt);
 
 		bindLogAppend("Binding Delete [");
 		bindLogAppend(meta.getTableName());
@@ -71,7 +75,7 @@ public class DeleteHandler extends DmlHandler {
 	 * Execute the delete non-batch.
 	 */
 	public int execute() throws SQLException {
-		int rowCount = pstmt.executeUpdate();
+		int rowCount = dataBind.getPstmt().executeUpdate();
 		persistRequest.checkRowCount(rowCount);
 		persistRequest.postExecute();
 		return rowCount;

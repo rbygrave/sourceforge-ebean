@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -29,42 +27,38 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for Long and long.
  */
-public class ScalarTypeLong extends ScalarTypeBase {
+public class ScalarTypeLong extends ScalarTypeBase<Long> {
 
 	public ScalarTypeLong() {
 		super(Long.class, true, Types.BIGINT);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Long value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.BIGINT);
+			b.setNull(Types.BIGINT);
 		} else {
-			pstmt.setLong(index, ((Long) value).longValue());
+			b.setLong(value.longValue());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public Long read(DataReader dataReader) throws SQLException {
 		
-		long i = rset.getLong(index);
-		if (rset.wasNull()){
-			return null;
-		}
-		return i;
+		return dataReader.getLong();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toLong(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Long toBeanType(Object value) {
 		return BasicTypeConverter.toLong(value);
 	}
 
-	public Object parse(String value) {
+	public Long parse(String value) {
 		return Long.valueOf(value);
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public Long parseDateTime(long systemTimeMillis) {
 		return Long.valueOf(systemTimeMillis);
 	}
 

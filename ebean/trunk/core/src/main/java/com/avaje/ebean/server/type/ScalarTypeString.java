@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -29,38 +27,38 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for String.
  */
-public class ScalarTypeString extends ScalarTypeBase {
+public class ScalarTypeString extends ScalarTypeBase<String> {
 
 	public ScalarTypeString() {
 		super(String.class, true, Types.VARCHAR);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, String value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
-			pstmt.setString(index, (String)value);
+			b.setString(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public String read(DataReader dataReader) throws SQLException {
 		
-		return rset.getString(index);
+		return dataReader.getString();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public String toBeanType(Object value) {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public Object parse(String value) {
+	public String parse(String value) {
 		return value;
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public String parseDateTime(long systemTimeMillis) {
 		return String.valueOf(systemTimeMillis);
 	}
 

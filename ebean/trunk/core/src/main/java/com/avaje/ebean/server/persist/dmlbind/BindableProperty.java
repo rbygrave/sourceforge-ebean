@@ -31,7 +31,7 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableProperty implements Bindable {
 	
-	final BeanProperty prop;
+	protected final BeanProperty prop;
 		
 	public BindableProperty(BeanProperty prop) {
 		this.prop = prop;
@@ -62,7 +62,7 @@ public class BindableProperty implements Bindable {
 			return;
 		}
 		
-		if (bean == null || prop.isDbNull(bean)){
+		if (bean == null || request.isDbNull(prop.getValue(bean))) {
         	request.appendColumnIsNull(prop.getDbColumn());
 
         } else {

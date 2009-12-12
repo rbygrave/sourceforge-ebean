@@ -61,8 +61,11 @@ public final class InsertMeta {
 	
 	private final String[] identityDbColumns;
 	
+	private final boolean emptyStringToNull;
+	
 	public InsertMeta(DatabasePlatform dbPlatform, BeanDescriptor<?> desc, Bindable shadowFKey, BindableId id, Bindable all) {
 
+	    this.emptyStringToNull = dbPlatform.isTreatEmptyStringsAsNull();
 		this.tableName = desc.getBaseTable();
 		this.discriminator = getDiscriminator(desc);
 		this.id = id;
@@ -100,6 +103,13 @@ public final class InsertMeta {
 	}
 	
 	/**
+	 * Return true if empty strings should be treated as null.
+	 */
+	public boolean isEmptyStringToNull() {
+        return emptyStringToNull;
+    }
+
+    /**
 	 * Return true if this is a concatenated key.
 	 */
 	public boolean isConcatinatedKey() {
@@ -168,7 +178,7 @@ public final class InsertMeta {
 
 	private String genSql(boolean nullId, Set<String> loadedProps) {
 
-		GenerateDmlRequest request = new GenerateDmlRequest(loadedProps, null);
+		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringToNull, loadedProps, null);
 		request.setInsertSetMode();
 		
 		request.append("insert into ").append(tableName);

@@ -27,6 +27,8 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Currency;
 import java.util.Iterator;
@@ -46,6 +48,9 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import com.avaje.ebean.annotation.EnumMapping;
+import com.avaje.ebean.config.CompoundType;
+import com.avaje.ebean.config.CompoundTypeProperty;
+import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.lib.util.StringHelper;
@@ -60,87 +65,88 @@ public final class DefaultTypeManager implements TypeManager {
 
 	private static final Logger logger = Logger.getLogger(DefaultTypeManager.class.getName());
 
-	private final ConcurrentHashMap<Class<?>, ScalarType> typeMap;
+    private final ConcurrentHashMap<Class<?>, CtCompoundType<?>> compoundTypeMap;
+	
+	private final ConcurrentHashMap<Class<?>, ScalarType<?>> typeMap;
 
-	private final ConcurrentHashMap<Integer, ScalarType> nativeMap;
+	private final ConcurrentHashMap<Integer, ScalarType<?>> nativeMap;
 
 	private final DefaultTypeFactory extraTypeFactory;
 
-	private final ScalarType charType = new ScalarTypeChar();
+	private final ScalarType<?> charType = new ScalarTypeChar();
 
-	private final ScalarType charArrayType = new ScalarTypeCharArray();
+	private final ScalarType<?> charArrayType = new ScalarTypeCharArray();
 
-	private final ScalarType longVarcharType = new ScalarTypeLongVarchar();
+	private final ScalarType<?> longVarcharType = new ScalarTypeLongVarchar();
 
-	private final ScalarType clobType = new ScalarTypeClob();
+	private final ScalarType<?> clobType = new ScalarTypeClob();
 
-	private final ScalarType byteType = new ScalarTypeByte();
+	private final ScalarType<?> byteType = new ScalarTypeByte();
 
-	private final ScalarType byteArrayType = new ScalarTypeByteArray();
+	private final ScalarType<?> byteArrayType = new ScalarTypeByteArray();
 
-	private final ScalarType blobType = new ScalarTypeBlob();
+	private final ScalarType<?> blobType = new ScalarTypeBlob();
 
-	private final ScalarType longVarbinaryType = new ScalarTypeLongVarbinary();
+	private final ScalarType<?> longVarbinaryType = new ScalarTypeLongVarbinary();
 
-	private final ScalarType shortType = new ScalarTypeShort();
+	private final ScalarType<?> shortType = new ScalarTypeShort();
 
-	private final ScalarType integerType = new ScalarTypeInteger();
+	private final ScalarType<?> integerType = new ScalarTypeInteger();
 
-	private final ScalarType longType = new ScalarTypeLong();
+	private final ScalarType<?> longType = new ScalarTypeLong();
 
-	private final ScalarType doubleType = new ScalarTypeDouble();
+	private final ScalarType<?> doubleType = new ScalarTypeDouble();
 
-	private final ScalarType floatType = new ScalarTypeFloat();
+	private final ScalarType<?> floatType = new ScalarTypeFloat();
 
-	private final ScalarType bigDecimalType = new ScalarTypeBigDecimal();
+	private final ScalarType<?> bigDecimalType = new ScalarTypeBigDecimal();
 
-	private final ScalarType timeType = new ScalarTypeTime();
+	private final ScalarType<?> timeType = new ScalarTypeTime();
 
-	private final ScalarType dateType = new ScalarTypeDate();
+	private final ScalarType<?> dateType = new ScalarTypeDate();
 
-	private final ScalarType timestampType = new ScalarTypeTimestamp();
+	private final ScalarType<?> timestampType = new ScalarTypeTimestamp();
 
-	private final ScalarType uuidType = new ScalarTypeUUID();
-	private final ScalarType urlType = new ScalarTypeURL();
-	private final ScalarType uriType = new ScalarTypeURI();
-    private final ScalarType localeType = new ScalarTypeLocale();
-    private final ScalarType currencyType = new ScalarTypeCurrency();
-    private final ScalarType timeZoneType = new ScalarTypeTimeZone();
+	private final ScalarType<?> uuidType = new ScalarTypeUUID();
+	private final ScalarType<?> urlType = new ScalarTypeURL();
+	private final ScalarType<?> uriType = new ScalarTypeURI();
+    private final ScalarType<?> localeType = new ScalarTypeLocale();
+    private final ScalarType<?> currencyType = new ScalarTypeCurrency();
+    private final ScalarType<?> timeZoneType = new ScalarTypeTimeZone();
+
+    private final ScalarType<?> stringType = new ScalarTypeString();
 
 	/**
 	 * Create the DefaultTypeManager.
 	 */
 	public DefaultTypeManager(ServerConfig config, BootupClasses bootupClasses) {
 		
-		this.typeMap = new ConcurrentHashMap<Class<?>, ScalarType>();
-		this.nativeMap = new ConcurrentHashMap<Integer, ScalarType>();
+	    this.compoundTypeMap = new ConcurrentHashMap<Class<?>, CtCompoundType<?>>();
+		this.typeMap = new ConcurrentHashMap<Class<?>, ScalarType<?>>();
+		this.nativeMap = new ConcurrentHashMap<Integer, ScalarType<?>>();
 		this.extraTypeFactory = new DefaultTypeFactory(config);
 
-		ScalarType stringType;
-		if (config.getDatabasePlatform().isTreatEmptyStringsAsNull()){
-			// use type that translates empty strings into DB nulls
-			stringType = new ScalarTypeStringOracle();
-		} else {
-			stringType = new ScalarTypeString();
-		}
 		
-		initialiseStandard(stringType);
-		
+		initialiseStandard(stringType);		
 		initialiseJodaTypes();
-		initialiseFromBootupSearch(bootupClasses);
+		initialiseCustomScalarTypes(bootupClasses);
+		
+		initialiseScalarConverters(bootupClasses);
+		initialiseCompoundTypes(bootupClasses);
+		
 	}
 
 	/**
 	 * Register a custom ScalarType.
 	 */
-	public void add(ScalarType scalarType) {
+	public void add(ScalarType<?> scalarType) {
 		synchronized (typeMap) {
 			typeMap.put(scalarType.getType(), scalarType);
 			logAdd(scalarType);
 		}
 	}
 
-	protected void logAdd(ScalarType scalarType) {
+	protected void logAdd(ScalarType<?> scalarType) {
 		if (logger.isLoggable(Level.FINE)) {
 			String msg = "ScalarType register [" + scalarType.getClass().getName() + "]";
 			msg += " for [" + scalarType.getType().getName() + "]";
@@ -148,19 +154,32 @@ public final class DefaultTypeManager implements TypeManager {
 		}
 	}
 
+    public CtCompoundType<?> getCompoundType(Class<?> type) {
+        return compoundTypeMap.get(type);
+    }
+
 	/**
 	 * Return the ScalarType for the given jdbc type as per java.sql.Types.
 	 */
-	public ScalarType getScalarType(int jdbcType) {
+	public ScalarType<?> getScalarType(int jdbcType) {
 		return nativeMap.get(jdbcType);
 	}
 
 	/**
 	 * This can return null if no matching ScalarType is found.
 	 */
-	public ScalarType getScalarType(Class<?> type) {
-		return typeMap.get(type);
+	@SuppressWarnings("unchecked")
+    public <T> ScalarType<T> getScalarType(Class<T> type) {
+		return (ScalarType<T>)typeMap.get(type);
 	}
+
+    public ScalarDataReader<?> getScalarDataReader(Class<?> type) {
+        ScalarDataReader<?> reader = typeMap.get(type);
+        if (reader == null){
+            reader = compoundTypeMap.get(type);
+        }
+        return reader;
+    }
 
 	/**
 	 * Return a ScalarType for a given class.
@@ -169,22 +188,23 @@ public final class DefaultTypeManager implements TypeManager {
 	 * different jdbcTypes in a single system.
 	 * </p>
 	 */
-	public ScalarType getScalarType(Class<?> type, int jdbcType) {
+	@SuppressWarnings("unchecked")
+    public <T> ScalarType<T> getScalarType(Class<T> type, int jdbcType) {
 
 		// check for Clob, LongVarchar etc first...
 		// the reason being that String maps to multiple jdbc types
 		// varchar, clob, longVarchar.
-		ScalarType scalarType = getLobTypes(type, jdbcType);
+		ScalarType<?> scalarType = getLobTypes(type, jdbcType);
 		if (scalarType != null) {
 			// it is a specific Lob type...
-			return scalarType;
+			return (ScalarType<T>)scalarType;
 		}
 
 		scalarType = typeMap.get(type);
 		if (scalarType != null) {
 			if (jdbcType == 0 || scalarType.getJdbcType() == jdbcType) {
 				// matching type
-				return scalarType;
+				return (ScalarType<T>)scalarType;
 			} else {
 				// sometime like java.util.Date or java.util.Calendar
 				// that that does not map to the same jdbc type as the
@@ -193,11 +213,11 @@ public final class DefaultTypeManager implements TypeManager {
 		}
 		// a util Date with jdbcType not matching server wide settings
 		if (type.equals(java.util.Date.class)) {
-			return extraTypeFactory.createUtilDate(jdbcType);
+			return (ScalarType<T>)extraTypeFactory.createUtilDate(jdbcType);
 		}
 		// a Calendar with jdbcType not matching server wide settings
 		if (type.equals(java.util.Calendar.class)) {
-			return extraTypeFactory.createCalendar(jdbcType);
+			return (ScalarType<T>)extraTypeFactory.createCalendar(jdbcType);
 		}
 
 		String msg = "Unmatched ScalarType for " + type + " jdbcType:" + jdbcType;
@@ -212,7 +232,7 @@ public final class DefaultTypeManager implements TypeManager {
 	 * for the specific Lob types first before looking for a matching type.
 	 * </p>
 	 */
-	private ScalarType getLobTypes(Class<?> type, int jdbcType) {
+	private ScalarType<?> getLobTypes(Class<?> type, int jdbcType) {
 
 		switch (jdbcType) {
 		case Types.LONGVARCHAR:
@@ -244,7 +264,7 @@ public final class DefaultTypeManager implements TypeManager {
 		if (value == null) {
 			return null;
 		}
-		ScalarType type = nativeMap.get(toJdbcType);
+		ScalarType<?> type = nativeMap.get(toJdbcType);
 		if (type != null) {
 			return type.toJdbcType(value);
 		}
@@ -261,7 +281,7 @@ public final class DefaultTypeManager implements TypeManager {
 	 * </p>
 	 */
 	@SuppressWarnings("unchecked")
-	public ScalarType createEnumScalarType(Class enumType) {
+	public ScalarType<?> createEnumScalarType(Class enumType) {
 
 		
 		// get the mapping information from EnumMapping
@@ -308,7 +328,7 @@ public final class DefaultTypeManager implements TypeManager {
 	 * interface and register it with this TypeManager.
 	 * </p>
 	 */
-	protected void initialiseFromBootupSearch(BootupClasses bootupClasses) {
+	protected void initialiseCustomScalarTypes(BootupClasses bootupClasses) {
 
 		List<Class<?>> foundTypes = bootupClasses.getScalarTypes();
 		
@@ -316,7 +336,7 @@ public final class DefaultTypeManager implements TypeManager {
 			Class<?> cls = foundTypes.get(i);
 			try {
 
-				ScalarType scalarType = (ScalarType) cls.newInstance();
+				ScalarType<?> scalarType = (ScalarType<?>) cls.newInstance();
 				add(scalarType);
 
 			} catch (Exception e) {
@@ -325,8 +345,94 @@ public final class DefaultTypeManager implements TypeManager {
 			}
 		}
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+    protected void initialiseScalarConverters(BootupClasses bootupClasses) {
 
+	    
+        List<Class<?>> foundTypes = bootupClasses.getScalarConverters();
+        
+        for (int i = 0; i < foundTypes.size(); i++) {
+            Class<?> cls = foundTypes.get(i);
+            try {
+                
+                Class<?>[] paramTypes = TypeReflectHelper.getParams(cls, ScalarTypeConverter.class);
+                if (paramTypes.length != 2){
+                    throw new IllegalStateException("Expected 2 generics paramtypes but got: "+Arrays.toString(paramTypes));
+                }
+                
+                Class<?> logicalType = paramTypes[0];
+                Class<?> persistType = paramTypes[1];
 
+                ScalarType<?> wrappedType = getScalarType(persistType);
+                if (wrappedType == null) {
+                    throw new IllegalStateException("Could not find ScalarType for: "+paramTypes[1]);                    
+                }
+                                
+                ScalarTypeConverter converter = (ScalarTypeConverter)cls.newInstance();
+                ScalarTypeWrapper stw = new ScalarTypeWrapper(logicalType, wrappedType, converter);
+                
+                logger.info("Register ScalarTypeWrapper from "+logicalType+" -> "+persistType+" using:"+cls);
+                
+                add(stw);
+
+            } catch (Exception e) {
+                String msg = "Error loading ScalarType [" + cls.getName() + "]";
+                logger.log(Level.SEVERE, msg, e);
+            }
+        }
+		
+	}
+
+    @SuppressWarnings("unchecked")
+    protected void initialiseCompoundTypes(BootupClasses bootupClasses) {
+
+        ArrayList<Class<?>> compoundTypes = bootupClasses.getCompoundTypes();
+        for (int j = 0; j < compoundTypes.size(); j++) {
+            Class<?> type = compoundTypes.get(j);
+            
+            CompoundType<?> compoundType;
+            try {
+                compoundType = (CompoundType<?>)type.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } 
+        
+            Class<?>[] paramTypes = TypeReflectHelper.getParams(type, CompoundType.class);
+            if (paramTypes.length != 1){
+                throw new RuntimeException("Expecting 1 generic paramter type but got "
+                        +Arrays.toString(paramTypes)+" for "+type);
+            }
+            
+            Class<?> compoundTypeClass = paramTypes[0];
+
+            CompoundTypeProperty<?, ?>[] cprops = compoundType.getProperties();
+
+            ScalarDataReader[] dataReaders = new ScalarDataReader[cprops.length];
+
+            for (int i = 0; i < cprops.length; i++) {
+                
+                // determine the types from generic parameter types using reflection
+                Class<?>[] propParamTypes = TypeReflectHelper.getParams(cprops[i].getClass(), CompoundTypeProperty.class);
+                if (propParamTypes.length != 2){
+                    throw new RuntimeException("Expecting 2 generic paramter types but got "
+                            +Arrays.toString(paramTypes)+" for "+cprops[i].getClass());
+                }
+                
+                ScalarDataReader<?> scalarDataReader = getScalarDataReader(propParamTypes[1]);
+                if (scalarDataReader == null){
+                    throw new RuntimeException("Could not find ScalarDataReader for "+propParamTypes[1]);                    
+                }
+                dataReaders[i] = scalarDataReader;
+            }
+            
+            CtCompoundType ctType = new CtCompoundType(compoundTypeClass, compoundType, dataReaders);
+
+            logger.info("Registering CompoundType "+compoundTypeClass);
+            compoundTypeMap.put(compoundTypeClass, ctType);
+        }
+    }
 
 	/**
 	 * Detect if Joda classes are in the classpath and if so
@@ -357,18 +463,18 @@ public final class DefaultTypeManager implements TypeManager {
 	 * types plus some other common types such as java.util.Date and
 	 * java.util.Calendar.
 	 */
-	protected void initialiseStandard(ScalarType stringType) {
+	protected void initialiseStandard(ScalarType<?> stringType) {
 
-		ScalarType utilDateType = extraTypeFactory.createUtilDate();
+		ScalarType<?> utilDateType = extraTypeFactory.createUtilDate();
 		typeMap.put(java.util.Date.class, utilDateType);
 
-		ScalarType calType = extraTypeFactory.createCalendar();
+		ScalarType<?> calType = extraTypeFactory.createCalendar();
 		typeMap.put(Calendar.class, calType);
 
-		ScalarType mathBigIntType = extraTypeFactory.createMathBigInteger();
+		ScalarType<?> mathBigIntType = extraTypeFactory.createMathBigInteger();
 		typeMap.put(BigInteger.class, mathBigIntType);
 
-		ScalarType booleanType = extraTypeFactory.createBoolean();
+		ScalarType<?> booleanType = extraTypeFactory.createBoolean();
 		typeMap.put(Boolean.class, booleanType);
 		typeMap.put(boolean.class, booleanType);
 		

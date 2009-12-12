@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.server.deploy;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,9 +47,9 @@ import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
-import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.internal.TransactionEventTable.TableIUD;
 import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
@@ -69,6 +68,7 @@ import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.query.SplitName;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
 import com.avaje.ebean.server.reflect.BeanReflect;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.util.SortByClause;
 import com.avaje.ebean.util.SortByClauseParser;
@@ -273,6 +273,7 @@ public class BeanDescriptor<T> {
 	 * List of the scalar properties excluding id and secondary table properties.
 	 */
 	private final BeanProperty[] propertiesBaseScalar;
+    private final BeanPropertyCompound[] propertiesBaseCompound;
 
 	private final BeanProperty[] propertiesTransient;
 
@@ -426,6 +427,7 @@ public class BeanDescriptor<T> {
 		this.propMap = listHelper.getPropertyMap();
 		this.propertiesTransient = listHelper.getTransients();
 		this.propertiesBaseScalar = listHelper.getBaseScalar();
+        this.propertiesBaseCompound = listHelper.getBaseCompound();
 		this.propertiesId = listHelper.getId();
 		this.propertiesVersion = listHelper.getVersion();
 		this.propertiesEmbedded = listHelper.getEmbedded();
@@ -1061,8 +1063,8 @@ public class BeanDescriptor<T> {
 	 * This takes care of the various id types such as embedded beans etc.
 	 * </p>
 	 */
-	public int bindId(PreparedStatement pstmt, int index, Object idValue) throws SQLException {
-		return idBinder.bindId(pstmt, index, idValue);
+	public void bindId(DataBind dataBind, Object idValue) throws SQLException {
+		idBinder.bindId(dataBind, idValue);
 	}
 
 	/**
@@ -1155,16 +1157,21 @@ public class BeanDescriptor<T> {
 		}
 	}
 
-	public BeanProperty getBeanPropertyFromPath(String path) {
-		String[] split = SplitName.splitBegin(path);
-		if (split[1] == null) {
-			return _findBeanProperty(split[0]);
-		}
-		BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>) _findBeanProperty(split[0]);
-		BeanDescriptor<?> targetDesc = assocProp.getTargetDescriptor();
+    /**
+     * Return the bean property traversing the object graph and taking into
+     * account inheritance.
+     */
+    public BeanProperty getBeanPropertyFromPath(String path) {
 
-		return targetDesc.getBeanPropertyFromPath(split[1]);
-	}
+        String[] split = SplitName.splitBegin(path);
+        if (split[1] == null) {
+            return _findBeanProperty(split[0]);
+        }
+        BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>) _findBeanProperty(split[0]);
+        BeanDescriptor<?> targetDesc = assocProp.getTargetDescriptor();
+
+        return targetDesc.getBeanPropertyFromPath(split[1]);
+    }
 	
 	/**
 	 * Return the BeanDescriptor for a given path of Associated One or Many beans.
@@ -1425,16 +1432,27 @@ public class BeanDescriptor<T> {
 			if (assocProp == null){
 				return null;
 			}
-			BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
-			
-			if (chain == null){
-				chain = new ElPropertyChainBuilder(assocProp.isEmbedded(), propName);
+			if (assocProp instanceof BeanPropertyCompound){
+			    // compound value object
+			    BeanPropertyCompound compound = (BeanPropertyCompound)assocProp;
+                if (chain == null){
+                    chain = new ElPropertyChainBuilder(true, propName);
+                }
+                return compound.buildElGetValue(remainder, chain).build();
+			    
+			} else {
+			    // associated or embedded bean
+    			BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
+    			
+    			if (chain == null){
+    				chain = new ElPropertyChainBuilder(assocProp.isEmbedded(), propName);
+    			}
+    			chain.add(assocProp);
+    			if (assocProp.containsMany()){
+    				chain.setContainsMany(true);
+    			}
+    			return embDesc.buildElGetValue(remainder, chain, propertyDeploy);
 			}
-			chain.add(assocProp);
-			if (assocProp.containsMany()){
-				chain.setContainsMany(true);
-			}
-			return embDesc.buildElGetValue(remainder, chain, propertyDeploy);			
 		}
 		
 		BeanProperty property = _findBeanProperty(propName);
@@ -1912,6 +1930,17 @@ public class BeanDescriptor<T> {
 		return propertiesBaseScalar;
 	}
 
+	/**
+	 * Return properties that are immutable compound value objects.
+	 * <p>
+	 * These are compound types but are not enhanced (Embedded are enhanced).
+	 * </p>
+	 */
+    public BeanPropertyCompound[] propertiesBaseCompound() {
+        return propertiesBaseCompound;
+    }
+	
+	
 	/**
 	 * Return the properties local to this type for inheritance.
 	 */

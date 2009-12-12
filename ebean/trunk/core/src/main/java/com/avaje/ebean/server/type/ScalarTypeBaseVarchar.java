@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -29,31 +27,31 @@ import com.avaje.ebean.text.TextException;
 /**
  * Base ScalarType for types which converts to and from a VARCHAR database column.
  */
-public abstract class ScalarTypeBaseVarchar extends ScalarTypeBase {
+public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
 
-	public ScalarTypeBaseVarchar(Class<?> type) {
+	public ScalarTypeBaseVarchar(Class<T> type) {
 		super(type, false, Types.VARCHAR);
 	}
 
-    public abstract Object parse(String value);
+    public abstract T parse(String value);
     
-    public abstract Object convertFromDbString(String dbValue);
+    public abstract T convertFromDbString(String dbValue);
     
-    public abstract String convertToDbString(Object beanValue);
+    public abstract String convertToDbString(T beanValue);
     
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, T value) throws SQLException {
 	    
 	    String s = convertToDbString(value);
 	    
 		if (s == null){
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
-			pstmt.setString(index, s);
+			b.setString(s);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
-		String s = rset.getString(index);
+	public T read(DataReader dataReader) throws SQLException {
+		String s = dataReader.getString();
 		if (s == null){
 			return null;
 		} else {
@@ -61,11 +59,15 @@ public abstract class ScalarTypeBaseVarchar extends ScalarTypeBase {
 		}
 	}
 	
-	public Object toBeanType(Object value) {
+	@SuppressWarnings("unchecked")
+    public T toBeanType(Object value) {
+	    if (value == null){
+	        return null;
+	    }
 		if (value instanceof String){
 		    return parse((String)value);
 		}
-		return value;
+		return (T)value;
 	}
 	
 	public Object toJdbcType(Object value){
@@ -75,7 +77,7 @@ public abstract class ScalarTypeBaseVarchar extends ScalarTypeBase {
 	    return value;
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public T parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 	

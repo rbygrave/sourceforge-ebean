@@ -19,10 +19,12 @@
  */
 package com.avaje.ebean.server.persist.dmlbind;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 import com.avaje.ebean.server.persist.dml.DmlMode;
 
 /**
@@ -45,18 +47,33 @@ public class FactoryBaseProperties {
 	 */
 	public void create(List<Bindable> list, BeanDescriptor<?> desc, DmlMode mode, boolean withLobs) {
 
+	    add(desc.propertiesBaseScalar(), list, desc, mode, withLobs);	    
 
-		BeanProperty[] props = desc.propertiesBaseScalar();
-		for (int i = 0; i < props.length; i++) {
+		BeanPropertyCompound[] compoundProps = desc.propertiesBaseCompound();
+		for (int i = 0; i < compoundProps.length; i++) {
+		    BeanProperty[] props = compoundProps[i].getScalarProperties();
 
-			Bindable item = factoryProperty.create(props[i], mode, withLobs);
-			if (item != null){
-				list.add(item);
-			} else {
-				// null where readOnly (Secondary tables) or Lob exclusion
-			}
+		    ArrayList<Bindable> newList = new ArrayList<Bindable>(props.length);
+		    add(props, newList, desc, mode, withLobs);
+		    
+		    BindableCompound compoundBindable = new BindableCompound(compoundProps[i], newList);
+
+		    list.add(compoundBindable);
 		}
-
 	}
+
+    private void add(BeanProperty[] props, List<Bindable> list, BeanDescriptor<?> desc, DmlMode mode, boolean withLobs) {
+
+        for (int i = 0; i < props.length; i++) {
+
+            Bindable item = factoryProperty.create(props[i], mode, withLobs);
+            if (item != null) {
+                list.add(item);
+            } else {
+                // null where readOnly (Secondary tables) or Lob exclusion
+            }
+        }
+
+    }
 
 }

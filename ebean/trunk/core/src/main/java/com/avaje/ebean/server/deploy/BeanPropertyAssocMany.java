@@ -172,11 +172,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
     @Override
-    public void loadIgnore(SqlBeanLoad sqlBeanLoad) {
-        // nothing to ignore for Many
-    }
-
-    //@Override
     public void loadIgnore(DbReadContext ctx) {
         // nothing to ignore for Many
     }

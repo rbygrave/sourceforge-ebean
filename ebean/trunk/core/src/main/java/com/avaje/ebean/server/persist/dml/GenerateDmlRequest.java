@@ -8,36 +8,43 @@ public class GenerateDmlRequest {
 
 	private static final String IS_NULL = " is null";
 
-	final StringBuilder sb = new StringBuilder(100);
+	private final boolean emptyStringAsNull;
+	
+	private final StringBuilder sb = new StringBuilder(100);
 
-	final Set<String> includeProps;
+	private final Set<String> includeProps;
 	
-	final Object oldValues;
+	private final Object oldValues;
 	
-	int bindCount;
+	private int bindCount;
 	
-	String prefix;
-	String prefix2;
-	String suffix;
+	private String prefix;
+	private String prefix2;
+	private String suffix;
 	
 	/**
 	 * Create from a PersistRequestBean.
 	 */
-	public GenerateDmlRequest(Set<String> includeProps, Object oldValues) {
-		this.includeProps = includeProps;
+	public GenerateDmlRequest(boolean emptyStringAsNull, Set<String> includeProps, Object oldValues) {
+		this.emptyStringAsNull = emptyStringAsNull;
+	    this.includeProps = includeProps;
 		this.oldValues = oldValues;
 	}
 
 	/**
 	 * Create for generating standard all properties DML/SQL.
 	 */
-	public GenerateDmlRequest() {
-		this(null,null);
+	public GenerateDmlRequest(boolean emptyStringAsNull) {
+		this(emptyStringAsNull, null,null);
 	}
 	
 	public GenerateDmlRequest append(String s){
 		sb.append(s);
 		return this;
+	}
+	
+	public boolean isDbNull(Object v){
+	    return v == null || (emptyStringAsNull && (v instanceof String) && ((String)v).length() == 0);
 	}
 	
 	public boolean isIncluded(BeanProperty prop) {

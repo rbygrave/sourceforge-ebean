@@ -534,11 +534,11 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
 	 * the BeanDescriptor.isUpdateChangesOnly() value.
 	 * </p>
 	 */
-	public GenerateDmlRequest createGenerateDmlRequest() {
+	public GenerateDmlRequest createGenerateDmlRequest(boolean emptyStringAsNull) {
 		if (beanDescriptor.isUpdateChangesOnly()) {
-			return new GenerateDmlRequest(changedProps, oldValues);	
+			return new GenerateDmlRequest(emptyStringAsNull, changedProps, oldValues);	
 		} else {
-			return new GenerateDmlRequest(loadedProps, oldValues);
+			return new GenerateDmlRequest(emptyStringAsNull, loadedProps, oldValues);
 		}
 	}
 	

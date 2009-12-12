@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.io.Reader;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,15 +28,12 @@ import java.sql.Types;
 public class ScalarTypeLongVarchar extends ScalarTypeClob {
 
 	public ScalarTypeLongVarchar() {
-		super(String.class, true, Types.LONGVARCHAR);
+		super(true, Types.LONGVARCHAR);
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	@Override
+	public String read(DataReader dataReader) throws SQLException {
 
-		Reader reader = rset.getCharacterStream(index);
-		if (reader == null) {
-			return null;
-		}
-		return readStringLob(reader);
+	    return dataReader.getStringFromStream();
 	}	
 }

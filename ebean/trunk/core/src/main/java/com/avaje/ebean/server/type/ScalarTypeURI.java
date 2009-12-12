@@ -21,8 +21,6 @@ package com.avaje.ebean.server.type;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -31,23 +29,22 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for java.net.URI which converts to and from a VARCHAR database column.
  */
-public class ScalarTypeURI extends ScalarTypeBase {
+public class ScalarTypeURI extends ScalarTypeBase<URI> {
 
 	public ScalarTypeURI() {
 		super(URI.class, false, Types.VARCHAR);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, URI value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
-			URI uri = (URI)value;
-			pstmt.setString(index, uri.toString());
+			b.setString(value.toString());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
-		String str = rset.getString(index);
+	public URI read(DataReader dataReader) throws SQLException {
+		String str = dataReader.getString();
 		if (str == null){
 			return null;
 		} else {
@@ -59,7 +56,7 @@ public class ScalarTypeURI extends ScalarTypeBase {
 		}
 	}
 	
-	public Object toBeanType(Object value) {
+	public URI toBeanType(Object value) {
 		if (value instanceof String){
 			try {
 				return new URI((String)value);
@@ -67,14 +64,14 @@ public class ScalarTypeURI extends ScalarTypeBase {
 				throw new RuntimeException("Error with URI ["+value+"] "+e);
 			}
 		}
-		return value;
+		return (URI)value;
 	}
 	
 	public Object toJdbcType(Object value) {
 		return value.toString();
 	}
 
-	public Object parse(String value) {
+	public URI parse(String value) {
 		try {
 			return new URI(value);
 		} catch (URISyntaxException e) {
@@ -82,7 +79,7 @@ public class ScalarTypeURI extends ScalarTypeBase {
 		}
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public URI parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 

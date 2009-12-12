@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -29,42 +27,38 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for Double and double.
  */
-public class ScalarTypeDouble extends ScalarTypeBase {
+public class ScalarTypeDouble extends ScalarTypeBase<Double> {
 	
 	public ScalarTypeDouble() {
 		super(Double.class, true, Types.DOUBLE);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Double value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.DOUBLE);
+			b.setNull(Types.DOUBLE);
 		} else {
-			pstmt.setDouble(index, ((Double) value).doubleValue());
+			b.setDouble(value.doubleValue());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public Double read(DataReader dataReader) throws SQLException {
 		
-		double i = rset.getDouble(index);
-		if (rset.wasNull()){
-			return null;
-		}
-		return i;
+		return dataReader.getDouble();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toDouble(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Double toBeanType(Object value) {
 		return BasicTypeConverter.toDouble(value);
 	}
 
-	public Object parse(String value) {
+	public Double parse(String value) {
 		return Double.valueOf(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public Double parseDateTime(long systemTimeMillis) {
 		return Double.valueOf(systemTimeMillis);
 	}
 

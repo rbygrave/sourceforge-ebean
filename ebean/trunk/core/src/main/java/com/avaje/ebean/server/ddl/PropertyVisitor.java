@@ -3,6 +3,7 @@ package com.avaje.ebean.server.ddl;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 
 /**
  * Used to visit a BeanProperty given the type of bean property it is.
@@ -39,5 +40,14 @@ public interface PropertyVisitor {
 	 */
 	public void visitScalar(BeanProperty p);
 
+	/**
+	 * Visit a compound value object.
+	 */
+    public void visitCompound(BeanPropertyCompound p);
+
+    /**
+     * Visit the scalar value inside a compound value object.
+     */
+    public void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p);
 
 }

@@ -21,8 +21,6 @@ package com.avaje.ebean.server.type;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -31,23 +29,22 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for java.net.URL which converts to and from a VARCHAR database column.
  */
-public class ScalarTypeURL extends ScalarTypeBase {
+public class ScalarTypeURL extends ScalarTypeBase<URL> {
 
 	public ScalarTypeURL() {
 		super(URL.class, false, Types.VARCHAR);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, URL value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
-			URL url = (URL)value;
-			pstmt.setString(index, url.toString());
+			b.setString(value.toString());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
-		String str = rset.getString(index);
+	public URL read(DataReader dataReader) throws SQLException {
+		String str = dataReader.getString();
 		if (str == null){
 			return null;
 		} else {
@@ -59,7 +56,7 @@ public class ScalarTypeURL extends ScalarTypeBase {
 		}
 	}
 	
-	public Object toBeanType(Object value) {
+	public URL toBeanType(Object value) {
 		if (value instanceof String){
 			try {
 				return new URL((String)value);
@@ -67,14 +64,14 @@ public class ScalarTypeURL extends ScalarTypeBase {
 				throw new RuntimeException("Error with URL ["+value+"] "+e);
 			}
 		}
-		return value;
+		return (URL)value;
 	}
 	
 	public Object toJdbcType(Object value) {
 		return value.toString();
 	}
 
-	public Object parse(String value) {
+	public URL parse(String value) {
 		try {
 			return new URL(value);
 		} catch (MalformedURLException e) {
@@ -82,7 +79,7 @@ public class ScalarTypeURL extends ScalarTypeBase {
 		}
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public URL parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 	

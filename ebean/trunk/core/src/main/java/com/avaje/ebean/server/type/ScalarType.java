@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.avaje.ebean.text.StringParser;
@@ -47,7 +45,7 @@ import com.avaje.ebean.text.StringParser;
  * other databases.
  * </p>
  */
-public interface ScalarType extends StringParser {
+public interface ScalarType<T> extends StringParser, ScalarDataReader<T> {
 
 	/**
 	 * Return the default DB column length for this type.
@@ -87,13 +85,19 @@ public interface ScalarType extends StringParser {
 	 * to.
 	 * </p>
 	 */
-	public Class<?> getType();
+	public Class<T> getType();
 
 	/**
 	 * Read the value from the resultSet and convert if necessary to the logical
 	 * bean property value.
 	 */
-	public Object read(ResultSet rset, int index) throws SQLException;
+    public T read(DataReader dataReader) throws SQLException;
+
+    /**
+     * Ignore the reading of this value. Typically this means moving the index
+     * position in the ResultSet.
+     */
+    public void loadIgnore(DataReader dataReader);
 
 	/**
 	 * Convert (if necessary) and bind the value to the preparedStatement.
@@ -102,8 +106,7 @@ public interface ScalarType extends StringParser {
 	 * JDBC type.
 	 * </p>
 	 */
-	public void bind(PreparedStatement pstmt, int index, Object value)
-			throws SQLException;
+	public void bind(DataBind b, T value) throws SQLException;
 
 	/**
 	 * Convert the value as necessary to the JDBC type.
@@ -128,7 +131,7 @@ public interface ScalarType extends StringParser {
 	 * to a int, long or UUID).
 	 * </p>
 	 */
-	public Object toBeanType(Object value);
+	public T toBeanType(Object value);
 
 	/**
 	 * Convert the string value to the appropriate java object.
@@ -136,7 +139,7 @@ public interface ScalarType extends StringParser {
 	 * Mostly used to support CSV, JSON and XML parsing.
 	 * </p>
 	 */
-	public Object parse(String value);
+	public T parse(String value);
 
 	/**
 	 * Convert the systemTimeMillis into the appropriate java object.
@@ -144,7 +147,7 @@ public interface ScalarType extends StringParser {
 	 * For non dateTime types this will throw an exception.
 	 * </p>
 	 */
-	public Object parseDateTime(long systemTimeMillis);
+	public T parseDateTime(long systemTimeMillis);
 
 	/**
 	 * Return true if the type can accept long systemTimeMillis input.
@@ -159,21 +162,5 @@ public interface ScalarType extends StringParser {
 	 * </p>
 	 */
 	public boolean isDateTimeCapable();
-
-	/**
-	 * Return true if the value is considered null by the Database.
-	 * <p>
-	 * Here to support Oracle empty strings treated as null.
-	 * </p>
-	 */
-	public boolean isDbNull(Object value);
-
-	/**
-	 * Return the value converted to Null if required.
-	 * <p>
-	 * Here to support Oracle empty strings treated as null.
-	 * </p>
-	 */
-	public Object getDbNullValue(Object value);
 
 }

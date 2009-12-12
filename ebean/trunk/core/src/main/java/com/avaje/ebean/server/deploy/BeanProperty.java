@@ -21,7 +21,6 @@ package com.avaje.ebean.server.deploy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.query.SqlBeanLoad;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
 import com.avaje.ebean.server.reflect.BeanReflectSetter;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.util.ValueUtil;
@@ -210,7 +210,8 @@ public class BeanProperty implements ElPropertyValue {
 	 * Used for non-jdbc native types (java.util.Date Enums etc). Converts from
 	 * logical to jdbc types.
 	 */
-	final ScalarType scalarType;
+	@SuppressWarnings("unchecked")
+    final ScalarType scalarType;
 
 	final Validator[] validators;
 
@@ -423,7 +424,7 @@ public class BeanProperty implements ElPropertyValue {
 	public Object readSetOwning(DbReadContext ctx, Object bean, Class<?> type) throws SQLException {
 
 		try {
-			Object value = scalarType.read(ctx.getRset(), ctx.nextRsetIndex());
+			Object value = scalarType.read(ctx.getDataReader());
 			if (value == null || bean == null) {
 				// not setting the value...
 			} else {
@@ -438,8 +439,8 @@ public class BeanProperty implements ElPropertyValue {
 		}
 	}
 	
-	public void loadIgnore(SqlBeanLoad sqlBeanLoad) throws SQLException {
-		sqlBeanLoad.loadIgnore(1);
+    public void loadIgnore(DbReadContext ctx) {
+        scalarType.loadIgnore(ctx.getDataReader());
 	}
 	
 	public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
@@ -447,13 +448,13 @@ public class BeanProperty implements ElPropertyValue {
 	}
 	
 	public Object read(DbReadContext ctx, int parentState) throws SQLException {
-		return scalarType.read(ctx.getRset(), ctx.nextRsetIndex());
+		return scalarType.read(ctx.getDataReader());
 	}
 	
 	public Object readSet(DbReadContext ctx, Object bean, Class<?> type) throws SQLException {
 
 		try {
-			Object value = scalarType.read(ctx.getRset(), ctx.nextRsetIndex());
+			Object value = scalarType.read(ctx.getDataReader());
 			if (bean == null || (type != null && !owningType.isAssignableFrom(type))) {
 				// not setting the value...
 			} else {
@@ -477,8 +478,9 @@ public class BeanProperty implements ElPropertyValue {
 		return scalarType.toBeanType(value);
 	}
 
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
-		scalarType.bind(pstmt, index, value);
+	@SuppressWarnings("unchecked")
+    public void bind(DataBind b, Object value) throws SQLException {
+		scalarType.bind(b, value);
 	}
 
 	Validator[] getValidators() {
@@ -622,26 +624,26 @@ public class BeanProperty implements ElPropertyValue {
 		}
 	}
 	
-	/**
-	 * Return the value converting to null if required.
-	 * <p>
-	 * Here to support Oracle empty string to null conversion.
-	 * </p>
-	 */
-	public Object getDbNullValue(Object value){
-		return scalarType.getDbNullValue(value);
-	}
+//	/**
+//	 * Return the value converting to null if required.
+//	 * <p>
+//	 * Here to support Oracle empty string to null conversion.
+//	 * </p>
+//	 */
+//	public Object getDbNullValue(Object value){
+//		return scalarType.getDbNullValue(value);
+//	}
 
-	/**
-	 * Return true if the value should be considered null.
-	 * <p>
-	 * Here to support Oracle empty string to null conversion.
-	 * </p>
-	 */
-	public boolean isDbNull(Object bean) {
-		Object value = getValue(bean);
-		return scalarType.isDbNull(value);
-	}
+//	/**
+//	 * Return true if the value should be considered null.
+//	 * <p>
+//	 * Here to support Oracle empty string to null conversion.
+//	 * </p>
+//	 */
+//	public boolean isDbNull(Object bean) {
+//		Object value = getValue(bean);
+//		return scalarType.isDbNull(value);
+//	}
 	
 	private static Object[] NO_ARGS = new Object[0];
 	
@@ -759,7 +761,7 @@ public class BeanProperty implements ElPropertyValue {
 	/**
 	 * Return the scalarType.
 	 */
-	public ScalarType getScalarType() {
+	public ScalarType<?> getScalarType() {
 		return scalarType;
 	}
 	

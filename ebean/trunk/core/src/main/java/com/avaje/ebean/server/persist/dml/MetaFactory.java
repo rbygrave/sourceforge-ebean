@@ -58,8 +58,11 @@ public class MetaFactory {
 
 	private final DatabasePlatform dbPlatform;
 	
+	private final boolean emptyStringAsNull;
+	
 	public MetaFactory(DatabasePlatform dbPlatform) {
 		this.dbPlatform = dbPlatform;
+		this.emptyStringAsNull = dbPlatform.isTreatEmptyStringsAsNull();
 	}
 
 	/**
@@ -88,7 +91,7 @@ public class MetaFactory {
 		Bindable setBindable = new BindableList(setList);
 		Bindable allBindable = new BindableList(allList);
 
-		return new UpdateMeta(desc, setBindable, id, ver, allBindable);
+		return new UpdateMeta(emptyStringAsNull, desc, setBindable, id, ver, allBindable);
 	}
 
 	/**
@@ -108,7 +111,7 @@ public class MetaFactory {
 
 		Bindable allBindable = new BindableList(allList);
 		
-		return new DeleteMeta(desc, id, ver, allBindable);
+		return new DeleteMeta(emptyStringAsNull, desc, id, ver, allBindable);
 	}
 
 	/**
