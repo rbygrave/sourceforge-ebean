@@ -66,7 +66,7 @@ public abstract class DeployBeanPropertyAssoc<T> extends DeployBeanProperty {
 	 * Construct the property.
 	 */
 	public DeployBeanPropertyAssoc(DeployBeanDescriptor<?> desc, Class<T> targetType) {
-		super(desc, targetType);
+		super(desc, targetType, null);
 		this.targetType = targetType;
 	}
 

@@ -30,9 +30,13 @@ import com.avaje.ebean.server.deploy.BeanDescriptorMap;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.validation.factory.Validator;
 
+/**
+ * Helper object to classify BeanProperties into appropriate lists.
+ */
 public class DeployBeanPropertyLists {
 
 	private BeanProperty derivedFirstVersionProp;
@@ -59,6 +63,8 @@ public class DeployBeanPropertyLists {
 	
 	private final ArrayList<BeanProperty> baseScalar = new ArrayList<BeanProperty>();
 
+    private final ArrayList<BeanPropertyCompound> baseCompound = new ArrayList<BeanPropertyCompound>();
+	
 	private final ArrayList<BeanProperty> transients = new ArrayList<BeanProperty>();
 
 	
@@ -153,7 +159,11 @@ public class DeployBeanPropertyLists {
 						derivedFirstVersionProp = prop;
 					}
 				}
-				baseScalar.add(prop);
+				if (prop instanceof BeanPropertyCompound){
+				    baseCompound.add((BeanPropertyCompound)prop);
+				} else {
+				    baseScalar.add(prop);
+				}
 			}
 		}	
 	}
@@ -194,6 +204,10 @@ public class DeployBeanPropertyLists {
 	public BeanProperty[] getBaseScalar() {
 		return (BeanProperty[]) baseScalar.toArray(new BeanProperty[baseScalar.size()]);
 	}
+
+    public BeanPropertyCompound[] getBaseCompound() {
+        return (BeanPropertyCompound[]) baseCompound.toArray(new BeanPropertyCompound[baseCompound.size()]);
+    }
 
 	public BeanProperty[] getId() {
 		return (BeanProperty[]) ids.toArray(new BeanProperty[ids.size()]);
@@ -341,6 +355,10 @@ public class DeployBeanPropertyLists {
 			
 			return new BeanPropertyAssocMany(owner, desc, (DeployBeanPropertyAssocMany)deployProp);
 		}
+		if (deployProp instanceof DeployBeanPropertyCompound){
+            
+            return new BeanPropertyCompound(owner, desc, (DeployBeanPropertyCompound)deployProp);
+        }
 
 		return new BeanProperty(owner, desc, deployProp);
 	}

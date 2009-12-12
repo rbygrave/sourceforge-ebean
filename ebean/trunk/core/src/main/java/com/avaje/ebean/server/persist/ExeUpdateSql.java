@@ -32,6 +32,7 @@ import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql;
 import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.core.PersistRequestUpdateSql.SqlType;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 
 /**
@@ -139,7 +140,7 @@ public class ExeUpdateSql {
     	
         String bindLog = null;
         if (!bindParams.isEmpty()){	       
-        	bindLog = binder.bind(bindParams, 0, pstmt);
+        	bindLog = binder.bind(bindParams, new DataBind(pstmt));
         }
         
         request.setBindLog(bindLog);

@@ -36,6 +36,7 @@ import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.BatchedPstmt;
 import com.avaje.ebean.server.persist.BatchedPstmtHolder;
 import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
+import com.avaje.ebean.server.type.DataBind;
 
 
 /**
@@ -43,37 +44,35 @@ import com.avaje.ebean.server.persist.dmlbind.BindableRequest;
  */
 public abstract class DmlHandler implements PersistHandler, BindableRequest {
 
-	static final Logger logger = Logger.getLogger(DmlHandler.class.getName());
-	
-	/**
-	 * Position in the PreparedStatement.
-	 */
-	int index;
+    protected static final Logger logger = Logger.getLogger(DmlHandler.class.getName());
 
 	/**
 	 * The PreparedStatement used for the dml.
 	 */
-	PreparedStatement pstmt;
-	
-	ArrayList<UpdateGenValue> updateGenValues;
+    protected DataBind dataBind;
+    
+    protected ArrayList<UpdateGenValue> updateGenValues;
 	
 	/**
 	 * The originating request.
 	 */
 	protected final PersistRequestBean<?> persistRequest;
 
-	final int logLevel;
+	protected final int logLevel;
 
-	final StringBuilder bindLog;
+	protected final StringBuilder bindLog;
 
-	final boolean loggingBind;
+	protected final boolean loggingBind;
 
-	final Set<String> loadedProps;
+	protected final Set<String> loadedProps;
 
-	final SpiTransaction transaction;
+	protected final SpiTransaction transaction;
+	
+	protected final boolean emptyStringToNull;
 
-	protected DmlHandler(PersistRequestBean<?> persistRequest) {
+	protected DmlHandler(PersistRequestBean<?> persistRequest, boolean emptyStringToNull) {
 		this.persistRequest = persistRequest;
+		this.emptyStringToNull = emptyStringToNull;
 		
 		EntityBeanIntercept ebi = persistRequest.getEntityBeanIntercept();
 		if (ebi == null){
@@ -113,9 +112,9 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	public void addBatch() throws SQLException {
 		PstmtBatch pstmtBatch = persistRequest.getPstmtBatch();
 		if (pstmtBatch != null){
-			pstmtBatch.addBatch(pstmt);
+			pstmtBatch.addBatch(dataBind.getPstmt());
 		} else {
-			pstmt.addBatch();
+		    dataBind.getPstmt().addBatch();
 		}
 	}
 
@@ -124,8 +123,8 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 */
 	public void close() {
 		try {
-			if (pstmt != null){
-				pstmt.close();
+			if (dataBind != null){
+			    dataBind.close();
 			}
 		} catch (SQLException ex) {
         	logger.log(Level.SEVERE, null, ex);
@@ -175,7 +174,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 			bindLog.append(propName).append("=");
 			bindLog.append(value).append(", ");
 		}
-		pstmt.setObject(++index, value, sqlType);
+		dataBind.setObject(value, sqlType);
 		return value;
 	}
 	
@@ -185,8 +184,11 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	public Object bind(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
 				
 		if (!bindNull){
-			// support Oracle conversion of empty string to null 
-			value = prop.getDbNullValue(value);
+		    if (emptyStringToNull && (value instanceof String) && ((String)value).length() == 0){
+	            // support Oracle conversion of empty string to null 
+	            //value = prop.getDbNullValue(value);
+		        value = null;
+		    }
 		}
 
 		if (!bindNull && value == null) { 
@@ -210,7 +212,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 				bindLog.append(", ");
 			}
 			// do the actual binding to PreparedStatement
-			prop.bind(pstmt, ++index, value);
+			prop.bind(dataBind, value);
 		}
 		return value;
 	}

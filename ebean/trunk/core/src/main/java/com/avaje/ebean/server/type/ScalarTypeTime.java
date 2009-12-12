@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Types;
@@ -30,38 +28,38 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for java.sql.Time.
  */
-public class ScalarTypeTime extends ScalarTypeBase {
+public class ScalarTypeTime extends ScalarTypeBase<Time> {
 
 	public ScalarTypeTime() {
 		super(Time.class, true, Types.TIME);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Time value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.TIME);
+			b.setNull(Types.TIME);
 		} else {
-			pstmt.setTime(index, (Time)value);
+			b.setTime(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public Time read(DataReader dataReader) throws SQLException {
 		
-		return rset.getTime(index);
+		return dataReader.getTime();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toTime(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Time toBeanType(Object value) {
 		return BasicTypeConverter.toTime(value);
 	}
 
-	public Object parse(String value) {
+	public Time parse(String value) {
 		return Time.valueOf(value);
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public Time parseDateTime(long systemTimeMillis) {
 		return new Time(systemTimeMillis);
 	}
 

@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,42 +28,38 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for Short and short.
  */
-public class ScalarTypeShort extends ScalarTypeBase {
+public class ScalarTypeShort extends ScalarTypeBase<Short> {
 
 	public ScalarTypeShort() {
 		super(Short.class, true, Types.SMALLINT);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Short value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.SMALLINT);
+			b.setNull(Types.SMALLINT);
 		} else {
-			pstmt.setShort(index, ((Short) value).shortValue());
+			b.setShort(value.shortValue());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public Short read(DataReader dataReader) throws SQLException {
 		
-		short i = rset.getShort(index);
-		if (rset.wasNull()){
-			return null;
-		}
-		return i;
+		return dataReader.getShort();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toShort(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Short toBeanType(Object value) {
 		return BasicTypeConverter.toShort(value);
 	}
 
-	public Object parse(String value) {
+	public Short parse(String value) {
 		return Short.valueOf(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public Short parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 

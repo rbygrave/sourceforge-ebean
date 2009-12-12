@@ -42,6 +42,7 @@ import com.avaje.ebean.server.core.RelationalQueryEngine;
 import com.avaje.ebean.server.core.RelationalQueryRequest;
 import com.avaje.ebean.server.jmx.MAdminLogging;
 import com.avaje.ebean.server.persist.Binder;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 
 /**
@@ -108,7 +109,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				}
 				
 				if (!bindParams.isEmpty()) {
-					bindLog = binder.bind(bindParams, 0, pstmt);
+					bindLog = binder.bind(bindParams, new DataBind(pstmt));
 				}
 	
 				if (logControl.isLogSqlQuery(MAdminLogging.SQL)) {

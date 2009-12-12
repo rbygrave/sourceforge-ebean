@@ -86,14 +86,12 @@ public interface ElPropertyValue extends ElPropertyDeploy {
 	 * <p>
 	 * If populate then 
 	 * </p>
-	 * @param bean
-	 * @param value
-	 * @param populate
-	 * @param reference
 	 */
-	public void elSetValue(Object bean, Object value, boolean populate,
-			boolean reference);
+	public void elSetValue(Object bean, Object value, boolean populate, boolean reference);
 
+	/**
+	 * Make the owning bean of this property a reference (as in not new/dirty).
+	 */
 	public void elSetReference(Object bean);
 
 	/**

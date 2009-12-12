@@ -25,7 +25,7 @@ import java.util.Locale;
  * ScalarType for java.util.Currency which converts to and from a VARCHAR
  * database column.
  */
-public class ScalarTypeLocale extends ScalarTypeBaseVarchar {
+public class ScalarTypeLocale extends ScalarTypeBaseVarchar<Locale> {
 
     public ScalarTypeLocale() {
         super(Locale.class);
@@ -37,16 +37,16 @@ public class ScalarTypeLocale extends ScalarTypeBaseVarchar {
     }
     
     @Override
-    public Object convertFromDbString(String dbValue) {
+    public Locale convertFromDbString(String dbValue) {
         return parse(dbValue);
     }
 
     @Override
-    public String convertToDbString(Object beanValue) {
+    public String convertToDbString(Locale beanValue) {
         return ((Locale) beanValue).toString();
     }
 
-    public Object parse(String value) {
+    public Locale parse(String value) {
 
         int pos1 = -1;
         int pos2 = -1;

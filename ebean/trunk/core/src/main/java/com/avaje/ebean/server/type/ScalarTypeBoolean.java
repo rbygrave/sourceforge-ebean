@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -36,7 +34,7 @@ import com.avaje.ebean.text.TextException;
  */
 public class ScalarTypeBoolean {
 
-	public static class Native extends ScalarTypeBase {
+	public static class Native extends ScalarTypeBase<Boolean> {
 
 		/**
 		 * Native Boolean database type.
@@ -45,7 +43,7 @@ public class ScalarTypeBoolean {
 			super(Boolean.class, true, Types.BOOLEAN);
 		}
 
-		public Object toBeanType(Object value) {
+		public Boolean toBeanType(Object value) {
 			return BasicTypeConverter.toBoolean(value);
 		}
 		
@@ -53,11 +51,11 @@ public class ScalarTypeBoolean {
 			return BasicTypeConverter.convert(value, jdbcType);
 		}
 		
-		public Object parse(String value) {
+		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
 		
-		public Object parseDateTime(long systemTimeMillis) {
+		public Boolean parseDateTime(long systemTimeMillis) {
 			throw new TextException("Not Supported");
 		}
 		
@@ -65,21 +63,17 @@ public class ScalarTypeBoolean {
 			return false;
 		}
 
-		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+		public void bind(DataBind b, Boolean value) throws SQLException {
 			if (value == null) {
-				pstmt.setNull(index, Types.BOOLEAN);
+				b.setNull(Types.BOOLEAN);
 			} else {
-				pstmt.setBoolean(index, (Boolean) value);
+				b.setBoolean(value);
 			}
 
 		}
 
-		public Object read(ResultSet rset, int index) throws SQLException {
-			boolean b = rset.getBoolean(index);
-			if (rset.wasNull()) {
-				return null;
-			}
-			return b;
+		public Boolean read(DataReader dataReader) throws SQLException {
+		    return dataReader.getBoolean();
 		}
 	}
 	
@@ -91,7 +85,7 @@ public class ScalarTypeBoolean {
 	 * the BitBoolean specify type.boolean.dbtype="bit" in the ebean configuration  
 	 * </p>
 	 */
-	public static class BitBoolean extends ScalarTypeBase {
+	public static class BitBoolean extends ScalarTypeBase<Boolean> {
 
 		/**
 		 * Native Boolean database type.
@@ -100,7 +94,7 @@ public class ScalarTypeBoolean {
 			super(Boolean.class, true, Types.BIT);
 		}
 
-		public Object toBeanType(Object value) {
+		public Boolean toBeanType(Object value) {
 			return BasicTypeConverter.toBoolean(value);
 		}
 		
@@ -109,11 +103,11 @@ public class ScalarTypeBoolean {
 			return BasicTypeConverter.toBoolean(value);
 		}
 
-		public Object parse(String value) {
+		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
 		
-		public Object parseDateTime(long systemTimeMillis) {
+		public Boolean parseDateTime(long systemTimeMillis) {
 			throw new TextException("Not Supported");
 		}
 
@@ -121,28 +115,24 @@ public class ScalarTypeBoolean {
 			return false;
 		}
 		
-		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+		public void bind(DataBind b, Boolean value) throws SQLException {
 			if (value == null) {
-				pstmt.setNull(index, Types.BIT);
+				b.setNull(Types.BIT);
 			} else {
 				// use JDBC driver to convert boolean to bit
-				pstmt.setBoolean(index, (Boolean) value);
+				b.setBoolean(value);
 			}
 		}
 
-		public Object read(ResultSet rset, int index) throws SQLException {
-			boolean b = rset.getBoolean(index);
-			if (rset.wasNull()) {
-				return null;
-			}
-			return b;
+		public Boolean read(DataReader dataReader) throws SQLException {
+		    return dataReader.getBoolean();
 		}
 	}
 
 	/**
 	 * Converted to/from an Integer in the Database.
 	 */
-	public static class IntBoolean extends ScalarTypeBase {
+	public static class IntBoolean extends ScalarTypeBase<Boolean> {
 		
 		private final Integer trueValue;
 		private final Integer falseValue;
@@ -158,21 +148,20 @@ public class ScalarTypeBoolean {
 			return 1;
 		}
 
-		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+		public void bind(DataBind b, Boolean value) throws SQLException {
 			if (value == null) {
-				pstmt.setNull(index, Types.INTEGER);
+				b.setNull(Types.INTEGER);
 			} else {
-				pstmt.setInt(index, toInteger(value));
+				b.setInt(toInteger(value));
 			}
 		}
 
-		public Object read(ResultSet rset, int index) throws SQLException {
-			int i = rset.getInt(index);
-			if (rset.wasNull()) {
-				return null;
-			}
-			Integer integer = Integer.valueOf(i);
-			if (integer.equals(trueValue)){
+		public Boolean read(DataReader dataReader) throws SQLException {
+		    Integer i = dataReader.getInt();
+		    if (i == null){
+		        return null;
+		    }
+			if (i.equals(trueValue)){
 				return Boolean.TRUE;
 			} else {
 				return Boolean.FALSE;
@@ -201,12 +190,12 @@ public class ScalarTypeBoolean {
 		/**
 		 * Convert the db value to the Boolean value.
 		 */
-		public Object toBeanType(Object value) {
+		public Boolean toBeanType(Object value) {
 			if (value == null) {
 				return null;
 			}
 			if (value instanceof Boolean){
-				return value;
+				return (Boolean)value;
 			}
 			if (trueValue.equals(value)) {
 				return Boolean.TRUE;
@@ -215,10 +204,10 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
-		public Object parse(String value) {
+		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
-		public Object parseDateTime(long systemTimeMillis) {
+		public Boolean parseDateTime(long systemTimeMillis) {
 			throw new TextException("Not Supported");
 		}
 
@@ -230,7 +219,7 @@ public class ScalarTypeBoolean {
 	/**
 	 * Converted to/from an Integer in the Database.
 	 */
-	public static class StringBoolean extends ScalarTypeBase {
+	public static class StringBoolean extends ScalarTypeBase<Boolean> {
 		
 		private final String trueValue;
 		private final String falseValue;
@@ -249,16 +238,16 @@ public class ScalarTypeBoolean {
 			return Math.max(trueValue.length(), falseValue.length());
 		}
 
-		public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+		public void bind(DataBind b, Boolean value) throws SQLException {
 			if (value == null) {
-				pstmt.setNull(index, Types.VARCHAR);
+				b.setNull(Types.VARCHAR);
 			} else {
-				pstmt.setString(index, toString(value));
+				b.setString(toString(value));
 			}
 		}
 
-		public Object read(ResultSet rset, int index) throws SQLException {
-			String string = rset.getString(index);
+		public Boolean read(DataReader dataReader) throws SQLException {
+			String string = dataReader.getString();
 			if (string == null) {
 				return null;
 			}
@@ -292,12 +281,12 @@ public class ScalarTypeBoolean {
 		/**
 		 * Convert the db value to the Boolean value.
 		 */
-		public Object toBeanType(Object value) {
+		public Boolean toBeanType(Object value) {
 			if (value == null) {
 				return null;
 			}
 			if (value instanceof Boolean){
-				return value;
+				return (Boolean)value;
 			}
 			if (trueValue.equals(value)) {
 				return Boolean.TRUE;
@@ -306,11 +295,11 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
-		public Object parse(String value) {
+		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
 		
-		public Object parseDateTime(long systemTimeMillis) {
+		public Boolean parseDateTime(long systemTimeMillis) {
 			throw new TextException("Not Supported");
 		}
 		

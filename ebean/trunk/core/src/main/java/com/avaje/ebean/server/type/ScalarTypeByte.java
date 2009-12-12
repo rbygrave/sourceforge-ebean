@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,42 +28,37 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for Byte.
  */
-public class ScalarTypeByte extends ScalarTypeBase {
+public class ScalarTypeByte extends ScalarTypeBase<Byte> {
 
 	public ScalarTypeByte() {
 		super(Byte.class, true,Types.TINYINT );
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Byte value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.TINYINT);
+			b.setNull(Types.TINYINT);
 		} else {
-			pstmt.setByte(index, (Byte)value);
+			b.setByte(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
-		byte b = rset.getByte(index);
-		if (rset.wasNull()){
-			return null;
-		} else {
-			return b;
-		}
+	public Byte read(DataReader dataReader) throws SQLException {
+		return dataReader.getByte();
 	}
 
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toByte(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Byte toBeanType(Object value) {
 		return BasicTypeConverter.toByte(value);
 	}
 
-	public Object parse(String value) {
+	public Byte parse(String value) {
 		throw new TextException("Not supported");
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public Byte parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 	

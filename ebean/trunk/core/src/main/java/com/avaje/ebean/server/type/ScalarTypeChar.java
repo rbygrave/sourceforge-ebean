@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,23 +28,23 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for char.
  */
-public class ScalarTypeChar extends ScalarTypeBase {
+public class ScalarTypeChar extends ScalarTypeBase<Character> {
 	
 	public ScalarTypeChar() {
 		super(char.class, false, Types.VARCHAR);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Character value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.VARCHAR);
+			b.setNull(Types.VARCHAR);
 		} else {
 			String s = BasicTypeConverter.toString(value);
-			pstmt.setString(index, s);
+			b.setString(s);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
-		String string = rset.getString(index);
+	public Character read(DataReader dataReader) throws SQLException {
+		String string = dataReader.getString();
 		if (string == null || string.length()==0){
 			return null;
 		} else {
@@ -58,16 +56,16 @@ public class ScalarTypeChar extends ScalarTypeBase {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Character toBeanType(Object value) {
 		String s = BasicTypeConverter.toString(value);
 		return s.charAt(0);
 	}
 	
-	public Object parse(String value) {
+	public Character parse(String value) {
 		return value.charAt(0);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public Character parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 

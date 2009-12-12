@@ -33,6 +33,7 @@ import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.persist.DmlUtil;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Insert bean handler.
@@ -64,7 +65,7 @@ public class InsertHandler extends DmlHandler {
 	 * Create to handle the insert execution.
 	 */
 	public InsertHandler(PersistRequestBean<?> persist, InsertMeta meta) {
-		super(persist);
+		super(persist, meta.isEmptyStringToNull());
 		this.meta = meta;
 		this.concatinatedKey = meta.isConcatinatedKey();
 	}
@@ -103,6 +104,7 @@ public class InsertHandler extends DmlHandler {
 		// get the appropriate sql
 		String sql = meta.getSql(withId);
 
+		PreparedStatement pstmt;
 		if (isBatch) {
 			pstmt = getPstmt(t, sql, persistRequest, useGeneratedKeys);
 
@@ -110,6 +112,7 @@ public class InsertHandler extends DmlHandler {
 			logSql(sql);
 			pstmt = getPstmt(t, sql, useGeneratedKeys);
 		}
+		dataBind = new DataBind(pstmt);
 
 		bindLogAppend("Binding Insert [");
 		bindLogAppend(desc.getBaseTable());
@@ -141,7 +144,7 @@ public class InsertHandler extends DmlHandler {
 	 * getGeneratedKeys if required.
 	 */
 	public int execute() throws SQLException {
-		int rc = pstmt.executeUpdate();
+		int rc = dataBind.getPstmt().executeUpdate();
 		if (useGeneratedKeys) {
 			// get the auto-increment value back and set into the bean
 			getGeneratedKeys();
@@ -161,7 +164,7 @@ public class InsertHandler extends DmlHandler {
 	 */
 	private void getGeneratedKeys() throws SQLException {
 
-		ResultSet rset = pstmt.getGeneratedKeys();
+		ResultSet rset = dataBind.getPstmt().getGeneratedKeys();
 		try {
 			if (rset.next()) {
 				Object idValue = rset.getObject(1);

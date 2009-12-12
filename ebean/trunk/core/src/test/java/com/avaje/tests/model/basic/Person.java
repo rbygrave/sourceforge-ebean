@@ -16,10 +16,12 @@ import javax.persistence.Table;
 @Table(name = "PERSONS")
 public class Person implements Serializable {
 
+    private static final long serialVersionUID = 495045977245770183L;
+    
     private Long id;
     private String surname;
     private String name;
-    private List phones;
+    private List<Phone> phones;
 
     public Person() {
     }
@@ -54,11 +56,11 @@ public class Person implements Serializable {
     }
 
     @OneToMany(targetEntity = Phone.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "person")
-    public List getPhones() {
+    public List<Phone> getPhones() {
         return phones;
     }
 
-    public void setPhones(List phones) {
+    public void setPhones(List<Phone> phones) {
         this.phones = phones;
     }
 

@@ -137,7 +137,7 @@ public class DdlGenContext {
 
 	private DbType getDbType(BeanProperty p) {
 
-		ScalarType scalarType = p.getScalarType();
+		ScalarType<?> scalarType = p.getScalarType();
 		if (scalarType == null) {
 			throw new RuntimeException("No scalarType for " + p.getFullBeanName());
 		}

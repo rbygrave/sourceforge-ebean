@@ -10,6 +10,7 @@ import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.deploy.InheritInfoVisitor;
 import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
@@ -175,6 +176,11 @@ public class CreateTableVisitor implements BeanVisitor {
 				ctx.write(p.getDbColumn()).write(", ");
 			}
 			
+			@Override
+            public void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p) {
+                ctx.write(p.getDbColumn()).write(", ");
+            }
+
 		});
 		
 		// remove the last comma, end of PK

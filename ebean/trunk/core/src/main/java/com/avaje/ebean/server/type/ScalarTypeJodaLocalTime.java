@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Types;
@@ -33,25 +31,24 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for Joda LocalTime. This maps to a JDBC Time.
  */
-public class ScalarTypeJodaLocalTime extends ScalarTypeBase {
+public class ScalarTypeJodaLocalTime extends ScalarTypeBase<LocalTime> {
 
 	public ScalarTypeJodaLocalTime() {
 		super(LocalTime.class, false, Types.TIME);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, LocalTime value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.TIME);
+			b.setNull(Types.TIME);
 		} else {
-			LocalTime lt = (LocalTime)value;
-			Time sqlTime = new Time(lt.getMillisOfDay());
-			pstmt.setTime(index, sqlTime);
+			Time sqlTime = new Time(value.getMillisOfDay());
+			b.setTime(sqlTime);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public LocalTime read(DataReader dataReader) throws SQLException {
 		
-		Time sqlTime = rset.getTime(index);
+		Time sqlTime = dataReader.getTime();
 		if (sqlTime == null){
 			return null;
 		} else {
@@ -66,19 +63,19 @@ public class ScalarTypeJodaLocalTime extends ScalarTypeBase {
 		return BasicTypeConverter.toTime(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public LocalTime toBeanType(Object value) {
 		if (value instanceof java.util.Date){
 			return new LocalTime(value, DateTimeZone.UTC);
 		}
-		return value;
+		return (LocalTime)value;
 	}
 
-	public Object parse(String value) {
+	public LocalTime parse(String value) {
 		Time ts = Time.valueOf(value);
 		return new LocalTime(ts.getTime());
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public LocalTime parseDateTime(long systemTimeMillis) {
 		return new LocalTime(systemTimeMillis);
 	}
 

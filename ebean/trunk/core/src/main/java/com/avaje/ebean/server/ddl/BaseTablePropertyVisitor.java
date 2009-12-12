@@ -3,6 +3,7 @@ package com.avaje.ebean.server.ddl;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 
 /**
  * Used to help mark PropertyVisitor methods that need to be implemented
@@ -43,5 +44,17 @@ public abstract class BaseTablePropertyVisitor implements PropertyVisitor {
 	 */
 	public abstract void visitScalar(BeanProperty p);
 
+	/**
+	 * Not required in that the scalar properties map to the columns.
+	 */
+    public void visitCompound(BeanPropertyCompound p){
+    }
+
+    /**
+     * Override this method for scalar property inside a Immutable Compound Value object.
+     */
+    public abstract void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p);
+
+    
 	
 }

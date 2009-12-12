@@ -32,6 +32,7 @@ import com.avaje.ebean.internal.SpiUpdate;
 import com.avaje.ebean.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebean.server.core.PstmtBatch;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 
 /**
@@ -143,7 +144,7 @@ public class ExeOrmUpdate {
         
         String bindLog = null;
         if (!bindParams.isEmpty()){	       
-        	bindLog = binder.bind(bindParams, 0, pstmt);
+        	bindLog = binder.bind(bindParams, new DataBind(pstmt));
         }
         
         request.setBindLog(bindLog);

@@ -20,8 +20,6 @@
 package com.avaje.ebean.server.type;
 
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,23 +28,23 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for java.sql.Date.
  */
-public class ScalarTypeDate extends ScalarTypeBase {
+public class ScalarTypeDate extends ScalarTypeBase<java.sql.Date> {
 	
 	public ScalarTypeDate() {
 		super(Date.class, true, Types.DATE);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, java.sql.Date value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.DATE);
+			b.setNull(Types.DATE);
 		} else {
-			pstmt.setDate(index, (Date)value);
+			b.setDate(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public java.sql.Date read(DataReader dataReader) throws SQLException {
 		
-		return rset.getDate(index);
+		return dataReader.getDate();
 	}
 	
 	
@@ -54,15 +52,15 @@ public class ScalarTypeDate extends ScalarTypeBase {
 		return BasicTypeConverter.toDate(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public java.sql.Date toBeanType(Object value) {
 		return BasicTypeConverter.toDate(value);
 	}
 
-	public Object parse(String value) {
+	public java.sql.Date parse(String value) {
 		return java.sql.Date.valueOf(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public java.sql.Date parseDateTime(long systemTimeMillis) {
 		return new java.sql.Date(systemTimeMillis);
 	}
 

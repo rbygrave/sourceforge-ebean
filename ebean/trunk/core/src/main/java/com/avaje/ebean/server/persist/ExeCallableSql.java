@@ -31,6 +31,7 @@ import com.avaje.ebean.internal.SpiCallableSql;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestCallableSql;
 import com.avaje.ebean.server.core.PstmtBatch;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 
 /**
@@ -119,7 +120,7 @@ public class ExeCallableSql {
     	
         String bindLog = null;
         if (!bindParams.isEmpty()){
-	        bindLog = binder.bind(bindParams, 0, cstmt);
+	        bindLog = binder.bind(bindParams, new DataBind(cstmt));
         }
         
         request.setBindLog(bindLog);

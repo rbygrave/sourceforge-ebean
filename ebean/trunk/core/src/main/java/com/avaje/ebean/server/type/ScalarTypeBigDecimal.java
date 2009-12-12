@@ -20,8 +20,6 @@
 package com.avaje.ebean.server.type;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,38 +28,38 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for BigDecimal.
  */
-public class ScalarTypeBigDecimal extends ScalarTypeBase {
+public class ScalarTypeBigDecimal extends ScalarTypeBase<BigDecimal> {
 
 	public ScalarTypeBigDecimal() {
 		super(BigDecimal.class, true, Types.DECIMAL);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, BigDecimal value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.DECIMAL);
+			b.setNull(Types.DECIMAL);
 		} else {
-			pstmt.setBigDecimal(index, (BigDecimal)value);
+			b.setBigDecimal(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public BigDecimal read(DataReader dataReader) throws SQLException {
 		
-		return rset.getBigDecimal(index);
+		return dataReader.getBigDecimal();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toBigDecimal(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public BigDecimal toBeanType(Object value) {
 		return BasicTypeConverter.toBigDecimal(value);
 	}
 
-	public Object parse(String value) {
+	public BigDecimal parse(String value) {
 		return new BigDecimal(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public BigDecimal parseDateTime(long systemTimeMillis) {
 		return BigDecimal.valueOf(systemTimeMillis);
 	}
 

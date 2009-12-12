@@ -32,7 +32,7 @@ public class DmlBeanPersisterFactory implements BeanPersisterFactory {
 	private final MetaFactory metaFactory;
 	
 	public DmlBeanPersisterFactory(DatabasePlatform dbPlatform) {
-		metaFactory = new MetaFactory(dbPlatform);
+		this.metaFactory = new MetaFactory(dbPlatform);
 	}
 	
 	

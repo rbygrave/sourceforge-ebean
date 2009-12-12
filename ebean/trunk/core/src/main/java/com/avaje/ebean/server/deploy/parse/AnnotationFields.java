@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.Basic;
@@ -43,6 +44,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
+import com.avaje.ebean.annotation.EmbeddedColumns;
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
 import com.avaje.ebean.config.GlobalProperties;
@@ -50,8 +52,12 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
+import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.idgen.UuidIdGenerator;
+import com.avaje.ebean.server.lib.util.StringHelper;
+import com.avaje.ebean.server.type.CtCompoundType;
+import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.validation.Length;
 import com.avaje.ebean.validation.NotNull;
 import com.avaje.ebean.validation.Pattern;
@@ -209,6 +215,31 @@ public class AnnotationFields extends AnnotationParser {
 				prop.setDbLength(length.max());
 			}
 		}
+		
+        EmbeddedColumns columns = get(prop, EmbeddedColumns.class);
+        if (columns != null) {
+            if (prop instanceof DeployBeanPropertyCompound){
+                DeployBeanPropertyCompound p = (DeployBeanPropertyCompound)prop;
+
+                // convert into a Map
+                String propColumns = columns.columns();
+                Map<String, String> propMap = StringHelper.delimitedToMap(propColumns, ",", "=");
+
+                p.getDeployEmbedded().putAll(propMap);
+                
+                TypeManager typeManager = info.getUtil().getTypeManager();
+                
+                CtCompoundType<?> compoundType = typeManager.getCompoundType(p.getPropertyType());
+                if (compoundType == null){
+                    throw new RuntimeException("No registered CtCompoundType for "+p.getPropertyType());
+                }
+                
+                p.setCompoundType(compoundType);
+                
+            } else {
+                throw new RuntimeException("Can't use EmbeddedColumns on ScalarType "+prop.getFullBeanName());
+            }
+        }
 		
 		// Want to process last so we can use with @Formula 
 		Transient t = get(prop, Transient.class);

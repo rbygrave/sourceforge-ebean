@@ -8,6 +8,7 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 
 /**
  * Utility object to use BeanVisitor.
@@ -98,6 +99,15 @@ public class VisitorUtil {
 				pv.visitOneImported(assocOne);
 
 			}
+        } else if (p instanceof BeanPropertyCompound){
+            BeanPropertyCompound compound = (BeanPropertyCompound)p;
+            pv.visitCompound(compound);
+            
+            BeanProperty[] properties = compound.getScalarProperties();
+            for (int i = 0; i < properties.length; i++) {
+                pv.visitCompoundScalar(compound, properties[i]);
+            }
+            
 		} else {
 			pv.visitScalar(p);
 		}

@@ -7,6 +7,7 @@ import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.server.deploy.TableJoinColumn;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -50,9 +51,18 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		}
 	}
 
+	
+	public void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p) {
+        visitScalar(p);
+    }
 
 
-	@Override
+    public void visitCompound(BeanPropertyCompound p) {
+        // do nothing
+    }
+
+
+    @Override
 	public void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded) {
 
 		visitScalar(p);

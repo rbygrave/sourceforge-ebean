@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -32,25 +30,24 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for Joda LocalDate. This maps to a JDBC Date.
  */
-public class ScalarTypeJodaLocalDate extends ScalarTypeBase {
+public class ScalarTypeJodaLocalDate extends ScalarTypeBase<LocalDate> {
 
 	public ScalarTypeJodaLocalDate() {
 		super(LocalDate.class, false, Types.DATE);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, LocalDate value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.DATE);
+			b.setNull(Types.DATE);
 		} else {
-			LocalDate ld= (LocalDate)value;
-			java.sql.Date d = new java.sql.Date(ld.toDateMidnight().getMillis());
-			pstmt.setDate(index, d);
+			java.sql.Date d = new java.sql.Date(value.toDateMidnight().getMillis());
+			b.setDate(d);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public LocalDate read(DataReader dataReader) throws SQLException {
 		
-		java.sql.Date d = rset.getDate(index);
+		java.sql.Date d = dataReader.getDate();
 		if (d == null){
 			return null;
 		} else {
@@ -65,19 +62,19 @@ public class ScalarTypeJodaLocalDate extends ScalarTypeBase {
 		return BasicTypeConverter.toDate(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public LocalDate toBeanType(Object value) {
 		if (value instanceof java.util.Date){
 			return new LocalDate(((java.util.Date)value).getTime());
 		}
-		return value;
+		return (LocalDate)value;
 	}
 
-	public Object parse(String value) {
+	public LocalDate parse(String value) {
 		Timestamp ts = Timestamp.valueOf(value);
 		return new LocalDate(ts.getTime());
 	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
+	public LocalDate parseDateTime(long systemTimeMillis) {
 		return new LocalDate(systemTimeMillis);
 	}
 	

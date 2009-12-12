@@ -378,6 +378,7 @@ public class SqlTreeBuilder {
 
 		// normal simple properties of the bean
 		selectProps.add(desc.propertiesBaseScalar());
+		selectProps.add(desc.propertiesBaseCompound());
 		selectProps.add(desc.propertiesEmbedded());
 
 		BeanPropertyAssocOne<?>[] propertiesOne = desc.propertiesOne();

@@ -17,7 +17,7 @@ public class TestJodaType extends TestCase {
 		SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(null);
 		BeanDescriptor<TJodaEntity> beanDescriptor = server.getBeanDescriptor(TJodaEntity.class);
 		BeanProperty beanProperty = beanDescriptor.getBeanProperty("localTime");
-		ScalarType scalarType = beanProperty.getScalarType();
+		ScalarType<?> scalarType = beanProperty.getScalarType();
 		
 		Assert.assertNotNull(scalarType);
 	}

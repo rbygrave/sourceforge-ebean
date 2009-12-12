@@ -24,7 +24,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.BindParams;
 import com.avaje.ebean.server.core.Message;
+import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
 
@@ -61,10 +61,8 @@ public class Binder {
 	/**
 	 * Bind the values to the Prepared Statement.
 	 */
-	public void bind(BindValues bindValues, PreparedStatement pstmt, StringBuilder bindBuf)
+	public void bind(BindValues bindValues, DataBind dataBind, StringBuilder bindBuf)
 			throws SQLException {
-
-		int index = 0;
 
 		String logPrefix = "";
 
@@ -81,7 +79,7 @@ public class Binder {
 			} else {
 				Object val = bindValue.getValue();
 				int dt = bindValue.getDbType();
-				bindObject(++index, val, dt, pstmt);
+				bindObject(dataBind, val, dt);
 
 				if (bindBuf != null) {
 					bindBuf.append(logPrefix);
@@ -103,36 +101,34 @@ public class Binder {
 	/**
 	 * Bind the list of positionedParameters in BindParams.
 	 */
-	public String bind(BindParams bindParams, int index, PreparedStatement pstmt)
+	public String bind(BindParams bindParams, DataBind dataBind)
 		throws SQLException {
 
 		StringBuilder bindLog = new StringBuilder();
-		bind(bindParams, index, pstmt, bindLog);
+		bind(bindParams, dataBind, bindLog);
 		return bindLog.toString();
 	}
 
 	/**
 	 * Bind the list of positionedParameters in BindParams.
 	 */
-	public void bind(BindParams bindParams, int index, PreparedStatement pstmt, StringBuilder bindLog)
+	public void bind(BindParams bindParams, DataBind dataBind, StringBuilder bindLog)
 		throws SQLException {
 
-		bind(bindParams.positionedParameters(), index, pstmt, bindLog);
+		bind(bindParams.positionedParameters(), dataBind, bindLog);
 	}
 	
 	/**
 	 * Bind the list of parameters..
 	 */
-	public void bind(List<BindParams.Param> list, int index, PreparedStatement pstmt, StringBuilder bindLog)
+	public void bind(List<BindParams.Param> list, DataBind dataBind, StringBuilder bindLog)
 			throws SQLException {
 
 		CallableStatement cstmt = null;
 
-		if (pstmt instanceof CallableStatement) {
-			cstmt = (CallableStatement) pstmt;
+		if (dataBind.getPstmt() instanceof CallableStatement) {
+			cstmt = (CallableStatement) dataBind.getPstmt();
 		}
-
-		//int index = 0;
 
 		// the iterator is assumed to be in the correct order
 		Object value = null;
@@ -142,9 +138,9 @@ public class Binder {
 				BindParams.Param param = list.get(i);
 
 				if (param.isOutParam() && cstmt != null){
-					cstmt.registerOutParameter(++index, param.getType());
+					cstmt.registerOutParameter(dataBind.nextPos(), param.getType());
 					if (param.isInParam()) {
-						index--;
+					    dataBind.decrementPos();
 					}
 				}
 				if (param.isInParam()) {
@@ -155,15 +151,15 @@ public class Binder {
 					}
 					if (value == null) {
 						// this doesn't work for query predicates
-						bindObject(++index, null, param.getType(), pstmt);
+						bindObject(dataBind, null, param.getType());
 					} else {
-						bindObject(++index, value, pstmt);
+						bindObject(dataBind, value);
 					}
 				}
 			}
 
 		} catch (SQLException ex) {
-			logger.warning(Message.msg("fetch.bind.error", "" + (index - 1), value));
+			logger.warning(Message.msg("fetch.bind.error", "" + (dataBind.currentPos() - 1), value));
 			throw ex;
 		}
 	}
@@ -171,15 +167,15 @@ public class Binder {
 	/**
 	 * Bind an Object with unknown data type.
 	 */
-	public void bindObject(int index, Object value, PreparedStatement pstmt) throws SQLException {
+	public void bindObject(DataBind dataBind, Object value) throws SQLException {
 
 		if (value == null) {
 			// null of unknown type
-			bindObject(index, null, Types.OTHER, pstmt);
+			bindObject(dataBind, null, Types.OTHER);
 
 		} else {
 
-			ScalarType type = typeManager.getScalarType(value.getClass());
+			ScalarType<?> type = typeManager.getScalarType(value.getClass());
 			if (type == null){
 				// the type is not registered with the TypeManager.
 				String msg = "No ScalarType registered for "+value.getClass();
@@ -191,7 +187,7 @@ public class Binder {
 			}
 
 			int dbType = type.getJdbcType();
-			bindObject(index, value, dbType, pstmt);
+			bindObject(dataBind, value, dbType);
 		}
 	}
 
@@ -207,137 +203,129 @@ public class Binder {
 	 * default is that both are converted to java.sql.Timestamp.
 	 * </p>
 	 */
-	public void bindObject(int index, Object data, int dbType, PreparedStatement pstmt)
+	public void bindObject(DataBind dataBind, Object data, int dbType)
 			throws SQLException {
 
 		if (data == null){
-			pstmt.setNull(index, dbType);
+		    dataBind.setNull(dbType);
 			return;
 		}
 		
 		switch (dbType) {
 		case java.sql.Types.LONGVARCHAR:
-			bindLongVarChar(index, data, pstmt);
+			bindLongVarChar(dataBind, data);
 			break;
 
 		case java.sql.Types.LONGVARBINARY:
-			bindLongVarBinary(index, data, pstmt);
+			bindLongVarBinary(dataBind, data);
 			break;
 
 		case java.sql.Types.CLOB:
-			bindClob(index, data, pstmt);
+			bindClob(dataBind, data);
 			break;
 
 		case java.sql.Types.BLOB:
-			bindBlob(index, data, pstmt);
+			bindBlob(dataBind, data);
 			break;
 
 		default:
 
-			bindSimpleData(index, dbType, data, pstmt);
+			bindSimpleData(dataBind, dbType, data);
 		}
-	}
-
-	/**
-	 * Ensure the data is of dataType type. This will return an object that is
-	 * converted to the appropriate type before returning it if required.
-	 */
-	public Object convertType(Object data, int dataType) {
-		return typeManager.convert(data, dataType);
 	}
 
 	/**
 	 * Binds the value to the statement according to the data type.
 	 */
-	private void bindSimpleData(int index, int dataType, Object data, PreparedStatement pstmt)
+	private void bindSimpleData(DataBind b, int dataType, Object data)
 			throws SQLException {
 
 		try {
 			switch (dataType) {
 			case java.sql.Types.BOOLEAN:
 				Boolean bo = (Boolean) data;
-				pstmt.setBoolean(index, bo.booleanValue());
+				b.setBoolean(bo.booleanValue());
 				break;
 
 			case java.sql.Types.VARCHAR:
-				pstmt.setString(index, (String) data);
+				b.setString((String) data);
 				break;
 
 			case java.sql.Types.CHAR:
-				pstmt.setString(index, data.toString());
+				b.setString(data.toString());
 				break;
 				
 			case java.sql.Types.TINYINT:
-				pstmt.setByte(index, ((Byte) data).byteValue());
+				b.setByte(((Byte) data).byteValue());
 				break;
 
 			case java.sql.Types.SMALLINT:
-				pstmt.setShort(index, ((Short) data).shortValue());
+				b.setShort(((Short) data).shortValue());
 				break;
 
 			case java.sql.Types.INTEGER:
-				pstmt.setInt(index, ((Integer) data).intValue());
+				b.setInt(((Integer) data).intValue());
 				break;
 
 			case java.sql.Types.BIGINT:
-				pstmt.setLong(index, ((Long) data).longValue());
+				b.setLong(((Long) data).longValue());
 				break;
 
 			case java.sql.Types.REAL:
-				pstmt.setFloat(index, ((Float) data).floatValue());
+				b.setFloat(((Float) data).floatValue());
 				break;
 
 			case java.sql.Types.FLOAT:
 				// DB Float in theory maps to Java Double type
-				pstmt.setDouble(index, ((Double) data).doubleValue());
+				b.setDouble(((Double) data).doubleValue());
 				break;
 
 			case java.sql.Types.DOUBLE:
-				pstmt.setDouble(index, ((Double) data).doubleValue());
+				b.setDouble(((Double) data).doubleValue());
 				break;
 
 			case java.sql.Types.NUMERIC:
-				pstmt.setBigDecimal(index, (BigDecimal) data);
+				b.setBigDecimal((BigDecimal) data);
 				break;
 
 			case java.sql.Types.DECIMAL:
-				pstmt.setBigDecimal(index, (BigDecimal) data);
+				b.setBigDecimal((BigDecimal) data);
 				break;
 
 			case java.sql.Types.TIME:
 				//pstmt.setTime(index, (java.sql.Time) data, calendar);
-				pstmt.setTime(index, (java.sql.Time) data);
+				b.setTime((java.sql.Time) data);
 				break;
 
 			case java.sql.Types.DATE:
 				//pstmt.setDate(index, (java.sql.Date) data, calendar);
-				pstmt.setDate(index, (java.sql.Date) data);
+				b.setDate((java.sql.Date) data);
 				break;
 
 			case java.sql.Types.TIMESTAMP:
 				//pstmt.setTimestamp(index, (java.sql.Timestamp) data, calendar);
-				pstmt.setTimestamp(index, (java.sql.Timestamp) data);
+				b.setTimestamp((java.sql.Timestamp) data);
 				break;
 
 			case java.sql.Types.BINARY:
-				pstmt.setBytes(index, (byte[]) data);
+				b.setBytes((byte[]) data);
 				break;
 
 			case java.sql.Types.VARBINARY:
-				pstmt.setBytes(index, (byte[]) data);
+				b.setBytes((byte[]) data);
 				break;
 
 			case java.sql.Types.OTHER:
-				pstmt.setObject(index, data);
+				b.setObject(data);
 				break;
 
 			case java.sql.Types.JAVA_OBJECT:
 				// Not too sure about this.
-				pstmt.setObject(index, data);
+				b.setObject(data);
 				break;
 
 			default:
-				String msg = Message.msg("persist.bind.datatype", "" + dataType, "" + index);
+				String msg = Message.msg("persist.bind.datatype", "" + dataType, "" + b.currentPos());
 				throw new SQLException(msg);
 			}
 
@@ -346,7 +334,7 @@ public class Binder {
 			if (data != null) {
 				dataClass = data.getClass().getName();
 			}
-			String m = "Error with property[" + index + "] dt[" + dataType + "]";
+			String m = "Error with property[" + b.currentPos() + "] dt[" + dataType + "]";
 			m += "data[" + data + "][" + dataClass + "]";
 			throw new PersistenceException(m, e);
 		}
@@ -355,44 +343,44 @@ public class Binder {
 	/**
 	 * Bind String data to a LONGVARCHAR column.
 	 */
-	private void bindLongVarChar(int index, Object data, PreparedStatement pstmt)
+	private void bindLongVarChar(DataBind b, Object data)
 			throws SQLException {
 
 		String sd = (String) data;
 		Reader stringReader = new StringReader(sd);
-		pstmt.setCharacterStream(index, stringReader, sd.length());
+		b.getPstmt().setCharacterStream(b.nextPos(), stringReader, sd.length());
 		return;
 	}
 
 	/**
 	 * Bind byte[] data to a LONGVARBINARY column.
 	 */
-	private void bindLongVarBinary(int index, Object data, PreparedStatement pstmt)
+	private void bindLongVarBinary(DataBind b, Object data)
 			throws SQLException {
 
 		byte[] bytes = (byte[]) data;
-		pstmt.setBinaryStream(index, new ByteArrayInputStream(bytes), bytes.length);
+		b.getPstmt().setBinaryStream(b.nextPos(), new ByteArrayInputStream(bytes), bytes.length);
 		return;
 	}
 
 	/**
 	 * Bind String data to a CLOB column.
 	 */
-	private void bindClob(int index, Object data, PreparedStatement pstmt) throws SQLException {
+	private void bindClob(DataBind b, Object data) throws SQLException {
 
 		String sd = (String) data;
 		Reader reader = new StringReader(sd);
-		pstmt.setCharacterStream(index, reader, sd.length());
+		b.getPstmt().setCharacterStream(b.nextPos(), reader, sd.length());
 	}
 
 	/**
 	 * Bind byte[] data to a BLOB column.
 	 */
-	private void bindBlob(int index, Object data, PreparedStatement pstmt) throws SQLException {
+	private void bindBlob(DataBind b, Object data) throws SQLException {
 
 		byte[] bytes = (byte[]) data;
 		ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-		pstmt.setBinaryStream(index, is, bytes.length);
+		b.getPstmt().setBinaryStream(b.nextPos(), is, bytes.length);
 	}
 
 	private boolean isLob(int dbType) {

@@ -42,7 +42,7 @@ public class DMLTest extends TestCase {
         person.setName("Yaroslav");
         Phone phone = new Phone();
         phone.setPhoneNumber("5244011");
-        List phones = new ArrayList();
+        List<Phone> phones = new ArrayList<Phone>();
         phones.add(phone);
         person.setPhones(phones);
         Ebean.save(person);

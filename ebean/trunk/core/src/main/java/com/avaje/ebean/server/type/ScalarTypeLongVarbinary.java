@@ -19,9 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.io.InputStream;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -35,18 +32,19 @@ public class ScalarTypeLongVarbinary extends ScalarTypeBlob {
 		super(byte[].class, true, Types.LONGVARBINARY);
 	}
 
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	@Override
+	public void bind(DataBind b, byte[] value) throws SQLException {
 		if (value == null) {
-			pstmt.setNull(index, Types.LONGVARBINARY);
+			b.setNull(Types.LONGVARBINARY);
 		} else {
-			pstmt.setBytes(index, (byte[])value);
+			b.setBytes(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	@Override
+	public byte[] read(DataReader dataReader) throws SQLException {
 	
-		InputStream in = rset.getBinaryStream(index);	
-		return getBinaryLob(in);
+	    return dataReader.getBinaryBytes();
 	}
 	
 }

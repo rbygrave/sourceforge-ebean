@@ -19,32 +19,42 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ScalarTypeWrapper implements ScalarType {
+import com.avaje.ebean.config.ScalarTypeConverter;
 
-    final ScalarType scalarType;
-    final WrapperConverter converter;
-    final Class<?> wrapperType;
+public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
+
+    private final ScalarType<S> scalarType;
+    private final ScalarTypeConverter<B,S> converter;
+    private final Class<B> wrapperType;
     
-    ScalarTypeWrapper(Class<?> wrapperType, ScalarType scalarType, WrapperConverter converter){
+    public ScalarTypeWrapper(Class<B> wrapperType, ScalarType<S> scalarType, ScalarTypeConverter<B,S> converter){
         this.scalarType = scalarType;
         this.converter = converter;
         this.wrapperType = wrapperType;
     }
     
-    public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
-        Object sv = converter.toScalarType(value);
-        scalarType.bind(pstmt, index, sv);
+    public void bind(DataBind b, B value) throws SQLException {
+        if (value == null){
+            scalarType.bind(b, null);            
+        } else {
+            S sv = converter.unwrapValue(value);
+            scalarType.bind(b, sv);
+        }
     }
 
-    public Object getDbNullValue(Object value) {
-        Object sv = converter.toScalarType(value);
-        return scalarType.getDbNullValue(sv);
-    }
+//    public Object getDbNullValue(Object value) {
+//        S sv = converter.unwrapValue((B)value);
+//        return scalarType.getDbNullValue(sv);
+//    }
 
+
+//  public boolean isDbNull(Object value) {
+//      S sv = converter.unwrapValue((B)value);
+//      return scalarType.isDbNull(sv);
+//  }
+    
     public int getJdbcType() {
         return scalarType.getJdbcType();
     }
@@ -53,7 +63,7 @@ public class ScalarTypeWrapper implements ScalarType {
         return scalarType.getLength();
     }
 
-    public Class<?> getType() {
+    public Class<B> getType() {
         return wrapperType;
     }
 
@@ -61,39 +71,70 @@ public class ScalarTypeWrapper implements ScalarType {
         return scalarType.isDateTimeCapable();
     }
 
-    public boolean isDbNull(Object value) {
-        Object sv = converter.toScalarType(value);
-        return scalarType.isDbNull(sv);
-    }
-
     public boolean isJdbcNative() {
         return false;
     }
 
-    public Object parse(String value) {
-        Object sv  = scalarType.parse(value);
-        return converter.toBeanType(sv);
+    public B parse(String value) {
+        S sv  = scalarType.parse(value);
+        if (sv == null){
+            return null;
+        }
+        return converter.wrapValue(sv);
     }
 
-    public Object parseDateTime(long systemTimeMillis) {
-        return scalarType.parseDateTime(systemTimeMillis);
+    public B parseDateTime(long systemTimeMillis) {
+        S sv = scalarType.parseDateTime(systemTimeMillis);
+        if (sv == null){
+            return null;
+        }
+        return converter.wrapValue(sv);        
     }
 
-    public Object read(ResultSet rset, int index) throws SQLException {
+    public void loadIgnore(DataReader dataReader) {
+        dataReader.incrementPos(1);
+    }
+
+    public B read(DataReader dataReader) throws SQLException {
         
-        Object sv = scalarType.read(rset, index);
-        return converter.toBeanType(sv);
+        S sv = scalarType.read(dataReader);
+        if (sv == null){
+            return null;
+        }
+        return converter.wrapValue(sv);
     }
 
-    public Object toBeanType(Object value) {
-        
-        Object sv = scalarType.toBeanType(value);
-        return converter.toBeanType(sv);
+    @SuppressWarnings("unchecked")
+    public B toBeanType(Object value) {
+        if (value == null){
+            return null;
+        }
+        if (getType().isAssignableFrom(value.getClass())){
+            return (B)value;
+        }
+        if (value instanceof String){
+            return parse((String)value);
+        }
+        S sv = scalarType.toBeanType(value);
+        return converter.wrapValue(sv);        
     }
 
+    @SuppressWarnings("unchecked")
     public Object toJdbcType(Object value) {
-        Object sv = converter.toScalarType(value);
+        
+        Object sv = converter.unwrapValue((B)value);
+        if (sv == null){
+            return null;
+        }
         return scalarType.toJdbcType(sv);
     }
 
+    public void accumulateScalarTypes(String propName, CtCompoundTypeScalarList list) {
+        list.addScalarType(propName, this);
+    }
+
+    public ScalarType<?> getScalarType() {
+        return this;
+    }
+    
 }

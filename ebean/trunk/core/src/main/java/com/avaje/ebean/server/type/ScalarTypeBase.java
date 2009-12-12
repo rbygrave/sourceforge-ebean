@@ -19,16 +19,18 @@
  */
 package com.avaje.ebean.server.type;
 
+
+
 /**
  * Base ScalarType object.
  */
-public abstract class ScalarTypeBase implements ScalarType {
+public abstract class ScalarTypeBase<T> implements ScalarType<T> {
 
-	final Class<?> type;
-	final boolean jdbcNative;
-	final int jdbcType;
+	protected final Class<T> type;
+	protected final boolean jdbcNative;
+	protected final int jdbcType;
 	
-	public ScalarTypeBase(Class<?> type, boolean jdbcNative, int jdbcType) {
+	public ScalarTypeBase(Class<T> type, boolean jdbcNative, int jdbcType) {
 		this.type = type;
 		this.jdbcNative = jdbcNative;
 		this.jdbcType = jdbcType;
@@ -49,7 +51,7 @@ public abstract class ScalarTypeBase implements ScalarType {
 		return jdbcType;
 	}
 	
-	public Class<?> getType() {
+	public Class<T> getType() {
 		return type;
 	}
 
@@ -66,6 +68,14 @@ public abstract class ScalarTypeBase implements ScalarType {
 	public Object getDbNullValue(Object value) {
 		return value;
 	}
+
+    public void loadIgnore(DataReader dataReader) {
+        
+        dataReader.incrementPos(1);
+    }
 	
-	
+    public void accumulateScalarTypes(String propName, CtCompoundTypeScalarList list) {
+        list.addScalarType(propName, this);
+    }
+
 }

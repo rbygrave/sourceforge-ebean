@@ -87,7 +87,7 @@ public class SqlBeanLoad {
 	 * Increment the resultSet index 1.
 	 */
 	public void loadIgnore(int increment) {
-		ctx.incrementRsetIndex(increment);
+	    ctx.getDataReader().incrementPos(increment);
 	}
 	
 	public void load(BeanProperty prop) throws SQLException {
@@ -105,7 +105,7 @@ public class SqlBeanLoad {
 			// ... excludes: partial bean that is lazy loading
 			// ... type: inheritance and not assignable to this instance
 			
-			prop.loadIgnore(this);
+		    prop.loadIgnore(ctx);
 			return;
 		}
 		

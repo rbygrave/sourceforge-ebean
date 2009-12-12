@@ -162,7 +162,7 @@ public class DeployBeanProperty {
 	/**
 	 * Set for Non-JDBC types to provide logical to db type conversion.
 	 */
-	private ScalarType scalarType;
+	private ScalarType<?> scalarType;
 
 	/**
 	 * The database column. This can include quoted identifiers.
@@ -212,9 +212,10 @@ public class DeployBeanProperty {
 
 	private int sortOrder;
 	
-	public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType) {
+	public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType, ScalarType<?> scalarType) {
 		this.desc = desc;
 		this.propertyType = propertyType;
+		this.scalarType = scalarType;
 	}
 	
 	public int getSortOverride() {
@@ -376,11 +377,11 @@ public class DeployBeanProperty {
 	 * Return the scalarType. This returns null for native JDBC types, otherwise
 	 * it is used to convert between logical types and jdbc types.
 	 */
-	public ScalarType getScalarType() {
+	public ScalarType<?> getScalarType() {
 		return scalarType;
 	}
 
-	public void setScalarType(ScalarType scalarType) {
+	public void setScalarType(ScalarType<?> scalarType) {
 		this.scalarType = scalarType;
 	}
 

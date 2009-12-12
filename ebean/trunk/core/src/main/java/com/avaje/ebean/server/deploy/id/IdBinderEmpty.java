@@ -1,12 +1,12 @@
 package com.avaje.ebean.server.deploy.id;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * For beans with no id properties AKA report type beans.
@@ -79,10 +79,13 @@ public final class IdBinderEmpty implements IdBinder {
 		return new Object[]{idValue};
 	}
 	
-	public int bindId(PreparedStatement pstmt, int index, Object value) throws SQLException {
-		return index;
+	public void bindId(DataBind dataBind, Object value) throws SQLException {
+		
 	}
 	
+    public void loadIgnore(DbReadContext ctx) {
+    }
+
 	public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
 		return null;
 	}

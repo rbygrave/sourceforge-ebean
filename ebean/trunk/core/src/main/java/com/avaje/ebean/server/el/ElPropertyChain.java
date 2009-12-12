@@ -54,7 +54,7 @@ public class ElPropertyChain implements ElPropertyValue {
 	private final boolean assocOneId;
 	private final int last;
 	private final BeanProperty lastBeanProperty;
-	private final ScalarType scalarType;
+	private final ScalarType<?> scalarType;
 	
 	private final ElPropertyValue lastElPropertyValue;
 	
@@ -82,7 +82,12 @@ public class ElPropertyChain implements ElPropertyValue {
 		
 		this.last = chain.length-1;
 		this.lastBeanProperty = chain[chain.length-1].getBeanProperty();
-		this.scalarType = lastBeanProperty.getScalarType();
+		if (lastBeanProperty != null){
+		    this.scalarType = lastBeanProperty.getScalarType();
+		} else {
+		    // case for nested compound type (non-scalar)
+		    this.scalarType = null;
+		}
 		this.lastElPropertyValue = chain[chain.length-1];
 		this.placeHolder = calcPlaceHolder(prefix,getDbColumn());
 		
@@ -239,10 +244,16 @@ public class ElPropertyChain implements ElPropertyValue {
 			}				
 		}
 		if (prevBean != null){
-			lastBeanProperty.setValueIntercept(prevBean, value);
-			if (reference){
-				((EntityBean)prevBean)._ebean_getIntercept().setReference();
-			}
+		    if (lastBeanProperty != null){
+		        // last chain element maps to a real scalar property
+    			lastBeanProperty.setValueIntercept(prevBean, value);
+    			if (reference){
+    				((EntityBean)prevBean)._ebean_getIntercept().setReference();
+    			}
+		    } else {
+		        // a non-scalar property of a Compound value object
+		        lastElPropertyValue.elSetValue(prevBean, value, populate, reference);
+		    }
 		}
 	}
 

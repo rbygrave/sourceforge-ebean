@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -30,38 +28,38 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
 /**
  * ScalarType for java.sql.Timestamp.
  */
-public class ScalarTypeTimestamp extends ScalarTypeBase {
+public class ScalarTypeTimestamp extends ScalarTypeBase<Timestamp> {
 
 	public ScalarTypeTimestamp() {
 		super(Timestamp.class, true, Types.TIMESTAMP);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Timestamp value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.TIMESTAMP);
+			b.setNull(Types.TIMESTAMP);
 		} else {
-			pstmt.setTimestamp(index, (Timestamp)value);
+			b.setTimestamp(value);
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public Timestamp read(DataReader dataReader) throws SQLException {
 		
-		return rset.getTimestamp(index);
+		return dataReader.getTimestamp();
 	}
 	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toTimestamp(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Timestamp toBeanType(Object value) {
 		return BasicTypeConverter.toTimestamp(value);
 	}
 
-	public Object parse(String value) {
+	public Timestamp parse(String value) {
 		return Timestamp.valueOf(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public Timestamp parseDateTime(long systemTimeMillis) {
 		return new Timestamp(systemTimeMillis);
 	}
 

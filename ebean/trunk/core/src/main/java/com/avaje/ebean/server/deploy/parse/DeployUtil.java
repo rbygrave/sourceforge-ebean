@@ -31,6 +31,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
+import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
 import com.avaje.ebean.server.type.TypeManager;
@@ -77,20 +78,18 @@ public class DeployUtil {
 
 		this.validatorFactoryManager = new ValidatorFactoryManager();
 	}
+	
+	public TypeManager getTypeManager() {
+        return typeManager;
+    }
 
-	
-	
-	public DatabasePlatform getDbPlatform() {
+    public DatabasePlatform getDbPlatform() {
 		return dbPlatform;
 	}
-
-
 
 	public NamingConvention getNamingConvention() {
 		return namingConvention;
 	}
-
-
 
 	/**
 	 * Return the table alias used for ManyToMany joins.
@@ -111,13 +110,13 @@ public class DeployUtil {
 		}
 	}
 
-	public ScalarType setEnumScalarType(Enumerated enumerated, DeployBeanProperty prop) {
+	public ScalarType<?> setEnumScalarType(Enumerated enumerated, DeployBeanProperty prop) {
 
 		Class<?> enumType = prop.getPropertyType();
 		if (!enumType.isEnum()) {
 			throw new IllegalArgumentException("Not a Enum?");
 		}
-		ScalarType scalarType = typeManager.getScalarType(enumType);
+		ScalarType<?> scalarType = typeManager.getScalarType(enumType);
 		if (scalarType == null) {
 			// see if it has a Mapping in avaje.properties
 			scalarType = typeManager.createEnumScalarType(enumType);
@@ -134,7 +133,7 @@ public class DeployUtil {
 		return scalarType;
 	}
 
-	private ScalarType createEnumScalarTypePerSpec(Class<?> enumType, EnumType type, int dbType) {
+	private ScalarType<?> createEnumScalarTypePerSpec(Class<?> enumType, EnumType type, int dbType) {
 
 		if (type == null) {
 			// default as per spec is ORDINAL
@@ -162,8 +161,12 @@ public class DeployUtil {
 			// this will be an Enum type...
 			return;
 		}
+		if (property instanceof DeployBeanPropertyCompound){
+		    // compound properties have a CvoInternalType instead
+		    return;
+		}
 
-		ScalarType scalarType = getScalarType(property);
+		ScalarType<?> scalarType = getScalarType(property);
 		if (scalarType != null){
 			// set the jdbc type this maps to
 			property.setDbType(scalarType.getJdbcType());
@@ -171,12 +174,12 @@ public class DeployUtil {
 		}
 	}
 
-	private ScalarType getScalarType(DeployBeanProperty property) {
+	private ScalarType<?> getScalarType(DeployBeanProperty property) {
 
 		// Note that Temporal types already have dbType
 		// set via annotations
 		Class<?> propType = property.getPropertyType();
-		ScalarType scalarType = typeManager.getScalarType(propType, property.getDbType());
+		ScalarType<?> scalarType = typeManager.getScalarType(propType, property.getDbType());
 		if (scalarType != null) {
 			return scalarType;
 		}

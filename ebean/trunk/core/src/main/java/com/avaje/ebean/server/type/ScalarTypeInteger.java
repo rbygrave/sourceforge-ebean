@@ -19,8 +19,6 @@
  */
 package com.avaje.ebean.server.type;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -30,42 +28,38 @@ import com.avaje.ebean.text.TextException;
 /**
  * ScalarType for Integer and int.
  */
-public class ScalarTypeInteger extends ScalarTypeBase {
+public class ScalarTypeInteger extends ScalarTypeBase<Integer> {
 
 	public ScalarTypeInteger() {
 		super(Integer.class, true, Types.INTEGER);
 	}
 	
-	public void bind(PreparedStatement pstmt, int index, Object value) throws SQLException {
+	public void bind(DataBind b, Integer value) throws SQLException {
 		if (value == null){
-			pstmt.setNull(index, Types.INTEGER);
+			b.setNull(Types.INTEGER);
 		} else {
-			pstmt.setInt(index, ((Integer) value).intValue());
+			b.setInt(value.intValue());
 		}
 	}
 
-	public Object read(ResultSet rset, int index) throws SQLException {
+	public Integer read(DataReader dataReader) throws SQLException {
 		
-		int i = rset.getInt(index);
-		if (rset.wasNull()){
-			return null;
-		}
-		return i;
+		return dataReader.getInt();
 	}
 
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toInteger(value);
 	}
 
-	public Object toBeanType(Object value) {
+	public Integer toBeanType(Object value) {
 		return BasicTypeConverter.toInteger(value);
 	}
 
-	public Object parse(String value) {
+	public Integer parse(String value) {
 		return Integer.valueOf(value);
 	}
 
-	public Object parseDateTime(long systemTimeMillis) {
+	public Integer parseDateTime(long systemTimeMillis) {
 		throw new TextException("Not Supported");
 	}
 

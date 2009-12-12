@@ -1,6 +1,5 @@
 package com.avaje.ebean.server.deploy.id;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
@@ -9,6 +8,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Bind an Id that is an Embedded bean.
@@ -118,15 +118,19 @@ public final class IdBinderEmbedded implements IdBinder {
 		return bindvalues;
 	}
 	
-	public int bindId(PreparedStatement pstmt, int index,
-			Object value) throws SQLException {
+	public void bindId(DataBind dataBind,Object value) throws SQLException {
 		
 		for (int i = 0; i < props.length; i++) {
 			Object embFieldValue = props[i].getValue(value);
-			props[i].bind(pstmt, ++index, embFieldValue);
+			props[i].bind(dataBind, embFieldValue);
 		}
-		return index;
 	}
+
+    public void loadIgnore(DbReadContext ctx) {
+        for (int i = 0; i < props.length; i++) {
+            props[i].loadIgnore(ctx);
+        }
+    }
 
 	public Object read(DbReadContext ctx) throws SQLException {
 		

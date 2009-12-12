@@ -76,7 +76,7 @@ public class BackgroundIdFetch implements Callable<Integer> {
         	while (rset.next()){
 				Object idValue = beanDescriptor.getIdBinder().read(ctx);
 				idList.add(idValue);
-				ctx.resetRsetIndex();
+				ctx.getDataReader().resetColumnPosition();
 				rowsRead++;				
 			}
         	

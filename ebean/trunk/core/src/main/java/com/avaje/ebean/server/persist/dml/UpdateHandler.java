@@ -19,13 +19,15 @@
  */
 package com.avaje.ebean.server.persist.dml;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Set;
 
-import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.internal.SpiTransaction;
+import com.avaje.ebean.internal.SpiUpdatePlan;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Update bean handler.
@@ -38,7 +40,7 @@ public class UpdateHandler extends DmlHandler {
 	private Set<String> updatedProperties;
 	
 	public UpdateHandler(PersistRequestBean<?> persist, UpdateMeta meta) {
-		super(persist);
+		super(persist, meta.isEmptyStringAsNull());
 		this.meta = meta;
 	}
 	
@@ -56,6 +58,7 @@ public class UpdateHandler extends DmlHandler {
 		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
 
+		PreparedStatement pstmt;
 		if (isBatch) {
 			pstmt = getPstmt(t, sql, persistRequest, false);
 
@@ -63,6 +66,7 @@ public class UpdateHandler extends DmlHandler {
 			logSql(sql);
 			pstmt = getPstmt(t, sql, false);
 		}
+		dataBind = new DataBind(pstmt);
 
 		bindLogAppend("Binding Update [");
 		bindLogAppend(meta.getTableName());
@@ -80,7 +84,7 @@ public class UpdateHandler extends DmlHandler {
 	 * Execute the update in non-batch.
 	 */
 	public int execute() throws SQLException {
-		int rowCount = pstmt.executeUpdate();
+		int rowCount = dataBind.getPstmt().executeUpdate();
 		persistRequest.checkRowCount(rowCount);
 		persistRequest.postExecute();
 		return rowCount;
