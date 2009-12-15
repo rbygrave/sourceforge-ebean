@@ -1,7 +1,6 @@
 
 package com.avaje.tests.model.ivo.converter;
 
-import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.tests.model.ivo.Oid;
 
 public class OidTypeConverter {//implements ScalarTypeConverter<Oid<?>,Long> {
