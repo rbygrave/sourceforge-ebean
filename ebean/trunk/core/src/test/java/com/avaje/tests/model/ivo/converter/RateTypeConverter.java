@@ -8,7 +8,7 @@ import com.avaje.tests.model.ivo.Rate;
 /**
  * Converts between Rate and BigDecimal.
  */
-public class RateTypeConverter implements ScalarTypeConverter<Rate,BigDecimal>{
+public class RateTypeConverter {//implements ScalarTypeConverter<Rate,BigDecimal>{
 
     public BigDecimal unwrapValue(Rate beanType) {
         return beanType.getValue();

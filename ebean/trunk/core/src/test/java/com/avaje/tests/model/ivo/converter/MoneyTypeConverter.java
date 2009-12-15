@@ -8,7 +8,7 @@ import com.avaje.tests.model.ivo.Money;
 /**
  * Converts between Money and BigDecimal.
  */
-public class MoneyTypeConverter implements ScalarTypeConverter<Money,BigDecimal>{
+public class MoneyTypeConverter {//implements ScalarTypeConverter<Money,BigDecimal>{
 
     public BigDecimal unwrapValue(Money beanType) {
         return beanType.getAmount();

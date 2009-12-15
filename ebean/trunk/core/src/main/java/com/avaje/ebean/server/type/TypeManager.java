@@ -19,10 +19,18 @@
  */
 package com.avaje.ebean.server.type;
 
+import com.avaje.ebean.server.type.reflect.CheckImmutableResponse;
+
 /**
  * Convert an Object to the required type.
  */
 public interface TypeManager {
+
+    public CheckImmutableResponse checkImmutable(Class<?> cls);
+
+    public ScalarDataReader<?> recursiveCreateScalarDataReader(Class<?> cls);
+
+    public ScalarType<?> recursiveCreateScalarTypes(Class<?> cls);
 
 	/**
 	 * Register a ScalarType with the system.

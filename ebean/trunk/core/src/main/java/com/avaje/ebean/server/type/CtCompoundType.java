@@ -59,6 +59,10 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
             propertyMap.put(cp.getName(), cp);
         }
     }
+    
+    public String toString() {
+        return cvoClass.toString();
+    }
 
     public Class<V> getCompoundTypeClass() {
         return cvoClass;
@@ -107,11 +111,19 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
 
     public V read(DataReader source) throws SQLException {
 
+        boolean nullValue = false;
         Object[] values = new Object[propReaders.length];
 
         for (int i = 0; i < propReaders.length; i++) {
             Object o = propReaders[i].read(source);
             values[i] = o;
+            if (o == null){
+                nullValue = true;
+            }
+        }
+        
+        if (nullValue){
+            return null;
         }
 
         return cvoType.create(values);

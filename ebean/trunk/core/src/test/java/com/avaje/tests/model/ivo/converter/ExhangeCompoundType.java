@@ -47,6 +47,11 @@ public class ExhangeCompoundType implements CompoundType<ExhangeCMoneyRate> {
         public Rate getValue(ExhangeCMoneyRate valueObject) {
             return valueObject.getRate();
         } 
+        
+        public int getDbType() {
+            return 0;
+        }
+
     }
     
     static class CMoneyProp implements CompoundTypeProperty<ExhangeCMoneyRate, CMoney> {
@@ -58,6 +63,11 @@ public class ExhangeCompoundType implements CompoundType<ExhangeCMoneyRate> {
         public CMoney getValue(ExhangeCMoneyRate valueObject) {
             return valueObject.getCmoney();
         }
+
+        public int getDbType() {
+            return 0;
+        }
+        
     }
     
 }

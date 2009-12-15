@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.server.core.Message;
@@ -41,6 +42,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebean.server.type.CtCompoundType;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
+import com.avaje.ebean.server.type.reflect.CheckImmutableResponse;
 
 /**
  * Create the properties for a bean.
@@ -286,8 +288,39 @@ public class DeployCreateProperties {
         if (compoundType != null) {
             return new DeployBeanPropertyCompound(desc, propertyType, compoundType);
         }
+     
+        if (!isTransientField(field)){
+            try {
+                CheckImmutableResponse checkImmutable = typeManager.checkImmutable(propertyType);
+                if (checkImmutable.isImmutable()){
+                    if (checkImmutable.isCompoundType()){
+                        // use reflection to support compound immutable value objects
+                        typeManager.recursiveCreateScalarDataReader(propertyType);
+                        compoundType = typeManager.getCompoundType(propertyType);
+                        if (compoundType != null) {
+                            return new DeployBeanPropertyCompound(desc, propertyType, compoundType);
+                        }
+                        
+                    } else {
+                        // use reflection to support simple immutable value objects
+                        ScalarType<?> st  = typeManager.recursiveCreateScalarTypes(propertyType);
+                        return new DeployBeanProperty(desc, propertyType, st);
+                    }
+                }
+            } catch (Exception e){
+                logger.log(Level.SEVERE, "Error with "+desc+" field:"+field.getName(), e);
+            }
+            
+        }
+        
         
         return new DeployBeanPropertyAssocOne(desc, propertyType);
+    }
+    
+    private boolean isTransientField(Field field) {
+        
+        Transient t = field.getAnnotation(Transient.class);
+        return (t != null);
     }
     
 	private DeployBeanProperty createProp(int level, DeployBeanDescriptor<?> desc, Field field, Class<?> beanType, Method getter, Method setter) {

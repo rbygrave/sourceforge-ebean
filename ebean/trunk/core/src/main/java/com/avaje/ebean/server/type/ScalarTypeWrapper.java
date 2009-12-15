@@ -23,38 +23,45 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.config.ScalarTypeConverter;
 
-public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
+/**
+ * A ScalarType that uses a ScalarTypeConverter to convert to and from another
+ * underlying ScalarType.
+ * <p>
+ * Enables the use of a simple interface to add additional scalarTypes.
+ * </p>
+ * 
+ * @author rbygrave
+ * 
+ * @param <B>
+ *            the logical type
+ * @param <S>
+ *            the underlying scalar type this is converted to
+ */
+public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
 
     private final ScalarType<S> scalarType;
-    private final ScalarTypeConverter<B,S> converter;
+    private final ScalarTypeConverter<B, S> converter;
     private final Class<B> wrapperType;
-    
-    public ScalarTypeWrapper(Class<B> wrapperType, ScalarType<S> scalarType, ScalarTypeConverter<B,S> converter){
+
+    public ScalarTypeWrapper(Class<B> wrapperType, ScalarType<S> scalarType, ScalarTypeConverter<B, S> converter) {
         this.scalarType = scalarType;
         this.converter = converter;
         this.wrapperType = wrapperType;
     }
-    
+
+    public String toString() {
+        return "ScalarTypeWrapper " + wrapperType + " to " + scalarType.getType();
+    }
+
     public void bind(DataBind b, B value) throws SQLException {
-        if (value == null){
-            scalarType.bind(b, null);            
+        if (value == null) {
+            scalarType.bind(b, null);
         } else {
             S sv = converter.unwrapValue(value);
             scalarType.bind(b, sv);
         }
     }
 
-//    public Object getDbNullValue(Object value) {
-//        S sv = converter.unwrapValue((B)value);
-//        return scalarType.getDbNullValue(sv);
-//    }
-
-
-//  public boolean isDbNull(Object value) {
-//      S sv = converter.unwrapValue((B)value);
-//      return scalarType.isDbNull(sv);
-//  }
-    
     public int getJdbcType() {
         return scalarType.getJdbcType();
     }
@@ -76,8 +83,8 @@ public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
     }
 
     public B parse(String value) {
-        S sv  = scalarType.parse(value);
-        if (sv == null){
+        S sv = scalarType.parse(value);
+        if (sv == null) {
             return null;
         }
         return converter.wrapValue(sv);
@@ -85,10 +92,10 @@ public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
 
     public B parseDateTime(long systemTimeMillis) {
         S sv = scalarType.parseDateTime(systemTimeMillis);
-        if (sv == null){
+        if (sv == null) {
             return null;
         }
-        return converter.wrapValue(sv);        
+        return converter.wrapValue(sv);
     }
 
     public void loadIgnore(DataReader dataReader) {
@@ -96,9 +103,9 @@ public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
     }
 
     public B read(DataReader dataReader) throws SQLException {
-        
+
         S sv = scalarType.read(dataReader);
-        if (sv == null){
+        if (sv == null) {
             return null;
         }
         return converter.wrapValue(sv);
@@ -106,24 +113,24 @@ public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
 
     @SuppressWarnings("unchecked")
     public B toBeanType(Object value) {
-        if (value == null){
+        if (value == null) {
             return null;
         }
-        if (getType().isAssignableFrom(value.getClass())){
-            return (B)value;
+        if (getType().isAssignableFrom(value.getClass())) {
+            return (B) value;
         }
-        if (value instanceof String){
-            return parse((String)value);
+        if (value instanceof String) {
+            return parse((String) value);
         }
         S sv = scalarType.toBeanType(value);
-        return converter.wrapValue(sv);        
+        return converter.wrapValue(sv);
     }
 
     @SuppressWarnings("unchecked")
     public Object toJdbcType(Object value) {
-        
-        Object sv = converter.unwrapValue((B)value);
-        if (sv == null){
+
+        Object sv = converter.unwrapValue((B) value);
+        if (sv == null) {
             return null;
         }
         return scalarType.toJdbcType(sv);
@@ -136,5 +143,5 @@ public class ScalarTypeWrapper<B,S> implements ScalarType<B> {
     public ScalarType<?> getScalarType() {
         return this;
     }
-    
+
 }
