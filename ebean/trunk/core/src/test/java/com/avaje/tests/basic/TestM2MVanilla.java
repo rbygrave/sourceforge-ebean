@@ -55,6 +55,17 @@ public class TestM2MVanilla extends TestCase {
         Assert.assertNotNull(checkRoles2);
         Assert.assertEquals("added a role", 3, checkRoles2.size());
         
+        
+        checkRoles2.remove(0);
+        checkRoles2.remove(0);
+        Ebean.saveManyToManyAssociations(checkRoles2);
+        
+
+        checkUser2 = Ebean.find(MUser.class, u0.getUserid());
+        checkRoles2 = checkUser2.getRoles();
+        Assert.assertNotNull(checkRoles2);
+        Assert.assertEquals("added a role", 1, checkRoles2.size());
+
     }
 
 }
