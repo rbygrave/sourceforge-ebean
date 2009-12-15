@@ -2,7 +2,6 @@ package com.avaje.tests.model.ivo.converter;
 
 import java.util.Currency;
 
-import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.CompoundTypeProperty;
 import com.avaje.tests.model.ivo.CMoney;
 import com.avaje.tests.model.ivo.Money;

@@ -2,7 +2,6 @@ package com.avaje.tests.model.ivo.converter;
 
 import java.math.BigDecimal;
 
-import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.tests.model.ivo.Rate;
 
 /**
