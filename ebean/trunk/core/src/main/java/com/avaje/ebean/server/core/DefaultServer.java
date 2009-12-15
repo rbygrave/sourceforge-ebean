@@ -1396,35 +1396,6 @@ public final class DefaultServer implements SpiEbeanServer {
 		persister.save(bean, t);
 	}
     
-//    /**
-//     * Save the associations of a ManyToMany.
-//     */
-//    public void saveManyToManyAssociations(Collection<?> collection, Transaction t){
-//        if (collection instanceof BeanCollection<?>){
-//            saveManyToManyAssociations((BeanCollection<?>)collection, t);
-//        } else {
-//            String msg = "The collection must be an Ebean BeanCollection";
-//            throw new PersistenceException(msg);
-//        }
-//    }
-//    
-//    private void saveManyToManyAssociations(BeanCollection<?> collection, Transaction t){
-//   
-//        BeanCollection<?> bc = (BeanCollection<?>)collection;
-//        TransWrapper wrap = initTransIfRequired(t);
-//        try {
-//            SpiTransaction trans = wrap.transaction;
-//            
-//            persister.saveManyToManyAssociations(bc, trans);
-//
-//            wrap.commitIfCreated();
-//
-//        } catch (RuntimeException e) {
-//            wrap.rollbackIfCreated();
-//            throw e;
-//        }        
-//    }    
-	
     /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
