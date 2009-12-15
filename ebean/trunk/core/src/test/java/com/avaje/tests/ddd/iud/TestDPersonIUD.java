@@ -5,6 +5,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.joda.time.Interval;
 import org.junit.Assert;
 
 import com.avaje.ebean.Ebean;
@@ -29,6 +30,8 @@ public class TestDPersonIUD extends TestCase {
         p.setLastName("last");
         p.setSalary(new Money("12200"));
         p.setCmoney(new CMoney(new Money("12"), NZD));
+        
+        p.setInterval(new Interval(System.currentTimeMillis()-20000, System.currentTimeMillis()));
         
         Ebean.save(p);
         

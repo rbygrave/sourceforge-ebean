@@ -7,7 +7,7 @@ import com.avaje.ebean.config.CompoundTypeProperty;
 import com.avaje.tests.model.ivo.CMoney;
 import com.avaje.tests.model.ivo.Money;
 
-public class CMoneyCompoundType implements CompoundType<CMoney> {
+public class CMoneyCompoundType {//implements CompoundType<CMoney> {
 
     @SuppressWarnings("unchecked")
     private CompoundTypeProperty[] props = {new PropertyMoney(), new PropertyCurrency()};
@@ -30,6 +30,10 @@ public class CMoneyCompoundType implements CompoundType<CMoney> {
         public Money getValue(CMoney valueObject) {
             return valueObject.getAmount();
         }
+
+        public int getDbType() {
+            return 0;
+        }
     }
     
     static class PropertyCurrency implements CompoundTypeProperty<CMoney,Currency> {
@@ -42,6 +46,9 @@ public class CMoneyCompoundType implements CompoundType<CMoney> {
             return valueObject.getCurrency();
         }
 
+        public int getDbType() {
+            return 0;
+        }
     }
 
 }

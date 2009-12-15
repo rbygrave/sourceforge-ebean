@@ -3,6 +3,8 @@ package com.avaje.tests.model.ddd;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.joda.time.Interval;
+
 import com.avaje.ebean.annotation.EmbeddedColumns;
 import com.avaje.tests.model.ivo.CMoney;
 import com.avaje.tests.model.ivo.Money;
@@ -22,7 +24,10 @@ public class DPerson {
     
     @EmbeddedColumns(columns="amount=a_amt, currency=a_curr")
     CMoney cmoney;
-        
+    
+    @EmbeddedColumns(columns="startMillis=i_start, endMillis=i_end")
+    Interval interval;
+    
     public String toString() {
         return id+" "+firstName+" "+lastName+" "+salary;
     }
@@ -66,7 +71,13 @@ public class DPerson {
     public void setCmoney(CMoney cmoney) {
         this.cmoney = cmoney;
     }
-    
-    
+
+    public Interval getInterval() {
+        return interval;
+    }
+
+    public void setInterval(Interval interval) {
+        this.interval = interval;
+    }
     
 }

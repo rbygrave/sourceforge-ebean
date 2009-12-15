@@ -54,6 +54,14 @@ import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.server.core.BootupClasses;
 import com.avaje.ebean.server.lib.util.StringHelper;
+import com.avaje.ebean.server.type.reflect.CheckImmutable;
+import com.avaje.ebean.server.type.reflect.CheckImmutableResponse;
+import com.avaje.ebean.server.type.reflect.ImmutableMeta;
+import com.avaje.ebean.server.type.reflect.ImmutableMetaFactory;
+import com.avaje.ebean.server.type.reflect.KnownImmutable;
+import com.avaje.ebean.server.type.reflect.ReflectionBasedCompoundType;
+import com.avaje.ebean.server.type.reflect.ReflectionBasedCompoundTypeProperty;
+import com.avaje.ebean.server.type.reflect.ReflectionBasedTypeBuilder;
 
 /**
  * Default implementation of TypeManager.
@@ -61,7 +69,7 @@ import com.avaje.ebean.server.lib.util.StringHelper;
  * Manages the list of ScalarType that is available.
  * </p>
  */
-public final class DefaultTypeManager implements TypeManager {
+public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 
 	private static final Logger logger = Logger.getLogger(DefaultTypeManager.class.getName());
 
@@ -116,11 +124,24 @@ public final class DefaultTypeManager implements TypeManager {
 
     private final ScalarType<?> stringType = new ScalarTypeString();
 
+    private final ScalarTypeLongToTimestamp longToTimestamp = new ScalarTypeLongToTimestamp();
+    
+    private final List<ScalarType<?>> customScalarTypes = new ArrayList<ScalarType<?>>();
+
+    private final CheckImmutable checkImmutable;
+
+    private final ImmutableMetaFactory immutableMetaFactory = new ImmutableMetaFactory();
+    
+    private final ReflectionBasedTypeBuilder reflectScalarBuilder;
+
 	/**
 	 * Create the DefaultTypeManager.
 	 */
 	public DefaultTypeManager(ServerConfig config, BootupClasses bootupClasses) {
 		
+	    this.checkImmutable = new CheckImmutable(this);
+	    this.reflectScalarBuilder = new ReflectionBasedTypeBuilder(this);
+	    
 	    this.compoundTypeMap = new ConcurrentHashMap<Class<?>, CtCompoundType<?>>();
 		this.typeMap = new ConcurrentHashMap<Class<?>, ScalarType<?>>();
 		this.nativeMap = new ConcurrentHashMap<Integer, ScalarType<?>>();
@@ -129,13 +150,72 @@ public final class DefaultTypeManager implements TypeManager {
 		
 		initialiseStandard(stringType);		
 		initialiseJodaTypes();
+		
 		initialiseCustomScalarTypes(bootupClasses);
 		
 		initialiseScalarConverters(bootupClasses);
 		initialiseCompoundTypes(bootupClasses);
 		
 	}
+	
+    public boolean isKnownImmutable(Class<?> cls) {
+        
+        if (cls.isPrimitive() || Object.class.equals(cls)) {
+            return true;
+        }
+        
+        ScalarDataReader<?> scalarDataReader = getScalarDataReader(cls);
+        return scalarDataReader != null;
+    }
 
+
+    public CheckImmutableResponse checkImmutable(Class<?> cls) {
+        return checkImmutable.checkImmutable(cls);
+    }
+
+    private ScalarType<?> register(ScalarType<?> st) {
+        add(st);
+        logger.info("Registering ScalarType for "+st.getType()+" implemented using reflection");
+        return st;        
+    }
+
+    public ScalarDataReader<?> recursiveCreateScalarDataReader(Class<?> cls) {
+
+        ScalarDataReader<?> scalarReader = getScalarDataReader(cls);
+        if (scalarReader != null){
+            return scalarReader;
+        }
+        
+        ImmutableMeta meta = immutableMetaFactory.createImmutableMeta(cls);
+        
+        if (!meta.isCompoundType()){
+            return register(reflectScalarBuilder.buildScalarType(meta));
+        }
+        
+        ReflectionBasedCompoundType compoundType = reflectScalarBuilder.buildCompound(meta);
+        Class<?> compoundTypeClass = compoundType.getCompoundType();
+        
+        return createCompoundScalarDataReader(compoundTypeClass, compoundType, " using reflection");
+
+    }
+    
+    public ScalarType<?> recursiveCreateScalarTypes(Class<?> cls) {
+        
+        ScalarType<?> scalarType = getScalarType(cls);
+        if (scalarType != null){
+            return scalarType;
+        }
+        
+        ImmutableMeta meta = immutableMetaFactory.createImmutableMeta(cls);
+        
+        if (!meta.isCompoundType()){
+            return register(reflectScalarBuilder.buildScalarType(meta));
+        }
+        
+        throw new RuntimeException("Not allowed compound types here");
+        
+    }
+    
 	/**
 	 * Register a custom ScalarType.
 	 */
@@ -173,6 +253,27 @@ public final class DefaultTypeManager implements TypeManager {
 		return (ScalarType<T>)typeMap.get(type);
 	}
 
+    public ScalarDataReader<?> getScalarDataReader(Class<?> propertyType, int sqlType) {
+
+        if (sqlType == 0){
+            return recursiveCreateScalarDataReader(propertyType);
+        }
+        
+        for (int i = 0; i < customScalarTypes.size(); i++) {
+            ScalarType<?> customScalarType = customScalarTypes.get(i);
+            
+            if (sqlType == customScalarType.getJdbcType()
+                    && (propertyType.equals(customScalarType.getType()))) {
+                
+                return customScalarType;
+            }
+        }
+        
+        String msg = "Unable to find a custom ScalarType with type ["
+                    +propertyType+"] and java.sql.Type ["+sqlType+"]";
+        throw new RuntimeException(msg);
+    }
+    
     public ScalarDataReader<?> getScalarDataReader(Class<?> type) {
         ScalarDataReader<?> reader = typeMap.get(type);
         if (reader == null){
@@ -330,6 +431,8 @@ public final class DefaultTypeManager implements TypeManager {
 	 */
 	protected void initialiseCustomScalarTypes(BootupClasses bootupClasses) {
 
+	    customScalarTypes.add(longToTimestamp);
+	    
 		List<Class<?>> foundTypes = bootupClasses.getScalarTypes();
 		
 		for (int i = 0; i < foundTypes.size(); i++) {
@@ -338,6 +441,8 @@ public final class DefaultTypeManager implements TypeManager {
 
 				ScalarType<?> scalarType = (ScalarType<?>) cls.newInstance();
 				add(scalarType);
+				
+				customScalarTypes.add(scalarType);
 
 			} catch (Exception e) {
 				String msg = "Error loading ScalarType [" + cls.getName() + "]";
@@ -385,53 +490,81 @@ public final class DefaultTypeManager implements TypeManager {
 		
 	}
 
-    @SuppressWarnings("unchecked")
     protected void initialiseCompoundTypes(BootupClasses bootupClasses) {
 
         ArrayList<Class<?>> compoundTypes = bootupClasses.getCompoundTypes();
         for (int j = 0; j < compoundTypes.size(); j++) {
-            Class<?> type = compoundTypes.get(j);
             
-            CompoundType<?> compoundType;
             try {
-                compoundType = (CompoundType<?>)type.newInstance();
+                Class<?> type = compoundTypes.get(j);
+                
+                Class<?>[] paramTypes = TypeReflectHelper.getParams(type, CompoundType.class);
+                if (paramTypes.length != 1) {
+                    throw new RuntimeException("Expecting 1 generic paramter type but got " + Arrays.toString(paramTypes)
+                            + " for " + type);
+                }
+
+                Class<?> compoundTypeClass = paramTypes[0];
+
+                CompoundType<?>  compoundType = (CompoundType<?>)type.newInstance();
+                createCompoundScalarDataReader(compoundTypeClass, compoundType,"");
+                
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } 
-        
-            Class<?>[] paramTypes = TypeReflectHelper.getParams(type, CompoundType.class);
-            if (paramTypes.length != 1){
-                throw new RuntimeException("Expecting 1 generic paramter type but got "
-                        +Arrays.toString(paramTypes)+" for "+type);
-            }
-            
-            Class<?> compoundTypeClass = paramTypes[0];
-
-            CompoundTypeProperty<?, ?>[] cprops = compoundType.getProperties();
-
-            ScalarDataReader[] dataReaders = new ScalarDataReader[cprops.length];
-
-            for (int i = 0; i < cprops.length; i++) {
-                
-                // determine the types from generic parameter types using reflection
-                Class<?>[] propParamTypes = TypeReflectHelper.getParams(cprops[i].getClass(), CompoundTypeProperty.class);
-                if (propParamTypes.length != 2){
-                    throw new RuntimeException("Expecting 2 generic paramter types but got "
-                            +Arrays.toString(paramTypes)+" for "+cprops[i].getClass());
-                }
-                
-                ScalarDataReader<?> scalarDataReader = getScalarDataReader(propParamTypes[1]);
-                if (scalarDataReader == null){
-                    throw new RuntimeException("Could not find ScalarDataReader for "+propParamTypes[1]);                    
-                }
-                dataReaders[i] = scalarDataReader;
-            }
-            
-            CtCompoundType ctType = new CtCompoundType(compoundTypeClass, compoundType, dataReaders);
-
-            logger.info("Registering CompoundType "+compoundTypeClass);
-            compoundTypeMap.put(compoundTypeClass, ctType);
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected CtCompoundType createCompoundScalarDataReader(Class<?> compoundTypeClass, CompoundType<?> compoundType, String info) {
+
+        CtCompoundType<?> ctCompoundType = compoundTypeMap.get(compoundTypeClass);
+        if (ctCompoundType != null){
+            logger.info("Already registered compound type "+compoundTypeClass);
+            return ctCompoundType;
+        }
+
+        CompoundTypeProperty<?, ?>[] cprops = compoundType.getProperties();
+
+        ScalarDataReader[] dataReaders = new ScalarDataReader[cprops.length];
+
+        for (int i = 0; i < cprops.length; i++) {
+
+            Class<?> propertyType = getCompoundPropertyType(cprops[i]);
+
+            ScalarDataReader<?> scalarDataReader = getScalarDataReader(propertyType, cprops[i].getDbType());
+            if (scalarDataReader == null) {
+                throw new RuntimeException("Could not find ScalarDataReader for " + propertyType);
+            }
+            
+            dataReaders[i] = scalarDataReader;
+        }
+
+        CtCompoundType ctType = new CtCompoundType(compoundTypeClass, compoundType, dataReaders);
+
+        logger.info("Registering CompoundType " + compoundTypeClass+" "+info);
+        compoundTypeMap.put(compoundTypeClass, ctType);
+        
+        return ctType;
+    }
+    
+    /**
+     * Return the property type for a given property of a compound type.
+     */
+    private Class<?> getCompoundPropertyType(CompoundTypeProperty<?,?> prop) {
+        
+        if (prop instanceof ReflectionBasedCompoundTypeProperty){
+            return ((ReflectionBasedCompoundTypeProperty)prop).getPropertyType();
+        }
+        
+        // determine the types from generic parameter types using reflection
+        Class<?>[] propParamTypes = TypeReflectHelper.getParams(prop.getClass(), CompoundTypeProperty.class);
+        if (propParamTypes.length != 2){
+            throw new RuntimeException("Expecting 2 generic paramter types but got "
+                    +Arrays.toString(propParamTypes)+" for "+prop.getClass());
+        }
+        
+        return propParamTypes[1];
     }
 
 	/**

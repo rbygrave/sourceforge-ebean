@@ -45,7 +45,10 @@ public class JodaIntervalCompoundType implements CompoundType<Interval>{
         public Long getValue(Interval valueObject) {
             return valueObject.getStartMillis();
         }
-        
+
+        public int getDbType() {
+            return java.sql.Types.TIMESTAMP;
+        }
     }
 
     static class End implements CompoundTypeProperty<Interval, Long> {
@@ -57,7 +60,11 @@ public class JodaIntervalCompoundType implements CompoundType<Interval>{
         public Long getValue(Interval valueObject) {
             return valueObject.getEndMillis();
         }
+        
+        public int getDbType() {
+            return java.sql.Types.TIMESTAMP;
+        }
+
     }
 
-    
 }
