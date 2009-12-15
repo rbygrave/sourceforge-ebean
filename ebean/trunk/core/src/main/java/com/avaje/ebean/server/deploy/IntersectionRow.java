@@ -12,9 +12,9 @@ import com.avaje.ebean.server.core.DefaultSqlUpdate;
 
 public class IntersectionRow {
 
-	String tableName;
+	private final String tableName;
 
-	Map<String,Object> values = new LinkedHashMap<String,Object>();
+	private final LinkedHashMap<String,Object> values = new LinkedHashMap<String,Object>();
 
 	public IntersectionRow(String tableName){
 		this.tableName = tableName;
@@ -24,6 +24,8 @@ public class IntersectionRow {
 		values.put(key, value);
 	}
 
+
+	   
 	public SqlUpdate createInsert(EbeanServer server){
 
 
@@ -84,4 +86,28 @@ public class IntersectionRow {
 		return new DefaultSqlUpdate(server, sb.toString(), bindParams);
 	}
 
+    public SqlUpdate createDeleteChildren(EbeanServer server) {
+
+        BindParams bindParams = new BindParams();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("delete from ").append(tableName).append(" where ");
+
+        int count = 0;
+        Iterator<Entry<String, Object>> it = values.entrySet().iterator();
+        while (it.hasNext()) {
+            if (count++ > 0) {
+                sb.append(" and ");
+            }
+
+            Map.Entry<String, Object> entry = it.next();
+
+            sb.append(entry.getKey());
+            sb.append(" = ?");
+
+            bindParams.setParameter(count, entry.getValue());
+        }
+
+        return new DefaultSqlUpdate(server, sb.toString(), bindParams);
+    }
 }

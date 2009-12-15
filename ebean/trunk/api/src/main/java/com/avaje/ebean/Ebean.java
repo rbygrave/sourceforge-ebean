@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -531,21 +530,20 @@ public final class Ebean {
 
 		return serverMgr.getPrimaryServer().save(iterator);
 	}
+    	
+    /**
+     * Save the associations of a ManyToMany given the owner bean and the
+     * propertyName of the ManyToMany collection.
+     * <p>
+     * You can use this when the collection is new and in this case all the 
+     * entries in the collection are treated as additions are result in inserts
+     * into the intersection table.
+     * </p>
+     */
+    public static void saveManyToManyAssociations(Object ownerBean, String propertyName){
+        serverMgr.getPrimaryServer().saveManyToManyAssociations(ownerBean, propertyName);
+    }
 
-    /**
-     * Save the associations of a ManyToMany.
-     */
-    public static void saveManyToManyAssociations(Collection<?> collection){
-        serverMgr.getPrimaryServer().saveManyToManyAssociations(collection);
-    }
-    
-    /**
-     * Save the associations of a ManyToMany.
-     */
-    public static void saveManyToManyAssociations(Map<?,?> collection){
-        serverMgr.getPrimaryServer().saveManyToManyAssociations(collection);
-    }
-	
 	/**
 	 * Delete the bean.
 	 * <p>

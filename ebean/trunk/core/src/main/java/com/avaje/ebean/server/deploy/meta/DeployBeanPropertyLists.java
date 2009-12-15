@@ -324,7 +324,8 @@ public class DeployBeanPropertyLists {
 				}
 				break;
 			case Delete:
-				if (prop.getCascadeInfo().isDelete() 
+				if (prop.isManyToMany() 
+				        || prop.getCascadeInfo().isDelete() 
 						|| ModifyListenMode.REMOVALS.equals(prop.getModifyListenMode())){
 					// REMOVALS means including PrivateOwned relationships
 					list.add(prop);	
