@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -531,6 +532,20 @@ public final class Ebean {
 		return serverMgr.getPrimaryServer().save(iterator);
 	}
 
+    /**
+     * Save the associations of a ManyToMany.
+     */
+    public static void saveManyToManyAssociations(Collection<?> collection){
+        serverMgr.getPrimaryServer().saveManyToManyAssociations(collection);
+    }
+    
+    /**
+     * Save the associations of a ManyToMany.
+     */
+    public static void saveManyToManyAssociations(Map<?,?> collection){
+        serverMgr.getPrimaryServer().saveManyToManyAssociations(collection);
+    }
+	
 	/**
 	 * Delete the bean.
 	 * <p>

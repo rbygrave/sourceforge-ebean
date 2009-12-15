@@ -383,7 +383,7 @@ public final class DefaultPersister implements Persister {
 					saveAssocManyDetails(insertedParent, request, manys[i], false);
 	                // for ManyToMany save the 'relationship' via inserts/deletes
 	                // into/from the intersection table
-	                saveAssocManyIntersection(insertedParent, request, manys[i]);
+	                saveAssocManyIntersection(insertedParent, manys[i], request.getBean(), request.getTransaction());
 				}
 
 			} else {
@@ -496,15 +496,28 @@ public final class DefaultPersister implements Persister {
 	}
 
 	/**
+	 * Save the associations of a ManyToMany.
+	 */
+	public void saveManyToManyAssociations(BeanCollection<?> bc, Transaction t) {
+	    
+	    Object ownerBean = bc.getOwnerBean();
+	    String propName = bc.getPropertyName();
+	    
+	    BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
+	    BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)descriptor.getBeanProperty(propName);
+	    
+	    saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t);
+	}
+	
+	/**
 	 * Save the additions and removals from a ManyToMany collection as inserts
 	 * and deletes from the intersection table.
 	 * <p>
 	 * This is done via MapBeans.
 	 * </p>
 	 */
-	private void saveAssocManyIntersection(boolean insertedParent, PersistRequestBean<?> request, BeanPropertyAssocMany<?> prop) {
+	private void saveAssocManyIntersection(boolean insertedParent, BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
 
-		Object parentBean = request.getBean();
 		Object value = prop.getValue(parentBean);
 		if (value == null) {
 			return;
@@ -534,7 +547,6 @@ public final class DefaultPersister implements Persister {
 			manyValue.modifyReset();
 		}
 
-		SpiTransaction t = request.getTransaction();
 		t.depth(+1);
 
 		if (additions != null && !additions.isEmpty()) {

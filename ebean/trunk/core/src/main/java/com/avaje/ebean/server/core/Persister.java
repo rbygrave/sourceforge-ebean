@@ -23,6 +23,7 @@ import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
+import com.avaje.ebean.bean.BeanCollection;
 
 
 /**
@@ -34,6 +35,11 @@ public interface Persister {
      * Insert or update the bean depending on its state.
      */
     public void save(Object entityBean, Transaction t);
+
+    /**
+     * Save the associations of a ManyToMany.
+     */
+    public void saveManyToManyAssociations(BeanCollection<?> bc, Transaction t);
 
     /**
      * Delete the bean.

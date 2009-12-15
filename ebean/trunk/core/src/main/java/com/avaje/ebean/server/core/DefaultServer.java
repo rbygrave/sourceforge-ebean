@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -1396,6 +1397,55 @@ public final class DefaultServer implements SpiEbeanServer {
 		persister.save(bean, t);
 	}
 
+    public void saveManyToManyAssociations(Map<?,?> collection){
+        saveManyToManyAssociations(collection, null);
+    }
+
+    /**
+     * Save the associations of a ManyToMany.
+     */
+    public void saveManyToManyAssociations(Map<?,?> collection, Transaction t){
+        if (collection instanceof BeanCollection<?>){
+            saveManyToManyAssociations((BeanCollection<?>)collection, t);
+        } else {
+            String msg = "The collection must be an Ebean BeanCollection";
+            throw new PersistenceException(msg);
+        }
+    }
+
+    public void saveManyToManyAssociations(Collection<?> collection){
+        saveManyToManyAssociations(collection, null);
+    }
+    
+    /**
+     * Save the associations of a ManyToMany.
+     */
+    public void saveManyToManyAssociations(Collection<?> collection, Transaction t){
+        if (collection instanceof BeanCollection<?>){
+            saveManyToManyAssociations((BeanCollection<?>)collection, t);
+        } else {
+            String msg = "The collection must be an Ebean BeanCollection";
+            throw new PersistenceException(msg);
+        }
+    }
+
+    private void saveManyToManyAssociations(BeanCollection<?> collection, Transaction t){
+   
+        BeanCollection<?> bc = (BeanCollection<?>)collection;
+        TransWrapper wrap = initTransIfRequired(t);
+        try {
+            SpiTransaction trans = wrap.transaction;
+            
+            persister.saveManyToManyAssociations(bc, trans);
+
+            wrap.commitIfCreated();
+
+        } catch (RuntimeException e) {
+            wrap.rollbackIfCreated();
+            throw e;
+        }        
+    }
+	
 	/**
 	 * Perform an update or insert on each bean in the iterator. Returns the
 	 * number of beans that where saved.
