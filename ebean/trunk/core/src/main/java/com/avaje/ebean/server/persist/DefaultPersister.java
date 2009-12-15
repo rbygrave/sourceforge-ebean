@@ -495,20 +495,28 @@ public final class DefaultPersister implements Persister {
 		}
 	}
 
-	/**
-	 * Save the associations of a ManyToMany.
-	 */
-	public void saveManyToManyAssociations(BeanCollection<?> bc, Transaction t) {
-	    
-	    Object ownerBean = bc.getOwnerBean();
-	    String propName = bc.getPropertyName();
-	    
-	    BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
-	    BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)descriptor.getBeanProperty(propName);
-	    
-	    saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t);
-	}
-	
+//	/**
+//	 * Save the associations of a ManyToMany.
+//	 */
+//	public void saveManyToManyAssociations(BeanCollection<?> bc, Transaction t) {
+//	    
+//	    Object ownerBean = bc.getOwnerBean();
+//	    String propName = bc.getPropertyName();
+//	    
+//	    BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
+//	    BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)descriptor.getBeanProperty(propName);
+//	    
+//	    saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t);
+//	}
+
+    public void saveManyToManyAssociations(Object ownerBean, String propertyName, Transaction t) {
+
+        BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
+        BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)descriptor.getBeanProperty(propertyName);
+        
+        saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t);
+    }
+	   
 	/**
 	 * Save the additions and removals from a ManyToMany collection as inserts
 	 * and deletes from the intersection table.
@@ -624,9 +632,13 @@ public final class DefaultPersister implements Persister {
 			// in getDetailsIterator().
 
 			if (manys[i].isManyToMany()) {
-				// ManyToMany delete cascade - a bit dangerous?
-				String m = "ManyToMany delete cascade not implemented!";
-				throw new RuntimeException(m);
+			    
+			    // build a intersection row for 'insert'
+                IntersectionRow intRow = manys[i].buildManyToManyDeleteChildren(parentBean);
+                SqlUpdate sqlDelete = intRow.createDeleteChildren(server);
+                t.log(sqlDelete.getSql());
+                sqlDelete.execute();
+                
 
 			} else {
 				Object details = manys[i].getValue(parentBean);

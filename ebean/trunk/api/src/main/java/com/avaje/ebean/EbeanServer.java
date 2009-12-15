@@ -21,7 +21,6 @@ package com.avaje.ebean;
 
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -766,24 +765,16 @@ public interface EbeanServer {
 	public int save(Iterator<?> it, Transaction t) throws OptimisticLockException;
 
     /**
-     * Save the associations of a ManyToMany.
+     * Save the associations of a ManyToMany given the owner bean and the
+     * propertyName of the ManyToMany collection.
      */
-    public void saveManyToManyAssociations(Collection<?> collection);
-    
-    /**
-     * Save the associations of a ManyToMany.
-     */
-    public void saveManyToManyAssociations(Collection<?> collection, Transaction t);
+    public void saveManyToManyAssociations(Object ownerBean, String propertyName);
 
     /**
-     * Save the associations of a ManyToMany.
+     * Save the associations of a ManyToMany given the owner bean and the
+     * propertyName of the ManyToMany collection.
      */
-    public void saveManyToManyAssociations(Map<?,?> collection);
-
-    /**
-     * Save the associations of a ManyToMany.
-     */
-    public void saveManyToManyAssociations(Map<?,?> collection, Transaction t);
+    public void saveManyToManyAssociations(Object ownerBean, String propertyName, Transaction t);
 	
 	/**
 	 * Delete the bean with an explicit transaction.

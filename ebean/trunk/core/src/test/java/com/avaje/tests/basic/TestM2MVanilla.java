@@ -40,6 +40,7 @@ public class TestM2MVanilla extends TestCase {
         user.setRoles(roleList);
 
         Ebean.save(user);
+        //Ebean.saveManyToManyAssociations(user, "roles");
 
         MUser checkUser = Ebean.find(MUser.class, u0.getUserid());
         List<MRole> checkRoles = checkUser.getRoles();
@@ -49,6 +50,7 @@ public class TestM2MVanilla extends TestCase {
         checkRoles.add(r3);
         
         Ebean.save(checkUser);
+        //Ebean.saveManyToManyAssociations(checkUser, "roles");
         
         MUser checkUser2 = Ebean.find(MUser.class, u0.getUserid());
         List<MRole> checkRoles2 = checkUser2.getRoles();
@@ -58,7 +60,7 @@ public class TestM2MVanilla extends TestCase {
         
         checkRoles2.remove(0);
         checkRoles2.remove(0);
-        Ebean.saveManyToManyAssociations(checkRoles2);
+        Ebean.saveManyToManyAssociations(checkUser2,"roles");
         
 
         checkUser2 = Ebean.find(MUser.class, u0.getUserid());
@@ -66,6 +68,9 @@ public class TestM2MVanilla extends TestCase {
         Assert.assertNotNull(checkRoles2);
         Assert.assertEquals("added a role", 1, checkRoles2.size());
 
+        
+        Ebean.delete(checkUser2);
+        
     }
 
 }
