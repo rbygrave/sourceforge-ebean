@@ -21,6 +21,11 @@ package com.avaje.ebean.config;
 
 /**
  * Represents a Property of a Compound Value Object.
+ * <p>
+ * For each property in a {@link CompoundType} you need an implementation of
+ * this CompoundTypeProperty interface.
+ * 
+ * </p>
  * 
  * @author rbygrave
  * 
@@ -28,6 +33,9 @@ package com.avaje.ebean.config;
  *            The type of the Compound value object
  * @param <P>
  *            The type of the property
+ * 
+ * @see CompoundType
+ * @see ScalarTypeConverter
  */
 public interface CompoundTypeProperty<V, P> {
 
