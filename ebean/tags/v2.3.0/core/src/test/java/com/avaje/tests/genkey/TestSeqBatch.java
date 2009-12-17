@@ -1,0 +1,34 @@
+package com.avaje.tests.genkey;
+
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.internal.SpiEbeanServer;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.tests.model.basic.TOne;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
+public class TestSeqBatch extends TestCase {
+
+	public void test() {
+		
+		EbeanServer server = Ebean.getServer(null);
+		SpiEbeanServer spiServer = (SpiEbeanServer)server;
+		
+		boolean seqSupport = spiServer.getDatabasePlatform().getDbIdentity().isSupportsSequence();
+		
+		if (seqSupport){
+			BeanDescriptor<TOne> d = spiServer.getBeanDescriptor(TOne.class);
+	
+			Object id = d.nextId();
+			Assert.assertNotNull(id);
+			
+			for (int i = 0; i < 6; i++) {
+				Object id2 = d.nextId();
+				Assert.assertNotNull(id2);		
+			}
+		}
+	}
+	
+}
