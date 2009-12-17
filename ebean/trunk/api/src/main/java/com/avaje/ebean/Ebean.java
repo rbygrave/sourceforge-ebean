@@ -120,7 +120,7 @@ import com.avaje.ebean.text.csv.CsvReader;
  * hrDb.save(contact);
  * </pre>
  * 
- * @version 2.2
+ * @version 2.3
  */
 public final class Ebean {
 
@@ -129,7 +129,7 @@ public final class Ebean {
 	/**
 	 * The version and date of build.
 	 */
-	private static final String EBVERSION = "2.2.0-20091121";
+	private static final String EBVERSION = "2.3.0-20091217";
 
 	static {
 		String version = System.getProperty("java.version");
