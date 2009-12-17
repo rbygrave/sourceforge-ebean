@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.server.type;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Currency;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +50,7 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import com.avaje.ebean.annotation.EnumMapping;
+import com.avaje.ebean.annotation.EnumValue;
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.CompoundTypeProperty;
 import com.avaje.ebean.config.ScalarTypeConverter;
@@ -372,6 +375,47 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 		return value;
 	}
 
+	private boolean isIntegerType(String s){
+	    
+	    try {
+	        Integer.parseInt(s);
+	    return true;
+	    } catch (NumberFormatException e){
+	        return false;
+	    }
+	}
+	
+	/**
+	 * Create the Mapping of Enum fields to DB values using EnumValue annotations.
+	 * <p>
+	 * Return null if the EnumValue annotations are not present/used.
+	 * </p>
+	 */
+    private ScalarType<?> createEnumScalarType2(Class<?> enumType) {
+        
+        boolean integerType = true;
+        
+        Map<String, String> nameValueMap = new HashMap<String,String>();
+        
+        Field[] fields = enumType.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            EnumValue enumValue = fields[i].getAnnotation(EnumValue.class);
+            if (enumValue != null){
+                nameValueMap.put(fields[i].getName(), enumValue.value());
+                if (integerType && !isIntegerType(enumValue.value())){
+                    // will treat the values as strings
+                    integerType = false;
+                }
+            }
+        }
+        if (nameValueMap.isEmpty()){
+            // Not using EnumValue here
+            return null;
+        }
+        
+        return createEnumScalarType(enumType, nameValueMap, integerType, 0);
+	}
+    
 	/**
 	 * Create a ScalarType for an Enum that has additional mapping.
 	 * <p>
@@ -381,23 +425,32 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * typically much shorter codes used in the DB.
 	 * </p>
 	 */
-	@SuppressWarnings("unchecked")
-	public ScalarType<?> createEnumScalarType(Class enumType) {
-
+	public ScalarType<?> createEnumScalarType(Class<?> enumType) {
 		
 		// get the mapping information from EnumMapping
 		EnumMapping enumMapping = (EnumMapping)enumType.getAnnotation(EnumMapping.class);
 		if (enumMapping == null){
-			return null;
+		    // look for EnumValue annotations instead
+			return createEnumScalarType2(enumType);
 		}
 		
 		String nameValuePairs  = enumMapping.nameValuePairs();
 		boolean integerType = enumMapping.integerType();
-		int length = enumMapping.length();
+		int dbColumnLength = enumMapping.length();
 		
 	
 		Map<String, String> nameValueMap = StringHelper.delimitedToMap(nameValuePairs, ",", "=");
 
+		return createEnumScalarType(enumType, nameValueMap, integerType, dbColumnLength);
+	}
+	
+	/**
+	 * Given the name value mapping and integer/string type and explicit DB column length
+	 * create the ScalarType for the Enum.
+	 */
+	@SuppressWarnings("unchecked")
+	private ScalarType<?> createEnumScalarType(Class enumType, Map<String, String> nameValueMap, boolean integerType, int dbColumnLength) {
+	    
 		EnumToDbValueMap<?> beanDbMap = EnumToDbValueMap.create(integerType);
 		
 		int maxValueLen = 0;
@@ -414,11 +467,11 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 			beanDbMap.add(enumValue, value.trim());
 		}
 		
-		if (length == 0 && !integerType){
-			length = maxValueLen;
+		if (dbColumnLength == 0 && !integerType){
+			dbColumnLength = maxValueLen;
 		}
 
-		return new ScalarTypeEnumWithMapping(beanDbMap, enumType, length);
+		return new ScalarTypeEnumWithMapping(beanDbMap, enumType, dbColumnLength);
 	}
 
 	/**

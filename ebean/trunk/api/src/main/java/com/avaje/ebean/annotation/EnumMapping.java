@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2009  Robin Bygrave
  * 
  * This file is part of Ebean.
  * 
@@ -26,6 +26,10 @@ import java.lang.annotation.Target;
 
 /**
  * For mapping the values of an Enum to and from Database values.
+ * <p>
+ * Also refer to the {@link EnumValue} approach which probably the preferred now
+ * (preferred over using this EnumMapping annotation).
+ * </p>
  * <p>
  * Both of the approaches defined in the JPA have significant problems!!!
  * </p>
@@ -55,6 +59,7 @@ import java.lang.annotation.Target;
  * <p>
  * An example mapping the UserState enum.
  * </p>
+ * 
  * <pre class="code">
  * ...
  * &#064;EnumMapping(nameValuePairs=&quot;NEW=N, ACTIVE=A, INACTIVE=I&quot;)
@@ -64,6 +69,8 @@ import java.lang.annotation.Target;
  *  INACTIVE;
  *  }
  * </pre>
+ * 
+ * @see EnumValue
  */
 @Target( { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
