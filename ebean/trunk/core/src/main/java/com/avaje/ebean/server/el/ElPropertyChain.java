@@ -77,7 +77,8 @@ public class ElPropertyChain implements ElPropertyValue {
 			this.prefix = null;
 			this.name = expression;
 		}		
-		
+
+		// FIXME chain[chain.length-1] is sometimes null
 		this.assocOneId = chain[chain.length-1].isAssocOneId();
 		
 		this.last = chain.length-1;
@@ -90,7 +91,6 @@ public class ElPropertyChain implements ElPropertyValue {
 		}
 		this.lastElPropertyValue = chain[chain.length-1];
 		this.placeHolder = calcPlaceHolder(prefix,getDbColumn());
-		
 	}
 
 	private String calcPlaceHolder(String prefix, String dbColumn){
