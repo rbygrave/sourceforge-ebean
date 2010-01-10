@@ -4,6 +4,7 @@ import com.avaje.ebean.Ebean;
 import com.avaje.tests.model.basic.PersistentFile;
 import com.avaje.tests.model.basic.PersistentFileContent;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 public class TestSaveDelete extends TestCase {
@@ -25,6 +26,13 @@ public class TestSaveDelete extends TestCase {
 		Ebean.save(persistentFile);
 
 		persistentFile = Ebean.find(PersistentFile.class, persistentFile.getId());
+		
+		PersistentFileContent persistentFileContent = persistentFile.getPersistentFileContent();
+		
+		Assert.assertNotNull(persistentFileContent);
+		
+		Assert.assertNotNull("load byte content", persistentFileContent.getContent());
+		
 		Ebean.delete(persistentFile);
 	}
 }
