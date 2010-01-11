@@ -541,7 +541,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             // TODO: Support for Inheritance hierarchy on exported OneToOne ?
             IdBinder idBinder = targetDescriptor.getIdBinder();
             Object id = idBinder.read(ctx);
-            if (id == null) {// || bean == null || !assignable) {
+            if (id == null) {
                 return null;
             }
 
@@ -549,18 +549,17 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             Object existing = persistCtx.get(targetType, id);
 
             if (existing != null) {
-                // setValue(bean, existing);
                 return existing;
-
-            } else {
-                Object parent = null;
-                Object ref = targetDescriptor.createReference(id, parent, null);
-                if (parentState != 0) {
-                    ((EntityBean) ref)._ebean_getIntercept().propagateParentState(parentState);
-                }
-                persistCtx.put(id, ref);
-                return ref;
+            } 
+            Object parent = null;
+            Object ref = targetDescriptor.createReference(id, parent, null);
+            EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 
+            if (parentState != 0) {
+                ebi.propagateParentState(parentState);
             }
+            persistCtx.put(id, ref);
+            ctx.register(name, ebi);
+            return ref;
         }
 
         /**

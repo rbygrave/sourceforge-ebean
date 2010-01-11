@@ -375,6 +375,7 @@ public class DefaultBeanLoader {
 		}
 		
 		query.setPersistenceContext(pc);
+		query.setLazyLoadProperty(ebi.getLazyLoadProperty());
 
 		if (collector != null) {
 			query.setParentNode(collector.getNode());
