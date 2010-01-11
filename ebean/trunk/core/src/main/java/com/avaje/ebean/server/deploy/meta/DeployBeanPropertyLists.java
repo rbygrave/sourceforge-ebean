@@ -268,7 +268,11 @@ public class DeployBeanPropertyLists {
 	public BeanPropertyAssocMany<?>[] getManyDelete() {
 		return getMany(Mode.Delete);
 	}
-	
+
+    public BeanPropertyAssocMany<?>[] getManyToMany() {
+        return getMany2Many();
+    }
+
 	/**
 	 * Mode used to determine which BeanPropertyAssoc to include.
 	 */
@@ -306,6 +310,17 @@ public class DeployBeanPropertyLists {
 		return (BeanPropertyAssocOne[]) list.toArray(new BeanPropertyAssocOne[list.size()]);
 	}
 
+    private BeanPropertyAssocMany<?>[] getMany2Many() {
+        ArrayList<BeanPropertyAssocMany<?>> list = new ArrayList<BeanPropertyAssocMany<?>>();
+        for (int i = 0; i < manys.size(); i++) {
+            BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>) manys.get(i);
+            if (prop.isManyToMany()) {
+                list.add(prop);
+            }
+        }
+
+        return (BeanPropertyAssocMany[]) list.toArray(new BeanPropertyAssocMany[list.size()]);
+    }
 	
 	private BeanPropertyAssocMany<?>[] getMany(Mode mode) {
 		ArrayList<BeanPropertyAssocMany<?>> list = new ArrayList<BeanPropertyAssocMany<?>>();
@@ -324,9 +339,11 @@ public class DeployBeanPropertyLists {
 				}
 				break;
 			case Delete:
-				if (prop.isManyToMany() 
-				        || prop.getCascadeInfo().isDelete() 
-						|| ModifyListenMode.REMOVALS.equals(prop.getModifyListenMode())){
+				if (prop.isManyToMany()) {
+				    // never cascade for manyToMany but will always 
+				    // delete the intersection rows
+				} else if (prop.getCascadeInfo().isDelete() 
+				    || ModifyListenMode.REMOVALS.equals(prop.getModifyListenMode())){
 					// REMOVALS means including PrivateOwned relationships
 					list.add(prop);	
 				}	

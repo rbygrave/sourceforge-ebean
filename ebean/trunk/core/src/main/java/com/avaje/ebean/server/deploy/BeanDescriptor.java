@@ -250,6 +250,7 @@ public class BeanDescriptor<T> {
 	private final BeanPropertyAssocMany<?>[] propertiesMany;
 	private final BeanPropertyAssocMany<?>[] propertiesManySave;
 	private final BeanPropertyAssocMany<?>[] propertiesManyDelete;
+    private final BeanPropertyAssocMany<?>[] propertiesManyToMany;
 
 	/**
 	 * list of properties that are associated beans and not embedded (Derived).
@@ -444,6 +445,7 @@ public class BeanDescriptor<T> {
 		this.propertiesMany = listHelper.getMany();
 		this.propertiesManySave = listHelper.getManySave();
 		this.propertiesManyDelete = listHelper.getManyDelete();
+        this.propertiesManyToMany = listHelper.getManyToMany();
 
 		this.namesOfManyProps = deriveManyPropNames();
 		this.namesOfManyPropsHash = namesOfManyProps.hashCode();
@@ -1902,6 +1904,13 @@ public class BeanDescriptor<T> {
 	public BeanPropertyAssocMany<?>[] propertiesManyDelete() {
 		return propertiesManyDelete;
 	}
+
+    /**
+     * Assoc ManyToMany's.
+     */
+    public BeanPropertyAssocMany<?>[] propertiesManyToMany() {
+        return propertiesManyToMany;
+    }
 
 	/**
 	 * Return the first version property that exists on the bean. Returns null

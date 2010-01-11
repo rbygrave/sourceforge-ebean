@@ -332,6 +332,7 @@ public final class DefaultPersister implements Persister {
 			request.unregisterBean();
 		}
 
+		deleteAssocManyIntersection(request);
 		request.executeOrQueue();
 
 		if (request.isPersistCascade()) {
@@ -580,6 +581,23 @@ public final class DefaultPersister implements Persister {
 		t.depth(-1);
 	}
 
+    private void deleteAssocManyIntersection(PersistRequestBean<?> request) {
+
+
+        // Many's with delete cascade
+        BeanDescriptor<?> desc = request.getBeanDescriptor();
+        BeanPropertyAssocMany<?>[] manys = desc.propertiesManyToMany();
+        for (int i = 0; i < manys.length; i++) {
+            // delete all intersection rows for this bean
+            IntersectionRow intRow = manys[i].buildManyToManyDeleteChildren(request.getBean());
+            SqlUpdate sqlDelete = intRow.createDeleteChildren(server);
+
+            SpiTransaction t = request.getTransaction();
+            t.log(sqlDelete.getSql());
+            sqlDelete.execute();
+        }
+    }
+   
 	/**
 	 * Delete beans in any associated many.
 	 * <p>
@@ -618,14 +636,9 @@ public final class DefaultPersister implements Persister {
 			// in getDetailsIterator().
 
 			if (manys[i].isManyToMany()) {
-			    
-			    // build a intersection row for 'insert'
-                IntersectionRow intRow = manys[i].buildManyToManyDeleteChildren(parentBean);
-                SqlUpdate sqlDelete = intRow.createDeleteChildren(server);
-                t.log(sqlDelete.getSql());
-                sqlDelete.execute();
+			    // deleted by deleteManyIntersection without
+			    // needing any persist cascade
                 
-
 			} else {
 				Object details = manys[i].getValue(parentBean);
 				

@@ -41,6 +41,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.deploy.meta.DeployTableJoinColumn;
+import com.avaje.ebean.server.lib.util.StringHelper;
 
 /**
  * Read the deployment annotation for Assoc Many beans.
@@ -159,7 +160,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 	 */
 	private void readJoinTable(JoinTable joinTable, DeployBeanPropertyAssocMany<?> prop) {
 
-		String intTableName = joinTable.name();
+		String intTableName = getFullTableName(joinTable);
 		// set the intersection table
 		DeployTableJoin intJoin = new DeployTableJoin();
 		intJoin.setTable(intTableName);
@@ -179,6 +180,23 @@ public class AnnotationAssocManys extends AnnotationParser {
 		prop.setInverseJoin(inverseDest);
 	}
 
+	/**
+	 * Return the full table name 
+	 * @param joinTable
+	 * @return
+	 */
+	private String getFullTableName(JoinTable joinTable) {
+	    StringBuilder sb = new StringBuilder();
+	    if (!StringHelper.isNull(joinTable.catalog())){
+	        sb.append(joinTable.catalog()).append(".");
+	    }
+	    if (!StringHelper.isNull(joinTable.schema())){
+            sb.append(joinTable.schema()).append(".");
+        }
+	    sb.append(joinTable.name());
+	    return sb.toString();
+	}
+	
 	/**
 	 * Define intersection table and foreign key columns for ManyToMany.
 	 * <p>
