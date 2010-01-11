@@ -64,6 +64,7 @@ public class Oracle10Platform extends DatabasePlatform {
 		dbTypeMap.put(Types.LONGVARBINARY, new DbType("blob"));
 		dbTypeMap.put(Types.LONGVARCHAR, new DbType("clob"));
 		dbTypeMap.put(Types.VARBINARY, new DbType("blob"));
+        dbTypeMap.put(Types.BINARY, new DbType("blob"));
 
 		dbTypeMap.put(Types.TIME, new DbType("timestamp"));
 
