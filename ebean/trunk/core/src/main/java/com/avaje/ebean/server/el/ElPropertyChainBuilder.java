@@ -49,7 +49,7 @@ public class ElPropertyChainBuilder {
 		this.embedded = embedded;
 		this.expression = expression;
 	}
-
+	
 	public boolean isContainsMany() {
 		return containsMany;
 	}
@@ -66,6 +66,9 @@ public class ElPropertyChainBuilder {
 	 * Add a ElGetValue element to the chain.
 	 */
 	public ElPropertyChainBuilder add(ElPropertyValue element) {
+	    if (element == null){
+	        throw new NullPointerException("element null in expression "+expression);
+	    }
 		chain.add(element);
 		return this;
 	}
