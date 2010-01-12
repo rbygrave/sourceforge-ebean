@@ -169,6 +169,7 @@ public class DeployUtil {
 		ScalarType<?> scalarType = getScalarType(property);
 		if (scalarType != null){
 			// set the jdbc type this maps to
+		    
 			property.setDbType(scalarType.getJdbcType());
 			property.setScalarType(scalarType);
 		}
@@ -199,17 +200,20 @@ public class DeployUtil {
 	 * This property is marked as a Lob object.
 	 */
 	public void setLobType(DeployBeanProperty prop) {
-
-		// is String or byte[] ? used to determine if its
-		// a CLOB or BLOB
+	    
+		// is String or byte[] ? used to determine if its a CLOB or BLOB
 		Class<?> type = prop.getPropertyType();
 
 		// this also sets the lob flag on DeployBeanProperty
-		if (isClobType(type)) {
-			prop.setDbType(dbCLOBType);
-		} else {
-			prop.setDbType(dbBLOBType);
-		}
+		int lobType = isClobType(type) ? dbCLOBType : dbBLOBType;
+		
+		ScalarType<?> scalarType = typeManager.getScalarType(type, lobType);
+        if (scalarType == null) {
+            // this should never occur actually
+            throw new RuntimeException("No ScalarType for LOB type ["+type+"] ["+lobType+"]");
+        } 
+        prop.setDbType(lobType);
+        prop.setScalarType(scalarType);
 	}
 
 	public boolean isClobType(Class<?> type){
