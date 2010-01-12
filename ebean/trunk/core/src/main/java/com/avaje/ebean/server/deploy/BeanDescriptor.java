@@ -1460,10 +1460,11 @@ public class BeanDescriptor<T> {
 		BeanProperty property = _findBeanProperty(propName);
 		if (chain == null){
 			return property;						
-		} else {
-			return chain.add(property).build();
 		}
-		
+		if (property == null){
+		    throw new NullPointerException("No property found for "+propName+" in expression "+chain.getExpression());
+		}
+		return chain.add(property).build();
 	}
 	
 	/**
