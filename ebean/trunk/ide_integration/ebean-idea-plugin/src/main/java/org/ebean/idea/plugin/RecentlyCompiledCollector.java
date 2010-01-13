@@ -22,8 +22,10 @@ package org.ebean.idea.plugin;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.TranslatingCompiler;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.Chunk;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -51,12 +53,12 @@ public class RecentlyCompiledCollector implements TranslatingCompiler
         return delegate.isCompilableFile(virtualFile, compileContext);
     }
 
-	public void compile(CompileContext context, VirtualFile[] files, OutputSink sink)
+	public void compile(CompileContext context, Chunk<Module> moduleChunk, VirtualFile[] files, OutputSink sink)
 	{
 		RecentlyCompiledSink sinkWrapper = new RecentlyCompiledSink(sink);
 
         // Perform actual compilation
-        delegate.compile(context, files, sinkWrapper);
+        delegate.compile(context, moduleChunk, files, sinkWrapper);
 
         // Collect all files which have been compiled
         List<RecentlyCompiledSink.CompiledItem> recentlyCompiled = context.getUserData(RECENTLY_COMPILED);

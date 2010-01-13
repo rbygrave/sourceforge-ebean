@@ -20,13 +20,15 @@
 <idea-plugin version="2">
     <name>Ebean weaver</name>
     <description>Post-compile Ebean weaving</description>
-    <version>1.0</version>
+    <version>1.2</version>
     <vendor url="http://www.avaje.org" >Mario Ivankovits</vendor>
-    <idea-version since-build="90.193"/>
+    <idea-version since-build="10000"/>
+    <depends>com.intellij.modules.lang</depends>
 
     <change-notes>
     <![CDATA[
-      <b>1.1</b> Made IDEA 9.0 compatible<br>
+      <b>1.2</b> Made IDEA 9.0 RELEASE compatible. Using Ebean agent version 2.2.0 (snapshot version of 20091209)<br>
+      <b>1.1</b> Made IDEA 9.0 BETA compatible<br>
       <b>1.0</b> Initial version. Using Ebean agent version 2.0.2<br>
     ]]>
     </change-notes>
