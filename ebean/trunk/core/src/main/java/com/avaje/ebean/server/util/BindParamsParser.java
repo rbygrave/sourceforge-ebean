@@ -138,7 +138,7 @@ public class BindParamsParser {
                 int endOfParam = nameParamStart + 1;
                 do {
                     char c = sql.charAt(endOfParam);
-                    if (!Character.isLetterOrDigit(c)) {
+                    if (c != '_' && !Character.isLetterOrDigit(c)) {
                         break;
                     }
                     endOfParam++;
