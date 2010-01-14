@@ -1,15 +1,9 @@
 package com.avaje.ebean.server.query;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.avaje.ebean.internal.BindParams;
+import com.avaje.ebean.internal.BindParams.OrderedList;
 import com.avaje.ebean.internal.SpiExpressionList;
 import com.avaje.ebean.internal.SpiQuery;
-import com.avaje.ebean.internal.BindParams.OrderedList;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -18,6 +12,12 @@ import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.DefaultExpressionRequest;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Compile Query Predicates.
@@ -346,10 +346,7 @@ public class CQueryPredicates {
 		// check for default ordering on the many property...
 		String manyOrderBy = manyProp.getFetchOrderBy();
 		if (manyOrderBy != null) {
-			// FIXME: Bug: assuming only one column in manyOrderBy
-			// Need to prefix many.getName() to all the column names
-			// in the order by but not the ASC DESC keywords
-			orderBy = orderBy + " , " + manyProp.getName() + "." + manyOrderBy;
+			orderBy = orderBy + " , " + CQueryBuilder.prefixOrderByFields(manyProp.getName(), manyOrderBy);
 		}
 		
 		if (request.isFindById()) {

@@ -1,24 +1,24 @@
 package com.avaje.tests.basic;
 
-import java.util.List;
-
-import junit.framework.TestCase;
-
 import com.avaje.ebean.AdminAutofetch;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Query;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.OrderDetail;
 import com.avaje.tests.model.basic.ResetBasicData;
+import junit.framework.TestCase;
+
+import java.util.List;
 
 public class TestBatchLazy extends TestCase {
 
 	public void testMe() {
 		
 		ResetBasicData.reset();
-		
-		List<Order> list = Ebean.find(Order.class)
-			.findList();
+
+		Query<Order> query = Ebean.find(Order.class);
+		List<Order> list = query.findList();
 		
 		Order order = list.get(0);
 		
@@ -32,7 +32,9 @@ public class TestBatchLazy extends TestCase {
 		customer.getName();
 		//customer.getCretime();
 		//Assert.assertFalse(Ebean.getBeanState(customer).isReference());
-		
+
+		// assertTrue(sql.contains())
+
 		AdminAutofetch adminAutofetch = Ebean.getServer(null).getAdminAutofetch();
 		adminAutofetch.collectUsageViaGC();
 
