@@ -74,10 +74,7 @@ public class CQueryBuilder implements Constants {
 		if (many != null) {
 			manyOrderBy = many.getFetchOrderBy();
 			if (manyOrderBy != null) {
-				// FIXME: Bug: assuming only one column in manyOrderBy
-				// Need to prefix many.getName() to all the column names
-				// in the order by but not the ASC DESC keywords
-				manyOrderBy = many.getName() + "." + manyOrderBy;
+				manyOrderBy = prefixOrderByFields(many.getName(), manyOrderBy);
 			}
 		}
 		if (orderBy == null && (hasListener || manyOrderBy != null)) {
@@ -98,6 +95,24 @@ public class CQueryBuilder implements Constants {
 			orderBy = orderBy + " , " + manyOrderBy;
 		}
 		return orderBy;
+	}
+
+	/**
+	 * split the order by claus on the field delimiter and prefix each field with the relation name
+	 */
+	public static String prefixOrderByFields(String name, String orderBy) {
+		StringBuilder sb = new StringBuilder();
+		for (String token : orderBy.split(",")) {
+			if (sb.length() > 0) {
+				sb.append(", ");
+			}
+
+			sb.append(name);
+			sb.append(".");
+			sb.append(token.trim());
+		}
+
+		return sb.toString();
 	}
 
 	/**

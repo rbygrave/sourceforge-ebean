@@ -1,10 +1,10 @@
 package com.avaje.tests.model.basic;
 
-import java.io.Serializable;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import com.avaje.ebean.annotation.CreatedTimestamp;
+import com.avaje.ebean.annotation.Formula;
+import com.avaje.ebean.annotation.Sql;
+import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.validation.NotNull;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -14,15 +14,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
-
-import com.avaje.ebean.annotation.CreatedTimestamp;
-import com.avaje.ebean.annotation.Formula;
-import com.avaje.ebean.annotation.Sql;
-import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.validation.NotNull;
+import java.io.Serializable;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Order entity bean.
@@ -95,6 +95,7 @@ public class Order implements Serializable {
     Timestamp updtime;
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
+	@OrderBy("id asc, orderQty asc, cretime desc")
     List<OrderDetail> details = new ArrayList<OrderDetail>();
     
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
