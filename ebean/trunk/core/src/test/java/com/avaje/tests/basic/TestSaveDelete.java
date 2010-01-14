@@ -9,14 +9,14 @@ import junit.framework.TestCase;
 
 public class TestSaveDelete extends TestCase {
 
-//	// This fails
-//	public void testCreateDeletePersistentFile() {
-//		PersistentFile persistentFile = new PersistentFile("test.txt",
-//				new PersistentFileContent("test".getBytes()));
-//
-//		Ebean.save(persistentFile);
-//		Ebean.delete(persistentFile);
-//	}
+	// This fails
+	public void testCreateDeletePersistentFile() {
+		PersistentFile persistentFile = new PersistentFile("test.txt",
+				new PersistentFileContent("test".getBytes()));
+
+		Ebean.save(persistentFile);
+		Ebean.delete(persistentFile);
+	}
 
 	// This passes
 	public void testCreateLoadDeletePersistentFile() {
