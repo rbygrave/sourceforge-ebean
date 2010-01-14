@@ -1423,7 +1423,36 @@ public final class DefaultServer implements SpiEbeanServer {
             throw e;
         }
     }
-	
+
+    public void saveAssociation(Object ownerBean, String propertyName) {
+        saveAssociation(ownerBean, propertyName, null);
+    }
+    
+    public void saveAssociation(Object ownerBean, String propertyName, Transaction t){
+        
+        if (ownerBean instanceof EntityBean){
+            Set<String> loadedProps = ((EntityBean)ownerBean)._ebean_getIntercept().getLoadedProps();
+            if (loadedProps != null && !loadedProps.contains(propertyName)){
+                // skip as property is not actually loaded in this partially loaded bean 
+                logger.fine("Skip saveAssociation as property "+propertyName+" is not loaded");
+                return;
+            }
+        }
+        
+        TransWrapper wrap = initTransIfRequired(t);
+        try {
+            SpiTransaction trans = wrap.transaction;
+            
+            persister.saveAssociation(ownerBean, propertyName, trans);
+
+            wrap.commitIfCreated();
+
+        } catch (RuntimeException e) {
+            wrap.rollbackIfCreated();
+            throw e;
+        }
+    }
+
 	/**
 	 * Perform an update or insert on each bean in the iterator. Returns the
 	 * number of beans that where saved.
@@ -1456,6 +1485,15 @@ public final class DefaultServer implements SpiEbeanServer {
 			throw e;
 		}
 	}
+
+    public void delete(Class<?> beanType, Object id) {
+        delete(beanType, id, null);
+    }
+    
+    public void delete(Class<?> beanType, Object id, Transaction t) {
+
+        persister.delete(beanType, id, t);
+    }
 
 	/**
 	 * Delete the bean.

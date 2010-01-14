@@ -193,8 +193,10 @@ public final class IdBinderEmbedded implements IdBinder {
 			if (i > 0) {
 				sb.append(" and ");
 			}
-			sb.append(baseTableAlias);
-			sb.append(".");
+			if (baseTableAlias != null){
+    			sb.append(baseTableAlias);
+    			sb.append(".");
+			}
 			sb.append(props[i].getDbColumn());
 			sb.append(" = ? ");
 		}

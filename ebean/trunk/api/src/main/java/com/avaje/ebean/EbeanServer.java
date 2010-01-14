@@ -691,6 +691,15 @@ public interface EbeanServer {
 	public int delete(Iterator<?> it) throws OptimisticLockException;
 
 	/**
+	 * Delete the bean
+	 * @param beanType
+	 * @param id
+	 */
+    public void delete(Class<?> beanType, Object id);
+    
+    public void delete(Class<?> beanType, Object id, Transaction t);
+
+	/**
 	 * Execute a SQL Update Delete or Insert statement using the current
 	 * transaction. This returns the number of rows that where updated, deleted
 	 * or inserted.
@@ -776,6 +785,43 @@ public interface EbeanServer {
      */
     public void saveManyToManyAssociations(Object ownerBean, String propertyName, Transaction t);
 	
+    /**
+     * Save the associated collection or bean given the property name.
+     * <p>
+     * This is similar to performing a save cascade on a specific property
+     * manually.
+     * </p>
+     * <p>
+     * Note that you can turn on/off cascading for a transaction via
+     * {@link Transaction#setPersistCascade(boolean)}
+     * </p>
+     * 
+     * @param ownerBean
+     *            the bean instance holding the property we want to save
+     * @param propertyName
+     *            the property we want to save
+     */
+    public void saveAssociation(Object ownerBean, String propertyName);
+    
+    /**
+     * Save the associated collection or bean given the property name with a
+     * specific transaction.
+     * <p>
+     * This is similar to performing a save cascade on a specific property
+     * manually.
+     * </p>
+     * <p>
+     * Note that you can turn on/off cascading for a transaction via
+     * {@link Transaction#setPersistCascade(boolean)}
+     * </p>
+     * 
+     * @param ownerBean
+     *            the bean instance holding the property we want to save
+     * @param propertyName
+     *            the property we want to save
+     */
+    public void saveAssociation(Object ownerBean, String propertyName, Transaction t);
+
 	/**
 	 * Delete the bean with an explicit transaction.
 	 */

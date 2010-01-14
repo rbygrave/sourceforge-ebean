@@ -28,6 +28,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
@@ -35,7 +36,7 @@ import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.internal.SpiQuery;
-import com.avaje.ebean.server.core.PersistRequest;
+import com.avaje.ebean.server.core.DefaultSqlUpdate;
 import com.avaje.ebean.server.deploy.id.ImportedId;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.lib.util.StringHelper;
@@ -98,6 +99,8 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	final ModifyListenMode modifyListenMode;
 	
+	String deleteByParentIdSql;
+	
 	/**
 	 * Create this property.
 	 */
@@ -139,9 +142,23 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			if (exportedProperties.length > 0){
 				embeddedExportedProperties = exportedProperties[0].isEmbedded();
 			}
+			
+			String whereParentId = deriveWhereParentIdSql();
+			if (manyToMany){
+                deleteByParentIdSql = "delete from "+inverseJoin.getTable()+" where "+whereParentId;
+			    
+			} else {
+			    deleteByParentIdSql = "delete from "+targetDescriptor.getBaseTable()+" where "+whereParentId;
+			}
 		}
 	}
 
+	public SqlUpdate deleteByParentId(Object parentId) {
+	    DefaultSqlUpdate sqlDelete = new DefaultSqlUpdate(deleteByParentIdSql);
+	    bindWhereParendId(sqlDelete, parentId);
+	    return sqlDelete;
+	}
+	
 	/**
 	 * Set the lazy load server to help create reference collections (that lazy
 	 * load on demand).
@@ -263,7 +280,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 * Set the join properties from the parent bean to the child bean.
 	 * This is only valid for OneToMany and NOT valid for ManyToMany.
 	 */
-	public void setJoinValuesToChild(PersistRequest request, Object parent, Object child, Object mapKeyValue) {
+	public void setJoinValuesToChild(Object parent, Object child, Object mapKeyValue) {
 
 		if (mapKeyProperty != null){
 			mapKeyProperty.setValue(child, mapKeyValue);
@@ -314,6 +331,39 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public Object getParentId(Object parentBean) {
 		return descriptor.getId(parentBean);
 	}
+	
+	private void bindWhereParendId(DefaultSqlUpdate sqlUpd, Object parentId){
+
+        ExportedProperty[] expProps = getExported();
+        
+        if (expProps.length == 1){
+            sqlUpd.addParameter(parentId);
+            return;
+        }
+        
+        // the parent is a compound primary key
+        for (int i = 0; i < expProps.length; i++) {
+            Object val = expProps[i].getValue(parentId);
+            sqlUpd.addParameter(val);
+        }
+
+	}
+	
+    private String deriveWhereParentIdSql() {
+        
+        ExportedProperty[] expProps = getExported();
+
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < expProps.length; i++) {
+            String fkColumn = expProps[i].getForeignDbColumn();
+            if (i > 0){
+                sb.append(" and ");
+            }
+            sb.append(fkColumn).append("=? ");            
+        }
+        return sb.toString();
+    }
 	
 	public void setPredicates(SpiQuery<?> query, Object parentBean) {
 
