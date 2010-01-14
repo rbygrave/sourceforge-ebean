@@ -544,6 +544,26 @@ public final class Ebean {
         serverMgr.getPrimaryServer().saveManyToManyAssociations(ownerBean, propertyName);
     }
 
+    /**
+     * Save the associated collection or bean given the property name.
+     * <p>
+     * This is similar to performing a save cascade on a specific property
+     * manually/programmatically.
+     * </p>
+     * <p>
+     * Note that you can turn on/off cascading for a transaction via
+     * {@link Transaction#setPersistCascade(boolean)}
+     * </p>
+     * 
+     * @param ownerBean
+     *            the bean instance holding the property we want to save
+     * @param propertyName
+     *            the property we want to save
+     */
+    public static void saveAssociation(Object ownerBean, String propertyName) {
+        serverMgr.getPrimaryServer().saveAssociation(ownerBean, propertyName); 
+    }
+
 	/**
 	 * Delete the bean.
 	 * <p>

@@ -77,7 +77,11 @@ public final class IdBinderSimple implements IdBinder {
 	}
 
 	public String getBindIdSql(String baseTableAlias) {
-		return baseTableAlias+"."+bindIdSql;
+	    if (baseTableAlias == null){
+	        return bindIdSql;
+	    } else {
+	        return baseTableAlias+"."+bindIdSql;	        
+	    }
 	}
 
 	public Object[] getIdValues(Object bean){

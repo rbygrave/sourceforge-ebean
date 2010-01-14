@@ -130,6 +130,11 @@ public final class DefaultSqlUpdate implements Serializable, SpiSqlUpdate {
 	private boolean isAutoTableMod = true;
 
 	/**
+	 * Helper to add positioned parameters in order.
+	 */
+	private int addPos;
+
+	/**
 	 * Create with server sql and bindParams object.
 	 * <p>
 	 * Useful if you are building the sql and binding parameters at the
@@ -196,7 +201,11 @@ public final class DefaultSqlUpdate implements Serializable, SpiSqlUpdate {
 		this.timeout = secs;
 		return this;
 	}
-
+    
+	public SqlUpdate addParameter(Object value) {
+        return setParameter(++addPos, value);
+    }
+    
 	public SqlUpdate setParameter(int position, Object value) {
 		bindParams.setParameter(position, value);
 		return this;

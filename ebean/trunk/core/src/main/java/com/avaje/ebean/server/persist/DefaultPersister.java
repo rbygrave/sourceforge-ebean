@@ -192,7 +192,7 @@ public final class DefaultPersister implements Persister {
 				if (request.isPersistCascade()) {
 					// save any associated List held beans
 					intercept.setLoaded();
-					saveAssocMany(false, request, false);
+					saveAssocMany(false, request);
 					intercept.setReference();
 				}
 
@@ -256,7 +256,7 @@ public final class DefaultPersister implements Persister {
 
 		if (request.isPersistCascade()) {
 			// save any associated List held beans
-			saveAssocMany(true, request, true);
+			saveAssocMany(true, request);
 		}
 	}
 
@@ -285,10 +285,10 @@ public final class DefaultPersister implements Persister {
 
 		if (request.isPersistCascade()) {
 			// save all the beans in assocMany's after
-			saveAssocMany(false, request, true);
+			saveAssocMany(false, request);
 		}
 	}
-
+	   
 	/**
 	 * Delete the bean with the explicit transaction.
 	 */
@@ -315,6 +315,39 @@ public final class DefaultPersister implements Persister {
 			throw ex;
 		}
 	}
+
+    public void delete(Class<?> beanType, Object id, Transaction transaction) {
+
+        SpiTransaction t = (SpiTransaction)transaction;
+        BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(beanType);
+
+        if (t.isPersistCascade()){
+            // OneToOne exported side with delete cascade
+            BeanPropertyAssocOne<?>[] expOnes = descriptor.propertiesOneExportedDelete();
+            for (int i = 0; i < expOnes.length; i++) {
+                //TODO:
+            }
+            
+            // OneToMany's with delete cascade
+            BeanPropertyAssocMany<?>[] manys = descriptor.propertiesManyDelete();
+            for (int i = 0; i < manys.length; i++) {
+     
+                SqlUpdate sqlDelete = manys[i].deleteByParentId(id);
+                executeSqlUpdate(sqlDelete, t);
+            }
+        }
+        
+        // ManyToMany's ... delete from intersection table
+        BeanPropertyAssocMany<?>[] manys = descriptor.propertiesManyToMany();
+        for (int i = 0; i < manys.length; i++) {
+            SqlUpdate sqlDelete = manys[i].deleteByParentId(id);
+            executeSqlUpdate(sqlDelete, t);
+        }
+        
+        // delete the bean 
+        SqlUpdate deleteById = descriptor.deleteById(id);
+        executeSqlUpdate(deleteById, t);
+    }
 
 	/**
 	 * Delete the bean.
@@ -347,10 +380,11 @@ public final class DefaultPersister implements Persister {
 	 * bean to the child beans.
 	 * </p>
 	 */
-	private void saveAssocMany(boolean insertedParent, PersistRequestBean<?> request, boolean includeExportedOnes) {
+	private void saveAssocMany(boolean insertedParent, PersistRequestBean<?> request) {
 
 		Object parentBean = request.getBean();
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
+		SpiTransaction t  = request.getTransaction();
 
 		// exported ones with cascade save
 		BeanPropertyAssocOne<?>[] expOnes = desc.propertiesOneExportedSave();
@@ -359,48 +393,50 @@ public final class DefaultPersister implements Persister {
 
 			// check for partial beans
 			if (request.isLoadedProperty(prop)) {
-				Object detailBean = prop.getValue(request.getBean());
+				Object detailBean = prop.getValue(parentBean);
 				if (detailBean != null) {
 					if (prop.isSaveRecurseSkippable(detailBean)) {
 						// skip saving this bean
 					} else {
-						SpiTransaction t = request.getTransaction();
 						t.depth(+1);
 						saveRecurse(detailBean, t, parentBean);
 						t.depth(-1);
 					}
 				}
-
 			}
 		}
 
 		// many's with cascade save
 		BeanPropertyAssocMany<?>[] manys = desc.propertiesManySave();
 		for (int i = 0; i < manys.length; i++) {
-			if (manys[i].isManyToMany()) {
-				// save the beans that are in the manyToMany
-				if (manys[i].getCascadeInfo().isSave()){
-					// Need explicit Cascade to save the beans on other side 
-					saveAssocManyDetails(insertedParent, request, manys[i], false);
-	                // for ManyToMany save the 'relationship' via inserts/deletes
-	                // into/from the intersection table
-	                saveAssocManyIntersection(insertedParent, manys[i], request.getBean(), request.getTransaction());
-				}
-
-			} else {
-				if (manys[i].getCascadeInfo().isSave()){
-					saveAssocManyDetails(insertedParent, request, manys[i], true);
-				}
-				if (ModifyListenMode.REMOVALS.equals(manys[i].getModifyListenMode())) {
-					removeAssocManyPrivateOwned(request, manys[i]);
-				}
-			}
+		    saveMany(insertedParent, manys[i], parentBean, t, manys[i].getCascadeInfo().isSave());
 		}
 	}
 
-	private void removeAssocManyPrivateOwned(PersistRequestBean<?> request, BeanPropertyAssocMany<?> prop) {
+    private void saveMany(boolean insertedParent, BeanPropertyAssocMany<?> many, Object parentBean, SpiTransaction t, boolean cascade) {
 
-		Object parentBean = request.getBean();
+        if (many.isManyToMany()) {
+            // save the beans that are in the manyToMany
+            if (cascade) {
+                // Need explicit Cascade to save the beans on other side
+                saveAssocManyDetails(insertedParent, many, parentBean, t);
+                // for ManyToMany save the 'relationship' via inserts/deletes
+                // into/from the intersection table
+                saveAssocManyIntersection(insertedParent, many, parentBean, t);
+            }
+
+        } else {
+            if (cascade) {
+                saveAssocManyDetails(insertedParent, many, parentBean, t);
+            }
+            if (ModifyListenMode.REMOVALS.equals(many.getModifyListenMode())) {
+                removeAssocManyPrivateOwned(many, parentBean, t);
+            }
+        }
+    }
+	
+	private void removeAssocManyPrivateOwned(BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
+
 		Object details = prop.getValue(parentBean);
 
 		// check that the list is not null and if it is a BeanCollection
@@ -410,7 +446,6 @@ public final class DefaultPersister implements Persister {
 			Set<?> modifyRemovals = c.getModifyRemovals();
 			if (modifyRemovals != null && !modifyRemovals.isEmpty()) {
 				// increase depth for batching order
-				SpiTransaction t = request.getTransaction();
 				t.depth(+1);
 				
 				Iterator<?> it = modifyRemovals.iterator();
@@ -427,10 +462,9 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Save the details from a OneToMany collection.
 	 */
-	private void saveAssocManyDetails(boolean insertedParent, PersistRequestBean<?> request, 
-			BeanPropertyAssocMany<?> prop, boolean oneToMany) {
+	private void saveAssocManyDetails(boolean insertedParent, 
+			BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
 
-		Object parentBean = request.getBean();
 		Object details = prop.getValue(parentBean);
 
 		// check that the list is not null and if it is a BeanCollection
@@ -445,7 +479,6 @@ public final class DefaultPersister implements Persister {
 			}
 			
 			// increase depth for batching order
-			SpiTransaction t = request.getTransaction();
 			t.depth(+1);
 
 			// if a map, then we get the key value and
@@ -465,13 +498,13 @@ public final class DefaultPersister implements Persister {
 					mapKeyValue = entry.getKey();
 					detailBean = entry.getValue();
 				}
-				if (oneToMany) {
+				if (!prop.isManyToMany()) {
 					// set the 'parent/master' bean to the detailBean as long
 					// as we don't make it 'dirty' in doing so
 					if (detailBean instanceof EntityBean) {
 						if (((EntityBean) detailBean)._ebean_getIntercept().isNewOrDirty()) {
 							// set the parent bean to detailBean
-							prop.setJoinValuesToChild(request, parentBean, detailBean, mapKeyValue);
+							prop.setJoinValuesToChild(parentBean, detailBean, mapKeyValue);
 						} else {
 							// unmodified so potentially can skip
 							// depending on prop.isSaveRecurseSkippable();
@@ -479,7 +512,7 @@ public final class DefaultPersister implements Persister {
 						}
 					} else {
 						// set the parent bean to detailBean
-						prop.setJoinValuesToChild(request, parentBean, detailBean, mapKeyValue);
+						prop.setJoinValuesToChild(parentBean, detailBean, mapKeyValue);
 					}
 				}
 
@@ -503,7 +536,41 @@ public final class DefaultPersister implements Persister {
         
         saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t);
     }
-	   
+
+    public void saveAssociation(Object parentBean, String propertyName, Transaction t) {
+        
+        BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(parentBean.getClass());
+        SpiTransaction trans = (SpiTransaction)t;
+        
+        BeanProperty prop = descriptor.getBeanProperty(propertyName);
+        if (prop == null){
+            String msg = "Could not find property ["+propertyName+"] on bean "+parentBean.getClass();
+            throw new PersistenceException(msg);
+        }
+        
+        if (prop instanceof BeanPropertyAssocMany<?>){
+            BeanPropertyAssocMany<?> manyProp = (BeanPropertyAssocMany<?>)prop;
+            saveMany(false, manyProp, parentBean, (SpiTransaction)t, true);
+            
+        } else if (prop instanceof BeanPropertyAssocOne<?>){
+            BeanPropertyAssocOne<?> oneProp = (BeanPropertyAssocOne<?>)prop;
+            Object assocBean = oneProp.getValue(parentBean);
+            
+            int depth = oneProp.isOneToOneExported() ? 1 : -1;
+            int revertDepth = -1 * depth;
+            
+            trans.depth(depth);
+            saveRecurse(assocBean, t, parentBean);
+            trans.depth(revertDepth);
+        
+        } else {
+            String msg = "Expecting ["+prop.getFullBeanName()
+                +"] to be a OneToMany, OneToOne, ManyToOne or ManyToMany property?";
+            throw new PersistenceException(msg);
+        }
+        
+    }
+
 	/**
 	 * Save the additions and removals from a ManyToMany collection as inserts
 	 * and deletes from the intersection table.
