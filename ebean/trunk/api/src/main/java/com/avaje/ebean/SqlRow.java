@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Used to return raw SQL query results.
@@ -78,6 +79,16 @@ public interface SqlRow extends Serializable, Map<String, Object> {
 	 * </p>
 	 */
 	public Object set(String name, Object value);
+
+    /**
+     * Return a property as a Boolean.
+     */
+    public Boolean getBoolean(String name);
+
+    /**
+     * Return a property as a UUID.
+     */
+    public UUID getUUID(String name);
 
 	/**
 	 * Return a property as an Integer.
