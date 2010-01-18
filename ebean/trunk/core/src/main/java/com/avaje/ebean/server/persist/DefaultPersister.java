@@ -316,7 +316,7 @@ public final class DefaultPersister implements Persister {
 		}
 	}
 
-    public void delete(Class<?> beanType, Object id, Transaction transaction) {
+    public int delete(Class<?> beanType, Object id, Transaction transaction) {
 
         SpiTransaction t = (SpiTransaction)transaction;
         BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(beanType);
@@ -325,7 +325,8 @@ public final class DefaultPersister implements Persister {
             // OneToOne exported side with delete cascade
             BeanPropertyAssocOne<?>[] expOnes = descriptor.propertiesOneExportedDelete();
             for (int i = 0; i < expOnes.length; i++) {
-                //TODO:
+                SqlUpdate sqlDelete = expOnes[i].deleteByParentId(id);
+                executeSqlUpdate(sqlDelete, t);
             }
             
             // OneToMany's with delete cascade
@@ -346,7 +347,7 @@ public final class DefaultPersister implements Persister {
         
         // delete the bean 
         SqlUpdate deleteById = descriptor.deleteById(id);
-        executeSqlUpdate(deleteById, t);
+        return executeSqlUpdate(deleteById, t);
     }
 
 	/**

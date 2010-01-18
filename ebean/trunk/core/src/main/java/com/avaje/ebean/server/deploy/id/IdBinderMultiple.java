@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.core.DefaultSqlUpdate;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
@@ -195,9 +196,26 @@ public final class IdBinderMultiple implements IdBinder {
 		} else {
 			return null;
 		}
-	}
+	}	
 	
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
+	public void bindId(DefaultSqlUpdate sqlUpdate, Object idValue) {
+        // concatenated id as a Map
+        try {
+            Map<String, ?> uidMap = (Map<String, ?>) idValue;
+
+            for (int i = 0; i < props.length; i++) {
+                Object value = uidMap.get(props[i].getName());
+                sqlUpdate.addParameter(value);
+            }
+            
+        } catch (ClassCastException e) {
+            String msg = "Expecting concatinated idValue to be a Map";
+            throw new PersistenceException(msg, e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
 	public void bindId(DataBind bind, Object idValue) throws SQLException {
 
 		// concatenated id as a Map
