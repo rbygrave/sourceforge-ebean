@@ -221,10 +221,6 @@ public final class DefaultServer implements SpiEbeanServer {
 	public int getLazyLoadBatchSize() {
 		return lazyLoadBatchSize;
 	}
-
-//	public void setLazyLoadBatchSize(int loadBatchSize) {
-//		this.lazyLoadBatchSize = loadBatchSize;
-//	}
 	
 	public PstmtBatch getPstmtBatch() {
 		return pstmtBatch;
@@ -302,7 +298,6 @@ public final class DefaultServer implements SpiEbeanServer {
 		// if using "subclassing" (not enhancement) this will
 		// return null for 'vanilla' instances (not subclassed)
 		return null;
-		// throw new PersistenceException("The bean is not an EntityBean");
 	}
 	
 	/**
@@ -372,11 +367,6 @@ public final class DefaultServer implements SpiEbeanServer {
 		beanLoader.loadMany(loadRequest);
 	}
 	
-//	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx) {
-//		
-//		beanLoader.loadMany(bc, ctx);
-//	}
-
 	public void loadMany(BeanCollection<?> bc, boolean onlyIds) {
 		
 		beanLoader.loadMany(bc, null, onlyIds);
