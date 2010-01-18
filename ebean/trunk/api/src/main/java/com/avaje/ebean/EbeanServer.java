@@ -691,13 +691,14 @@ public interface EbeanServer {
 	public int delete(Iterator<?> it) throws OptimisticLockException;
 
 	/**
-	 * Delete the bean
-	 * @param beanType
-	 * @param id
+	 * Delete the bean given its type and id.
 	 */
-    public void delete(Class<?> beanType, Object id);
+    public int delete(Class<?> beanType, Object id);
     
-    public void delete(Class<?> beanType, Object id, Transaction t);
+    /**
+     * Delete the bean given its type and id with an explicit transaction.
+     */
+    public int delete(Class<?> beanType, Object id, Transaction t);
 
 	/**
 	 * Execute a SQL Update Delete or Insert statement using the current
