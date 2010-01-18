@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
@@ -49,235 +50,177 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
  */
 public class DefaultSqlRow implements SqlRow {
 
-	static final long serialVersionUID = -3120927797041336242L;
+    static final long serialVersionUID = -3120927797041336242L;
 
-	/**
-	 * The underlying map of property data.
-	 */
-	Map<String, Object> map;
+    private final String dbTrueValue;
+    
+    /**
+     * The underlying map of property data.
+     */
+    Map<String, Object> map;
 
-	/**
-	 * Create with a specific Map implementation.
-	 * <p>
-	 * The default Map implementation is LinkedHashMap.
-	 * </p>
-	 */
-	public DefaultSqlRow(Map<String, Object> map) {
-		this.map = map;
-	}
+    /**
+     * Create with a specific Map implementation.
+     * <p>
+     * The default Map implementation is LinkedHashMap.
+     * </p>
+     */
+    public DefaultSqlRow(Map<String, Object> map, String dbTrueValue) {
+        this.map = map;
+        this.dbTrueValue = dbTrueValue;
+    }
 
-	/**
-	 * Create a new MapBean based on a LinkedHashMap with default
-	 * initialCapacity (of 16).
-	 */
-	public DefaultSqlRow() {
-		this.map = new LinkedHashMap<String, Object>();
-	}
+    /**
+     * Create a new MapBean based on a LinkedHashMap with default
+     * initialCapacity (of 16).
+     */
+    public DefaultSqlRow(String dbTrueValue) {
+        this.map = new LinkedHashMap<String, Object>();
+        this.dbTrueValue = dbTrueValue;
+    }
 
-	/**
-	 * Create with an initialCapacity and loadFactor.
-	 * <p>
-	 * The defaults of these are 16 and 0.75.
-	 * </p>
-	 * <p>
-	 * Note that the Map will rehash the contents when the number of keys in
-	 * this map reaches its threshold (initialCapacity * loadFactor).
-	 * </p>
-	 */
-	public DefaultSqlRow(int initialCapacity, float loadFactor) {
-		this.map = new LinkedHashMap<String, Object>(initialCapacity, loadFactor);
-	}
+    /**
+     * Create with an initialCapacity and loadFactor.
+     * <p>
+     * The defaults of these are 16 and 0.75.
+     * </p>
+     * <p>
+     * Note that the Map will rehash the contents when the number of keys in
+     * this map reaches its threshold (initialCapacity * loadFactor).
+     * </p>
+     */
+    public DefaultSqlRow(int initialCapacity, float loadFactor, String dbTrueValue) {
+        this.map = new LinkedHashMap<String, Object>(initialCapacity, loadFactor);
+        this.dbTrueValue = dbTrueValue;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#keys()
-	 */
-	public Iterator<String> keys() {
-		return map.keySet().iterator();
-	}
+    public Iterator<String> keys() {
+        return map.keySet().iterator();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#remove(java.lang.Object)
-	 */
-	public Object remove(Object name) {
-		name = ((String)name).toLowerCase();
-		return map.remove(name);
-	}
+    public Object remove(Object name) {
+        name = ((String) name).toLowerCase();
+        return map.remove(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#get(java.lang.Object)
-	 */
-	public Object get(Object name) {
-		name = ((String)name).toLowerCase();
-		return map.get(name);
-	}
+    public Object get(Object name) {
+        name = ((String) name).toLowerCase();
+        return map.get(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#put(java.lang.String, java.lang.Object)
-	 */
-	public Object put(String name, Object value) {
-		return setInternal(name, value);
-	}
+    public Object put(String name, Object value) {
+        return setInternal(name, value);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#set(java.lang.String, java.lang.Object)
-	 */
-	public Object set(String name, Object value) {
-		return setInternal(name, value);
-	}
+    public Object set(String name, Object value) {
+        return setInternal(name, value);
+    }
 
-	private Object setInternal(String name, Object newValue) {
-		// MapBean properties are always lowercase
-		name = name.toLowerCase();
+    private Object setInternal(String name, Object newValue) {
+        // MapBean properties are always lowercase
+        name = name.toLowerCase();
 
-		// valueList = null;
-		return map.put(name, newValue);
-	}
+        // valueList = null;
+        return map.put(name, newValue);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getInteger(java.lang.String)
-	 */
-	public Integer getInteger(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toInteger(val);
-	}
+    public UUID getUUID(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toUUID(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getBigDecimal(java.lang.String)
-	 */
-	public BigDecimal getBigDecimal(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toBigDecimal(val);
-	}
+    public Boolean getBoolean(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toBoolean(val, dbTrueValue);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getLong(java.lang.String)
-	 */
-	public Long getLong(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toLong(val);
-	}
+    public Integer getInteger(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toInteger(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getDouble(java.lang.String)
-	 */
-	public Double getDouble(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toDouble(val);
-	}
+    public BigDecimal getBigDecimal(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toBigDecimal(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getFloat(java.lang.String)
-	 */
-	public Float getFloat(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toFloat(val);
-	}
+    public Long getLong(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toLong(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getString(java.lang.String)
-	 */
-	public String getString(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toString(val);
-	}
+    public Double getDouble(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toDouble(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getUtilDate(java.lang.String)
-	 */
-	public java.util.Date getUtilDate(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toUtilDate(val);
-	}
+    public Float getFloat(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toFloat(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getDate(java.lang.String)
-	 */
-	public Date getDate(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toDate(val);
-	}
+    public String getString(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toString(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#getTimestamp(java.lang.String)
-	 */
-	public Timestamp getTimestamp(String name) {
-		Object val = get(name);
-		return BasicTypeConverter.toTimestamp(val);
-	}
+    public java.util.Date getUtilDate(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toUtilDate(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#toString()
-	 */
-	public String toString() {
-		return map.toString();
-	}
+    public Date getDate(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toDate(val);
+    }
 
-	// ------------------------------------
-	// Normal map methods...
+    public Timestamp getTimestamp(String name) {
+        Object val = get(name);
+        return BasicTypeConverter.toTimestamp(val);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#clear()
-	 */
-	public void clear() {
-		map.clear();
-	}
+    public String toString() {
+        return map.toString();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#containsKey(java.lang.Object)
-	 */
-	public boolean containsKey(Object key) {
-		key = ((String)key).toLowerCase();
-		return map.containsKey(key);
-	}
+    // ------------------------------------
+    // Normal map methods...
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#containsValue(java.lang.Object)
-	 */
-	public boolean containsValue(Object value) {
-		return map.containsValue(value);
-	}
+    public void clear() {
+        map.clear();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#entrySet()
-	 */
-	public Set<Map.Entry<String, Object>> entrySet() {
-		return map.entrySet();
-	}
+    public boolean containsKey(Object key) {
+        key = ((String) key).toLowerCase();
+        return map.containsKey(key);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#isEmpty()
-	 */
-	public boolean isEmpty() {
-		return map.isEmpty();
-	}
+    public boolean containsValue(Object value) {
+        return map.containsValue(value);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#keySet()
-	 */
-	public Set<String> keySet() {
-		return map.keySet();
-	}
+    public Set<Map.Entry<String, Object>> entrySet() {
+        return map.entrySet();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#putAll(java.util.Map)
-	 */
-	public void putAll(Map<? extends String, ? extends Object> t) {
-		map.putAll(t);
-	}
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#size()
-	 */
-	public int size() {
-		return map.size();
-	}
+    public Set<String> keySet() {
+        return map.keySet();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.ISqlRow#values()
-	 */
-	public Collection<Object> values() {
-		return map.values();
-	}
+    public void putAll(Map<? extends String, ? extends Object> t) {
+        map.putAll(t);
+    }
 
+    public int size() {
+        return map.size();
+    }
+
+    public Collection<Object> values() {
+        return map.values();
+    }
 
 }

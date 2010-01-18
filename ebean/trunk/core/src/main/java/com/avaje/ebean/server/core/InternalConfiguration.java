@@ -159,7 +159,7 @@ public class InternalConfiguration {
 
 
 	public RelationalQueryEngine createRelationalQueryEngine() {
-		return new DefaultRelationalQueryEngine(logControl, binder);
+		return new DefaultRelationalQueryEngine(logControl, binder, serverConfig.getDatabaseBooleanTrue());
 	}
 	
 	public OrmQueryEngine createOrmQueryEngine() {

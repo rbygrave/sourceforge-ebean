@@ -57,11 +57,14 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 	private final Binder binder;
 
 	private final MAdminLogging logControl;
+	
+	private final String dbTrueValue;
 
-	public DefaultRelationalQueryEngine(MAdminLogging logControl, Binder binder) {
+	public DefaultRelationalQueryEngine(MAdminLogging logControl, Binder binder, String dbTrueValue) {
 		this.binder = binder;
 		this.logControl = logControl;
 		this.defaultMaxRows = GlobalProperties.getInt("nativesql.defaultmaxrows",100000);
+		this.dbTrueValue = dbTrueValue == null ? "true" : dbTrueValue;
 	}
 
 	public Object findMany(RelationalQueryRequest request) {
@@ -261,7 +264,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 		// it will be pretty common to have 12 or more entries so
 		// to reduce rehashing I am trying to estimate a good
 		// initial capacity for the MapBean to use.
-		SqlRow bean = new DefaultSqlRow(initialCapacity, 0.75f);
+		SqlRow bean = new DefaultSqlRow(initialCapacity, 0.75f, dbTrueValue);
 		
 		int index = 0;
 
