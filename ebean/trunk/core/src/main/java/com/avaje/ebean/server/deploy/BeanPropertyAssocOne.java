@@ -20,11 +20,16 @@
 package com.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
+import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.server.core.DefaultSqlUpdate;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.ImportedId;
@@ -52,7 +57,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      * The information for Imported foreign Keys.
      */
     private ImportedId importedId;
-
+    
+    private ExportedProperty[] exportedProperties;
+    
+    private String deleteByParentIdSql;
+    
     /**
      * Create based on deploy information of an EmbeddedId.
      */
@@ -92,10 +101,33 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     public void initialise() {
         super.initialise();
         if (!isTransient) {
-            if (!embedded && !oneToOneExported) {
+            if (embedded) {
+                // no imported or exported information
+            } else if (!oneToOneExported) {
                 importedId = createImportedId(this, targetDescriptor, tableJoin);
+            } else {
+                exportedProperties = createExported();
+                String s = "delete from "+targetDescriptor.getBaseTable()+" where ";
+                for (int i = 0; i < exportedProperties.length; i++) {
+                    if (i > 0){
+                        s += " and ";
+                    }
+                    s += exportedProperties[i].getForeignDbColumn()+" = ?";
+                }
+                deleteByParentIdSql = s;
             }
         }
+    }
+    
+    public SqlUpdate deleteByParentId(Object parentId) {
+        
+        DefaultSqlUpdate delete = new DefaultSqlUpdate(deleteByParentIdSql);
+        if (exportedProperties.length == 1){
+            delete.addParameter(parentId);
+        } else {
+            targetDescriptor.getIdBinder().bindId(delete, parentId);
+        }
+        return delete;
     }
 
     public void addFkey() {
@@ -254,6 +286,66 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return importedId;
     }
 
+    /**
+     * Create the array of ExportedProperty used to build reference objects.
+     */
+    private ExportedProperty[] createExported() {
+
+        BeanProperty[] uids = descriptor.propertiesId();
+
+        ArrayList<ExportedProperty> list = new ArrayList<ExportedProperty>();
+
+        if (uids.length == 1 && uids[0].isEmbedded()) {
+
+            BeanPropertyAssocOne<?> one = (BeanPropertyAssocOne<?>) uids[0];
+            BeanDescriptor<?> targetDesc = one.getTargetDescriptor();
+            BeanProperty[] emIds = targetDesc.propertiesBaseScalar();
+            try {
+                for (int i = 0; i < emIds.length; i++) {
+                    ExportedProperty expProp = findMatch(true, emIds[i]);
+                    list.add(expProp);
+                }
+            } catch (PersistenceException e){
+                // not found as individual scalar properties
+                e.printStackTrace();
+            }
+
+        } else {
+            for (int i = 0; i < uids.length; i++) {
+                ExportedProperty expProp = findMatch(false, uids[i]);
+                list.add(expProp);
+            }
+        }
+
+        return (ExportedProperty[]) list.toArray(new ExportedProperty[list.size()]);
+    }
+
+    /**
+     * Find the matching foreignDbColumn for a given local property.
+     */
+    private ExportedProperty findMatch(boolean embedded,BeanProperty prop) {
+
+        String matchColumn = prop.getDbColumn();
+
+        String searchTable = tableJoin.getTable();
+        TableJoinColumn[] columns = tableJoin.columns();
+        
+        for (int i = 0; i < columns.length; i++) {
+            String matchTo = columns[i].getLocalDbColumn();
+
+            if (matchColumn.equalsIgnoreCase(matchTo)) {
+                String foreignCol = columns[i].getForeignDbColumn();
+                return new ExportedProperty(embedded, foreignCol, prop);
+            }
+        }
+
+        String msg = "Error with the Join on ["+getFullBeanName()
+            +"]. Could not find the matching foreign key for ["+matchColumn+"] in table["+searchTable+"]?"
+            +" Perhaps using a @JoinColumn with the name/referencedColumnName attributes swapped?";
+        throw new PersistenceException(msg);
+    }
+
+    
     @Override
     public void appendSelect(DbSqlContext ctx) {
         if (!isTransient) {

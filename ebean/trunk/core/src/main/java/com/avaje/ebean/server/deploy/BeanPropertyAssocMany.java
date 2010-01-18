@@ -341,12 +341,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
             return;
         }
         
-        // the parent is a compound primary key
-        for (int i = 0; i < expProps.length; i++) {
-            Object val = expProps[i].getValue(parentId);
-            sqlUpd.addParameter(val);
-        }
-
+        targetDescriptor.getIdBinder().bindId(sqlUpd, parentId);
 	}
 	
     private String deriveWhereParentIdSql() {
@@ -470,16 +465,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 			if (matchColumn.equalsIgnoreCase(matchTo)) {
 				String foreignCol = columns[i].getForeignDbColumn();
-				if (manyToMany){
-					// we use the inverseJoin alias as thats the join
-					// we will use for the reference find
-					//String refQuery = inverseJoin.getForeignTableAlias()+"." + foreignCol;
-					return new ExportedProperty(embedded, foreignCol, prop);//refQuery, prop, foreignCol);
-
-				} else {
-
-					return new ExportedProperty(embedded, foreignCol, prop);
-				}
+                return new ExportedProperty(embedded, foreignCol, prop);
 			}
 		}
 

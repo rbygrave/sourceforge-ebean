@@ -59,7 +59,7 @@ public interface Persister {
      * This will also cascade delete one level of children.
      * </p>
      */
-    public void delete(Class<?> beanType, Object id, Transaction transaction);
+    public int delete(Class<?> beanType, Object id, Transaction transaction);
 
     /**
      * Delete the bean.

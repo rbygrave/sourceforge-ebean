@@ -3,6 +3,7 @@ package com.avaje.ebean.server.deploy.id;
 import java.sql.SQLException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
+import com.avaje.ebean.server.core.DefaultSqlUpdate;
 import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
@@ -79,7 +80,11 @@ public final class IdBinderEmpty implements IdBinder {
 		return new Object[]{idValue};
 	}
 	
-	public void bindId(DataBind dataBind, Object value) throws SQLException {
+	public void bindId(DefaultSqlUpdate sqlUpdate, Object value) {
+        
+    }
+	
+    public void bindId(DataBind dataBind, Object value) throws SQLException {
 		
 	}
 	

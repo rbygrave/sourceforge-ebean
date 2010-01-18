@@ -1486,13 +1486,25 @@ public final class DefaultServer implements SpiEbeanServer {
 		}
 	}
 
-    public void delete(Class<?> beanType, Object id) {
-        delete(beanType, id, null);
+    public int delete(Class<?> beanType, Object id) {
+        return delete(beanType, id, null);
     }
     
-    public void delete(Class<?> beanType, Object id, Transaction t) {
+    public int delete(Class<?> beanType, Object id, Transaction t) {
 
-        persister.delete(beanType, id, t);
+        TransWrapper wrap = initTransIfRequired(t);
+        try {
+            SpiTransaction trans = wrap.transaction;
+            int rowCount = persister.delete(beanType, id, trans);
+            wrap.commitIfCreated();
+
+            return rowCount;
+            
+        } catch (RuntimeException e) {
+            wrap.rollbackIfCreated();
+            throw e;
+        }
+
     }
 
 	/**
