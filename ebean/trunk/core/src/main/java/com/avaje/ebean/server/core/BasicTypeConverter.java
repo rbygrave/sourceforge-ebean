@@ -168,6 +168,22 @@ public final class BasicTypeConverter implements Serializable {
 		return value.toString();
 	}
 
+	
+    /**
+     * Convert the value to a Boolean with an explicit String true value.
+     */
+    public static Boolean toBoolean(Object value, String dbTrueValue) {
+
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        String s = value.toString();
+        return s.equalsIgnoreCase(dbTrueValue);
+	}
+    
 	/**
 	 * Convert the value to a Boolean. Can be a Boolean or the string values
 	 * "true" or "false".
