@@ -775,6 +775,45 @@ public interface EbeanServer {
 	public int save(Iterator<?> it, Transaction t) throws OptimisticLockException;
 
     /**
+     * Force an update using the bean.
+     * <p>
+     * You can use this method to FORCE an update to occur. When
+     * {@link EbeanServer#save(Object)} is used Ebean determines whether to use an
+     * insert or an update based on the state of the bean. Using this method
+     * will force an update to occur.
+     * </p>
+     * <p>
+     * It is expected that this method is most useful in stateless web
+     * applications where you have the values you wish to update but no existing
+     * bean.
+     * </p>
+     * 
+     * <pre class="code">
+     * 
+     * Customer c = new Customer();
+     * c.setId(7);
+     * c.setName(&quot;ModifiedNameNoOCC&quot;);
+     * 
+     * // generally you should set the version property 
+     * // so that Optimistic Concurrency Checking is used.
+     * // If a version property is not set then no Optimistic
+     * // Concurrency Checking occurs for the update
+     * //c.setLastUpdate(lastUpdateTime);
+     * 
+     * // by default the Non-null properties 
+     * // are included in the update
+     * ebeanServer.update(c);
+     * 
+     * </pre>
+     */
+    public void update(Object bean);
+
+    /**
+     * Force an update using the bean with an explicit transaction.
+     */
+    public void update(Object bean, Transaction t);
+
+    /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
      */
