@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.PersistRequestBean;
 import com.avaje.ebean.server.core.PstmtBatch;
@@ -73,22 +72,15 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	protected DmlHandler(PersistRequestBean<?> persistRequest, boolean emptyStringToNull) {
 		this.persistRequest = persistRequest;
 		this.emptyStringToNull = emptyStringToNull;
-		
-		EntityBeanIntercept ebi = persistRequest.getEntityBeanIntercept();
-		if (ebi == null){
-			loadedProps = null;
-		} else {
-			loadedProps = ebi.getLoadedProps();
-		}
-		
-		transaction = persistRequest.getTransaction();
-		logLevel = persistRequest.getLogLevel();
+		this.loadedProps = persistRequest.getLoadedProperties();
+		this.transaction = persistRequest.getTransaction();
+		this.logLevel = persistRequest.getLogLevel();
 		if (logLevel >= MAdminLogging.BIND) {
-			loggingBind = true;
-			bindLog = new StringBuilder();
+			this.loggingBind = true;
+			this.bindLog = new StringBuilder();
 		} else {
-			loggingBind = false;
-			bindLog = null;
+			this.loggingBind = false;
+			this.bindLog = null;
 		}
 	}
 

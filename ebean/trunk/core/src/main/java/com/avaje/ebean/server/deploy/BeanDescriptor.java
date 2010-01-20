@@ -22,6 +22,7 @@ package com.avaje.ebean.server.deploy;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -279,6 +280,7 @@ public class BeanDescriptor<T> {
     private final BeanPropertyCompound[] propertiesBaseCompound;
 
     private final BeanProperty[] propertiesTransient;
+    private final BeanProperty[] propertiesNonTransient;
 
     /**
      * Set to true if the bean has version properties or an embedded bean has
@@ -431,6 +433,7 @@ public class BeanDescriptor<T> {
 
         this.propMap = listHelper.getPropertyMap();
         this.propertiesTransient = listHelper.getTransients();
+        this.propertiesNonTransient = listHelper.getNonTransients();
         this.propertiesBaseScalar = listHelper.getBaseScalar();
         this.propertiesBaseCompound = listHelper.getBaseCompound();
         this.propertiesId = listHelper.getId();
@@ -510,6 +513,34 @@ public class BeanDescriptor<T> {
         return (T) copy;
     }
 
+    /**
+     * Determine the concurrency mode based on the existence 
+     * of a non-null version property value.
+     */
+    public ConcurrencyMode determineConcurrencyMode(Object bean) {
+        
+        if (propertyFirstVersion == null){
+            return ConcurrencyMode.NONE;
+        }
+        Object v = propertyFirstVersion.getValue(bean);
+        return (v == null)? ConcurrencyMode.NONE : ConcurrencyMode.VERSION;
+    }
+    
+    /**
+     * Determine the non-null properties of the bean.
+     */
+    public Set<String> determineLoadedProperties(Object bean) {
+        
+        HashSet<String> nonNullProps = new HashSet<String>();
+        
+        for (int i = 0; i < propertiesNonTransient.length; i++) {
+            if (propertiesNonTransient[i].getValue(bean) != null){
+                nonNullProps.add(propertiesNonTransient[i].getName());
+            }
+        }
+        return nonNullProps;
+    }
+    
     /**
      * Return the EbeanServer instance that owns this BeanDescriptor.
      */
