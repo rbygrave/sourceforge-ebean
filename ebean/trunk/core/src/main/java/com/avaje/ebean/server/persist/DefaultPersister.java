@@ -40,6 +40,7 @@ import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.SpiUpdate;
+import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.Message;
 import com.avaje.ebean.server.core.PersistRequest;
 import com.avaje.ebean.server.core.PersistRequestBean;
@@ -158,6 +159,62 @@ public final class DefaultPersister implements Persister {
 		// NB: a new PersistRequest is made
 		server.delete(detailBean, t);
 	}
+
+	/**
+	 * Force an Update using the given bean.
+	 */
+    @SuppressWarnings("unchecked")
+    public void forceUpdate(Object bean, Transaction t) {
+        
+        if (bean == null) {
+            throw new NullPointerException(Message.msg("bean.isnull"));
+        }
+
+        Set<String> updateProps = null;
+
+        if (bean instanceof EntityBean){
+            EntityBeanIntercept ebi = ((EntityBean)bean)._ebean_getIntercept();
+            if (ebi.isDirty()) {
+                // normal update of an enhanced bean
+                PersistRequestBean<?> req = createPersistRequest(bean, t, null);
+                update(req);
+                return;
+            }
+            updateProps = ebi.getLoadedProps();
+        }
+        
+        BeanManager<?> mgr = getPersistDescriptor(bean);
+        if (mgr == null){
+            String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it a registered entity?";
+            throw new PersistenceException(msg);
+        }
+
+        BeanDescriptor<?> descriptor = mgr.getBeanDescriptor();
+        
+        // determine concurrency mode based on version property not null
+        ConcurrencyMode mode = descriptor.determineConcurrencyMode(bean);
+        
+        // determine loaded properties (anything that is non-null)
+        if (updateProps == null){
+            updateProps = descriptor.determineLoadedProperties(bean);
+            
+        } else if (updateProps.isEmpty()){
+            // in this case means we want to include all properties in the update 
+            updateProps = null;
+        }
+        
+        PersistRequestBean<?> req = new PersistRequestBean(server, bean, null, mgr, (SpiTransaction)t, persistExecute, updateProps, mode);
+
+        try {
+            req.initTransIfRequired();
+            update(req);
+            req.commitTransIfRequired();
+
+        } catch (RuntimeException ex) {
+            req.rollbackTransIfRequired();
+            throw ex;
+        }
+    }
 
 	public void save(Object bean, Transaction t) {
 		saveRecurse(bean, t, null);
@@ -773,9 +830,10 @@ public final class DefaultPersister implements Persister {
 			if (request.isLoadedProperty(prop)) {
 				Object detailBean = prop.getValue(request.getBean());
 				if (detailBean != null) {
-					if (request.isParent(detailBean)) {
+				    if (isReference(detailBean)){
+				        // skip saving a reference
+				    } else if (request.isParent(detailBean)) {
 						// skip saving the parent as already saved
-						
 					} else if (prop.isSaveRecurseSkippable(detailBean)) {
 						// we can skip saving this bean
 					
@@ -788,6 +846,13 @@ public final class DefaultPersister implements Persister {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Return true if the bean is a reference.
+	 */
+	private boolean isReference(Object bean){
+	    return (bean instanceof EntityBean) && ((EntityBean)bean)._ebean_getIntercept().isReference();
 	}
 
 	/**

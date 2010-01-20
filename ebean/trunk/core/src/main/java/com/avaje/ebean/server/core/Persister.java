@@ -31,6 +31,11 @@ import com.avaje.ebean.Update;
 public interface Persister {
 
     /**
+     * Force an Update using the given bean.
+     */
+    public void forceUpdate(Object entityBean, Transaction t);
+
+    /**
      * Insert or update the bean depending on its state.
      */
     public void save(Object entityBean, Transaction t);
