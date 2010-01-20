@@ -7,7 +7,6 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.tests.model.basic.EBasicVer;
 
 public class TestIUDVanilla extends TestCase {
@@ -19,9 +18,9 @@ public class TestIUDVanilla extends TestCase {
 
         Ebean.save(e0);
 
-        // only use the below test when not using enhancement
-        boolean entity = (e0 instanceof EntityBean);
-        Assert.assertTrue(!entity);
+//        // only use the below test when not using enhancement
+//        boolean entity = (e0 instanceof EntityBean);
+//        Assert.assertTrue(!entity);
 
         Assert.assertNotNull(e0.getId());
         Assert.assertNotNull(e0.getLastUpdate());
