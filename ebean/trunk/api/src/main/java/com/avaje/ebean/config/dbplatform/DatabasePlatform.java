@@ -65,6 +65,8 @@ public class DatabasePlatform {
 	/** Use a BackTick ` at the beginning and end of table or column names that you want to use quoted identifiers for. The backticks get converted to the appropriate characters in convertQuotedIdentifiers */
 	private static final char BACK_TICK = '`';
 	
+	protected DbEncrypt dbEncrypt;
+	
 	/**
 	 * Instantiates a new database platform.
 	 */
@@ -103,8 +105,14 @@ public class DatabasePlatform {
 		return null;
 	}
 
-
 	/**
+	 * Return the DbDecrypt handler for this DB platform.
+	 */
+	public DbEncrypt getDbEncrypt() {
+        return dbEncrypt;
+    }
+
+    /**
 	 * Return the mapping of JDBC to DB types.
 	 *
 	 * @return the db type map

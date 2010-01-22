@@ -184,6 +184,8 @@ public class ServerConfig {
 	private List<BeanPersistListener<?>> persistListeners = new ArrayList<BeanPersistListener<?>>();
 	private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
 	
+	private EncryptKeyManager encryptKeyManager;
+	
 	/**
 	 * Return the name of the EbeanServer.
 	 */
@@ -596,8 +598,22 @@ public class ServerConfig {
 	public void setDatabasePlatform(DatabasePlatform databasePlatform) {
 		this.databasePlatform = databasePlatform;
 	}
-
+	
 	/**
+	 * Return the EncryptKeyManager.
+	 */
+	public EncryptKeyManager getEncryptKeyManager() {
+        return encryptKeyManager;
+    }
+
+    /**
+     * Set the EncryptKeyManager.
+     */
+    public void setEncryptKeyManager(EncryptKeyManager encryptKeyManager) {
+        this.encryptKeyManager = encryptKeyManager;
+    }
+
+    /**
 	 * Return the amount of transaction logging.
 	 */
 	public TxLogLevel getTransactionLogging() {
@@ -1058,6 +1074,15 @@ public class ServerConfig {
 				throw new RuntimeException(e);
 			}
 		}
+		String ekm = p.get("encryptKeyManager", null);
+        if (ekm != null){
+            try {
+                Class<?> cls = Class.forName(ekm);
+                encryptKeyManager = (EncryptKeyManager)cls.newInstance();
+            } catch (Exception e){
+                throw new RuntimeException(e);
+            }
+        }
 		
 		updateChangesOnly = p.getBoolean("updateChangesOnly", true);
 		
