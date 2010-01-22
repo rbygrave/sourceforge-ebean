@@ -40,26 +40,32 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public interface Bindable {
 
-	/**
-	 * For Updates including only changed properties add the Bindable to the 
-	 * list if it should be included in the 'update set'.
-	 */
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list);
+    /**
+     * For Updates including only changed properties add the Bindable to the
+     * list if it should be included in the 'update set'.
+     */
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list);
 
-	/**
-	 * append sql to the buffer with prefix and suffix options.
-	 */
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes);
+    /**
+     * append sql to the buffer with prefix and suffix options.
+     */
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes);
 
-	/**
-	 * For WHERE clauses append sql to the buffer with prefix and suffix options.
-	 * These need to take into account binding of null values.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean);
+    /**
+     * append sql to the buffer with prefix and suffix options.
+     */
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes);
 
-	/**
-	 * Bind given the request and bean. The bean could be the oldValues bean
-	 * when binding a update or delete where clause with ALL concurrency mode.
-	 */
-	public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException;
+    /**
+     * For WHERE clauses append sql to the buffer with prefix and suffix
+     * options. These need to take into account binding of null values.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean);
+
+    /**
+     * Bind given the request and bean. The bean could be the oldValues bean
+     * when binding a update or delete where clause with ALL concurrency mode.
+     */
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
+            throws SQLException;
 }

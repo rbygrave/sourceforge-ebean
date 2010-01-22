@@ -32,49 +32,54 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableAssocOne implements Bindable {
 
-	private final BeanPropertyAssocOne<?> assocOne;
+    private final BeanPropertyAssocOne<?> assocOne;
 
-	private final ImportedId importedId;
-	
-	public BindableAssocOne(BeanPropertyAssocOne<?> assocOne) {
-		this.assocOne = assocOne;
-		this.importedId = assocOne.getImportedId();
-	}
+    private final ImportedId importedId;
 
-	public String toString() {
-		return "BindableAssocOne "+assocOne;
-	}
-	
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		if (request.hasChanged(assocOne)) {
-			list.add(this);
-		}
-	}
+    public BindableAssocOne(BeanPropertyAssocOne<?> assocOne) {
+        this.assocOne = assocOne;
+        this.importedId = assocOne.getImportedId();
+    }
 
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
-		if (checkIncludes && !request.isIncluded(assocOne)){
-			return;
-		}
-		importedId.dmlAppend(request);
-	}
+    public String toString() {
+        return "BindableAssocOne " + assocOne;
+    }
 
-	/**
-	 * Used for dynamic where clause generation.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean){
-		if (checkIncludes && !request.isIncluded(assocOne)){
-			return;
-		}
-		Object assocBean = assocOne.getValue(bean);
-		importedId.dmlWhere(request, assocBean);
-	}
-	
-	public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
-		if (checkIncludes && !request.isIncluded(assocOne)){
-			return;
-		}
-		Object assocBean = assocOne.getValue(bean);
-		importedId.bind(request, assocBean, bindNull);
-	}
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        if (request.hasChanged(assocOne)) {
+            list.add(this);
+        }
+    }
+
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        dmlAppend(request, checkIncludes);
+    }
+
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+        if (checkIncludes && !request.isIncluded(assocOne)) {
+            return;
+        }
+        importedId.dmlAppend(request);
+    }
+
+    /**
+     * Used for dynamic where clause generation.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+        if (checkIncludes && !request.isIncluded(assocOne)) {
+            return;
+        }
+        Object assocBean = assocOne.getValue(bean);
+        importedId.dmlWhere(request, assocBean);
+    }
+
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
+            throws SQLException {
+        if (checkIncludes && !request.isIncluded(assocOne)) {
+            return;
+        }
+        Object assocBean = assocOne.getValue(bean);
+        importedId.bind(request, assocBean, bindNull);
+    }
 
 }

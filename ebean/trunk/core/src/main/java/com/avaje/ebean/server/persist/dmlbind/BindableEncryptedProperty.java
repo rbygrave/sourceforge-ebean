@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist.dmlbind;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 import com.avaje.ebean.server.core.PersistRequestBean;
@@ -27,13 +28,13 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
 
 /**
- * Bindable for a single BeanProperty.
+ * Bindable for a DB encrypted BeanProperty.
  */
-public class BindableProperty implements Bindable {
+public class BindableEncryptedProperty implements Bindable {
 
     protected final BeanProperty prop;
 
-    public BindableProperty(BeanProperty prop) {
+    public BindableEncryptedProperty(BeanProperty prop) {
         this.prop = prop;
     }
 
@@ -48,14 +49,22 @@ public class BindableProperty implements Bindable {
     }
 
     public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
-        dmlAppend(request, checkIncludes);
-    }
 
-    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
         if (checkIncludes && !request.isIncluded(prop)) {
             return;
         }
-        request.appendColumn(prop.getDbColumn());
+        // columnName
+        // AES_ENCRYPT(?,?)
+        request.appendColumn(prop.getDbColumn(), prop.getDbBind());
+    }
+
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+
+        if (checkIncludes && !request.isIncluded(prop)) {
+            return;
+        }
+        // columnName = AES_ENCRYPT(?,?)
+        request.appendColumn(prop.getDbColumn(), "=", prop.getDbBind());
     }
 
     /**
@@ -70,7 +79,8 @@ public class BindableProperty implements Bindable {
             request.appendColumnIsNull(prop.getDbColumn());
 
         } else {
-            request.appendColumn(prop.getDbColumn());
+            // ? = AES_DECRYPT(columnName,?)
+            request.appendColumn("? = ", prop.getDecryptSql());
         }
     }
 
@@ -86,7 +96,12 @@ public class BindableProperty implements Bindable {
         if (bean != null) {
             value = prop.getValue(bean);
         }
-        // value = prop.getDefaultValue();
-        request.bind(value, prop, prop.getName(), bindNull);
+
+        request.bindNoLog(value, prop, prop.getName(), bindNull);
+
+        // get Encrypt key and bind
+        String keyValue = prop.getEncryptKey();
+        request.bindNoLog(keyValue, Types.VARCHAR, prop.getName() + "=****");
+
     }
 }

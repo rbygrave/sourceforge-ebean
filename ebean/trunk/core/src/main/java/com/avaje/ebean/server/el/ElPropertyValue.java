@@ -30,76 +30,82 @@ import com.avaje.ebean.text.StringParser;
  */
 public interface ElPropertyValue extends ElPropertyDeploy {
 
-	/**
-	 * Return the Id values for the given bean value.
-	 */
-	public Object[] getAssocOneIdValues(Object bean);
+    /**
+     * Return the Id values for the given bean value.
+     */
+    public Object[] getAssocOneIdValues(Object bean);
 
-	/**
-	 * Return the Id expression string.
-	 * <p>
-	 * Typically used to produce id = ? expression strings.
-	 * </p>
-	 */
-	public String getAssocOneIdExpr(String prefix, String operator);
+    /**
+     * Return the Id expression string.
+     * <p>
+     * Typically used to produce id = ? expression strings.
+     * </p>
+     */
+    public String getAssocOneIdExpr(String prefix, String operator);
 
-	/**
-	 * Return true if this is an ManyToOne or OneToOne associated bean property.
-	 */
-	public boolean isAssocOneId();
+    /**
+     * Return true if this is an ManyToOne or OneToOne associated bean property.
+     */
+    public boolean isAssocOneId();
 
-	/**
-	 * Return the underlying bean property.
-	 */
-	public BeanProperty getBeanProperty();
+    /**
+     * Return true if 
+     * @return
+     */
+    public boolean isEncrypted();
 
-	/**
-	 * Return the default StringParser for the scalar property.
-	 */
-	public StringParser getStringParser();
+    /**
+     * Return the underlying bean property.
+     */
+    public BeanProperty getBeanProperty();
 
-	/**
-	 * Return true if the last type is "DateTime capable" - can support
-	 * {@link #parseDateTime(long)}.
-	 */
-	public boolean isDateTimeCapable();
+    /**
+     * Return the default StringParser for the scalar property.
+     */
+    public StringParser getStringParser();
 
-	/**
-	 * For DateTime capable scalar types convert the long systemTimeMillis into
-	 * an appropriate java time (Date,Timestamp,Time,Calendar, JODA type etc).
-	 */
-	public Object parseDateTime(long systemTimeMillis);
+    /**
+     * Return true if the last type is "DateTime capable" - can support
+     * {@link #parseDateTime(long)}.
+     */
+    public boolean isDateTimeCapable();
 
-	/**
-	 * Return the value from a given entity bean.
-	 */
-	public Object elGetValue(Object bean);
+    /**
+     * For DateTime capable scalar types convert the long systemTimeMillis into
+     * an appropriate java time (Date,Timestamp,Time,Calendar, JODA type etc).
+     */
+    public Object parseDateTime(long systemTimeMillis);
 
-	/**
-	 * Return the value ensuring objects prior to the top
-	 * scalar property are automatically populated.
-	 */
-	public Object elGetReference(Object bean);
+    /**
+     * Return the value from a given entity bean.
+     */
+    public Object elGetValue(Object bean);
 
-	/**
-	 * Set a value given a root level bean.
-	 * <p>
-	 * If populate then 
-	 * </p>
-	 */
-	public void elSetValue(Object bean, Object value, boolean populate, boolean reference);
+    /**
+     * Return the value ensuring objects prior to the top scalar property are
+     * automatically populated.
+     */
+    public Object elGetReference(Object bean);
 
-	/**
-	 * Make the owning bean of this property a reference (as in not new/dirty).
-	 */
-	public void elSetReference(Object bean);
+    /**
+     * Set a value given a root level bean.
+     * <p>
+     * If populate then
+     * </p>
+     */
+    public void elSetValue(Object bean, Object value, boolean populate, boolean reference);
 
-	/**
-	 * Convert the value to the expected type.
-	 * <p>
-	 * Typically useful for converting strings to the appropriate number type
-	 * etc.
-	 * </p>
-	 */
-	public Object elConvertType(Object value);
+    /**
+     * Make the owning bean of this property a reference (as in not new/dirty).
+     */
+    public void elSetReference(Object bean);
+
+    /**
+     * Convert the value to the expected type.
+     * <p>
+     * Typically useful for converting strings to the appropriate number type
+     * etc.
+     * </p>
+     */
+    public Object elConvertType(Object value);
 }

@@ -76,6 +76,10 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         return null;
     }
 
+    public boolean isEncrypted() {
+        return false;
+    }
+
     public boolean isAssocOneId() {
         return false;
     }

@@ -36,83 +36,87 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableIdMap implements BindableId {
 
-	private final BeanProperty[] uids;
+    private final BeanProperty[] uids;
 
-	private final MatchedImportedProperty[] matches;
+    private final MatchedImportedProperty[] matches;
 
-	public BindableIdMap(BeanProperty[] uids, BeanDescriptor<?> desc) {
-		this.uids = uids;
-		matches = MatchedImportedProperty.build(uids, desc);
-	}
+    public BindableIdMap(BeanProperty[] uids, BeanDescriptor<?> desc) {
+        this.uids = uids;
+        matches = MatchedImportedProperty.build(uids, desc);
+    }
 
-	public boolean isConcatenated() {
-		return true;
-	}
-	
-	public String getIdentityColumn() {
-		// return null for concatenated keys
-		return null;
-	}
+    public boolean isConcatenated() {
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return Arrays.toString(uids);
-	}
+    public String getIdentityColumn() {
+        // return null for concatenated keys
+        return null;
+    }
 
-	/**
-	 * Does nothing for BindableId. 
-	 */
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		// do nothing (id not changing)
-	}
-	
-	/**
-	 * Id values are never null in where clause.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
-		// id values are never null in where clause
-		dmlAppend(request, false);
-	}
+    @Override
+    public String toString() {
+        return Arrays.toString(uids);
+    }
 
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
-		for (int i = 0; i < uids.length; i++) {
-			request.appendColumn(uids[i].getDbColumn());
-		}
-	}
+    /**
+     * Does nothing for BindableId.
+     */
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        // do nothing (id not changing)
+    }
 
-	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean,
-			boolean bindNull) throws SQLException {
+    /**
+     * Id values are never null in where clause.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+        // id values are never null in where clause
+        dmlAppend(request, false);
+    }
 
-		LinkedHashMap<String, Object> mapId = new LinkedHashMap<String, Object>();
-		for (int i = 0; i < uids.length; i++) {
-			Object value = uids[i].getValue(bean);
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        dmlAppend(request, checkIncludes);
+    }
 
-			bindRequest.bind(value, uids[i], uids[i].getName(), bindNull);
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+        for (int i = 0; i < uids.length; i++) {
+            request.appendColumn(uids[i].getDbColumn());
+        }
+    }
 
-			// putting logicalType into map rather than
-			// the dbType (which may have been converted).
-			mapId.put(uids[i].getName(), value);
-		}
-		bindRequest.setIdValue(mapId);
-	}
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull)
+            throws SQLException {
 
-	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
+        LinkedHashMap<String, Object> mapId = new LinkedHashMap<String, Object>();
+        for (int i = 0; i < uids.length; i++) {
+            Object value = uids[i].getValue(bean);
 
-		if (matches == null) {
-			String m = "Matches for the concatinated key columns where not found?"
-					+ " I expect that the concatinated key was null, and this bean does"
-					+ " not have ManyToOne assoc beans matching the primary key columns?";
-			throw new PersistenceException(m);
-		}
+            bindRequest.bind(value, uids[i], uids[i].getName(), bindNull);
 
-		Object bean = persist.getBean();
+            // putting logicalType into map rather than
+            // the dbType (which may have been converted).
+            mapId.put(uids[i].getName(), value);
+        }
+        bindRequest.setIdValue(mapId);
+    }
 
-		// populate it from the assoc one id values...
-		for (int i = 0; i < matches.length; i++) {
-			matches[i].populate(bean, bean);
-		}
+    public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
 
-		return true;
-	}
+        if (matches == null) {
+            String m = "Matches for the concatinated key columns where not found?"
+                    + " I expect that the concatinated key was null, and this bean does"
+                    + " not have ManyToOne assoc beans matching the primary key columns?";
+            throw new PersistenceException(m);
+        }
+
+        Object bean = persist.getBean();
+
+        // populate it from the assoc one id values...
+        for (int i = 0; i < matches.length; i++) {
+            matches[i].populate(bean, bean);
+        }
+
+        return true;
+    }
 
 }

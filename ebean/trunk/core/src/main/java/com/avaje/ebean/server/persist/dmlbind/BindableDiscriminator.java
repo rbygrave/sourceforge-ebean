@@ -51,6 +51,10 @@ public class BindableDiscriminator implements Bindable {
 		throw new PersistenceException("Never called (only for inserts)");
 	}
 
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        dmlAppend(request, checkIncludes);
+    }
+
 	/**
 	 * Never used in where clause.
 	 */

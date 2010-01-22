@@ -45,6 +45,7 @@ import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.EmbeddedColumns;
+import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
 import com.avaje.ebean.config.GlobalProperties;
@@ -158,6 +159,13 @@ public class AnnotationFields extends AnnotationParser {
 			readId(id, prop);
 		}
 
+		Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
+        if (encrypted != null) {
+            prop.setDbEncrypted(true);
+            //FIXME: Get AES_ENCRYPT(?, ?) ...
+            prop.setDbBind("AES_ENCRYPT(?, ?)");
+        }
+        
 		// determine the JDBC type using Lob/Temporal
 		// otherwise based on the property Class
 		Lob lob = get(prop, Lob.class);

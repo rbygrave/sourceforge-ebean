@@ -55,47 +55,43 @@ class SimpleExpression extends AbstractExpression {
 	public String getPropertyName() {
 		return propertyName;
 	}
-
-	/**
-	 * If this is a ManyToOne or OneToOne bean return the ElPropertyValue else
-	 * return null.
-	 * <p>
-	 * This is used to support the "getAssocOneIdValues" scenario where someone
-	 * goes query.where().eq("customer", customerBean); instead of
-	 * query.where().eq("customer.id", customerBean.getId());
-	 * </p>
-	 */
-	private ElPropertyValue getAssocOneElProp(SpiExpressionRequest request) {
-		
-		ElPropertyValue elGetValue = request.getBeanDescriptor().getElGetValue(propertyName);
-		if (elGetValue != null && elGetValue.isAssocOneId()){
-			return elGetValue;
-		} else {
-			return null;
-		}
-	}
 	
 	public void addBindValues(SpiExpressionRequest request) {
-		ElPropertyValue assocOne = getAssocOneElProp(request);
-		if (assocOne != null){
-			Object[] ids = assocOne.getAssocOneIdValues(value);
-			if (ids != null){
-				for (int i = 0; i < ids.length; i++) {
-					request.addBindValue(ids[i]);
-				}
-			}
-		} else {
-			request.addBindValue(value);			
-		}
+		ElPropertyValue prop = getElProp(request);
+		if (prop != null){
+		    if (prop.isAssocOneId()){
+	            Object[] ids = prop.getAssocOneIdValues(value);
+	            if (ids != null){
+	                for (int i = 0; i < ids.length; i++) {
+	                    request.addBindValue(ids[i]);
+	                }
+	            }
+	            return;
+		    }
+		    if (prop.isEncrypted()){
+                // bind the key as well as the value
+		        String key = prop.getBeanProperty().getEncryptKey();
+		        request.addBindValue(key);
+		    }
+		} 
+		
+		request.addBindValue(value);
 	}
 	
 	public void addSql(SpiExpressionRequest request) {
-		ElPropertyValue el = getAssocOneElProp(request);
-		if (el != null){
-			request.append(el.getAssocOneIdExpr(propertyName,type.toString()));
-		} else {
-			request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
+		ElPropertyValue prop = getElProp(request);
+		if (prop != null){
+		    if (prop.isAssocOneId()){
+	            request.append(prop.getAssocOneIdExpr(propertyName,type.toString()));
+	            return;
+		    }
+		    if (prop.isEncrypted()){
+		        String dsql = prop.getBeanProperty().getDecryptSql();
+		        request.append(dsql).append(" ").append(type.toString()).append(" ? ");
+		        return;
+		    }
 		}
+        request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
 	}
 	
 	

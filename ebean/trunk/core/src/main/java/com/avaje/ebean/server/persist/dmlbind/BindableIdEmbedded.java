@@ -36,97 +36,102 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableIdEmbedded implements BindableId {
 
-	private final BeanPropertyAssocOne<?> embId;
+    private final BeanPropertyAssocOne<?> embId;
 
-	private final BeanProperty[] props;
+    private final BeanProperty[] props;
 
-	private final MatchedImportedProperty[] matches;
+    private final MatchedImportedProperty[] matches;
 
-	public BindableIdEmbedded(BeanPropertyAssocOne<?> embId, BeanDescriptor<?> desc) {
-		this.embId = embId;
-		this.props = embId.getTargetDescriptor().propertiesBaseScalar();
-		matches = MatchedImportedProperty.build(props, desc);		
-	}
-	
-	public boolean isConcatenated() {
-		return true;
-	}
+    public BindableIdEmbedded(BeanPropertyAssocOne<?> embId, BeanDescriptor<?> desc) {
+        this.embId = embId;
+        this.props = embId.getTargetDescriptor().propertiesBaseScalar();
+        matches = MatchedImportedProperty.build(props, desc);
+    }
 
-	public String getIdentityColumn() {
-		// return null for concatenated keys
-		return null;
-	}
+    public boolean isConcatenated() {
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return embId + " props:" + Arrays.toString(props);
-	}
+    public String getIdentityColumn() {
+        // return null for concatenated keys
+        return null;
+    }
 
-	/**
-	 * Does nothing for BindableId. 
-	 */
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		// do nothing (id not changing)
-	}
+    @Override
+    public String toString() {
+        return embId + " props:" + Arrays.toString(props);
+    }
 
-	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
+    /**
+     * Does nothing for BindableId.
+     */
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        // do nothing (id not changing)
+    }
 
-		if (checkIncludes && !bindRequest.isIncluded(embId)){
-			return;
-		}
-		
-		Object idValue = embId.getValue(bean);
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull)
+            throws SQLException {
 
-		for (int i = 0; i < props.length; i++) {
+        if (checkIncludes && !bindRequest.isIncluded(embId)) {
+            return;
+        }
 
-			Object value = props[i].getValue(idValue);
-			bindRequest.bind(value, props[i], props[i].getDbColumn(), bindNull);
-		}
+        Object idValue = embId.getValue(bean);
 
-		bindRequest.setIdValue(idValue);
-	}
+        for (int i = 0; i < props.length; i++) {
 
-	/**
-	 * Id values are never null in where clause.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
-		if (checkIncludes && !request.isIncluded(embId)){
-			return;
-		}
-		dmlAppend(request, false);
-	}
+            Object value = props[i].getValue(idValue);
+            bindRequest.bind(value, props[i], props[i].getDbColumn(), bindNull);
+        }
 
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
-		if (checkIncludes && !request.isIncluded(embId)){
-			return;
-		}
-		for (int i = 0; i < props.length; i++) {
-			request.appendColumn(props[i].getDbColumn());
-		}
-	}
-	
-	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
+        bindRequest.setIdValue(idValue);
+    }
 
-		if (matches == null) {
-			String m = "Matches for the concatinated key columns where not found?"
-					+ " I expect that the concatinated key was null, and this bean does"
-					+ " not have ManyToOne assoc beans matching the primary key columns?";
-			throw new PersistenceException(m);
-		}
+    /**
+     * Id values are never null in where clause.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+        if (checkIncludes && !request.isIncluded(embId)) {
+            return;
+        }
+        dmlAppend(request, false);
+    }
 
-		Object bean = persist.getBean();
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        dmlAppend(request, checkIncludes);
+    }
 
-		// create the new id
-		Object newId = embId.createEmbeddedId();
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+        if (checkIncludes && !request.isIncluded(embId)) {
+            return;
+        }
+        for (int i = 0; i < props.length; i++) {
+            request.appendColumn(props[i].getDbColumn());
+        }
+    }
 
-		// populate it from the assoc one id values...
-		for (int i = 0; i < matches.length; i++) {
-			matches[i].populate(bean, newId);
-		}
+    public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
 
-		// support PropertyChangeSupport
-		embId.setValueIntercept(bean, newId);
-		return true;
-	}
+        if (matches == null) {
+            String m = "Matches for the concatinated key columns where not found?"
+                    + " I expect that the concatinated key was null, and this bean does"
+                    + " not have ManyToOne assoc beans matching the primary key columns?";
+            throw new PersistenceException(m);
+        }
+
+        Object bean = persist.getBean();
+
+        // create the new id
+        Object newId = embId.createEmbeddedId();
+
+        // populate it from the assoc one id values...
+        for (int i = 0; i < matches.length; i++) {
+            matches[i].populate(bean, newId);
+        }
+
+        // support PropertyChangeSupport
+        embId.setValueIntercept(bean, newId);
+        return true;
+    }
 
 }

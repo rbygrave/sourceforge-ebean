@@ -33,59 +33,65 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableIdScalar implements BindableId {
 
-	private final BeanProperty uidProp;
-	
-	public BindableIdScalar(BeanProperty uidProp) {
-		this.uidProp = uidProp;
-	}	
-	public boolean isConcatenated() {
-		return false;
-	}
-	
-	public String getIdentityColumn() {
-		return uidProp.getDbColumn();
-	}
+    private final BeanProperty uidProp;
 
-	@Override
-	public String toString() {
-		return uidProp.toString();
-	}
+    public BindableIdScalar(BeanProperty uidProp) {
+        this.uidProp = uidProp;
+    }
 
-	/**
-	 * Does nothing for BindableId. 
-	 */
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		// do nothing (id not changing)
-	}
-	
-	/**
-	 * Should not be called as this is really only for concatenated keys.
-	 */
-	public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
-		throw new PersistenceException("Should not be called? only for concatinated keys");
-	}
-	
-	/**
-	 * Id values are never null in where clause.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean){
-		// id values are never null in where clause
-		request.appendColumn(uidProp.getDbColumn());
-	}
-	
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
-		
-		request.appendColumn(uidProp.getDbColumn());
-	}
-	
-	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
-		
-		Object value = uidProp.getValue(bean);
-		
-		bindRequest.bind(value, uidProp, uidProp.getName(), bindNull);
-		
-		// used for summary logging
-		bindRequest.setIdValue(value);
-	}
+    public boolean isConcatenated() {
+        return false;
+    }
+
+    public String getIdentityColumn() {
+        return uidProp.getDbColumn();
+    }
+
+    @Override
+    public String toString() {
+        return uidProp.toString();
+    }
+
+    /**
+     * Does nothing for BindableId.
+     */
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        // do nothing (id not changing)
+    }
+
+    /**
+     * Should not be called as this is really only for concatenated keys.
+     */
+    public boolean deriveConcatenatedId(PersistRequestBean<?> persist) {
+        throw new PersistenceException("Should not be called? only for concatinated keys");
+    }
+
+    /**
+     * Id values are never null in where clause.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+        // id values are never null in where clause
+        request.appendColumn(uidProp.getDbColumn());
+    }
+
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        dmlAppend(request, checkIncludes);
+    }
+
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+
+        request.appendColumn(uidProp.getDbColumn());
+    }
+
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull)
+            throws SQLException {
+
+        Object value = uidProp.getValue(bean);
+
+        bindRequest.bind(value, uidProp, uidProp.getName(), bindNull);
+
+        // used for summary logging
+        bindRequest.setIdValue(value);
+    }
 
 }

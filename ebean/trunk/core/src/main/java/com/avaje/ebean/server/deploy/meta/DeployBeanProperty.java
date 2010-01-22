@@ -114,11 +114,15 @@ public class DeployBeanProperty {
 	
 	private boolean isTransient;
 
+	private boolean dbEncrypted;
+	
+    private String dbBind = "?";
+	
 	/**
 	 * Is this property include in database resultSet.
 	 */
-	private boolean dbRead;
-
+	private boolean dbRead;	
+	
 	/**
 	 * Include this in DB insert.
 	 */
@@ -644,8 +648,37 @@ public class DeployBeanProperty {
 	public void setSecondaryTable() {
 		this.secondaryTable = true;
 	}
+	
+	/**
+	 * Return the DB Bind parameter.
+	 * Typically is "?" but can be different for encrypted bind.
+	 */
+	public String getDbBind() {
+        return dbBind;
+    }
 
 	/**
+	 * Set the DB bind parameter (if different from "?").
+	 */
+    public void setDbBind(String dbBind) {
+        this.dbBind = dbBind;
+    }
+
+    /**
+	 * Return true if this property is encrypted in the DB.
+	 */
+	public boolean isDbEncrypted() {
+        return dbEncrypted;
+    }
+
+	/**
+	 * Set true if this property should be encrypted in the DB.
+	 */
+    public void setDbEncrypted(boolean dbEncrypted) {
+        this.dbEncrypted = dbEncrypted;
+    }
+
+    /**
 	 * Return true if this property is included in database queries.
 	 */
 	public boolean isDbRead() {

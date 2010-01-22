@@ -45,6 +45,10 @@ public class BindableCompound implements Bindable {
 		return "BindableCompound "+compound+" items:"+Arrays.toString(items);
 	}
 	
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        dmlAppend(request, checkIncludes);
+    }
+
 	
 	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes){
 		if (checkIncludes && !request.isIncluded(compound)){
