@@ -28,4 +28,9 @@ public class MySqlDbEncrypt implements DbEncrypt {
     public String getEncryptSql(String column) {
         return column+" = AES_ENCRYPT(?,?)";
     }
+
+    public String getEncryptBindSql() {
+        return "AES_ENCRYPT(?,?)";
+    }
+
 }
