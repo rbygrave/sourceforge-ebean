@@ -49,6 +49,7 @@ import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
@@ -161,9 +162,12 @@ public class AnnotationFields extends AnnotationParser {
 
 		Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
         if (encrypted != null) {
-            prop.setDbEncrypted(true);
-            //FIXME: Get AES_ENCRYPT(?, ?) ...
-            prop.setDbBind("AES_ENCRYPT(?, ?)");
+            DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
+            if (dbEncrypt != null){
+                String dbBind = dbEncrypt.getEncryptBindSql();
+                prop.setDbEncrypted(true);
+                prop.setDbBind(dbBind);                
+            }
         }
         
 		// determine the JDBC type using Lob/Temporal
