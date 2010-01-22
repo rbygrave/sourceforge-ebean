@@ -25,4 +25,6 @@ public interface DbEncrypt {
 
     public String getEncryptSql(String column);
 
+    public String getEncryptBindSql();
+
 }
