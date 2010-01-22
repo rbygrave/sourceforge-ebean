@@ -636,14 +636,6 @@ public class BeanDescriptor<T> {
 
         return sqlDelete;
     }
-    
-//    /**
-//     * Return SQL that can be used to delete by Id without any optimistic
-//     * concurrency checking.
-//     */
-//    public String getDeleteByIdSql() {
-//        return deleteByIdSql;
-//    }
 
     /**
      * Add objects to ElPropertyDeploy etc. These are used so that expressions
@@ -688,6 +680,24 @@ public class BeanDescriptor<T> {
      */
     public ReferenceOptions getReferenceOptions() {
         return referenceOptions;
+    }
+
+    /**
+     * Return the DB decrypt SQL for a given column with its table alias.
+     */
+    public String getDecryptSql(String columnWithTableAlias){
+        return owner.getDecryptSql(columnWithTableAlias);
+    }
+
+    public String getEncryptSql(BeanProperty p){
+        return owner.getEncryptSql(p.getDbColumn());
+    }
+
+    /**
+     * Return the Encrypt key given the table and column name.
+     */
+    public String getEncryptKey(BeanProperty p){
+        return owner.getEncryptKey(baseTable, p.getDbColumn());
     }
 
     /**

@@ -57,6 +57,16 @@ public interface BindableRequest {
 	public Object bind(String propName, Object value, int sqlType) throws SQLException;
 
 	/**
+	 * Bind a raw value with a placeHolder to put into the transaction log.
+	 */
+    public Object bindNoLog(Object value, int sqlType, String logPlaceHolder) throws SQLException;
+    
+    /**
+     * Bind the value to the preparedStatement without logging.
+     */
+    public Object bindNoLog(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException;
+
+	/**
 	 * Return true if the property is included in this request.
 	 */
 	public boolean isIncluded(BeanProperty prop);

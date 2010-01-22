@@ -123,6 +123,7 @@ public class SqlTreeBuilder {
 		clause.setSummary(summary.toString());
 		clause.setManyProperty(manyProperty);
 
+		clause.setEncryptedProps(ctx.getEncryptedProps());
 
 		return clause;
 	}

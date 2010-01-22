@@ -21,6 +21,7 @@ package com.avaje.ebean.server.query;
 
 import java.util.Set;
 
+import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 
 /**
@@ -28,28 +29,33 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
  */
 public class SqlTree {
 
-    SqlTreeNode rootNode;
+    private SqlTreeNode rootNode;
 
     /**
      * Property if resultSet contains master and detail rows.
      */
-    BeanPropertyAssocMany<?> manyProperty;
+    private BeanPropertyAssocMany<?> manyProperty;
 
-    Set<String> includes;
+    private Set<String> includes;
 
     /**
      * Summary of the select being generated.
      */
-    String summary;
+    private String summary;
 
-    String selectSql;
+    private String selectSql;
 
-    String fromSql;
+    private String fromSql;
 
+    /**
+     * Encrypted Properties require additional binding. 
+     */
+    private BeanProperty[] encryptedProps;
+    
     /**
      * Where clause for inheritance.
      */
-	String inheritanceWhereSql;
+    private String inheritanceWhereSql;
 
     
     /**
@@ -153,4 +159,11 @@ public class SqlTree {
         return (manyProperty != null);
     }
 
+    public BeanProperty[] getEncryptedProps() {
+        return encryptedProps;
+    }
+
+    public void setEncryptedProps(BeanProperty[] encryptedProps) {
+        this.encryptedProps = encryptedProps;
+    }
 }

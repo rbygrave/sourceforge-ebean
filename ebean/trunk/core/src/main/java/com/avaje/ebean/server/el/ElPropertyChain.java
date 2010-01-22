@@ -133,8 +133,12 @@ public class ElPropertyChain implements ElPropertyValue {
 	public String getElPlaceholder() {
 		return placeHolder;
 	}
+	
+	public boolean isEncrypted() {
+        return lastElPropertyValue.isEncrypted();
+    }
 
-	public Object[] getAssocOneIdValues(Object bean) {
+    public Object[] getAssocOneIdValues(Object bean) {
 		// Don't navigate the object graph as bean 
 		// is assumed to be the appropriate type
 		return lastElPropertyValue.getAssocOneIdValues(bean);

@@ -42,6 +42,13 @@ public final class BeanFkeyProperty implements ElPropertyValue {
 	}
 	
 	/**
+	 * Returns false for keys.
+	 */
+	public boolean isEncrypted() {
+        return false;
+    }
+
+    /**
 	 * Only usable as ElPropertyDeploy.
 	 */
 	public boolean isDeployOnly() {

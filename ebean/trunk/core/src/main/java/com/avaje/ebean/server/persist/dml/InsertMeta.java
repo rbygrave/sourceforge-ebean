@@ -185,33 +185,21 @@ public final class InsertMeta {
 		request.append(" (");
 
 		if (!nullId) {
-			id.dmlAppend(request, false);
+			id.dmlInsert(request, false);
 		} 
 		
 		if (shadowFKey != null){
-			shadowFKey.dmlAppend(request, false);
+			shadowFKey.dmlInsert(request, false);
 		}
 		
 		if (discriminator != null){
-			discriminator.dmlAppend(request, false);			
+			discriminator.dmlInsert(request, false);			
 		}
 		
-		all.dmlAppend(request, false);
+		all.dmlInsert(request, false);
 
 		request.append(") values (");
-
-		// ensure prefixes are reset for the value list
-		request.setInsertSetMode();
-				
-		// the number of scalar properties being bound
-		int bindCount = request.getBindCount();
-
-		for (int i = 0; i < bindCount; i++) {
-			if (i > 0) {
-				request.append(", ");
-			}
-			request.append("?");
-		}
+		request.append(request.getInsertBindBuffer());
 		request.append(")");
 
 		return request.toString();

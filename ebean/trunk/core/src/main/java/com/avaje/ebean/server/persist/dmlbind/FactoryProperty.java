@@ -52,7 +52,7 @@ public class FactoryProperty {
 				// Lob exclusion
 				return null;
 			} else {
-				return new BindableProperty(prop);
+			    return prop.isDbEncrypted() ? new BindableEncryptedProperty(prop) : new BindableProperty(prop);
 			}
 		}
 
@@ -76,6 +76,6 @@ public class FactoryProperty {
 			}
 		}
 
-		return new BindableProperty(prop);
+        return prop.isDbEncrypted() ? new BindableEncryptedProperty(prop) : new BindableProperty(prop);
 	}
 }

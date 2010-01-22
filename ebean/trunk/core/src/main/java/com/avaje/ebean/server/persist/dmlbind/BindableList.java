@@ -30,37 +30,44 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableList implements Bindable {
 
-	private final Bindable[] items;
+    private final Bindable[] items;
 
-	public BindableList(List<Bindable> list) {
-		items = list.toArray(new Bindable[list.size()]);
-	}
-	
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		for (int i = 0; i < items.length; i++) {
-			items[i].addChanged(request, list);
-		}
-	}
-	
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes){
-		
-		for (int i = 0; i < items.length; i++) {
-			items[i].dmlAppend(request, checkIncludes);
-		}
-	}
-	
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean){
-		
-		for (int i = 0; i < items.length; i++) {
-			items[i].dmlWhere(request,checkIncludes, bean);
-		}
-	}
-	
-	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException{
-		
-		for (int i = 0; i < items.length; i++) {
-			items[i].dmlBind(bindRequest, checkIncludes, bean, bindNull);
-		}
-	}
-	
+    public BindableList(List<Bindable> list) {
+        items = list.toArray(new Bindable[list.size()]);
+    }
+
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        for (int i = 0; i < items.length; i++) {
+            items[i].addChanged(request, list);
+        }
+    }
+
+    public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlInsert(request, checkIncludes);
+        }
+    }
+
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlAppend(request, checkIncludes);
+        }
+    }
+
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlWhere(request, checkIncludes, bean);
+        }
+    }
+
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull)
+            throws SQLException {
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlBind(bindRequest, checkIncludes, bean, bindNull);
+        }
+    }
+
 }

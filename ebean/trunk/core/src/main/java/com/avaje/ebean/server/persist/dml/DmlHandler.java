@@ -169,11 +169,30 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		dataBind.setObject(value, sqlType);
 		return value;
 	}
-	
-	/**
-	 * Bind the value to the preparedStatement.
-	 */
-	public Object bind(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
+
+    public Object bindNoLog(Object value, int sqlType, String logPlaceHolder) throws SQLException {
+        if (loggingBind) {
+            bindLog.append(logPlaceHolder).append(" ");
+        }
+        dataBind.setObject(value, sqlType);
+        return value;
+    }
+
+    /**
+     * Bind the value to the preparedStatement.
+     */
+    public Object bind(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
+        return bindInternal(loggingBind, value, prop, propName, bindNull);
+    }
+    
+    /**
+     * Bind the value to the preparedStatement without logging.
+     */
+    public Object bindNoLog(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
+        return bindInternal(false, value, prop, propName, bindNull);
+    }
+    
+	private Object bindInternal(boolean log, Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
 				
 		if (!bindNull){
 		    if (emptyStringToNull && (value instanceof String) && ((String)value).length() == 0){
@@ -185,12 +204,12 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 
 		if (!bindNull && value == null) { 
 			// where will have IS NULL clause so don't actually bind
-			if (loggingBind) {
+			if (log) {
 				bindLog.append(propName).append("=");
 				bindLog.append("null, ");
 			}
 		} else {
-			if (loggingBind) {
+			if (log) {
 				bindLog.append(propName).append("=");
 				if (prop.isLob()){
 					bindLog.append("[LOB]");

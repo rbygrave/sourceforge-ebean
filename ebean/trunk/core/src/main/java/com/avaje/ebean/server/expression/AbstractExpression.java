@@ -20,8 +20,10 @@
 package com.avaje.ebean.server.expression;
 
 import com.avaje.ebean.internal.SpiExpression;
+import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.el.ElPropertyDeploy;
+import com.avaje.ebean.server.el.ElPropertyValue;
 
 /**
  * Base class for simple expressions.
@@ -49,5 +51,8 @@ public abstract class AbstractExpression implements SpiExpression {
 		return false;
 	}
 	
-	
+	protected ElPropertyValue getElProp(SpiExpressionRequest request) {
+
+        return request.getBeanDescriptor().getElGetValue(propertyName);
+    }
 }

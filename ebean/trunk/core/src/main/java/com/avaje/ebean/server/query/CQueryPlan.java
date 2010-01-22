@@ -1,9 +1,13 @@
 package com.avaje.ebean.server.query;
 
+import java.sql.SQLException;
+
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.deploy.BeanProperty;
+import com.avaje.ebean.server.type.DataBind;
 
 /**
  * Represents a query for a given SQL statement.
@@ -42,12 +46,17 @@ public class CQueryPlan {
 
 	private final SqlTree selectClause;
 
+	/**
+	 * Encrypted properties required additional binding.
+	 */
+	private final BeanProperty[] encryptedProps;
+	
 	private CQueryStats queryStats = new CQueryStats();
 
 	/**
 	 * Create a query plan based on a Orm query request.
 	 */
-	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree selectClause, 
+	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree sqlTree, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
 		ObjectGraphNode node = request.getQuery().getParentNode();
@@ -55,28 +64,39 @@ public class CQueryPlan {
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
 		this.sql = sql;
-		this.selectClause = selectClause;
+		this.selectClause = sqlTree;
 		this.rawSql = rawSql;
 		this.rowNumberIncluded = rowNumberIncluded;
 		this.logWhereSql = logWhereSql;
+		this.encryptedProps = sqlTree.getEncryptedProps();
 	}
 
 	/**
 	 * Create a query plan for a raw sql query.
 	 */
-	public CQueryPlan(String sql, SqlTree selectClause, 
+	public CQueryPlan(String sql, SqlTree sqlTree, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
 		this.objectGraphOrigin = null;
 		this.hash = 0;
 		this.autofetchTuned = false;
 		this.sql = sql;
-		this.selectClause = selectClause;
+		this.selectClause = sqlTree;
 		this.rawSql = rawSql;
 		this.rowNumberIncluded = rowNumberIncluded;
 		this.logWhereSql = logWhereSql;
+		this.encryptedProps = sqlTree.getEncryptedProps();
 	}
 
+	public void bindEncryptedProperties(DataBind dataBind) throws SQLException {
+	    if (encryptedProps != null){
+	        for (int i = 0; i < encryptedProps.length; i++) {
+	            String key = encryptedProps[i].getEncryptKey();
+	            dataBind.setString(key);
+            }
+	    }
+	}
+	
 	public boolean isAutofetchTuned() {
 		return autofetchTuned;
 	}
