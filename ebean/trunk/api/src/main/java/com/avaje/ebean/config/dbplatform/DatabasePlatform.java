@@ -106,10 +106,17 @@ public class DatabasePlatform {
 	}
 
 	/**
-	 * Return the DbDecrypt handler for this DB platform.
+	 * Return the DbEncrypt handler for this DB platform.
 	 */
 	public DbEncrypt getDbEncrypt() {
         return dbEncrypt;
+    }
+	
+	/**
+	 * Set the DbEncrypt handler for this DB platform.
+	 */
+    public void setDbEncrypt(DbEncrypt dbEncrypt) {
+        this.dbEncrypt = dbEncrypt;
     }
 
     /**
