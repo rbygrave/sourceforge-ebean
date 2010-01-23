@@ -134,6 +134,10 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		
 		// determine database platform (Oracle etc)
 		setDatabasePlatform(serverConfig);
+		if (serverConfig.getDbEncrypt() != null){
+		    // use a configured DbEncrypt rather than the platform default 
+		    serverConfig.getDatabasePlatform().setDbEncrypt(serverConfig.getDbEncrypt());
+		}
 		
 		DatabasePlatform dbPlatform = serverConfig.getDatabasePlatform();
 		
