@@ -22,30 +22,29 @@ package com.avaje.ebean.config.dbplatform;
 import java.sql.Types;
 
 /**
- * MySql aes_encrypt aes_decrypt based encryption support.
+ * Postgres pgp_sym_encrypt pgp_sym_decrypt based encryption support.
  * 
  * @author rbygrave
  */
-public class MySqlDbEncrypt implements DbEncrypt {
+public class PostgresDbEncrypt implements DbEncrypt {
 
     public String getDecryptSql(String columnWithTableAlias) {
-        return "AES_DECRYPT(" + columnWithTableAlias + ",?)";
+        return "pgp_sym_decrypt(" + columnWithTableAlias + ",?)";
     }
 
     public String getEncryptBindSql() {
-        return "AES_ENCRYPT(?,?)";
+        return "pgp_sym_encrypt(?,?)";
     }
 
     public int getEncryptDbType() {
-        return Types.VARCHAR;
+        return Types.VARBINARY;
     }
-
+    
     /**
-     * For AES_ENCRYPT returns true binding the data before the key.
+     * For pgp_sym_encrypt returns true binding the data before the key.
      */
     public boolean isBindEncryptDataFirst() {
         return true;
     }
-    
-    
+
 }

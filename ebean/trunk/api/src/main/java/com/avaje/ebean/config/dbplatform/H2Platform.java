@@ -31,6 +31,7 @@ public class H2Platform extends DatabasePlatform {
     public H2Platform(){
         super();
         this.name = "h2";
+        this.dbEncrypt = new H2DbEncrypt();
         
         // only support getGeneratedKeys with non-batch JDBC 
         // so generally use SEQUENCE instead for H2

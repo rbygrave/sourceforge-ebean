@@ -22,30 +22,29 @@ package com.avaje.ebean.config.dbplatform;
 import java.sql.Types;
 
 /**
- * MySql aes_encrypt aes_decrypt based encryption support.
+ * H2 encryption support via encrypt decrypt function .
  * 
  * @author rbygrave
  */
-public class MySqlDbEncrypt implements DbEncrypt {
+public class H2DbEncrypt implements DbEncrypt {
 
     public String getDecryptSql(String columnWithTableAlias) {
-        return "AES_DECRYPT(" + columnWithTableAlias + ",?)";
+        // Hmmm, this looks ugly - checking with H2 Database folks.
+        return "TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), " + columnWithTableAlias + ")))";
     }
 
     public String getEncryptBindSql() {
-        return "AES_ENCRYPT(?,?)";
+        return "ENCRYPT('AES', STRINGTOUTF8(?), STRINGTOUTF8(?))";
     }
 
     public int getEncryptDbType() {
-        return Types.VARCHAR;
+        return Types.VARBINARY;
     }
-
+    
     /**
-     * For AES_ENCRYPT returns true binding the data before the key.
+     * For H2 encrypt function returns false binding the key before the data.
      */
     public boolean isBindEncryptDataFirst() {
-        return true;
+        return false;
     }
-    
-    
 }
