@@ -51,7 +51,6 @@ public class CQueryBuilder implements Constants {
 	
 	private final BackgroundExecutor backgroundExecutor;
 	
-	
 	/**
 	 * Create the SqlGenSelect.
 	 */

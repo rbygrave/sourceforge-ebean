@@ -33,42 +33,47 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableDiscriminator implements Bindable {
 
-	private final String columnName;
-	private final Object discValue;
-	private final int sqlType;
-	
-	public BindableDiscriminator(InheritInfo inheritInfo) {
-		this.columnName = inheritInfo.getDiscriminatorColumn();
-		this.discValue = inheritInfo.getDiscriminatorValue();
-		this.sqlType = inheritInfo.getDiscriminatorType();
-	}
-	
-	public String toString() {
-		return columnName+" = "+discValue;
-	}
-	
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		throw new PersistenceException("Never called (only for inserts)");
-	}
+    private final String columnName;
+    private final Object discValue;
+    private final int sqlType;
+
+    public BindableDiscriminator(InheritInfo inheritInfo) {
+        this.columnName = inheritInfo.getDiscriminatorColumn();
+        this.discValue = inheritInfo.getDiscriminatorValue();
+        this.sqlType = inheritInfo.getDiscriminatorType();
+    }
+
+    public String toString() {
+        return columnName + " = " + discValue;
+    }
+
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        throw new PersistenceException("Never called (only for inserts)");
+    }
 
     public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
         dmlAppend(request, checkIncludes);
     }
 
-	/**
-	 * Never used in where clause.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean){
-		// never used in where
-	}
-	
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
-		request.appendColumn(columnName);
-	}
-	
-	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
-		
-		bindRequest.bind(columnName, discValue, sqlType);		
-	}
+    /**
+     * Never used in where clause.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+        // never used in where
+    }
+
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+        request.appendColumn(columnName);
+    }
+
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean) throws SQLException {
+
+        bindRequest.bind(columnName, discValue, sqlType);
+    }
+
+    public void dmlBindWhere(BindableRequest bindRequest, boolean checkIncludes, Object bean) throws SQLException {
+
+        bindRequest.bind(columnName, discValue, sqlType);
+    }
 
 }

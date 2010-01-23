@@ -21,7 +21,6 @@ package com.avaje.ebean.server.deploy;
 
 import com.avaje.ebean.cache.ServerCacheManager;
 
-
 /**
  * Provides a method to find a BeanDescriptor.
  * <p>
@@ -30,28 +29,26 @@ import com.avaje.ebean.cache.ServerCacheManager;
  */
 public interface BeanDescriptorMap {
 
-	/**
-	 * Return the name of the server/database.
-	 */
-	public String getServerName();
+    /**
+     * Return the name of the server/database.
+     */
+    public String getServerName();
 
-	/**
-	 * Return the Cache Manager.
-	 */
-	public ServerCacheManager getCacheManager();
-	
-	/**
-	 * Return the BeanDescriptor for a given class.
-	 */
-	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
+    /**
+     * Return the Cache Manager.
+     */
+    public ServerCacheManager getCacheManager();
+
+    /**
+     * Return the BeanDescriptor for a given class.
+     */
+    public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
 
     /**
      * Return the DB decrypt SQL for a given column with its table alias.
      */
     public String getDecryptSql(String columnWithTableAlias);
-    
-    public String getEncryptSql(String column);
-   
+
     /**
      * Return the Encrypt key given the table and column name.
      */

@@ -153,15 +153,15 @@ public final class InsertMeta {
 	public void bind(DmlHandler request, Object bean, boolean withId) throws SQLException {
 
 		if (withId) {
-			id.dmlBind(request, false, bean, true);
+			id.dmlBind(request, false, bean);
 		}
 		if (shadowFKey != null){
-			shadowFKey.dmlBind(request, false, bean, true);
+			shadowFKey.dmlBind(request, false, bean);
 		}
 		if (discriminator != null){
-			discriminator.dmlBind(request, false, bean, true);			
+			discriminator.dmlBind(request, false, bean);			
 		}
-		all.dmlBind(request, false, bean, true);
+		all.dmlBind(request, false, bean);
 	}
 
 	/**

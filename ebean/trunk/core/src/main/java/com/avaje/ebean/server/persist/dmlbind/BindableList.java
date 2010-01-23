@@ -62,12 +62,19 @@ public class BindableList implements Bindable {
         }
     }
 
-    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull)
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean)
             throws SQLException {
 
         for (int i = 0; i < items.length; i++) {
-            items[i].dmlBind(bindRequest, checkIncludes, bean, bindNull);
+            items[i].dmlBind(bindRequest, checkIncludes, bean);
         }
     }
 
+    public void dmlBindWhere(BindableRequest bindRequest, boolean checkIncludes, Object bean)
+            throws SQLException {
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlBindWhere(bindRequest, checkIncludes, bean);
+        }
+    }
 }

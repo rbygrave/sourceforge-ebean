@@ -32,98 +32,76 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableCompound implements Bindable {
 
-	private final Bindable[] items;
+    private final Bindable[] items;
 
-	private final BeanPropertyCompound compound;
+    private final BeanPropertyCompound compound;
 
-	public BindableCompound(BeanPropertyCompound embProp, List<Bindable> list) {
-		this.compound = embProp;
-		this.items = list.toArray(new Bindable[list.size()]);
-	}
+    public BindableCompound(BeanPropertyCompound embProp, List<Bindable> list) {
+        this.compound = embProp;
+        this.items = list.toArray(new Bindable[list.size()]);
+    }
 
-	public String toString() {
-		return "BindableCompound "+compound+" items:"+Arrays.toString(items);
-	}
-	
+    public String toString() {
+        return "BindableCompound " + compound + " items:" + Arrays.toString(items);
+    }
+
     public void dmlInsert(GenerateDmlRequest request, boolean checkIncludes) {
         dmlAppend(request, checkIncludes);
     }
 
-	
-	public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes){
-		if (checkIncludes && !request.isIncluded(compound)){
-			return;
-		}
-		
-		for (int i = 0; i < items.length; i++) {
-			items[i].dmlAppend(request, false);
-		}
-	}
-	
-	/**
-	 * Used for dynamic where clause generation.
-	 */
-	public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object origBean){
-		if (checkIncludes && !request.isIncluded(compound)){
-			return;
-		}
-		
-		Object valueObject = compound.getValue(origBean);
-		//Object oldValueObject = getOldValue(origBean);
+    public void dmlAppend(GenerateDmlRequest request, boolean checkIncludes) {
+        if (checkIncludes && !request.isIncluded(compound)) {
+            return;
+        }
 
-		for (int i = 0; i < items.length; i++) {
-			items[i].dmlWhere(request, false, valueObject);
-		}
-	}
-	
-	public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
-		if (request.hasChanged(compound)) {
-			list.add(this);
-		}
-	}
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlAppend(request, false);
+        }
+    }
 
-	public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException{
-		if (checkIncludes && !bindRequest.isIncluded(compound)){
-			return;
-		}
-		
-//		// get the embedded bean
-//		Object embBean = compound.getValue(bean);
-//		if (!bindNull){
-//			// get the old value of the embedded bean
-//			// to bind into where clause
-//			embBean = getOldValue(embBean);
-//		}
-		
-	    Object valueObject = compound.getValue(bean);
+    /**
+     * Used for dynamic where clause generation.
+     */
+    public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object origBean) {
+        if (checkIncludes && !request.isIncluded(compound)) {
+            return;
+        }
 
-		for (int i = 0; i < items.length; i++) {
-			items[i].dmlBind(bindRequest, false, valueObject, bindNull);
-		}
-	}
-	
-//	/**
-//	 * Get the old bean which will have the original values.
-//	 * <p>
-//	 * These are bound to the WHERE clause for updates.
-//	 * </p>
-//	 */
-//	private Object getOldValue(Object origBean) {
-//
-//		Object oldBean = null;
-//		
-//		if (origBean instanceof EntityBean){
-//			// get the old embedded bean (with the original values)
-//			oldBean = ((EntityBean)origBean)._ebean_getIntercept().getOldValues();
-//		}
-//		
-//		if (oldValues == null){
-//			// this embedded bean was not modified 
-//			// (or not an EntityBean)
-//			oldValues = embBean;
-//		}
-//		
-//		return oldValues;
-//	}
-	
+        Object valueObject = compound.getValue(origBean);
+        // Object oldValueObject = getOldValue(origBean);
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlWhere(request, false, valueObject);
+        }
+    }
+
+    public void addChanged(PersistRequestBean<?> request, List<Bindable> list) {
+        if (request.hasChanged(compound)) {
+            list.add(this);
+        }
+    }
+
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean) throws SQLException {
+        if (checkIncludes && !bindRequest.isIncluded(compound)) {
+            return;
+        }
+
+        Object valueObject = compound.getValue(bean);
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlBind(bindRequest, false, valueObject);
+        }
+    }
+
+    public void dmlBindWhere(BindableRequest bindRequest, boolean checkIncludes, Object bean) throws SQLException {
+        if (checkIncludes && !bindRequest.isIncluded(compound)) {
+            return;
+        }
+
+        Object valueObject = compound.getValue(bean);
+
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlBindWhere(bindRequest, false, valueObject);
+        }
+    }
 }

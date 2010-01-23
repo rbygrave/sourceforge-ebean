@@ -32,7 +32,10 @@ import com.avaje.ebean.server.persist.dml.DmlMode;
  */
 public class FactoryProperty {
 
-	public FactoryProperty() {
+    private final boolean bindEncryptDataFirst;
+    
+	public FactoryProperty(boolean bindEncryptDataFirst) {
+	    this.bindEncryptDataFirst = bindEncryptDataFirst;
 	}
 
 	/**
@@ -52,7 +55,7 @@ public class FactoryProperty {
 				// Lob exclusion
 				return null;
 			} else {
-			    return prop.isDbEncrypted() ? new BindableEncryptedProperty(prop) : new BindableProperty(prop);
+			    return prop.isDbEncrypted() ? new BindableEncryptedProperty(prop, bindEncryptDataFirst) : new BindableProperty(prop);
 			}
 		}
 
@@ -76,6 +79,6 @@ public class FactoryProperty {
 			}
 		}
 
-        return prop.isDbEncrypted() ? new BindableEncryptedProperty(prop) : new BindableProperty(prop);
+        return prop.isDbEncrypted() ? new BindableEncryptedProperty(prop, bindEncryptDataFirst) : new BindableProperty(prop);
 	}
 }

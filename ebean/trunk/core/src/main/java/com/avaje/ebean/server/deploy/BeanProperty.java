@@ -175,6 +175,8 @@ public class BeanProperty implements ElPropertyValue {
      * Set to true if stored encrypted.
      */
     final boolean dbEncrypted;
+    
+    final int dbEncryptedType;
 
     /**
      * The jdbc data type this maps to.
@@ -254,6 +256,7 @@ public class BeanProperty implements ElPropertyValue {
         this.descriptor = descriptor;
         this.name = InternString.intern(deploy.getName());
         this.dbEncrypted = deploy.isDbEncrypted();
+        this.dbEncryptedType = deploy.getDbEncryptedType();
         this.dbBind = deploy.getDbBind();
         this.dbRead = deploy.isDbRead();
         this.dbInsertable = deploy.isDbInsertable();
@@ -331,6 +334,7 @@ public class BeanProperty implements ElPropertyValue {
         this.secondaryTable = source.isSecondaryTable();
         this.dbBind = source.getDbBind();
         this.dbEncrypted = source.isDbEncrypted();
+        this.dbEncryptedType = source.getDbEncryptedType();
         this.dbRead = source.isDbRead();
         this.dbInsertable = source.isDbInsertable();
         this.dbUpdatable = source.isDbUpdatable();
@@ -430,9 +434,9 @@ public class BeanProperty implements ElPropertyValue {
         return descriptor.getDecryptSql(tableAlias + "." + this.getDbColumn());
     }
 
-    public String getEncryptSql() {
-        return descriptor.getEncryptSql(this);
-    }
+//    public String getEncryptSql() {
+//        return descriptor.getEncryptSql(this);
+//    }
 
     /**
      * Add any extra joins required to support this property. Generally a no
@@ -977,6 +981,10 @@ public class BeanProperty implements ElPropertyValue {
         return dbEncrypted;
     }
 
+    public int getDbEncryptedType() {
+        return dbEncryptedType;
+    }
+    
     /**
      * Return true if this property should be included in an Insert.
      */

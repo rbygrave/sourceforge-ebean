@@ -38,8 +38,8 @@ public class FactoryBaseProperties {
 	private final FactoryProperty factoryProperty;
 	
 	
-	public FactoryBaseProperties() {
-		factoryProperty = new FactoryProperty();
+	public FactoryBaseProperties(boolean bindEncryptDataFirst) {
+		factoryProperty = new FactoryProperty(bindEncryptDataFirst);
 	}
 
 	/**

@@ -78,7 +78,7 @@ public class UpdatePlan implements SpiUpdatePlan {
 	 */
 	public void bindSet(DmlHandler bind, Object bean) throws SQLException {
 
-		set.dmlBind(bind, checkIncludes, bean, true);
+		set.dmlBind(bind, checkIncludes, bean);
 
 		// not strictly 'thread safe' but object assignment is atomic
 		Long touched = Long.valueOf(System.currentTimeMillis());

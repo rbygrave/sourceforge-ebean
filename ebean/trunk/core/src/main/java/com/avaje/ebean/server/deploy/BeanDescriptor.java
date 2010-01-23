@@ -689,9 +689,9 @@ public class BeanDescriptor<T> {
         return owner.getDecryptSql(columnWithTableAlias);
     }
 
-    public String getEncryptSql(BeanProperty p){
-        return owner.getEncryptSql(p.getDbColumn());
-    }
+//    public String getEncryptSql(BeanProperty p){
+//        return owner.getEncryptSql(p.getDbColumn());
+//    }
 
     /**
      * Return the Encrypt key given the table and column name.

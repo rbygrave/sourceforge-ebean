@@ -32,10 +32,13 @@ import com.avaje.ebean.server.persist.dml.GenerateDmlRequest;
  */
 public class BindableEncryptedProperty implements Bindable {
 
-    protected final BeanProperty prop;
+    private final BeanProperty prop;
+    
+    private final boolean bindEncryptDataFirst;
 
-    public BindableEncryptedProperty(BeanProperty prop) {
+    public BindableEncryptedProperty(BeanProperty prop, boolean bindEncryptDataFirst) {
         this.prop = prop;
+        this.bindEncryptDataFirst = bindEncryptDataFirst;
     }
 
     public String toString() {
@@ -87,8 +90,9 @@ public class BindableEncryptedProperty implements Bindable {
     /**
      * Bind a value in a Insert SET clause.
      */
-    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean)
             throws SQLException {
+        
         if (checkIncludes && !request.isIncluded(prop)) {
             return;
         }
@@ -97,11 +101,54 @@ public class BindableEncryptedProperty implements Bindable {
             value = prop.getValue(bean);
         }
 
-        request.bindNoLog(value, prop, prop.getName(), bindNull);
+        // get Encrypt key
+        String encryptKeyValue = prop.getEncryptKey();
 
-        // get Encrypt key and bind
-        String keyValue = prop.getEncryptKey();
-        request.bindNoLog(keyValue, Types.VARCHAR, prop.getName() + "=****");
+        if (!bindEncryptDataFirst){
+            // H2 encrypt function ... different parameter order
+            //request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
+            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "key:"+encryptKeyValue);            
+        }
+        request.bind(value, prop, prop.getName(), true);
+        //request.bindNoLog(value, prop, prop.getName(), bindNull);
+        
+        if (bindEncryptDataFirst){
+            // MySql, Postgres, Oracle
+            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
+        }
+
+    }
+    
+
+    /**
+     * Bind a value in a Insert SET clause.
+     */
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean)
+            throws SQLException {
+        
+        if (checkIncludes && !request.isIncluded(prop)) {
+            return;
+        }
+        Object value = null;
+        if (bean != null) {
+            value = prop.getValue(bean);
+        }
+
+        // get Encrypt key
+        String encryptKeyValue = prop.getEncryptKey();
+
+//        if (!bindEncryptDataFirst){
+//            // H2 encrypt function ... different parameter order
+//            //request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
+//            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "key:"+encryptKeyValue);            
+//        }
+        request.bind(value, prop, prop.getName(), false);
+        //request.bindNoLog(value, prop, prop.getName(), bindNull);
+        
+        //if (bindEncryptDataFirst){
+            // MySql, Postgres, Oracle
+            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
+        //}
 
     }
 }

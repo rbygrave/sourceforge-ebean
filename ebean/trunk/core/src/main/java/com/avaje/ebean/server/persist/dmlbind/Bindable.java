@@ -66,6 +66,10 @@ public interface Bindable {
      * Bind given the request and bean. The bean could be the oldValues bean
      * when binding a update or delete where clause with ALL concurrency mode.
      */
-    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean)
             throws SQLException;
+
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean)
+        throws SQLException;
+
 }

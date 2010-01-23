@@ -73,8 +73,17 @@ public class BindableAssocOne implements Bindable {
         importedId.dmlWhere(request, assocBean);
     }
 
-    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        dmlBind(request, checkIncludes, bean, true);
+    }
+
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        dmlBind(request, checkIncludes, bean, false);
+    }
+
+    private void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
             throws SQLException {
+        
         if (checkIncludes && !request.isIncluded(assocOne)) {
             return;
         }
