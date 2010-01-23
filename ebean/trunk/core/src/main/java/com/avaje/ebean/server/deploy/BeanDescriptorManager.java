@@ -279,10 +279,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         return dbEncrypt.getDecryptSql(columnWithTableAlias);
     }
 
-    public String getEncryptSql(String column) {
-        return dbEncrypt.getEncryptSql(column);
-    }
-
     /**
      * Return the Encrypt key given the table and column name.
      */

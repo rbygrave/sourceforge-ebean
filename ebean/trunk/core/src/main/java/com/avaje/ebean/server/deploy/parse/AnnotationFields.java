@@ -164,9 +164,9 @@ public class AnnotationFields extends AnnotationParser {
         if (encrypted != null) {
             DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
             if (dbEncrypt != null){
-                String dbBind = dbEncrypt.getEncryptBindSql();
                 prop.setDbEncrypted(true);
-                prop.setDbBind(dbBind);                
+                prop.setDbBind(dbEncrypt.getEncryptBindSql());   
+                prop.setDbEncryptedType(dbEncrypt.getEncryptDbType());
             }
         }
         

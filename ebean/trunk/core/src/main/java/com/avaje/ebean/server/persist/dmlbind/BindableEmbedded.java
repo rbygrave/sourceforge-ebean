@@ -81,22 +81,34 @@ public class BindableEmbedded implements Bindable {
         }
     }
 
-    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean, boolean bindNull)
+    public void dmlBind(BindableRequest bindRequest, boolean checkIncludes, Object bean)
             throws SQLException {
+        
         if (checkIncludes && !bindRequest.isIncluded(embProp)) {
             return;
         }
 
         // get the embedded bean
         Object embBean = embProp.getValue(bean);
-        if (!bindNull) {
-            // get the old value of the embedded bean
-            // to bind into where clause
-            embBean = getOldValue(embBean);
+        
+        for (int i = 0; i < items.length; i++) {
+            items[i].dmlBind(bindRequest, false, embBean);
+        }
+    }
+    
+    public void dmlBindWhere(BindableRequest bindRequest, boolean checkIncludes, Object bean)
+            throws SQLException {
+        
+        if (checkIncludes && !bindRequest.isIncluded(embProp)) {
+            return;
         }
 
+        // get the embedded bean
+        Object embBean = embProp.getValue(bean);
+        Object oldEmbBean = getOldValue(embBean);
+
         for (int i = 0; i < items.length; i++) {
-            items[i].dmlBind(bindRequest, false, embBean, bindNull);
+            items[i].dmlBindWhere(bindRequest, false, oldEmbBean);
         }
     }
 

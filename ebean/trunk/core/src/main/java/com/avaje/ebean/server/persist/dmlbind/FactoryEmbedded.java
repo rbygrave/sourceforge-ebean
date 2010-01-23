@@ -34,8 +34,8 @@ public class FactoryEmbedded {
 
 	private final FactoryProperty factoryProperty;
 
-	public FactoryEmbedded() {
-		factoryProperty = new FactoryProperty();
+	public FactoryEmbedded(boolean bindEncryptDataFirst) {
+		factoryProperty = new FactoryProperty(bindEncryptDataFirst);
 	}
 	
 	/**

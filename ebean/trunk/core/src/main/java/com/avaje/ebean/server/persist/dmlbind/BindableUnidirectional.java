@@ -73,7 +73,15 @@ public class BindableUnidirectional implements Bindable {
         throw new RuntimeException("Never called");
     }
 
-    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        dmlBind(request, checkIncludes, bean, true);
+    }
+    
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        dmlBind(request, checkIncludes, bean, false);
+    }
+    
+    private void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
             throws SQLException {
 
         PersistRequestBean<?> persistRequest = request.getPersistRequest();

@@ -8,17 +8,17 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 public class DefaultExpressionRequest implements SpiExpressionRequest {
 
-	final OrmQueryRequest<?> queryRequest;
+	private final OrmQueryRequest<?> queryRequest;
 	
-	StringBuilder sb = new StringBuilder();
+	private final StringBuilder sb = new StringBuilder();
 	
-	ArrayList<Object> bindValues = new ArrayList<Object>();
+	private final ArrayList<Object> bindValues = new ArrayList<Object>();
 	
 	public DefaultExpressionRequest(OrmQueryRequest<?> queryRequest) {
 		this.queryRequest = queryRequest;
 	}
-	
-	public BeanDescriptor<?> getBeanDescriptor(){
+
+    public BeanDescriptor<?> getBeanDescriptor(){
 		return queryRequest.getBeanDescriptor();
 	}
 	

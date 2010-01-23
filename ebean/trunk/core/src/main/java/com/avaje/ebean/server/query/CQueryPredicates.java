@@ -50,7 +50,7 @@ public class CQueryPredicates {
 	/**
 	 * Named bind parameters.
 	 */
-	private BindParams bindParams;
+	private final BindParams bindParams;
 
 	/**
 	 * Named bind parameters for the having clause.
@@ -114,8 +114,8 @@ public class CQueryPredicates {
 		this.request = request;
 		this.query = request.getQuery();
 		this.deployParser = deployParser;
-		bindParams = query.getBindParams();
-		idValue = query.getId();
+		this.bindParams = query.getBindParams();
+		this.idValue = query.getId();
 	}
 
 	public String bind(DataBind dataBind) throws SQLException {

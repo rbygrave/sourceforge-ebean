@@ -28,12 +28,28 @@ public class TestEncrypt extends TestCase {
         SqlRow row = q.findUnique();
         String name = row.getString("name");
         Object desc = row.get("description");
-        System.out.println(""+name+" "+desc);
+        System.out.println("SqlRow: "+name+" "+desc);
         
         EBasicEncrypt e1 = Ebean.find(EBasicEncrypt.class, e.getId());
         
         String desc1 = e1.getDescription();
-        System.out.println(""+desc1);
+        System.out.println("Decrypted: "+desc1);
+        
+//        String s = "select TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), description))) as x"
+//            +" from e_basicenc where id = ? and ? = TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), description))) ";
+//        
+//        SqlRow r = Ebean.createSqlQuery(s)
+//            .setParameter(1, "simple")
+//            .setParameter(2, e1.getId())
+//            .setParameter(3, "testdesc")
+//            .setParameter(4, "simple")
+//            .findUnique();
+//        
+//        if (r == null){
+//            System.out.println("No row found.");
+//        }
+//        System.out.println("R: "+r.get("x"));
+        
         
         e1.setName("testmod");
         e1.setDescription("moddesc");
@@ -43,7 +59,7 @@ public class TestEncrypt extends TestCase {
         EBasicEncrypt e2 = Ebean.find(EBasicEncrypt.class, e.getId());
         
         String desc2 = e2.getDescription();
-        System.out.println(""+desc2);
+        System.out.println("moddesc="+desc2);
         
         List<EBasicEncrypt> list 
             = Ebean.find(EBasicEncrypt.class)

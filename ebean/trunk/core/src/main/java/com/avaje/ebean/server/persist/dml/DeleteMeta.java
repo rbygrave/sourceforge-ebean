@@ -77,16 +77,16 @@ public final class DeleteMeta {
 
 		Object bean = persist.getBean();
 
-		id.dmlBind(bind, false, bean, true);
+		id.dmlBind(bind, false, bean);
 
 		switch (persist.getConcurrencyMode()) {
 		case VERSION:
-			version.dmlBind(bind, false, bean, true);
+			version.dmlBind(bind, false, bean);
 			break;
 
 		case ALL:
 			Object oldBean = persist.getOldValues();
-			all.dmlBind(bind, true, oldBean, false);
+			all.dmlBindWhere(bind, true, oldBean);
 			break;
 
 		default:

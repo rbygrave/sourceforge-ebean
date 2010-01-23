@@ -40,12 +40,9 @@ import com.avaje.ebean.server.persist.dmlbind.FactoryVersion;
  */
 public class MetaFactory {
 
+    private final FactoryBaseProperties baseFact;
+    private final FactoryEmbedded embeddedFact;
 	private final FactoryVersion versionFact = new FactoryVersion();
-
-	private final FactoryBaseProperties baseFact = new FactoryBaseProperties();
-
-	private final FactoryEmbedded embeddedFact = new FactoryEmbedded();
-
 	private final FactoryAssocOnes assocOneFact = new FactoryAssocOnes();
 
 	private final FactoryId idFact = new FactoryId();
@@ -63,6 +60,12 @@ public class MetaFactory {
 	public MetaFactory(DatabasePlatform dbPlatform) {
 		this.dbPlatform = dbPlatform;
 		this.emptyStringAsNull = dbPlatform.isTreatEmptyStringsAsNull();
+		
+		// to bind encryption data before or after the encryption key
+		boolean bindEncryptDataFirst = dbPlatform.getDbEncrypt().isBindEncryptDataFirst();
+		
+		this.baseFact = new FactoryBaseProperties(bindEncryptDataFirst);
+		this.embeddedFact = new FactoryEmbedded(bindEncryptDataFirst);
 	}
 
 	/**

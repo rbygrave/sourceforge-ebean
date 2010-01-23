@@ -45,75 +45,73 @@ import com.avaje.ebean.server.querydefn.OrmQueryLimitRequest;
  */
 public class RawSqlSelectClauseBuilder {
 
-	private static final Logger logger = Logger.getLogger(RawSqlSelectClauseBuilder.class.getName());
-	
-	private final Binder binder;
+    private static final Logger logger = Logger.getLogger(RawSqlSelectClauseBuilder.class.getName());
 
-	private final SqlLimiter dbQueryLimiter;
-			
-	public RawSqlSelectClauseBuilder(DatabasePlatform dbPlatform, Binder binder) {
+    private final Binder binder;
 
-		this.binder = binder;
-		this.dbQueryLimiter = dbPlatform.getSqlLimiter();
-	}
+    private final SqlLimiter dbQueryLimiter;
 
+    public RawSqlSelectClauseBuilder(DatabasePlatform dbPlatform, Binder binder) {
 
-	/**
-	 * Build based on the includes and using the BeanJoinTree.
-	 */
-	public <T> CQuery<T> build(OrmQueryRequest<T> request) throws PersistenceException {
+        this.binder = binder;
+        this.dbQueryLimiter = dbPlatform.getSqlLimiter();
+    }
 
-		SpiQuery<T> query = request.getQuery();
-		BeanDescriptor<T> desc = request.getBeanDescriptor();
-		
-		DeployNamedQuery namedQuery = desc.getNamedQuery(query.getName());
-		RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
+    /**
+     * Build based on the includes and using the BeanJoinTree.
+     */
+    public <T> CQuery<T> build(OrmQueryRequest<T> request) throws PersistenceException {
 
-		
-		// create a parser for this specific SqlSelect... has to be really
-		// as each SqlSelect could have different table alias etc
-		DeployParser parser = sqlSelect.createDeployPropertyParser();
-		
-		CQueryPredicates predicates = new CQueryPredicates(binder, request, parser);
-		// prepare and convert logical property names to dbColumns etc 
-		predicates.prepare(true, false);
-		
-		SqlTreeAlias alias = new SqlTreeAlias(sqlSelect.getTableAlias());
-		predicates.parseTableAlias(alias);
-		
-		String sql = null;
-		try {
+        SpiQuery<T> query = request.getQuery();
+        BeanDescriptor<T> desc = request.getBeanDescriptor();
 
-			boolean includeRowNumColumn = false;
-			String orderBy = sqlSelect.getOrderBy(predicates);
-			
-			// build the actual sql String
-			sql = sqlSelect.buildSql(orderBy, predicates, request);
-			if (query.hasMaxRowsOrFirstRow() && dbQueryLimiter != null) {
-				// wrap with a limit offset or ROW_NUMBER() etc
-				SqlLimitResponse limitSql = dbQueryLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query));
-				includeRowNumColumn = limitSql.isIncludesRowNumberColumn();
-				
-				sql = limitSql.getSql();
-			} else {
-				// add back select keyword 
-				// ... was removed to support dbQueryLimiter
-				sql = "select "+sql;
-			}
-			
-			SqlTree sqlTree = sqlSelect.getSqlTree();
-			
-			CQueryPlan queryPlan = new CQueryPlan(sql, sqlTree, true, includeRowNumColumn, "");
-			CQuery<T> compiledQuery = new CQuery<T>(request, predicates, queryPlan);
+        DeployNamedQuery namedQuery = desc.getNamedQuery(query.getName());
+        RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
 
-			return compiledQuery;
+        // create a parser for this specific SqlSelect... has to be really
+        // as each SqlSelect could have different table alias etc
+        DeployParser parser = sqlSelect.createDeployPropertyParser();
 
-		} catch (Exception e) {
-			
-			String msg = "Error with "+desc.getFullName()+" query:\r" + sql;
-			logger.log(Level.SEVERE, msg);
-			throw new PersistenceException(e);
-		}
-	}
-	
+        CQueryPredicates predicates = new CQueryPredicates(binder, request, parser);
+        // prepare and convert logical property names to dbColumns etc
+        predicates.prepare(true, false);
+
+        SqlTreeAlias alias = new SqlTreeAlias(sqlSelect.getTableAlias());
+        predicates.parseTableAlias(alias);
+
+        String sql = null;
+        try {
+
+            boolean includeRowNumColumn = false;
+            String orderBy = sqlSelect.getOrderBy(predicates);
+
+            // build the actual sql String
+            sql = sqlSelect.buildSql(orderBy, predicates, request);
+            if (query.hasMaxRowsOrFirstRow() && dbQueryLimiter != null) {
+                // wrap with a limit offset or ROW_NUMBER() etc
+                SqlLimitResponse limitSql = dbQueryLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query));
+                includeRowNumColumn = limitSql.isIncludesRowNumberColumn();
+
+                sql = limitSql.getSql();
+            } else {
+                // add back select keyword
+                // ... was removed to support dbQueryLimiter
+                sql = "select " + sql;
+            }
+
+            SqlTree sqlTree = sqlSelect.getSqlTree();
+
+            CQueryPlan queryPlan = new CQueryPlan(sql, sqlTree, true, includeRowNumColumn, "");
+            CQuery<T> compiledQuery = new CQuery<T>(request, predicates, queryPlan);
+
+            return compiledQuery;
+
+        } catch (Exception e) {
+
+            String msg = "Error with " + desc.getFullName() + " query:\r" + sql;
+            logger.log(Level.SEVERE, msg);
+            throw new PersistenceException(e);
+        }
+    }
+
 }

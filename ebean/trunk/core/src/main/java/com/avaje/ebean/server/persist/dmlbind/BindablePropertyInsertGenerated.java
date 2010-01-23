@@ -40,11 +40,18 @@ public class BindablePropertyInsertGenerated extends BindableProperty {
 		this.gen = gen;
 	}
 	
+    public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        dmlBind(request, checkIncludes, bean, true);
+    }
+    
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        dmlBind(request, checkIncludes, bean, false);
+    }
+    
     /**
      * Bind a value in a Insert SET clause.
      */
-	@Override
-	public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
+	private void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
         
 		Object value = gen.getInsertValue(prop, bean);
 		
