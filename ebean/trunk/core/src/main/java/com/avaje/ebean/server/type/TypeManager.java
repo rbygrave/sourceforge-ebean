@@ -26,10 +26,19 @@ import com.avaje.ebean.server.type.reflect.CheckImmutableResponse;
  */
 public interface TypeManager {
 
+    /**
+     * Check if the type is immutable using reflection.
+     */
     public CheckImmutableResponse checkImmutable(Class<?> cls);
 
+    /**
+     * Create ScalarDataReader's for the Immutable compound type. 
+     */
     public ScalarDataReader<?> recursiveCreateScalarDataReader(Class<?> cls);
 
+    /**
+     * Create ScalarTypes for this Immutable Value Object type.
+     */
     public ScalarType<?> recursiveCreateScalarTypes(Class<?> cls);
 
 	/**

@@ -91,7 +91,7 @@ public class CQueryPlan {
 	public void bindEncryptedProperties(DataBind dataBind) throws SQLException {
 	    if (encryptedProps != null){
 	        for (int i = 0; i < encryptedProps.length; i++) {
-	            String key = encryptedProps[i].getEncryptKey();
+	            String key = encryptedProps[i].getEncryptKey().getStringValue();
 	            dataBind.setString(key);
             }
 	    }

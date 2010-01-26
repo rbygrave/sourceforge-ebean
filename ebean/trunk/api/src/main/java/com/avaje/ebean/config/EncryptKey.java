@@ -20,15 +20,18 @@
 package com.avaje.ebean.config;
 
 /**
- * Determine keys used for encryption and decryption.
+ * Represents the key used for encryption.
+ * <p>
+ * For simple cases this often represent a simple String key but depending on
+ * the encryption method this could contain other details.
+ * </p>
  * 
  * @author rbygrave
  */
-public interface EncryptKeyManager {
+public interface EncryptKey {
 
     /**
-     * Return the key used to encrypt and decrypt a property mapping to the
-     * given table and column.
+     * Return the string key value.
      */
-    public EncryptKey getEncryptKey(String tableName, String columnName);
+    public String getStringValue();
 }

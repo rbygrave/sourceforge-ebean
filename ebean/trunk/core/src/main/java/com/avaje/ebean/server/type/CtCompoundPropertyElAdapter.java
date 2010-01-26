@@ -76,7 +76,11 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         return null;
     }
 
-    public boolean isEncrypted() {
+    public boolean isDbEncrypted() {
+        return false;
+    }
+
+    public boolean isLocalEncrypted() {
         return false;
     }
 

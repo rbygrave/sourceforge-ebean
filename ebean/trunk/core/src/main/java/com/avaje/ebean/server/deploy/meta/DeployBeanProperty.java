@@ -114,6 +114,8 @@ public class DeployBeanProperty {
 
     private boolean isTransient;
 
+    private boolean localEncrypted;
+
     private boolean dbEncrypted;
 
     private int dbEncryptedType;
@@ -294,6 +296,20 @@ public class DeployBeanProperty {
      */
     public void setSortOrder(int sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    /**
+     * Return true if the property is encrypted in java rather than in the DB.
+     */
+    public boolean isLocalEncrypted() {
+        return localEncrypted;
+    }
+
+    /**
+     * Set to true when the property is encrypted in java rather than in the DB.
+     */
+    public void setLocalEncrypted(boolean localEncrypted) {
+        this.localEncrypted = localEncrypted;
     }
 
     /**

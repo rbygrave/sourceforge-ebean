@@ -19,16 +19,14 @@
  */
 package com.avaje.ebean.config;
 
+
 /**
- * Determine keys used for encryption and decryption.
+ * Programmatically define which database columns are encrypted.
  * 
  * @author rbygrave
+ *
  */
-public interface EncryptKeyManager {
+public interface EncryptDeployManager {
 
-    /**
-     * Return the key used to encrypt and decrypt a property mapping to the
-     * given table and column.
-     */
-    public EncryptKey getEncryptKey(String tableName, String columnName);
+    public boolean isEncrypted(TableName table, String column);
 }

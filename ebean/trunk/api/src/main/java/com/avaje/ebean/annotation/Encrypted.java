@@ -31,4 +31,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Encrypted {
 
+    /**
+     * When true try to use DB encryption rather than local java encryption.
+     */
+    boolean dbEncryption() default true;
 };

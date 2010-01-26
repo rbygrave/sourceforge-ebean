@@ -63,7 +63,7 @@ public class AnnotationClass extends AnnotationParser {
 			// default the TableName using NamingConvention.
 			TableName tableName = namingConvention.getTableName(descriptor.getBeanType());
 			
-            descriptor.setBaseTable(tableName.getQualifiedName());
+            descriptor.setBaseTable(tableName);
 		}
 	}
 	

@@ -8,5 +8,6 @@
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="lib" path="D:/dev/jarlib/postgresql-8.4-701.jdbc3.jar"/>
 	<classpathentry kind="lib" path="D:/apps/jarlib/mysql-5.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.xerces_2.9.0.v200909240008.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

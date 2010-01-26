@@ -28,6 +28,7 @@ import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.AdminLogging.StmtLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
+import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.event.BeanPersistController;
@@ -194,6 +195,10 @@ public class ServerConfig {
     private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
 
     private EncryptKeyManager encryptKeyManager;
+
+    private EncryptDeployManager encryptDeployManager;
+    
+    private Encryptor bytesEncryptor;
 
     private DbEncrypt dbEncrypt;
 
@@ -623,6 +628,42 @@ public class ServerConfig {
      */
     public void setEncryptKeyManager(EncryptKeyManager encryptKeyManager) {
         this.encryptKeyManager = encryptKeyManager;
+    }
+
+    /**
+     * Return the EncryptDeployManager.
+     * <p>
+     * This is optionally used to programmatically define which columns are
+     * encrypted instead of using the {@link Encrypted} Annotation.
+     * </p>
+     */
+    public EncryptDeployManager getEncryptDeployManager() {
+        return encryptDeployManager;
+    }
+
+    /**
+     * Set the EncryptDeployManager.
+     * <p>
+     * This is optionally used to programmatically define which columns are
+     * encrypted instead of using the {@link Encrypted} Annotation.
+     * </p>
+     */
+    public void setEncryptDeployManager(EncryptDeployManager encryptDeployManager) {
+        this.encryptDeployManager = encryptDeployManager;
+    }
+
+    /**
+     * Return the BytesEncryptor used to encrypt binary data.
+     */
+    public Encryptor getBytesEncryptor() {
+        return bytesEncryptor;
+    }
+
+    /**
+     * Set the BytesEncryptor used to encrypt binary data.
+     */
+    public void setBytesEncryptor(Encryptor bytesEncryptor) {
+        this.bytesEncryptor = bytesEncryptor;
     }
 
     /**
@@ -1109,6 +1150,9 @@ public class ServerConfig {
         namingConvention = createInstance(p, NamingConvention.class, "namingconvention");
         databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
+        encryptDeployManager = createInstance(p, EncryptDeployManager.class, "encryptDeployManager");
+        bytesEncryptor = createInstance(p, Encryptor.class, "bytesEncryptor");
+        
         dbEncrypt = createInstance(p, DbEncrypt.class, "dbEncrypt");
 
         updateChangesOnly = p.getBoolean("updateChangesOnly", true);

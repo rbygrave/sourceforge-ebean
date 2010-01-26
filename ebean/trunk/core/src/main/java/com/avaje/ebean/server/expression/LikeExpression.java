@@ -25,9 +25,9 @@ class LikeExpression extends AbstractExpression {
     public void addBindValues(SpiExpressionRequest request) {
 
         ElPropertyValue prop = getElProp(request);
-        if (prop != null && prop.isEncrypted()) {
+        if (prop != null && prop.isDbEncrypted()) {
             // bind the key as well as the value
-            String encryptKey = prop.getBeanProperty().getEncryptKey();
+            String encryptKey = prop.getBeanProperty().getEncryptKey().getStringValue();
             request.addBindValue(encryptKey);
         }
     
@@ -40,7 +40,7 @@ class LikeExpression extends AbstractExpression {
         String pname = propertyName;
         
         ElPropertyValue prop = getElProp(request);
-        if (prop != null && prop.isEncrypted()){
+        if (prop != null && prop.isDbEncrypted()){
             pname = prop.getBeanProperty().getDecryptProperty(propertyName);
         }
         if (caseInsensitive) {

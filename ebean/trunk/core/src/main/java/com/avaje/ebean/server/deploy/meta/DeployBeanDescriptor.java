@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
@@ -145,6 +146,7 @@ public class DeployBeanDescriptor<T> {
 	 * The base database table.
 	 */
 	private String baseTable;
+    private TableName baseTableFull;
 
 	/**
 	 * Used to provide mechanism to new EntityBean instances. Generated code
@@ -542,11 +544,19 @@ public class DeployBeanDescriptor<T> {
 	}
 
 	/**
+	 * Return the base table with full structure.
+	 */
+	public TableName getBaseTableFull() {
+        return baseTableFull;
+    }
+
+    /**
 	 * Set the base table. Only properties mapped to the base table are by
 	 * default persisted.
 	 */
-	public void setBaseTable(String baseTable) {
-		this.baseTable = baseTable;
+	public void setBaseTable(TableName baseTableFull) {
+	    this.baseTableFull = baseTableFull;
+		this.baseTable = baseTableFull == null ? null : baseTableFull.getQualifiedName();
 	}
 
 	public void sortProperties() {

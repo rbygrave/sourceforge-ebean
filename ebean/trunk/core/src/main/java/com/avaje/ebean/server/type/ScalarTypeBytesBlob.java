@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 Authors
+ * Copyright (C) 2006  Robin Bygrave
  * 
  * This file is part of Ebean.
  * 
@@ -17,18 +17,22 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.config;
+package com.avaje.ebean.server.type;
+
+import java.sql.SQLException;
+import java.sql.Types;
 
 /**
- * Determine keys used for encryption and decryption.
- * 
- * @author rbygrave
+ * ScalarType for BLOB.
  */
-public interface EncryptKeyManager {
+public class ScalarTypeBytesBlob extends ScalarTypeBytesBase {
+		
+	public ScalarTypeBytesBlob() {
+		super(true, Types.BLOB);
+	}
+	
+	public byte[] read(DataReader dataReader) throws SQLException {
 
-    /**
-     * Return the key used to encrypt and decrypt a property mapping to the
-     * given table and column.
-     */
-    public EncryptKey getEncryptKey(String tableName, String columnName);
+	    return dataReader.getBlobBytes();
+	}
 }

@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.deploy;
 
 import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.config.EncryptKey;
 
 /**
  * Provides a method to find a BeanDescriptor.
@@ -52,6 +53,6 @@ public interface BeanDescriptorMap {
     /**
      * Return the Encrypt key given the table and column name.
      */
-    public String getEncryptKey(String tableName, String columnName);
+    public EncryptKey getEncryptKey(String tableName, String columnName);
 
 }
