@@ -162,13 +162,13 @@ public class DeployTableJoin {
     	return (DeployBeanProperty[])properties.toArray(new DeployBeanProperty[properties.size()]);
     }
 
-    /**
-     * Add a property for this tableJoin.
-     */
-    public void addProperty(DeployBeanProperty prop) {
-        prop.setSecondaryTable();
-        properties.add(prop);
-    }
+//    /**
+//     * Add a property for this tableJoin.
+//     */
+//    public void addProperty(DeployBeanProperty prop) {
+//        prop.setSecondaryTable();
+//        properties.add(prop);
+//    }
 
     /**
      * Return the joined table name.

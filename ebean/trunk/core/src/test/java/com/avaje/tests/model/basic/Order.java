@@ -1,12 +1,13 @@
 package com.avaje.tests.model.basic;
 
-import com.avaje.ebean.annotation.CreatedTimestamp;
-import com.avaje.ebean.annotation.Formula;
-import com.avaje.ebean.annotation.Sql;
-import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebean.validation.NotNull;
+import java.io.Serializable;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -18,11 +19,12 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
-import java.io.Serializable;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.avaje.ebean.annotation.CreatedTimestamp;
+import com.avaje.ebean.annotation.Formula;
+import com.avaje.ebean.annotation.Sql;
+import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.validation.NotNull;
 
 /**
  * Order entity bean.
@@ -34,7 +36,7 @@ import java.util.List;
   @SqlSelect(name="test2",extend="test",where="u.status = :status")
 })
 public class Order implements Serializable {
-
+    
 	private static final long serialVersionUID = 1L;
 
 	//@EnumMapping(nameValuePairs="APPROVED=A, COMPLETE=C, NEW=N, SHIPPED=S")
@@ -88,6 +90,11 @@ public class Order implements Serializable {
     @JoinColumn(name="kcustomer_id")
     Customer customer;
     
+    @Column(name="name",table="o_customer")
+    //@Transient
+    //@Formula(select="sj_${ta}.name",join="join o_customer sj_${ta} where sj_${ta}.id = ${ta}.kcustomer_id")
+    String customerName;
+    
     @CreatedTimestamp
     Timestamp cretime;
 
@@ -117,6 +124,14 @@ public class Order implements Serializable {
      */    
     public void setId(Integer id) {
   	    this.id = id;
+    }
+    
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
     public Double getTotalAmount() {

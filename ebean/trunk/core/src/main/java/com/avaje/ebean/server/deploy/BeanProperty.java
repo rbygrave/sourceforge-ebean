@@ -120,6 +120,9 @@ public class BeanProperty implements ElPropertyValue {
      */
     final boolean secondaryTable;
 
+    final TableJoin secondaryTableJoin;
+    final String secondaryTableJoinPrefix;
+
     /**
      * The property is inherited from a super class.
      */
@@ -258,6 +261,7 @@ public class BeanProperty implements ElPropertyValue {
 
         this.descriptor = descriptor;
         this.name = InternString.intern(deploy.getName());
+        
         this.localEncrypted = deploy.isLocalEncrypted();
         this.dbEncrypted = deploy.isDbEncrypted();
         this.dbEncryptedType = deploy.getDbEncryptedType();
@@ -265,7 +269,15 @@ public class BeanProperty implements ElPropertyValue {
         this.dbRead = deploy.isDbRead();
         this.dbInsertable = deploy.isDbInsertable();
         this.dbUpdatable = deploy.isDbUpdateable();
+        
         this.secondaryTable = deploy.isSecondaryTable();
+        if (secondaryTable){
+            this.secondaryTableJoin = new TableJoin(deploy.getSecondaryTableJoin(), null);    
+            this.secondaryTableJoinPrefix = deploy.getSecondaryTableJoinPrefix();
+        } else {
+            this.secondaryTableJoin = null;
+            this.secondaryTableJoinPrefix = null;
+        }
         this.isTransient = deploy.isTransient();
         this.nullable = deploy.isNullable();
         this.unique = deploy.isUnique();
@@ -337,6 +349,9 @@ public class BeanProperty implements ElPropertyValue {
         this.localEncrypted = source.isLocalEncrypted();
         this.isTransient = source.isTransient();
         this.secondaryTable = source.isSecondaryTable();
+        this.secondaryTableJoin = source.secondaryTableJoin;
+        this.secondaryTableJoinPrefix = source.secondaryTableJoinPrefix;
+        
         this.dbBind = source.getDbBind();
         this.dbEncrypted = source.isDbEncrypted();
         this.dbEncryptedType = source.getDbEncryptedType();
@@ -438,7 +453,7 @@ public class BeanProperty implements ElPropertyValue {
     public String getDecryptSql(String tableAlias) {
         return descriptor.getDecryptSql(tableAlias + "." + this.getDbColumn());
     }
-
+    
     /**
      * Add any extra joins required to support this property. Generally a no
      * operation except for a OneToOne exported.
@@ -446,7 +461,13 @@ public class BeanProperty implements ElPropertyValue {
     public void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
         if (formula && sqlFormulaJoin != null) {
             ctx.appendFormulaJoin(sqlFormulaJoin, forceOuterJoin);
+        
+        } else if (secondaryTableJoin != null) {
+        
+            String relativePrefix = ctx.getRelativePrefix(secondaryTableJoinPrefix);
+            secondaryTableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
         }
+
     }
 
     public void appendSelect(DbSqlContext ctx) {
@@ -455,6 +476,11 @@ public class BeanProperty implements ElPropertyValue {
 
         } else if (!isTransient) {
             
+            if (secondaryTableJoin != null){
+                String relativePrefix = ctx.getRelativePrefix(secondaryTableJoinPrefix);
+                ctx.pushTableAlias(relativePrefix);
+            }
+
             if (dbEncrypted) {
                 String decryptSql = getDecryptSql(ctx.peekTableAlias());
                 ctx.appendRawColumn(decryptSql);
@@ -463,6 +489,10 @@ public class BeanProperty implements ElPropertyValue {
             } else {
                 ctx.appendColumn(dbColumn);
             }
+            
+            if (secondaryTableJoin != null){
+                ctx.popTableAlias();
+            }            
         }
     }
 

@@ -55,7 +55,6 @@ import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
-import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.idgen.UuidIdGenerator;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.type.CtCompoundType;
@@ -416,8 +415,9 @@ public class AnnotationFields extends AnnotationParser {
 			// its a base table property...
 		} else {
 			// its on a secondary table...
-			DeployTableJoin tableJoin = info.getTableJoin(tableName);
-			tableJoin.addProperty(prop);
+		    prop.setSecondaryTable(tableName);
+			//DeployTableJoin tableJoin = info.getTableJoin(tableName);
+			//tableJoin.addProperty(prop);
 		}
 	}
 

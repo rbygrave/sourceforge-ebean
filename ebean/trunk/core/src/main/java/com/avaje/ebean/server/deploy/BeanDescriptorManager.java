@@ -604,10 +604,34 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         }
 
         for (DeployBeanInfo<?> info : deplyInfoMap.values()) {
+            secondaryPropsJoins(info);
+        }
+        
+        for (DeployBeanInfo<?> info : deplyInfoMap.values()) {
             registerBeanDescriptor(new BeanDescriptor(this, typeManager, info.getDescriptor()));
         }
     }
 
+    private void secondaryPropsJoins(DeployBeanInfo<?> info) {
+
+        DeployBeanDescriptor<?> descriptor = info.getDescriptor();
+        for (DeployBeanProperty prop : descriptor.propertiesBase()) {
+            if (prop.isSecondaryTable()) {
+                String tableName = prop.getSecondaryTable();
+                // find a join to that table...
+                DeployBeanPropertyAssocOne<?> assocOne = descriptor.findJoinToTable(tableName);
+                if (assocOne == null){
+                    String msg = "Error with property "+prop.getFullBeanName()
+                        + ". Could not find a Relationship to table "+tableName
+                        + ". Perhaps you could use a @JoinColumn instead.";
+                    throw new RuntimeException(msg);
+                } 
+                DeployTableJoin tableJoin = assocOne.getTableJoin();
+                prop.setSecondaryTableJoin(tableJoin, assocOne.getName());
+            }
+        }
+    }
+    
     /**
      * Check the mappedBy attributes for properties on this descriptor.
      * <p>
