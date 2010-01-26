@@ -150,22 +150,17 @@ public class DeployBeanPropertyLists {
             }
 
         } else {
-            if (prop.isSecondaryTable()) {
-                // property based on secondary table...
-
+            // its a "base" property...
+            if (prop.isVersion()) {
+                version.add(prop);
+                if (derivedFirstVersionProp == null) {
+                    derivedFirstVersionProp = prop;
+                }
+            }
+            if (prop instanceof BeanPropertyCompound) {
+                baseCompound.add((BeanPropertyCompound) prop);
             } else {
-                // its a "base" property...
-                if (prop.isVersion()) {
-                    version.add(prop);
-                    if (derivedFirstVersionProp == null) {
-                        derivedFirstVersionProp = prop;
-                    }
-                }
-                if (prop instanceof BeanPropertyCompound) {
-                    baseCompound.add((BeanPropertyCompound) prop);
-                } else {
-                    baseScalar.add(prop);
-                }
+                baseScalar.add(prop);
             }
         }
     }

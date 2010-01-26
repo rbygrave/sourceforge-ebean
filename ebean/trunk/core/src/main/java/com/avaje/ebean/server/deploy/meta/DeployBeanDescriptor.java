@@ -767,7 +767,7 @@ public class DeployBeanDescriptor<T> {
 		StringBuilder sb = new StringBuilder();
 		
 		boolean hasLazyFetch = false;
-		
+				
 		Iterator<DeployBeanProperty> it  = propMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
@@ -832,6 +832,18 @@ public class DeployBeanDescriptor<T> {
 		}
 
 		return list;
+	}
+	
+	public DeployBeanPropertyAssocOne<?> findJoinToTable(String tableName){
+	    
+	    List<DeployBeanPropertyAssocOne<?>> assocOne = propertiesAssocOne();
+	    for (DeployBeanPropertyAssocOne<?> prop : assocOne) {
+	        DeployTableJoin tableJoin = prop.getTableJoin();
+	        if (tableJoin != null && tableJoin.getTable().equalsIgnoreCase(tableName)){
+	            return prop;
+	        }
+        }
+	    return null;
 	}
 	
 	/**

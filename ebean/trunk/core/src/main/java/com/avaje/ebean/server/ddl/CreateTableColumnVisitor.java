@@ -139,6 +139,9 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		if (parent.wroteColumns.contains(p.getDbColumn())) {
 			return;
 		}
+		if (p.isSecondaryTable()) {
+		    return;
+		}
 		
 		parent.writeColumnName(p.getDbColumn(), p);
 

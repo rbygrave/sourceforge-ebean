@@ -137,10 +137,14 @@ public class DeployBeanProperty {
      */
     private boolean dbUpdateable;
 
+    private DeployTableJoin secondaryTableJoin;
+
+    private String secondaryTableJoinPrefix;
+
     /**
      * Set to true if this property is based on a secondary table.
      */
-    private boolean secondaryTable;
+    private String secondaryTable;
 
     /**
      * The type that owns this property.
@@ -565,7 +569,6 @@ public class DeployBeanProperty {
      */
     public void setFetchType(FetchType fetchType) {
         this.fetchEager = FetchType.EAGER.equals(fetchType);
-        ;
     }
 
     /**
@@ -658,14 +661,39 @@ public class DeployBeanProperty {
      * Return true if this property is based on a secondary table.
      */
     public boolean isSecondaryTable() {
+        return secondaryTable != null;
+    }
+
+    /**
+     * Return the secondary table this property is associated with.
+     */
+    public String getSecondaryTable() {
         return secondaryTable;
     }
 
     /**
      * Set to true if this property is included in persisting.
      */
-    public void setSecondaryTable() {
-        this.secondaryTable = true;
+    public void setSecondaryTable(String secondaryTable) {
+        this.secondaryTable = secondaryTable;
+        this.dbInsertable = false;
+        this.dbUpdateable = false;
+    }
+
+    /**
+     * 
+     */
+    public String getSecondaryTableJoinPrefix() {
+        return secondaryTableJoinPrefix;
+    }
+
+    public DeployTableJoin getSecondaryTableJoin() {
+        return secondaryTableJoin;
+    }
+
+    public void setSecondaryTableJoin(DeployTableJoin secondaryTableJoin, String prefix) {
+        this.secondaryTableJoin = secondaryTableJoin;
+        this.secondaryTableJoinPrefix = prefix;
     }
 
     /**

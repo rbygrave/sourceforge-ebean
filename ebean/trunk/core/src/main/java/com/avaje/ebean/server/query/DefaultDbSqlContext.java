@@ -218,10 +218,17 @@ public class DefaultDbSqlContext implements DbSqlContext {
 
     public void appendColumn(String tableAlias, String column) {
         sb.append(COMMA);
-        sb.append(tableAlias);
-        sb.append(PERIOD);
-        sb.append(column);
-
+        
+        if (column.indexOf("${}") > -1){
+            // support DB functions such as lower() etc
+            // with the use of secondary columns etc
+            String x = StringHelper.replaceString(column, "${}", tableAlias);
+            sb.append(x);
+        } else {
+            sb.append(tableAlias);
+            sb.append(PERIOD);
+            sb.append(column);
+        }
         if (useColumnAlias) {
             sb.append(" ");
             sb.append(columnAliasPrefix);

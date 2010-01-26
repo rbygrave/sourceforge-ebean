@@ -52,7 +52,7 @@ public class VisitorUtil {
 			while (it.hasNext()) {
 				BeanProperty p = it.next();
 	
-				if (!p.isTransient()){
+				if (!p.isTransient() && !p.isFormula() && !p.isSecondaryTable()){
 					PropertyVisitor pv = visitor.visitProperty(p);
 					if (pv != null){
 						visit(p, pv);
