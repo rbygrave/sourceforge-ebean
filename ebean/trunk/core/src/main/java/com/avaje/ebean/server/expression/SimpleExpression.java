@@ -69,10 +69,14 @@ class SimpleExpression extends AbstractExpression {
 	            }
 	            return;
 		    }
-		    if (prop.isEncrypted()){
+		    if (prop.isDbEncrypted()){
                 // bind the key as well as the value
-		        String encryptKey = prop.getBeanProperty().getEncryptKey();
+		        String encryptKey = prop.getBeanProperty().getEncryptKey().getStringValue();
 		        request.addBindValue(encryptKey);
+		    } else if (prop.isLocalEncrypted()) {
+		        
+		        prop.getBeanProperty().getScalarType();
+		        
 		    }
 		}
 		     
@@ -86,7 +90,7 @@ class SimpleExpression extends AbstractExpression {
 	            request.append(prop.getAssocOneIdExpr(propertyName,type.toString()));
 	            return;
 		    }
-		    if (prop.isEncrypted()){
+		    if (prop.isDbEncrypted()){
 		        String dsql = prop.getBeanProperty().getDecryptSql();
 		        request.append(dsql).append(" ").append(type.toString()).append(" ? ");
 		        return;

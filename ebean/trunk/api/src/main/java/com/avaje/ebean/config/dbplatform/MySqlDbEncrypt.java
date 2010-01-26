@@ -37,7 +37,7 @@ public class MySqlDbEncrypt implements DbEncrypt {
     }
 
     public int getEncryptDbType() {
-        return Types.VARCHAR;
+        return Types.VARBINARY;
     }
 
     /**

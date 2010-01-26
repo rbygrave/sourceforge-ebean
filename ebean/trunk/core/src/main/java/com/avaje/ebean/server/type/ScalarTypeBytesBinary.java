@@ -22,46 +22,16 @@ package com.avaje.ebean.server.type;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebean.text.TextException;
-
 /**
- * ScalarType for byte[].
+ * ScalarType for Types.BINARY to byte[].
  */
-public class ScalarTypeByteArray extends ScalarTypeBase<byte[]> {
+public class ScalarTypeBytesBinary extends ScalarTypeBytesBase {
 
-	public ScalarTypeByteArray() {
-		super(byte[].class, true, Types.BINARY);
+	public ScalarTypeBytesBinary() {
+		super(true, Types.BINARY);
 	}
 	
-	public void bind(DataBind b, byte[] value) throws SQLException {
-		if (value == null){
-			b.setNull(Types.BINARY);
-		} else {
-			b.setBytes(value);					
-		}
-	}
-
 	public byte[] read(DataReader dataReader) throws SQLException {
 		return dataReader.getBytes();
-	}
-	
-	public Object toJdbcType(Object value) {
-		return value;
-	}
-
-	public byte[] toBeanType(Object value) {
-		return (byte[])value;
-	}
-
-	public byte[] parse(String value) {
-		throw new TextException("Not supported");
-	}
-	
-	public byte[] parseDateTime(long systemTimeMillis) {
-		throw new TextException("Not Supported");
-	}
-
-	public boolean isDateTimeCapable() {
-		return false;
 	}
 }

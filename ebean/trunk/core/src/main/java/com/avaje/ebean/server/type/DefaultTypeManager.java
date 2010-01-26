@@ -94,11 +94,11 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 
 	private final ScalarType<?> byteType = new ScalarTypeByte();
 
-	private final ScalarType<?> byteArrayType = new ScalarTypeByteArray();
+	private final ScalarType<?> byteArrayType = new ScalarTypeBytesBinary();
 
-	private final ScalarType<?> blobType = new ScalarTypeBlob();
+	private final ScalarType<?> blobType = new ScalarTypeBytesBlob();
 
-	private final ScalarType<?> longVarbinaryType = new ScalarTypeLongVarbinary();
+	private final ScalarType<?> longVarbinaryType = new ScalarTypeBytesLongVarbinary();
 
 	private final ScalarType<?> shortType = new ScalarTypeShort();
 
@@ -148,17 +148,17 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	    this.compoundTypeMap = new ConcurrentHashMap<Class<?>, CtCompoundType<?>>();
 		this.typeMap = new ConcurrentHashMap<Class<?>, ScalarType<?>>();
 		this.nativeMap = new ConcurrentHashMap<Integer, ScalarType<?>>();
-		this.extraTypeFactory = new DefaultTypeFactory(config);
 
+        this.extraTypeFactory = new DefaultTypeFactory(config);
 		
-		initialiseStandard(stringType);		
+		initialiseStandard();		
 		initialiseJodaTypes();
 		
-		initialiseCustomScalarTypes(bootupClasses);
-		
-		initialiseScalarConverters(bootupClasses);
-		initialiseCompoundTypes(bootupClasses);
-		
+		if (bootupClasses != null){
+    		initialiseCustomScalarTypes(bootupClasses);
+    		initialiseScalarConverters(bootupClasses);
+    		initialiseCompoundTypes(bootupClasses);
+		}
 	}
 	
     public boolean isKnownImmutable(Class<?> cls) {
@@ -649,7 +649,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * types plus some other common types such as java.util.Date and
 	 * java.util.Calendar.
 	 */
-	protected void initialiseStandard(ScalarType<?> stringType) {
+	protected void initialiseStandard() {
 
 		ScalarType<?> utilDateType = extraTypeFactory.createUtilDate();
 		typeMap.put(java.util.Date.class, utilDateType);

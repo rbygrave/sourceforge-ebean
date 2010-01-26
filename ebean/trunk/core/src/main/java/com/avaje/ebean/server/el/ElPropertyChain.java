@@ -134,8 +134,12 @@ public class ElPropertyChain implements ElPropertyValue {
 		return placeHolder;
 	}
 	
-	public boolean isEncrypted() {
-        return lastElPropertyValue.isEncrypted();
+	public boolean isDbEncrypted() {
+        return lastElPropertyValue.isDbEncrypted();	    
+	}
+	
+	public boolean isLocalEncrypted() {
+        return lastElPropertyValue.isLocalEncrypted();
     }
 
     public Object[] getAssocOneIdValues(Object bean) {

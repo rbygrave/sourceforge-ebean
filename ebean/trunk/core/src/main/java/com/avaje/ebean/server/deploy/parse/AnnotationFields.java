@@ -59,6 +59,13 @@ import com.avaje.ebean.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebean.server.idgen.UuidIdGenerator;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.type.CtCompoundType;
+import com.avaje.ebean.server.type.DataEncryptSupport;
+import com.avaje.ebean.server.type.ScalarType;
+import com.avaje.ebean.server.type.ScalarTypeBytesBase;
+import com.avaje.ebean.server.type.ScalarTypeBytesBlob;
+import com.avaje.ebean.server.type.ScalarTypeBytesEncrypted;
+import com.avaje.ebean.server.type.ScalarTypeBytesVarbinary;
+import com.avaje.ebean.server.type.ScalarTypeEncryptedWrapper;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.validation.Length;
 import com.avaje.ebean.validation.NotNull;
@@ -159,16 +166,6 @@ public class AnnotationFields extends AnnotationParser {
 		if (id != null) {
 			readId(id, prop);
 		}
-
-		Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
-        if (encrypted != null) {
-            DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
-            if (dbEncrypt != null){
-                prop.setDbEncrypted(true);
-                prop.setDbBind(dbEncrypt.getEncryptBindSql());   
-                prop.setDbEncryptedType(dbEncrypt.getEncryptDbType());
-            }
-        }
         
 		// determine the JDBC type using Lob/Temporal
 		// otherwise based on the property Class
@@ -262,7 +259,70 @@ public class AnnotationFields extends AnnotationParser {
 			prop.setDbUpdateable(false);
 			prop.setTransient(true);
 		}
+
+		if (!prop.isTransient()){
+            Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
+            if (encrypted != null) {    
+                setEncryption(prop, encrypted);
+                
+            } else {
+                String dbColumn = prop.getDbColumn();
+                if (dbColumn != null){
+                    if (util.isEncrypted(info.getDescriptor().getBaseTableFull(), dbColumn)) {
+                        setEncryption(prop, null);
+                    }
+                }
+            }
+		}
 	}
+	
+	@SuppressWarnings("unchecked")
+    private void setEncryption(DeployBeanProperty prop, Encrypted encrypted) {
+	    
+	    ScalarType<?> st = prop.getScalarType();
+	    if (byte[].class.equals(st.getType())){
+	        // Always using Java Encryptor rather than DB for encryption
+	        // of binary data (partially as this is not supported on all db's etc)
+	        // This could be reviewed at a later stage.
+	        ScalarTypeBytesBase baseType = (ScalarTypeBytesBase)st;
+	        DataEncryptSupport support = createDataEncryptSupport(prop);
+	        ScalarTypeBytesEncrypted encryptedScalarType = new ScalarTypeBytesEncrypted(baseType, support);
+	        prop.setScalarType(encryptedScalarType);
+	        prop.setLocalEncrypted(true);
+	        return;
+	    
+	    } 
+	    if (String.class.equals(st.getType()) && encrypted.dbEncryption()){
+	        DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
+	        if (dbEncrypt != null){
+	            // Use DB functions to encrypt string content
+	            prop.setDbEncrypted(true);
+	            prop.setDbBind(dbEncrypt.getEncryptBindSql());
+	            prop.setDbEncryptedType(dbEncrypt.getEncryptDbType());          
+	            return;
+	        }
+	    }
+	    
+	    // Use Java Encryptor wrapping the logical scalar type 
+        DataEncryptSupport support = createDataEncryptSupport(prop);
+        ScalarTypeBytesBase byteType = prop.isLob() ? scalarTypeBlob : scalarTypeVarbinary;
+	    ScalarTypeEncryptedWrapper<?> scw = new ScalarTypeEncryptedWrapper(st, byteType, support);
+	    
+	    prop.setScalarType(scw);
+	    prop.setLocalEncrypted(true);
+	}
+	
+	private final ScalarTypeBytesBlob scalarTypeBlob = new ScalarTypeBytesBlob();
+	private final ScalarTypeBytesVarbinary scalarTypeVarbinary = new ScalarTypeBytesVarbinary();
+	
+	private DataEncryptSupport createDataEncryptSupport(DeployBeanProperty prop) {
+	    
+	    String table = info.getDescriptor().getBaseTable();
+	    String column = prop.getDbColumn();
+	    
+	    return util.createDataEncryptSupport(table, column);
+	}
+	
 
 	private void readId(Id id, DeployBeanProperty prop) {
 

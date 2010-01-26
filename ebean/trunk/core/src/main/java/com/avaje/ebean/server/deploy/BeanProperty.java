@@ -31,6 +31,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
@@ -175,7 +176,9 @@ public class BeanProperty implements ElPropertyValue {
      * Set to true if stored encrypted.
      */
     final boolean dbEncrypted;
-    
+
+    final boolean localEncrypted;
+
     final int dbEncryptedType;
 
     /**
@@ -255,6 +258,7 @@ public class BeanProperty implements ElPropertyValue {
 
         this.descriptor = descriptor;
         this.name = InternString.intern(deploy.getName());
+        this.localEncrypted = deploy.isLocalEncrypted();
         this.dbEncrypted = deploy.isDbEncrypted();
         this.dbEncryptedType = deploy.getDbEncryptedType();
         this.dbBind = deploy.getDbBind();
@@ -330,6 +334,7 @@ public class BeanProperty implements ElPropertyValue {
         this.sqlFormulaSelect = InternString.intern(override.getSqlFormulaSelect());
         this.formula = sqlFormulaSelect != null;
 
+        this.localEncrypted = source.isLocalEncrypted();
         this.isTransient = source.isTransient();
         this.secondaryTable = source.isSecondaryTable();
         this.dbBind = source.getDbBind();
@@ -414,7 +419,7 @@ public class BeanProperty implements ElPropertyValue {
     /**
      * Return the encrypt key for the column matching this property.
      */
-    public String getEncryptKey() {
+    public EncryptKey getEncryptKey() {
         return descriptor.getEncryptKey(this);
     }
 
@@ -433,10 +438,6 @@ public class BeanProperty implements ElPropertyValue {
     public String getDecryptSql(String tableAlias) {
         return descriptor.getDecryptSql(tableAlias + "." + this.getDbColumn());
     }
-
-//    public String getEncryptSql() {
-//        return descriptor.getEncryptSql(this);
-//    }
 
     /**
      * Add any extra joins required to support this property. Generally a no
@@ -674,27 +675,6 @@ public class BeanProperty implements ElPropertyValue {
             throw new RuntimeException(msg, ex);
         }
     }
-
-    // /**
-    // * Return the value converting to null if required.
-    // * <p>
-    // * Here to support Oracle empty string to null conversion.
-    // * </p>
-    // */
-    // public Object getDbNullValue(Object value){
-    // return scalarType.getDbNullValue(value);
-    // }
-
-    // /**
-    // * Return true if the value should be considered null.
-    // * <p>
-    // * Here to support Oracle empty string to null conversion.
-    // * </p>
-    // */
-    // public boolean isDbNull(Object bean) {
-    // Object value = getValue(bean);
-    // return scalarType.isDbNull(value);
-    // }
 
     private static Object[] NO_ARGS = new Object[0];
 
@@ -970,8 +950,8 @@ public class BeanProperty implements ElPropertyValue {
     /**
      * Returns true if DB encrypted.
      */
-    public boolean isEncrypted() {
-        return isDbEncrypted();
+    public boolean isLocalEncrypted() {
+        return localEncrypted;
     }
 
     /**

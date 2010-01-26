@@ -17,18 +17,22 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.config;
+package com.avaje.tests.basic.encrypt;
 
-/**
- * Determine keys used for encryption and decryption.
- * 
- * @author rbygrave
- */
-public interface EncryptKeyManager {
+import com.avaje.ebean.config.EncryptKey;
 
-    /**
-     * Return the key used to encrypt and decrypt a property mapping to the
-     * given table and column.
-     */
-    public EncryptKey getEncryptKey(String tableName, String columnName);
+public class BasicEncryptKey implements EncryptKey {
+
+    private final String key;
+
+    public BasicEncryptKey(String key) {
+        this.key = key;
+    }
+    
+    public String getStringValue() {
+        return key;
+    }
+    
+
+    
 }

@@ -102,15 +102,13 @@ public class BindableEncryptedProperty implements Bindable {
         }
 
         // get Encrypt key
-        String encryptKeyValue = prop.getEncryptKey();
+        String encryptKeyValue = prop.getEncryptKey().getStringValue(); 
 
         if (!bindEncryptDataFirst){
             // H2 encrypt function ... different parameter order
-            //request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
-            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "key:"+encryptKeyValue);            
+            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");                        
         }
-        request.bind(value, prop, prop.getName(), true);
-        //request.bindNoLog(value, prop, prop.getName(), bindNull);
+        request.bindNoLog(value, prop, prop.getName(), true);
         
         if (bindEncryptDataFirst){
             // MySql, Postgres, Oracle
@@ -135,20 +133,10 @@ public class BindableEncryptedProperty implements Bindable {
         }
 
         // get Encrypt key
-        String encryptKeyValue = prop.getEncryptKey();
+        String encryptKeyValue = prop.getEncryptKey().getStringValue();
 
-//        if (!bindEncryptDataFirst){
-//            // H2 encrypt function ... different parameter order
-//            //request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
-//            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "key:"+encryptKeyValue);            
-//        }
         request.bind(value, prop, prop.getName(), false);
-        //request.bindNoLog(value, prop, prop.getName(), bindNull);
-        
-        //if (bindEncryptDataFirst){
-            // MySql, Postgres, Oracle
-            request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
-        //}
+        request.bindNoLog(encryptKeyValue, Types.VARCHAR, prop.getName() + "=****");            
 
     }
 }

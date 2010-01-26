@@ -23,24 +23,15 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /**
- * ScalarType for String.
+ * ScalarType for Longvarbinary.
  */
-public class ScalarTypeLongVarbinary extends ScalarTypeBlob {
+public class ScalarTypeBytesLongVarbinary extends ScalarTypeBytesBase {
 
 	
-	public ScalarTypeLongVarbinary() {
-		super(byte[].class, true, Types.LONGVARBINARY);
+	public ScalarTypeBytesLongVarbinary() {
+		super(true, Types.LONGVARBINARY);
 	}
-
-	@Override
-	public void bind(DataBind b, byte[] value) throws SQLException {
-		if (value == null) {
-			b.setNull(Types.LONGVARBINARY);
-		} else {
-			b.setBytes(value);
-		}
-	}
-
+	
 	@Override
 	public byte[] read(DataReader dataReader) throws SQLException {
 	

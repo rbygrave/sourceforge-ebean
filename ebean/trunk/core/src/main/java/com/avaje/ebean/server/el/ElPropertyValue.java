@@ -49,10 +49,15 @@ public interface ElPropertyValue extends ElPropertyDeploy {
     public boolean isAssocOneId();
 
     /**
-     * Return true if 
-     * @return
+     * Return true if the property is encrypted via Java.
      */
-    public boolean isEncrypted();
+    public boolean isLocalEncrypted();
+    
+    /**
+     * Return true if the property is encrypted in the DB.
+     */
+    public boolean isDbEncrypted();
+
 
     /**
      * Return the underlying bean property.

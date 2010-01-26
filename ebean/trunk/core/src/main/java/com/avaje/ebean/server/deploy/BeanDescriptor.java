@@ -43,6 +43,7 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.cache.ServerCache;
 import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.event.BeanFinder;
@@ -688,15 +689,11 @@ public class BeanDescriptor<T> {
     public String getDecryptSql(String columnWithTableAlias){
         return owner.getDecryptSql(columnWithTableAlias);
     }
-
-//    public String getEncryptSql(BeanProperty p){
-//        return owner.getEncryptSql(p.getDbColumn());
-//    }
-
+    
     /**
      * Return the Encrypt key given the table and column name.
      */
-    public String getEncryptKey(BeanProperty p){
+    public EncryptKey getEncryptKey(BeanProperty p){
         return owner.getEncryptKey(baseTable, p.getDbColumn());
     }
 

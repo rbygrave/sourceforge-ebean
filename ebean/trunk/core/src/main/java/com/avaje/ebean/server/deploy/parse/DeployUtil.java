@@ -28,12 +28,19 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.config.Encryptor;
+import com.avaje.ebean.config.EncryptDeployManager;
+import com.avaje.ebean.config.EncryptKeyManager;
 import com.avaje.ebean.config.NamingConvention;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
+import com.avaje.ebean.server.type.DataEncryptSupport;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeEnumStandard;
+import com.avaje.ebean.server.type.SimpleAesEncryptor;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.validation.factory.Validator;
 
@@ -67,12 +74,23 @@ public class DeployUtil {
 
 	private final DatabasePlatform dbPlatform;
 	
-	public DeployUtil(TypeManager typeMgr, NamingConvention nc, DatabasePlatform dbPlatform) {
+	private final EncryptDeployManager encryptDeployManager;
+
+	private final EncryptKeyManager encryptKeyManager;
+	
+	private final Encryptor bytesEncryptor;
+	
+	public DeployUtil(TypeManager typeMgr, ServerConfig serverConfig) {
 
 		this.typeManager = typeMgr;
-		this.namingConvention = nc;
-		this.dbPlatform = dbPlatform;
-
+		this.namingConvention = serverConfig.getNamingConvention(); 
+        this.dbPlatform = serverConfig.getDatabasePlatform();
+        this.encryptDeployManager = serverConfig.getEncryptDeployManager();
+        this.encryptKeyManager = serverConfig.getEncryptKeyManager();
+        
+        Encryptor be = serverConfig.getBytesEncryptor();
+        this.bytesEncryptor = be != null ? be : new SimpleAesEncryptor(typeMgr);
+		
 		// this alias is used for ManyToMany lazy loading queries
 		this.manyToManyAlias = "zzzzzz";
 
@@ -91,6 +109,17 @@ public class DeployUtil {
 		return namingConvention;
 	}
 
+	public boolean isEncrypted(TableName table, String column) {
+	    if (encryptDeployManager == null){
+	        return false;
+	    }
+	    return encryptDeployManager.isEncrypted(table, column);
+	}
+	
+	public DataEncryptSupport createDataEncryptSupport(String table, String column) {
+	    return new DataEncryptSupport(encryptKeyManager, bytesEncryptor, table, column);
+	}
+	
 	/**
 	 * Return the table alias used for ManyToMany joins.
 	 */

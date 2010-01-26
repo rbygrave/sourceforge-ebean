@@ -20,30 +20,21 @@
 package com.avaje.ebean.server.type;
 
 import java.sql.SQLException;
-import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 
 /**
- * ScalarType for String.
+ * ScalarType for BLOB.
  */
-public class ScalarTypeBlob extends ScalarTypeBase<byte[]> {
-
-//	private static final int bufferSize = 512;
+public abstract class ScalarTypeBytesBase extends ScalarTypeBase<byte[]> {
 	
-	//private static final int initialSize = 512;
-	
-	protected ScalarTypeBlob(Class<byte[]> type, boolean jdbcNative, int jdbcType) {
-		super(type, jdbcNative, jdbcType);
-	}
-	
-	public ScalarTypeBlob() {
-		super(byte[].class, true, Types.BLOB);
+	protected ScalarTypeBytesBase(boolean jdbcNative, int jdbcType) {
+		super(byte[].class, jdbcNative, jdbcType);
 	}
 
 	public void bind(DataBind b, byte[] value) throws SQLException {
 		if (value == null) {
-			b.setNull(Types.BLOB);
+			b.setNull(jdbcType);
 		} else {
 			b.setBytes(value);
 		}
@@ -69,35 +60,5 @@ public class ScalarTypeBlob extends ScalarTypeBase<byte[]> {
 		return false;
 	}
 	
-	public byte[] read(DataReader dataReader) throws SQLException {
-
-	    return dataReader.getBlobBytes();
-	}
-	
-//	protected byte[] getBinaryLob(InputStream in) throws SQLException {
-//
-//		try {
-//			if (in == null) {
-//				return null;
-//			}
-//			ByteArrayOutputStream out = new ByteArrayOutputStream();
-//		
-//			byte[] buf = new byte[bufferSize];
-//			int len;
-//			while ((len = in.read(buf, 0, buf.length)) != -1) {
-//				out.write(buf, 0, len);
-//			}
-//			byte[] data = out.toByteArray();
-//		
-//			if (data.length == 0) {
-//				data = null;
-//			}
-//			in.close();
-//			out.close();
-//			return data;
-//		
-//		} catch (IOException e) {
-//			throw new SQLException(e.getClass().getName() + ":" + e.getMessage());
-//		}
-//	}
+	public abstract byte[] read(DataReader dataReader) throws SQLException;
 }

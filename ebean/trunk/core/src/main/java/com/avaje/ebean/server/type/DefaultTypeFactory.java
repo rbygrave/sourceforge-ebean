@@ -32,128 +32,134 @@ import com.avaje.ebean.server.core.BasicTypeConverter;
  */
 public class DefaultTypeFactory {
 
-	private final ServerConfig serverConfig;
+    private final ServerConfig serverConfig;
 
-	public DefaultTypeFactory(ServerConfig serverConfig) {
-		this.serverConfig = serverConfig;
-	}
+    public DefaultTypeFactory(ServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
+    }
 
-	private ScalarType<Boolean> createBoolean(String trueValue, String falseValue) {
-		
-		try {
-			// first try Integer based boolean
-			Integer intTrue = BasicTypeConverter.toInteger(trueValue);
-			Integer intFalse = BasicTypeConverter.toInteger(falseValue);
+    private ScalarType<Boolean> createBoolean(String trueValue, String falseValue) {
 
-			return new ScalarTypeBoolean.IntBoolean(intTrue, intFalse);
+        try {
+            // first try Integer based boolean
+            Integer intTrue = BasicTypeConverter.toInteger(trueValue);
+            Integer intFalse = BasicTypeConverter.toInteger(falseValue);
 
-		} catch (NumberFormatException e){
-		}
+            return new ScalarTypeBoolean.IntBoolean(intTrue, intFalse);
 
-		// treat as Varchar/String based boolean
-		return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
-		
-	}
-	
-	/**
-	 * Create the ScalarType for mapping Booleans. For some databases this is a
-	 * native data type and for others Booleans will be converted to Y/N or 0/1
-	 * etc.
-	 */
-	public ScalarType<Boolean> createBoolean() {
+        } catch (NumberFormatException e) {
+        }
 
-		String trueValue = serverConfig.getDatabaseBooleanTrue();
-		String falseValue = serverConfig.getDatabaseBooleanFalse();
+        // treat as Varchar/String based boolean
+        return new ScalarTypeBoolean.StringBoolean(trueValue, falseValue);
 
-		if (falseValue != null && trueValue != null){
-			// explicit integer or string based booleans
-			return createBoolean(trueValue, falseValue);
-		}
+    }
 
-		// determine based on database platform configuration
-		int booleanDbType = serverConfig.getDatabasePlatform().getBooleanDbType();
-		
-		// Some dbs use BIT e.g. MySQL
-		if (booleanDbType == Types.BIT){
-			return new ScalarTypeBoolean.BitBoolean();
-		}
-		
-		if (booleanDbType == Types.INTEGER){
-			return new ScalarTypeBoolean.IntBoolean(1, 0);
-		}
-		if (booleanDbType == Types.VARCHAR){
-			return new ScalarTypeBoolean.StringBoolean("T", "F");
-		}
-		
-		if (booleanDbType == Types.BOOLEAN){
-			return new ScalarTypeBoolean.Native();			
-		}
+    /**
+     * Create the ScalarType for mapping Booleans. For some databases this is a
+     * native data type and for others Booleans will be converted to Y/N or 0/1
+     * etc.
+     */
+    public ScalarType<Boolean> createBoolean() {
 
-		// assume the JDBC driver can convert the type
-		return new ScalarTypeBoolean.Native();			
-	}
+        if (serverConfig == null) {
+            return new ScalarTypeBoolean.Native();
+        }
+        String trueValue = serverConfig.getDatabaseBooleanTrue();
+        String falseValue = serverConfig.getDatabaseBooleanFalse();
 
-	/**
-	 * Create the default ScalarType for java.util.Date.
-	 */
-	public ScalarType<java.util.Date> createUtilDate() {
-		// by default map anonymous java.util.Date to java.sql.Timestamp.
-		//String mapType = properties.getProperty("type.mapping.java.util.Date","timestamp");
-		int utilDateType = getTemporalMapType("timestamp");
+        if (falseValue != null && trueValue != null) {
+            // explicit integer or string based booleans
+            return createBoolean(trueValue, falseValue);
+        }
 
-		return createUtilDate(utilDateType);
-	}
+        // determine based on database platform configuration
+        int booleanDbType = serverConfig.getDatabasePlatform().getBooleanDbType();
 
-	/**
-	 * Create a ScalarType for java.util.Date explicitly specifying the type to
-	 * map to.
-	 */
-	public ScalarType<java.util.Date> createUtilDate(int utilDateType) {
+        // Some dbs use BIT e.g. MySQL
+        if (booleanDbType == Types.BIT) {
+            return new ScalarTypeBoolean.BitBoolean();
+        }
 
-		switch (utilDateType) {
-		case Types.DATE:
-			return new ScalarTypeUtilDate.DateType();
-			
-		case Types.TIMESTAMP:
-			return new ScalarTypeUtilDate.TimestampType();
+        if (booleanDbType == Types.INTEGER) {
+            return new ScalarTypeBoolean.IntBoolean(1, 0);
+        }
+        if (booleanDbType == Types.VARCHAR) {
+            return new ScalarTypeBoolean.StringBoolean("T", "F");
+        }
 
-		default:
-			throw new RuntimeException("Invalid type "+utilDateType);
-		}
-	}
+        if (booleanDbType == Types.BOOLEAN) {
+            return new ScalarTypeBoolean.Native();
+        }
 
-	/**
-	 * Create the default ScalarType for java.util.Calendar.
-	 */
-	public ScalarType<Calendar> createCalendar() {
-		// by default map anonymous java.util.Calendar to java.sql.Timestamp.
-		//String mapType = properties.getProperty("type.mapping.java.util.Calendar", "timestamp");
-		int jdbcType = getTemporalMapType("timestamp");
+        // assume the JDBC driver can convert the type
+        return new ScalarTypeBoolean.Native();
+    }
 
-		return createCalendar(jdbcType);
-	}
+    /**
+     * Create the default ScalarType for java.util.Date.
+     */
+    public ScalarType<java.util.Date> createUtilDate() {
+        // by default map anonymous java.util.Date to java.sql.Timestamp.
+        // String mapType =
+        // properties.getProperty("type.mapping.java.util.Date","timestamp");
+        int utilDateType = getTemporalMapType("timestamp");
 
-	/**
-	 * Create a ScalarType for java.util.Calendar explicitly specifying the type
-	 * to map to.
-	 */
-	public ScalarType<Calendar> createCalendar(int jdbcType) {
+        return createUtilDate(utilDateType);
+    }
 
-		return new ScalarTypeCalendar(jdbcType);
-	}
+    /**
+     * Create a ScalarType for java.util.Date explicitly specifying the type to
+     * map to.
+     */
+    public ScalarType<java.util.Date> createUtilDate(int utilDateType) {
 
-	private int getTemporalMapType(String mapType) {
-		if (mapType.equalsIgnoreCase("date")) {
-			return java.sql.Types.DATE;
-		}
-		return java.sql.Types.TIMESTAMP;
-	}
+        switch (utilDateType) {
+        case Types.DATE:
+            return new ScalarTypeUtilDate.DateType();
 
-	/**
-	 * Create a ScalarType for java.math.BigInteger.
-	 */
-	public ScalarType<BigInteger> createMathBigInteger() {
+        case Types.TIMESTAMP:
+            return new ScalarTypeUtilDate.TimestampType();
 
-		return new ScalarTypeMathBigInteger();
-	}
+        default:
+            throw new RuntimeException("Invalid type " + utilDateType);
+        }
+    }
+
+    /**
+     * Create the default ScalarType for java.util.Calendar.
+     */
+    public ScalarType<Calendar> createCalendar() {
+        // by default map anonymous java.util.Calendar to java.sql.Timestamp.
+        // String mapType =
+        // properties.getProperty("type.mapping.java.util.Calendar",
+        // "timestamp");
+        int jdbcType = getTemporalMapType("timestamp");
+
+        return createCalendar(jdbcType);
+    }
+
+    /**
+     * Create a ScalarType for java.util.Calendar explicitly specifying the type
+     * to map to.
+     */
+    public ScalarType<Calendar> createCalendar(int jdbcType) {
+
+        return new ScalarTypeCalendar(jdbcType);
+    }
+
+    private int getTemporalMapType(String mapType) {
+        if (mapType.equalsIgnoreCase("date")) {
+            return java.sql.Types.DATE;
+        }
+        return java.sql.Types.TIMESTAMP;
+    }
+
+    /**
+     * Create a ScalarType for java.math.BigInteger.
+     */
+    public ScalarType<BigInteger> createMathBigInteger() {
+
+        return new ScalarTypeMathBigInteger();
+    }
 }

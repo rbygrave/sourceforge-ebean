@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.EncryptKeyManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.NamingConvention;
@@ -282,7 +283,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     /**
      * Return the Encrypt key given the table and column name.
      */
-    public String getEncryptKey(String tableName, String columnName) {
+    public EncryptKey getEncryptKey(String tableName, String columnName) {
         return encryptKeyManager.getEncryptKey(tableName, columnName);
     }
 

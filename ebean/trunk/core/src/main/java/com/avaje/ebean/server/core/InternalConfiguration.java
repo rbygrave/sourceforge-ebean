@@ -127,9 +127,7 @@ public class InternalConfiguration {
 		this.deployInherit = new DeployInherit(bootupClasses);		
 		
 		this.deployCreateProperties = new DeployCreateProperties(typeManager);
-		this.deployUtil = new DeployUtil(typeManager, serverConfig.getNamingConvention(), serverConfig.getDatabasePlatform());
-
-		
+		this.deployUtil = new DeployUtil(typeManager, serverConfig);
 		this.beanDescriptorManager = new BeanDescriptorManager(this);
 		beanDescriptorManager.deploy();
 		
