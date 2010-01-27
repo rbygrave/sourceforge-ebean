@@ -29,7 +29,7 @@ package com.avaje.ebean.config;
  */
 public class UnderscoreNamingConvention extends AbstractNamingConvention {
 
-	/** Force toUnderscore to return in upper case. */
+    /** Force toUnderscore to return in upper case. */
     private boolean forceUpperCase = false;
 
     /** The digits compressed. */

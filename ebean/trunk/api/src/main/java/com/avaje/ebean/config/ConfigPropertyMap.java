@@ -5,7 +5,7 @@ package com.avaje.ebean.config;
  */
 class ConfigPropertyMap {
 
-	String serverName;
+	private final String serverName;
 		
 	public ConfigPropertyMap(String serverName) {
 		this.serverName = serverName;

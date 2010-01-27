@@ -294,7 +294,14 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	 */
 	private void setNamingConvention(ServerConfig config){
 		if (config.getNamingConvention() == null){
-			config.setNamingConvention(new UnderscoreNamingConvention());
+		    UnderscoreNamingConvention nc = new UnderscoreNamingConvention();
+			config.setNamingConvention(nc);
+			
+			String v = config.getProperty("namingConvention.useForeignKeyPrefix");
+			if (v != null){
+			    boolean useForeignKeyPrefix = Boolean.valueOf(v);
+			    nc.setUseForeignKeyPrefix(useForeignKeyPrefix);
+			}
 		}
 	}
 	

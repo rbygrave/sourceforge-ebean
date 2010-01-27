@@ -1116,6 +1116,14 @@ public class ServerConfig {
         ConfigPropertyMap p = new ConfigPropertyMap(name);
         loadSettings(p);
     }
+    
+    /**
+     * Return a configuration property.
+     */
+    public String getProperty(String propertyName){
+        ConfigPropertyMap p = new ConfigPropertyMap(name);
+        return p.get(propertyName, null);
+    }
 
     @SuppressWarnings("unchecked")
     private <T> T createInstance(ConfigPropertyMap p, Class<T> type, String key) {
@@ -1208,10 +1216,10 @@ public class ServerConfig {
 
         ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
 
-        String[] split = classNames.split("[,;]");
+        String[] split = classNames.split("[ ,;]");
         for (int i = 0; i < split.length; i++) {
             String cn = split[i].trim();
-            if (cn.length() > 0) {
+            if (cn.length() > 0 && !"class".equalsIgnoreCase(cn)) {
                 try {
                     classes.add(Class.forName(cn));
                 } catch (ClassNotFoundException e) {

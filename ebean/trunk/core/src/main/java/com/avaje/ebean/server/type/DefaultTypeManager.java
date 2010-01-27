@@ -548,8 +548,8 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
         ArrayList<Class<?>> compoundTypes = bootupClasses.getCompoundTypes();
         for (int j = 0; j < compoundTypes.size(); j++) {
             
+            Class<?> type = compoundTypes.get(j);
             try {
-                Class<?> type = compoundTypes.get(j);
                 
                 Class<?>[] paramTypes = TypeReflectHelper.getParams(type, CompoundType.class);
                 if (paramTypes.length != 1) {
@@ -563,7 +563,8 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
                 createCompoundScalarDataReader(compoundTypeClass, compoundType,"");
                 
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                String msg = "Error initialising component "+type;
+                throw new RuntimeException(msg, e);
             } 
         }
     }

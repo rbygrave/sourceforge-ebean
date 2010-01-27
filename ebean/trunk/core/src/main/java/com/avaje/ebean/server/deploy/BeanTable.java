@@ -102,13 +102,16 @@ public class BeanTable {
 		
 		for (int i = 0; i < props.length; i++) {
 				
-    		String fk = foreignKeyPrefix+"_"+props[i].getDbColumn();
     		String lc = props[i].getDbColumn();
+    		String fk = lc;
+    		if (foreignKeyPrefix != null){
+    		    fk = foreignKeyPrefix+"_"+fk;
+    		}
     		
     		if (complexKey){
     			// check to see if we want prefixes by default with complex keys
-    			boolean usePrefix = GlobalProperties.getBoolean("ebean.prefixComplexKeys", false);
-    			if (!usePrefix){
+    			boolean usePrefixOnComplex = GlobalProperties.getBoolean("ebean.prefixComplexKeys", false);
+    			if (!usePrefixOnComplex){
 	    			// just to copy the column name rather than prefix with the foreignKeyPrefix. 
     				// I think that with complex keys this is the more common approach.
 	    			String msg = "On table["+baseTable+"] foreign key column ["+lc+"]";
