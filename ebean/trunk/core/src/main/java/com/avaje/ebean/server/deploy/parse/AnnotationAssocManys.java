@@ -32,6 +32,7 @@ import javax.persistence.OrderBy;
 import com.avaje.ebean.annotation.PrivateOwned;
 import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -142,9 +143,14 @@ public class AnnotationAssocManys extends AnnotationParser {
 
 			// use naming convention to define join (based on the bean name for this side of relationship)			
 			// A unidirectional OneToMany or OneToMany with no mappedBy property
-			String fkeyPrefix = factory.getNamingConvention()
-								.getColumnFromProperty(descriptor.getBeanType(), descriptor.getName());
+		    
+            NamingConvention nc = factory.getNamingConvention();
 
+            String fkeyPrefix = null;
+            if (nc.isUseForeignKeyPrefix()){
+                fkeyPrefix = nc.getColumnFromProperty(descriptor.getBeanType(), descriptor.getName());
+            }
+		     
 			// Use the owning bean table to define the join
 			BeanTable owningBeanTable = factory.getBeanTable(descriptor.getBeanType());
 			owningBeanTable.createJoinColumn(fkeyPrefix, prop.getTableJoin(), false);

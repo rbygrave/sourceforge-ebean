@@ -37,6 +37,7 @@ import javax.persistence.OneToOne;
 
 import com.avaje.ebean.annotation.EmbeddedColumns;
 import com.avaje.ebean.annotation.Where;
+import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.server.deploy.BeanDescriptorManager;
 import com.avaje.ebean.server.deploy.BeanTable;
 import com.avaje.ebean.server.deploy.TableJoin;
@@ -50,11 +51,11 @@ import com.avaje.ebean.validation.NotNull;
  */
 public class AnnotationAssocOnes extends AnnotationParser {
 
-	private final BeanDescriptorManager factory;
+    private final BeanDescriptorManager factory;
 
-	/**
-	 * Create with the deploy Info.
-	 */
+    /**
+     * Create with the deploy Info.
+     */
     public AnnotationAssocOnes(DeployBeanInfo<?> info, BeanDescriptorManager factory) {
         super(info);
         this.factory = factory;
@@ -65,15 +66,14 @@ public class AnnotationAssocOnes extends AnnotationParser {
      */
     public void parse() {
 
-    	Iterator<DeployBeanProperty> it = descriptor.propertiesAll();
-    	while (it.hasNext()) {
-    		DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssocOne<?>){
-				readAssocOne((DeployBeanPropertyAssocOne<?>)prop);
-			}
-		}
+        Iterator<DeployBeanProperty> it = descriptor.propertiesAll();
+        while (it.hasNext()) {
+            DeployBeanProperty prop = it.next();
+            if (prop instanceof DeployBeanPropertyAssocOne<?>) {
+                readAssocOne((DeployBeanPropertyAssocOne<?>) prop);
+            }
+        }
     }
-
 
     private void readAssocOne(DeployBeanPropertyAssocOne<?> prop) {
 
@@ -90,94 +90,93 @@ public class AnnotationAssocOnes extends AnnotationParser {
             readEmbedded(embedded, prop);
         }
         EmbeddedId emId = get(prop, EmbeddedId.class);
-        if (emId != null){
-        	prop.setEmbedded(true);
-        	prop.setId(true);
-        	prop.setNullable(false);
+        if (emId != null) {
+            prop.setEmbedded(true);
+            prop.setId(true);
+            prop.setNullable(false);
         }
         Column column = get(prop, Column.class);
-        if (column != null && !isEmpty(column.name())){
-        	// have this in for AssocOnes used on
-        	// Sql based beans...
-        	prop.setDbColumn(column.name());
+        if (column != null && !isEmpty(column.name())) {
+            // have this in for AssocOnes used on
+            // Sql based beans...
+            prop.setDbColumn(column.name());
         }
 
         // May as well check for Id. Makes sense to me.
         Id id = get(prop, Id.class);
-        if (id != null){
-        	prop.setEmbedded(true);
-        	prop.setId(true);
-        	prop.setNullable(false);
+        if (id != null) {
+            prop.setEmbedded(true);
+            prop.setId(true);
+            prop.setNullable(false);
         }
 
-		Where where = get(prop, Where.class);
-		if (where != null) {
-			// not expecting this to be used on assoc one properties
-			prop.setExtraWhere(where.clause());
-		}
+        Where where = get(prop, Where.class);
+        if (where != null) {
+            // not expecting this to be used on assoc one properties
+            prop.setExtraWhere(where.clause());
+        }
 
-		NotNull notNull = get(prop, NotNull.class);
-		if (notNull != null) {
-			prop.setNullable(false);
-			// overrides optional attribute of ManyToOne etc
-			prop.getTableJoin().setType(TableJoin.JOIN);
-		}
+        NotNull notNull = get(prop, NotNull.class);
+        if (notNull != null) {
+            prop.setNullable(false);
+            // overrides optional attribute of ManyToOne etc
+            prop.getTableJoin().setType(TableJoin.JOIN);
+        }
 
-		// check for manually defined joins
-		BeanTable beanTable = prop.getBeanTable();
+        // check for manually defined joins
+        BeanTable beanTable = prop.getBeanTable();
         JoinColumn joinColumn = get(prop, JoinColumn.class);
         if (joinColumn != null) {
-        	prop.getTableJoin().addJoinColumn(false, joinColumn, beanTable);
+            prop.getTableJoin().addJoinColumn(false, joinColumn, beanTable);
         }
 
         JoinColumns joinColumns = get(prop, JoinColumns.class);
         if (joinColumns != null) {
-        	prop.getTableJoin().addJoinColumn(false, joinColumns.value(), beanTable);
+            prop.getTableJoin().addJoinColumn(false, joinColumns.value(), beanTable);
         }
 
         JoinTable joinTable = get(prop, JoinTable.class);
         if (joinTable != null) {
-        	prop.getTableJoin().addJoinColumn(false, joinTable.joinColumns(), beanTable);
+            prop.getTableJoin().addJoinColumn(false, joinTable.joinColumns(), beanTable);
         }
 
         info.setBeanJoinType(prop, prop.isNullable());
 
-		if (!prop.getTableJoin().hasJoinColumns() && beanTable != null){
+        if (!prop.getTableJoin().hasJoinColumns() && beanTable != null) {
 
-			if (prop.getMappedBy() != null){
-				// the join is derived by reversing the join information
-				// from the mapped by property.
-				// Refer BeanDescriptorManager.readEntityRelationships()
+            if (prop.getMappedBy() != null) {
+                // the join is derived by reversing the join information
+                // from the mapped by property.
+                // Refer BeanDescriptorManager.readEntityRelationships()
 
-			} else {
-				// use naming convention to define join.
-				// not expecting a dbColumn to be defined but check anyway.
-				String fkeyPrefix = prop.getDbColumn();
-				if (fkeyPrefix == null){
-					// the common case. Define a decent foreign key column 
-					fkeyPrefix = factory.getNamingConvention()
-							.getColumnFromProperty(beanType, prop.getName());
-				}
-				
-				beanTable.createJoinColumn(fkeyPrefix, prop.getTableJoin(), true);
-			}
-		}
+            } else {
+                // use naming convention to define join.
+                NamingConvention nc = factory.getNamingConvention();
+                
+                String fkeyPrefix = null;
+                if (nc.isUseForeignKeyPrefix()){
+                    fkeyPrefix = nc.getColumnFromProperty(beanType, prop.getName());
+                }
+
+                beanTable.createJoinColumn(fkeyPrefix, prop.getTableJoin(), true);
+            }
+        }
     }
 
     private String errorMsgMissingBeanTable(Class<?> type, String from) {
-    	return "Error with association to ["+type+"] from ["+from+"]. Is "+type+" registered?";
+        return "Error with association to [" + type + "] from [" + from + "]. Is " + type + " registered?";
     }
 
     private void readManyToOne(ManyToOne propAnn, DeployBeanProperty prop) {
 
-    	DeployBeanPropertyAssocOne<?> beanProp = (DeployBeanPropertyAssocOne<?>) prop;
+        DeployBeanPropertyAssocOne<?> beanProp = (DeployBeanPropertyAssocOne<?>) prop;
 
         setCascadeTypes(propAnn.cascade(), beanProp.getCascadeInfo());
 
         BeanTable assoc = factory.getBeanTable(beanProp.getPropertyType());
-        if (assoc == null){
-        	String msg = errorMsgMissingBeanTable(beanProp.getPropertyType(), prop.getFullBeanName());
-        	throw new RuntimeException(msg);
+        if (assoc == null) {
+            String msg = errorMsgMissingBeanTable(beanProp.getPropertyType(), prop.getFullBeanName());
+            throw new RuntimeException(msg);
         }
         beanProp.setBeanTable(assoc);
         beanProp.setNullable(propAnn.optional());
@@ -186,20 +185,20 @@ public class AnnotationAssocOnes extends AnnotationParser {
 
     private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
-    	prop.setOneToOne(true);
+        prop.setOneToOne(true);
         prop.setNullable(propAnn.optional());
         prop.setFetchType(propAnn.fetch());
         prop.setMappedBy(propAnn.mappedBy());
-        if (!"".equals(propAnn.mappedBy())){
-        	prop.setOneToOneExported(true);
+        if (!"".equals(propAnn.mappedBy())) {
+            prop.setOneToOneExported(true);
         }
 
         setCascadeTypes(propAnn.cascade(), prop.getCascadeInfo());
 
         BeanTable assoc = factory.getBeanTable(prop.getPropertyType());
-        if (assoc == null){
-        	String msg = errorMsgMissingBeanTable(prop.getPropertyType(), prop.getFullBeanName());
-        	throw new RuntimeException(msg);
+        if (assoc == null) {
+            String msg = errorMsgMissingBeanTable(prop.getPropertyType(), prop.getFullBeanName());
+            throw new RuntimeException(msg);
         }
 
         prop.setBeanTable(assoc);
@@ -207,31 +206,31 @@ public class AnnotationAssocOnes extends AnnotationParser {
 
     private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
-    	prop.setEmbedded(true);
+        prop.setEmbedded(true);
 
-    	EmbeddedColumns columns = get(prop, EmbeddedColumns.class);
-    	if (columns != null){
+        EmbeddedColumns columns = get(prop, EmbeddedColumns.class);
+        if (columns != null) {
 
-    		// convert into a Map
-    		String propColumns = columns.columns();
-    		Map<String,String> propMap = StringHelper.delimitedToMap(propColumns, ",", "=");
+            // convert into a Map
+            String propColumns = columns.columns();
+            Map<String, String> propMap = StringHelper.delimitedToMap(propColumns, ",", "=");
 
-    		prop.getDeployEmbedded().putAll(propMap);
-    	}
+            prop.getDeployEmbedded().putAll(propMap);
+        }
 
-    	AttributeOverrides attrOverrides = get(prop, AttributeOverrides.class);
-    	if (attrOverrides != null){
-    		HashMap<String,String> propMap = new HashMap<String,String>();
-    		AttributeOverride[] aoArray = attrOverrides.value();
-    		for (int i = 0; i < aoArray.length; i++) {
-    			String propName = aoArray[i].name();
-    			String columnName = aoArray[i].column().name();
+        AttributeOverrides attrOverrides = get(prop, AttributeOverrides.class);
+        if (attrOverrides != null) {
+            HashMap<String, String> propMap = new HashMap<String, String>();
+            AttributeOverride[] aoArray = attrOverrides.value();
+            for (int i = 0; i < aoArray.length; i++) {
+                String propName = aoArray[i].name();
+                String columnName = aoArray[i].column().name();
 
-    			propMap.put(propName, columnName);
-			}
+                propMap.put(propName, columnName);
+            }
 
-    		prop.getDeployEmbedded().putAll(propMap);
-    	}
+            prop.getDeployEmbedded().putAll(propMap);
+        }
 
     }
 

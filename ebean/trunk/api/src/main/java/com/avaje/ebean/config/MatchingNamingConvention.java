@@ -50,7 +50,7 @@ public class MatchingNamingConvention extends AbstractNamingConvention {
 	}
 
 
-	public String getColumnFromProperty(Class<?> beanClass, String propertyName){//Field field) {
+	public String getColumnFromProperty(Class<?> beanClass, String propertyName){
 		return propertyName;
 	}
 
