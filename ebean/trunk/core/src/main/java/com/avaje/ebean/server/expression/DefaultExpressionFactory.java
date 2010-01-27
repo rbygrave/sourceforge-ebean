@@ -77,6 +77,14 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 		return new BetweenExpression(propertyName, value1, value2);
 	}
 	
+    /**
+     * Between - value between two given properties.
+     */
+    public Expression betweenProperties(String lowProperty, String highProperty, Object value) {
+
+        return new BetweenPropertyExpression(lowProperty, highProperty, value);
+    }
+	
 	/**
 	 * Greater Than - property greater than the given value.
 	 */
