@@ -66,6 +66,11 @@ public interface ExpressionFactory {
 	 */
 	public Expression between(String propertyName, Object value1, Object value2);
 	
+    /**
+     * Between - value between two given properties.
+     */
+    public Expression betweenProperties(String lowProperty, String highProperty, Object value);
+    
 	/**
 	 * Greater Than - property greater than the given value.
 	 */
