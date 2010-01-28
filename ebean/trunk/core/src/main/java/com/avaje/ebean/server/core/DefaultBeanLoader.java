@@ -28,7 +28,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.internal.LoadBeanContext;
@@ -41,6 +40,11 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.transaction.DefaultPersistenceContext;
 
+/**
+ * Helper to handle lazy loading and refreshing of beans.
+ * 
+ * @author rbygrave
+ */
 public class DefaultBeanLoader {
 
 	private final DebugLazyLoad debugLazyLoad;
@@ -180,30 +184,33 @@ public class DefaultBeanLoader {
 
 	private void loadManyInternal(Object parentBean, String propertyName, Transaction t, boolean refresh, ObjectGraphNode node, boolean onlyIds) {
 
-		if (parentBean instanceof EntityBean == false) {
-			throw new PersistenceException("Can only refresh a previously queried bean");			
+        boolean vanilla = (parentBean instanceof EntityBean == false);
+
+        EntityBeanIntercept ebi = null;
+        PersistenceContext pc = null;
+		
+		if (!vanilla){
+	        ebi = ((EntityBean)parentBean)._ebean_getIntercept();
+            pc = ebi.getPersistenceContext();
 		}
 
-		EntityBean parent = (EntityBean) parentBean;
-		EntityBeanIntercept ebi = parent._ebean_getIntercept();
-		Class<?> cls = parent.getClass();
-		
-		BeanDescriptor<?> parentDesc = server.getBeanDescriptor(cls);
-		BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) parentDesc.getBeanProperty(propertyName);
+        BeanDescriptor<?> parentDesc = server.getBeanDescriptor(parentBean.getClass());
+        BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) parentDesc.getBeanProperty(propertyName);
+
+        Object parentId = parentDesc.getId(parentBean);
+        
+		if (pc == null){
+            pc = new DefaultPersistenceContext();    
+            pc.put(parentId, parentBean);
+        }
 
 		if (refresh){
-			BeanCollection<?> emptyCollection = many.createEmpty();
-			many.setValue(parent, emptyCollection);
-			if (ebi.isSharedInstance()){
-				emptyCollection.setSharedInstance();
+		    // populate a new collection
+			Object emptyCollection = many.createEmpty(vanilla);
+			many.setValue(parentBean, emptyCollection);
+			if (ebi != null && ebi.isSharedInstance()){
+				((BeanCollection<?>)emptyCollection).setSharedInstance();
 			}
-		}
-		
-		PersistenceContext pc = ebi.getPersistenceContext();
-		if (pc == null){
-			pc = new DefaultPersistenceContext();
-			Object parentId = parentDesc.getId(parent);
-			pc.put(parentId, parent);
 		}
 
 		SpiQuery<?> query = (SpiQuery<?>)server.createQuery(parentDesc.getBeanType());
@@ -212,17 +219,8 @@ public class DefaultBeanLoader {
 			// so we can hook back to the root query
 			query.setParentNode(node);
 		}
-		
-		if (ebi.isSharedInstance()){
-			// lazy loading for a sharedInstance (bean in the cache)
-			query.setSharedInstance();
-		}
 
-		Object parentId = parentDesc.getId(parentBean);
 		String idProperty = parentDesc.getIdBinder().getIdProperty();
-
-		
-
 		query.select(idProperty);
 		
 		if (onlyIds){
@@ -235,13 +233,15 @@ public class DefaultBeanLoader {
 		query.where().idEq(parentId);
 		query.setMode(Mode.LAZYLOAD_MANY);
 		query.setPersistenceContext(pc);
+		query.setVanillaMode(vanilla);
 		
-		if (ebi.isSharedInstance()){
-			query.setSharedInstance();
-		} else if (ebi.isReadOnly()){
-			query.setReadOnly(true);
+		if (ebi != null){
+    		if (ebi.isSharedInstance()){
+    			query.setSharedInstance();
+    		} else if (ebi.isReadOnly()){
+    			query.setReadOnly(true);
+    		}
 		}
-		
 
 		server.findUnique(query, t);
 	}
@@ -329,67 +329,75 @@ public class DefaultBeanLoader {
 	}
 
 	public void refresh(Object bean) {
-		EntityBean eb = (EntityBean)bean;
-		refreshBeanInternal(eb._ebean_getIntercept(), SpiQuery.Mode.REFRESH_BEAN);
+		refreshBeanInternal(bean, SpiQuery.Mode.REFRESH_BEAN);
 	}
 	
 	public void loadBean(EntityBeanIntercept ebi) {
-		refreshBeanInternal(ebi, SpiQuery.Mode.LAZYLOAD_BEAN);
+		refreshBeanInternal(ebi.getOwner(), SpiQuery.Mode.LAZYLOAD_BEAN);
 	}
 
-	private void refreshBeanInternal(EntityBeanIntercept ebi, SpiQuery.Mode mode) {
+	private void refreshBeanInternal(Object bean, SpiQuery.Mode mode) {
 
-		NodeUsageCollector collector = null;
-		
-		EntityBean eb = ebi.getOwner();
-		BeanDescriptor<?> desc = server.getBeanDescriptor(eb.getClass());
-		Object id = desc.getId(eb);
+	    boolean vanilla = (bean instanceof EntityBean == false);
+	    
+	    EntityBeanIntercept ebi = null;
+	    PersistenceContext pc = null;
+	    
+	    if (!vanilla){
+	        ebi = ((EntityBean)bean)._ebean_getIntercept();
+	        pc = ebi.getPersistenceContext();
+	    }
 
-		if (desc.refreshFromCache(ebi, id)) {
-			return;
-		}
-		
-		PersistenceContext pc = ebi.getPersistenceContext();
-		if (pc == null){
-			// a reference with no existing persistenceContext
-			pc = new DefaultPersistenceContext();
-			ebi.setPersistenceContext(pc);
-			
-			pc.put(id, eb);
-		}
-		
-		// query the database 
-		SpiQuery<?> query = (SpiQuery<?>) server.createQuery(desc.getBeanType());
-		
-		// don't collect autoFetch usage profiling information
-		// as we just copy the data out of these fetched beans
-		// and put the data into the original bean
-		query.setUsageProfiling(false);
+        BeanDescriptor<?> desc = server.getBeanDescriptor(bean.getClass());
+        Object id = desc.getId(bean);
 
-		Object parentBean = ebi.getParentBean();
-		if (parentBean != null) {
-			// Special case for OneToOne 
-			BeanDescriptor<?> parentDesc = server.getBeanDescriptor(parentBean.getClass());
-			Object parentId = parentDesc.getId(parentBean);
-			pc.putIfAbsent(parentId, parentBean);
-		}
-		
-		query.setPersistenceContext(pc);
-		query.setLazyLoadProperty(ebi.getLazyLoadProperty());
+        if (pc == null) {
+            // a reference with no existing persistenceContext
+            pc = new DefaultPersistenceContext();
+            pc.put(id, bean);
+            if (ebi != null){
+                ebi.setPersistenceContext(pc);
+            }
+        }
 
-		if (collector != null) {
-			query.setParentNode(collector.getNode());
-		}
+        SpiQuery<?> query = (SpiQuery<?>) server.createQuery(desc.getBeanType());
+        
+        // don't collect autoFetch usage profiling information
+        // as we just copy the data out of these fetched beans
+        // and put the data into the original bean
+        query.setUsageProfiling(false);
+        query.setPersistenceContext(pc);
+        
+        if (ebi != null) {
+            if (desc.refreshFromCache(ebi, id)) {
+                return;
+            }
+
+            Object parentBean = ebi.getParentBean();
+            if (parentBean != null) {
+                // Special case for OneToOne
+                BeanDescriptor<?> parentDesc = server.getBeanDescriptor(parentBean.getClass());
+                Object parentId = parentDesc.getId(parentBean);
+                pc.putIfAbsent(parentId, parentBean);
+            }
+    
+            query.setLazyLoadProperty(ebi.getLazyLoadProperty());
+        }
+
 
 		// make sure the query doesn't use the cache and
 		// use readOnly in case we put the bean in the cache
 		query.setMode(mode);
 		query.setId(id);
 		query.setUseCache(false);
-		if (ebi.isSharedInstance()){
-			query.setSharedInstance();
-		} else if (ebi.isReadOnly()){
-			query.setReadOnly(true);
+		query.setVanillaMode(vanilla);
+		
+		if (ebi != null){
+    		if (ebi.isSharedInstance()){
+    			query.setSharedInstance();
+    		} else if (ebi.isReadOnly()){
+    			query.setReadOnly(true);
+    		}
 		}
 		
 		Object dbBean = query.findUnique();
@@ -398,7 +406,8 @@ public class DefaultBeanLoader {
 			String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + desc.getBeanType() + "]";
 			throw new PersistenceException(msg);
 		}
-		if (desc.calculateUseCache(null)){
+		
+		if (desc.calculateUseCache(null) && !vanilla){
 			// put a copy into the cache
         	Object cacheBean = desc.createCopy(dbBean);
             desc.cachePutObject(cacheBean);	

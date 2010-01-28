@@ -68,6 +68,7 @@ import com.avaje.ebean.server.el.ElComparatorProperty;
 import com.avaje.ebean.server.el.ElPropertyChainBuilder;
 import com.avaje.ebean.server.el.ElPropertyDeploy;
 import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.server.persist.DmlUtil;
 import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.query.SplitName;
 import com.avaje.ebean.server.querydefn.OrmQueryDetail;
@@ -1161,6 +1162,13 @@ public class BeanDescriptor<T> {
     }
 
     /**
+     * Create an EntityBean or "Vanilla" bean depending on the flag.
+     */
+    public Object createBean(boolean vanillaMode) {
+        return vanillaMode ? createVanillaBean() : createEntityBean() ;
+    }
+    
+    /**
      * Create a plain vanilla object.
      * <p>
      * Used for EmbeddedId Bean construction.
@@ -1189,32 +1197,35 @@ public class BeanDescriptor<T> {
      * Create a reference bean based on the id.
      */
     @SuppressWarnings("unchecked")
-    public T createReference(Object id, Object parent, ReferenceOptions options) {
+    public T createReference(boolean vanillaMode, Object id, Object parent, ReferenceOptions options) {
 
         try {
+            Object bean = createBean(vanillaMode);
 
-            EntityBean eb = (EntityBean) beanReflect.createEntityBean();
+            convertSetId(id, bean);
 
-            EntityBeanIntercept ebi = eb._ebean_getIntercept();
-            ebi.setBeanLoader(0, ebeanServer);
-
-            if (parent != null) {
-                // Special case for a OneToOne ... parent
-                // needs to be added to context prior to query
-                ebi.setParentBean(parent);
+            if (!vanillaMode){
+                EntityBean eb = (EntityBean) bean;
+    
+                EntityBeanIntercept ebi = eb._ebean_getIntercept();
+                ebi.setBeanLoader(0, ebeanServer);
+    
+                if (parent != null) {
+                    // Special case for a OneToOne ... parent
+                    // needs to be added to context prior to query
+                    ebi.setParentBean(parent);
+                }
+    
+                if (options != null) {
+                    ebi.setUseCache(options.isUseCache());
+                    ebi.setReadOnly(options.isReadOnly());
+                }
+                // Note: not creating proxies for many's...
+    
+                ebi.setReference();
             }
 
-            convertSetId(id, eb);
-
-            if (options != null) {
-                ebi.setUseCache(options.isUseCache());
-                ebi.setReadOnly(options.isReadOnly());
-            }
-            // Note: not creating proxies for many's...
-
-            ebi.setReference();
-
-            return (T) eb;
+            return (T) bean;
 
         } catch (Exception ex) {
             throw new PersistenceException(ex);
@@ -1988,6 +1999,14 @@ public class BeanDescriptor<T> {
         return propertyFirstVersion;
     }
 
+    public boolean isVanillaInsert(Object bean) {
+        if (propertyFirstVersion == null){
+            return true;
+        }
+        Object versionValue = propertyFirstVersion.getValue(bean);
+        return DmlUtil.isNullOrZero(versionValue);
+    }
+    
     /**
      * Returns 'Version' properties on this bean. These are 'Counter' or 'Update
      * Timestamp' type properties. Note version properties can also be on

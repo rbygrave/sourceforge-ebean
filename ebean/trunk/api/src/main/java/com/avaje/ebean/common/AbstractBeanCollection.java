@@ -61,7 +61,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	/**
 	 * The owning bean (used for lazy fetch).
 	 */
-	protected final EntityBean ownerBean;
+	protected final Object ownerBean;
 
 	/**
 	 * The name of this property in the owning bean (used for lazy fetch).
@@ -99,18 +99,20 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	/**
 	 * Used to create deferred fetch proxy.
 	 */	
-	public AbstractBeanCollection(BeanCollectionLoader loader, EntityBean ownerBean, String propertyName) {
+	public AbstractBeanCollection(BeanCollectionLoader loader, Object ownerBean, String propertyName) {
 		this.loader = loader;
 		this.ebeanServerName = loader.getName();
 		this.ownerBean = ownerBean;
 		this.propertyName = propertyName;
 		
-		EntityBeanIntercept ebi = ownerBean._ebean_getIntercept();
-		
-		if (ebi.isSharedInstance()){
-			setSharedInstance();
-		} else if (ebi.isReadOnly()){
-			setReadOnly(true);
+		if (ownerBean instanceof EntityBean ){
+    		EntityBeanIntercept ebi = ((EntityBean)ownerBean)._ebean_getIntercept();
+    		
+    		if (ebi.isSharedInstance()){
+    			setSharedInstance();
+    		} else if (ebi.isReadOnly()){
+    			setReadOnly(true);
+    		}
 		}
 	}
 

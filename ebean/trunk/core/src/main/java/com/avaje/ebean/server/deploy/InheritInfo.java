@@ -20,13 +20,11 @@
 package com.avaje.ebean.server.deploy;
 
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.parse.DeployInheritInfo;
@@ -165,8 +163,8 @@ public class InheritInfo {
 	/**
 	 * Create an EntityBean for this type.
 	 */
-	public EntityBean createEntityBean() {
-		return descriptor.createEntityBean();
+	public Object createBean(boolean vanillaMode) {
+		return descriptor.createBean(vanillaMode);
 	}
 	
 	/**

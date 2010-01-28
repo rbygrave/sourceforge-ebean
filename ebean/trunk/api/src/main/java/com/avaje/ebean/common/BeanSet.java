@@ -28,7 +28,6 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.SerializeControl;
 
 /**
@@ -55,7 +54,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
         this(new LinkedHashSet<E>());
     }
 
-	public BeanSet(BeanCollectionLoader loader, EntityBean ownerBean, String propertyName) {
+	public BeanSet(BeanCollectionLoader loader, Object ownerBean, String propertyName) {
 		super(loader, ownerBean, propertyName);
 	}
 	

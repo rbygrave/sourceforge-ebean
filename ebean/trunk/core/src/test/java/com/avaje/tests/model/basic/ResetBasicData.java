@@ -219,7 +219,7 @@ public class ResetBasicData {
 		order.setDetails(details);
 		
 		
-		order.add(new OrderShipment());
+		order.addShipment(new OrderShipment());
 		
 		Ebean.save(order);
 		return order;
@@ -236,7 +236,7 @@ public class ResetBasicData {
 		details.add(new OrderDetail(product1, 4, 10.50));
 		order.setDetails(details);
 		
-		order.add(new OrderShipment());
+		order.addShipment(new OrderShipment());
 
 		Ebean.save(order);
 	}
@@ -254,7 +254,7 @@ public class ResetBasicData {
 		details.add(new OrderDetail(product3, 40, 2.10));
 		order.setDetails(details);
 		
-		order.add(new OrderShipment());
+		order.addShipment(new OrderShipment());
 
 		Ebean.save(order);
 	}

@@ -103,7 +103,7 @@ public class Order implements Serializable {
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
 	@OrderBy("id asc, orderQty asc, cretime desc")
-    List<OrderDetail> details = new ArrayList<OrderDetail>();
+    List<OrderDetail> details;
     
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
     List<OrderShipment> shipments;
@@ -248,6 +248,14 @@ public class Order implements Serializable {
   	    this.details = details;
     }
 
+    public void addDetail(OrderDetail detail){
+        
+        if (details == null){
+            details = new ArrayList<OrderDetail>(); 
+        }
+        details.add(detail);        
+    }
+    
 	public List<OrderShipment> getShipments() {
 		return shipments;
 	}
@@ -256,12 +264,11 @@ public class Order implements Serializable {
 		this.shipments = shipments;
 	}
 	
-	public void add(OrderShipment shipment){
+	public void addShipment(OrderShipment shipment){
 		
 		if (shipments == null){
 			shipments = new ArrayList<OrderShipment>();	
 		}
-		
 		shipments.add(shipment);		
 	}
 }

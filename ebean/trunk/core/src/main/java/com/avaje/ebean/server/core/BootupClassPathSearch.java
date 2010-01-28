@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.server.util.ClassPathSearch;
 import com.avaje.ebean.server.util.ClassPathSearchFilter;
 
@@ -39,15 +38,17 @@ public class BootupClassPathSearch {
 	private final ClassLoader classLoader;
 
 	private final List<String> packages;
+    private final List<String> jars;
 	
 	private BootupClasses bootupClasses;
 
 	/**
 	 * Construct and search for interesting classes.
 	 */
-	public BootupClassPathSearch(ClassLoader classLoader, List<String> packages) {
+	public BootupClassPathSearch(ClassLoader classLoader, List<String> packages, List<String> jars) {
 		this.classLoader = (classLoader == null) ? getClass().getClassLoader() : classLoader;
 		this.packages = packages;
+		this.jars = jars;
 	}
 
 	public BootupClasses getBootupClasses() {
@@ -99,27 +100,17 @@ public class BootupClassPathSearch {
 		ClassPathSearchFilter filter = new ClassPathSearchFilter();
 		filter.addDefaultExcludePackages();
 
-		String searchPackages = GlobalProperties.get("ebean.search.packages", null);
-		if (searchPackages != null) {
-			String[] packageList = searchPackages.split(",");
-			for (int i = 0; i < packageList.length; i++) {
-				filter.includePackage(packageList[i].trim());
-			}
-		}
-		
-		if (packages != null){
-			for (String packageName : packages) {
-				filter.includePackage(packageName);
-			}
-		}
+        if (packages != null) {
+            for (String packageName : packages) {
+                filter.includePackage(packageName);
+            }
+        }
 
-		String searchJars = GlobalProperties.get("ebean.search.jars", null);
-		if (searchJars != null) {
-			String[] jarList = searchJars.split(",");
-			for (int i = 0; i < jarList.length; i++) {
-				filter.includeJar(jarList[i].trim());
-			}
-		}
+        if (jars != null) {
+            for (String jarName : jars) {
+                filter.includeJar(jarName);
+            }
+        }
 
 		return filter;
 	}

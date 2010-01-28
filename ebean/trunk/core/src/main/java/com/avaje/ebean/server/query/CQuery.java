@@ -114,18 +114,18 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	/**
 	 * The detail bean just loaded.
 	 */
-	Object loadedManyBean;
+	private Object loadedManyBean;
 
 	/**
 	 * The previous 'detail' collection remembered so that for manyToMany we can
 	 * turn on the modify listening.
 	 */
-	private BeanCollection<?> prevDetailCollection;
+    private Object prevDetailCollection;
 
 	/**
 	 * The current 'detail' collection being populated.
 	 */
-	private BeanCollection<?> currentDetailCollection;
+    private Object currentDetailCollection;
 
 	/**
 	 * The 'master' collection being populated.
@@ -144,7 +144,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final BeanDescriptor<T> desc;
 
 	private final SpiQuery<T> query;
-	
+		
 	private final OrmQueryDetail queryDetail;
 
 	private final QueryListener<T> queryListener;
@@ -255,7 +255,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	/**
 	 * Create the Sql select based on the request.
 	 */
-	public CQuery(OrmQueryRequest<T> request, CQueryPredicates predicates, CQueryPlan queryPlan) {
+	@SuppressWarnings("unchecked")
+    public CQuery(OrmQueryRequest<T> request, CQueryPredicates predicates, CQueryPlan queryPlan) {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
@@ -267,11 +268,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		
 		this.parentState = request.getParentState();
 		
-		autoFetchManager = query.getAutoFetchManager();
-		autoFetchProfiling = autoFetchManager != null;
-		autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;
+		this.autoFetchManager = query.getAutoFetchManager();
+		this.autoFetchProfiling = autoFetchManager != null;
+		this.autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;
 		
-		autoFetchManagerRef = autoFetchProfiling ? new WeakReference<NodeUsageListener>(autoFetchManager) : null;
+		this.autoFetchManagerRef = autoFetchProfiling ? new WeakReference<NodeUsageListener>(autoFetchManager) : null;
 		
 		// set the generated sql back to the query
 		// so its available to the user...
@@ -286,7 +287,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			// probably remove at some point - checks order
 			// of the duplicate master beans in a master/detail
 			// type query...
-			loadBeanOrderCheck = new HashSet<Object>(200);
+		    this.loadBeanOrderCheck = new HashSet<Object>(200);
 		}
 
 		this.sql = queryPlan.getSql();
@@ -296,7 +297,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.desc = request.getBeanDescriptor();
 		this.predicates = predicates;
 
-		queryListener = query.getListener();
+		this.queryListener = query.getListener();
 		if (queryListener == null) {
 			// normal, use the one from the transaction
 			this.persistenceContext = request.getPersistenceContext();
@@ -307,11 +308,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			this.persistenceContext = new DefaultPersistenceContext();
 		}
 
-		maxRowsLimit = query.getMaxRows() > 0 ? query.getMaxRows() : GLOBAL_ROW_LIMIT;
-		backgroundFetchAfter = query.getBackgroundFetchAfter() > 0 ? query.getBackgroundFetchAfter() : Integer.MAX_VALUE;
+		this.maxRowsLimit = query.getMaxRows() > 0 ? query.getMaxRows() : GLOBAL_ROW_LIMIT;
+		this.backgroundFetchAfter = query.getBackgroundFetchAfter() > 0 ? query.getBackgroundFetchAfter() : Integer.MAX_VALUE;
 
-		help = createHelp(request);
-		collection = help != null ? help.createEmpty() : null;
+		this.help = createHelp(request);
+		this.collection = (BeanCollection<T>)(help != null ? help.createEmpty(false) : null);
 	}
 
 	private BeanCollectionHelp<T> createHelp(OrmQueryRequest<T> request) {
@@ -335,7 +336,14 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		return queryMode;
 	}
 
-	/**
+    /**
+     * Return true if we want to return vanilla (not enhanced) objects.
+     */
+	public boolean isVanillaMode() {
+        return request.isVanillaMode();
+    }
+
+    /**
 	 * Return true if the query is to a lazy load for a bean in the cache.
 	 */
 	public boolean isSharedInstance() {
@@ -504,10 +512,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	@SuppressWarnings("unchecked")
 	public T getLoadedBean() {
 		if (manyIncluded) {
-			if (prevDetailCollection != null) {
-				prevDetailCollection.setModifyListening(manyProperty.getModifyListenMode());
-			} else {
-				currentDetailCollection.setModifyListening(manyProperty.getModifyListenMode());
+			if (prevDetailCollection instanceof BeanCollection<?>) {
+				((BeanCollection<?>)prevDetailCollection).setModifyListening(manyProperty.getModifyListenMode());
+				
+			} else if (currentDetailCollection instanceof BeanCollection<?>) {
+			    ((BeanCollection<?>)currentDetailCollection).setModifyListening(manyProperty.getModifyListenMode());
 			}
 		}
 
@@ -621,10 +630,10 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		prevDetailCollection = currentDetailCollection;
 		if (queryMode.equals(Mode.LAZYLOAD_MANY)){
 			// just populate the current collection
-			currentDetailCollection = (BeanCollection<?>)manyProperty.getValue(loadedBean);
+			currentDetailCollection = manyProperty.getValue(loadedBean);
 		} else {
 			// create a new collection to populate and assign to the bean
-			currentDetailCollection = manyProperty.createEmpty();
+			currentDetailCollection = manyProperty.createEmpty(request.isVanillaMode());
 			manyProperty.setValue(loadedBean, currentDetailCollection);
 		}
 		// the manyKey is always null for this case, just using default mapKey on the property
@@ -635,7 +644,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private void addToCurrentDetailCollection() {
 		if (loadedManyBean != null) {
 			currentDetailAdd.addBean(loadedManyBean);
-			//manyProperty.add(currentDetailCollection, loadedManyBean);
 		}
 	}
 

@@ -30,7 +30,6 @@ import java.util.ListIterator;
 
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.SerializeControl;
 
 /**
@@ -61,7 +60,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	/**
 	 * Used to create deferred fetch proxy.
 	 */	
-	public BeanList(BeanCollectionLoader loader, EntityBean ownerBean, String propertyName) {
+	public BeanList(BeanCollectionLoader loader, Object ownerBean, String propertyName) {
 		super(loader, ownerBean, propertyName);
 	}
 	

@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.config.ServerConfig;
 
 /**
  * Object relational query for finding a List, Set, Map or single entity bean.
@@ -1026,6 +1027,22 @@ public interface Query<T> extends Serializable {
 	 */
 	public Query<T> setDistinct(boolean isDistinct);
 
+
+	/**
+	 * Set this to true and the beans and collections returned
+	 * will be plain classes rather than Ebean generated dynamic subclasses etc.
+	 * <p>
+	 * This is *ONLY* relevant when you are not using enhancement (and using dynamic subclasses instead).
+	 * </p>
+	 * <p>
+	 * Alternatively you can globally set the mode using ebean.vanillaMode=true in ebean.properties 
+	 * or {@link ServerConfig#setVanillaMode(boolean)}.
+	 * </p>
+	 * @see ServerConfig#setVanillaMode(boolean)
+	 * @see ServerConfig#setVanillaRefMode(boolean)
+	 */
+	public Query<T> setVanillaMode(boolean vanillaMode);
+	    
 	/**
 	 * Return the first row value.
 	 */

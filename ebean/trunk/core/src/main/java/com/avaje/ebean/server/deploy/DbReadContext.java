@@ -17,7 +17,15 @@ import com.avaje.ebean.server.type.DataReader;
  */
 public interface DbReadContext {
 	
+    /**
+     * Return the DataReader.
+     */
     public DataReader getDataReader();
+    
+    /**
+     * Return true if vanilla objects should be returned.
+     */
+    public boolean isVanillaMode();
     
 	/**
 	 * Return true if this is a lazy loading query for a shared instance.

@@ -545,15 +545,17 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                     }
                 }
 
+                boolean vanillaMode = ctx.isVanillaMode();
+                
                 boolean createReference = false;
                 if (ref == null) {
                     // create a lazy loading reference/proxy
                     createReference = true;
                     if (targetInheritInfo != null) {
 						// for inheritance hierarchy create the correct type for this row...
-                        ref = rowDescriptor.createReference(id, parent, options);
+                        ref = rowDescriptor.createReference(vanillaMode, id, parent, options);
                     } else {
-                        ref = targetDescriptor.createReference(id, parent, options);
+                        ref = targetDescriptor.createReference(vanillaMode, id, parent, options);
                     }
                 }
 
@@ -566,11 +568,13 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                     createReference = false;
                 }
 
-                EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept();
-
-                if (createReference) {
-                    ebi.propagateParentState(parentState);
-                    ctx.register(name, ebi);
+                if (!vanillaMode){
+                    EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept();
+    
+                    if (createReference) {
+                        ebi.propagateParentState(parentState);
+                        ctx.register(name, ebi);
+                    }
                 }
 
                 return ref;
@@ -643,14 +647,18 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             if (existing != null) {
                 return existing;
             } 
+            boolean vanillaMode = ctx.isVanillaMode();
             Object parent = null;
-            Object ref = targetDescriptor.createReference(id, parent, null);
-            EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 
-            if (parentState != 0) {
-                ebi.propagateParentState(parentState);
+            Object ref = targetDescriptor.createReference(vanillaMode, id, parent, null);
+            
+            if (!vanillaMode){
+                EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 
+                if (parentState != 0) {
+                    ebi.propagateParentState(parentState);
+                }
+                persistCtx.put(id, ref);
+                ctx.register(name, ebi);
             }
-            persistCtx.put(id, ref);
-            ctx.register(name, ebi);
             return ref;
         }
 

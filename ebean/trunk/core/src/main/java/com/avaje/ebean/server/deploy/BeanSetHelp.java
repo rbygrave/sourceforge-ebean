@@ -12,7 +12,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.common.BeanSet;
 
 /**
@@ -44,23 +43,45 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		this.loader = loader;
 	}
 	
-	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc,String mapKey) {
-		BeanSet<?> beanSet = (BeanSet<?>)bc;
-		if (beanSet.getActualSet() == null){
-			beanSet.setActualSet(new LinkedHashSet<Object>());
-		}
-		return beanSet;
+	public BeanCollectionAdd getBeanCollectionAdd(Object bc,String mapKey) {
+	    if (bc instanceof BeanSet<?>){
+    		BeanSet<?> beanSet = (BeanSet<?>)bc;
+    		if (beanSet.getActualSet() == null){
+    			beanSet.setActualSet(new LinkedHashSet<Object>());
+    		}
+    		return beanSet;
+	    } else if (bc instanceof Set<?>) {
+	        return new VanillaAdd((Set<?>)bc);
+	        
+	    } else {
+	        throw new RuntimeException("Unhandled type "+bc);
+	    }
 	}
+	
+
+    @SuppressWarnings("unchecked")
+    static class VanillaAdd implements BeanCollectionAdd {
+
+        private final Set set;
+
+        private VanillaAdd(Set<?> set) {
+            this.set = set;
+        }
+
+        public void addBean(Object bean) {
+            set.add(bean);
+        }
+    }
 	
 	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
 	}
 
-	public BeanCollection<T> createEmpty() {
-		return new BeanSet<T>();
+	public Object createEmpty(boolean vanilla) {
+	    return vanilla ? new ArrayList<T>() : new BeanSet<T>();
 	}
 
-	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName) {
+	public BeanCollection<T> createReference(Object parentBean, String propertyName) {
 		
 		return new BeanSet<T>(loader, parentBean, propertyName);
 	}

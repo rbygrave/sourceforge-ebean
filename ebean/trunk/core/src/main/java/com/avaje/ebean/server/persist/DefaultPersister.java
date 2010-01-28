@@ -163,7 +163,6 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Force an Update using the given bean.
 	 */
-    @SuppressWarnings("unchecked")
     public void forceUpdate(Object bean, Transaction t) {
         
         if (bean == null) {
@@ -176,19 +175,25 @@ public final class DefaultPersister implements Persister {
             EntityBeanIntercept ebi = ((EntityBean)bean)._ebean_getIntercept();
             if (ebi.isDirty()) {
                 // normal update of an enhanced bean
-                PersistRequestBean<?> req = createPersistRequest(bean, t, null);
+                PersistRequestBean<?> req = createRequest(bean, t, null);
                 update(req);
                 return;
             }
             updateProps = ebi.getLoadedProps();
         }
         
-        BeanManager<?> mgr = getPersistDescriptor(bean);
+        BeanManager<?> mgr = getBeanManager(bean);
         if (mgr == null){
             String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it a registered entity?";
             throw new PersistenceException(msg);
         }
-
+        
+        forceUpdate(bean, t, null, mgr, updateProps);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void forceUpdate(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr, Set<String> updateProps) {
+        
         BeanDescriptor<?> descriptor = mgr.getBeanDescriptor();
         
         // determine concurrency mode based on version property not null
@@ -203,7 +208,8 @@ public final class DefaultPersister implements Persister {
             updateProps = null;
         }
         
-        PersistRequestBean<?> req = new PersistRequestBean(server, bean, null, mgr, (SpiTransaction)t, persistExecute, updateProps, mode);
+        // special constructor for forceUpdate mode ...
+        PersistRequestBean<?> req = new PersistRequestBean(server, bean, parentBean, mgr, (SpiTransaction)t, persistExecute, updateProps, mode);
 
         try {
             req.initTransIfRequired();
@@ -225,10 +231,15 @@ public final class DefaultPersister implements Persister {
 			throw new NullPointerException(Message.msg("bean.isnull"));
 		}
 	
-		PersistRequestBean<?> req = createPersistRequest(bean, t, parentBean);
+		if (bean instanceof EntityBean == false){
+		    saveVanillaRecurse(bean, t, parentBean);
+		    return;
+		}
+		
+		PersistRequestBean<?> req = createRequest(bean, t, parentBean);
 		try {
 			req.initTransIfRequired();
-			save(req);
+			saveEnhanced(req);
 			req.commitTransIfRequired();
 
 		} catch (RuntimeException ex) {
@@ -240,58 +251,63 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Insert or update the bean depending on PersistControl and the bean state.
 	 */
-	private void save(PersistRequestBean<?> request) {
+	private void saveEnhanced(PersistRequestBean<?> request) {
 
 		EntityBeanIntercept intercept = request.getEntityBeanIntercept();
-		if (intercept != null) {
-			if (intercept.isReference()) {
-				// its a reference...
-				if (request.isPersistCascade()) {
-					// save any associated List held beans
-					intercept.setLoaded();
-					saveAssocMany(false, request);
-					intercept.setReference();
-				}
-
-			} else {
-				if (intercept.isLoaded()) {
-					// Need to call setLoaded(false) to simulate insert
-					update(request);
-				} else {
-					insert(request);
-				}
+		
+		if (intercept.isReference()) {
+			// its a reference...
+			if (request.isPersistCascade()) {
+				// save any associated List held beans
+				intercept.setLoaded();
+				saveAssocMany(false, request);
+				intercept.setReference();
 			}
 
 		} else {
-			saveVanilla(request);
+			if (intercept.isLoaded()) {
+				// Need to call setLoaded(false) to simulate insert
+				update(request);
+			} else {
+				insert(request);
+			}
 		}
 	}
 
 	/**
 	 * Determine if this is an Insert or update for the 'vanilla' bean.
 	 */
-	private void saveVanilla(PersistRequestBean<?> request) {
+	private void saveVanillaRecurse(Object bean, Transaction t, Object parentBean) {
 
+	    BeanManager<?> mgr = getBeanManager(bean);
+	    if (mgr == null){
+	        throw new RuntimeException("No Mgr found for "+bean+" "+bean.getClass());
+	    }
 		// use the version property to determine insert or update
-		// if it is available on this bean
-
-		BeanDescriptor<?> desc = request.getBeanDescriptor();
-		Object bean = request.getBean();
-
-		BeanProperty versProp = desc.firstVersionProperty();
-		if (versProp == null) {
-			// no version property - assume insert 
-			insert(request);
-
+		if (mgr.getBeanDescriptor().isVanillaInsert(bean)) {
+		    saveVanillaInsert(bean, t, parentBean, mgr);
+		    
 		} else {
-			// use version property to determine insert or update
-			Object value = versProp.getValue(bean);
-			if (DmlUtil.isNullOrZero(value)) {
-				insert(request);
-			} else {
-				update(request);
-			}
+		    // update non-null properties (no partial object knowledge with vanilla bean)
+		    forceUpdate(bean, t, parentBean, mgr, null);
 		}
+	}
+	
+	/**
+	 * Perform insert on non-enhanced bean (effectively same as enhanced bean).
+	 */
+	private void saveVanillaInsert(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr) {
+        
+	    PersistRequestBean<?> req = createRequest(bean, t, parentBean, mgr);
+        try {
+            req.initTransIfRequired();
+            insert(req);
+            req.commitTransIfRequired();
+
+        } catch (RuntimeException ex) {
+            req.rollbackTransIfRequired();
+            throw ex;
+        }
 	}
 	
 	/**
@@ -351,7 +367,7 @@ public final class DefaultPersister implements Persister {
 	 */
 	public void delete(Object bean, Transaction t) {
 		
-		PersistRequestBean<?> req = createPersistRequest(bean, t, null);
+		PersistRequestBean<?> req = createRequest(bean, t, null);
 		if (req.isRegistered()){
 			// skip deleting bean. Used where cascade is on
 			// both sides of a relationship
@@ -939,21 +955,30 @@ public final class DefaultPersister implements Persister {
 		throw new PersistenceException(m);
 	}
 
-	/**
-	 * Create the BeanPersistRequest that wraps all the objects used to perform
-	 * an insert, update or delete.
-	 */
-	private <T> PersistRequestBean<T> createPersistRequest(T bean, Transaction t, Object parentBean) {
+    /**
+     * Create the Persist Request Object that wraps all the objects used to
+     * perform an insert, update or delete.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> PersistRequestBean<T> createRequest(T bean, Transaction t, Object parentBean) {
+        BeanManager<T> mgr = getBeanManager(bean);
+        if (mgr == null) {
+            String msg = "No BeanManager found for type [" + bean.getClass() + "]. Is it a registered entity?";
+            throw new PersistenceException(msg);
+        }
+        return (PersistRequestBean<T>)createRequest(bean, t, parentBean, mgr);
+    }
 
-		BeanManager<T> mgr = getPersistDescriptor(bean);
-		if (mgr == null){
-			String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it a registered entity?";
-			throw new PersistenceException(msg);
-		}
+    /**
+     * Create the Persist Request Object that wraps all the objects used to
+     * perform an insert, update or delete.
+     */
+    @SuppressWarnings("unchecked")
+    private PersistRequestBean<?> createRequest(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr) {
 
-		return new PersistRequestBean<T>(server, bean, parentBean, mgr, (SpiTransaction) t,persistExecute);
-	}
-
+        return new PersistRequestBean(server, bean, parentBean, mgr, (SpiTransaction) t, persistExecute);
+    }
+    
 	/**
 	 * Return the BeanDescriptor for a bean that is being persisted.
 	 * <p>
@@ -962,7 +987,7 @@ public final class DefaultPersister implements Persister {
 	 * </p>
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> BeanManager<T> getPersistDescriptor(T bean) {
+	private <T> BeanManager<T> getBeanManager(T bean) {
 		
 		return (BeanManager<T>) beanDescriptorManager.getBeanManager(bean.getClass());
 	}

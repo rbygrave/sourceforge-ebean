@@ -12,7 +12,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.common.BeanMap;
 
 /**
@@ -54,20 +53,28 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	
 
 	@SuppressWarnings("unchecked")
-	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc, String mapKey) {
+	public BeanCollectionAdd getBeanCollectionAdd(Object bc, String mapKey) {
 		
 		if(mapKey == null){
 			mapKey = many.getMapKey();
 		}
 		BeanProperty beanProperty = targetDescriptor.getBeanProperty(mapKey);
 		
-		BeanMap<Object, Object> bm = (BeanMap<Object, Object>)bc;
-		Map<Object, Object> actualMap = bm.getActualMap();
-		if (actualMap == null){
-			actualMap = new LinkedHashMap<Object, Object>();
-			bm.setActualMap(actualMap);
-		}
-		return new Adder(beanProperty, actualMap);
+		if (bc instanceof BeanMap<?,?>){
+    		BeanMap<Object, Object> bm = (BeanMap<Object, Object>)bc;
+    		Map<Object, Object> actualMap = bm.getActualMap();
+    		if (actualMap == null){
+    			actualMap = new LinkedHashMap<Object, Object>();
+    			bm.setActualMap(actualMap);
+    		}
+    		return new Adder(beanProperty, actualMap);
+		
+		} else if (bc instanceof Map<?,?>) {
+            return new Adder(beanProperty, (Map<Object, Object>)bc);		    
+		
+		} else {
+            throw new RuntimeException("Unhandled type "+bc);
+        }
 	}
 
 	static class Adder implements BeanCollectionAdd {
@@ -88,8 +95,8 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public BeanCollection<T> createEmpty() {
-		return new BeanMap();
+    public Object createEmpty(boolean vanilla) {
+		return vanilla ? new LinkedHashMap() : new BeanMap();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -102,7 +109,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName) {
+	public BeanCollection<T> createReference(Object parentBean, String propertyName) {
 
 		return new BeanMap(loader, parentBean, propertyName);
 	}

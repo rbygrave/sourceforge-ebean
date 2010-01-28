@@ -57,6 +57,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
 	private final SpiQuery<T> query;
 	
+	private final boolean vanillaMode;
+	
 	private final BeanFinder<T> finder;
 
 	private final SqlTreeAlias sqlTreeAlias;
@@ -98,6 +100,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;
 		this.query = query;
+		this.vanillaMode = query.isVanillaMode(server.isVanillaMode());
 		this.sqlTreeAlias = new SqlTreeAlias(beanDescriptor.getBaseTableAlias());
 		
 		this.parentState = determineParentState(query);
@@ -249,6 +252,10 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return query.getType() == null;
 	}
 	
+	public boolean isVanillaMode() {
+	    return vanillaMode;
+	}
+	
 	/**
 	 * Execute the query as findById.
 	 */
@@ -274,15 +281,18 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	@SuppressWarnings("unchecked")
 	public List<T> findList() {
 		query.setType(Query.Type.LIST);
-		return (List<T>) queryEngine.findMany(this);
+		BeanCollection<T> bc = queryEngine.findMany(this);
+		return (List<T>) (vanillaMode ? bc.getActualCollection() : bc);
 	}
 
 	/**
 	 * Execute the query as findSet.
 	 */
+	@SuppressWarnings("unchecked")
 	public Set<?> findSet() {
 		query.setType(Query.Type.SET);
-		return (Set<?>) queryEngine.findMany(this);
+		BeanCollection<T> bc =  queryEngine.findMany(this);
+		return (Set<T>) (vanillaMode ? bc.getActualCollection() : bc);
 	}
 
 	/**
@@ -300,8 +310,9 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 				throw new PersistenceException(msg);
 			}
 		}
-		return (Map<?, ?>) queryEngine.findMany(this);
-	}
+		BeanCollection<T> bc =  queryEngine.findMany(this);
+		return (Map<?, ?>) (vanillaMode ? bc.getActualCollection() : bc);
+    }
 	
 	
 	public Query.Type getQueryType() {

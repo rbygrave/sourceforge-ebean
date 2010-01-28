@@ -181,7 +181,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	/**
 	 * read the properties from the resultSet.
 	 */
-	public void load(DbReadContext ctx, EntityBean parentBean, int parentState) throws SQLException {
+	public void load(DbReadContext ctx, Object parentBean, int parentState) throws SQLException {
 
 		// bean already existing in the persistence context
 		Object contextBean = null;
@@ -189,7 +189,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		Class<?> localType;
 		BeanDescriptor<?> localDesc;
 		IdBinder localIdBinder;
-		EntityBean localBean;
+		Object localBean;
+		
 		if (inheritInfo != null){
 			InheritInfo localInfo = inheritInfo.readType(ctx);
 			if (localInfo == null){
@@ -199,7 +200,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				localType = null;
 				localDesc = desc;
 			} else {
-				localBean = localInfo.createEntityBean();
+				localBean = localInfo.createBean(ctx.isVanillaMode());
 				localType = localInfo.getType();
 				localIdBinder = localInfo.getIdBinder();
 				localDesc = localInfo.getBeanDescriptor();
@@ -208,7 +209,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		} else {
 			localType = null;
 			localDesc = desc;
-			localBean = desc.createEntityBean();
+			localBean = desc.createBean(ctx.isVanillaMode());
 			localIdBinder = idBinder;
 		}
 		
@@ -228,26 +229,29 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			} else {
 				// check the PersistenceContext to see if the bean already exists
 				contextBean = persistenceContext.putIfAbsent(id, localBean);
-				if (contextBean != null){
+				if (contextBean == null){
+                    // bean just added to the persistenceContext
+                    contextBean = localBean;                    				    
+				} else {
 					// bean already exists in persistenceContext
 					if (queryMode.isLoadContextBean()){
 						// refresh it anyway (lazy loading for example)
-						localBean = (EntityBean)contextBean;
-						localBean._ebean_getIntercept().setIntercepting(false);
+						localBean = contextBean;
+						if (localBean instanceof EntityBean){
+						    ((EntityBean)localBean)._ebean_getIntercept().setIntercepting(false);
+						}
 					} else {
+					    // ignore the DB data...
 						localBean = null;	
 					}
-				} else {
-					// bean just added to the persistenceContext
-					contextBean = localBean;					
 				}
 			}
 		} 
 
 		ctx.setCurrentPrefix(prefix, pathMap);
 		
-		if (localBean != null && parentState != 0){
-			localBean._ebean_getIntercept().propagateParentState(parentState);			
+		if (parentState != 0 && localBean instanceof EntityBean){
+			((EntityBean)localBean)._ebean_getIntercept().propagateParentState(parentState);			
 		} 
 		
 		SqlBeanLoad sqlBeanLoad = new SqlBeanLoad(ctx, localType, localBean, queryMode, parentState);
@@ -279,7 +283,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		boolean lazyLoadMany = false;
 		if (localBean == null && queryMode.equals(Mode.LAZYLOAD_MANY)){
 			// batch lazy load many into existing contextBean
-			localBean = (EntityBean)contextBean;
+			localBean = contextBean;
 			lazyLoadMany = true;
 		}
 		
@@ -296,29 +300,33 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		} else if (localBean != null) {
 			
 			ctx.setCurrentPrefix(prefix, pathMap);
+			if (!ctx.isVanillaMode()){
+			    // only create lazy loading collection proxies
+			    // when not in vanilla mode
+			    createListProxies(localDesc, ctx, localBean);
+			}
 			
-			createListProxies(localDesc, ctx, localBean);
-
 			localDesc.postLoad(localBean, includedProps);
 
-			EntityBeanIntercept ebi = localBean._ebean_getIntercept();
-			ebi.setPersistenceContext(persistenceContext);
-			ebi.setLoadedProps(includedProps);
-			ebi.setLoaded();
-			
-			if (partialObject){
-				ctx.register(null, ebi);					
-			}
-			
-			if (disableLazyLoad){
-				// bean does not have an Id or is SqlSelect based
-				ebi.setDisableLazyLoad(true);
-			} 
-			
-			if (ctx.isAutoFetchProfiling()){
-				// collect autofetch profiling for this bean...
-				ctx.profileBean(ebi, prefix);
-			}
+            if (localBean instanceof EntityBean) {
+                EntityBeanIntercept ebi = ((EntityBean)localBean)._ebean_getIntercept();
+                ebi.setPersistenceContext(persistenceContext);
+                ebi.setLoadedProps(includedProps);
+                ebi.setLoaded();
+
+                if (partialObject) {
+                    ctx.register(null, ebi);
+                }
+
+                if (disableLazyLoad) {
+                    // bean does not have an Id or is SqlSelect based
+                    ebi.setDisableLazyLoad(true);
+                }
+                if (ctx.isAutoFetchProfiling()) {
+                    // collect autofetch profiling for this bean...
+                    ctx.profileBean(ebi, prefix);
+                }
+            }
 			
 		}
 		if (parentBean != null && contextBean != null) {
@@ -342,7 +350,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 * Create lazy loading proxies for the Many's except for the one that is
 	 * included in the actual query.
 	 */
-	private void createListProxies(BeanDescriptor<?> localDesc, DbReadContext ctx, EntityBean localBean) { 
+	private void createListProxies(BeanDescriptor<?> localDesc, DbReadContext ctx, Object localBean) { 
 		
 		BeanPropertyAssocMany<?> fetchedMany = ctx.getManyProperty();
 
