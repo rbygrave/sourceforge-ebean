@@ -278,6 +278,8 @@ public class AnnotationFields extends AnnotationParser {
 	@SuppressWarnings("unchecked")
     private void setEncryption(DeployBeanProperty prop, Encrypted encrypted) {
 	    
+	    int dbLen = encrypted == null ? 0 : encrypted.dbLength();
+	    
 	    ScalarType<?> st = prop.getScalarType();
 	    if (byte[].class.equals(st.getType())){
 	        // Always using Java Encryptor rather than DB for encryption
@@ -297,7 +299,11 @@ public class AnnotationFields extends AnnotationParser {
 	            // Use DB functions to encrypt string content
 	            prop.setDbEncrypted(true);
 	            prop.setDbBind(dbEncrypt.getEncryptBindSql());
-	            prop.setDbEncryptedType(dbEncrypt.getEncryptDbType());          
+	            int dbType = prop.isLob() ? Types.BLOB : dbEncrypt.getEncryptDbType();
+	            prop.setDbEncryptedType(dbType);
+	            if (dbLen > 0){
+	                prop.setDbLength(dbLen);
+	            }
 	            return;
 	        }
 	    }
@@ -309,6 +315,9 @@ public class AnnotationFields extends AnnotationParser {
 	    
 	    prop.setScalarType(scw);
 	    prop.setLocalEncrypted(true);
+        if (dbLen > 0){
+            prop.setDbLength(dbLen);
+        }
 	}
 	
 	private final ScalarTypeBytesBlob scalarTypeBlob = new ScalarTypeBytesBlob();

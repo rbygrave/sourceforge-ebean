@@ -9,6 +9,8 @@ import org.junit.Assert;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.config.dbplatform.DbEncrypt;
+import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.tests.model.basic.EBasicEncrypt;
 
 public class TestEncrypt extends TestCase {
@@ -35,21 +37,6 @@ public class TestEncrypt extends TestCase {
         String desc1 = e1.getDescription();
         System.out.println("Decrypted: "+desc1);
         
-//        String s = "select TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), description))) as x"
-//            +" from e_basicenc where id = ? and ? = TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), description))) ";
-//        
-//        SqlRow r = Ebean.createSqlQuery(s)
-//            .setParameter(1, "simple")
-//            .setParameter(2, e1.getId())
-//            .setParameter(3, "testdesc")
-//            .setParameter(4, "simple")
-//            .findUnique();
-//        
-//        if (r == null){
-//            System.out.println("No row found.");
-//        }
-//        System.out.println("R: "+r.get("x"));
-        
         
         e1.setName("testmod");
         e1.setDescription("moddesc");
@@ -61,19 +48,29 @@ public class TestEncrypt extends TestCase {
         String desc2 = e2.getDescription();
         System.out.println("moddesc="+desc2);
         
-        List<EBasicEncrypt> list 
-            = Ebean.find(EBasicEncrypt.class)
-                .where().eq("description", "moddesc")
-                .findList();
-
-        Assert.assertEquals(1, list.size());
+        SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(null);
+        DbEncrypt dbEncrypt = server.getDatabasePlatform().getDbEncrypt();
         
-        list 
-            = Ebean.find(EBasicEncrypt.class)
-                .where().startsWith("description", "modde")
-                .findList();
+        if (dbEncrypt == null){
+            // can not test the where clause 
+            System.out.println("TestEncrypt: Not testing where clause as no DbEncrypt");
+            
+        } else {
         
-        Assert.assertEquals(1, list.size());
+            List<EBasicEncrypt> list 
+                = Ebean.find(EBasicEncrypt.class)
+                    .where().eq("description", "moddesc")
+                    .findList();
+    
+            Assert.assertEquals(1, list.size());
+            
+            list 
+                = Ebean.find(EBasicEncrypt.class)
+                    .where().startsWith("description", "modde")
+                    .findList();
+            
+            Assert.assertEquals(1, list.size());
+        }
     }
     
 }

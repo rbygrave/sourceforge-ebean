@@ -6,7 +6,8 @@ import com.avaje.ebean.config.EncryptKeyManager;
 public class BasicEncyptKeyManager implements EncryptKeyManager {
 
     public EncryptKey getEncryptKey(String tableName, String columnName) {
-        return new BasicEncryptKey("simple");
+        // Must be 16 Chars for Oracle function
+        return new BasicEncryptKey("simple0123456789");
     }
 
 }
