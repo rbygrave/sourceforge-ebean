@@ -56,6 +56,9 @@ public class DatabasePlatform {
 	/** The JDBC type to map booleans to (by default). */
 	protected int booleanDbType = Types.BOOLEAN;
 
+	/** The JDBC type to map Blob to. */
+    protected int blobDbType = Types.BLOB;
+	
 	/** For Oracle treat empty strings as null. */
 	protected boolean treatEmptyStringsAsNull;
 
@@ -164,6 +167,17 @@ public class DatabasePlatform {
 		return booleanDbType;
 	}
 
+    /**
+     * Return the data type that should be used for Blob.
+     * <p>
+     * This is typically Types.BLOB but for Postgres is Types.LONGVARBINARY for
+     * example.
+     * </p>
+     */
+	public int getBlobDbType() {
+	    return blobDbType;
+	}
+	
 	/**
 	 * Return true if empty strings should be treated as null.
 	 *

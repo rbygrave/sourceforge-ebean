@@ -38,6 +38,7 @@ public class PostgresPlatform extends DatabasePlatform {
     public PostgresPlatform() {
         super();
         this.name = "postgres";
+        this.blobDbType = Types.LONGVARBINARY;
         this.dbEncrypt = new PostgresDbEncrypt();
         
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
@@ -60,12 +61,12 @@ public class PostgresPlatform extends DatabasePlatform {
         dbTypeMap.put(Types.TINYINT, new DbType("smallint"));
         dbTypeMap.put(Types.DECIMAL, new DbType("decimal", 38));
 
-        dbTypeMap.put(Types.BINARY, new DbType("bytea"));
-        dbTypeMap.put(Types.VARBINARY, new DbType("bytea"));
+        dbTypeMap.put(Types.BINARY, new DbType("bytea", false));
+        dbTypeMap.put(Types.VARBINARY, new DbType("bytea", false));
         
-        dbTypeMap.put(Types.BLOB, new DbType("bytea"));
+        dbTypeMap.put(Types.BLOB, new DbType("bytea", false));
         dbTypeMap.put(Types.CLOB, new DbType("text"));
-        dbTypeMap.put(Types.LONGVARBINARY, new DbType("bytea"));
+        dbTypeMap.put(Types.LONGVARBINARY, new DbType("bytea", false));
         dbTypeMap.put(Types.LONGVARCHAR, new DbType("text"));
         
 		dbDdlSyntax.setDropTableCascade("cascade");

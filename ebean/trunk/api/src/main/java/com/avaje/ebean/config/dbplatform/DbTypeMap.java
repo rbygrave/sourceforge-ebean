@@ -38,9 +38,9 @@ public class DbTypeMap {
 		put(Types.BLOB, new DbType("blob"));
 		put(Types.CLOB, new DbType("clob"));
 		put(Types.LONGVARBINARY, new DbType("longvarbinary"));
-		put(Types.LONGVARCHAR, new DbType("lonvarcahr"));
-		put(Types.VARBINARY, new DbType("varbinary"));
-		put(Types.BINARY, new DbType("binary"));
+		put(Types.LONGVARCHAR, new DbType("lonvarchar"));
+		put(Types.VARBINARY, new DbType("varbinary",255));
+		put(Types.BINARY, new DbType("binary",255));
 
 		put(Types.DATE, new DbType("date"));
 		put(Types.TIME, new DbType("time"));
