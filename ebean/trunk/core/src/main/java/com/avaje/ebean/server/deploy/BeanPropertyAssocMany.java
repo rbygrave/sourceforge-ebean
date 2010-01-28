@@ -33,7 +33,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.server.core.DefaultSqlUpdate;
@@ -313,18 +312,18 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		return mapKey;
 	}
 		
-	public BeanCollection<?> createReference(EntityBean parentBean) {
+	public BeanCollection<?> createReference(Object parentBean) {
 
 		BeanCollection<?> ref = help.createReference(parentBean, name);
 		setValue(parentBean, ref);
 		return ref;
 	}
 
-	public BeanCollection<?> createEmpty() {
-		return help.createEmpty();
+	public Object createEmpty(boolean vanilla) {
+		return help.createEmpty(vanilla);
 	}
 	
-	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc, String mapKey) {
+	public BeanCollectionAdd getBeanCollectionAdd(Object bc, String mapKey) {
 		return help.getBeanCollectionAdd(bc, mapKey);		
 	}
 	

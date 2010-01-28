@@ -43,6 +43,11 @@ import com.avaje.ebean.server.transaction.RemoteTransactionEvent;
  */
 public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionLoader {
 
+    /**
+     * Return true if vanilla beans should be returned by queries by default.
+     */
+    public boolean isVanillaMode();
+    
 	/**
 	 * Return the DatabasePlatform for this server.
 	 */

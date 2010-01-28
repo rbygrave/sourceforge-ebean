@@ -41,7 +41,7 @@ import com.avaje.ebean.server.deploy.DbReadContext;
 public class SqlBeanLoad {
 
 	private final DbReadContext ctx;
-	private final EntityBean bean;
+	private final Object bean;
 	private final Class<?> type;
 	private final Object originalOldValues;
 	private final boolean isLazyLoad;
@@ -54,7 +54,7 @@ public class SqlBeanLoad {
 	
 	private final boolean rawSql;
 	
-	public SqlBeanLoad(DbReadContext ctx, Class<?> type, EntityBean bean, Mode queryMode, int parentState) {
+	public SqlBeanLoad(DbReadContext ctx, Class<?> type, Object bean, Mode queryMode, int parentState) {
 	
 		this.parentState = parentState;
 		this.ctx = ctx;
@@ -63,24 +63,24 @@ public class SqlBeanLoad {
 		this.isLazyLoad = queryMode.equals(Mode.LAZYLOAD_BEAN);
 		this.bean = bean;
 		
-		if (bean == null){
-			this.excludes = null;
-			this.originalOldValues = null;
-			this.setOriginalOldValues = false;
-		} else {
-			EntityBeanIntercept ebi = bean._ebean_getIntercept();
+        if (bean instanceof EntityBean) {
+            EntityBeanIntercept ebi = ((EntityBean) bean)._ebean_getIntercept();
 
-			this.excludes = isLazyLoad ? ebi.getLoadedProps() : null;
-			if (excludes != null){
-				// lazy loading a "Partial Object"... which already
-				// contains some properties and perhaps some oldValues
-				// and these will need to be maintained...
-				originalOldValues = ebi.getOldValues();
-			} else {
-				originalOldValues = null;
-			}
-			this.setOriginalOldValues = originalOldValues != null;	
-		}
+            this.excludes = isLazyLoad ? ebi.getLoadedProps() : null;
+            if (excludes != null) {
+                // lazy loading a "Partial Object"... which already
+                // contains some properties and perhaps some oldValues
+                // and these will need to be maintained...
+                originalOldValues = ebi.getOldValues();
+            } else {
+                originalOldValues = null;
+            }
+            this.setOriginalOldValues = originalOldValues != null;
+        } else {
+            this.excludes = null;
+            this.originalOldValues = null;
+            this.setOriginalOldValues = false;
+        }
 	}
 	
 	/**

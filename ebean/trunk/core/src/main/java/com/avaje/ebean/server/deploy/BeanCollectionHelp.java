@@ -9,7 +9,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 
 /**
  * Helper functions for performing tasks on Lists Sets or Maps.
@@ -27,12 +26,12 @@ public interface BeanCollectionHelp<T> {
 	 * For Map's this needs to take the mapKey.
 	 * </p>
 	 */
-	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc, String mapKey);
+	public BeanCollectionAdd getBeanCollectionAdd(Object bc, String mapKey);
 
 	/**
 	 * Create an empty collection of the correct type.
 	 */
-	public BeanCollection<T> createEmpty();
+	public Object createEmpty(boolean vanilla);
 
 	/**
 	 * Add a bean to the List Set or Map.
@@ -42,7 +41,7 @@ public interface BeanCollectionHelp<T> {
 	/**
 	 * Create a lazy loading proxy for a List Set or Map.
 	 */
-	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName);
+	public BeanCollection<T> createReference(Object parentBean, String propertyName);
 
 	/**
 	 * Validate the List Set or Map.

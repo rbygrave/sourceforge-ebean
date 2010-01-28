@@ -147,6 +147,13 @@ public final class DefaultServer implements SpiEbeanServer {
     private final boolean rollbackOnChecked;
 
     /**
+     * Set to true if vanilla objects should be returned by default from queries
+     * (with dynamic subclassing).
+     */
+    private final boolean vanillaMode;
+    private final boolean vanillaRefMode;
+
+    /**
      * Handles the save, delete, updateSql CallableSql.
      */
     private final Persister persister;
@@ -188,6 +195,9 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     public DefaultServer(InternalConfiguration config, ServerCacheManager cache) {
 
+        this.vanillaMode = config.getServerConfig().isVanillaMode();
+        this.vanillaRefMode = config.getServerConfig().isVanillaRefMode();
+        
         this.serverCacheManager = cache;
         this.pstmtBatch = config.getPstmtBatch();
         this.databasePlatform = config.getDatabasePlatform();
@@ -216,6 +226,10 @@ public final class DefaultServer implements SpiEbeanServer {
         this.beanLoader = new DefaultBeanLoader(this, config.getDebugLazyLoad());
 
         ShutdownManager.register(new Shutdown());
+    }
+    
+    public boolean isVanillaMode() {
+        return vanillaMode;
     }
 
     public int getLazyLoadBatchSize() {
@@ -550,7 +564,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
             } else {
                 // use the default reference options
-                ref = desc.createReference(id, null, desc.getReferenceOptions());
+                ref = desc.createReference(vanillaRefMode, id, null, desc.getReferenceOptions());
             }
 
             if (ctx != null) {

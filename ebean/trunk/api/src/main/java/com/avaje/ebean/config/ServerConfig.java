@@ -24,7 +24,9 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.AdminLogging.StmtLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
@@ -62,6 +64,10 @@ import com.avaje.ebean.event.BeanQueryAdapter;
  * 
  * // add any classes found in the app.data package
  * c.addPackage(&quot;app.data&quot;);
+ * 
+ * // add the names of Jars that contain entities
+ * c.addJar(&quot;myJarContainingEntities.jar&quot;);
+ * c.addJar(&quot;someOtherJarContainingEntities.jar&quot;);
  * 
  * // register as the 'Default' server
  * c.setDefaultServer(true);
@@ -103,8 +109,17 @@ public class ServerConfig {
      */
     private List<Class<?>> classes = new ArrayList<Class<?>>();
 
-    /** The packages. */
+    /** 
+     * The packages that are searched for interesting classes.
+     * Only used when classes is empty/not explicitly specified. 
+     */
     private List<String> packages = new ArrayList<String>();
+
+    /**
+     * The names of Jar files that are searched for entities and other interesting classes.
+     * Only used when classes is empty/not explicitly specified.
+     */
+    private List<String> searchJars = new ArrayList<String>();
 
     /** The autofetch config. */
     private AutofetchConfig autofetchConfig = new AutofetchConfig();
@@ -116,7 +131,7 @@ public class ServerConfig {
     private DatabasePlatform databasePlatform;
 
     /**
-     * For DB's using sequences this is the number of sequence values prefetched
+     * For DB's using sequences this is the number of sequence values prefetched.
      */
     private int databaseSequenceBatchSize = 20;
 
@@ -197,10 +212,23 @@ public class ServerConfig {
     private EncryptKeyManager encryptKeyManager;
 
     private EncryptDeployManager encryptDeployManager;
-    
+
     private Encryptor bytesEncryptor;
 
     private DbEncrypt dbEncrypt;
+
+    /**
+     * Set this to true when by default vanilla objects should be returned from
+     * queries rather than dynamic subclasses etc. Only relevant when not using
+     * enhancement (using dynamic subclasses).
+     */
+    private boolean vanillaMode;
+    
+    /**
+     * Controls whether the {@link EbeanServer#getReference(Class, Object)} method 
+     * returns vanilla objects or not.
+     */
+    private boolean vanillaRefMode;
 
     /**
      * Return the name of the EbeanServer.
@@ -367,6 +395,57 @@ public class ServerConfig {
      */
     public void setExternalTransactionManager(ExternalTransactionManager externalTransactionManager) {
         this.externalTransactionManager = externalTransactionManager;
+    }
+
+    /**
+     * Return true if by default queries should return 'vanilla' objects rather
+     * than dynamic subclasses.
+     * <p>
+     * This setting is not relevant when using enhancement (only when using
+     * dynamic subclasses).
+     * </p>
+     */
+    public boolean isVanillaMode() {
+        return vanillaMode;
+    }
+
+    /**
+     * Set this to true if by default queries should return 'vanilla' objects
+     * rather than dynamic subclasses.
+     * <p>
+     * This setting is not relevant when using enhancement (only when using
+     * dynamic subclasses).
+     * </p>
+     * <p>
+     * Alternatively you can set this on a specific query via
+     * {@link Query#setVanillaMode(boolean)}.
+     * </p>
+     * 
+     * @see #setVanillaRefMode(boolean)
+     * @see Query#setVanillaMode(boolean)
+     */
+    public void setVanillaMode(boolean vanillaMode) {
+        this.vanillaMode = vanillaMode;
+    }
+
+    
+    /**
+     * Returns true if {@link EbeanServer#getReference(Class, Object)} should
+     * return vanilla objects or not.
+     * 
+     * @see #setVanillaMode(boolean)
+     * @see Query#setVanillaMode(boolean)
+     */
+    public boolean isVanillaRefMode() {
+        return vanillaRefMode;
+    }
+
+    /**
+     * Set this to true if you want {@link EbeanServer#getReference(Class, Object)} to
+     * return vanilla objects.
+     */
+    public void setVanillaRefMode(boolean vanillaRefMode) {
+        this.vanillaRefMode = vanillaRefMode;
     }
 
     /**
@@ -971,6 +1050,40 @@ public class ServerConfig {
         this.packages = packages;
     }
 
+
+    /**
+     * Add the name of a Jar to search for entities via class path search.
+     * <p>
+     * This is only used if classes have not been explicitly specified.
+     * </p>
+     */
+    public void addJar(String jarName) {
+        if (searchJars == null) {
+            searchJars = new ArrayList<String>();
+        }
+        searchJars.add(jarName);
+    }
+
+    /**
+     * Return packages to search for entities via class path search.
+     * <p>
+     * This is only used if classes have not been explicitly specified.
+     * </p>
+     */
+    public List<String> getJars() {
+        return searchJars;
+    }
+
+    /**
+     * Set the names of Jars to search for entities via class path search.
+     * <p>
+     * This is only used if classes have not been explicitly specified.
+     * </p>
+     */
+    public void setJars(List<String> searchJars) {
+        this.searchJars = searchJars;
+    }
+    
     /**
      * Set the list of classes (entities, listeners, scalarTypes etc) that
      * should be used for this server.
@@ -1116,15 +1229,22 @@ public class ServerConfig {
         ConfigPropertyMap p = new ConfigPropertyMap(name);
         loadSettings(p);
     }
-    
+
+    /**
+     * Return a configuration property using a default value.
+     */
+    public String getProperty(String propertyName, String defaultValue) {
+        ConfigPropertyMap p = new ConfigPropertyMap(name);
+        return p.get(propertyName, defaultValue);
+    }
+
     /**
      * Return a configuration property.
      */
-    public String getProperty(String propertyName){
-        ConfigPropertyMap p = new ConfigPropertyMap(name);
-        return p.get(propertyName, null);
+    public String getProperty(String propertyName) {
+        return getProperty(propertyName, null);
     }
-
+    
     @SuppressWarnings("unchecked")
     private <T> T createInstance(ConfigPropertyMap p, Class<T> type, String key) {
 
@@ -1160,9 +1280,20 @@ public class ServerConfig {
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
         encryptDeployManager = createInstance(p, EncryptDeployManager.class, "encryptDeployManager");
         bytesEncryptor = createInstance(p, Encryptor.class, "bytesEncryptor");
-        
         dbEncrypt = createInstance(p, DbEncrypt.class, "dbEncrypt");
 
+        String jarsProp = p.get("search.jars", p.get("jars", null));
+        if (jarsProp != null){
+            searchJars = getSearchJarsPackages(jarsProp);
+        }
+        
+        String packagesProp = p.get("search.packages", p.get("packages", null));
+        if (packages != null){
+            packages = getSearchJarsPackages(packagesProp);
+        }
+        
+        vanillaMode = p.getBoolean("vanillaMode", false);
+        vanillaRefMode = p.getBoolean("vanillaRefMode", false);
         updateChangesOnly = p.getBoolean("updateChangesOnly", true);
 
         boolean batchMode = p.getBoolean("batch.mode", false);
@@ -1180,8 +1311,8 @@ public class ServerConfig {
         ddlGenerate = p.getBoolean("ddl.generate", false);
         ddlRun = p.getBoolean("ddl.run", false);
 
-        transactionLogging = p.getEnum(TxLogLevel.class, "logging", TxLogLevel.ALL);// "log.level"
-        transactionLogSharing = p.getEnum(TxLogSharing.class, "logsharing", TxLogSharing.EXPLICIT);// "log.sharing"
+        transactionLogging = p.getEnum(TxLogLevel.class, "logging", TxLogLevel.ALL);
+        transactionLogSharing = p.getEnum(TxLogSharing.class, "logsharing", TxLogSharing.EXPLICIT);
 
         useJuliTransactionLogger = p.getBoolean("useJuliTransactionLogger", false);
 
@@ -1230,4 +1361,19 @@ public class ServerConfig {
         }
         return classes;
     }
+    
+    private List<String> getSearchJarsPackages(String searchPackages) {
+
+        List<String> hitList = new ArrayList<String>();
+
+        if (searchPackages != null) {
+
+            String[] entries = searchPackages.split("[ ,;]");
+            for (int i = 0; i < entries.length; i++) {
+                hitList.add(entries[i].trim());
+            }
+        }
+        return hitList;
+    }
+
 }

@@ -20,19 +20,22 @@ public final class EnhanceBeanReflect implements BeanReflect {
 
 	private static final Object[] constuctorArgs = new Object[0];
 
-	final Class<?> clazz;
-	final EntityBean entityBean;
-	final Constructor<?> constructor;
+	private final Class<?> clazz;
+	private final EntityBean entityBean;
+	private final Constructor<?> constructor;
+	private final Constructor<?> vanillaConstructor;
 
-	public EnhanceBeanReflect(Class<?> clazz) {
+	public EnhanceBeanReflect(Class<?> vanillaType, Class<?> clazz) {
 		try {
 			this.clazz = clazz;
 			if (Modifier.isAbstract(clazz.getModifiers())) {
 				this.entityBean = null;
 				this.constructor = null;
+				this.vanillaConstructor = null;
 			} else {
 				this.entityBean = (EntityBean) clazz.newInstance();
 				this.constructor = defaultConstructor(clazz);
+				this.vanillaConstructor = defaultConstructor(vanillaType);
 			}
 		} catch (InstantiationException e) {
 			throw new PersistenceException(e);
@@ -59,7 +62,11 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	}
 
 	public Object createVanillaBean() {
-		return createEntityBean();
+        try {
+            return vanillaConstructor.newInstance(constuctorArgs);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 	}
 
 	private int getFieldIndex(String fieldName) {
@@ -88,8 +95,8 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	}
 
 	static final class Getter implements BeanReflectGetter {
-		final int fieldIndex;
-		final EntityBean entityBean;
+	    private final int fieldIndex;
+	    private final EntityBean entityBean;
 
 		Getter(int fieldIndex, EntityBean entityBean) {
 			this.fieldIndex = fieldIndex;
@@ -106,8 +113,8 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	}
 
 	static final class Setter implements BeanReflectSetter {
-		final int fieldIndex;
-		final EntityBean entityBean;
+		private final int fieldIndex;
+		private final EntityBean entityBean;
 
 		Setter(int fieldIndex, EntityBean entityBean) {
 			this.fieldIndex = fieldIndex;

@@ -10,7 +10,6 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.common.BeanList;
 
 /**
@@ -41,20 +40,42 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 	}
 
 	
-	public BeanCollectionAdd getBeanCollectionAdd(BeanCollection<?> bc,String mapKey) {
+	public BeanCollectionAdd getBeanCollectionAdd(Object bc, String mapKey) {
 		
-		BeanList<?> bl = (BeanList<?>)bc;
-		if (bl.getActualList() == null){
-			bl.setActualList(new ArrayList<Object>());
-		}
-		return bl;
+	    if (bc instanceof BeanList<?>){
+	    
+    		BeanList<?> bl = (BeanList<?>)bc;
+    		if (bl.getActualList() == null){
+    			bl.setActualList(new ArrayList<Object>());
+    		}
+    		return bl;
+	    } else if (bc instanceof List<?>){
+	        return new VanillaAdd((List<?>)bc);
+	        
+	    } else {
+	        throw new RuntimeException("Unhandled type "+bc);
+	    }
 	}
 
-	public BeanCollection<T> createEmpty() {
-		return new BeanList<T>();
+    @SuppressWarnings("unchecked")
+    static class VanillaAdd implements BeanCollectionAdd {
+
+        private final List list;
+
+        private VanillaAdd(List<?> list) {
+            this.list = list;
+        }
+
+        public void addBean(Object bean) {
+            list.add(bean);
+        }
+    }
+	
+	public Object createEmpty(boolean vanilla) {
+		return vanilla ? new ArrayList<T>() : new BeanList<T>();
 	}
 
-	public BeanCollection<T> createReference(EntityBean parentBean,String propertyName) {
+	public BeanCollection<T> createReference(Object parentBean, String propertyName) {
 		
 		return new BeanList<T>(loader, parentBean, propertyName);
 	}

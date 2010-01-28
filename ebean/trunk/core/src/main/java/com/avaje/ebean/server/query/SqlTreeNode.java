@@ -2,7 +2,6 @@ package com.avaje.ebean.server.query;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.DbReadContext;
 import com.avaje.ebean.server.deploy.DbSqlContext;
 
@@ -48,6 +47,6 @@ public interface SqlTreeNode {
 	 * </p>
 	 * 
 	 */
-	public void load(DbReadContext ctx, EntityBean parentBean, int parentState) throws SQLException;
+	public void load(DbReadContext ctx, Object parentBean, int parentState) throws SQLException;
 
 }

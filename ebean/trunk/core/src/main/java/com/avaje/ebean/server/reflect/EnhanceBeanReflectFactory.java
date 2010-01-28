@@ -7,7 +7,7 @@ package com.avaje.ebean.server.reflect;
 public final class EnhanceBeanReflectFactory implements BeanReflectFactory {
 
 	public BeanReflect create(Class<?> vanillaType, Class<?> entityBeanType) {
-		return new EnhanceBeanReflect(entityBeanType);
+		return new EnhanceBeanReflect(vanillaType, entityBeanType);
 	}
 
 	

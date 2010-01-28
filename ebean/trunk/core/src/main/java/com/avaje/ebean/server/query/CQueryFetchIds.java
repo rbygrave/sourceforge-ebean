@@ -272,6 +272,10 @@ public class CQueryFetchIds {
             return dataReader;
         }
 
+        public boolean isVanillaMode() {
+            return false;
+        }
+
         public boolean isSharedInstance() {
 			return false;
 		}

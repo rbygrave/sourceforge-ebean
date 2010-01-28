@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.DbReadContext;
@@ -113,7 +112,7 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 	/**
 	 * Does nothing.
 	 */
-	public void load(DbReadContext ctx, EntityBean parentBean, int parentState) throws SQLException {
+	public void load(DbReadContext ctx, Object parentBean, int parentState) throws SQLException {
 	}
 
 	

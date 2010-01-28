@@ -80,13 +80,30 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 
 		this.clusterManager = createClusterManager();
 		this.jndiDataSourceFactory = new JndiDataSourceLookup();
-		this.bootupClassSearch = new BootupClassPathSearch(null, null);
+		
+	    List<String> packages = getSearchJarsPackages(GlobalProperties.get("ebean.search.packages", null));
+	    List<String> jars = getSearchJarsPackages(GlobalProperties.get("ebean.search.jars", null));
+        
+		this.bootupClassSearch = new BootupClassPathSearch(null, packages, jars);
 		
 		// register so that we can shutdown any Ebean wide
 		// resources such as clustering
 		ShutdownManager.registerServerFactory(this);
 	}
 
+    private List<String> getSearchJarsPackages(String searchPackages) {
+
+        List<String> hitList = new ArrayList<String>();
+
+        if (searchPackages != null) {
+
+            String[] entries = searchPackages.split("[ ,;]");
+            for (int i = 0; i < entries.length; i++) {
+                hitList.add(entries[i].trim());
+            }
+        }
+        return hitList;
+    }
 
 	public void shutdown() {
 		clusterManager.shutdown();	
@@ -270,10 +287,12 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			return new BootupClasses(serverConfig.getClasses());		
 		}
 
+        List<String> jars = serverConfig.getJars();
 		List<String> packages = serverConfig.getPackages();
-		if (packages != null && packages.size() > 0){
+		
+		if ((packages != null && !packages.isEmpty()) || (jars != null && !jars.isEmpty())){
 			// filter by package name
-			BootupClassPathSearch search = new BootupClassPathSearch(null, packages);
+			BootupClassPathSearch search = new BootupClassPathSearch(null, packages, jars);
 			return search.getBootupClasses();
 		}
 
