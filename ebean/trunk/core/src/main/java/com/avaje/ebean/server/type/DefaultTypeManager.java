@@ -94,9 +94,11 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 
 	private final ScalarType<?> byteType = new ScalarTypeByte();
 
-	private final ScalarType<?> byteArrayType = new ScalarTypeBytesBinary();
+	private final ScalarType<?> binaryType = new ScalarTypeBytesBinary();
 
 	private final ScalarType<?> blobType = new ScalarTypeBytesBlob();
+
+    private final ScalarType<?> varbinaryType = new ScalarTypeBytesVarbinary();
 
 	private final ScalarType<?> longVarbinaryType = new ScalarTypeBytesLongVarbinary();
 
@@ -142,6 +144,9 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 */
 	public DefaultTypeManager(ServerConfig config, BootupClasses bootupClasses) {
 		
+	    
+	    int blobType = config == null ? Types.BLOB : config.getDatabasePlatform().getBlobDbType();
+	    
 	    this.checkImmutable = new CheckImmutable(this);
 	    this.reflectScalarBuilder = new ReflectionBasedTypeBuilder(this);
 	    
@@ -151,7 +156,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 
         this.extraTypeFactory = new DefaultTypeFactory(config);
 		
-		initialiseStandard();		
+		initialiseStandard(blobType);		
 		initialiseJodaTypes();
 		
 		if (bootupClasses != null){
@@ -298,7 +303,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 		// check for Clob, LongVarchar etc first...
 		// the reason being that String maps to multiple jdbc types
 		// varchar, clob, longVarchar.
-		ScalarType<?> scalarType = getLobTypes(type, jdbcType);
+		ScalarType<?> scalarType = getLobTypes(jdbcType);
 		if (scalarType != null) {
 			// it is a specific Lob type...
 			return (ScalarType<T>)scalarType;
@@ -336,24 +341,9 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * for the specific Lob types first before looking for a matching type.
 	 * </p>
 	 */
-	private ScalarType<?> getLobTypes(Class<?> type, int jdbcType) {
+	private ScalarType<?> getLobTypes(int jdbcType) {
 
-		switch (jdbcType) {
-		case Types.LONGVARCHAR:
-			return longVarcharType;
-
-		case Types.CLOB:
-			return clobType;
-
-		case Types.LONGVARBINARY:
-			return longVarbinaryType;
-
-		case Types.BLOB:
-			return blobType;
-
-		default:
-			return null;
-		}
+	    return getScalarType(jdbcType);
 	}
 
 	/**
@@ -650,7 +640,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * types plus some other common types such as java.util.Date and
 	 * java.util.Calendar.
 	 */
-	protected void initialiseStandard() {
+	protected void initialiseStandard(int platformBlobType) {
 
 		ScalarType<?> utilDateType = extraTypeFactory.createUtilDate();
 		typeMap.put(java.util.Date.class, utilDateType);
@@ -691,11 +681,15 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 		nativeMap.put(Types.CLOB, clobType);
 
 		// Binary type
-		typeMap.put(byte[].class, byteArrayType);
-		nativeMap.put(Types.BINARY, byteArrayType);
-		nativeMap.put(Types.VARBINARY, byteArrayType);
-		nativeMap.put(Types.LONGVARBINARY, byteArrayType);
-		nativeMap.put(Types.BLOB, byteArrayType);
+		typeMap.put(byte[].class, varbinaryType);
+		nativeMap.put(Types.BINARY, binaryType);
+		nativeMap.put(Types.VARBINARY, varbinaryType);
+		nativeMap.put(Types.LONGVARBINARY, longVarbinaryType);
+		
+		// for Postgres Blobs handled by LongVarbinary ...
+		ScalarType<?> pltBlob = platformBlobType == Types.LONGVARBINARY ? longVarbinaryType : blobType;
+		nativeMap.put(Types.BLOB, pltBlob);
+		
 
 		// Number types
 		typeMap.put(Byte.class, byteType);
