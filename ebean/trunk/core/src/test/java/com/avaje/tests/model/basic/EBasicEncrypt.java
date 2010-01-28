@@ -17,7 +17,8 @@ public class EBasicEncrypt {
     
     String name;
     
-    @Encrypted
+    //@Lob
+    @Encrypted(dbLength=80)
     String description;
     
     //@Version

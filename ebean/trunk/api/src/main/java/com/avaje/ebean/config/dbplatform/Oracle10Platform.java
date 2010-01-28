@@ -34,6 +34,7 @@ public class Oracle10Platform extends DatabasePlatform {
     public Oracle10Platform() {
         super();
         this.name = "oracle";
+        //this.dbEncrypt = new Oracle10DbEncrypt();
         
         this.sqlLimiter = new RownumSqlLimiter();
 
@@ -57,14 +58,14 @@ public class Oracle10Platform extends DatabasePlatform {
 		dbTypeMap.put(Types.DOUBLE, new DbType("number", 19, 4));
 		dbTypeMap.put(Types.SMALLINT, new DbType("number", 5));
 		dbTypeMap.put(Types.TINYINT, new DbType("number", 3));
-		dbTypeMap.put(Types.DECIMAL, new DbType("NUMBER", 38));
+		dbTypeMap.put(Types.DECIMAL, new DbType("number", 38));
 		
 		dbTypeMap.put(Types.VARCHAR, new DbType("varchar2", 255));
 
 		dbTypeMap.put(Types.LONGVARBINARY, new DbType("blob"));
 		dbTypeMap.put(Types.LONGVARCHAR, new DbType("clob"));
-		dbTypeMap.put(Types.VARBINARY, new DbType("blob"));
-        dbTypeMap.put(Types.BINARY, new DbType("blob"));
+		dbTypeMap.put(Types.VARBINARY, new DbType("raw",255));
+        dbTypeMap.put(Types.BINARY, new DbType("raw",255));
 
 		dbTypeMap.put(Types.TIME, new DbType("timestamp"));
 

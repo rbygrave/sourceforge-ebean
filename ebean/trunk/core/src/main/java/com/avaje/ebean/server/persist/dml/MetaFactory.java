@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.persist.dmlbind.Bindable;
@@ -62,7 +63,8 @@ public class MetaFactory {
 		this.emptyStringAsNull = dbPlatform.isTreatEmptyStringsAsNull();
 		
 		// to bind encryption data before or after the encryption key
-		boolean bindEncryptDataFirst = dbPlatform.getDbEncrypt().isBindEncryptDataFirst();
+		DbEncrypt dbEncrypt = dbPlatform.getDbEncrypt();
+		boolean bindEncryptDataFirst = dbEncrypt == null ? true : dbEncrypt.isBindEncryptDataFirst();
 		
 		this.baseFact = new FactoryBaseProperties(bindEncryptDataFirst);
 		this.embeddedFact = new FactoryEmbedded(bindEncryptDataFirst);
