@@ -61,9 +61,7 @@ import com.avaje.ebean.server.type.CtCompoundType;
 import com.avaje.ebean.server.type.DataEncryptSupport;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeBytesBase;
-import com.avaje.ebean.server.type.ScalarTypeBytesBlob;
 import com.avaje.ebean.server.type.ScalarTypeBytesEncrypted;
-import com.avaje.ebean.server.type.ScalarTypeBytesVarbinary;
 import com.avaje.ebean.server.type.ScalarTypeEncryptedWrapper;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.validation.Length;
@@ -275,7 +273,6 @@ public class AnnotationFields extends AnnotationParser {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
     private void setEncryption(DeployBeanProperty prop, Encrypted encrypted) {
 	    
 	    int dbLen = encrypted == null ? 0 : encrypted.dbLength();
@@ -308,21 +305,28 @@ public class AnnotationFields extends AnnotationParser {
 	        }
 	    }
 	    
-	    // Use Java Encryptor wrapping the logical scalar type 
-        DataEncryptSupport support = createDataEncryptSupport(prop);
-        ScalarTypeBytesBase byteType = prop.isLob() ? scalarTypeBlob : scalarTypeVarbinary;
-	    ScalarTypeEncryptedWrapper<?> scw = new ScalarTypeEncryptedWrapper(st, byteType, support);
-	    
-	    prop.setScalarType(scw);
+	    prop.setScalarType(createScalarType(prop, st));
 	    prop.setLocalEncrypted(true);
         if (dbLen > 0){
             prop.setDbLength(dbLen);
         }
 	}
 	
-	private final ScalarTypeBytesBlob scalarTypeBlob = new ScalarTypeBytesBlob();
-	private final ScalarTypeBytesVarbinary scalarTypeVarbinary = new ScalarTypeBytesVarbinary();
+    @SuppressWarnings("unchecked")
+    private ScalarTypeEncryptedWrapper<?> createScalarType(DeployBeanProperty prop, ScalarType<?> st ) {
+        
+        // Use Java Encryptor wrapping the logical scalar type 
+        DataEncryptSupport support = createDataEncryptSupport(prop);
+        ScalarTypeBytesBase byteType = getDbEncryptType(prop);
+        
+        return new ScalarTypeEncryptedWrapper(st, byteType, support);
+	}
 	
+	private ScalarTypeBytesBase getDbEncryptType(DeployBeanProperty prop) {
+	    int dbType = prop.isLob() ? Types.BLOB : Types.VARBINARY;
+	    return (ScalarTypeBytesBase)util.getTypeManager().getScalarType(dbType);
+	}
+		
 	private DataEncryptSupport createDataEncryptSupport(DeployBeanProperty prop) {
 	    
 	    String table = info.getDescriptor().getBaseTable();
