@@ -24,11 +24,9 @@ public class TestQueryWhereBetween extends TestCase {
             .order().asc("orderDate")
             .order().desc("id");
 
-        int rc = query.findList().size();
+        query.findList();
 
         String sql = query.getGeneratedSql();
         Assert.assertTrue(sql.indexOf("between o.cretime and o.updtime") > -1);
-
-        Assert.assertTrue(rc == 0);
     }
 }
