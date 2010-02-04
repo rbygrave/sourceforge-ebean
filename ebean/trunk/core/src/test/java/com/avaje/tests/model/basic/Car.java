@@ -18,6 +18,7 @@ public class Car extends Vehicle {
 
 	private String driver;
 
+	
 	@ManyToOne
 	TruckRef carRef;
 	

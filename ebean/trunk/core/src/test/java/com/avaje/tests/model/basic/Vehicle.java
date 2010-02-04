@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
+import javax.persistence.Transient;
 
 @Entity
 @Inheritance
@@ -16,6 +17,10 @@ public abstract class Vehicle extends BasicDomain {
 	private String licenseNumber;
 
 	private Date registrationDate; 
+	
+	//@Transient
+	private transient String testTransient;
+
 	
 	public String getLicenseNumber() {
 		return licenseNumber;
@@ -32,5 +37,12 @@ public abstract class Vehicle extends BasicDomain {
 	public void setRegistrationDate(Date registrationDate) {
 		this.registrationDate = registrationDate;
 	}
+	
+	public String getTestTransient() {
+		return testTransient;
+	}
 
+	public void setTestTransient(String testTransient) {
+		this.testTransient = testTransient;
+	}
 }
