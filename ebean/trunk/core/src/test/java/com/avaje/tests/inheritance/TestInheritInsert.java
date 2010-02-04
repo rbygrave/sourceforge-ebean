@@ -3,6 +3,7 @@ package com.avaje.tests.inheritance;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.avaje.tests.model.basic.Car;
+import com.avaje.tests.model.basic.Vehicle;
 import com.avaje.tests.model.basic.VehicleDriver;
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -30,6 +31,8 @@ public class TestInheritInsert extends TestCase {
 		Car car = new Car();
 		car.setLicenseNumber("MARIOS_CAR_LICENSE");
 		Ebean.save(car);
+		
+		
 
 		VehicleDriver driver = new VehicleDriver();
 		driver.setName("Mario");
@@ -47,5 +50,12 @@ public class TestInheritInsert extends TestCase {
 		Assert.assertEquals("Mario", drivers.get(0).getName());
 		Assert.assertEquals("MARIOS_CAR_LICENSE", drivers.get(0).getVehicle()
 				.getLicenseNumber());
+
+		Vehicle car2 = Ebean.find(Vehicle.class, car.getId());
+		
+		// FIXME~EMG - NoSuchMethodError
+		car2.setLicenseNumber("test");
+		Ebean.save(car);
+
 	}
 }
