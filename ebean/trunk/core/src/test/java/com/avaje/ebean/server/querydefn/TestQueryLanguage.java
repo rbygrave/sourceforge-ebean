@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.server.expression.DefaultExpressionFactory;
 import com.avaje.tests.model.basic.Order;
 
 
@@ -85,7 +86,7 @@ public class TestQueryLanguage extends TestCase {
 
         OrmQueryDetailParser p = new OrmQueryDetailParser(q);
         p.parse();
-        DefaultOrmQuery<Order> qry = new DefaultOrmQuery<Order>(Order.class, server);
+        DefaultOrmQuery<Order> qry = new DefaultOrmQuery<Order>(Order.class, server, new DefaultExpressionFactory());
         p.assign(qry);
 
         return qry;

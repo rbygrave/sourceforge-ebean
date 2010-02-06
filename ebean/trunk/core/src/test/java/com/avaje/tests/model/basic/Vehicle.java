@@ -5,44 +5,42 @@ import java.util.Date;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
-import javax.persistence.Transient;
 
 @Entity
 @Inheritance
-@DiscriminatorColumn(length=3)
+@DiscriminatorColumn(length = 3)
 public abstract class Vehicle extends BasicDomain {
 
-	private static final long serialVersionUID = -3060920549470002030L;
-	
-	private String licenseNumber;
+    private static final long serialVersionUID = -3060920549470002030L;
 
-	private Date registrationDate; 
-	
-	//@Transient
-	private transient String testTransient;
+    private String licenseNumber;
 
-	
-	public String getLicenseNumber() {
-		return licenseNumber;
-	}
+    private Date registrationDate;
 
-	public void setLicenseNumber(String licenseNumber) {
-		this.licenseNumber = licenseNumber;
-	}
+    // @Transient
+    private transient String testTransient;
 
-	public Date getRegistrationDate() {
-		return registrationDate;
-	}
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
 
-	public void setRegistrationDate(Date registrationDate) {
-		this.registrationDate = registrationDate;
-	}
-	
-	public String getTestTransient() {
-		return testTransient;
-	}
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
 
-	public void setTestTransient(String testTransient) {
-		this.testTransient = testTransient;
-	}
+    public Date getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(Date registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
+    public String getTestTransient() {
+        return testTransient;
+    }
+
+    public void setTestTransient(String testTransient) {
+        this.testTransient = testTransient;
+    }
 }
