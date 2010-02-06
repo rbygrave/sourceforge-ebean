@@ -3,26 +3,45 @@ package com.avaje.ebean.util;
 import java.util.ArrayList;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
-import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
+import com.avaje.ebean.server.deploy.DeployParser;
 
 public class DefaultExpressionRequest implements SpiExpressionRequest {
 
-	private final OrmQueryRequest<?> queryRequest;
+	private final SpiOrmQueryRequest<?> queryRequest;
 	
 	private final StringBuilder sb = new StringBuilder();
 	
 	private final ArrayList<Object> bindValues = new ArrayList<Object>();
 	
-	public DefaultExpressionRequest(OrmQueryRequest<?> queryRequest) {
+	private final DeployParser deployParser;
+	
+	private int paramIndex;
+	
+	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, DeployParser deployParser) {
 		this.queryRequest = queryRequest;
+		this.deployParser = deployParser;
 	}
+	
+	public String parseDeploy(String logicalProp) {
+        
+        String s = deployParser.getDeployWord(logicalProp);
+        return s == null ? logicalProp : s;
+    }
+
+    /**
+	 * Increments the parameter index and returns that value.
+	 */
+    public int nextParameter() {
+        return ++paramIndex;
+    }
 
     public BeanDescriptor<?> getBeanDescriptor(){
 		return queryRequest.getBeanDescriptor();
 	}
 	
-	public OrmQueryRequest<?> getQueryRequest() {
+	public SpiOrmQueryRequest<?> getQueryRequest() {
 		return queryRequest;
 	}
 

@@ -27,16 +27,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.DbType;
+import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
 import com.avaje.ebean.server.core.InternString;
+import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.server.ldap.LdapPersistenceException;
 import com.avaje.ebean.server.lib.util.StringHelper;
 import com.avaje.ebean.server.query.SqlBeanLoad;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
@@ -227,6 +233,11 @@ public class BeanProperty implements ElPropertyValue {
     @SuppressWarnings("unchecked")
     final ScalarType scalarType;
 
+    /**
+     * For LDAP attributes that have custom conversion.
+     */
+    final LdapAttributeAdapter ldapAttributeAdapter;
+    
     final Validator[] validators;
 
     final boolean hasLocalValidators;
@@ -312,13 +323,15 @@ public class BeanProperty implements ElPropertyValue {
         this.defaultValue = deploy.getDefaultValue();
         this.dbType = deploy.getDbType();
         this.scalarType = deploy.getScalarType();
+        this.ldapAttributeAdapter = deploy.getLdapAttributeAdapter();
         this.lob = isLobType(dbType);
         this.propertyType = deploy.getPropertyType();
         this.field = deploy.getField();
         this.validators = deploy.getValidators();
         this.hasLocalValidators = (validators.length > 0);
 
-        this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder());
+        EntityType et = descriptor == null ? null : descriptor.getEntityType();
+        this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder(et));
     }
 
     private String tableAliasIntern(BeanDescriptor<?> descriptor, String s) {
@@ -381,6 +394,7 @@ public class BeanProperty implements ElPropertyValue {
         this.defaultValue = source.getDefaultValue();
         this.dbType = source.getDbType();
         this.scalarType = source.scalarType;
+        this.ldapAttributeAdapter = source.ldapAttributeAdapter;
         this.lob = isLobType(dbType);
         this.propertyType = source.getPropertyType();
         this.field = source.getField();
@@ -665,6 +679,35 @@ public class BeanProperty implements ElPropertyValue {
         return local;
     }
 
+    public Attribute createAttribute(Object bean) {
+        Object v = getValue(bean);
+        if (v == null){
+        	return null;
+        }
+        if (ldapAttributeAdapter != null){
+            return ldapAttributeAdapter.createAttribute(v);
+        }
+        Object ldapValue = scalarType.toJdbcType(v);
+        return new BasicAttribute(dbColumn, ldapValue);
+    }
+    
+    public void setAttributeValue(Object bean, Attribute attr) {
+        try {
+            if (attr != null){
+                Object beanValue;
+                if (ldapAttributeAdapter != null){
+                    beanValue = ldapAttributeAdapter.readAttribute(attr);
+                } else {
+                    beanValue = scalarType.toBeanType(attr.get());
+                }
+                
+                setValue(bean, beanValue);
+            }
+        } catch (NamingException e) {
+            throw new LdapPersistenceException(e);
+        }
+    }
+    
     /**
      * Set the value of the property without interception or
      * PropertyChangeSupport.

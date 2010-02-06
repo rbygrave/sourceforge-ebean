@@ -39,6 +39,7 @@ import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
+import com.avaje.ebean.server.deploy.meta.DeployBeanPropertySimpleCollection;
 import com.avaje.ebean.server.type.CtCompoundType;
 import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.TypeManager;
@@ -259,6 +260,17 @@ public class DeployCreateProperties {
     }
     
     @SuppressWarnings("unchecked")
+    private DeployBeanProperty createManyType(DeployBeanDescriptor<?> desc, Class<?> targetType, Query.Type queryType) {
+
+        ScalarType<?> scalarType = typeManager.getScalarType(targetType);
+        if (scalarType != null) {
+            return new DeployBeanPropertySimpleCollection(desc, targetType, scalarType, queryType);
+        }
+        //TODO: Handle Collection of CompoundType and Embedded Type
+        return new DeployBeanPropertyAssocMany(desc, targetType, queryType);
+    }
+    
+    @SuppressWarnings("unchecked")
     private DeployBeanProperty createProp(DeployBeanDescriptor<?> desc, Field field) {
         
         Class<?> propertyType = field.getType();
@@ -272,7 +284,7 @@ public class DeployCreateProperties {
             if (targetType == null){
                 logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
             }
-            return new DeployBeanPropertyAssocMany(desc, targetType, queryType);
+            return createManyType(desc, targetType, queryType);
         } 
         
         if (propertyType.isEnum() || propertyType.isPrimitive()){
@@ -310,9 +322,7 @@ public class DeployCreateProperties {
             } catch (Exception e){
                 logger.log(Level.SEVERE, "Error with "+desc+" field:"+field.getName(), e);
             }
-            
         }
-        
         
         return new DeployBeanPropertyAssocOne(desc, propertyType);
     }

@@ -46,6 +46,12 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 		this.beanProperty = targetDescriptor.getBeanProperty(mapKey);
 	}
 	
+	/**
+	 * Return an iterator of the values.
+	 */
+    public Iterator<?> getIterator(Object collection) {
+        return ((Map<?,?>) collection).values().iterator();
+    }
 	
 	public void setLoader(BeanCollectionLoader loader){
 		this.loader = loader;

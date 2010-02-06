@@ -34,9 +34,27 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
     private transient ExpressionFactory expr;
 
-    public DefaultExpressionList(Query<T> query) {
+    private final String exprLang;
+    private final String listAndStart;
+    private final String listAndEnd;
+    private final String listAndJoin;
+
+    public DefaultExpressionList(Query<T> query, String exprLang) {
         this.query = query;
         this.expr = query.getExpressionFactory();
+        this.exprLang = exprLang;
+        
+        if ("ldap".equals(exprLang)){
+            // Language is LDAP
+            listAndStart = "(&";
+            listAndEnd = ")";
+            listAndJoin = "";
+            
+        } else {
+            listAndStart = "";
+            listAndEnd = "";
+            listAndJoin = " and ";
+        }
     }
 
     /**
@@ -57,7 +75,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
      * </p>
      */
     public DefaultExpressionList<T> copy(Query<T> query) {
-        DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query);
+        DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query, exprLang);
         copy.list.addAll(list);
         return copy;
     }
@@ -172,16 +190,18 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     public boolean isEmpty() {
         return list.isEmpty();
     }
-
+    
     public String buildSql(SpiExpressionRequest request) {
 
+        request.append(listAndStart);
         for (int i = 0, size = list.size(); i < size; i++) {
             SpiExpression expression = list.get(i);
             if (i > 0) {
-                request.append(" and ");
+                request.append(listAndJoin);
             }
             expression.addSql(request);
         }
+        request.append(listAndEnd);
         return request.getSql();
     }
 

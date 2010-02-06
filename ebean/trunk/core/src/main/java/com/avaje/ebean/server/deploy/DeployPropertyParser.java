@@ -27,15 +27,22 @@ public final class DeployPropertyParser extends DeployParser {
 		return includes;
 	}
 
-	public String convertWord() {
-		
-		ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(word);
-		if (elProp == null){
-			return word;
-		} else {
-			addIncludes(elProp.getElPrefix());
-			return elProp.getElPlaceholder();
-		}
+	
+	
+	@Override
+    public String getDeployWord(String expression) {
+        ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(expression);
+        if (elProp == null){
+            return null;
+        } else {
+            addIncludes(elProp.getElPrefix());
+            return elProp.getElPlaceholder();
+        }
+    }
+
+    public String convertWord() {
+		String r = getDeployWord(word);
+		return r == null ? word : r;
 	}
 
 	private void addIncludes(String prefix) {

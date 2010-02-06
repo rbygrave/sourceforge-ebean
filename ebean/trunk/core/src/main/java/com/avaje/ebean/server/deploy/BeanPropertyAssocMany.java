@@ -46,7 +46,6 @@ import com.avaje.ebean.server.query.SqlBeanLoad;
  */
 public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
-
 	/**
 	 * Join for manyToMany intersection table.
 	 */
@@ -56,18 +55,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 * For ManyToMany this is the Inverse join used to build reference queries.
 	 */
 	final TableJoin inverseJoin;
-
-	/**
-	 * Derived list of exported property and matching foreignKey
-	 */
-	ExportedProperty[] exportedProperties;
-
-	/**
-	 * Property on the 'child' bean that links back to the 'master'.
-	 */
-	BeanProperty childMasterProperty;
-
-	boolean embeddedExportedProperties;
 
 	/**
 	 * Flag to indicate that this is a unidirectional relationship.
@@ -81,8 +68,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	final String fetchOrderBy;
 
-	BeanProperty mapKeyProperty;
-
 	final String mapKey;
 
 	/**
@@ -92,11 +77,24 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	final String serverName;
 
-	BeanCollectionHelp<T> help;
+	final ModifyListenMode modifyListenMode;
+
+    BeanProperty mapKeyProperty;
+    /**
+     * Derived list of exported property and matching foreignKey
+     */
+    ExportedProperty[] exportedProperties;
+
+    /**
+     * Property on the 'child' bean that links back to the 'master'.
+     */
+    BeanProperty childMasterProperty;
+
+    boolean embeddedExportedProperties;
+
+    BeanCollectionHelp<T> help;
 
 	ImportedId importedId;
-
-	final ModifyListenMode modifyListenMode;
 	
 	String deleteByParentIdSql;
 	
@@ -119,9 +117,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 	public void initialise() {
 		super.initialise();
-		if (!isTransient){
 
-			help = BeanCollectionHelpFactory.create(this);
+	    this.help = BeanCollectionHelpFactory.create(this);
+
+		if (!isTransient){
 
 			if (manyToMany){
 				// only manyToMany's have imported properties

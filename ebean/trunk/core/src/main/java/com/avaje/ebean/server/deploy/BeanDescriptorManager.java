@@ -55,6 +55,7 @@ import com.avaje.ebean.server.core.ConcurrencyMode;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.core.InternalConfiguration;
 import com.avaje.ebean.server.core.Message;
+import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebean.server.deploy.id.IdBinder;
 import com.avaje.ebean.server.deploy.id.IdBinderEmbedded;
 import com.avaje.ebean.server.deploy.meta.DeployBeanDescriptor;
@@ -994,11 +995,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         readXml(desc);
 
-        if (desc.isSqlSelectBased()) {
-            desc.setBaseTable(null);
-        }
-
-        if (desc.isMeta()) {
+        if (!EntityType.ORM.equals(desc.getEntityType())){
+            // not using base table
             desc.setBaseTable(null);
         }
 
@@ -1027,7 +1025,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         if (desc.propertiesId().size() == 0) {
             // bean doen't have an Id property
-            if (!desc.isSqlSelectBased() || desc.getBeanFinder() != null) {
+            if (!desc.isBaseTableType() || desc.getBeanFinder() != null) {
                 // using BeanFinder so perhaps valid without an id
             } else {
                 // expecting an id property

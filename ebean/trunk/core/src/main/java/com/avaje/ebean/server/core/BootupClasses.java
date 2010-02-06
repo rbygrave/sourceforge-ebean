@@ -30,6 +30,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.avaje.ebean.annotation.LdapDomain;
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.event.BeanFinder;
@@ -309,6 +310,10 @@ public class BootupClasses implements ClassPathSearchMatcher {
             return true;
         }
         ann = cls.getAnnotation(Table.class);
+        if (ann != null) {
+            return true;
+        }
+        ann = cls.getAnnotation(LdapDomain.class);
         if (ann != null) {
             return true;
         }

@@ -26,7 +26,7 @@ public abstract class DeployParser {
 	 * Used to determine when a column name terminates.
 	 */
 	protected static final char PERIOD = '.';
-
+	
 	protected String source;
 
 	protected StringBuilder sb;
@@ -38,20 +38,23 @@ public abstract class DeployParser {
 	protected String word;
 
 	protected char wordTerminator;
-
+	
 	protected abstract String convertWord();
 
+	public abstract String getDeployWord(String expression);
+
+	       
 	/**
 	 * Return the join includes.
 	 */
 	public abstract Set<String> getIncludes();
-
+	
 	public String parse(String source) {
 
 		if (source == null) {
 			return source;
 		}
-
+		
 		pos = -1;
 		this.source = source;
 		this.sourceLength = source.length();

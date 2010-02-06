@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.avaje.ebean.EbeanServer;
@@ -70,8 +71,12 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
             list.add(bean);
         }
     }
-	
-	public Object createEmpty(boolean vanilla) {
+    
+	public Iterator<?> getIterator(Object collection) {
+        return ((List<?>)collection).iterator();
+    }
+
+    public Object createEmpty(boolean vanilla) {
 		return vanilla ? new ArrayList<T>() : new BeanList<T>();
 	}
 

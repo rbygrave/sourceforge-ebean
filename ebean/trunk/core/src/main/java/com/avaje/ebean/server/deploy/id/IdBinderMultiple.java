@@ -4,6 +4,9 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.internal.SpiExpressionRequest;
@@ -59,7 +62,38 @@ public final class IdBinderMultiple implements IdBinder {
 		// do nothing
 	}
 	
-	public int getPropertyCount() {
+    public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {
+        
+        if (id instanceof Map<?,?> == false){
+            throw new RuntimeException("Expecting a Map for concatinated key");
+        }
+        
+        Map<?,?> mapId = (Map<?,?>)id;
+        for (int i = 0; i < props.length; i++) {
+            
+            Object v = mapId.get(props[i].getName());
+            if (v == null){
+                throw new RuntimeException("No value in Map for key "+props[i].getName());
+            }
+            
+            Rdn rdn = new Rdn(props[i].getDbColumn(), v);
+            name.add(rdn);            
+        }
+    }
+    
+    
+
+	public void createLdapNameByBean(LdapName name, Object bean) throws InvalidNameException {
+
+        for (int i = 0; i < props.length; i++) {
+            
+            Object v = props[i].getValue(bean);            
+            Rdn rdn = new Rdn(props[i].getDbColumn(), v);
+            name.add(rdn);            
+        }
+    }
+
+    public int getPropertyCount() {
 		return props.length;
 	}
 

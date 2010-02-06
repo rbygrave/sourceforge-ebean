@@ -35,7 +35,7 @@ public class VisitorUtil {
 
 			if (desc.getBaseTable() != null){
 				visitBean(desc, visitor);
-			}
+			} 
 		}
 
 		visitor.visitEnd();

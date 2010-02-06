@@ -41,7 +41,7 @@ import com.avaje.ebean.util.DefaultExpressionList;
 /**
  * Default implementation of an Object Relational query.
  */
-public final class DefaultOrmQuery<T> implements SpiQuery<T> {
+public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private static final long serialVersionUID = 6838006264714672460L;
 
@@ -207,10 +207,13 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private transient PersistenceContext persistenceContext;
 
-	public DefaultOrmQuery(Class<T> beanType, EbeanServer server) {
+	private final String exprLang;
+	
+	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory) {
 		this.beanType = beanType;
 		this.server = server;
-		this.expressionFactory = server.getExpressionFactory();
+		this.expressionFactory = expressionFactory;
+		this.exprLang = expressionFactory == null ? "sql" : expressionFactory.getLang();
 		this.detail = new OrmQueryDetail();
 		this.name = "";
 	}
@@ -218,12 +221,13 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 	/**
 	 * Additional supply a query which is parsed.
 	 */
-	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, DeployNamedQuery namedQuery)
-			throws PersistenceException {
+	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory, 
+	        DeployNamedQuery namedQuery) throws PersistenceException {
 
 		this.beanType = beanType;
 		this.server = server;
-		this.expressionFactory = server.getExpressionFactory();
+		this.expressionFactory = expressionFactory;
+        this.exprLang = expressionFactory == null ? "sql" : expressionFactory.getLang();
 		this.name = namedQuery.getName();
 		this.sqlSelect = namedQuery.isSqlSelect();
 		if (sqlSelect) {
@@ -320,7 +324,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// QueryListener<T> queryListener;
 		// TransactionContext transactionContext;
 
-		DefaultOrmQuery<T> copy = new DefaultOrmQuery<T>(beanType, server);
+		DefaultOrmQuery<T> copy = new DefaultOrmQuery<T>(beanType, server, expressionFactory);
 		copy.name = name;
 		copy.includeTableJoin = includeTableJoin;
 		copy.autoFetchManager = autoFetchManager;
@@ -1052,7 +1056,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> where(Expression expression) {
 		if (whereExpressions == null) {
-			whereExpressions = new DefaultExpressionList<T>(this);
+			whereExpressions = new DefaultExpressionList<T>(this, exprLang);
 		}
 		whereExpressions.add(expression);
 		return this;
@@ -1060,7 +1064,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public ExpressionList<T> where() {
 		if (whereExpressions == null) {
-			whereExpressions = new DefaultExpressionList<T>(this);
+			whereExpressions = new DefaultExpressionList<T>(this, exprLang);
 		}
 		return whereExpressions;
 	}
@@ -1088,7 +1092,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> having(Expression expression) {
 		if (havingExpressions == null) {
-			havingExpressions = new DefaultExpressionList<T>(this);
+			havingExpressions = new DefaultExpressionList<T>(this, exprLang);
 		}
 		havingExpressions.add(expression);
 		return this;
@@ -1096,7 +1100,7 @@ public final class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public ExpressionList<T> having() {
 		if (havingExpressions == null) {
-			havingExpressions = new DefaultExpressionList<T>(this);
+			havingExpressions = new DefaultExpressionList<T>(this, exprLang);
 		}
 		return havingExpressions;
 	}

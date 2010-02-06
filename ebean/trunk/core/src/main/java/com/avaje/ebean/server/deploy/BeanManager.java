@@ -48,5 +48,12 @@ public class BeanManager<T> {
 	public BeanDescriptor<T> getBeanDescriptor() {
 		return descriptor;
 	}
+	
+	/**
+	 * Return true if this bean type is an LDAP entity type.
+	 */
+	public boolean isLdapEntityType() {
+	    return descriptor.isLdapEntityType();
+	}
 
 }

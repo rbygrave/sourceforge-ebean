@@ -35,7 +35,9 @@ import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
 import com.avaje.ebean.server.core.InternString;
+import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebean.server.el.ElPropertyValue;
 import com.avaje.ebean.server.reflect.BeanReflectGetter;
@@ -103,6 +105,8 @@ public class DeployBeanProperty {
 
     private boolean unique;
 
+    private LdapAttributeAdapter ldapAttributeAdapter;
+    
     /**
      * The length or precision of the DB column.
      */
@@ -544,6 +548,20 @@ public class DeployBeanProperty {
     }
 
     /**
+     * Return the LdapAttributeAdapter.
+     */
+    public LdapAttributeAdapter getLdapAttributeAdapter() {
+        return ldapAttributeAdapter;
+    }
+
+    /**
+     * Set the LdapAttributeAdapter.
+     */
+    public void setLdapAttributeAdapter(LdapAttributeAdapter ldapAttributeAdapter) {
+        this.ldapAttributeAdapter = ldapAttributeAdapter;
+    }
+
+    /**
      * Return true if this is a version column used for concurrency checking.
      */
     public boolean isVersionColumn() {
@@ -593,10 +611,13 @@ public class DeployBeanProperty {
         this.dbUpdateable = false;
     }
 
-    public String getElPlaceHolder() {
+    public String getElPlaceHolder(EntityType et) {
         if (sqlFormulaSelect != null) {
             return sqlFormulaSelect;
+        } else if (EntityType.LDAP.equals(et)){
+            return dbColumn;
         } else {
+            // prepend table alias placeholder
             return ElPropertyValue.ROOT_ELPREFIX + dbColumn;
         }
     }

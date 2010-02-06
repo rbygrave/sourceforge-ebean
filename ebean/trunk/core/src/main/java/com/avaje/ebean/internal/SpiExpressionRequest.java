@@ -2,7 +2,7 @@ package com.avaje.ebean.internal;
 
 import java.util.ArrayList;
 
-import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
@@ -10,6 +10,11 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
  */
 public interface SpiExpressionRequest {
 
+    /**
+     * Parse the logical property name to the deployment name.
+     */
+    public String parseDeploy(String logicalProp);
+    
 	/**
 	 * Return the bean descriptor for the root type.
 	 */
@@ -18,7 +23,7 @@ public interface SpiExpressionRequest {
 	/**
 	 * Return the associated QueryRequest.
 	 */
-	public BeanQueryRequest<?> getQueryRequest();
+	public SpiOrmQueryRequest<?> getQueryRequest();
 	
 	/**
 	 * Append to the expression sql.
@@ -39,4 +44,9 @@ public interface SpiExpressionRequest {
 	 * Return the ordered list of bind values for all expressions in this request.
 	 */
 	public ArrayList<Object> getBindValues();
+	
+    /**
+     * Increments the parameter index and returns that value.
+     */
+    public int nextParameter();
 }

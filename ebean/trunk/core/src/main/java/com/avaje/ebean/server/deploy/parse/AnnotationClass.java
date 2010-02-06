@@ -28,6 +28,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.annotation.CacheStrategy;
+import com.avaje.ebean.annotation.LdapDomain;
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
 import com.avaje.ebean.annotation.UpdateMode;
@@ -35,6 +36,7 @@ import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.server.core.ReferenceOptions;
 import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
+import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 
 /**
  * Read the class level deployment annotations.
@@ -58,7 +60,7 @@ public class AnnotationClass extends AnnotationParser {
 	 */
 	private void setTableName() {
 		
-		if (!descriptor.isEmbedded() && !descriptor.isMeta()) {
+		if (descriptor.isBaseTableType()) {
 
 			// default the TableName using NamingConvention.
 			TableName tableName = namingConvention.getTableName(descriptor.getBeanType());
@@ -67,8 +69,24 @@ public class AnnotationClass extends AnnotationParser {
 		}
 	}
 	
+	private String[] parseLdapObjectclasses(String objectclasses) {
+	    
+	    if (objectclasses == null || objectclasses.length() == 0){
+	        return null;
+	    } 
+	    return objectclasses.split(",");
+	}
+	
 	private void read(Class<?> cls) {
 
+        LdapDomain ldapDomain = cls.getAnnotation(LdapDomain.class);
+        if (ldapDomain != null) {
+            descriptor.setName(cls.getSimpleName());
+            descriptor.setEntityType(EntityType.LDAP);
+            descriptor.setLdapBaseDn(ldapDomain.baseDn());
+            descriptor.setLdapObjectclasses(parseLdapObjectclasses(ldapDomain.objectclass()));
+        }
+	        
 		Entity entity = cls.getAnnotation(Entity.class);
 		if (entity != null){
 			checkDefaultConstructor();
@@ -82,7 +100,7 @@ public class AnnotationClass extends AnnotationParser {
 
 		Embeddable embeddable = cls.getAnnotation(Embeddable.class);
 		if (embeddable != null){
-			descriptor.setEmbedded(true);
+		    descriptor.setEntityType(EntityType.EMBEDDED);
 			descriptor.setName("Embeddable:"+cls.getSimpleName());
 		}
 

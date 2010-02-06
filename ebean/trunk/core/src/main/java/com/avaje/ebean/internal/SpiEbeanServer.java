@@ -30,8 +30,8 @@ import com.avaje.ebean.bean.BeanLoader;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
-import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.PstmtBatch;
+import com.avaje.ebean.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.server.ddl.DdlGenerator;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.query.CQuery;
@@ -139,7 +139,7 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	/**
 	 * Create a query request object.
 	 */
-	public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t);
+	public <T> SpiOrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t);
 
 	/**
 	 * Compile a query.
