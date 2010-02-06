@@ -2,6 +2,10 @@ package com.avaje.ebean.server.deploy.id;
 
 import java.sql.SQLException;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+
 import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.core.DefaultSqlUpdate;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -44,6 +48,22 @@ public final class IdBinderEmbedded implements IdBinder {
         sb.append(")");
 
         idInValueSql = sb.toString();
+    }
+    
+    public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {
+
+        for (int i = 0; i < props.length; i++) {
+            Object v = props[i].getValue(id);
+            Rdn rdn = new Rdn(props[i].getDbColumn(), v);
+            name.add(rdn);
+        }
+    }
+    
+    
+
+    public void createLdapNameByBean(LdapName name, Object bean) throws InvalidNameException {
+        Object id = embIdProperty.getValue(bean);
+        createLdapNameById(name, id);
     }
 
     public BeanDescriptor<?> getIdBeanDescriptor() {

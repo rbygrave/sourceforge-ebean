@@ -37,6 +37,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
+import com.avaje.ebean.config.ldap.LdapContextFactory;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.SpiUpdate;
@@ -57,6 +58,8 @@ import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.IntersectionRow;
 import com.avaje.ebean.server.jmx.MAdminLogging;
+import com.avaje.ebean.server.ldap.DefaultLdapPersister;
+import com.avaje.ebean.server.ldap.LdapPersistBeanRequest;
 
 /**
  * Persister implementation using DML.
@@ -83,17 +86,20 @@ public final class DefaultPersister implements Persister {
 	 */
 	private final PersistExecute persistExecute;
 
+	private final DefaultLdapPersister ldapPersister;
+
 	private final SpiEbeanServer server;
 
 	private final BeanDescriptorManager beanDescriptorManager;
 	
 	public DefaultPersister(SpiEbeanServer server, boolean validate, MAdminLogging logControl, 
-			Binder binder, BeanDescriptorManager descMgr, PstmtBatch pstmtBatch) {
+			Binder binder, BeanDescriptorManager descMgr, PstmtBatch pstmtBatch, LdapContextFactory contextFactory) {
 
 		this.server = server;
 		this.beanDescriptorManager = descMgr;
 		
 		this.persistExecute = new DefaultPersistExecute(validate, logControl, binder, pstmtBatch);
+		this.ldapPersister = new DefaultLdapPersister(contextFactory);
 	}
 
 	/**
@@ -976,6 +982,9 @@ public final class DefaultPersister implements Persister {
     @SuppressWarnings("unchecked")
     private PersistRequestBean<?> createRequest(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr) {
 
+        if (mgr.isLdapEntityType()){
+            return new LdapPersistBeanRequest(server, bean, parentBean, mgr, ldapPersister);
+        }
         return new PersistRequestBean(server, bean, parentBean, mgr, (SpiTransaction) t, persistExecute);
     }
     

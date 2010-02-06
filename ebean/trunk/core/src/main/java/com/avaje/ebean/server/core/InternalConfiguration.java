@@ -27,6 +27,8 @@ import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.ldap.LdapConfig;
+import com.avaje.ebean.config.ldap.LdapContextFactory;
 import com.avaje.ebean.internal.SpiEbeanServer;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.autofetch.AutoFetchManagerFactory;
@@ -165,7 +167,12 @@ public class InternalConfiguration {
 	}
 	
 	public Persister createPersister(SpiEbeanServer server) {
-		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager, pstmtBatch);
+	    LdapContextFactory ldapCtxFactory = null;
+	    LdapConfig ldapConfig = serverConfig.getLdapConfig();
+	    if (ldapConfig != null){
+	        ldapCtxFactory = ldapConfig.getContextFactory();
+	    }
+		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager, pstmtBatch, ldapCtxFactory);
 	}
 
 	public PstmtBatch getPstmtBatch() {

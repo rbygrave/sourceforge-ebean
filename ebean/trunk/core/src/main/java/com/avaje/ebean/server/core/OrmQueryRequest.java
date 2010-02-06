@@ -49,7 +49,7 @@ import com.avaje.ebean.server.query.SqlTreeAlias;
 /**
  * Wraps the objects involved in executing a Query.
  */
-public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRequest<T> {	
+public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRequest<T>, SpiOrmQueryRequest<T> {	
 
 	private final BeanDescriptor<T> beanDescriptor;
 	

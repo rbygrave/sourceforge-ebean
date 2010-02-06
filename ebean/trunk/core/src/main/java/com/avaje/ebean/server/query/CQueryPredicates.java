@@ -221,7 +221,11 @@ public class CQueryPredicates {
 
 		SpiExpressionList<?> whereExp = query.getWhereExpressions();
 		
-		DefaultExpressionRequest whereExpReq = new DefaultExpressionRequest(request);
+		if (deployParser == null){
+            deployParser = request.getBeanDescriptor().createDeployPropertyParser();
+        }
+		
+		DefaultExpressionRequest whereExpReq = new DefaultExpressionRequest(request, deployParser);
 		
 		if (whereExp != null) {
 			whereExprBindValues = whereExp.buildBindValues(whereExpReq);
@@ -233,7 +237,7 @@ public class CQueryPredicates {
 		// having expression
 		SpiExpressionList<?> havingExpr = query.getHavingExpressions();
 
-		DefaultExpressionRequest havingExpReq = new DefaultExpressionRequest(request);
+		DefaultExpressionRequest havingExpReq = new DefaultExpressionRequest(request, deployParser);
 
 		if (havingExpr != null) {
 			havingExprBindValues = havingExpr.buildBindValues(havingExpReq);

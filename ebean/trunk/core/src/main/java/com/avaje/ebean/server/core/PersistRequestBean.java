@@ -47,61 +47,61 @@ import com.avaje.ebean.server.transaction.RemoteBeanPersist;
 /**
  * PersistRequest for insert update or delete of a bean.
  */
-public final class PersistRequestBean<T> extends PersistRequest implements BeanPersistRequest<T> {
+public class PersistRequestBean<T> extends PersistRequest implements BeanPersistRequest<T> {
 
-    private final BeanManager<T> beanManager;
+    protected final BeanManager<T> beanManager;
 
-    private final BeanDescriptor<T> beanDescriptor;
+    protected final BeanDescriptor<T> beanDescriptor;
 
-    private final BeanPersistListener<T> beanPersistListener;
+    protected final BeanPersistListener<T> beanPersistListener;
 
     /**
      * For per post insert update delete control.
      */
-    private final BeanPersistController controller;
+    protected final BeanPersistController controller;
 
     /**
      * The associated intercept.
      */
-    private final EntityBeanIntercept intercept;
+    protected final EntityBeanIntercept intercept;
 
     /**
      * The parent bean for unidirectional save.
      */
-    private final Object parentBean;
+    protected final Object parentBean;
 
-    private final boolean isDirty;
+    protected final boolean isDirty;
 
     /**
      * True if this is a vanilla bean.
      */
-    private final boolean vanilla;
+    protected final boolean vanilla;
 
     /**
      * The bean being persisted.
      */
-    private final T bean;
+    protected final T bean;
 
     /**
      * Old values used for concurrency checking.
      */
-    private T oldValues;
+    protected T oldValues;
 
     /**
      * The concurrency mode used for update or delete.
      */
-    private ConcurrencyMode concurrencyMode;
+    protected ConcurrencyMode concurrencyMode;
 
-    private final Set<String> loadedProps;
+    protected final Set<String> loadedProps;
 
     /**
      * The unique id used for logging summary.
      */
-    private Object idValue;
+    protected Object idValue;
 
-    private Set<String> changedProps;
+    protected final Set<String> changedProps;
 
-    private boolean notifyCache;
+    protected boolean notifyCache;
 
     /**
      * Used for forced update of a bean.
@@ -161,6 +161,7 @@ public final class PersistRequestBean<T> extends PersistRequest implements BeanP
             this.vanilla = true;
             this.isDirty = true;
             this.loadedProps = null;
+            this.changedProps = null;
             this.intercept = null;
 
             // degrade concurrency checking to none for vanilla bean

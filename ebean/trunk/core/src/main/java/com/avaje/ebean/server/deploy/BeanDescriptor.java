@@ -33,6 +33,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.InvalidNameException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
+import javax.naming.ldap.LdapName;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
@@ -68,6 +73,7 @@ import com.avaje.ebean.server.el.ElComparatorProperty;
 import com.avaje.ebean.server.el.ElPropertyChainBuilder;
 import com.avaje.ebean.server.el.ElPropertyDeploy;
 import com.avaje.ebean.server.el.ElPropertyValue;
+import com.avaje.ebean.server.ldap.LdapPersistenceException;
 import com.avaje.ebean.server.persist.DmlUtil;
 import com.avaje.ebean.server.query.CQueryPlan;
 import com.avaje.ebean.server.query.SplitName;
@@ -97,11 +103,24 @@ public class BeanDescriptor<T> {
 
     private final ConcurrentHashMap<String, BeanFkeyProperty> fkeyMap = new ConcurrentHashMap<String, BeanFkeyProperty>();
 
+    public enum EntityType {
+        ORM,
+        EMBEDDED,
+        SQL,
+        META,
+        LDAP
+    }
+    
     /**
      * The EbeanServer name. Same as the plugin name.
      */
     private final String serverName;
 
+    /**
+     * Set to true if this is a LDAP domain object.
+     */
+    private final EntityType entityType;
+    
     /**
      * Type of Identity generation strategy used.
      */
@@ -114,26 +133,14 @@ public class BeanDescriptor<T> {
      */
     private final String sequenceName;
 
+    private final String ldapBaseDn;
+    private final String[] ldapObjectclasses;
+
     /**
      * SQL used to return last inserted id. Used for Identity columns where
      * getGeneratedKeys is not supported.
      */
     private final String selectLastInsertedId;
-
-    /**
-     * True if this is Table based for TableBeans.
-     */
-    private final boolean tableGenerated;
-
-    /**
-     * True if this is an Embedded bean.
-     */
-    private final boolean embedded;
-
-    /**
-     * True if this is a Meta bean.
-     */
-    private final boolean meta;
 
     private final boolean autoFetchTunable;
 
@@ -160,12 +167,6 @@ public class BeanDescriptor<T> {
     private final String baseTable;
 
     /**
-     * True if based on a table (or view) false if based on a raw sql select
-     * statement.
-     */
-    private final boolean sqlSelectBased;
-
-    /**
      * Used to provide mechanism to new EntityBean instances. Generated code
      * faster than reflection at this stage.
      */
@@ -175,6 +176,7 @@ public class BeanDescriptor<T> {
      * Map of BeanProperty Linked so as to preserve order.
      */
     private final LinkedHashMap<String, BeanProperty> propMap;
+    private final LinkedHashMap<String, BeanProperty> propMapByDbColumn;
 
     /**
      * The type of bean this describes.
@@ -306,14 +308,6 @@ public class BeanDescriptor<T> {
     private final Map<String, DeployNamedUpdate> namedUpdates;
 
     /**
-     * Logical to physical deployment mapping for use with updates.
-     * <p>
-     * Maps bean properties to db columns and the bean name to base table.
-     * </p>
-     */
-    private Map<String, String> updateDeployMap;
-
-    /**
      * Has local validation rules.
      */
     private final boolean hasLocalValidation;
@@ -388,6 +382,7 @@ public class BeanDescriptor<T> {
         this.owner = owner;
         this.cacheManager = owner.getCacheManager();
         this.serverName = owner.getServerName();
+        this.entityType = deploy.getEntityType();
         this.name = InternString.intern(deploy.getName());
         this.baseTableAlias = InternString.intern(name.substring(0, 1).toLowerCase());
         this.fullName = InternString.intern(deploy.getFullName());
@@ -410,11 +405,10 @@ public class BeanDescriptor<T> {
 
         this.idType = deploy.getIdType();
         this.idGenerator = deploy.getIdGenerator();
+        this.ldapBaseDn = deploy.getLdapBaseDn();
+        this.ldapObjectclasses = deploy.getLdapObjectclasses();
         this.sequenceName = deploy.getSequenceName();
         this.selectLastInsertedId = deploy.getSelectLastInsertedId();
-        this.tableGenerated = deploy.isTableGenerated();
-        this.embedded = deploy.isEmbedded();
-        this.meta = deploy.isMeta();
         this.lazyFetchIncludes = InternString.intern(deploy.getLazyFetchIncludes());
         this.concurrencyMode = deploy.getConcurrencyMode();
         this.updateChangesOnly = deploy.isUpdateChangesOnly();
@@ -424,16 +418,16 @@ public class BeanDescriptor<T> {
         this.extraAttrMap = deploy.getExtraAttributeMap();
 
         this.baseTable = InternString.intern(deploy.getBaseTable());
-        this.sqlSelectBased = deploy.isSqlSelectBased();
 
         this.beanReflect = deploy.getBeanReflect();
 
-        this.autoFetchTunable = !tableGenerated && !embedded && !sqlSelectBased && (beanFinder == null);
+        this.autoFetchTunable = EntityType.ORM.equals(entityType) && (beanFinder == null);
 
         // helper object used to derive lists of properties
         DeployBeanPropertyLists listHelper = new DeployBeanPropertyLists(owner, this, deploy);
 
         this.propMap = listHelper.getPropertyMap();
+        this.propMapByDbColumn = getReverseMap(propMap);
         this.propertiesTransient = listHelper.getTransients();
         this.propertiesNonTransient = listHelper.getNonTransients();
         this.propertiesBaseScalar = listHelper.getBaseScalar();
@@ -482,6 +476,19 @@ public class BeanDescriptor<T> {
         this.idBinder = IdBinderFactory.createIdBinder(propertiesId);
     }
 
+    private LinkedHashMap<String, BeanProperty> getReverseMap(LinkedHashMap<String, BeanProperty> propMap) {
+    	
+    	LinkedHashMap<String, BeanProperty> revMap = new LinkedHashMap<String, BeanProperty>(propMap.size()*2);
+    	
+    	for (BeanProperty prop : propMap.values()) {
+			if (prop.getDbColumn() != null){
+				revMap.put(prop.getDbColumn(), prop);
+			}
+		}
+    	
+    	return revMap;
+    }
+    
     /**
      * Set the server. Primarily so that the Many's can lazy load.
      */
@@ -549,6 +556,13 @@ public class BeanDescriptor<T> {
     public SpiEbeanServer getEbeanServer() {
         return ebeanServer;
     }
+    
+    /**
+     * Return the type of this domain object.
+     */
+    public EntityType getEntityType() {
+        return entityType;
+    }
 
     /**
      * Initialise the Id properties first.
@@ -567,7 +581,7 @@ public class BeanDescriptor<T> {
             inheritInfo.setDescriptor(this);
         }
 
-        if (embedded) {
+        if (isEmbedded()) {
             // initialise all the properties
             Iterator<BeanProperty> it = propertiesAll();
             while (it.hasNext()) {
@@ -588,7 +602,7 @@ public class BeanDescriptor<T> {
      */
     public void initialiseOther() {
 
-        if (!embedded) {
+        if (!isEmbedded()) {
             // initialise all the non-id properties
             Iterator<BeanProperty> it = propertiesAll();
             while (it.hasNext()) {
@@ -609,12 +623,7 @@ public class BeanDescriptor<T> {
 
         deleteByIdSql = "delete from " + baseTable + " where " + idBinder.getBindIdSql(null);
 
-        if (tableGenerated || embedded) {
-
-        } else {
-            // map of bean and property name to base table and db column
-            updateDeployMap = DeployUpdateMapFactory.build(this);
-
+        if (!isEmbedded()) {
             // parse every named update up front into sql dml
             for (DeployNamedUpdate namedUpdate : namedUpdates.values()) {
                 DeployUpdateParser parser = new DeployUpdateParser(this);
@@ -622,7 +631,56 @@ public class BeanDescriptor<T> {
             }
         }
     }
+    
+    /**
+     * Set the LDAP objectClasses to the attributes.
+     */
+    public void setLdapObjectClasses(Attributes attributes) {
+        
+        if (ldapObjectclasses != null){
+            BasicAttribute ocAttrs = new BasicAttribute("objectclass");
+            for (int i = 0; i < ldapObjectclasses.length; i++) {
+                ocAttrs.add(ldapObjectclasses[i]);
+            }
+            attributes.put(ocAttrs);
+        }
+    }
 
+    /**
+     * Creates Attributes with the objectclass.
+     */
+    public Attributes createAttributes() {
+
+        Attributes attrs = new BasicAttributes(true);
+        setLdapObjectClasses(attrs);
+        return attrs;
+    }
+
+    public String getLdapBaseDn() {
+    	return ldapBaseDn;
+    }
+
+    public LdapName createLdapNameById(Object id) throws InvalidNameException {
+
+    	LdapName baseDn = new LdapName(ldapBaseDn);
+    	idBinder.createLdapNameById(baseDn, id);
+    	return baseDn;
+    }
+    
+    public LdapName createLdapName(Object bean) {
+
+        try {
+            LdapName name = new LdapName(ldapBaseDn);
+            if (bean != null){
+                idBinder.createLdapNameByBean(name, bean);
+            }
+            return name;
+            
+        } catch (InvalidNameException e) {
+            throw new LdapPersistenceException(e);
+        }
+    }
+    
     /**
      * Return SQL that can be used to delete by Id without any optimistic
      * concurrency checking.
@@ -1233,6 +1291,13 @@ public class BeanDescriptor<T> {
     }
 
     /**
+     * Return the BeanProperty for the given deployment name.
+     */
+    public BeanProperty getBeanPropertyFromDbColumn(String dbColumn) {
+    	return propMapByDbColumn.get(dbColumn);
+    }
+    
+    /**
      * Return the bean property traversing the object graph and taking into
      * account inheritance.
      */
@@ -1537,7 +1602,7 @@ public class BeanDescriptor<T> {
             return property;
         }
         if (property == null) {
-            throw new NullPointerException("No property found for " + propName + " in expression "
+            throw new NullPointerException("No property found for [" + propName + "] in expression "
                     + chain.getExpression());
         }
         return chain.add(property).build();
@@ -1593,29 +1658,14 @@ public class BeanDescriptor<T> {
     }
 
     /**
-     * Return true if this was generated from jdbc meta data of a table. Returns
-     * false for normal beans.
-     */
-    public boolean isTableGenerated() {
-        return tableGenerated;
-    }
-
-    /**
      * Return true if this is an embedded bean.
      */
     public boolean isEmbedded() {
-        return embedded;
+        return EntityType.EMBEDDED.equals(entityType);
     }
-
-    /**
-     * Return true if this is an meta bean.
-     * <p>
-     * Those are Entity Beans in org.avaje.ebean.meta that hold meta data such
-     * as query performance statistics etc.
-     * </p>
-     */
-    public boolean isMeta() {
-        return meta;
+    
+    public boolean isBaseTableType() {
+        return EntityType.ORM.equals(entityType);
     }
 
     /**
@@ -1758,26 +1808,22 @@ public class BeanDescriptor<T> {
      * </p>
      */
     public boolean isSqlSelectBased() {
-        return sqlSelectBased;
+        return EntityType.SQL.equals(entityType);
     }
 
+    /**
+     * Return true if this an LDAP object.
+     */
+    public boolean isLdapEntityType() {
+        return EntityType.LDAP.equals(entityType);
+    }
+    
     /**
      * Return the base table. Only properties mapped to the base table are by
      * default persisted.
      */
     public String getBaseTable() {
         return baseTable;
-    }
-
-    /**
-     * Return the map of logical property names to database column names as well
-     * as the bean name to base table.
-     * <p>
-     * This is used in converting a logical update into sql.
-     * </p>
-     */
-    public Map<String, String> getUpdateDeployMap() {
-        return updateDeployMap;
     }
 
     /**

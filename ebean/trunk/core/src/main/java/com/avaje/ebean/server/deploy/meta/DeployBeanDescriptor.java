@@ -51,6 +51,7 @@ import com.avaje.ebean.server.deploy.DeployNamedQuery;
 import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.deploy.RawSqlMeta;
+import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebean.server.reflect.BeanReflect;
 
 /**
@@ -83,6 +84,8 @@ public class DeployBeanDescriptor<T> {
 	 */
 	private final Class<T> beanType;
 
+	private EntityType entityType;
+	
 	private final Map<String, DeployNamedQuery> namedQueries = new LinkedHashMap<String, DeployNamedQuery>();
 
 	private final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
@@ -108,20 +111,14 @@ public class DeployBeanDescriptor<T> {
 	 */
 	private String sequenceName;
 	
+	private String ldapBaseDn;
+	
+	private String[] ldapObjectclasses;
+	
 	/**
 	 * Used with Identity columns but no getGeneratedKeys support.
 	 */
 	private String selectLastInsertedId;
-
-	/**
-	 * True if this is Table based for TableBeans.
-	 */
-	private boolean tableGenerated;
-
-	/**
-	 * True if this is an Embedded bean.
-	 */
-	private boolean embedded;
 
 	private String lazyFetchIncludes;
 
@@ -267,47 +264,55 @@ public class DeployBeanDescriptor<T> {
 		}
 		return !missingMethods;
 	}
-	
-	/**
-	 * Return true if this is a Meta entity bean.
-	 * <p>
-	 * The Meta entity beans are not based on real tables but get meta information
-	 * from memory such as all the entity bean meta data.
-	 * </p>
-	 */
-	public boolean isMeta() {
-		return beanType.getName().startsWith(META_BEAN_PREFIX);
-	}
 
-	/**
-	 * Return true if this entity bean is based on raw SQL (rather than a table or view).
-	 * <p>
-	 * This typically means the bean is more for reporting purposes than OLTP.
-	 * </p>
-	 */
-	public boolean isSqlSelectBased() {
-		DeployNamedQuery defaultQuery = namedQueries.get("default");
-		if (defaultQuery != null) {
-			return defaultQuery.isSqlSelect();
-		}
-		RawSqlMeta rawSql = rawSqlMetas.get("default");
-		if (rawSql != null) {
-			return true;
-		}
-		return false;
-	}
+    public void setEntityType(EntityType entityType) {
+        this.entityType = entityType;
+    }
+    
+    public boolean isEmbedded() {
+        return EntityType.EMBEDDED.equals(entityType);
+    }
+    
+    public boolean isBaseTableType() {
+        EntityType et = getEntityType();
+        return EntityType.ORM.equals(et);
+    }
+
+    public EntityType getEntityType() {
+        if (entityType == null){
+            entityType = isMeta() ? EntityType.META : EntityType.ORM; 
+        }
+        return entityType;
+    }
+
+    /**
+     * Return true if this is a Meta entity bean.
+     * <p>
+     * The Meta entity beans are not based on real tables but get meta information
+     * from memory such as all the entity bean meta data.
+     * </p>
+     */
+    private boolean isMeta() {
+        return beanType.getName().startsWith(META_BEAN_PREFIX);
+    }
 
 	public void add(RawSqlMeta rawSqlMeta) {
 		rawSqlMetas.put(rawSqlMeta.getName(), rawSqlMeta);
+		if ("default".equals(rawSqlMeta.getName())) {
+		    setEntityType(EntityType.SQL);
+		}
 	}
 
 	public void add(DeployNamedUpdate namedUpdate) {
 		namedUpdates.put(namedUpdate.getName(), namedUpdate);
 	}
-	
-	public void add(DeployNamedQuery namedQuery) {
-		namedQueries.put(namedQuery.getName(), namedQuery);
-	}
+
+    public void add(DeployNamedQuery namedQuery) {
+        namedQueries.put(namedQuery.getName(), namedQuery);
+        if ("default".equals(namedQuery.getName())) {
+            setEntityType(EntityType.SQL);
+        }
+    }
 
 	public Map<String, DeployNamedQuery> getNamedQueries() {
 		return namedQueries;
@@ -382,35 +387,6 @@ public class DeployBeanDescriptor<T> {
 		this.referenceOptions = referenceOptions;
 	}
 	
-	/**
-	 * Return true if this was generated from jdbc meta data of a table. Returns
-	 * false for normal beans.
-	 */
-	public boolean isTableGenerated() {
-		return tableGenerated;
-	}
-
-	/**
-	 * Set to true when this is generated from jdbc meta data of a table.
-	 */
-	public void setTableGenerated(boolean tableGenerated) {
-		this.tableGenerated = tableGenerated;
-	}
-
-	/**
-	 * Return true if this is an embedded bean.
-	 */
-	public boolean isEmbedded() {
-		return embedded;
-	}
-
-	/**
-	 * Set to true if this is an embedded bean.
-	 */
-	public void setEmbedded(boolean embedded) {
-		this.embedded = embedded;
-	}
-	
 	public DeployBeanPropertyAssocOne<?> getUnidirectional() {
 		return unidirectional;
 	}
@@ -433,8 +409,23 @@ public class DeployBeanDescriptor<T> {
 		this.concurrencyMode = concurrencyMode;
 	}
 
-	
-	public boolean isUpdateChangesOnly() {
+	public String getLdapBaseDn() {
+        return ldapBaseDn;
+    }
+
+    public void setLdapBaseDn(String ldapBaseDn) {
+        this.ldapBaseDn = ldapBaseDn;
+    }
+    
+    public String[] getLdapObjectclasses() {
+        return ldapObjectclasses;
+    }
+
+    public void setLdapObjectclasses(String[] ldapObjectclasses) {
+        this.ldapObjectclasses = ldapObjectclasses;
+    }
+
+    public boolean isUpdateChangesOnly() {
 		return updateChangesOnly;
 	}
 
@@ -617,9 +608,6 @@ public class DeployBeanDescriptor<T> {
 	 * </p>
 	 */
 	public String getFullName() {
-		if (tableGenerated) {
-			return "table[" + baseTable + "]";
-		}
 		return beanType.getName();
 	}
 

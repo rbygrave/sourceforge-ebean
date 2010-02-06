@@ -2,6 +2,9 @@ package com.avaje.ebean.server.deploy.id;
 
 import java.sql.SQLException;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+
 import com.avaje.ebean.internal.SpiExpressionRequest;
 import com.avaje.ebean.server.core.DefaultSqlUpdate;
 import com.avaje.ebean.server.deploy.BeanProperty;
@@ -25,7 +28,13 @@ public final class IdBinderEmpty implements IdBinder {
 		
 	}
 		
-	public int getPropertyCount() {
+	public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {        
+    }
+	
+    public void createLdapNameByBean(LdapName name, Object bean) throws InvalidNameException {
+    }
+    
+    public int getPropertyCount() {
 		return 0;
 	}
 	

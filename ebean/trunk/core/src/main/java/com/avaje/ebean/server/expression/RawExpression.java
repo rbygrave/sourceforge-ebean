@@ -27,9 +27,11 @@ class RawExpression implements SpiExpression {
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {
-		for (int i = 0; i < values.length; i++) {
-			request.addBindValue(values[i]);
-		}
+	    if (values != null){
+    		for (int i = 0; i < values.length; i++) {
+    			request.addBindValue(values[i]);
+    		}
+	    }
 	}
 	
 	public void addSql(SpiExpressionRequest request) {

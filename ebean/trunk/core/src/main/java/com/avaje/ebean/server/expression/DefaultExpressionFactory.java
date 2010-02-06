@@ -38,7 +38,12 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	public DefaultExpressionFactory() {
 	}
 
-	/**
+	public String getLang() {
+        return "sql";
+    }
+
+
+    /**
 	 * Equal To - property equal to the given value.
 	 */
 	public Expression eq(String propertyName, Object value) {

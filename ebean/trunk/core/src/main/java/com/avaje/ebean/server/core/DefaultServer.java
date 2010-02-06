@@ -72,6 +72,7 @@ import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.internal.LoadBeanRequest;
@@ -94,6 +95,10 @@ import com.avaje.ebean.server.deploy.DeployNamedUpdate;
 import com.avaje.ebean.server.deploy.InheritInfo;
 import com.avaje.ebean.server.el.ElFilter;
 import com.avaje.ebean.server.jmx.MAdminAutofetch;
+import com.avaje.ebean.server.ldap.DefaultLdapOrmQuery;
+import com.avaje.ebean.server.ldap.LdapOrmQueryEngine;
+import com.avaje.ebean.server.ldap.LdapOrmQueryRequest;
+import com.avaje.ebean.server.ldap.expression.LdapExpressionFactory;
 import com.avaje.ebean.server.lib.ShutdownManager;
 import com.avaje.ebean.server.query.CQuery;
 import com.avaje.ebean.server.query.CQueryEngine;
@@ -153,6 +158,8 @@ public final class DefaultServer implements SpiEbeanServer {
     private final boolean vanillaMode;
     private final boolean vanillaRefMode;
 
+    private final LdapOrmQueryEngine ldapQueryEngine;
+
     /**
      * Handles the save, delete, updateSql CallableSql.
      */
@@ -173,6 +180,8 @@ public final class DefaultServer implements SpiEbeanServer {
     private final CQueryEngine cqueryEngine;
 
     private final DdlGenerator ddlGenerator;
+
+    private final ExpressionFactory ldapExpressionFactory = new LdapExpressionFactory();
 
     private final ExpressionFactory expressionFactory;
 
@@ -225,6 +234,13 @@ public final class DefaultServer implements SpiEbeanServer {
         this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
         this.beanLoader = new DefaultBeanLoader(this, config.getDebugLazyLoad());
 
+        LdapConfig ldapConfig = config.getServerConfig().getLdapConfig();
+        if (ldapConfig == null){
+            this.ldapQueryEngine = null;
+        } else {
+            this.ldapQueryEngine = new LdapOrmQueryEngine(ldapConfig.isVanillaMode(), ldapConfig.getContextFactory());            
+        }
+        
         ShutdownManager.register(new Shutdown());
     }
     
@@ -332,12 +348,12 @@ public final class DefaultServer implements SpiEbeanServer {
     }
 
     /**
-     * Compile a query.
+     * Compile a query. Only valid for ORM queries (not LDAP)
      */
     public <T> CQuery<T> compileQuery(Query<T> query, Transaction t) {
-        OrmQueryRequest<T> qr = createQueryRequest(query, t);
-
-        return cqueryEngine.buildQuery(qr);
+        SpiOrmQueryRequest<T> qr = createQueryRequest(query, t);
+        OrmQueryRequest<T> orm = (OrmQueryRequest<T>)qr;
+        return cqueryEngine.buildQuery(orm);
     }
 
     public CQueryEngine getQueryEngine() {
@@ -866,7 +882,7 @@ public final class DefaultServer implements SpiEbeanServer {
         }
 
         // this will parse the query
-        return new DefaultOrmQuery<T>(beanType, this, deployQuery);
+        return new DefaultOrmQuery<T>(beanType, this, expressionFactory, deployQuery);
     }
 
     public <T> Filter<T> filter(Class<T> beanType) {
@@ -893,14 +909,18 @@ public final class DefaultServer implements SpiEbeanServer {
             String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
             throw new PersistenceException(m);
         }
-        if (desc.isSqlSelectBased()) {
+        switch (desc.getEntityType()) {
+        case SQL:
             // use the "default" SqlSelect
             DeployNamedQuery defaultSqlSelect = desc.getNamedQuery("default");
-            return new DefaultOrmQuery<T>(beanType, this, defaultSqlSelect);
-
-        } else {
-            return new DefaultOrmQuery<T>(beanType, this);
-        }
+            return new DefaultOrmQuery<T>(beanType, this, expressionFactory, defaultSqlSelect);
+        
+        case LDAP:
+            return new DefaultLdapOrmQuery<T>(beanType, this, ldapExpressionFactory);
+            
+        default:
+            return new DefaultOrmQuery<T>(beanType, this, expressionFactory);
+        }        
     }
 
     public <T> Update<T> createNamedUpdate(Class<T> beanType, String namedUpdate) {
@@ -973,8 +993,8 @@ public final class DefaultServer implements SpiEbeanServer {
         Query<T> query = createQuery(beanType).setId(id);
         return findId(query, t);
     }
-
-    public <T> OrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
+    
+    public <T> SpiOrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
 
         SpiQuery<T> query = (SpiQuery<T>) q;
 
@@ -983,6 +1003,10 @@ public final class DefaultServer implements SpiEbeanServer {
 
         BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(query.getBeanType());
         query.setBeanDescriptor(desc);
+        
+        if (desc.isLdapEntityType()){
+            return new LdapOrmQueryRequest<T>(query, desc, ldapQueryEngine);
+        }
 
         if (desc.isAutoFetchTunable() && !query.isSqlSelect()) {
             // its a tunable query
@@ -1041,7 +1065,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     private <T> T findId(Query<T> query, Transaction t) {
 
-        OrmQueryRequest<T> request = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(query, t);
 
         // First have a look in the persistence context and then
         // the bean cache (if we are using caching)
@@ -1090,7 +1114,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
-        OrmQueryRequest request = createQueryRequest(query, t);
+        SpiOrmQueryRequest request = createQueryRequest(query, t);
 
         Object result = request.getFromQueryCache();
         if (result != null) {
@@ -1114,7 +1138,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
 
-        OrmQueryRequest request = createQueryRequest(query, t);
+        SpiOrmQueryRequest request = createQueryRequest(query, t);
 
         Object result = request.getFromQueryCache();
         if (result != null) {
@@ -1139,7 +1163,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
         SpiQuery<T> copy = ((SpiQuery<T>) query).copy();
 
-        OrmQueryRequest<T> request = createQueryRequest(copy, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(copy, t);
         try {
             request.initTransIfRequired();
             int rowCount = request.findRowCount();
@@ -1162,7 +1186,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
     public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t) {
 
-        OrmQueryRequest<T> request = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(query, t);
         try {
             request.initTransIfRequired();
             List<Object> list = request.findIds();
@@ -1266,7 +1290,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     public <T> List<T> findList(Query<T> query, Transaction t) {
 
-        OrmQueryRequest<T> request = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(query, t);
 
         Object result = request.getFromQueryCache();
         if (result != null) {

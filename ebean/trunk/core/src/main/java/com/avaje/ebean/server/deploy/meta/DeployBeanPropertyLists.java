@@ -31,6 +31,7 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.BeanPropertyCompound;
+import com.avaje.ebean.server.deploy.BeanPropertySimpleCollection;
 import com.avaje.ebean.server.deploy.TableJoin;
 import com.avaje.ebean.validation.factory.Validator;
 
@@ -368,6 +369,10 @@ public class DeployBeanPropertyLists {
         if (deployProp instanceof DeployBeanPropertyAssocOne) {
 
             return new BeanPropertyAssocOne(owner, desc, (DeployBeanPropertyAssocOne) deployProp);
+        }
+        if (deployProp instanceof DeployBeanPropertySimpleCollection<?>) {
+
+            return new BeanPropertySimpleCollection(owner, desc, (DeployBeanPropertySimpleCollection)deployProp);
         }
         if (deployProp instanceof DeployBeanPropertyAssocMany) {
 

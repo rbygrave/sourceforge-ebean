@@ -33,6 +33,7 @@ import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
+import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
@@ -216,6 +217,8 @@ public class ServerConfig {
     private Encryptor bytesEncryptor;
 
     private DbEncrypt dbEncrypt;
+    
+    private LdapConfig ldapConfig;
 
     /**
      * Set this to true when by default vanilla objects should be returned from
@@ -989,6 +992,20 @@ public class ServerConfig {
      */
     public boolean isDdlRun() {
         return ddlRun;
+    }
+
+    /**
+     * Return the LDAP configuration.
+     */    
+    public LdapConfig getLdapConfig() {
+        return ldapConfig;
+    }
+
+    /**
+     * Set the LDAP configuration.
+     */    
+    public void setLdapConfig(LdapConfig ldapConfig) {
+        this.ldapConfig = ldapConfig;
     }
 
     /**

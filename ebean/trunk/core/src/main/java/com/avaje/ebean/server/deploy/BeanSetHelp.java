@@ -43,6 +43,10 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		this.loader = loader;
 	}
 	
+    public Iterator<?> getIterator(Object collection) {
+        return ((Set<?>) collection).iterator();
+    }
+	
 	public BeanCollectionAdd getBeanCollectionAdd(Object bc,String mapKey) {
 	    if (bc instanceof BeanSet<?>){
     		BeanSet<?> beanSet = (BeanSet<?>)bc;
@@ -78,7 +82,7 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	}
 
 	public Object createEmpty(boolean vanilla) {
-	    return vanilla ? new ArrayList<T>() : new BeanSet<T>();
+	    return vanilla ? new LinkedHashSet<T>() : new BeanSet<T>();
 	}
 
 	public BeanCollection<T> createReference(Object parentBean, String propertyName) {

@@ -31,6 +31,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.internal.SpiQuery;
 import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.server.core.OrmQueryRequest;
+import com.avaje.ebean.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.type.DataBind;
 
@@ -114,7 +115,7 @@ public class CQueryRowCount {
 		return sql;
 	}
 	
-	public OrmQueryRequest<?> getQueryRequest() {
+	public SpiOrmQueryRequest<?> getQueryRequest() {
 		return request;
 	}
 

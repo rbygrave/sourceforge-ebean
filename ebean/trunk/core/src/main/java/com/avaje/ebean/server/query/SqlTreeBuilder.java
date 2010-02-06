@@ -98,12 +98,7 @@ public class SqlTreeBuilder {
 
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
 
-		if (desc.isTableGenerated()) {
-			summary.append(desc.getBaseTable());
-
-		} else {
-			summary.append(desc.getName());
-		}
+		summary.append(desc.getName());
 
 		// build the appropriate chain of SelectAdapter's
 		buildRoot(desc);

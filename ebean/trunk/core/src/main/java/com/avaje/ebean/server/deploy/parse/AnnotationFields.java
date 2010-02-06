@@ -47,10 +47,13 @@ import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.EmbeddedColumns;
 import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.annotation.Formula;
+import com.avaje.ebean.annotation.LdapAttribute;
+import com.avaje.ebean.annotation.LdapId;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.dbplatform.IdType;
+import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyAssoc;
@@ -63,6 +66,9 @@ import com.avaje.ebean.server.type.ScalarType;
 import com.avaje.ebean.server.type.ScalarTypeBytesBase;
 import com.avaje.ebean.server.type.ScalarTypeBytesEncrypted;
 import com.avaje.ebean.server.type.ScalarTypeEncryptedWrapper;
+import com.avaje.ebean.server.type.ScalarTypeLdapBoolean;
+import com.avaje.ebean.server.type.ScalarTypeLdapDate;
+import com.avaje.ebean.server.type.ScalarTypeLdapTimestamp;
 import com.avaje.ebean.server.type.TypeManager;
 import com.avaje.ebean.validation.Length;
 import com.avaje.ebean.validation.NotNull;
@@ -147,11 +153,22 @@ public class AnnotationFields extends AnnotationParser {
 		if (column != null) {
 			readColumn(column, prop);
 		} 
+		LdapAttribute ldapAttribute = get(prop, LdapAttribute.class);
+        if (ldapAttribute != null) {
+            // read ldap specific property settings
+            readLdapAttribute(ldapAttribute, prop);
+        }
+		
 		if (prop.getDbColumn() == null){
-			// No @Column annotation or @Column.name() not set
-			// Use the NamingConvention to set the DB column name
-			String dbColumn = namingConvention.getColumnFromProperty(beanType, prop.getName());
-			prop.setDbColumn(dbColumn);
+		    if (EntityType.LDAP.equals(descriptor.getEntityType())) {
+		        // just use matching for now. Could consider an LdapNamingConvention later.
+		        prop.setDbColumn(prop.getName());
+		    } else {
+    			// No @Column annotation or @Column.name() not set
+    			// Use the NamingConvention to set the DB column name
+    			String dbColumn = namingConvention.getColumnFromProperty(beanType, prop.getName());
+    			prop.setDbColumn(dbColumn);
+		    }
 		}
 
 		GeneratedValue gen = get(prop, GeneratedValue.class);
@@ -163,7 +180,13 @@ public class AnnotationFields extends AnnotationParser {
 		if (id != null) {
 			readId(id, prop);
 		}
-        
+		LdapId ldapId = (LdapId)get(prop, LdapId.class);
+        if (ldapId != null) {
+            prop.setId(true);
+            prop.setNullable(false);
+        }
+		
+		
 		// determine the JDBC type using Lob/Temporal
 		// otherwise based on the property Class
 		Lob lob = get(prop, Lob.class);
@@ -271,6 +294,36 @@ public class AnnotationFields extends AnnotationParser {
                 }
             }
 		}
+		
+		if (EntityType.LDAP.equals(descriptor.getEntityType())){
+		    adjustTypesForLdap(prop);
+		}
+	}
+	
+	private static final ScalarTypeLdapBoolean LDAP_BOOLEAN_SCALARTYPE = new ScalarTypeLdapBoolean();
+	
+	@SuppressWarnings("unchecked")
+    private void adjustTypesForLdap(DeployBeanProperty prop) {
+	    
+        Class<?> pt = prop.getPropertyType();
+        if (boolean.class.equals(pt) || Boolean.class.equals(pt)){
+            prop.setScalarType(LDAP_BOOLEAN_SCALARTYPE);
+        
+        } else {
+            ScalarType<?> sqlScalarType = prop.getScalarType();
+            int sqlType = sqlScalarType.getJdbcType();
+            if (sqlType == Types.TIMESTAMP){
+                // Use LDAP Timestamp String format
+                prop.setScalarType(new ScalarTypeLdapTimestamp(sqlScalarType));
+                
+            } else if (sqlType == Types.DATE){
+                // Use LDAP Timestamp String format
+                prop.setScalarType(new ScalarTypeLdapDate(sqlScalarType));   
+            
+            } else {
+                // Just using string parsing for all other types
+            }
+        }
 	}
 	
     private void setEncryption(DeployBeanProperty prop, Encrypted encrypted) {
@@ -402,6 +455,7 @@ public class AnnotationFields extends AnnotationParser {
 		}
 	}
 
+    
 	private void readColumn(Column columnAnn, DeployBeanProperty prop) {
 
 		if (!isEmpty(columnAnn.name())){

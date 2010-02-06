@@ -73,7 +73,7 @@ public final class DeployUpdateParser extends DeployParser {
 		}
 	}
 	
-	private String getDeployWord(String expression) {
+	public String getDeployWord(String expression) {
 	
 		if (expression.equalsIgnoreCase(beanDescriptor.getName())){
 			return beanDescriptor.getBaseTable();

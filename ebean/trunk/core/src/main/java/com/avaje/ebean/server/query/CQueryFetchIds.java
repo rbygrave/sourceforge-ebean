@@ -41,6 +41,7 @@ import com.avaje.ebean.internal.SpiTransaction;
 import com.avaje.ebean.internal.SpiQuery.Mode;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ReferenceOptions;
+import com.avaje.ebean.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
@@ -136,7 +137,7 @@ public class CQueryFetchIds {
 		return sql;
 	}
 	
-	public OrmQueryRequest<?> getQueryRequest() {
+	public SpiOrmQueryRequest<?> getQueryRequest() {
 		return request;
 	}
 

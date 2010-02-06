@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.deploy;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
@@ -32,6 +33,11 @@ public interface BeanCollectionHelp<T> {
 	 * Create an empty collection of the correct type.
 	 */
 	public Object createEmpty(boolean vanilla);
+
+	/**
+	 * Create an iterator for reading the entries.
+	 */
+	public Iterator<?> getIterator(Object collection);
 
 	/**
 	 * Add a bean to the List Set or Map.

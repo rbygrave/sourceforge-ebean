@@ -48,6 +48,7 @@ import com.avaje.ebean.internal.SpiQuery.Mode;
 import com.avaje.ebean.server.autofetch.AutoFetchManager;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.core.ReferenceOptions;
+import com.avaje.ebean.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanCollectionHelp;
 import com.avaje.ebean.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
@@ -365,7 +366,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		return request.getGraphContext();
 	}
 
-	public OrmQueryRequest<?> getQueryRequest() {
+	public SpiOrmQueryRequest<?> getQueryRequest() {
 		return request;
 	}
 

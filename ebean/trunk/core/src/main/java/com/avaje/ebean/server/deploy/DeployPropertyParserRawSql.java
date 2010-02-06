@@ -10,28 +10,32 @@ import java.util.Set;
  */
 public final class DeployPropertyParserRawSql extends DeployParser {
 
-	
-	private final RawSqlSelect rawSqlSelect;
-	
-	public DeployPropertyParserRawSql(RawSqlSelect rawSqlSelect) {
-		this.rawSqlSelect = rawSqlSelect;
-	}
+    private final RawSqlSelect rawSqlSelect;
 
-	/**
-	 * Returns null for raw sql queries.
-	 */
-	public Set<String> getIncludes() {
-		return null;
-	}
+    public DeployPropertyParserRawSql(RawSqlSelect rawSqlSelect) {
+        this.rawSqlSelect = rawSqlSelect;
+    }
 
-	public String convertWord() {
-	
-	    RawSqlColumnInfo columnInfo = rawSqlSelect.getRawSqlColumnInfo(word);
-		if (columnInfo == null){
-			return word;
-		} else {
-		    return columnInfo.getName();
-		}
-	}
+    /**
+     * Returns null for raw sql queries.
+     */
+    public Set<String> getIncludes() {
+        return null;
+    }
+
+    public String convertWord() {
+        String r = getDeployWord(word);
+        return r == null ? word : r;
+    }
+
+    @Override
+    public String getDeployWord(String expression) {
+        RawSqlColumnInfo columnInfo = rawSqlSelect.getRawSqlColumnInfo(expression);
+        if (columnInfo == null) {
+            return null;
+        } else {
+            return columnInfo.getName();
+        }
+    }
 
 }
