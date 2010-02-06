@@ -77,7 +77,13 @@ public class ClassMetaReaderVisitor extends EmptyVisitor implements EnhanceConst
 			}
 			return super.visitField(access, name, desc, signature, value);
 		}
-
+        if ((access & Opcodes.ACC_TRANSIENT) != 0) {
+            if (isLog(2)) {
+                log("Skip transient field " + name);
+            }
+            // no interception of transient fields
+            return super.visitField(access, name, desc, signature, value);
+        }
 		return classMeta.createLocalFieldVisitor(name, desc);
 	}
 

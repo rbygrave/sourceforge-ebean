@@ -12,19 +12,16 @@ import com.avaje.ebean.enhance.asm.FieldVisitor;
 public class LocalFieldVisitor  implements FieldVisitor {
 
 	private static final EmptyVisitor emptyVisitor = new EmptyVisitor();
+		
+	private final FieldVisitor fv;
 	
-	final ClassVisitor cv;
-	
-	final FieldVisitor fv;
-	
-	final FieldMeta fieldMeta;
+	private final FieldMeta fieldMeta;
 	
 	/**
 	 * Constructor used for subclass generation.
 	 * @param fieldMeta the fieldMeta data
 	 */
 	public LocalFieldVisitor(FieldMeta fieldMeta) {
-		this.cv = null;
 		this.fv = null;
 		this.fieldMeta = fieldMeta;
 	}
@@ -36,7 +33,6 @@ public class LocalFieldVisitor  implements FieldVisitor {
 	 * @param fieldMeta the fieldMeta data
 	 */
 	public LocalFieldVisitor(ClassVisitor cv, FieldVisitor fv, FieldMeta fieldMeta) {
-		this.cv = cv;
 		this.fv = fv;
 		this.fieldMeta = fieldMeta;
 	}
@@ -53,7 +49,7 @@ public class LocalFieldVisitor  implements FieldVisitor {
 	 * Return the field name.
 	 */
 	public String getName() {
-		return fieldMeta.fieldName;
+		return fieldMeta.getFieldName();
 	}
 	
 	/**

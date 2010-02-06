@@ -57,9 +57,9 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 		} else {
 			if (meta.isLog(2)) {
 				meta.log("adding equals() hashCode() and _ebean_getIdentity() with Id field " 
-					+ idFieldMeta.getName()+ " index:" + idFieldIndex+" primative:"+idFieldMeta.primativeType);
+					+ idFieldMeta.getName()+ " index:" + idFieldIndex+" primative:"+idFieldMeta.isPrimativeType());
 			}
-			if (idFieldMeta.primativeType){
+			if (idFieldMeta.isPrimativeType()){
 				addGetIdentityPrimitive(cv, meta, idFieldIndex, idFieldMeta);
 			} else {
 				addGetIdentityObject(cv, meta, idFieldIndex);	
