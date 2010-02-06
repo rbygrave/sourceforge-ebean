@@ -310,7 +310,7 @@ public class ClassMeta {
 	}
 
 	/**
-	 * Return true if the class has an Entity, Embeddable or MappedSuperclass annotation.
+	 * Return true if the class has an Entity, Embeddable, MappedSuperclass or LdapDomain annotation.
 	 */
 	public boolean isEntity() {
 		if (classAnnotation.contains(EnhanceConstants.ENTITY_ANNOTATION)) {
@@ -322,6 +322,9 @@ public class ClassMeta {
 		if (classAnnotation.contains(EnhanceConstants.MAPPEDSUPERCLASS_ANNOTATION)) {
 			return true;
 		}
+        if (classAnnotation.contains(EnhanceConstants.LDAPDOMAIN_ANNOTATION)) {
+            return true;
+        }
 		return false;
 	}
 

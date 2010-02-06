@@ -1,7 +1,5 @@
 package com.avaje.ebean.enhance.agent;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.HashSet;
 
 import com.avaje.ebean.enhance.asm.ClassVisitor;
@@ -20,42 +18,27 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 
 	private static final Type BOOLEAN_OBJECT_TYPE = Type.getType(Boolean.class);
 	
-	final ClassMeta classMeta;
-	final String fieldClass;
-	final String fieldName;
-	final String fieldDesc;
+	private final ClassMeta classMeta;
+	private final String fieldClass;
+	private final String fieldName;
+	private final String fieldDesc;
 
-	final HashSet<String> annotations = new HashSet<String>();
+	private final HashSet<String> annotations = new HashSet<String>();
 
-	final Type asmType;
+	private final Type asmType;
 
-	final boolean primativeType;
-	final boolean arrayType;
-	final boolean objectType;
+	private final boolean primativeType;
+	private final boolean objectType;
 
-	final String getMethodName;
-	final String getMethodDesc;
-	final String setMethodName;
-	final String setMethodDesc;
-	final String getNoInterceptMethodName;
-	final String setNoInterceptMethodName;
+	private final String getMethodName;
+	private final String getMethodDesc;
+	private final String setMethodName;
+	private final String setMethodDesc;
+	private final String getNoInterceptMethodName;
+	private final String setNoInterceptMethodName;
 
-	final String publicSetterName;
-	final String publicGetterName;
-
-	/**
-	 * Construct based on field.
-	 * <p>
-	 * Used when getting inherited fields from super classes.
-	 * </p>
-	 */
-	public FieldMeta(Field field, String fieldClass) {
-		this(null, field.getName(), Type.getDescriptor(field.getType()), fieldClass);
-		Annotation[] anno = field.getAnnotations();
-		for (Annotation a : anno) {
-			addAnnotation(a);
-		}
-	}
+	private final String publicSetterName;
+	private final String publicGetterName;
 
 	/**
 	 * Construct based on field name and desc from reading byte code.
@@ -73,7 +56,6 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 
 		int sort = asmType.getSort();
 		primativeType = sort > Type.VOID && sort <= Type.DOUBLE;
-		arrayType = sort == Type.ARRAY;
 		objectType = sort == Type.OBJECT;
 		
 		getMethodName = "_ebean_get_" + name;
@@ -131,8 +113,22 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	public String toString(){
 		return fieldName;
 	}
-	
+		
 	/**
+	 * Return the field name.
+	 */
+	public String getFieldName() {
+        return fieldName;
+    }
+
+    /**
+	 * Return true if this is a primativeType.
+	 */
+	public boolean isPrimativeType() {
+        return primativeType;
+    }
+
+    /**
 	 * The expected public getter name following bean naming convention.
 	 * <p>
 	 * This is generally used for subclassing rather than javaagent enhancement.
@@ -173,15 +169,6 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	 */
 	protected void addAnnotationDesc(String desc) {
 		annotations.add(desc);
-	}
-
-	/**
-	 * Add a field annotation.
-	 */
-	private void addAnnotation(Annotation a) {
-		String at = a.annotationType().getName();
-		at = "L" + at.replace('.', '/') + ";";
-		annotations.add(at);
 	}
 
 	/**
@@ -461,11 +448,6 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 				// don't intercept id properties 
 				// setter required for propertyChangeListener
 				addPublicSetMethod(cv, classMeta, checkExisting);
-				
-//			} else if (isMany()){
-//				// setter required for propertyChangeListener
-//				addPublicGetMethod(cv, classMeta, checkExisting);				
-//				addPublicSetMethod(cv, classMeta, checkExisting);
 				
 			} else {
 				addPublicGetMethod(cv, classMeta, checkExisting);				
