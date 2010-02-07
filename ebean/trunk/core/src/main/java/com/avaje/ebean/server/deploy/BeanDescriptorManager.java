@@ -1323,24 +1323,26 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         return hasVersionProperty;
     }
 
+    private boolean hasEntityBeanInterface(Class<?> beanClass) {
+        
+        Class<?>[] interfaces = beanClass.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++) {
+            if (interfaces[i].equals(EntityBean.class)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
-     * Test the bean type to see if it implements EntityBean natively without
-     * any Byte code enhancement.
+     * Test the bean type to see if it implements EntityBean interface already.
      */
     private void setEntityBeanClass(DeployBeanDescriptor<?> desc) {
 
         Class<?> beanClass = desc.getBeanType();
 
         if (desc.isAbstract()) {
-
-            boolean enhancedAbstract = false;
-            Class<?>[] interfaces = beanClass.getInterfaces();
-            for (int i = 0; i < interfaces.length; i++) {
-                if (interfaces[i].equals(EntityBean.class)) {
-                    enhancedAbstract = true;
-                }
-            }
-            if (enhancedAbstract) {
+            if (hasEntityBeanInterface(beanClass)) {
                 checkEnhanced(desc, beanClass);
             } else {
                 checkSubclass(desc, beanClass);
@@ -1348,9 +1350,20 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             return;
         }
         try {
-            Object testBean = beanClass.newInstance();
-
-            if (testBean instanceof EntityBean) {
+            Object testBean =  null;
+            try {
+                testBean = beanClass.newInstance();
+            } catch (InstantiationException e){
+                // expected when no default constructor
+                e.printStackTrace();
+            } catch (IllegalAccessException e){
+                // expected when no default constructor   
+                e.printStackTrace();
+            }
+            if (testBean instanceof EntityBean == false) {
+                checkSubclass(desc, beanClass);
+                
+            } else {
                 String className = beanClass.getName();
                 try {
                     // check that it really is enhanced (rather than mixed
@@ -1370,10 +1383,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
                 }
 
                 checkEnhanced(desc, beanClass);
-
-            } else {
-                checkSubclass(desc, beanClass);
-            }
+            } 
 
         } catch (PersistenceException ex) {
             throw ex;

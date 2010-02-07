@@ -1411,20 +1411,34 @@ public final class DefaultServer implements SpiEbeanServer {
     }
 
     /**
-     * Force an update using the bean.
+     * Force an update using the bean updating non-null properties.
      */
     public void update(Object bean) {
-        update(bean, null);
+        update(bean, null, null);
     }
 
     /**
-     * Force an update using the bean with an explicit transaction.
+     * Force an update using the bean explicitly stating which properties to include in the update.
+     */
+    public void update(Object bean, Set<String> updateProps) {
+        update(bean, updateProps, null);
+    }
+    
+    /**
+     * Force an update using the bean updating non-null properties.
      */
     public void update(Object bean, Transaction t) {
+        update(bean, null, t);
+    }
+    
+    /**
+     * Force an update using the bean explicitly stating which properties to include in the update.
+     */
+    public void update(Object bean, Set<String> updateProps, Transaction t) {
         if (bean == null) {
             throw new NullPointerException(Message.msg("bean.isnull"));
         }
-        persister.forceUpdate(bean, t);
+        persister.forceUpdate(bean, updateProps, t);
     }
 
     /**

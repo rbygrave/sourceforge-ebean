@@ -19,13 +19,10 @@
  */
 package com.avaje.ebean.server.deploy.parse;
 
-import java.lang.reflect.Constructor;
-
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.annotation.LdapDomain;
@@ -89,7 +86,7 @@ public class AnnotationClass extends AnnotationParser {
 	        
 		Entity entity = cls.getAnnotation(Entity.class);
 		if (entity != null){
-			checkDefaultConstructor();
+			//checkDefaultConstructor();
 			if (entity.name().equals("")) {
 				descriptor.setName(cls.getSimpleName());
 
@@ -167,32 +164,32 @@ public class AnnotationClass extends AnnotationParser {
 		descriptor.add(upd);
 	}
 
-	/**
-	 * Check to see if the Entity bean has a default constructor.
-	 * <p>
-	 * If it does not then it is expected that this entity bean has an
-	 * associated BeanFinder.
-	 * </p>
-	 */
-	private void checkDefaultConstructor() {
-
-		Class<?> beanType = descriptor.getBeanType();
-
-		Constructor<?> defaultConstructor;
-		try {
-			defaultConstructor = beanType.getConstructor((Class[]) null);
-			if (defaultConstructor == null) {
-				String m = "No default constructor on "+beanType;
-				throw new PersistenceException(m);
-			}
-		} catch (SecurityException e) {
-			String m = "Error checking for default constructor on "+beanType;
-			throw new PersistenceException(m, e);
-
-		} catch (NoSuchMethodException e) {
-			String m = "No default constructor on "+beanType;
-			throw new PersistenceException(m);
-		}
-	}
+//	/**
+//	 * Check to see if the Entity bean has a default constructor.
+//	 * <p>
+//	 * If it does not then it is expected that this entity bean has an
+//	 * associated BeanFinder.
+//	 * </p>
+//	 */
+//	private void checkDefaultConstructor() {
+//
+//		Class<?> beanType = descriptor.getBeanType();
+//
+//		Constructor<?> defaultConstructor;
+//		try {
+//			defaultConstructor = beanType.getConstructor((Class[]) null);
+//			if (defaultConstructor == null) {
+//				String m = "No default constructor on "+beanType;
+//				throw new PersistenceException(m);
+//			}
+//		} catch (SecurityException e) {
+//			String m = "Error checking for default constructor on "+beanType;
+//			throw new PersistenceException(m, e);
+//
+//		} catch (NoSuchMethodException e) {
+//			String m = "No default constructor on "+beanType;
+//			throw new PersistenceException(m);
+//		}
+//	}
 
 }

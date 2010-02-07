@@ -20,6 +20,7 @@
 package com.avaje.ebean.server.persist;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -169,13 +170,11 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Force an Update using the given bean.
 	 */
-    public void forceUpdate(Object bean, Transaction t) {
+    public void forceUpdate(Object bean, Set<String> updateProps, Transaction t) {
         
         if (bean == null) {
             throw new NullPointerException(Message.msg("bean.isnull"));
         }
-
-        Set<String> updateProps = null;
 
         if (bean instanceof EntityBean){
             EntityBeanIntercept ebi = ((EntityBean)bean)._ebean_getIntercept();
@@ -185,7 +184,9 @@ public final class DefaultPersister implements Persister {
                 update(req);
                 return;
             }
-            updateProps = ebi.getLoadedProps();
+            if (updateProps == null){
+                updateProps = ebi.getLoadedProps();
+            }
         }
         
         BeanManager<?> mgr = getBeanManager(bean);
@@ -205,13 +206,22 @@ public final class DefaultPersister implements Persister {
         // determine concurrency mode based on version property not null
         ConcurrencyMode mode = descriptor.determineConcurrencyMode(bean);
         
-        // determine loaded properties (anything that is non-null)
         if (updateProps == null){
+            // determine based on anything that is non-null
             updateProps = descriptor.determineLoadedProperties(bean);
             
         } else if (updateProps.isEmpty()){
             // in this case means we want to include all properties in the update 
             updateProps = null;
+        
+        } else if (ConcurrencyMode.VERSION.equals(mode)){
+            // check that the version property is included
+            String verName = descriptor.firstVersionProperty().getName();
+            if (!updateProps.contains(verName)){
+                // defensively copy the updateProps and add the version property name
+                updateProps = new HashSet<String>(updateProps);
+                updateProps.add(verName);
+            }
         }
         
         // special constructor for forceUpdate mode ...

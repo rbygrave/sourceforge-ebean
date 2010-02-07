@@ -460,10 +460,9 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
             controllerPost();
         }
 
-        if (bean instanceof EntityBean) {
+        if (intercept != null){
             // if bean persisted again then should result in an update
-            EntityBean entityBean = (EntityBean) bean;
-            entityBean._ebean_getIntercept().setLoaded();
+            intercept.setLoaded();
         }
 
         addEvent();
