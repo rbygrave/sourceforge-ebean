@@ -15,13 +15,13 @@ import com.avaje.ebean.enhance.asm.Opcodes;
  */
 public class ConstructorAdapter extends MethodAdapter implements EnhanceConstants, Opcodes {
 
-	final ClassMeta meta;
+	private final ClassMeta meta;
 
-	final String className;
+	private final String className;
 
-	final String constructorDesc;
+	private final String constructorDesc;
 
-	boolean constructorInitializationDone;
+	private boolean constructorInitializationDone;
 
 	public ConstructorAdapter(MethodVisitor mv, ClassMeta meta, String constructorDesc) {
 		super(mv);
