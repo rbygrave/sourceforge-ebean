@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.reflect;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
@@ -24,7 +25,8 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	private final EntityBean entityBean;
 	private final Constructor<?> constructor;
 	private final Constructor<?> vanillaConstructor;
-
+	private final boolean hasNewInstanceMethod;
+	
 	public EnhanceBeanReflect(Class<?> vanillaType, Class<?> clazz) {
 		try {
 			this.clazz = clazz;
@@ -32,10 +34,12 @@ public final class EnhanceBeanReflect implements BeanReflect {
 				this.entityBean = null;
 				this.constructor = null;
 				this.vanillaConstructor = null;
+				this.hasNewInstanceMethod = false;
 			} else {
+                this.vanillaConstructor = defaultConstructor(vanillaType);
 				this.entityBean = (EntityBean) clazz.newInstance();
 				this.constructor = defaultConstructor(clazz);
-				this.vanillaConstructor = defaultConstructor(vanillaType);
+				this.hasNewInstanceMethod = hasNewInstanceMethod(clazz);
 			}
 		} catch (InstantiationException e) {
 			throw new PersistenceException(e);
@@ -47,18 +51,34 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	private Constructor<?> defaultConstructor(Class<?> cls) {
 		try {
 			Class<?>[] params = new Class[0];
-			return cls.getConstructor(params);
+			return cls.getDeclaredConstructor(params);
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
+	
+	private boolean hasNewInstanceMethod(Class<?> clazz) {
+        Class<?>[] params = new Class[0];
+	    try {
+            Method method = clazz.getMethod("_ebean_newInstance", params);
+            return method != null;
+        } catch (SecurityException e) {
+            return false;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+	}
 
 	public Object createEntityBean() {
-		try {
-			return constructor.newInstance(constuctorArgs);
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+	    if (hasNewInstanceMethod){
+	        return entityBean._ebean_newInstance();
+	    } else {
+    		try {
+    			return constructor.newInstance(constuctorArgs);
+    		} catch (Exception ex) {
+    			throw new RuntimeException(ex);
+    		}
+	    }
 	}
 
 	public Object createVanillaBean() {

@@ -11,6 +11,7 @@ import com.avaje.ebean.enhance.agent.InterceptField;
 import com.avaje.ebean.enhance.agent.MarkerField;
 import com.avaje.ebean.enhance.agent.MethodEquals;
 import com.avaje.ebean.enhance.agent.MethodIsEmbeddedNewOrDirty;
+import com.avaje.ebean.enhance.agent.MethodNewInstance;
 import com.avaje.ebean.enhance.agent.MethodPropertyChangeListener;
 import com.avaje.ebean.enhance.agent.MethodSetEmbeddedLoaded;
 import com.avaje.ebean.enhance.agent.NoEnhancementRequiredException;
@@ -192,6 +193,13 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 		if (!classMeta.isEntityEnhancementRequired()){
 			throw new NoEnhancementRequiredException();
 		}
+		
+		if (!classMeta.hasDefaultConstructor()){
+		    if (isLog(2)){
+		        log("... adding default constructor");
+		    }
+		    SubClassConstructor.addDefault(cv, classMeta);
+		}
 
 		MarkerField.addGetMarker(cv, classMeta.getClassName());
 
@@ -210,6 +218,7 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 		
 		MethodSetEmbeddedLoaded.addMethod(cv, classMeta);
 		MethodIsEmbeddedNewOrDirty.addMethod(cv, classMeta);
+		MethodNewInstance.addMethod(cv, classMeta);
 				
 		// add a writeReplace method to control serialisation
 		MethodWriteReplace.add(cv, classMeta);

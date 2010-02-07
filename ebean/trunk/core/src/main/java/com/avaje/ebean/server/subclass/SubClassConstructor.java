@@ -3,16 +3,28 @@ package com.avaje.ebean.server.subclass;
 import com.avaje.ebean.enhance.agent.ClassMeta;
 import com.avaje.ebean.enhance.agent.EnhanceConstants;
 import com.avaje.ebean.enhance.agent.VisitMethodParams;
+import com.avaje.ebean.enhance.asm.ClassVisitor;
 import com.avaje.ebean.enhance.asm.Label;
 import com.avaje.ebean.enhance.asm.MethodVisitor;
 import com.avaje.ebean.enhance.asm.Opcodes;
 
 public class SubClassConstructor implements Opcodes, EnhanceConstants{
 
+    public static void addDefault(ClassVisitor cv, ClassMeta meta) {
+        VisitMethodParams params = new VisitMethodParams(cv, Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        add(params, meta);
+    }
+    
 	public static void add(VisitMethodParams params, ClassMeta meta) {
 		
 		String className = meta.getClassName();
 		String superClassName = meta.getSuperClassName();
+		
+		if (params.forcePublic()){
+		    if (meta.isLog(0)){
+		        meta.log(" forcing ACC_PUBLIC ");
+		    }
+		}
 		
 		MethodVisitor mv = params.visitMethod();		
 		//mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);

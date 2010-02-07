@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.server.core;
 
+import java.util.Set;
+
 import com.avaje.ebean.CallableSql;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
@@ -33,7 +35,7 @@ public interface Persister {
     /**
      * Force an Update using the given bean.
      */
-    public void forceUpdate(Object entityBean, Transaction t);
+    public void forceUpdate(Object entityBean, Set<String> updateProps, Transaction t);
 
     /**
      * Insert or update the bean depending on its state.
