@@ -809,7 +809,34 @@ public interface EbeanServer {
     public void update(Object bean);
 
     /**
-     * Force an update using the bean with an explicit transaction.
+     * Force an update using the bean explicitly stating the properties to update.
+     * <pre class="code">
+     * 
+     * Customer c = new Customer();
+     * c.setId(7);
+     * c.setName(&quot;ModifiedNameNoOCC&quot;);
+     * 
+     * // generally you should set the version property 
+     * // so that Optimistic Concurrency Checking is used.
+     * // If a version property is not set then no Optimistic
+     * // Concurrency Checking occurs for the update
+     * //c.setLastUpdate(lastUpdateTime);
+     * 
+     * // by default the Non-null properties 
+     * // are included in the update
+     * ebeanServer.update(c);
+     * 
+     * </pre>
+     */
+    public void update(Object bean, Set<String> updateProps);
+
+    /**
+     * Force an update of the specified properties of the bean with an explicit transaction.
+     */
+    public void update(Object bean, Set<String> updateProps, Transaction t);
+    
+    /**
+     * Force an update of the non-null properties of the bean with an explicit transaction.
      */
     public void update(Object bean, Transaction t);
 

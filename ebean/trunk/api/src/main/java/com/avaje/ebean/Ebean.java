@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -525,7 +526,7 @@ public final class Ebean {
     }
 
     /**
-     * Force an update using the bean.
+     * Force an update using the bean updating the non-null properties.
      * <p>
      * You can use this method to FORCE an update to occur. When
      * {@link Ebean#save(Object)} is used Ebean determines whether to use an
@@ -560,6 +561,22 @@ public final class Ebean {
         serverMgr.getPrimaryServer().update(bean);
     }
 
+    /**
+     * Force an update using the bean explicitly stating the properties
+     * to update.
+     * <p>
+     * If you don't specify explicit properties to use in the update then
+     * the non-null properties are included in the update.
+     * </p>
+     * 
+     * @param bean The bean holding the values to be included in the update.
+     * @param updateProps the explicit set of properties to include in the update.
+     */
+    public static void update(Object bean, Set<String> updateProps) {
+        serverMgr.getPrimaryServer().update(bean, updateProps);
+    }
+
+    
     /**
      * Save all the beans from an Iterator.
      */

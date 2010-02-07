@@ -42,8 +42,19 @@ public interface EntityBean extends Serializable {
 	 */
 	public String _ebean_getMarker();
 
+    /**
+     * Create and return a new entity bean instance.
+     */
+    public Object _ebean_newInstance();
+
+    /**
+     * Add a PropertyChangeListener to this bean.
+     */
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	
+    /**
+     * Remove a PropertyChangeListener from this bean.
+     */
 	public void removePropertyChangeListener(PropertyChangeListener listener);
 	
 	/**
