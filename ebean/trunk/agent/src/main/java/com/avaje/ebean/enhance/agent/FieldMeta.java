@@ -485,7 +485,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		mv.visitLabel(l1);
 		mv.visitLineNumber(1, l1);
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitMethodInsn(INVOKESPECIAL, classMeta.getSuperClassName(), params.name, params.desc);
+		mv.visitMethodInsn(INVOKESPECIAL, classMeta.getSuperClassName(), params.getName(), params.getDesc());
 		mv.visitInsn(iReturnOpcode);
 		Label l2 = new Label();
 		mv.visitLabel(l2);
@@ -552,7 +552,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		mv.visitLineNumber(1, l1);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitVarInsn(iLoadOpcode, 1);
-		mv.visitMethodInsn(INVOKESPECIAL, superClassName, params.name, params.desc);
+		mv.visitMethodInsn(INVOKESPECIAL, superClassName, params.getName(), params.getDesc());
 
 		Label levt = new Label();
 		mv.visitLabel(levt);

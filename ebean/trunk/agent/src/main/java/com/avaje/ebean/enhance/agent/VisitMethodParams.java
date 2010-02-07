@@ -21,23 +21,24 @@ package com.avaje.ebean.enhance.agent;
 
 import com.avaje.ebean.enhance.asm.ClassVisitor;
 import com.avaje.ebean.enhance.asm.MethodVisitor;
+import com.avaje.ebean.enhance.asm.Opcodes;
 
 /**
  * Utility object used to hold all the method parameters.
  */
 public class VisitMethodParams {
 
-    ClassVisitor cv;
+    private final ClassVisitor cv;
 
-    int access;
+    private int access;
 
-    String name;
+    private final String name;
 
-    String desc;
+    private final String desc;
 
-    String signiture;
+    private final String signiture;
 
-    String[] exceptions;
+    private final String[] exceptions;
     
     /**
      * Create with all the method parameters.
@@ -51,6 +52,18 @@ public class VisitMethodParams {
         this.exceptions = exceptions;
         this.signiture = signiture;
     }
+    
+    /**
+     * Force the access to the ACC_PUBLIC.
+     */
+    public boolean forcePublic() {
+        if (access != Opcodes.ACC_PUBLIC){
+            access = Opcodes.ACC_PUBLIC;
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Visit the method.
@@ -58,4 +71,20 @@ public class VisitMethodParams {
     public MethodVisitor visitMethod() {
         return cv.visitMethod(access, name, desc, signiture, exceptions);
     }
+
+    /**
+     * Return the method name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Return the method description.
+     */
+    public String getDesc() {
+        return desc;
+    }
+    
+    
 }

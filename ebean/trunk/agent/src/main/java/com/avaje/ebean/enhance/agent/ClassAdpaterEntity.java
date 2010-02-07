@@ -222,14 +222,18 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 			firstMethod = false;
 		}
 
-		MethodVisitor mv =  super.visitMethod(access, name, desc, signature, exceptions);
 
 		classMeta.addExistingMethod(name, desc);
 		
-		if (isConstructor(access, name, desc, signature, exceptions)){
+		if (isDefaultConstructor(name, desc)){
+		    // make sure the access is public
+	        MethodVisitor mv =  super.visitMethod(Opcodes.ACC_PUBLIC, name, desc, signature, exceptions);
 			// also create the entityBeanIntercept object
 			return new ConstructorAdapter(mv, classMeta, desc);
 		}
+
+	    MethodVisitor mv =  super.visitMethod(access, name, desc, signature, exceptions);
+
 		if (interceptEntityMethod(access, name, desc, signature, exceptions)) {
 			// change the method replacing the relevant GETFIELD PUTFIELD with
 			// our special field methods with interception... 
@@ -248,6 +252,10 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 
 		if (!classMeta.isEntityEnhancementRequired()){
 			throw new NoEnhancementRequiredException();
+		}
+		
+		if (!classMeta.hasDefaultConstructor()){
+		    DefaultConstructor.add(cv, classMeta);
 		}
 
 		MarkerField.addGetMarker(cv, classMeta.getClassName());
@@ -269,6 +277,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		
 		MethodSetEmbeddedLoaded.addMethod(cv, classMeta);
 		MethodIsEmbeddedNewOrDirty.addMethod(cv, classMeta);
+        MethodNewInstance.addMethod(cv, classMeta);
 		
 		// register with the agentContext
 		enhanceContext.addClassMeta(classMeta);
@@ -276,8 +285,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 		super.visitEnd();
 	}
 
-	private boolean isConstructor(int access, String name, String desc, String signature,
-			String[] exceptions){
+	private boolean isDefaultConstructor(String name, String desc){
 
 		if (name.equals("<init>")) {
 			if (desc.equals("()V")) {
