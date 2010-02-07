@@ -2,6 +2,7 @@ package com.avaje.tests.basic;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -54,6 +55,16 @@ public class TestIUDVanilla extends TestCase {
         // e3.setLastUpdate(e2.getLastUpdate());
 
         Ebean.update(e3);
+        
+        e3.setName("ModAgain");
+        e3.setDescription("Banana");
+        
+        
+        Set<String> updateProps = new HashSet<String>();
+        updateProps.add("name");
+        updateProps.add("description");
+        
+        Ebean.update(e3, updateProps);
 
     }
 }
