@@ -328,6 +328,7 @@ public class AnnotationFields extends AnnotationParser {
 	
     private void setEncryption(DeployBeanProperty prop, Encrypted encrypted) {
 	    
+        boolean dbEncString = encrypted == null ? true : encrypted.dbEncryption();
 	    int dbLen = encrypted == null ? 0 : encrypted.dbLength();
 	    
 	    ScalarType<?> st = prop.getScalarType();
@@ -343,7 +344,7 @@ public class AnnotationFields extends AnnotationParser {
 	        return;
 	    
 	    } 
-	    if (String.class.equals(st.getType()) && encrypted.dbEncryption()){
+	    if (dbEncString && String.class.equals(st.getType())){
 	        DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
 	        if (dbEncrypt != null){
 	            // Use DB functions to encrypt string content
