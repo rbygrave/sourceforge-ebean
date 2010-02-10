@@ -314,7 +314,7 @@ public class BeanProperty implements ElPropertyValue {
         }
         this.setter = deploy.getSetter();
 
-        this.dbColumn = tableAliasIntern(descriptor, deploy.getDbColumn());
+        this.dbColumn = tableAliasIntern(descriptor, deploy.getDbColumn(), false, null);
         this.sqlFormulaJoin = InternString.intern(deploy.getSqlFormulaJoin());
         this.sqlFormulaSelect = InternString.intern(deploy.getSqlFormulaSelect());
         this.formula = sqlFormulaSelect != null;
@@ -331,13 +331,19 @@ public class BeanProperty implements ElPropertyValue {
         this.hasLocalValidators = (validators.length > 0);
 
         EntityType et = descriptor == null ? null : descriptor.getEntityType();
-        this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder(et));
+        this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder(et), dbEncrypted, dbColumn);
     }
 
-    private String tableAliasIntern(BeanDescriptor<?> descriptor, String s) {
+    private String tableAliasIntern(BeanDescriptor<?> descriptor, String s, boolean dbEncrypted, String dbColumn) {
         if (descriptor != null) {
-            s = StringHelper.replaceString(s, "${ta}.", "${}");// descriptor.getBaseTableAlias()
-            s = StringHelper.replaceString(s, "${ta}", "${}");// descriptor.getBaseTableAlias()
+            s = StringHelper.replaceString(s, "${ta}.", "${}");
+            s = StringHelper.replaceString(s, "${ta}", "${}");
+            
+            if (dbEncrypted){
+                s = descriptor.getDecryptSql(s);
+                String namedParam = ":encryptkey_"+descriptor.getBaseTable()+"___"+dbColumn;
+                s = StringHelper.replaceString(s,"?",namedParam);
+            }
         }
         return InternString.intern(s);
     }

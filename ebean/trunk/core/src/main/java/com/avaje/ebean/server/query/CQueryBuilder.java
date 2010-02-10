@@ -129,11 +129,10 @@ public class CQueryBuilder implements Constants {
     	if (hasMany){
     		// need to count distinct id's ...
         	query.setDistinct(true);
-    		//sqlSelect = null;
     	}
     	
-		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
-		predicates.prepare(true, true);
+		CQueryPredicates predicates = new CQueryPredicates(binder, request);
+		predicates.prepare(true);
 
 		SqlTree sqlTree = createSqlTree(request, predicates);
 
@@ -165,8 +164,8 @@ public class CQueryBuilder implements Constants {
     		sqlSelect = null;
     	}
     	
-		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
-		predicates.prepare(true, true);
+		CQueryPredicates predicates = new CQueryPredicates(binder, request);
+		predicates.prepare(true);
 
 		SqlTree sqlTree = createSqlTree(request, predicates);
 
@@ -191,7 +190,7 @@ public class CQueryBuilder implements Constants {
 			return rawSqlBuilder.build(request);
 		}
 		
-		CQueryPredicates predicates = new CQueryPredicates(binder, request, null);
+		CQueryPredicates predicates = new CQueryPredicates(binder, request);
 		
 		
 		CQueryPlan queryPlan = request.getQueryPlan();
@@ -199,7 +198,7 @@ public class CQueryBuilder implements Constants {
 		if (queryPlan != null){
 			// Reuse the query plan so skip generating SqlTree and SQL.
 			// We do prepare and bind the new parameters
-			predicates.prepare(false, true);
+			predicates.prepare(false);
 			return new CQuery<T>(request, predicates, queryPlan);
 		}
 
@@ -209,7 +208,7 @@ public class CQueryBuilder implements Constants {
 		
 		// We need to check these 'includes' for extra joins 
 		// that are not included via select
-		predicates.prepare(true, true);
+		predicates.prepare(true);
 
 		// Build the tree structure that represents the query.
 		SqlTree sqlTree = createSqlTree(request, predicates);

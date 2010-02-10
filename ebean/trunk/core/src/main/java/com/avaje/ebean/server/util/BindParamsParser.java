@@ -24,9 +24,11 @@ import java.util.Iterator;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.internal.BindParams;
 import com.avaje.ebean.internal.BindParams.OrderedList;
 import com.avaje.ebean.internal.BindParams.Param;
+import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 /**
  * Parses the BindParams if they are using named parameters.
@@ -35,6 +37,13 @@ import com.avaje.ebean.internal.BindParams.Param;
  * </p>
  */
 public class BindParamsParser {
+
+
+    public static final String ENCRYPTKEY_PREFIX = "encryptkey_";
+    public static final String ENCRYPTKEY_GAP = "___";
+
+    private static final int ENCRYPTKEY_PREFIX_LEN = ENCRYPTKEY_PREFIX.length();
+    private static final int ENCRYPTKEY_GAP_LEN = ENCRYPTKEY_GAP.length();
 
     /**
      * Used to parse sql looking for named parameters.
@@ -46,7 +55,41 @@ public class BindParamsParser {
      */
     private static final String colon = ":";
 
-    private BindParamsParser() {	
+    private final BindParams params;
+    private final String sql;
+
+    private final BeanDescriptor<?> beanDescriptor;
+
+    public static String parse(BindParams params, String sql) {
+        return parse(params, sql, null);
+    }
+    
+    public static String parse(BindParams params, String sql, BeanDescriptor<?> beanDescriptor) {
+        return new BindParamsParser(params, sql, beanDescriptor).parseSql();
+    }
+
+    public static OrderedList parseNamedParams(BindParams params, String sql) {
+        return new BindParamsParser(params, sql, null).parseSqlNamedParams();
+    }
+    
+    private BindParamsParser(BindParams params, String sql, BeanDescriptor<?> beanDescriptor) {
+        this.params = params;
+        this.sql = sql;
+        this.beanDescriptor = beanDescriptor;
+    }
+        
+    /**
+     * Used for parsing having clauses with named parameters.
+     * <p>
+     * The issue here is that BindParams contains named parameters for
+     * both where and having clauses. BindParams.positionedParameters is
+     * used for the where and the OrderedList for the having.
+     * </p>
+     */
+    private OrderedList parseSqlNamedParams() {
+        OrderedList orderedList = new OrderedList();
+        parseNamedParams(orderedList);
+        return orderedList;
     }
     
     /**
@@ -60,7 +103,7 @@ public class BindParamsParser {
      * could be for a where clause and some for the having clause.
      * </p>
      */
-    public static String parse(BindParams params, String sql) {
+    private String parseSql() {
     	
     	String preparedSql = params.getPreparedSql();
     	if (preparedSql != null){
@@ -73,7 +116,7 @@ public class BindParamsParser {
         if (params.requiresNamedParamsPrepare()) {
         	OrderedList orderedList = new OrderedList(params.positionedParameters());
         	
-            parseNamedParams(orderedList, params, sql);
+            parseNamedParams(orderedList);
             prepardSql = orderedList.getPreparedSql();
         } else {
         	prepardSql = sql;
@@ -81,31 +124,18 @@ public class BindParamsParser {
         params.setPreparedSql(prepardSql);
         return prepardSql;        
     }
-    
-    /**
-     * Used for parsing having clauses with named parameters.
-     * <p>
-     * The issue here is that BindParams contains named parameters for
-     * both where and having clauses. BindParams.positionedParameters is
-     * used for the where and the OrderedList for the having.
-     * </p>
-     */
-    public static OrderedList parseNamedParams(BindParams bp, String sql) {
-    	OrderedList orderedList = new OrderedList();
-    	parseNamedParams(orderedList, bp, sql);
-    	return orderedList;
-    }
+
     
     
     /**
      * Named parameters need to be parsed and replaced with ?.
      */
-    private static void parseNamedParams(OrderedList orderedList, BindParams bp, String sql) {
+    private void parseNamedParams(OrderedList orderedList) {
 
-        parseNamedParams(sql, 0, orderedList, bp);
+        parseNamedParams(0, orderedList);
     }
 
-    private static void parseNamedParams(String sql, int startPos, OrderedList orderedList, BindParams bp) {
+    private void parseNamedParams(int startPos, OrderedList orderedList) {
 
     	if (sql == null){
     		throw new PersistenceException("query does not contain any named bind parameters?");
@@ -125,7 +155,7 @@ public class BindParamsParser {
             orderedList.appendSql(sub);
 
             // start again after the end quote
-            parseNamedParams(sql, endQuotePos + 1, orderedList, bp);
+            parseNamedParams(endQuotePos + 1, orderedList);
 
         } else {
             if (nameParamStart < 0) {
@@ -146,7 +176,14 @@ public class BindParamsParser {
 
                 // add the named parameter value to bindList
                 String paramName = sql.substring(nameParamStart + 1, endOfParam);
-                Param param = bp.getParameter(paramName);
+                
+                Param param;
+                if (paramName.startsWith(ENCRYPTKEY_PREFIX)){
+                    param = addEncryptKeyParam(paramName);
+                } else {
+                    param = params.getParameter(paramName);
+                }
+                
                 if (param == null) {
                 	String msg = "Bind value is not set or null for [" + paramName
                     + "] in [" + sql+ "]";
@@ -182,10 +219,26 @@ public class BindParamsParser {
                 }
 
                 // continue on after the end of the parameter
-                parseNamedParams(sql, endOfParam, orderedList, bp);
+                parseNamedParams(endOfParam, orderedList);
             }
         }
     }
 
-    
+    /**
+     * Add an encryption key bind parameter.
+     */
+    private Param addEncryptKeyParam(String keyNamedParam) {
+        
+        
+        int pos = keyNamedParam.indexOf(ENCRYPTKEY_GAP, ENCRYPTKEY_PREFIX_LEN);
+        
+        String tableName = keyNamedParam.substring(ENCRYPTKEY_PREFIX_LEN, pos);
+        String columnName = keyNamedParam.substring(pos+ENCRYPTKEY_GAP_LEN);
+        
+        EncryptKey key = beanDescriptor.getEncryptKey(tableName, columnName);
+        String strKey = key.getStringValue();
+        
+        return params.setParameter(keyNamedParam, strKey);
+    }
+
 }

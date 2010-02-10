@@ -750,10 +750,17 @@ public class BeanDescriptor<T> {
     }
     
     /**
-     * Return the Encrypt key given the table and column name.
+     * Return the Encrypt key given the BeanProperty.
      */
     public EncryptKey getEncryptKey(BeanProperty p){
         return owner.getEncryptKey(baseTable, p.getDbColumn());
+    }
+
+    /**
+     * Return the Encrypt key given the table and column name.
+     */
+    public EncryptKey getEncryptKey(String tableName, String columnName){
+        return owner.getEncryptKey(tableName, columnName);
     }
 
     /**
