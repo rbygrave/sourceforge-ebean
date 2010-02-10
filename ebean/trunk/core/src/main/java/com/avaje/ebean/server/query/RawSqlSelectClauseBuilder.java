@@ -72,9 +72,9 @@ public class RawSqlSelectClauseBuilder {
         // as each SqlSelect could have different table alias etc
         DeployParser parser = sqlSelect.createDeployPropertyParser();
 
-        CQueryPredicates predicates = new CQueryPredicates(binder, request, parser);
+        CQueryPredicates predicates = new CQueryPredicates(binder, request);
         // prepare and convert logical property names to dbColumns etc
-        predicates.prepare(true, false);
+        predicates.prepare(true, false, parser);
 
         SqlTreeAlias alias = new SqlTreeAlias(sqlSelect.getTableAlias());
         predicates.parseTableAlias(alias);

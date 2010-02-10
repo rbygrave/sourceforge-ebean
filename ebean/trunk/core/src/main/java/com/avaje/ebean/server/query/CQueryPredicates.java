@@ -1,9 +1,15 @@
 package com.avaje.ebean.server.query;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.avaje.ebean.internal.BindParams;
-import com.avaje.ebean.internal.BindParams.OrderedList;
 import com.avaje.ebean.internal.SpiExpressionList;
 import com.avaje.ebean.internal.SpiQuery;
+import com.avaje.ebean.internal.BindParams.OrderedList;
 import com.avaje.ebean.server.core.OrmQueryRequest;
 import com.avaje.ebean.server.deploy.BeanDescriptor;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocMany;
@@ -12,12 +18,6 @@ import com.avaje.ebean.server.persist.Binder;
 import com.avaje.ebean.server.type.DataBind;
 import com.avaje.ebean.server.util.BindParamsParser;
 import com.avaje.ebean.util.DefaultExpressionRequest;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Compile Query Predicates.
@@ -106,14 +106,10 @@ public class CQueryPredicates {
 	 */
 	private Set<String> predicateIncludes;
 	
-
-	private DeployParser deployParser;
-
-	public CQueryPredicates(Binder binder, OrmQueryRequest<?> request, DeployParser deployParser) {
+    public CQueryPredicates(Binder binder, OrmQueryRequest<?> request) {
 		this.binder = binder;
 		this.request = request;
 		this.query = request.getQuery();
-		this.deployParser = deployParser;
 		this.bindParams = query.getBindParams();
 		this.idValue = query.getId();
 	}
@@ -167,32 +163,34 @@ public class CQueryPredicates {
 		return bindLog.toString();
 	}
 
-	private void buildBindHavingRawSql(boolean buildSql) {
+	private void buildBindHavingRawSql(boolean buildSql, boolean parseRaw, DeployParser deployParser) {
 		if (buildSql || bindParams != null) {
 			// having clause with named parameters...
 			havingRawSql = query.getAdditionalHaving();
+			if (parseRaw){
+			    havingRawSql = deployParser.parse(havingRawSql);    
+			}
 			if (havingRawSql != null && bindParams != null) {
 				// convert and order named parameters if required
 				havingNamedParams = BindParamsParser.parseNamedParams(bindParams, havingRawSql);
 				havingRawSql = havingNamedParams.getPreparedSql();
 			}
-		} else {
-			// we can skip...
 		}
 	}
 
 	/**
 	 * Convert named parameters into an OrderedList.
 	 */
-	private void buildBindWhereRawSql(boolean buildSql) {
+	private void buildBindWhereRawSql(boolean buildSql, boolean parseRaw, DeployParser parser) {
 		if (buildSql || bindParams != null) {
 			whereRawSql = buildWhereRawSql();
+			if (parseRaw){
+			    whereRawSql = parser.parse(whereRawSql);
+			}
 			if (bindParams != null) {
 				// convert and order named parameters if required
-				whereRawSql = BindParamsParser.parse(bindParams, whereRawSql);
+				whereRawSql = BindParamsParser.parse(bindParams, whereRawSql, request.getBeanDescriptor());
 			}
-		} else {
-			// we can skip this...
 		}
 	}
 
@@ -211,59 +209,54 @@ public class CQueryPredicates {
 		return whereRaw;
 	}
 
+    public void prepare(boolean buildSql) {
+
+        DeployParser deployParser = request.getBeanDescriptor().createDeployPropertyParser();
+
+        prepare(buildSql, true, deployParser);
+    }
+	   
 	/**
 	 * This combines the sql from named/positioned parameters and expressions.
 	 */
-	public void prepare(boolean buildSql, boolean parseRaw) {
+	public void prepare(boolean buildSql, boolean parseRaw, DeployParser deployParser) {
 
-		buildBindWhereRawSql(buildSql);
-		buildBindHavingRawSql(buildSql);
-
-		SpiExpressionList<?> whereExp = query.getWhereExpressions();
+		buildBindWhereRawSql(buildSql, parseRaw, deployParser);
+		buildBindHavingRawSql(buildSql, parseRaw, deployParser);
 		
-		if (deployParser == null){
-            deployParser = request.getBeanDescriptor().createDeployPropertyParser();
-        }
-		
-		DefaultExpressionRequest whereExpReq = new DefaultExpressionRequest(request, deployParser);
-		
+        SpiExpressionList<?> whereExp = query.getWhereExpressions();
 		if (whereExp != null) {
-			whereExprBindValues = whereExp.buildBindValues(whereExpReq);
+	        DefaultExpressionRequest whereReq = new DefaultExpressionRequest(request, deployParser);
+			whereExprBindValues = whereExp.buildBindValues(whereReq);
 			if (buildSql) {
-				whereExprSql = whereExp.buildSql(whereExpReq);
+				whereExprSql = whereExp.buildSql(whereReq);
 			}
 		}
 
-		// having expression
-		SpiExpressionList<?> havingExpr = query.getHavingExpressions();
-
-		DefaultExpressionRequest havingExpReq = new DefaultExpressionRequest(request, deployParser);
-
+        // having expression
+        SpiExpressionList<?> havingExpr = query.getHavingExpressions();
 		if (havingExpr != null) {
-			havingExprBindValues = havingExpr.buildBindValues(havingExpReq);
+	        DefaultExpressionRequest havingReq = new DefaultExpressionRequest(request, deployParser);
+			havingExprBindValues = havingExpr.buildBindValues(havingReq);
 			if (buildSql) {
-				havingExprSql = havingExpr.buildSql(havingExpReq);
+				havingExprSql = havingExpr.buildSql(havingReq);
 			}
 		}
 
 		if (buildSql) {
-			parsePropertiesToDbColumns(parseRaw);
+			parsePropertiesToDbColumns(deployParser);
 		}
+
 	}
 	
 	/**
 	 * Parse/Convert property names to database columns in the where and order
 	 * by clauses etc.
 	 */
-	private void parsePropertiesToDbColumns(boolean parseRaw) {
-
-		// property name to column name parser...
-		if (deployParser == null){
-			deployParser = request.getBeanDescriptor().createDeployPropertyParser();
-		}
+	private void parsePropertiesToDbColumns(DeployParser deployParser) {
 		
-		dbWhere = deriveWhere(parseRaw);		
-		dbHaving = deriveHaving(parseRaw);
+		dbWhere = deriveWhere(deployParser);		
+		dbHaving = deriveHaving(deployParser);
 
 		// order by is dependent on the manyProperty (if there is one)
 		logicalOrderBy = deriveOrderByWithMany(request.getManyProperty());
@@ -274,6 +267,15 @@ public class CQueryPredicates {
 		predicateIncludes = deployParser.getIncludes();
 	}
 
+	 
+  private String deriveWhere(DeployParser deployParser) {
+      if (whereRawSql == null || whereRawSql.trim().length() == 0) {
+          return deployParser.parse(whereExprSql);
+      } else {
+          return parse(whereRawSql, whereExprSql, deployParser);
+      }
+  }
+	
 	/**
 	 * Replace the table alias place holders.
 	 */
@@ -289,42 +291,25 @@ public class CQueryPredicates {
 		}
 	}
 	
-//	/**
-//	 * Used in logging to the transaction log.
-//	 */
-//	public String getDbWhere() {
-//		return dbWhere;
-//	}
-
+	private boolean isEmpty(String s){
+	    return s == null || s.length() == 0;
+	}
 	
-	
-	private String parse(boolean parseRaw, String raw, String expr){
+	private String parse(String raw, String expr, DeployParser deployParser){
 
-		if (expr == null || expr.trim().length() == 0) {
-			return parseRaw ? deployParser.parse(raw) : raw; 
+		if (isEmpty(expr)) {
+			return raw; 
 						
 		} else{
-			if (parseRaw){
-				return deployParser.parse(raw)+" and "+deployParser.parse(expr);
-			} else {
-				return raw +" and "+deployParser.parse(expr);
-			}			
+			return raw +" and "+deployParser.parse(expr);			
 		} 
 	}
 	
-	private String deriveWhere(boolean parseRaw) {
-		if (whereRawSql == null || whereRawSql.trim().length() == 0) {
-			return deployParser.parse(whereExprSql);
-		} else {
-			return parse(parseRaw, whereRawSql, whereExprSql);
-		}
-	}
-	
-	private String deriveHaving(boolean parseRaw) {
+	private String deriveHaving(DeployParser deployParser) {
 		if (havingRawSql == null || havingRawSql.trim().length() == 0) {
 			return deployParser.parse(havingExprSql);
 		} else {
-			return parse(parseRaw, havingRawSql, havingExprSql);
+			return parse(havingRawSql, havingExprSql, deployParser);
 		} 
 	}
 
@@ -430,21 +415,6 @@ public class CQueryPredicates {
 	public Set<String> getPredicateIncludes() {
 		return predicateIncludes;
 	}
-
-//	/**
-//	 * Returns true if a ROW_NUMBER column is used. e.g. using firstRow with
-//	 * Oracle.
-//	 */
-//	public boolean isRowNumberIncluded() {
-//		return rowNumberIncluded;
-//	}
-
-//	/**
-//	 * Set when the sql also includes a ROW_NUMBER column.
-//	 */
-//	public void setRowNumberIncluded(boolean isRowNumberIncluded) {
-//		this.rowNumberIncluded = isRowNumberIncluded;
-//	}
 
 	/**
 	 * The where sql with named bind parameters converted to ?.

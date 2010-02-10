@@ -189,9 +189,10 @@ public class BindParams implements Serializable {
 	/**
 	 * Set a named In parameter that is not null.
 	 */
-	public void setParameter(String name, Object value) {
+	public Param setParameter(String name, Object value) {
 		Param p = getParam(name);
 		p.setInValue(value);
+		return p;
 	}
 
 	/**

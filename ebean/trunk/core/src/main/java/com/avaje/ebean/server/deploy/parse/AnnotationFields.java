@@ -51,6 +51,7 @@ import com.avaje.ebean.annotation.LdapAttribute;
 import com.avaje.ebean.annotation.LdapId;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.EncryptDeployManager.Mode;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
@@ -281,18 +282,16 @@ public class AnnotationFields extends AnnotationParser {
 		}
 
 		if (!prop.isTransient()){
-            Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
-            if (encrypted != null) {    
-                setEncryption(prop, encrypted);
-                
-            } else {
-                String dbColumn = prop.getDbColumn();
-                if (dbColumn != null){
-                    if (util.isEncrypted(info.getDescriptor().getBaseTableFull(), dbColumn)) {
-                        setEncryption(prop, null);
-                    }
-                }
-            }
+		    
+		    Mode encryptMode = util.getEncryptMode(info.getDescriptor().getBaseTableFull(), prop.getDbColumn());
+		    if (encryptMode == null || encryptMode.equals(Mode.ANNOTATION)){
+	            Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
+	            if (encrypted != null) {    
+	                setEncryption(prop, encrypted);
+	            }		        
+		    } else if (Mode.ENCRYPT.equals(encryptMode)) {
+                setEncryption(prop, null);
+		    }		        		    
 		}
 		
 		if (EntityType.LDAP.equals(descriptor.getEntityType())){
