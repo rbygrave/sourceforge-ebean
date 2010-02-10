@@ -27,8 +27,14 @@ package com.avaje.ebean.config;
  */
 public interface EncryptDeployManager {
 
+    public enum Mode {
+        ENCRYPT,
+        NO_ENCRYPT,
+        ANNOTATION
+    }
+    
     /**
      * Return true if the table column is encrypted.
      */
-    public boolean isEncrypted(TableName table, String column);
+    public Mode getEncryptMode(TableName table, String column);
 }
