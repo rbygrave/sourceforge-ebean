@@ -41,7 +41,8 @@ public class MsSqlServer2000Platform extends DatabasePlatform {
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
         this.dbIdentity.setSelectLastInsertedIdTemplate("select @@IDENTITY as X");
-        
+        this.dbIdentity.setSupportsIdentity(true);
+
         this.openQuote = "[";
         this.closeQuote = "]";
         

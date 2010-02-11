@@ -38,6 +38,7 @@ public class H2Platform extends DatabasePlatform {
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         this.dbIdentity.setIdType(IdType.SEQUENCE);        
         this.dbIdentity.setSupportsSequence(true);
+        this.dbIdentity.setSupportsIdentity(true);
 
         this.openQuote = "\"";
         this.closeQuote = "\"";

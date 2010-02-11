@@ -10,6 +10,7 @@ public class DbIdentity {
 	 * Note some DB's support both Sequences and Identity.
 	 */
 	private boolean supportsSequence;
+    private boolean supportsIdentity;
 	
 	private boolean supportsGetGeneratedKeys;
 		
@@ -81,8 +82,23 @@ public class DbIdentity {
 	public void setSupportsSequence(boolean supportsSequence) {
 		this.supportsSequence = supportsSequence;
 	}
+	
+	
+	/**
+	 * Return true if this DB platform supports identity (autoincrement).
+	 */
+	public boolean isSupportsIdentity() {
+        return supportsIdentity;
+    }
 
 	/**
+	 * Set to true if this DB platform supports identity (autoincrement).
+	 */
+    public void setSupportsIdentity(boolean supportsIdentity) {
+        this.supportsIdentity = supportsIdentity;
+    }
+
+    /**
 	 * Return the default ID generation type that should be used.
 	 * This should be either SEQUENCE or IDENTITY (aka Autoincrement).
 	 * <p>

@@ -41,7 +41,8 @@ public class MsSqlServer2005Platform extends DatabasePlatform {
         this.name = "mssqlserver2005";   
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
-        
+        this.dbIdentity.setSupportsIdentity(true);
+
         this.openQuote = "[";
         this.closeQuote = "]";
 

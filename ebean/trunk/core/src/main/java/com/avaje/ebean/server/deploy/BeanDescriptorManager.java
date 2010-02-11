@@ -1036,10 +1036,15 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         if (IdType.SEQUENCE.equals(desc.getIdType()) && !dbIdentity.isSupportsSequence()) {
             // explicit sequence but not supported by the DatabasePlatform
-            logger.info("Explicit sequence on " + desc.getFullName() + " but not supported by DB Platform");
+            logger.info("Explicit sequence on " + desc.getFullName() + " but not supported by DB Platform - ignored");
             desc.setIdType(null);
         }
-
+        if (IdType.IDENTITY.equals(desc.getIdType()) && !dbIdentity.isSupportsIdentity()) {
+            // explicit identity but not supported by the DatabasePlatform
+            logger.info("Explicit Identity on " + desc.getFullName() + " but not supported by DB Platform - ignored");
+            desc.setIdType(null);
+        }
+        
         if (desc.getIdType() == null) {
             // use the default. IDENTITY or SEQUENCE.
             desc.setIdType(dbIdentity.getIdType());

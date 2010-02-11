@@ -1,6 +1,8 @@
 package com.avaje.ebean.server.ddl;
 
 import java.sql.Types;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
 import com.avaje.ebean.config.dbplatform.IdType;
@@ -17,6 +19,8 @@ import com.avaje.ebean.server.deploy.id.ImportedId;
  */
 public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
+    private static final Logger logger = Logger.getLogger(CreateTableColumnVisitor.class.getName());
+    
 	private final DdlGenContext ctx;
 
 	private final DbDdlSyntax ddl;
@@ -172,18 +176,22 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
 	protected boolean isIdentity(BeanProperty p) {
 		
-		IdType idType = ctx.getDbPlatform().getDbIdentity().getIdType();
-		if (!idType.equals(IdType.IDENTITY)){
-			// this dbPlatform probably uses Sequences
-			return false;
-		}
-		
 		if (p.isId()) {
-			int jdbcType = p.getScalarType().getJdbcType();
-			if (jdbcType == Types.INTEGER || jdbcType == Types.BIGINT || jdbcType == Types.SMALLINT) {
-
-				return true;
-			}
+		    try {
+    		    IdType idType = p.getBeanDescriptor().getIdType();       
+    
+    		    if (idType.equals(IdType.IDENTITY)){
+    		    
+        			int jdbcType = p.getScalarType().getJdbcType();
+        			if (jdbcType == Types.INTEGER || jdbcType == Types.BIGINT || jdbcType == Types.SMALLINT) {
+        
+        				return true;
+        			}
+    		    }
+		    } catch (Exception e){
+		        String msg = "Error determining identity on property "+p.getFullBeanName();
+		        logger.log(Level.SEVERE, msg, e);
+		    }
 		}
 		return false;
 	}

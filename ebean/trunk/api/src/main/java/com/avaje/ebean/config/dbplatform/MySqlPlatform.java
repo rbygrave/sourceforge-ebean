@@ -47,7 +47,9 @@ public class MySqlPlatform extends DatabasePlatform {
         
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
-        
+        this.dbIdentity.setSupportsIdentity(true);
+        this.dbIdentity.setSupportsSequence(false);
+
         this.openQuote = "`";
         this.closeQuote = "`";
         
