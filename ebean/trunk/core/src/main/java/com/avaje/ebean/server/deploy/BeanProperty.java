@@ -168,6 +168,7 @@ public class BeanProperty implements ElPropertyValue {
     final String dbColumn;
 
     final String elPlaceHolder;
+    final String elPlaceHolderEncrypted;
 
     /**
      * Select part of a SQL Formula used to populate this property.
@@ -331,7 +332,8 @@ public class BeanProperty implements ElPropertyValue {
         this.hasLocalValidators = (validators.length > 0);
 
         EntityType et = descriptor == null ? null : descriptor.getEntityType();
-        this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder(et), dbEncrypted, dbColumn);
+        this.elPlaceHolder = tableAliasIntern(descriptor, deploy.getElPlaceHolder(et), false, null);
+        this.elPlaceHolderEncrypted = tableAliasIntern(descriptor, deploy.getElPlaceHolder(et), dbEncrypted, dbColumn);
     }
 
     private String tableAliasIntern(BeanDescriptor<?> descriptor, String s, boolean dbEncrypted, String dbColumn) {
@@ -407,7 +409,8 @@ public class BeanProperty implements ElPropertyValue {
         this.validators = source.getValidators();
         this.hasLocalValidators = validators.length > 0;
 
-        this.elPlaceHolder = source.getElPlaceholder();
+        this.elPlaceHolder = source.elPlaceHolder;
+        this.elPlaceHolderEncrypted = source.elPlaceHolderEncrypted;
     }
 
     /**
@@ -849,8 +852,8 @@ public class BeanProperty implements ElPropertyValue {
         return false;
     }
 
-    public String getElPlaceholder() {
-        return elPlaceHolder;
+    public String getElPlaceholder(boolean encrypted) {
+        return encrypted ? elPlaceHolderEncrypted : elPlaceHolder;
     }
 
     public String getElPrefix() {

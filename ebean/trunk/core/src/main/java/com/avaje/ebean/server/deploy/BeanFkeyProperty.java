@@ -97,7 +97,7 @@ public final class BeanFkeyProperty implements ElPropertyValue {
         return false;
     }
 
-    public String getElPlaceholder() {
+    public String getElPlaceholder(boolean encrypted) {
         return placeHolder;
     }
 

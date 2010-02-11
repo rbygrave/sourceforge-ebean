@@ -27,6 +27,8 @@ public abstract class DeployParser {
 	 */
 	protected static final char PERIOD = '.';
 	
+	protected boolean encrypted;
+	
 	protected String source;
 
 	protected StringBuilder sb;
@@ -48,7 +50,11 @@ public abstract class DeployParser {
 	 * Return the join includes.
 	 */
 	public abstract Set<String> getIncludes();
-	
+
+    public void setEncrypted(boolean encrytped) {
+        this.encrypted = encrytped;
+    }
+
 	public String parse(String source) {
 
 		if (source == null) {

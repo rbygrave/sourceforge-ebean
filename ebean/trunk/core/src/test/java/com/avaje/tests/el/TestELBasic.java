@@ -38,7 +38,7 @@ public class TestELBasic extends TestCase {
 		Assert.assertTrue(elBillAddressCity instanceof ElPropertyChain);
 		Assert.assertEquals("billingAddress",elBillAddressCity.getElPrefix());
 		Assert.assertEquals("city",elBillAddressCity.getName());
-		Assert.assertEquals("${billingAddress}city",elBillAddressCity.getElPlaceholder());
+		Assert.assertEquals("${billingAddress}city",elBillAddressCity.getElPlaceholder(false));
 		Assert.assertEquals("city",elBillAddressCity.getDbColumn());
 
 //		ElPropertyDeploy elBillAddressCountry = descriptor.getElPropertyDeploy("billingAddress.country");
@@ -51,7 +51,7 @@ public class TestELBasic extends TestCase {
 		Assert.assertTrue(elOrderStatus instanceof ElPropertyChain);
 		Assert.assertEquals("orders",elOrderStatus.getElPrefix());
 		Assert.assertEquals("status",elOrderStatus.getName());
-		Assert.assertEquals("${orders}status",elOrderStatus.getElPlaceholder());
+		Assert.assertEquals("${orders}status",elOrderStatus.getElPlaceholder(false));
 		Assert.assertEquals("status",elOrderStatus.getDbColumn());
 
 		ElPropertyDeploy elOrderCust = descriptor.getElPropertyDeploy("orders.customer");

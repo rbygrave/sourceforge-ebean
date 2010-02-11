@@ -35,7 +35,7 @@ public interface ElPropertyDeploy {
 	 * The ${elPrefix} is replaced by the appropriate table alias.
 	 * </p>
 	 */
-	public String getElPlaceholder();
+	public String getElPlaceholder(boolean encrypted);
 	
 	/**
 	 * Return the name of the property.

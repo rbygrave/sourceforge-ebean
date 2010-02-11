@@ -42,6 +42,7 @@ public class ElPropertyChain implements ElPropertyValue {
 	private final String prefix;
 
 	private final String placeHolder;
+    private final String placeHolderEncrypted;
 	
 	private final String name;
 	
@@ -78,7 +79,6 @@ public class ElPropertyChain implements ElPropertyValue {
 			this.name = expression;
 		}		
 
-		// FIXME chain[chain.length-1] is sometimes null
 		this.assocOneId = chain[chain.length-1].isAssocOneId();
 		
 		this.last = chain.length-1;
@@ -90,26 +90,20 @@ public class ElPropertyChain implements ElPropertyValue {
 		    this.scalarType = null;
 		}
 		this.lastElPropertyValue = chain[chain.length-1];
-		this.placeHolder = calcPlaceHolder(prefix,getDbColumn());
+		this.placeHolder = getElPlaceHolder(prefix, lastElPropertyValue, false);
+        this.placeHolderEncrypted = getElPlaceHolder(prefix, lastElPropertyValue, true);
 	}
 
-	private String calcPlaceHolder(String prefix, String dbColumn){
-		
-		String p;
-		if (prefix != null){
-			p = "${"+prefix+"}";
-		} else {
-			p = ROOT_ELPREFIX;
-		}
-		
-		if (dbColumn != null && dbColumn.indexOf("${}") > -1){
-			// typically a sql formula
-			return StringHelper.replaceString(dbColumn, "${}", p);
-		} else {
-			return p + dbColumn;
-		}
+	private String getElPlaceHolder(String prefix, ElPropertyValue lastElPropertyValue, boolean encrypted) {
+	    if (prefix == null){
+	        return lastElPropertyValue.getElPlaceholder(encrypted);
+	    }
+	    String p = "${"+prefix+"}";
+	    String el = lastElPropertyValue.getElPlaceholder(encrypted);
+	    
+	    return StringHelper.replaceString(el, ROOT_ELPREFIX, p);
 	}
-	
+		
 	/**
 	 * Full ElGetValue support.
 	 */
@@ -130,8 +124,8 @@ public class ElPropertyChain implements ElPropertyValue {
 		return name;
 	}
 	
-	public String getElPlaceholder() {
-		return placeHolder;
+	public String getElPlaceholder(boolean encrypted) {
+	    return encrypted ? placeHolderEncrypted : placeHolder;
 	}
 	
 	public boolean isDbEncrypted() {

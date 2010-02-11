@@ -24,6 +24,24 @@ public class TestEncrypt extends TestCase {
         Ebean.save(e);
         
         
+        List<EBasicEncrypt> qlList = 
+            Ebean.createQuery(EBasicEncrypt.class)
+                .setQuery("where description like :d")
+                .setParameter("d", "testde%")
+                .findList();
+        
+        Assert.assertTrue(qlList.size() > 0);
+        
+        qlList = 
+            Ebean.createQuery(EBasicEncrypt.class)
+                .setQuery("find e (id, description) where description = :d")
+                .setParameter("d", "testdesc")
+                .findList();
+        
+        Assert.assertTrue(qlList.size() == 1);
+        
+        
+        
         SqlQuery q = Ebean.createSqlQuery("select * from e_basicenc where id = :id");
         q.setParameter("id", e.getId());
         
@@ -57,8 +75,8 @@ public class TestEncrypt extends TestCase {
             
         } else {
         
-            List<EBasicEncrypt> list 
-                = Ebean.find(EBasicEncrypt.class)
+            List<EBasicEncrypt> list  =
+                Ebean.find(EBasicEncrypt.class)
                     .where().eq("description", "moddesc")
                     .findList();
     
@@ -70,6 +88,13 @@ public class TestEncrypt extends TestCase {
                     .findList();
             
             Assert.assertEquals(1, list.size());
+            
+            list = 
+                Ebean.createQuery(EBasicEncrypt.class)
+                    .setQuery("where description like :d")
+                    .setParameter("d", "modde%")
+                .findList();
+            
         }
     }
     

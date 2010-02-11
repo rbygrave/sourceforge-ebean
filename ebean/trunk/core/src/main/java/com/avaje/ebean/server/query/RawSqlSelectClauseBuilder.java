@@ -74,7 +74,7 @@ public class RawSqlSelectClauseBuilder {
 
         CQueryPredicates predicates = new CQueryPredicates(binder, request);
         // prepare and convert logical property names to dbColumns etc
-        predicates.prepare(true, false, parser);
+        predicates.prepareRawSql(parser);
 
         SqlTreeAlias alias = new SqlTreeAlias(sqlSelect.getTableAlias());
         predicates.parseTableAlias(alias);

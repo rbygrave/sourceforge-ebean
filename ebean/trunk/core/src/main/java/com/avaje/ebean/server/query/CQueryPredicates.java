@@ -185,7 +185,12 @@ public class CQueryPredicates {
 		if (buildSql || bindParams != null) {
 			whereRawSql = buildWhereRawSql();
 			if (parseRaw){
+			    // parse with encrypted property awareness. This means that if we have an 
+			    // encrypted property we will insert special named parameter place holders
+			    // for binding the encryption key values
+			    parser.setEncrypted(true);
 			    whereRawSql = parser.parse(whereRawSql);
+                parser.setEncrypted(false);
 			}
 			if (bindParams != null) {
 				// convert and order named parameters if required
@@ -216,10 +221,14 @@ public class CQueryPredicates {
         prepare(buildSql, true, deployParser);
     }
 	   
+    public void prepareRawSql(DeployParser deployParser) {
+        prepare(true, false, deployParser);
+    }
+    
 	/**
 	 * This combines the sql from named/positioned parameters and expressions.
 	 */
-	public void prepare(boolean buildSql, boolean parseRaw, DeployParser deployParser) {
+	private void prepare(boolean buildSql, boolean parseRaw, DeployParser deployParser) {
 
 		buildBindWhereRawSql(buildSql, parseRaw, deployParser);
 		buildBindHavingRawSql(buildSql, parseRaw, deployParser);
