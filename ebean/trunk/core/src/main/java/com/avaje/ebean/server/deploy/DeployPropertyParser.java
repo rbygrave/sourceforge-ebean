@@ -23,11 +23,9 @@ public final class DeployPropertyParser extends DeployParser {
 		this.beanDescriptor = beanDescriptor;
 	}
 
-	public Set<String> getIncludes() {
+    public Set<String> getIncludes() {
 		return includes;
 	}
-
-	
 	
 	@Override
     public String getDeployWord(String expression) {
@@ -36,10 +34,11 @@ public final class DeployPropertyParser extends DeployParser {
             return null;
         } else {
             addIncludes(elProp.getElPrefix());
-            return elProp.getElPlaceholder();
+            return elProp.getElPlaceholder(encrypted);
         }
     }
 
+	@Override
     public String convertWord() {
 		String r = getDeployWord(word);
 		return r == null ? word : r;

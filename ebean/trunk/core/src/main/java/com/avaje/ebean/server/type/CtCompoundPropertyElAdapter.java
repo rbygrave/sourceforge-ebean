@@ -104,7 +104,7 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         return null;
     }
 
-    public String getElPlaceholder() {
+    public String getElPlaceholder(boolean encrypted) {
         return null;
     }
 

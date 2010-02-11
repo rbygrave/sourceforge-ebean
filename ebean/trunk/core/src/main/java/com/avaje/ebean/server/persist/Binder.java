@@ -146,7 +146,11 @@ public class Binder {
 				if (param.isInParam()) {
 					value = param.getInValue();
 					if (bindLog != null) {
-						bindLog.append(value);
+					    if (param.isEncryptionKey()){
+		                    bindLog.append("****");
+					    } else {
+	                        bindLog.append(value);					        
+					    }
 						bindLog.append(", ");
 					}
 					if (value == null) {

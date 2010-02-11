@@ -196,6 +196,18 @@ public class BindParams implements Serializable {
 	}
 
 	/**
+	 * Set an encryption key as a bind value.
+	 * <p>
+	 * Needs special treatment as the value should not be included in a log. 
+	 * </p>
+	 */
+    public Param setEncryptionKey(String name, Object value) {
+        Param p = getParam(name);
+        p.setEncryptionKey(value);
+        return p;
+    }
+
+	/**
 	 * Register the named parameter as an Out parameter.
 	 */
 	public void registerOut(String name, int outType) {
@@ -300,17 +312,18 @@ public class BindParams implements Serializable {
 	 */
 	public static final class Param {
 
-		boolean isInParam;
+        private boolean encryptionKey;
+		private boolean isInParam;
 
-		boolean isOutParam;
+		private boolean isOutParam;
 
-		int type;
+		private int type;
 
-		Object inValue;
+		private Object inValue;
 
-		Object outValue;
+		private Object outValue;
 
-		int textLocation;
+		private int textLocation;
 
 		/**
 		 * Construct a Parameter.
@@ -394,6 +407,15 @@ public class BindParams implements Serializable {
 		}
 
 		/**
+		 * Set an encryption key (which can not be logged).
+		 */
+        public void setEncryptionKey(Object in) {
+            this.inValue = in;
+            this.isInParam = true;
+            this.encryptionKey = true;
+        }
+		
+		/**
 		 * Specify that the In parameter is NULL and the specific type that it
 		 * is.
 		 */
@@ -442,5 +464,12 @@ public class BindParams implements Serializable {
 			this.textLocation = textLocation;
 		}
 
+		/**
+		 * If true do not include this value in a transaction log.
+		 */
+        public boolean isEncryptionKey() {
+            return encryptionKey;
+        }
+		
 	}
 }
