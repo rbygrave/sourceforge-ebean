@@ -190,6 +190,16 @@ public final class DefaultServer implements SpiEbeanServer {
     private final DefaultBeanLoader beanLoader;
 
     /**
+     * The MBean name used to register Ebean.
+     */
+    private String mbeanName;
+    
+    /**
+     * The MBeanServer Ebean is registered with.
+     */
+    private MBeanServer mbeanServer;
+    
+    /**
      * The default batch size for lazy loading beans or collections.
      */
     private int lazyLoadBatchSize;
@@ -284,9 +294,11 @@ public final class DefaultServer implements SpiEbeanServer {
         return autoFetchManager;
     }
 
+    
     public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {
 
-        String mbeanName = "Ebean:server=" + serverName + uniqueServerId;
+        this.mbeanServer = mbeanServer;
+        this.mbeanName = "Ebean:server=" + serverName + uniqueServerId;
 
         try {
             mbeanServer.registerMBean(adminLogging, new ObjectName(mbeanName + ",function=Logging"));
@@ -306,6 +318,16 @@ public final class DefaultServer implements SpiEbeanServer {
 
     private final class Shutdown implements Runnable {
         public void run() {
+            try {
+                if (mbeanServer != null){
+                    mbeanServer.unregisterMBean(new ObjectName(mbeanName + ",function=Logging"));
+                    mbeanServer.unregisterMBean(new ObjectName(mbeanName + ",key=AutoFetch"));
+                }
+            } catch (Exception e) {
+                String msg = "Error unregistering Ebean "+mbeanName;
+                logger.log(Level.SEVERE, msg, e);
+            }
+            
             // collect usage statistics
             autoFetchManager.shutdown();
         }
