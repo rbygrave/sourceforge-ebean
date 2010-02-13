@@ -46,7 +46,7 @@ public class JdbcTransaction implements SpiTransaction {
 	/**
 	 * The associated TransactionManager.
 	 */
-	final TransactionManager manager;
+	final protected TransactionManager manager;
 	
 	/**
 	 * The transaction id.
@@ -579,5 +579,7 @@ public class JdbcTransaction implements SpiTransaction {
 		getEvent().add(tableName, inserts, updates, deletes);
 	}
 
-	
+	public final TransactionManager getTransactionManger(){
+		return manager;
+	}
 }
