@@ -42,7 +42,4 @@ public class SpringJdbcTransaction extends ExternalJdbcTransaction {
 	public ConnectionHolder getConnectionHolder() {
 		return holder;
 	}
-
-
-
 }
