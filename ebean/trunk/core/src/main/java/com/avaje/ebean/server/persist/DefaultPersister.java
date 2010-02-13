@@ -709,7 +709,9 @@ public final class DefaultPersister implements Persister {
 				if (deletions != null && deletions.remove(otherBean)) {
 					String m = "Inserting and Deleting same object? " + otherBean;
 					t.log(m);
-					logger.log(Level.SEVERE, m);
+					
+					// FIXME ~EMG This is quite common - i.e  often removes and then changes mind ... IMO shouldn't be a severe just a warning  
+					logger.log(Level.WARNING, m);
 
 				} else {
 					// build a intersection row for 'insert'

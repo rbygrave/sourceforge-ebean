@@ -22,6 +22,7 @@ package com.avaje.ebean.common;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -211,7 +212,12 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public void clear() {
     	checkReadOnly();
         initClear();
-        set.clear();
+
+        // FIXME ~EMG We can probably do this a bit more effeciently
+        // Remove all if the set has elements
+        if (!set.isEmpty()){
+        	removeAll(new HashSet<E>(set));
+        }
     }
 
     public boolean contains(Object o) {
@@ -246,7 +252,9 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
         if (modifyRemoveListening){
         	if (set.remove(o)){
         		modifyRemoval(o);
+        		return true;
         	}
+        	return false;
         }
         return set.remove(o);
     }
