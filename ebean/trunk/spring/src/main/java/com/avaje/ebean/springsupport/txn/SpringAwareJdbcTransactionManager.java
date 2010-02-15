@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.springsupport.txn;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +27,7 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.ConnectionHolder;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -64,12 +66,6 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
     private String serverName;
 
     /**
-     * The Spring TransactionSynchronisation that is registered with Spring so
-     * that Ebean is notified of commit and rollback events.
-     */
-    private SpringTxnListener springTxnListener;
-
-    /**
      * Instantiates a new spring aware transaction scope manager.
      */
     public SpringAwareJdbcTransactionManager() {
@@ -86,12 +82,6 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
         this.transactionManager = (TransactionManager) txnMgr;
         this.dataSource = transactionManager.getDataSource();
         this.serverName = transactionManager.getServerName();
-        
-        // This is a Spring TransactionSynchronization that is used to
-        // get Spring to notify us when it has committed or rolled back a 
-        // transaction. Ebean can then manage its cache and notify
-        // BeanPersistListeners etc
-        this.springTxnListener = createSpringTxnListener(serverName, transactionManager);
     }
 
     /**
@@ -101,14 +91,6 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
      * </p>
      */
     public Object getCurrentTransaction() {
-
-        // Register the springTxnListener if not added already
-        if (TransactionSynchronizationManager.isSynchronizationActive()
-                && !TransactionSynchronizationManager.getSynchronizations().contains(springTxnListener)) {
-            // this must be registered here (rather than on initialisation) as it gets registered 
-            // into a Spring ThreadLocal mechanism (Spring does not have a global txn listener at this point)
-            TransactionSynchronizationManager.registerSynchronization(springTxnListener);
-        }
 
         // Get the current Spring ConnectionHolder associated to the current spring managed transaction
         ConnectionHolder holder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
@@ -126,35 +108,48 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
             }
             return currentEbeanTransaction;
         }
-
-        // get the current Ebean transaction so that we can check this against the current Spring transaction
-        SpringJdbcTransaction currentTrans = (SpringJdbcTransaction) DefaultTransactionThreadLocal.get(serverName);
-
-        if (currentTrans != null) {
-            ConnectionHolder currentHolder = currentTrans.getConnectionHolder();
-            if (holder.equals(currentHolder)) {
-                // already been using this transaction (already "wrapped" by Ebean)
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "SpringTransaction - using current transaction " + currentTrans.getId());
-                }
-                return currentTrans;
-            }
-        }
-
-
-        // "wrap" the underlying JDBC Connection from the Spring transaction
-        // as an Ebean Transaction (which Ebean is NOT allowed to commit or rollback)
-        SpringJdbcTransaction newTrans = new SpringJdbcTransaction(holder, transactionManager);
         
-        // put this into Ebean's ThreadLocal and Ebean will use this (on this thread) 
-        // until it has been committed or rolled back by Spring / external code
-        DefaultTransactionThreadLocal.set(serverName, newTrans);
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "SpringTransaction starting new transaction " + newTrans.getId());
+        SpringTxnListener springTxnLister = getSpringTxnListener();
+        
+        if (springTxnLister != null){
+            // we have already seen this transaction 
+            return springTxnLister.getTransaction();
+            
+        } else {
+            // This is a new spring txn that we have not seen before
+            SpringJdbcTransaction newTrans = new SpringJdbcTransaction(holder, transactionManager);
+            
+            springTxnLister = createSpringTxnListener(newTrans);
+            TransactionSynchronizationManager.registerSynchronization(springTxnLister);
+            
+            // also put in Ebean ThreadLocal
+            DefaultTransactionThreadLocal.set(serverName, newTrans);
+            return newTrans;
         }
-        return newTrans;
     }
 
+    /**
+     * Search for our specific transaction listener.
+     * <p>
+     * If it exists then we have already seen and "wrapped" this transaction.
+     * </p>
+     */
+    private SpringTxnListener getSpringTxnListener() {
+
+        TransactionSynchronizationManager.isSynchronizationActive();
+
+        List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
+        if (synchronizations != null){
+            // search for our specific listener
+            for (int i = 0; i < synchronizations.size(); i++) {
+                if (synchronizations.get(i) instanceof SpringTxnListener){
+                    return (SpringTxnListener)synchronizations.get(i);
+                }
+            }
+        }
+        return null;
+    }
+    
     /**
      * Create a listener to register with Spring to enable Ebean to be 
      * notified when transactions commit and rollback.
@@ -163,8 +158,8 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
      * cache etc.
      * </p>
      */
-    private SpringTxnListener createSpringTxnListener(String serverName, TransactionManager transactionManager) {
-        return new SpringTxnListener(serverName, transactionManager);
+    private SpringTxnListener createSpringTxnListener(SpringJdbcTransaction t) {
+        return new SpringTxnListener(transactionManager, t);
     }
 
     /**
@@ -177,47 +172,38 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
      * </p>
      */
     private static class SpringTxnListener extends TransactionSynchronizationAdapter {
-
-        private final String serverName;
         
         private final TransactionManager transactionManager;
         
-        private SpringTxnListener(String serverName, TransactionManager transactionManager){
-            this.serverName  = serverName;
+        private final SpringJdbcTransaction transaction;
+        
+        private SpringTxnListener(TransactionManager transactionManager, SpringJdbcTransaction t){
             this.transactionManager = transactionManager;
+            this.transaction = t;
         }
         
+        public SpringJdbcTransaction getTransaction() {
+            return transaction;
+        }
+
         public void afterCompletion(int status) {
             
-            SpringJdbcTransaction t = (SpringJdbcTransaction) DefaultTransactionThreadLocal.get(serverName);
-
-            if (t == null) {
-                // A spring transaction was created and committed / rolled back ... but Ebean was
-                // never used with that transaction (perhaps used a Spring jdbc template etc)
-                if (logger.isLoggable(Level.FINE)){
-                    logger.fine("Ebean was not used with this Spring transaction; EbeanServer name:" + serverName);
-                }
+            switch (status) {
+            case STATUS_COMMITTED:
+                logger.info("Txn committed");
+                transactionManager.notifyOfCommit(transaction);
+                break;
                 
-            } else {
-                // Ebean was used with this transaction so it needs to
-                // manage its cache and notify BeanPersistListeners etc
-                switch (status) {
-                case STATUS_COMMITTED:
-                    logger.info("Txn committed");
-                    transactionManager.notifyOfCommit(t);
-                    break;
-                    
-                case STATUS_ROLLED_BACK:
-                    logger.info("Txn rolled back");
-                    transactionManager.notifyOfRollback(t, null);
-                    break;
-                    
-                default:
-                    // this should never happen
-                    String msg = "Invalid status "+status;
-                    throw new PersistenceException(msg);
-                }
-            } 
+            case STATUS_ROLLED_BACK:
+                logger.info("Txn rolled back");
+                transactionManager.notifyOfRollback(transaction, null);
+                break;
+                
+            default:
+                // this should never happen
+                String msg = "Invalid status "+status;
+                throw new PersistenceException(msg);
+            }
         }
     }
 }
