@@ -174,6 +174,12 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	public void clear() {
 		checkReadOnly();
 		initClear();
+        if (modifyRemoveListening) {
+            for (K key : map.keySet()) {
+                E o = map.remove(key);
+                modifyRemoval(o);                
+            }
+        }
 		map.clear();
 	}
 
