@@ -136,17 +136,18 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
      */
     private SpringTxnListener getSpringTxnListener() {
 
-        TransactionSynchronizationManager.isSynchronizationActive();
-
-        List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
-        if (synchronizations != null){
-            // search for our specific listener
-            for (int i = 0; i < synchronizations.size(); i++) {
-                if (synchronizations.get(i) instanceof SpringTxnListener){
-                    return (SpringTxnListener)synchronizations.get(i);
-                }
-            }
+        if (TransactionSynchronizationManager.isSynchronizationActive()){
+	        List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
+	        if (synchronizations != null){
+	            // search for our specific listener
+	            for (int i = 0; i < synchronizations.size(); i++) {
+	                if (synchronizations.get(i) instanceof SpringTxnListener){
+	                    return (SpringTxnListener)synchronizations.get(i);
+	                }
+	            }
+	        }
         }
+        
         return null;
     }
     
@@ -204,6 +205,9 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
                 String msg = "Invalid status "+status;
                 throw new PersistenceException(msg);
             }
+            
+            // Remove this transaction object as it is completed
+    		DefaultTransactionThreadLocal.replace(transaction.getTransactionManger().getServerName(), null);
         }
     }
 }
