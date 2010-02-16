@@ -69,8 +69,13 @@ public class ScalarTypeCalendar extends ScalarTypeBase<Calendar> {
 	public Calendar toBeanType(Object value) {
 		return BasicTypeConverter.toCalendar(value);
 	}
+	
+	public String format(Calendar t) {
+	    Timestamp ts = new Timestamp(t.getTimeInMillis());
+	    return ts.toString();
+    }
 
-	public Calendar parse(String value) {
+    public Calendar parse(String value) {
 		Timestamp ts = Timestamp.valueOf(value);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(ts.getTime());

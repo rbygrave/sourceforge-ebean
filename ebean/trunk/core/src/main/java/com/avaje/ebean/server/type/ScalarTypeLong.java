@@ -53,8 +53,12 @@ public class ScalarTypeLong extends ScalarTypeBase<Long> {
 	public Long toBeanType(Object value) {
 		return BasicTypeConverter.toLong(value);
 	}
+	
+	public String format(Long t) {
+        return t.toString();
+    }
 
-	public Long parse(String value) {
+    public Long parse(String value) {
 		return Long.valueOf(value);
 	}
 	

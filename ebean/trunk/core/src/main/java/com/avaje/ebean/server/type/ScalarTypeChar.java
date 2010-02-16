@@ -60,8 +60,12 @@ public class ScalarTypeChar extends ScalarTypeBase<Character> {
 		String s = BasicTypeConverter.toString(value);
 		return s.charAt(0);
 	}
-	
-	public Character parse(String value) {
+		
+	public String format(Character t) {
+        return t.toString();
+    }
+
+    public Character parse(String value) {
 		return value.charAt(0);
 	}
 

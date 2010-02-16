@@ -134,10 +134,21 @@ public interface ScalarType<T> extends StringParser, ScalarDataReader<T> {
 	public T toBeanType(Object value);
 
 	/**
+	 * Convert the type into a string representation.
+	 * <p>
+	 * Reciprocal of parse().
+	 * </p>
+	 */
+	public String format(T v);
+	
+	/**
 	 * Convert the string value to the appropriate java object.
 	 * <p>
 	 * Mostly used to support CSV, JSON and XML parsing.
 	 * </p>
+     * <p>
+     * Reciprocal of format().
+     * </p>
 	 */
 	public T parse(String value);
 

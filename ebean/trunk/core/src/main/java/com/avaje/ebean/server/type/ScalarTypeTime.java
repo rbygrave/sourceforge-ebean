@@ -55,7 +55,12 @@ public class ScalarTypeTime extends ScalarTypeBase<Time> {
 		return BasicTypeConverter.toTime(value);
 	}
 
-	public Time parse(String value) {
+	
+	public String format(Time v) {
+        return v.toString();
+    }
+
+    public Time parse(String value) {
 		return Time.valueOf(value);
 	}
 	

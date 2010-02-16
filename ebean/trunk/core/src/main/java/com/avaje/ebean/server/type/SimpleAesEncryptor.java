@@ -20,8 +20,6 @@
 package com.avaje.ebean.server.type;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -29,10 +27,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.Encryptor;
-import com.avaje.ebean.text.StringParser;
 
 /**
- * Simple AES based encryptor.
+ * Simple AES based encryption and decryption.
  * 
  * @author rbygrave
  */
@@ -42,16 +39,7 @@ public class SimpleAesEncryptor implements Encryptor {
 
     private final String padding = "asldkalsdkadsdfkjsldfjl";
 
-    private final Map<Class<?>, StringParser> typeParserMap = new HashMap<Class<?>, StringParser>();
-
-    private final TypeManager typeManager;
-
-    public SimpleAesEncryptor(TypeManager typeManager) {
-        this.typeManager = typeManager;
-    }
-
-    public void addParser(Class<?> type, StringParser parser) {
-        typeParserMap.put(type, parser);
+    public SimpleAesEncryptor() {
     }
 
     private String paddKey(EncryptKey encryptKey) {
@@ -128,32 +116,24 @@ public class SimpleAesEncryptor implements Encryptor {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T decryptObject(byte[] data, EncryptKey key, Class<T> type) {
+    public String decryptString(byte[] data, EncryptKey key) {
 
         byte[] bytes = decrypt(data, key);
         try {
-            String s = new String(bytes, "UTF-8");
-
-            // StringParser parser
-            ScalarType parser = typeManager.getScalarType(type);
-            if (parser == null) {
-                throw new RuntimeException("No parser for type " + type);
-            }
-            return (T) parser.parse(s);
+            return new String(bytes, "UTF-8");
 
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public <T> byte[] encryptObject(T value, EncryptKey key) {
+    public byte[] encryptString(String valueFormatValue, EncryptKey key) {
 
-        if (value == null) {
+        if (valueFormatValue == null) {
             return null;
         }
         try {
-            byte[] d = value.toString().getBytes("UTF-8");
+            byte[] d = valueFormatValue.getBytes("UTF-8");
             return encrypt(d, key);
 
         } catch (UnsupportedEncodingException e) {

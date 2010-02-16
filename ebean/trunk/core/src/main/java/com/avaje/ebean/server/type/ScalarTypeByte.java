@@ -54,7 +54,12 @@ public class ScalarTypeByte extends ScalarTypeBase<Byte> {
 		return BasicTypeConverter.toByte(value);
 	}
 
-	public Byte parse(String value) {
+	
+	public String format(Byte t) {
+        return t.toString();
+    }
+
+    public Byte parse(String value) {
 		throw new TextException("Not supported");
 	}
 	

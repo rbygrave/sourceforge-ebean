@@ -59,7 +59,12 @@ public class ScalarTypeMathBigInteger extends ScalarTypeBase<BigInteger> {
 		return BasicTypeConverter.toMathBigInteger(value);
 	}
 
-	public BigInteger parse(String value) {
+	
+	public String format(BigInteger v) {
+        return v.toString();
+    }
+
+    public BigInteger parse(String value) {
 		return new BigInteger(value);
 	}
 
