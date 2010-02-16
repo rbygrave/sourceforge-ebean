@@ -35,6 +35,12 @@ public class MySqlDbEncrypt implements DbEncrypt {
         switch (jdbcType) {
         case Types.VARCHAR:
             return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.CLOB:
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.CHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.LONGVARCHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
             
         case Types.DATE:
             return DATE_ENCRYPT_FUNCTION;
