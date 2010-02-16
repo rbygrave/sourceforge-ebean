@@ -27,64 +27,59 @@ import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.ServerConfig;
 
 /**
- * The Class EbeanServerFactoryBean.
+ * A Spring FactoryBean for constructing EbeanServer instances.
  *
  * @since 18.05.2009
  * @author E Mc Greal
  */
-public class EbeanServerFactoryBean implements InitializingBean, FactoryBean {
+public class EbeanServerFactoryBean implements InitializingBean, FactoryBean<EbeanServer> {
 
-	/** The server configuration. */
+	/** 
+	 * The Ebean server configuration. 
+	 */
 	private ServerConfig serverConfig;
 
-	/** The ebean server. */
+	/** 
+	 * The EbeanServer instance. 
+	 */
 	private EbeanServer ebeanServer;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	public void afterPropertiesSet() throws Exception {
 
 		if (serverConfig == null){
 			throw new Exception("No ServerConig set. You must define a ServerConfig bean");
 		}
 
-		// Create the new Ebean server using the configuration
-		ebeanServer = EbeanServerFactory.create(serverConfig);
+		// Create the new EbeanServer using the configuration
+		this.ebeanServer = EbeanServerFactory.create(serverConfig);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
-	public Object getObject() throws Exception {
+	public EbeanServer getObject() throws Exception {
 		return ebeanServer;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
-	public Class<?> getObjectType() {
+	public Class<? extends EbeanServer> getObjectType() {
 		return EbeanServer.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	/**
+	 * Returns true for EbeanServer.
 	 */
 	public boolean isSingleton() {
 		return true;
 	}
 
 	/**
-	 * @return the serverConfiguration
+	 * Return the server configuration.
 	 */
 	public ServerConfig getServerConfig() {
 		return serverConfig;
 	}
 
 	/**
-	 * @param serverConfiguration the serverConfiguration to set
+	 * Set the server configuration.
 	 */
-	public void setServerConfig(ServerConfig serverConfiguration) {
-		this.serverConfig = serverConfiguration;
+	public void setServerConfig(ServerConfig serverConfig) {
+		this.serverConfig = serverConfig;
 	}
 }
