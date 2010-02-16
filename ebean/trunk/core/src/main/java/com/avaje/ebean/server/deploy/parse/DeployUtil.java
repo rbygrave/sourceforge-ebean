@@ -28,13 +28,13 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.config.EncryptDeploy;
 import com.avaje.ebean.config.EncryptDeployManager;
 import com.avaje.ebean.config.EncryptKeyManager;
 import com.avaje.ebean.config.Encryptor;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.TableName;
-import com.avaje.ebean.config.EncryptDeployManager.Mode;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebean.server.deploy.meta.DeployBeanPropertyCompound;
@@ -110,11 +110,21 @@ public class DeployUtil {
 		return namingConvention;
 	}
 
-	public Mode getEncryptMode(TableName table, String column) {
-	    if (encryptDeployManager == null){
-	        return Mode.ANNOTATION;
+	/**
+	 * Check that the EncryptKeyManager has been defined.
+	 */
+	public void checkEncryptKeyManagerDefined(String fullPropName) {
+	    if (encryptKeyManager == null){
+	        String msg = "Using encryption on "+fullPropName+" but no EncryptKeyManager defined!";
+	        throw new PersistenceException(msg);
 	    }
-	    return encryptDeployManager.getEncryptMode(table, column);
+	}
+	
+	public EncryptDeploy getEncryptDeploy(TableName table, String column) {
+	    if (encryptDeployManager == null){
+	        return EncryptDeploy.ANNOTATION;
+	    }
+	    return encryptDeployManager.getEncryptDeploy(table, column);
 	}
 	
 	public DataEncryptSupport createDataEncryptSupport(String table, String column) {
