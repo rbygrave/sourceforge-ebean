@@ -116,9 +116,11 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
             return springTxnLister.getTransaction();
             
         } else {
-            // This is a new spring txn that we have not seen before
+            // This is a new spring transaction that we have not seen before.
+            // "wrap" it in a SpringJdbcTransaction for use with Ebean 
             SpringJdbcTransaction newTrans = new SpringJdbcTransaction(holder, transactionManager);
             
+            // Create and register a Spring TransactionSynchronization for this transaction
             springTxnLister = createSpringTxnListener(newTrans);
             TransactionSynchronizationManager.registerSynchronization(springTxnLister);
             
@@ -178,15 +180,28 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
         
         private final SpringJdbcTransaction transaction;
         
+        private final String serverName;
+        
         private SpringTxnListener(TransactionManager transactionManager, SpringJdbcTransaction t){
             this.transactionManager = transactionManager;
             this.transaction = t;
+            this.serverName = transactionManager.getServerName();
         }
         
+        /**
+         * Return the associated Ebean wrapped transaction.
+         */
         public SpringJdbcTransaction getTransaction() {
             return transaction;
         }
+        
+        @Override
+        public void beforeCommit(boolean readOnly) {
+            // Future note: for JPA2 locking we will
+            // have beforeCommit events to fire
+        }
 
+        @Override
         public void afterCompletion(int status) {
             
             switch (status) {
@@ -207,7 +222,7 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
             }
             
             // Remove this transaction object as it is completed
-    		DefaultTransactionThreadLocal.replace(transaction.getTransactionManger().getServerName(), null);
+    		DefaultTransactionThreadLocal.replace(serverName, null);
         }
     }
 }
