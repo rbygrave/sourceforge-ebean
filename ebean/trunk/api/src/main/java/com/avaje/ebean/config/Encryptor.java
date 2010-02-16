@@ -25,9 +25,8 @@ public interface Encryptor {
     
     public byte[] decrypt(byte[] data, EncryptKey key);
     
-    
-    public <T> byte[] encryptObject(T value, EncryptKey key);
+    public byte[] encryptString(String formattedValue, EncryptKey key);
 
-    public <T> T decryptObject(byte[]data, EncryptKey key, Class<T> type);
+    public String decryptString(byte[] data, EncryptKey key);
 
 }
