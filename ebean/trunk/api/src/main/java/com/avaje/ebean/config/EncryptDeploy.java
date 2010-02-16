@@ -52,9 +52,25 @@ public class EncryptDeploy {
      */
     public static final EncryptDeploy ENCRYPT_CLIENT = new EncryptDeploy(Mode.ENCRYPT, false, 0);
     
+    /**
+     * The Encryption mode.
+     */
     public enum Mode {
+        /**
+         * Encrypt the property using DB encryption or Java client encryption depending on 
+         * the type and dbEncryption flag.
+         */
         ENCRYPT,
+        
+        /**
+         * No encryption is used, even if there is an Encryption annotation on the property.
+         */
         NO_ENCRYPT,
+        
+        /**
+         * Use encryption options defined by the Encryption annotation on the property.
+         * If no annotation is on the property it is not encrypted.
+         */
         ANNOTATION
     }
 
