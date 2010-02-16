@@ -35,6 +35,8 @@ import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.avaje.ebean.config.dbplatform.DbEncrypt;
+import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
 import com.avaje.ebean.server.core.InternString;
 import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
@@ -121,6 +123,7 @@ public class DeployBeanProperty {
     private boolean localEncrypted;
 
     private boolean dbEncrypted;
+    private DbEncryptFunction dbEncryptFunction;
 
     private int dbEncryptedType;
 
@@ -739,11 +742,26 @@ public class DeployBeanProperty {
         return dbEncrypted;
     }
 
-    /**
-     * Set true if this property should be encrypted in the DB.
-     */
-    public void setDbEncrypted(boolean dbEncrypted) {
-        this.dbEncrypted = dbEncrypted;
+//    /**
+//     * Set true if this property should be encrypted in the DB.
+//     */
+//    public void setDbEncrypted(boolean dbEncrypted) {
+//        this.dbEncrypted = dbEncrypted;
+//    }
+    
+    public DbEncryptFunction getDbEncryptFunction() {
+        return dbEncryptFunction;
+    }
+
+    public void setDbEncryptFunction(DbEncryptFunction dbEncryptFunction, DbEncrypt dbEncrypt, int dbLen) {
+        this.dbEncryptFunction = dbEncryptFunction;
+        this.dbEncrypted = true;
+        this.dbBind = dbEncryptFunction.getEncryptBindSql();
+        
+        this.dbEncryptedType = isLob() ? Types.BLOB : dbEncrypt.getEncryptDbType();
+        if (dbLen > 0){
+            setDbLength(dbLen);
+        }
     }
 
     /**

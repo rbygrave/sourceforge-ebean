@@ -28,13 +28,18 @@ import java.sql.Types;
  */
 public class PostgresDbEncrypt implements DbEncrypt {
 
-    public String getDecryptSql(String columnWithTableAlias) {
-        return "pgp_sym_decrypt(" + columnWithTableAlias + ",?)";
+    private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
+    
+    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
+        switch (jdbcType) {
+        case Types.VARCHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+            
+        default:
+            return null;
+        }
     }
-
-    public String getEncryptBindSql() {
-        return "pgp_sym_encrypt(?,?)";
-    }
+    
 
     public int getEncryptDbType() {
         return Types.VARBINARY;
@@ -47,4 +52,15 @@ public class PostgresDbEncrypt implements DbEncrypt {
         return true;
     }
 
+    static class VarcharFunction implements DbEncryptFunction {
+        
+        public String getDecryptSql(String columnWithTableAlias) {
+            return "pgp_sym_decrypt(" + columnWithTableAlias + ",?)";
+        }
+
+        public String getEncryptBindSql() {
+            return "pgp_sym_encrypt(?,?)";
+        }
+    }
+    
 }

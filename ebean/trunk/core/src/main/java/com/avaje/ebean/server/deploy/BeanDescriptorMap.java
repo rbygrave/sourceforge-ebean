@@ -45,10 +45,10 @@ public interface BeanDescriptorMap {
      */
     public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
 
-    /**
-     * Return the DB decrypt SQL for a given column with its table alias.
-     */
-    public String getDecryptSql(String columnWithTableAlias);
+//    /**
+//     * Return the DB decrypt SQL for a given column with its table alias.
+//     */
+//    public String getDecryptSql(String columnWithTableAlias);
 
     /**
      * Return the Encrypt key given the table and column name.

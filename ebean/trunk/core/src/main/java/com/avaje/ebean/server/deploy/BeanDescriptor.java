@@ -742,12 +742,12 @@ public class BeanDescriptor<T> {
         return referenceOptions;
     }
 
-    /**
-     * Return the DB decrypt SQL for a given column with its table alias.
-     */
-    public String getDecryptSql(String columnWithTableAlias){
-        return owner.getDecryptSql(columnWithTableAlias);
-    }
+//    /**
+//     * Return the DB decrypt SQL for a given column with its table alias.
+//     */
+//    public String getDecryptSql(String columnWithTableAlias){
+//        return owner.getDecryptSql(columnWithTableAlias);
+//    }
     
     /**
      * Return the Encrypt key given the BeanProperty.
