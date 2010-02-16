@@ -50,8 +50,9 @@ import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.LdapAttribute;
 import com.avaje.ebean.annotation.LdapId;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.avaje.ebean.config.EncryptDeploy;
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.config.EncryptDeployManager.Mode;
+import com.avaje.ebean.config.EncryptDeploy.Mode;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
@@ -283,14 +284,14 @@ public class AnnotationFields extends AnnotationParser {
 
 		if (!prop.isTransient()){
 		    
-		    Mode encryptMode = util.getEncryptMode(info.getDescriptor().getBaseTableFull(), prop.getDbColumn());
-		    if (encryptMode == null || encryptMode.equals(Mode.ANNOTATION)){
-	            Encrypted encrypted = (Encrypted) get(prop, Encrypted.class);
+		    EncryptDeploy encryptDeploy = util.getEncryptDeploy(info.getDescriptor().getBaseTableFull(), prop.getDbColumn());
+		    if (encryptDeploy == null || encryptDeploy.getMode().equals(Mode.ANNOTATION)){
+	            Encrypted encrypted = get(prop, Encrypted.class);
 	            if (encrypted != null) {    
-	                setEncryption(prop, encrypted);
+	                setEncryption(prop, encrypted.dbEncryption(), encrypted.dbLength());
 	            }		        
-		    } else if (Mode.ENCRYPT.equals(encryptMode)) {
-                setEncryption(prop, null);
+		    } else if (Mode.ENCRYPT.equals(encryptDeploy)) {
+                setEncryption(prop, encryptDeploy.isDbEncrypt(), encryptDeploy.getDbLength());
 		    }		        		    
 		}
 		
@@ -325,14 +326,13 @@ public class AnnotationFields extends AnnotationParser {
         }
 	}
 	
-    private void setEncryption(DeployBeanProperty prop, Encrypted encrypted) {
-	    
-        boolean dbEncString = encrypted == null ? true : encrypted.dbEncryption();
-	    int dbLen = encrypted == null ? 0 : encrypted.dbLength();
-	    
+    private void setEncryption(DeployBeanProperty prop, boolean dbEncString, int dbLen) {
+	    	    
+        util.checkEncryptKeyManagerDefined(prop.getFullBeanName());
+        
 	    ScalarType<?> st = prop.getScalarType();
 	    if (byte[].class.equals(st.getType())){
-	        // Always using Java Encryptor rather than DB for encryption
+	        // Always using Java client encryption rather than DB for encryption
 	        // of binary data (partially as this is not supported on all db's etc)
 	        // This could be reviewed at a later stage.
 	        ScalarTypeBytesBase baseType = (ScalarTypeBytesBase)st;
