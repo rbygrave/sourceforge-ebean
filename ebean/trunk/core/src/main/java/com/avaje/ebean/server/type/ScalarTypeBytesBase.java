@@ -48,7 +48,12 @@ public abstract class ScalarTypeBytesBase extends ScalarTypeBase<byte[]> {
 		return (byte[])value;
 	}
 
-	public byte[] parse(String value) {
+	
+	public String format(byte[] t) {
+        throw new TextException("Not supported");
+    }
+
+    public byte[] parse(String value) {
 		throw new TextException("Not supported");
 	}
 	

@@ -54,8 +54,12 @@ public class ScalarTypeBigDecimal extends ScalarTypeBase<BigDecimal> {
 	public BigDecimal toBeanType(Object value) {
 		return BasicTypeConverter.toBigDecimal(value);
 	}
+	
+	public String format(BigDecimal t) {
+        return t.toPlainString();
+    }
 
-	public BigDecimal parse(String value) {
+    public BigDecimal parse(String value) {
 		return new BigDecimal(value);
 	}
 

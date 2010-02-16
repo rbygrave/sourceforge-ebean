@@ -52,15 +52,6 @@ public class ScalarTypeClob extends ScalarTypeBase<String> {
 	public String read(DataReader dataReader) throws SQLException {
 
 	    return dataReader.getStringClob();
-//		Clob clob = rset.getClob(index);
-//		if (clob == null) {
-//			return null;
-//		}
-//		Reader reader = clob.getCharacterStream();
-//		if (reader == null) {
-//			return null;
-//		}
-//		return readStringLob(reader);
 	}
 
 	public Object toJdbcType(Object value) {
@@ -71,7 +62,12 @@ public class ScalarTypeClob extends ScalarTypeBase<String> {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public String parse(String value) {
+	
+	public String format(String t) {
+        return t;
+    }
+
+    public String parse(String value) {
 		return value;
 	}
 
@@ -82,21 +78,4 @@ public class ScalarTypeClob extends ScalarTypeBase<String> {
 	public boolean isDateTimeCapable() {
 		return true;
 	}
-	
-//	protected String readStringLob(Reader reader) throws SQLException {
-//
-//		char[] buffer = new char[clobBufferSize];
-//		int readLength = 0;
-//		StringBuilder out = new StringBuilder(stringInitialSize);
-//		try {
-//			while ((readLength = reader.read(buffer)) != -1) {
-//				out.append(buffer, 0, readLength);
-//			}
-//			reader.close();
-//		} catch (IOException e) {
-//			throw new SQLException(Message.msg("persist.clob.io", e.getMessage()));
-//		}
-//
-//		return out.toString();
-//	}
 }

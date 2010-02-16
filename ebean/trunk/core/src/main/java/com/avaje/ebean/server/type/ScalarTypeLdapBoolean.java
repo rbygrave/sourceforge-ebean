@@ -101,6 +101,10 @@ public class ScalarTypeLdapBoolean extends ScalarTypeBase<Boolean> {
             return Boolean.FALSE;
         }
     }
+    
+    public String format(Boolean t) {
+        return t.toString();
+    }
 
     public Boolean parse(String value) {
         return Boolean.valueOf(value);

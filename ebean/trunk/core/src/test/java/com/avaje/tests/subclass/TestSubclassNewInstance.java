@@ -17,10 +17,10 @@ public class TestSubclassNewInstance extends TestCase {
         
         EBasicNoDefaultConstructor inst = new EBasicNoDefaultConstructor(12,"banana");
         
-//        if (inst instanceof EntityBean){
-//            // using enhancement so can't run test
-//            return;
-//        }
+        if (inst instanceof EntityBean){
+            // using enhancement so can't run test
+            return;
+        }
         
         EBasicNoDefaultConstructor inst2 = Ebean.getServer(null).createEntityBean(EBasicNoDefaultConstructor.class);
         

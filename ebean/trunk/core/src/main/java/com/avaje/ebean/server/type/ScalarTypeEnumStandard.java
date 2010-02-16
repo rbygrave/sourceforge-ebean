@@ -132,7 +132,12 @@ public class ScalarTypeEnumStandard {
 			return Enum.valueOf(enumType, (String)dbValue);
 		}
 
-		public Object parse(String value) {	
+		
+		public String format(Object t) {
+            return t.toString();
+        }
+
+        public Object parse(String value) {	
 			return Enum.valueOf(enumType, value);
 		}
 		
@@ -232,7 +237,11 @@ public class ScalarTypeEnumStandard {
 			}
 			return enumArray[ordinal];
 		}
-		
+
+        public String format(Object t) {
+            return t.toString();
+        }
+
 		public Object parse(String value) {	
 			return Enum.valueOf(enumType, value);
 		}

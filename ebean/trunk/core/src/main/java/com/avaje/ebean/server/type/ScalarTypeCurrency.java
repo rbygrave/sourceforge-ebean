@@ -45,7 +45,11 @@ public class ScalarTypeCurrency extends ScalarTypeBaseVarchar<Currency> {
         return ((Currency)beanValue).getCurrencyCode();
     }
 
-	public Currency parse(String value) {
+	public String format(Currency v) {
+        return v.toString();
+    }
+
+    public Currency parse(String value) {
 		return Currency.getInstance(value);
 	}
 		

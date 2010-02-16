@@ -54,7 +54,12 @@ public class ScalarTypeDouble extends ScalarTypeBase<Double> {
 		return BasicTypeConverter.toDouble(value);
 	}
 
-	public Double parse(String value) {
+	
+	public String format(Double t) {
+        return t.toString();
+    }
+
+    public Double parse(String value) {
 		return Double.valueOf(value);
 	}
 

@@ -6,8 +6,6 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.config.EncryptKey;
-import com.avaje.ebean.server.type.DefaultTypeManager;
-import com.avaje.ebean.server.type.ScalarTypeTimestamp;
 import com.avaje.ebean.server.type.SimpleAesEncryptor;
 import com.avaje.tests.basic.encrypt.BasicEncryptKey;
 
@@ -16,8 +14,7 @@ public class TestSimpleEncryptor extends TestCase {
     
     public void test() {
         
-        SimpleAesEncryptor e = new SimpleAesEncryptor(new DefaultTypeManager(null, null));
-        e.addParser(Timestamp.class, new ScalarTypeTimestamp());
+        SimpleAesEncryptor e = new SimpleAesEncryptor();
         
         EncryptKey key = new BasicEncryptKey("hello");
         
@@ -33,11 +30,11 @@ public class TestSimpleEncryptor extends TestCase {
         System.out.println(s);
         
         Timestamp t = new Timestamp(System.currentTimeMillis());
-        byte[] ecTimestamp = e.encryptObject(t, key);
+        byte[] ecTimestamp = e.encryptString(t.toString(), key);
         System.out.println(t+" encrypted -> "+ecTimestamp);
         
-        Timestamp t1 = e.decryptObject(ecTimestamp, key, Timestamp.class);
-        
+        String tsFormat = e.decryptString(ecTimestamp, key);
+        Timestamp t1 = Timestamp.valueOf(tsFormat);
         Assert.assertEquals(t, t1);
         
     }

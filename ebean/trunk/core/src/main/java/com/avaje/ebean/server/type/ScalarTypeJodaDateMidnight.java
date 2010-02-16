@@ -21,7 +21,6 @@ package com.avaje.ebean.server.type;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.joda.time.DateMidnight;
@@ -72,9 +71,14 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
 		return (DateMidnight)value;
 	}
 	
+    public String format(DateMidnight v) {
+        Date sqlDate = new Date(v.getMillis());
+        return sqlDate.toString();
+    }
+
 	public DateMidnight parse(String value) {
-		Timestamp ts = Timestamp.valueOf(value);
-		return new DateMidnight(ts.getTime());
+		Date sqlDate = Date.valueOf(value);
+		return new DateMidnight(sqlDate.getTime());
 	}
 
 	public DateMidnight parseDateTime(long systemTimeMillis) {

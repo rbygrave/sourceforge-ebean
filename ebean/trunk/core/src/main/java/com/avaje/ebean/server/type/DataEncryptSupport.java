@@ -49,15 +49,14 @@ public class DataEncryptSupport {
         return encryptor.decrypt(data, key);
     }
     
-    public <T> T decryptObject(byte[] data, Class<T> type) {
-
+    public String decryptObject(byte[] data) {
         EncryptKey key = encryptKeyManager.getEncryptKey(table, column);
-        return encryptor.decryptObject(data, key, type);
+        return encryptor.decryptString(data, key);
     }
 
-    public <T> byte[] encryptObject(T value) {
+    public <T> byte[] encryptObject(String formattedValue) {
         EncryptKey key = encryptKeyManager.getEncryptKey(table, column);
-        return encryptor.encryptObject(value, key);
+        return encryptor.encryptString(formattedValue, key);
     }
 
 }

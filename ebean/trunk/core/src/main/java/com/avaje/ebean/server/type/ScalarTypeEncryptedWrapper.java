@@ -34,14 +34,25 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
         this.byteArrayType = byteArrayType;
         this.dataEncryptSupport = dataEncryptSupport;
     }
-    
-    public byte[] encrypt(T value){
-        return dataEncryptSupport.encryptObject(value);
+
+    public T read(DataReader dataReader) throws SQLException {
+
+        byte[] data = dataReader.getBytes();
+        String formattedValue = dataEncryptSupport.decryptObject(data);
+        if (formattedValue == null){
+            return null;
+        }
+        return wrapped.parse(formattedValue);
+    }
+
+    private byte[] encrypt(T value){
+        String formatValue = wrapped.format(value);
+        return dataEncryptSupport.encryptObject(formatValue);
     }
     
     public void bind(DataBind b, T value) throws SQLException {
         
-        byte[] encryptedValue = dataEncryptSupport.encryptObject(value);
+        byte[] encryptedValue = encrypt(value);
         byteArrayType.bind(b, encryptedValue);
     }
 
@@ -68,6 +79,10 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
     public void loadIgnore(DataReader dataReader) {
         wrapped.loadIgnore(dataReader);
     }
+    
+    public String format(T v) {
+        return wrapped.format(v);
+    }
 
     public T parse(String value) {
         return wrapped.parse(value);
@@ -75,12 +90,6 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
 
     public T parseDateTime(long systemTimeMillis) {
         return wrapped.parseDateTime(systemTimeMillis);
-    }
-
-    public T read(DataReader dataReader) throws SQLException {
-
-        byte[] data = dataReader.getBytes();
-        return dataEncryptSupport.decryptObject(data, wrapped.getType());
     }
 
     public T toBeanType(Object value) {

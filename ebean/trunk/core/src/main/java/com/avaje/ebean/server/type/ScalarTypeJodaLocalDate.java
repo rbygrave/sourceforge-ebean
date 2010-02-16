@@ -19,8 +19,8 @@
  */
 package com.avaje.ebean.server.type;
 
+import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.joda.time.LocalDate;
@@ -69,8 +69,13 @@ public class ScalarTypeJodaLocalDate extends ScalarTypeBase<LocalDate> {
 		return (LocalDate)value;
 	}
 
+    public String format(LocalDate v) {
+        Date sqlDate = new Date(v.toDateTimeAtStartOfDay().getMillis());
+        return sqlDate.toString();
+    }
+
 	public LocalDate parse(String value) {
-		Timestamp ts = Timestamp.valueOf(value);
+		Date ts = Date.valueOf(value);
 		return new LocalDate(ts.getTime());
 	}
 	

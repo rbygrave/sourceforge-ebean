@@ -54,7 +54,11 @@ public class ScalarTypeString extends ScalarTypeBase<String> {
 		return BasicTypeConverter.toString(value);
 	}
 
-	public String parse(String value) {
+	public String format(String t) {
+        return t;
+    }
+
+    public String parse(String value) {
 		return value;
 	}
 	

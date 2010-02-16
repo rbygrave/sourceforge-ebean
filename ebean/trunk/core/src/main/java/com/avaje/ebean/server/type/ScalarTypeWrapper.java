@@ -82,6 +82,11 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
         return false;
     }
 
+    public String format(B v) {
+        S sv = converter.unwrapValue(v);
+        return scalarType.format(sv);
+    }
+
     public B parse(String value) {
         S sv = scalarType.parse(value);
         if (sv == null) {

@@ -51,6 +51,10 @@ public class ScalarTypeBoolean {
 			return BasicTypeConverter.convert(value, jdbcType);
 		}
 		
+        public String format(Boolean t) {
+            return t.toString();
+        }
+
 		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
@@ -102,8 +106,12 @@ public class ScalarTypeBoolean {
 			// use JDBC driver to convert boolean to bit
 			return BasicTypeConverter.toBoolean(value);
 		}
+		
+		public String format(Boolean t) {
+            return t.toString();
+        }
 
-		public Boolean parse(String value) {
+        public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
 		
@@ -204,6 +212,10 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
+        public String format(Boolean t) {
+            return t.toString();
+        }
+
 		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
@@ -295,6 +307,10 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
+        public String format(Boolean t) {
+            return t.toString();
+        }
+
 		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}

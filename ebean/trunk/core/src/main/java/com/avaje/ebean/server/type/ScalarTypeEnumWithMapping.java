@@ -123,6 +123,10 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 		return beanDbMap.getBeanValue(dbValue);
 	}
 
+    public String format(Object t) {
+        return t.toString();
+    }
+
 	public Object parse(String value) {
 		return Enum.valueOf(enumType, value);
 	}

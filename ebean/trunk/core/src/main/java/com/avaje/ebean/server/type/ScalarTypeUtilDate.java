@@ -65,7 +65,12 @@ public class ScalarTypeUtilDate {
 			return BasicTypeConverter.toUtilDate(value);
 		}
 
-		public java.util.Date parse(String value) {
+		public String format(Date v) {
+            Timestamp ts = new Timestamp(v.getTime());
+		    return ts.toString();
+        }
+
+        public java.util.Date parse(String value) {
 			Timestamp ts = Timestamp.valueOf(value);
 			return new java.util.Date(ts.getTime());
 		}
@@ -112,6 +117,11 @@ public class ScalarTypeUtilDate {
 		public java.util.Date toBeanType(Object value) {
 			return BasicTypeConverter.toUtilDate(value);
 		}
+
+        public String format(Date v) {
+            java.sql.Date sqlDate = new java.sql.Date(v.getTime());
+            return sqlDate.toString();
+        }
 
 		public java.util.Date parse(String value) {
 			java.sql.Date ts = java.sql.Date.valueOf(value);

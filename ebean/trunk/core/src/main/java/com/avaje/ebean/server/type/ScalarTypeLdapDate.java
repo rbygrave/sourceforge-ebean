@@ -106,6 +106,10 @@ public class ScalarTypeLdapDate<T> implements ScalarType<T> {
     public void loadIgnore(DataReader dataReader) {
         baseType.loadIgnore(dataReader);
     }
+    
+    public String format(T t) {
+        return baseType.format(t);
+    }
 
     public T parse(String value) {
         return baseType.parse(value);

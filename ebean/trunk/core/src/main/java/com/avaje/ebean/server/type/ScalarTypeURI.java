@@ -70,8 +70,12 @@ public class ScalarTypeURI extends ScalarTypeBase<URI> {
 	public Object toJdbcType(Object value) {
 		return value.toString();
 	}
+	
+	public String format(URI v) {
+        return v.toString();
+    }
 
-	public URI parse(String value) {
+    public URI parse(String value) {
 		try {
 			return new URI(value);
 		} catch (URISyntaxException e) {

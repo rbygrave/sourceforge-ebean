@@ -54,8 +54,12 @@ public class ScalarTypeShort extends ScalarTypeBase<Short> {
 	public Short toBeanType(Object value) {
 		return BasicTypeConverter.toShort(value);
 	}
+	
+	public String format(Short v) {
+        return v.toString();
+    }
 
-	public Short parse(String value) {
+    public Short parse(String value) {
 		return Short.valueOf(value);
 	}
 

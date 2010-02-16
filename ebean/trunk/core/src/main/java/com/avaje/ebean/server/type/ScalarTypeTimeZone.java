@@ -45,7 +45,11 @@ public class ScalarTypeTimeZone extends ScalarTypeBaseVarchar<TimeZone> {
         return ((TimeZone)beanValue).getID();
     }
 
-	public TimeZone parse(String value) {
+	public String format(TimeZone v) {
+        return v.toString();
+    }
+
+    public TimeZone parse(String value) {
 		return TimeZone.getTimeZone(value);
 	}
 		

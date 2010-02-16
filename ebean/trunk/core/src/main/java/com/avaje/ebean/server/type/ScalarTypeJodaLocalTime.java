@@ -69,10 +69,13 @@ public class ScalarTypeJodaLocalTime extends ScalarTypeBase<LocalTime> {
 		}
 		return (LocalTime)value;
 	}
+	
+	public String format(LocalTime v) {
+	    return v.toString();
+    }
 
-	public LocalTime parse(String value) {
-		Time ts = Time.valueOf(value);
-		return new LocalTime(ts.getTime());
+    public LocalTime parse(String value) {
+        return new LocalTime(value);
 	}
 	
 	public LocalTime parseDateTime(long systemTimeMillis) {

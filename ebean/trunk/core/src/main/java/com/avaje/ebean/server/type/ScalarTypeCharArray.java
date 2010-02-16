@@ -62,7 +62,12 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
 		return s.toCharArray();
 	}
 
-	public char[] parse(String value) {
+	
+	public String format(char[] t) {
+        return String.valueOf(t);
+    }
+
+    public char[] parse(String value) {
 		return value.toCharArray();
 	}
 
