@@ -117,7 +117,10 @@ public class SimpleAesEncryptor implements Encryptor {
     }
 
     public String decryptString(byte[] data, EncryptKey key) {
-
+        if (data == null) {
+            return null;
+        }
+        
         byte[] bytes = decrypt(data, key);
         try {
             return new String(bytes, "UTF-8");
