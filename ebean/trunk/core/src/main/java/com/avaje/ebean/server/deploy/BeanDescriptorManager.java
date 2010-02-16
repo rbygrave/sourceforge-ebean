@@ -43,7 +43,6 @@ import com.avaje.ebean.config.EncryptKeyManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.NamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
-import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
@@ -162,8 +161,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
     private final int dbSequenceBatchSize;
 
-    private final DbEncrypt dbEncrypt;
-
     private final EncryptKeyManager encryptKeyManager;
 
     /**
@@ -178,7 +175,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         this.dataSource = config.getServerConfig().getDataSource();
         this.encryptKeyManager = config.getServerConfig().getEncryptKeyManager();
         this.databasePlatform = config.getServerConfig().getDatabasePlatform();
-        this.dbEncrypt = databasePlatform.getDbEncrypt();
         this.bootupClasses = config.getBootupClasses();
         this.createProperties = config.getDeployCreateProperties();
         this.subClassManager = config.getSubClassManager();
@@ -272,13 +268,6 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             logger.log(Level.SEVERE, msg, e);
             throw e;
         }
-    }
-
-    /**
-     * Return the DB decrypt SQL for a given column with its table alias.
-     */
-    public String getDecryptSql(String columnWithTableAlias) {
-        return dbEncrypt.getDecryptSql(columnWithTableAlias);
     }
 
     /**

@@ -35,6 +35,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.EncryptKey;
+import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
 import com.avaje.ebean.server.core.InternString;
@@ -264,6 +265,8 @@ public class BeanProperty implements ElPropertyValue {
      * DB Constraint (typically check constraint on enum)
      */
     final String dbConstraintExpression;
+    
+    final DbEncryptFunction dbEncryptFunction; 
 
     public BeanProperty(DeployBeanProperty deploy) {
         this(null, null, deploy);
@@ -277,6 +280,7 @@ public class BeanProperty implements ElPropertyValue {
         this.localEncrypted = deploy.isLocalEncrypted();
         this.dbEncrypted = deploy.isDbEncrypted();
         this.dbEncryptedType = deploy.getDbEncryptedType();
+        this.dbEncryptFunction = deploy.getDbEncryptFunction();
         this.dbBind = deploy.getDbBind();
         this.dbRead = deploy.isDbRead();
         this.dbInsertable = deploy.isDbInsertable();
@@ -342,7 +346,7 @@ public class BeanProperty implements ElPropertyValue {
             s = StringHelper.replaceString(s, "${ta}", "${}");
             
             if (dbEncrypted){
-                s = descriptor.getDecryptSql(s);
+                s = dbEncryptFunction.getDecryptSql(s);
                 String namedParam = ":encryptkey_"+descriptor.getBaseTable()+"___"+dbColumn;
                 s = StringHelper.replaceString(s,"?",namedParam);
             }
@@ -376,6 +380,7 @@ public class BeanProperty implements ElPropertyValue {
         this.dbBind = source.getDbBind();
         this.dbEncrypted = source.isDbEncrypted();
         this.dbEncryptedType = source.getDbEncryptedType();
+        this.dbEncryptFunction = source.dbEncryptFunction;
         this.dbRead = source.isDbRead();
         this.dbInsertable = source.isDbInsertable();
         this.dbUpdatable = source.isDbUpdatable();
@@ -462,19 +467,19 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     public String getDecryptProperty() {
-        return descriptor.getDecryptSql(this.getName());
+        return dbEncryptFunction.getDecryptSql(this.getName());
     }
 
     public String getDecryptProperty(String propertyName) {
-        return descriptor.getDecryptSql(propertyName);
+        return dbEncryptFunction.getDecryptSql(propertyName);
     }
     
     public String getDecryptSql() {
-        return descriptor.getDecryptSql(this.getDbColumn());
+        return dbEncryptFunction.getDecryptSql(this.getDbColumn());
     }
     
     public String getDecryptSql(String tableAlias) {
-        return descriptor.getDecryptSql(tableAlias + "." + this.getDbColumn());
+        return dbEncryptFunction.getDecryptSql(tableAlias + "." + this.getDbColumn());
     }
     
     /**

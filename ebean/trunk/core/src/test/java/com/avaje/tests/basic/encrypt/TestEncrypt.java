@@ -1,5 +1,6 @@
 package com.avaje.tests.basic.encrypt;
 
+import java.sql.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -20,14 +21,17 @@ public class TestEncrypt extends TestCase {
         EBasicEncrypt e = new EBasicEncrypt();
         e.setName("testname");
         e.setDescription("testdesc");
+        e.setDob(new Date(System.currentTimeMillis()-100000));
         
         Ebean.save(e);
         
+        Date earlyDob = new Date(System.currentTimeMillis()-500000);
         
         List<EBasicEncrypt> qlList = 
             Ebean.createQuery(EBasicEncrypt.class)
-                .setQuery("where description like :d")
+                .setQuery("where description like :d and dob >= :dob")
                 .setParameter("d", "testde%")
+                .setParameter("dob", earlyDob)
                 .findList();
         
         Assert.assertTrue(qlList.size() > 0);
@@ -53,7 +57,7 @@ public class TestEncrypt extends TestCase {
         EBasicEncrypt e1 = Ebean.find(EBasicEncrypt.class, e.getId());
         
         String desc1 = e1.getDescription();
-        System.out.println("Decrypted: "+desc1);
+        System.out.println("Decrypted: "+desc1+"  "+e1.getDob());
         
         
         e1.setName("testmod");

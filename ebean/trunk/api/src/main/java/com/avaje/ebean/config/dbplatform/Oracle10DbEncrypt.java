@@ -66,8 +66,17 @@ import java.sql.Types;
  */
 public class Oracle10DbEncrypt implements DbEncrypt {
 
-    private final String encryptFunction;
-    private final String decryptFunction;
+    private final DbEncryptFunction varcharEncrypt;
+    
+    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
+        switch (jdbcType) {
+        case Types.VARCHAR:
+            return varcharEncrypt;
+            
+        default:
+            return null;
+        }
+    }
 
     /**
      * Create using the example eb_encrypt and eb_decrypt functions.
@@ -77,20 +86,12 @@ public class Oracle10DbEncrypt implements DbEncrypt {
     }
 
     /**
-     * Create using your own defined encryption and decryption functions.
+     * Create using your own defined encryption and decryption functions for VARCHAR'S.
      */
     public Oracle10DbEncrypt(String encryptFunction, String decryptFunction) {
-        this.encryptFunction = encryptFunction;
-        this.decryptFunction = decryptFunction;
+        varcharEncrypt = new VarcharFunction(encryptFunction, decryptFunction);
     }
 
-    public String getDecryptSql(String columnWithTableAlias) {
-        return decryptFunction + "(" + columnWithTableAlias + ",?)";
-    }
-
-    public String getEncryptBindSql() {
-        return encryptFunction + "(?,?)";
-    }
 
     public int getEncryptDbType() {
         return Types.VARBINARY;
@@ -103,4 +104,23 @@ public class Oracle10DbEncrypt implements DbEncrypt {
         return true;
     }
 
+    static class VarcharFunction implements DbEncryptFunction {
+
+        private final String encryptFunction;
+        private final String decryptFunction;
+
+        VarcharFunction(String encryptFunction, String decryptFunction) {
+            this.encryptFunction = encryptFunction;
+            this.decryptFunction = decryptFunction;
+        }
+        
+        public String getDecryptSql(String columnWithTableAlias) {
+            return decryptFunction + "(" + columnWithTableAlias + ",?)";
+        }
+
+        public String getEncryptBindSql() {
+            return encryptFunction + "(?,?)";
+        }
+        
+    }
 }

@@ -54,6 +54,7 @@ import com.avaje.ebean.config.EncryptDeploy;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.EncryptDeploy.Mode;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
+import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.dbplatform.IdType;
 import com.avaje.ebean.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebean.server.deploy.generatedproperty.GeneratedPropertyFactory;
@@ -343,18 +344,19 @@ public class AnnotationFields extends AnnotationParser {
 	        return;
 	    
 	    } 
-	    if (dbEncString && String.class.equals(st.getType())){
-	        DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
+	    if (dbEncString){
+	        
+            DbEncrypt dbEncrypt = util.getDbPlatform().getDbEncrypt();
+	        
 	        if (dbEncrypt != null){
-	            // Use DB functions to encrypt string content
-	            prop.setDbEncrypted(true);
-	            prop.setDbBind(dbEncrypt.getEncryptBindSql());
-	            int dbType = prop.isLob() ? Types.BLOB : dbEncrypt.getEncryptDbType();
-	            prop.setDbEncryptedType(dbType);
-	            if (dbLen > 0){
-	                prop.setDbLength(dbLen);
+	            // check if we have a DB encryption function for this type
+	            int jdbcType = prop.getScalarType().getJdbcType();
+	            DbEncryptFunction dbEncryptFunction = dbEncrypt.getDbEncryptFunction(jdbcType);
+	            if (dbEncryptFunction != null){
+	                // Use DB functions to encrypt and decrypt
+	                prop.setDbEncryptFunction(dbEncryptFunction, dbEncrypt, dbLen);
+	                return;
 	            }
-	            return;
 	        }
 	    }
 	    

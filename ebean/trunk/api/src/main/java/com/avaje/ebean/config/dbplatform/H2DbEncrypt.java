@@ -28,14 +28,18 @@ import java.sql.Types;
  */
 public class H2DbEncrypt implements DbEncrypt {
 
-    public String getDecryptSql(String columnWithTableAlias) {
-        // Hmmm, this looks ugly - checking with H2 Database folks.
-        return "TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), " + columnWithTableAlias + ")))";
+    private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
+    
+    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
+        switch (jdbcType) {
+        case Types.VARCHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+            
+        default:
+            return null;
+        }
     }
 
-    public String getEncryptBindSql() {
-        return "ENCRYPT('AES', STRINGTOUTF8(?), STRINGTOUTF8(?))";
-    }
 
     public int getEncryptDbType() {
         return Types.VARBINARY;
@@ -46,5 +50,18 @@ public class H2DbEncrypt implements DbEncrypt {
      */
     public boolean isBindEncryptDataFirst() {
         return false;
+    }
+    
+    static class VarcharFunction implements DbEncryptFunction {
+
+        public String getDecryptSql(String columnWithTableAlias) {
+            // Hmmm, this looks ugly - checking with H2 Database folks.
+            return "TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), " + columnWithTableAlias + ")))";
+        }
+
+        public String getEncryptBindSql() {
+            return "ENCRYPT('AES', STRINGTOUTF8(?), STRINGTOUTF8(?))";
+        }
+        
     }
 }

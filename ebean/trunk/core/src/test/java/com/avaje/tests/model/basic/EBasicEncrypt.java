@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import javax.persistence.Entity;
@@ -21,6 +22,9 @@ public class EBasicEncrypt {
     @Encrypted(dbLength=80)
     String description;
     
+    @Encrypted(dbLength=20)
+    Date dob;
+    
     //@Version
     Timestamp lastUpdate;
     
@@ -38,6 +42,14 @@ public class EBasicEncrypt {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Date getDob() {
+        return dob;
+    }
+
+    public void setDob(Date dob) {
+        this.dob = dob;
     }
 
     public String getDescription() {

@@ -28,12 +28,20 @@ import java.sql.Types;
  */
 public class MySqlDbEncrypt implements DbEncrypt {
 
-    public String getDecryptSql(String columnWithTableAlias) {
-        return "AES_DECRYPT(" + columnWithTableAlias + ",?)";
-    }
+    private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
+    private static final DbEncryptFunction DATE_ENCRYPT_FUNCTION = new DateFunction();
+    
+    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
+        switch (jdbcType) {
+        case Types.VARCHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+            
+        case Types.DATE:
+            return DATE_ENCRYPT_FUNCTION;
 
-    public String getEncryptBindSql() {
-        return "AES_ENCRYPT(?,?)";
+        default:
+            return null;
+        }
     }
 
     public int getEncryptDbType() {
@@ -48,4 +56,25 @@ public class MySqlDbEncrypt implements DbEncrypt {
     }
     
     
+    static class VarcharFunction implements DbEncryptFunction {
+
+        public String getDecryptSql(String columnWithTableAlias) {
+            return "AES_DECRYPT(" + columnWithTableAlias + ",?)";
+        }
+
+        public String getEncryptBindSql() {
+            return "AES_ENCRYPT(?,?)";
+        }        
+    }
+    
+    static class DateFunction implements DbEncryptFunction {
+
+        public String getDecryptSql(String columnWithTableAlias) {
+            return "STR_TO_DATE(AES_DECRYPT(" + columnWithTableAlias + ",?),'%Y%d%m')";
+        }
+
+        public String getEncryptBindSql() {
+            return "AES_ENCRYPT(DATE_FORMAT(?,'%Y%d%m'),?)";
+        }        
+    }
 }
