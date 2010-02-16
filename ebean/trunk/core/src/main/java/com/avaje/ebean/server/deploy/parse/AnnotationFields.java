@@ -291,7 +291,7 @@ public class AnnotationFields extends AnnotationParser {
 	            if (encrypted != null) {    
 	                setEncryption(prop, encrypted.dbEncryption(), encrypted.dbLength());
 	            }		        
-		    } else if (Mode.ENCRYPT.equals(encryptDeploy)) {
+		    } else if (Mode.ENCRYPT.equals(encryptDeploy.getMode())) {
                 setEncryption(prop, encryptDeploy.isDbEncrypt(), encryptDeploy.getDbLength());
 		    }		        		    
 		}
