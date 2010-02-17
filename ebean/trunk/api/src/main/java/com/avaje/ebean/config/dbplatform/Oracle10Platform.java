@@ -34,7 +34,7 @@ public class Oracle10Platform extends DatabasePlatform {
     public Oracle10Platform() {
         super();
         this.name = "oracle";
-        //this.dbEncrypt = new Oracle10DbEncrypt();
+        this.dbEncrypt = new Oracle10DbEncrypt();
         
         this.sqlLimiter = new RownumSqlLimiter();
 

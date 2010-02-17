@@ -30,12 +30,26 @@ public class PostgresDbEncrypt implements DbEncrypt {
 
     private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
     
+    private static final DbEncryptFunction DATE_ENCRYPT_FUNCTION = new DateFunction();
+    
     public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
         switch (jdbcType) {
         case Types.VARCHAR:
             return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.CLOB:
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.CHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.LONGVARCHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+            
+            
+        case Types.DATE:
+            return DATE_ENCRYPT_FUNCTION;
             
         default:
+            // we can not encrypt this type using DB functions
+            // so it will be encrypted/decrypted on Java client side
             return null;
         }
     }
@@ -62,5 +76,15 @@ public class PostgresDbEncrypt implements DbEncrypt {
             return "pgp_sym_encrypt(?,?)";
         }
     }
-    
+
+    static class DateFunction implements DbEncryptFunction {
+        
+        public String getDecryptSql(String columnWithTableAlias) {
+            return "to_date(pgp_sym_decrypt(" + columnWithTableAlias + ",?),'YYYYMMDD')";
+        }
+
+        public String getEncryptBindSql() {
+            return "pgp_sym_encrypt(to_char(?::date,'YYYYMMDD'),?)";
+        }
+    }
 }
