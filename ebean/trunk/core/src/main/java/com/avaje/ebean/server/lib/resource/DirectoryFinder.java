@@ -36,7 +36,7 @@ public class DirectoryFinder {
 	 * working directory.
 	 * </p>
 	 * 
-	 * <pre><code>
+	 * <pre class="code">
 	 * 
 	 * // search to a depth of 3 from the current working directory
 	 * // looking for a directory WEB-INF that contains the subdirectory
@@ -46,7 +46,7 @@ public class DirectoryFinder {
 	 * if (dir != null) {
 	 * 	//found the directory
 	 * }
-	 * </code></pre>
+	 * </pre>
 	 */
 	public static File find(File startDir, String match, int maxDepth) {
 
@@ -77,10 +77,12 @@ public class DirectoryFinder {
 
 		if (dir.exists()) {
 			File[] list = dir.listFiles();
-			for (int i = 0; i < list.length; i++) {
-				if (isMatch(list[i], match, matchSub)) {
-					return list[i];
-				}
+			if (list != null){
+    			for (int i = 0; i < list.length; i++) {
+    				if (isMatch(list[i], match, matchSub)) {
+    					return list[i];
+    				}
+    			}
 			}
 
 			// go through the directories again
