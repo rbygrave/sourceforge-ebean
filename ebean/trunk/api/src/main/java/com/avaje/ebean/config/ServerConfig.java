@@ -1369,7 +1369,10 @@ public class ServerConfig {
 
         transactionLogDirectory = p.get("log.directory", "logs");
 
-        transactionDebugLevel = p.getEnum(TxDebugLevel.class, "debug.transaction", TxDebugLevel.NONE);
+        transactionDebugLevel = getIntDebugLevel(p);
+        if (transactionDebugLevel == null){
+            transactionDebugLevel = p.getEnum(TxDebugLevel.class, "debug.transaction", TxDebugLevel.NONE);
+        }
         iudLogLevel = p.getEnum(StmtLogLevel.class, "logging.iud", StmtLogLevel.SQL);
         sqlQueryLogLevel = p.getEnum(StmtLogLevel.class, "logging.sqlquery", StmtLogLevel.SQL);
         queryLogLevel = p.getEnum(StmtLogLevel.class, "logging.query", StmtLogLevel.SQL);
@@ -1377,6 +1380,27 @@ public class ServerConfig {
         classes = getClasses(p);
     }
 
+    private TxDebugLevel getIntDebugLevel(ConfigPropertyMap p) {
+        String dt = p.get("debug.transaction", null);
+        if (dt != null){
+            try {
+                int i = Integer.parseInt(dt);
+                switch (i) {
+                case 0:
+                    return TxDebugLevel.NONE;
+                case 1:
+                    return TxDebugLevel.LOG_ROLLBACKS;
+    
+                default:
+                    return TxDebugLevel.LOG_ALL;
+                }
+            } catch (NumberFormatException e){
+                return null;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Build the list of classes from the comma delimited string.
      * 
