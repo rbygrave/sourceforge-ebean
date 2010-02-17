@@ -709,16 +709,20 @@ public final class DefaultPersister implements Persister {
 				if (deletions != null && deletions.remove(otherBean)) {
 					String m = "Inserting and Deleting same object? " + otherBean;
 					t.log(m);
-					
-					// FIXME ~EMG This is quite common - i.e  often removes and then changes mind ... IMO shouldn't be a severe just a warning  
 					logger.log(Level.WARNING, m);
 
 				} else {
-					// build a intersection row for 'insert'
-					IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherBean);
-					SqlUpdate sqlInsert = intRow.createInsert(server);
-					t.log(sqlInsert.getSql());
-					sqlInsert.execute();
+				    if (!prop.hasImportedId(otherBean)){
+				        String msg = "ManyToMany bean "+otherBean+" does not have an Id value.";
+                        throw new PersistenceException(msg);
+                        
+				    } else {
+    					// build a intersection row for 'insert'
+    					IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherBean);
+    					SqlUpdate sqlInsert = intRow.createInsert(server);
+    					t.log(sqlInsert.getSql());
+    					sqlInsert.execute();
+				    }
 				}
 			}
 		}

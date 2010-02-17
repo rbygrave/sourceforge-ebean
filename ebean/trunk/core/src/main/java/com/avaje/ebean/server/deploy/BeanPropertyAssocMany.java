@@ -582,5 +582,12 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		importedId.buildImport(row, otherBean);
 	}
 
+	/**
+	 * Return true if the otherBean has an Id value.
+	 */
+    public boolean hasImportedId(Object otherBean) {
+        
+        return null != targetDescriptor.getId(otherBean);
+    }
 
 }
