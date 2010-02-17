@@ -70,6 +70,7 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.cache.ServerCacheManager;
+import com.avaje.ebean.config.EncryptKeyManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.ldap.LdapConfig;
@@ -189,6 +190,8 @@ public final class DefaultServer implements SpiEbeanServer {
 
     private final DefaultBeanLoader beanLoader;
 
+    private final EncryptKeyManager encryptKeyManager;
+
     /**
      * The MBean name used to register Ebean.
      */
@@ -226,6 +229,7 @@ public final class DefaultServer implements SpiEbeanServer {
         this.cqueryEngine = config.getCQueryEngine();
         this.expressionFactory = config.getExpressionFactory();
         this.adminLogging = config.getLogControl();
+        this.encryptKeyManager = config.getServerConfig().getEncryptKeyManager();
 
         this.beanDescriptorManager = config.getBeanDescriptorManager();
         beanDescriptorManager.setEbeanServer(this);
@@ -294,6 +298,14 @@ public final class DefaultServer implements SpiEbeanServer {
         return autoFetchManager;
     }
 
+    /**
+     * Run any initialisation required.
+     */
+    public void initialise() {
+        if (encryptKeyManager != null){
+            encryptKeyManager.initialise();
+        }
+    }
     
     public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {
 

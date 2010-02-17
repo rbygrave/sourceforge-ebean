@@ -27,6 +27,14 @@ package com.avaje.ebean.config;
 public interface EncryptKeyManager {
 
     /**
+     * Initialise the EncryptKeyManager.
+     * <p>
+     * This gives the EncryptKeyManager the opportunity to get keys etc. 
+     * </p>
+     */
+    public void initialise();
+    
+    /**
      * Return the key used to encrypt and decrypt a property mapping to the
      * given table and column.
      */
