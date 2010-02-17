@@ -29,6 +29,7 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
+import com.avaje.ebean.AdminLogging.TxDebugLevel;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.config.GlobalProperties;
@@ -147,12 +148,13 @@ public class TransactionManager implements Constants {
 		
 		this.dataSource = config.getDataSource();
 		
-		if (config.isUseJuliTransactionLogger()){
-			// turn this off as already logging these using a juli logger
+		if (config.isTransactionLogToJavaLogger()){
+			// turn this off as already logging these using a java util logger
 			this.debugLevel = 0;
 		} else {
-			// log some transaction events using a juli logger
-			int debug = config.getTransactionDebugLevel();
+			// log some transaction events using a java util logger
+		    TxDebugLevel txDebugLevel = config.getTransactionDebugLevel();
+			int debug = txDebugLevel == null ? 0 : txDebugLevel.ordinal();
 			if (debug < 1 && GlobalProperties.getBoolean("log.commit", false)){
 				debug = 1;
 			}

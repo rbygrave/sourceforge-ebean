@@ -28,6 +28,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.AdminLogging.StmtLogLevel;
+import com.avaje.ebean.AdminLogging.TxDebugLevel;
 import com.avaje.ebean.AdminLogging.TxLogLevel;
 import com.avaje.ebean.AdminLogging.TxLogSharing;
 import com.avaje.ebean.annotation.Encrypted;
@@ -84,25 +85,35 @@ import com.avaje.ebean.event.BeanQueryAdapter;
  */
 public class ServerConfig {
 
-    /** The name. */
+    /**
+     * The EbeanServer name.
+     */
     private String name;
 
-    /** The resource directory. */
+    /**
+     * The resource directory.
+     */
     private String resourceDirectory;
 
-    /** The enhance log level. */
+    /**
+     * The enhance log level. Used with subclass generation.
+     */
     private int enhanceLogLevel;
 
-    /** true to register this EbeanServer with the Ebean singleton. */
+    /**
+     * Set to true to register this EbeanServer with the Ebean singleton.
+     */
     private boolean register = true;
 
-    /** true if this is the default/primary server. */
+    /**
+     * Set to true if this is the default/primary server.
+     */
     private boolean defaultServer;
 
-    /** The validate on save. */
+    /**
+     * The validate on save.
+     */
     private boolean validateOnSave = true;
-
-    private boolean useJuliTransactionLogger;
 
     /**
      * List of interesting classes such as entities, embedded, ScalarTypes,
@@ -110,15 +121,16 @@ public class ServerConfig {
      */
     private List<Class<?>> classes = new ArrayList<Class<?>>();
 
-    /** 
-     * The packages that are searched for interesting classes.
-     * Only used when classes is empty/not explicitly specified. 
+    /**
+     * The packages that are searched for interesting classes. Only used when
+     * classes is empty/not explicitly specified.
      */
     private List<String> packages = new ArrayList<String>();
 
     /**
-     * The names of Jar files that are searched for entities and other interesting classes.
-     * Only used when classes is empty/not explicitly specified.
+     * The names of Jar files that are searched for entities and other
+     * interesting classes. Only used when classes is empty/not explicitly
+     * specified.
      */
     private List<String> searchJars = new ArrayList<String>();
 
@@ -132,7 +144,8 @@ public class ServerConfig {
     private DatabasePlatform databasePlatform;
 
     /**
-     * For DB's using sequences this is the number of sequence values prefetched.
+     * For DB's using sequences this is the number of sequence values
+     * prefetched.
      */
     private int databaseSequenceBatchSize = 20;
 
@@ -159,7 +172,13 @@ public class ServerConfig {
     private ExternalTransactionManager externalTransactionManager;
 
     /** The transaction debug level. */
-    private int transactionDebugLevel;
+    private TxDebugLevel transactionDebugLevel;
+
+    /**
+     * Set to true to log using java.util.logging and otherwise uses ebean txn
+     * logging.
+     */
+    private boolean transactionLogToJavaLogger;
 
     /** The transaction log directory. */
     private String transactionLogDirectory = "logs";
@@ -214,10 +233,10 @@ public class ServerConfig {
 
     private EncryptDeployManager encryptDeployManager;
 
-    private Encryptor bytesEncryptor;
+    private Encryptor encryptor;
 
     private DbEncrypt dbEncrypt;
-    
+
     private LdapConfig ldapConfig;
 
     /**
@@ -226,10 +245,10 @@ public class ServerConfig {
      * enhancement (using dynamic subclasses).
      */
     private boolean vanillaMode;
-    
+
     /**
-     * Controls whether the {@link EbeanServer#getReference(Class, Object)} method 
-     * returns vanilla objects or not.
+     * Controls whether the {@link EbeanServer#getReference(Class, Object)}
+     * method returns vanilla objects or not.
      */
     private boolean vanillaRefMode;
 
@@ -431,7 +450,6 @@ public class ServerConfig {
         this.vanillaMode = vanillaMode;
     }
 
-    
     /**
      * Returns true if {@link EbeanServer#getReference(Class, Object)} should
      * return vanilla objects or not.
@@ -444,8 +462,9 @@ public class ServerConfig {
     }
 
     /**
-     * Set this to true if you want {@link EbeanServer#getReference(Class, Object)} to
-     * return vanilla objects.
+     * Set this to true if you want
+     * {@link EbeanServer#getReference(Class, Object)} to return vanilla
+     * objects.
      */
     public void setVanillaRefMode(boolean vanillaRefMode) {
         this.vanillaRefMode = vanillaRefMode;
@@ -735,17 +754,19 @@ public class ServerConfig {
     }
 
     /**
-     * Return the BytesEncryptor used to encrypt binary data.
+     * Return the Encryptor used to encrypt data on the java client side (as
+     * opposed to DB encryption functions).
      */
-    public Encryptor getBytesEncryptor() {
-        return bytesEncryptor;
+    public Encryptor getEncryptor() {
+        return encryptor;
     }
 
     /**
-     * Set the BytesEncryptor used to encrypt binary data.
+     * Set the Encryptor used to encrypt data on the java client side (as
+     * opposed to DB encryption functions).
      */
-    public void setBytesEncryptor(Encryptor bytesEncryptor) {
-        this.bytesEncryptor = bytesEncryptor;
+    public void setEncryptor(Encryptor encryptor) {
+        this.encryptor = encryptor;
     }
 
     /**
@@ -842,32 +863,19 @@ public class ServerConfig {
 
     /**
      * Return the debug level for transaction begin, commit and rollback events.
-     * <p>
-     * <ul>
-     * <li>0 = No Logging</li>
-     * <li>1 = Log Rollbacks</li>
-     * <li>2 = Log all begin, commit and rollback events</li>
-     * </p>
-     * 
-     * @return the transaction debug level
      */
-    public int getTransactionDebugLevel() {
+    public TxDebugLevel getTransactionDebugLevel() {
         return transactionDebugLevel;
     }
 
     /**
      * Set a debug level for transaction begin, commit and rollback events.
      * <p>
-     * <ul>
-     * <li>0 = No Logging</li>
-     * <li>1 = Log Rollbacks</li>
-     * <li>2 = Log all begin, commit and rollback events</li>
+     * When this is set transaction begin, commit and rollback events logged to
+     * java util logging.
      * </p>
-     * 
-     * @param transactionDebugLevel
-     *            the transaction debug level
      */
-    public void setTransactionDebugLevel(int transactionDebugLevel) {
+    public void setTransactionDebugLevel(TxDebugLevel transactionDebugLevel) {
         this.transactionDebugLevel = transactionDebugLevel;
     }
 
@@ -888,6 +896,10 @@ public class ServerConfig {
 
     /**
      * Set the directory that the transaction logs go in.
+     * <p>
+     * This will not be used if the transaction logging is going to java util
+     * logging (via {@link #setTransactionLogToJavaLogger(boolean)}).
+     * </p>
      * <p>
      * This can contain expressions like ${catalina.base} with environment
      * variables, java system properties and entries in ebean.properties.
@@ -911,8 +923,8 @@ public class ServerConfig {
      * the transaction details to separate transaction log files.
      * </p>
      */
-    public boolean isUseJuliTransactionLogger() {
-        return useJuliTransactionLogger;
+    public boolean isTransactionLogToJavaLogger() {
+        return transactionLogToJavaLogger;
     }
 
     /**
@@ -920,8 +932,26 @@ public class ServerConfig {
      * java.util.logging.Logger to log the statements and bind variables etc
      * rather than the default one which creates separate transaction log files.
      */
-    public void setUseJuliTransactionLogger(boolean useJuliTransactionLogger) {
-        this.useJuliTransactionLogger = useJuliTransactionLogger;
+    public void setTransactionLogToJavaLogger(boolean transactionLogToJavaLogger) {
+        this.transactionLogToJavaLogger = transactionLogToJavaLogger;
+    }
+
+    /**
+     * Deprecated - please use isTransactionLogToJavaLogger();
+     * 
+     * @deprecated
+     */
+    public boolean isUseJuliTransactionLogger() {
+        return isTransactionLogToJavaLogger();
+    }
+
+    /**
+     * Deprecated - please use setTransactionLogToJavaLogger();
+     * 
+     * @deprecated
+     */
+    public void setUseJuliTransactionLogger(boolean transactionLogToJavaLogger) {
+        setTransactionLogToJavaLogger(transactionLogToJavaLogger);
     }
 
     /**
@@ -939,28 +969,28 @@ public class ServerConfig {
     }
 
     /**
-     * Return the logging level on Find by Id (or find unique) statements.
+     * Return the logging level for query statements.
      */
     public StmtLogLevel getQueryLogLevel() {
         return queryLogLevel;
     }
 
     /**
-     * set the logging level on Find by Id (or find unique) statements.
+     * set the logging level for query statements.
      */
     public void setQueryLogLevel(StmtLogLevel queryLogLevel) {
         this.queryLogLevel = queryLogLevel;
     }
 
     /**
-     * Return the logging level on FindMany statements.
+     * Return the logging level on SqlQuery statements.
      */
     public StmtLogLevel getSqlQueryLogLevel() {
         return sqlQueryLogLevel;
     }
 
     /**
-     * Set the logging level on FindMany statements.
+     * Set the logging level on SqlQuery statements.
      */
     public void setSqlQueryLogLevel(StmtLogLevel sqlQueryLogLevel) {
         this.sqlQueryLogLevel = sqlQueryLogLevel;
@@ -996,14 +1026,14 @@ public class ServerConfig {
 
     /**
      * Return the LDAP configuration.
-     */    
+     */
     public LdapConfig getLdapConfig() {
         return ldapConfig;
     }
 
     /**
      * Set the LDAP configuration.
-     */    
+     */
     public void setLdapConfig(LdapConfig ldapConfig) {
         this.ldapConfig = ldapConfig;
     }
@@ -1067,7 +1097,6 @@ public class ServerConfig {
         this.packages = packages;
     }
 
-
     /**
      * Add the name of a Jar to search for entities via class path search.
      * <p>
@@ -1100,7 +1129,7 @@ public class ServerConfig {
     public void setJars(List<String> searchJars) {
         this.searchJars = searchJars;
     }
-    
+
     /**
      * Set the list of classes (entities, listeners, scalarTypes etc) that
      * should be used for this server.
@@ -1261,7 +1290,7 @@ public class ServerConfig {
     public String getProperty(String propertyName) {
         return getProperty(propertyName, null);
     }
-    
+
     @SuppressWarnings("unchecked")
     private <T> T createInstance(ConfigPropertyMap p, Class<T> type, String key) {
 
@@ -1296,19 +1325,19 @@ public class ServerConfig {
         databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
         encryptDeployManager = createInstance(p, EncryptDeployManager.class, "encryptDeployManager");
-        bytesEncryptor = createInstance(p, Encryptor.class, "bytesEncryptor");
+        encryptor = createInstance(p, Encryptor.class, "encryptor");
         dbEncrypt = createInstance(p, DbEncrypt.class, "dbEncrypt");
 
         String jarsProp = p.get("search.jars", p.get("jars", null));
-        if (jarsProp != null){
+        if (jarsProp != null) {
             searchJars = getSearchJarsPackages(jarsProp);
         }
-        
+
         String packagesProp = p.get("search.packages", p.get("packages", null));
-        if (packages != null){
+        if (packages != null) {
             packages = getSearchJarsPackages(packagesProp);
         }
-        
+
         vanillaMode = p.getBoolean("vanillaMode", false);
         vanillaRefMode = p.getBoolean("vanillaRefMode", false);
         updateChangesOnly = p.getBoolean("updateChangesOnly", true);
@@ -1331,14 +1360,16 @@ public class ServerConfig {
         transactionLogging = p.getEnum(TxLogLevel.class, "logging", TxLogLevel.ALL);
         transactionLogSharing = p.getEnum(TxLogSharing.class, "logsharing", TxLogSharing.EXPLICIT);
 
-        useJuliTransactionLogger = p.getBoolean("useJuliTransactionLogger", false);
+        String s = p.get("useJuliTransactionLogger", null);
+        s = p.get("transactionLogToJavaLogger", s);
+        transactionLogToJavaLogger = "true".equalsIgnoreCase(s);
 
         debugSql = p.getBoolean("debug.sql", false);
         debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
-        transactionDebugLevel = p.getInt("debug.transaction", 0);
         transactionLogDirectory = p.get("log.directory", "logs");
 
+        transactionDebugLevel = p.getEnum(TxDebugLevel.class, "debug.transaction", TxDebugLevel.NONE);
         iudLogLevel = p.getEnum(StmtLogLevel.class, "logging.iud", StmtLogLevel.SQL);
         sqlQueryLogLevel = p.getEnum(StmtLogLevel.class, "logging.sqlquery", StmtLogLevel.SQL);
         queryLogLevel = p.getEnum(StmtLogLevel.class, "logging.query", StmtLogLevel.SQL);
@@ -1378,7 +1409,7 @@ public class ServerConfig {
         }
         return classes;
     }
-    
+
     private List<String> getSearchJarsPackages(String searchPackages) {
 
         List<String> hitList = new ArrayList<String>();
