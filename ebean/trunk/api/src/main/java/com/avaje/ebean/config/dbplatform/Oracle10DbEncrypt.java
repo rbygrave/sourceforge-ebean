@@ -66,12 +66,18 @@ import java.sql.Types;
  */
 public class Oracle10DbEncrypt implements DbEncrypt {
 
-    private final DbEncryptFunction varcharEncrypt;
+    private final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION;
     
     public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
         switch (jdbcType) {
         case Types.VARCHAR:
-            return varcharEncrypt;
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.CLOB:
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.CHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
+        case Types.LONGVARCHAR:
+            return VARCHAR_ENCRYPT_FUNCTION;
             
         default:
             return null;
@@ -89,7 +95,7 @@ public class Oracle10DbEncrypt implements DbEncrypt {
      * Create using your own defined encryption and decryption functions for VARCHAR'S.
      */
     public Oracle10DbEncrypt(String encryptFunction, String decryptFunction) {
-        varcharEncrypt = new VarcharFunction(encryptFunction, decryptFunction);
+        VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction(encryptFunction, decryptFunction);
     }
 
 

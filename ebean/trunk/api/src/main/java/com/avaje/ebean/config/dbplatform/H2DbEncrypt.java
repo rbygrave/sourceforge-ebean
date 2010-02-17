@@ -28,13 +28,23 @@ import java.sql.Types;
  */
 public class H2DbEncrypt implements DbEncrypt {
 
-    private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
+    private static final DbEncryptFunction H2_VARCHAR_ENCRYPT = new H2VarcharFunction();
+    private static final DbEncryptFunction H2_DATE_ENCRYPT = new H2DateFunction();
     
     public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
         switch (jdbcType) {
         case Types.VARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-            
+            return H2_VARCHAR_ENCRYPT;
+        case Types.CLOB:
+            return H2_VARCHAR_ENCRYPT;
+        case Types.CHAR:
+            return H2_VARCHAR_ENCRYPT;
+        case Types.LONGVARCHAR:
+            return H2_VARCHAR_ENCRYPT;
+
+        case Types.DATE:
+            return H2_DATE_ENCRYPT;
+
         default:
             return null;
         }
@@ -52,7 +62,7 @@ public class H2DbEncrypt implements DbEncrypt {
         return false;
     }
     
-    static class VarcharFunction implements DbEncryptFunction {
+    static class H2VarcharFunction implements DbEncryptFunction {
 
         public String getDecryptSql(String columnWithTableAlias) {
             // Hmmm, this looks ugly - checking with H2 Database folks.
@@ -61,6 +71,18 @@ public class H2DbEncrypt implements DbEncrypt {
 
         public String getEncryptBindSql() {
             return "ENCRYPT('AES', STRINGTOUTF8(?), STRINGTOUTF8(?))";
+        }
+        
+    }
+    
+    static class H2DateFunction implements DbEncryptFunction {
+
+        public String getDecryptSql(String columnWithTableAlias) {
+            return "PARSEDATETIME(TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), " + columnWithTableAlias + "))),'yyyyMMdd')";
+        }
+
+        public String getEncryptBindSql() {
+            return "ENCRYPT('AES', STRINGTOUTF8(?), STRINGTOUTF8(FORMATDATETIME(?,'yyyyMMdd')))";
         }
         
     }
