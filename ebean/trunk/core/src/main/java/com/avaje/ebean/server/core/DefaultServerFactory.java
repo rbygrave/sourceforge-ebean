@@ -208,6 +208,8 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		// generate and run DDL if required
 		executeDDL(server);
 		
+		server.initialise();
+		
 		// warm the cache in 30 seconds 
 		int delaySecs = GlobalProperties.getInt("ebean.cacheWarmingDelay", 30);
 		long sleepMillis = 1000 * delaySecs;
