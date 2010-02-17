@@ -80,8 +80,7 @@ public class TestJoinInheritance extends TestCase {
 
 		Ebean.beginTransaction();
 
-		Query<Trip> q = Ebean.createQuery(Trip.class);
-		q.setQuery("find com.avaje.tests.model.basic.Trip join address join vehicleDriver ");
+		Query<Trip> q = Ebean.createQuery(Trip.class, "join address join vehicleDriver ");
 		
 		List<Trip> trips = q.findList();
 		

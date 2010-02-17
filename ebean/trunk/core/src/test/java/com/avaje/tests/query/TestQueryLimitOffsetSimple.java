@@ -16,8 +16,7 @@ public class TestQueryLimitOffsetSimple extends TestCase {
 		
 		ResetBasicData.reset();
 		
-		Query<Order> query = Ebean.createQuery(Order.class);
-		query.setQuery("find order where status = :A limit 100 offset 3");
+		Query<Order> query = Ebean.createQuery(Order.class, "where status = :A limit 100 offset 3");
 		query.setParameter("A",Order.Status.NEW);
 		
 		query

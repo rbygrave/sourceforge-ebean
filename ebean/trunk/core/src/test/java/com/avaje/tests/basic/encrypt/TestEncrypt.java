@@ -28,8 +28,7 @@ public class TestEncrypt extends TestCase {
         Date earlyDob = new Date(System.currentTimeMillis()-500000);
         
         List<EBasicEncrypt> qlList = 
-            Ebean.createQuery(EBasicEncrypt.class)
-                .setQuery("where description like :d and dob >= :dob")
+            Ebean.createQuery(EBasicEncrypt.class, "where description like :d and dob >= :dob")
                 .setParameter("d", "testde%")
                 .setParameter("dob", earlyDob)
                 .findList();
@@ -37,8 +36,7 @@ public class TestEncrypt extends TestCase {
         Assert.assertTrue(qlList.size() > 0);
         
         qlList = 
-            Ebean.createQuery(EBasicEncrypt.class)
-                .setQuery("find e (id, description) where description = :d")
+            Ebean.createQuery(EBasicEncrypt.class, "find e (id, description) where description = :d")
                 .setParameter("d", "testdesc")
                 .findList();
         
@@ -94,8 +92,7 @@ public class TestEncrypt extends TestCase {
             Assert.assertEquals(1, list.size());
             
             list = 
-                Ebean.createQuery(EBasicEncrypt.class)
-                    .setQuery("where description like :d")
+                Ebean.createQuery(EBasicEncrypt.class, "where description like :d")
                     .setParameter("d", "modde%")
                 .findList();
             

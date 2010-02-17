@@ -892,16 +892,31 @@ public final class Ebean {
     }
 
     /**
-     * Please use {@link #createNamedQuery(Class, String)}.
+     * Create a query using the query language.
      * <p>
-     * Create a named query for the given bean type. Deprecated in favour of
-     * {@link #createNamedQuery(Class, String)}.
+     * Note that you are allowed to add additional clauses using where() as well
+     * as use join() and setOrderBy() after the query has been created.
+     * </p>
+     * <p>
+     * Note that this method signature used to map to named queries and that has
+     * moved to {@link #createNamedQuery(Class, String)}.
      * </p>
      * 
-     * @deprecated
-     */
-    public static <T> Query<T> createQuery(Class<T> beanType, String namedQuery) {
-        return createNamedQuery(beanType, namedQuery);
+     * <pre class="code">
+     * 
+     *  String q = "find order join details where status = :st";
+     *  
+     *  List&lt;Order&gt; newOrders 
+     *        = Ebean.createQuery(Order.class, q)
+     *             .setParameter("st", Order.Status.NEW)
+     *             .findList();
+     * </pre>
+     * 
+     * @param query
+     *            the object query
+     */            
+    public static <T> Query<T> createQuery(Class<T> beanType, String query) {
+        return serverMgr.getPrimaryServer().createQuery(beanType, query);
     }
 
     /**

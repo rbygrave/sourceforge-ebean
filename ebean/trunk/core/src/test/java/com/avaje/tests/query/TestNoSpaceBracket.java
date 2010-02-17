@@ -11,8 +11,7 @@ public class TestNoSpaceBracket extends TestCase {
     
     public void test() {
         
-        Query<Order> query = Ebean.createQuery(Order.class);
-        query.setQuery("find order join customer(id,name) ");
+        Query<Order> query = Ebean.createQuery(Order.class, "find order join customer(id,name) ");
         
         query.findList();
         
