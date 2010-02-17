@@ -89,7 +89,7 @@ public class DeployUtil {
         this.encryptDeployManager = serverConfig.getEncryptDeployManager();
         this.encryptKeyManager = serverConfig.getEncryptKeyManager();
         
-        Encryptor be = serverConfig.getBytesEncryptor();
+        Encryptor be = serverConfig.getEncryptor();
         this.bytesEncryptor = be != null ? be : new SimpleAesEncryptor();
 		
 		// this alias is used for ManyToMany lazy loading queries

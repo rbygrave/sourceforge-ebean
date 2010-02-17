@@ -9,6 +9,30 @@ package com.avaje.ebean;
  */
 public interface AdminLogging {
 
+    /**
+     * A Debug Level that can be set to additionally get
+     * transaction begin, commit and rollback events logged
+     * to java util logging.
+     */
+    public enum TxDebugLevel {
+        
+        /**
+         * Don't log any begin, commit and rollback events
+         */
+        NONE,
+        
+        /**
+         * Log Rollback events.
+         */
+        LOG_ROLLBACKS,
+        
+        /**
+         * Log all begin, commit and rollback events.
+         */
+        LOG_ALL
+
+    }
+    
 	/**
 	 * Statement logging level.
 	 * <p>

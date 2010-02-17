@@ -85,7 +85,7 @@ public class TransactionLogManager {
 
 	private TxLogSharing logSharing;
 
-	private final boolean useJuliTransactionLogger;
+	private final boolean transactionLogToJavaLogger;
 	
 	private final TransactionLogger sharedLogger;
 
@@ -105,7 +105,7 @@ public class TransactionLogManager {
 		
 		this.logLevel = serverConfig.getTransactionLogging();
 		this.logSharing = serverConfig.getTransactionLogSharing();
-		this.useJuliTransactionLogger = serverConfig.isUseJuliTransactionLogger();
+		this.transactionLogToJavaLogger = serverConfig.isTransactionLogToJavaLogger();
 		
 		String dir = serverConfig.getTransactionLogDirectoryWithEval();
 		if (dir == null) {
@@ -207,7 +207,7 @@ public class TransactionLogManager {
 
 	private TransactionLogger removeLogger(SpiTransaction t) {
 		
-		if (useJuliTransactionLogger){
+		if (transactionLogToJavaLogger){
 			return sharedLogger;
 		}
 		String id = t.getId();
@@ -223,7 +223,7 @@ public class TransactionLogManager {
 	 */
 	private TransactionLogger getLogger(SpiTransaction t) {
 		
-		if (useJuliTransactionLogger){
+		if (transactionLogToJavaLogger){
 			return sharedLogger;
 		}
 		
@@ -244,7 +244,7 @@ public class TransactionLogManager {
 
 	private TransactionLogger createLogger(SpiTransaction t) {
 
-		if (useJuliTransactionLogger){
+		if (transactionLogToJavaLogger){
 			return sharedLogger;
 		}
 		
@@ -261,7 +261,7 @@ public class TransactionLogManager {
 	 */
 	private TransactionLogger createSharedLogger() {
 
-		if (useJuliTransactionLogger){
+		if (transactionLogToJavaLogger){
 			return new JuliTransactionLogger();
 		}
 		
