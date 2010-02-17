@@ -17,8 +17,7 @@ public class TestQueryParse extends TestCase {
 		ResetBasicData.reset();
 		
 		String oql = "where 1=1 order by customer.name desc, status";
-		Query<Order> query = Ebean.createQuery(Order.class)
-			.setQuery(oql);
+		Query<Order> query = Ebean.createQuery(Order.class, oql);
 		
 		OrderBy<Order> order = query.order();
 		Assert.assertTrue(order.getProperties().size() == 2);

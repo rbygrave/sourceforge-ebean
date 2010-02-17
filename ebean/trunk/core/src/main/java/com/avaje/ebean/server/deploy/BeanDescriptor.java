@@ -772,8 +772,7 @@ public class BeanDescriptor<T> {
         }
         String warmingQuery = referenceOptions.getWarmingQuery();
         if (warmingQuery != null && warmingQuery.trim().length() > 0) {
-            Query<T> query = ebeanServer.createQuery(beanType);
-            query.setQuery(warmingQuery);
+            Query<T> query = ebeanServer.createQuery(beanType, warmingQuery);
             query.setUseCache(true);
             query.setReadOnly(true);
             query.setLoadBeanCache(true);

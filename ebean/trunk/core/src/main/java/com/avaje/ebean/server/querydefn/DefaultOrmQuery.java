@@ -209,13 +209,16 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private final String exprLang;
 	
-	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory) {
+	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory, String query) {
 		this.beanType = beanType;
 		this.server = server;
 		this.expressionFactory = expressionFactory;
 		this.exprLang = expressionFactory == null ? "sql" : expressionFactory.getLang();
 		this.detail = new OrmQueryDetail();
 		this.name = "";
+		if (query != null){
+		    setQuery(query);
+		}
 	}
 
 	/**
@@ -324,7 +327,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// QueryListener<T> queryListener;
 		// TransactionContext transactionContext;
 
-		DefaultOrmQuery<T> copy = new DefaultOrmQuery<T>(beanType, server, expressionFactory);
+		DefaultOrmQuery<T> copy = new DefaultOrmQuery<T>(beanType, server, expressionFactory, (String)null);
 		copy.name = name;
 		copy.includeTableJoin = includeTableJoin;
 		copy.autoFetchManager = autoFetchManager;

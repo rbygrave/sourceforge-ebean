@@ -900,8 +900,8 @@ public final class DefaultServer implements SpiEbeanServer {
         beanDescriptor.sort(list, sortByClause);
     }
 
-    public <T> Query<T> createQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
-        return createNamedQuery(beanType, namedQuery);
+    public <T> Query<T> createQuery(Class<T> beanType) throws PersistenceException {
+        return createQuery(beanType, null);
     }
 
     public <T> Query<T> createNamedQuery(Class<T> beanType, String namedQuery) throws PersistenceException {
@@ -937,7 +937,7 @@ public final class DefaultServer implements SpiEbeanServer {
         return createQuery(beanType);
     }
 
-    public <T> Query<T> createQuery(Class<T> beanType) {
+    public <T> Query<T> createQuery(Class<T> beanType, String query) {
         BeanDescriptor<?> desc = getBeanDescriptor(beanType);
         if (desc == null) {
             String m = beanType.getName() + " is NOT an Entity Bean registered with this server?";
@@ -945,15 +945,18 @@ public final class DefaultServer implements SpiEbeanServer {
         }
         switch (desc.getEntityType()) {
         case SQL:
+            if (query != null){
+                throw new PersistenceException("You must used Named queries for this Entity "+desc.getFullName());
+            }
             // use the "default" SqlSelect
             DeployNamedQuery defaultSqlSelect = desc.getNamedQuery("default");
             return new DefaultOrmQuery<T>(beanType, this, expressionFactory, defaultSqlSelect);
         
         case LDAP:
-            return new DefaultLdapOrmQuery<T>(beanType, this, ldapExpressionFactory);
+            return new DefaultLdapOrmQuery<T>(beanType, this, ldapExpressionFactory, query);
             
         default:
-            return new DefaultOrmQuery<T>(beanType, this, expressionFactory);
+            return new DefaultOrmQuery<T>(beanType, this, expressionFactory, query);
         }        
     }
 

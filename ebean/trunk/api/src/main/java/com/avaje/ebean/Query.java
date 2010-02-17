@@ -437,23 +437,11 @@ public interface Query<T> extends Serializable {
 	public Query<T> setAutoFetch(boolean autoFetch);
 
 	/**
-	 * Set the query using the query language.
+	 * Deprecated in favour of {@link EbeanServer#createQuery(Class, String)}.
 	 * <p>
-	 * You are <em>NOT</em> allowed to use this method if the query is a named
-	 * query. You are allowed to add additional clauses using where() as well as
-	 * use join() and setOrderBy().
+     * Set the query using the query language.
 	 * </p>
-	 * This can contain join where order by and limit clauses. The query can
-	 * also contain named parameters.
-	 * 
-	 * <pre class="code">
-	 * String oql = &quot;find order join customer where id = :orderId&quot;;
-	 * 
-	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
-	 * query.setQuery(oql);
-	 * query.setParameter(&quot;orderId&quot;, 1);
-	 * Order order = query.findUnique();
-	 * </pre>
+	 * @deprecated
 	 */
 	public Query<T> setQuery(String oql);
 
