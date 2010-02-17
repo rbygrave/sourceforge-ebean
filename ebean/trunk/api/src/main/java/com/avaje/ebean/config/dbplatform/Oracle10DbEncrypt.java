@@ -66,18 +66,22 @@ import java.sql.Types;
  */
 public class Oracle10DbEncrypt implements DbEncrypt {
 
-    private final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION;
+    protected DbEncryptFunction varcharEncryptFunction = new EbVarcharFunction();
+    protected DbEncryptFunction dateEncryptFunction = new EbDateFunction();
     
     public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
         switch (jdbcType) {
         case Types.VARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
+            return varcharEncryptFunction;
         case Types.CLOB:
-            return VARCHAR_ENCRYPT_FUNCTION;
+            return varcharEncryptFunction;
         case Types.CHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
+            return varcharEncryptFunction;
         case Types.LONGVARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
+            return varcharEncryptFunction;
+            
+        case Types.DATE:
+            return dateEncryptFunction;
             
         default:
             return null;
@@ -85,19 +89,25 @@ public class Oracle10DbEncrypt implements DbEncrypt {
     }
 
     /**
-     * Create using the example eb_encrypt and eb_decrypt functions.
+     * Create.
      */
     public Oracle10DbEncrypt() {
-        this("eb_encrypt", "eb_decrypt");
+
     }
 
     /**
-     * Create using your own defined encryption and decryption functions for VARCHAR'S.
+     * Set the Function to encrypt/decrypt Varchars.
      */
-    public Oracle10DbEncrypt(String encryptFunction, String decryptFunction) {
-        VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction(encryptFunction, decryptFunction);
+    public void setVarcharEncryptFunction(DbEncryptFunction varcharEncryptFunction) {
+        this.varcharEncryptFunction = varcharEncryptFunction;
     }
 
+    /**
+     * Set the Function to encrypt/decrypt Dates.
+     */
+    public void setDateEncryptFunction(DbEncryptFunction dateEncryptFunction) {
+        this.dateEncryptFunction = dateEncryptFunction;
+    }
 
     public int getEncryptDbType() {
         return Types.VARBINARY;
@@ -110,22 +120,32 @@ public class Oracle10DbEncrypt implements DbEncrypt {
         return true;
     }
 
-    static class VarcharFunction implements DbEncryptFunction {
-
-        private final String encryptFunction;
-        private final String decryptFunction;
-
-        VarcharFunction(String encryptFunction, String decryptFunction) {
-            this.encryptFunction = encryptFunction;
-            this.decryptFunction = decryptFunction;
-        }
+    /**
+     * Ebean example VARCHAR encryption/decryption function.
+     */
+    private static class EbVarcharFunction implements DbEncryptFunction {
         
         public String getDecryptSql(String columnWithTableAlias) {
-            return decryptFunction + "(" + columnWithTableAlias + ",?)";
+            return "eb_decrypt(" + columnWithTableAlias + ",?)";
         }
 
         public String getEncryptBindSql() {
-            return encryptFunction + "(?,?)";
+            return "eb_encrypt(?,?)";
+        }
+        
+    }
+
+    /**
+     * Ebean example DATE encryption/decryption function.
+     */
+    private static class EbDateFunction implements DbEncryptFunction {
+        
+        public String getDecryptSql(String columnWithTableAlias) {
+            return "to_date(eb_decrypt(" + columnWithTableAlias + ",?),'YYYYMMDD')";
+        }
+
+        public String getEncryptBindSql() {
+            return "eb_encrypt(to_char(?,'YYYYMMDD'),?)";
         }
         
     }
