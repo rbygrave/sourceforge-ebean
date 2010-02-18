@@ -1,11 +1,11 @@
 package com.avaje.tests.autofetch;
 
-import java.util.List;
-
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
+
+import java.util.List;
 
 public class MainAutoQueryTune1 {
 
@@ -20,29 +20,30 @@ public class MainAutoQueryTune1 {
 
 		MainAutoQueryTune1 me = new MainAutoQueryTune1();		
 //		me.tuneQuery();
+		// me.tuneAutoJoin();
 		me.tuneJoin();
 	}
 	
 //	private void tuneQuery() {
-//		
-//		
+//
+//
 //		Query<Order> query = Ebean.find(Order.class)
 //			.order().asc("id")
 //			.setAutofetch(true);
 //
 //		List<Order> list = query.findList();
-//		
+//
 //		for (Order order : list) {
 //			order.getShipDate();
 //			// with this modification... tuning should fetch version
 //			//order.setShipDate(new java.sql.Date(System.currentTimeMillis()));
 //		}
-//	
+//
 //		//String generatedSql = query.getGeneratedSql();
-//		
+//
 //	}
-	
-	private void tuneJoin() {
+
+	private void tuneAutoJoin() {
 				
 		List<Order> list = Ebean.find(Order.class)
 			//.join("customer")
@@ -59,5 +60,22 @@ public class MainAutoQueryTune1 {
 			System.out.println(order);
 		}
 		
+	}
+
+	private void tuneJoin()
+	{
+		List<Order> list = Ebean.find(Order.class)
+			.setAutofetch(true)
+			.join("customer")
+			.where()
+			.eq("status", Order.Status.NEW)
+			.eq("name", "Rob")
+			.order().asc("id")
+			.findList();
+
+		for (Order order : list)
+		{
+			System.out.println(order.getId() + " " + order.getOrderDate());
+		}
 	}
 }
