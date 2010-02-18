@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,8 @@ public class SqlTreeBuilder {
 	
 	private final DefaultDbSqlContext ctx;
 	
+	private final HashSet<String> selectIncludes = new HashSet<String>();
+    
 	/**
 	 * The predicates are used to determine if 'extra' joins are required to
 	 * support the where and/or order by clause. If so these extra joins are
@@ -178,6 +181,7 @@ public class SqlTreeBuilder {
 		for (int i = 0; i < ones.length; i++) {
 			String propPrefix = SplitName.add(prefix, ones[i].getName());
 			if (isIncludeBean(propPrefix, ones[i])){
+			    selectIncludes.add(propPrefix);
 				buildSelectChain(propPrefix, ones[i], ones[i].getTargetDescriptor(), myJoinList);
 			}
 		}
@@ -186,6 +190,7 @@ public class SqlTreeBuilder {
 		for (int i = 0; i < manys.length; i++) {
 			String propPrefix = SplitName.add(prefix, manys[i].getName());
 			if (isIncludeMany(prefix, propPrefix, manys[i])){
+                selectIncludes.add(propPrefix);
 				buildSelectChain(propPrefix, manys[i], manys[i].getTargetDescriptor(), myJoinList);
 			}
 		}
@@ -227,7 +232,14 @@ public class SqlTreeBuilder {
 			return;
 		}
 		
-		IncludesDistiller extraJoinDistill = new IncludesDistiller(desc, queryDetail.getIncludes(), predicateIncludes);
+		// Note includes - basically means joins.
+		// The selectIncludes is the set of joins that are required to support
+		// the 'select' part of the query. We may need to add other joins to support
+		// the predicates or order by clauses.
+		
+		// look for predicateIncludes that are not in selectIncludes ... and add them
+		// as extra joins to the query 
+		IncludesDistiller extraJoinDistill = new IncludesDistiller(desc, selectIncludes, predicateIncludes);
 
 		Collection<SqlTreeNodeExtraJoin> extraJoins = extraJoinDistill.getExtraJoinRootNodes();
 		if (extraJoins.isEmpty()) {
