@@ -75,8 +75,6 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 	 * Execute the Callable statement.
 	 */
 	public int executeStatement() {
-
-		initTransIfRequired();
 		
 		boolean batch = transaction.isBatchThisRequest();
 
@@ -92,9 +90,7 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 		} else {
 			rows = executeNow();
 		}
-		
-		commitTransIfRequired();
-		
+				
 		return rows;
 	}
 	
