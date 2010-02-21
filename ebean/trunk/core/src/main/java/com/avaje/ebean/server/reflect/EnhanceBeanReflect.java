@@ -1,6 +1,7 @@
 package com.avaje.ebean.server.reflect;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -57,17 +58,33 @@ public final class EnhanceBeanReflect implements BeanReflect {
 		}
 	}
 	
-	private boolean hasNewInstanceMethod(Class<?> clazz) {
+    private boolean hasNewInstanceMethod(Class<?> clazz) {
         Class<?>[] params = new Class[0];
-	    try {
+        try {
             Method method = clazz.getMethod("_ebean_newInstance", params);
-            return method != null;
+            if (method == null){
+                return false;
+            }
+            try {
+                Object o = constructor.newInstance(constuctorArgs);
+                method.invoke(o, new Object[0]);
+                return true;
+
+            } catch (AbstractMethodError e){
+                return false;
+
+            } catch (InvocationTargetException e){
+                return false;
+               
+            } catch (Exception e) {
+                throw new RuntimeException("Unexpected? ", e);
+            }
         } catch (SecurityException e) {
             return false;
         } catch (NoSuchMethodException e) {
             return false;
         }
-	}
+    }
 
 	public Object createEntityBean() {
 	    if (hasNewInstanceMethod){
