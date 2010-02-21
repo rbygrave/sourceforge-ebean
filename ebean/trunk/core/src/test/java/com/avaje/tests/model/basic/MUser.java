@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -42,6 +43,11 @@ public class MUser {
 		this.roles = roles;
 	}
 	
-	
+	public void addRole(MRole role){
+	    if (roles == null){
+	        roles = new ArrayList<MRole>();
+	    }
+	    roles.add(role);
+	}
 	
 }
