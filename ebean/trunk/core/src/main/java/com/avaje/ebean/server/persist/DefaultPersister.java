@@ -111,8 +111,11 @@ public final class DefaultPersister implements Persister {
 		PersistRequestCallableSql request = new PersistRequestCallableSql(server, callSql,
 				(SpiTransaction) t, persistExecute);
 		try {
-			return request.executeOrQueue();
-
+		    request.initTransIfRequired();
+			int rc = request.executeOrQueue();
+			request.commitTransIfRequired();
+			return rc;
+			
 		} catch (RuntimeException e) {
 			request.rollbackTransIfRequired();
 			throw e;
@@ -135,7 +138,10 @@ public final class DefaultPersister implements Persister {
 
 		PersistRequestOrmUpdate request = new PersistRequestOrmUpdate(server, mgr, ormUpdate, (SpiTransaction) t, persistExecute);
 		try {
-			return request.executeOrQueue();
+            request.initTransIfRequired();
+            int rc = request.executeOrQueue();
+            request.commitTransIfRequired();
+            return rc;
 
 		} catch (RuntimeException e) {
 			request.rollbackTransIfRequired();
@@ -151,7 +157,10 @@ public final class DefaultPersister implements Persister {
 		PersistRequestUpdateSql request = new PersistRequestUpdateSql(server, updSql,
 				(SpiTransaction) t, persistExecute);
 		try {
-			return request.executeOrQueue();
+            request.initTransIfRequired();
+            int rc = request.executeOrQueue();
+            request.commitTransIfRequired();
+            return rc;
 
 		} catch (RuntimeException e) {
 			request.rollbackTransIfRequired();
@@ -721,7 +730,7 @@ public final class DefaultPersister implements Persister {
     					IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherBean);
     					SqlUpdate sqlInsert = intRow.createInsert(server);
     					t.log(sqlInsert.getSql());
-    					sqlInsert.execute();
+    					executeSqlUpdate(sqlInsert, t);
 				    }
 				}
 			}
@@ -736,7 +745,7 @@ public final class DefaultPersister implements Persister {
 				IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherDelete);
 				SqlUpdate sqlDelete = intRow.createDelete(server);
 				t.log(sqlDelete.getSql());
-				sqlDelete.execute();
+				executeSqlUpdate(sqlDelete, t);
 			}
 		}
 
