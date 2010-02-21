@@ -111,7 +111,7 @@ public class LdapExpressionFactory implements ExpressionFactory {
         if (!value.endsWith("*")){
             value = "*"+value+"*";
         }
-        return new LdSimpleExpression(propertyName, Op.EQ, value);
+        return new LdLikeExpression(propertyName, value);
     }
 
     public Expression idEq(Object value) {
@@ -139,7 +139,7 @@ public class LdapExpressionFactory implements ExpressionFactory {
     }
 
     public Expression ilike(String propertyName, String value) {
-        return new LdSimpleExpression(propertyName, Op.EQ, value);
+        return new LdLikeExpression(propertyName, value);
     }
 
     public Expression in(String propertyName, Collection<?> values) {

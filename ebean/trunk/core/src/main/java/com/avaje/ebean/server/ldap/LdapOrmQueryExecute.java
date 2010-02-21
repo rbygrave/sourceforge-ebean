@@ -20,7 +20,10 @@
 package com.avaje.ebean.server.ldap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -35,6 +38,8 @@ import com.avaje.ebean.server.deploy.BeanDescriptor;
 
 public class LdapOrmQueryExecute<T> {
 
+    private static final Logger logger = Logger.getLogger(LdapOrmQueryExecute.class.getName());
+    
     private final SpiQuery<?> query;
 
     private final BeanDescriptor<T> beanDescriptor;
@@ -70,10 +75,16 @@ public class LdapOrmQueryExecute<T> {
 
         try {
             LdapName dn = beanDescriptor.createLdapNameById(id);
-            
+
+            // build a string describing the query
+            String debugQuery = "Name:"+dn;
+
             Attributes attrs = dc.getAttributes(dn, selectProps);
 
-            return beanBuilder.readAttributes(attrs);
+            T bean = beanBuilder.readAttributes(attrs);
+            
+            query.setGeneratedSql(debugQuery);
+            return bean;
 
         } catch (NamingException e) {
             throw new LdapPersistenceException(e);
@@ -90,17 +101,29 @@ public class LdapOrmQueryExecute<T> {
         try {
             LdapName dn = beanDescriptor.createLdapName(null);
 
+            // build a string describing the query
+            String debugQuery = "Name:"+dn;
+           
             if (selectProps != null) {
                 sc.setReturningAttributes(selectProps);
+                debugQuery += " select:"+Arrays.toString(selectProps);
             }
 
+            if (logger.isLoggable(Level.INFO)){
+                logger.info("Ldap Query  Name:"+dn+" filterExpr:"+filterExpr);
+            }
+               
+            debugQuery += " filterExpr:"+filterExpr;
 
             NamingEnumeration<SearchResult> result;
-            if (filterValues == null) {
+            if (filterValues == null && filterValues.length > 0) {
                 result = dc.search(dn, filterExpr, sc);
             } else {
+                debugQuery += " filterValues:"+Arrays.toString(filterValues);
                 result = dc.search(dn, filterExpr, filterValues, sc);
             }
+           
+            query.setGeneratedSql(debugQuery);
 
             if (result != null){
                 while (result.hasMoreElements()) {

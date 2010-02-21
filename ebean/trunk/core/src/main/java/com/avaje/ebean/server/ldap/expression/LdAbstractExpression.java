@@ -43,7 +43,7 @@ public abstract class LdAbstractExpression implements SpiExpression {
 	protected String nextParam(SpiExpressionRequest request) {
 	    
 	    int pos = request.nextParameter();
-	    return "{"+(pos-1)+"}";
+	    return "{"+(pos-1)+"}";	    
 	}
 	
 	public boolean containsMany(BeanDescriptor<?> desc) {

@@ -36,6 +36,13 @@ public class LdapOrmQueryEngine {
         this.contextFactory = contextFactory;
     }
     
+    public <T> T findId(LdapOrmQueryRequest<T> request) {
+    	 DirContext dc = contextFactory.createContext();
+         LdapOrmQueryExecute<T> exe = new LdapOrmQueryExecute<T>(request, defaultVanillaMode, dc);
+         
+         return exe.findId();
+    }
+    
     public <T> List<T> findList(LdapOrmQueryRequest<T> request) {
         
         DirContext dc = contextFactory.createContext();

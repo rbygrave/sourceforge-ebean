@@ -49,7 +49,7 @@ public class LdapOrmQueryRequest<T> implements SpiOrmQueryRequest<T> {
     }
 
     public Object findId() {
-        throw new RuntimeException("Not Implemented yet");
+    	return queryEngine.findId(this);
     }
 
     public List<Object> findIds() {

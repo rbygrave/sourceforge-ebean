@@ -192,6 +192,9 @@ public final class DefaultPersister implements Persister {
                 PersistRequestBean<?> req = createRequest(bean, t, null);
                 update(req);
                 return;
+            } else if (ebi.isLoaded()) {
+                // fetched/loaded but not dirty so skip update
+                return;
             }
             if (updateProps == null){
                 updateProps = ebi.getLoadedProps();
@@ -233,8 +236,14 @@ public final class DefaultPersister implements Persister {
             }
         }
         
-        // special constructor for forceUpdate mode ...
-        PersistRequestBean<?> req = new PersistRequestBean(server, bean, parentBean, mgr, (SpiTransaction)t, persistExecute, updateProps, mode);
+        PersistRequestBean<?> req;
+        if (descriptor.isLdapEntityType()){
+            req = new LdapPersistBeanRequest(server, bean, parentBean, mgr, ldapPersister, updateProps, mode);
+
+        } else {
+            // special constructor for forceUpdate mode ...
+            req = new PersistRequestBean(server, bean, parentBean, mgr, (SpiTransaction)t, persistExecute, updateProps, mode);
+        }
 
         try {
             req.initTransIfRequired();
@@ -766,7 +775,7 @@ public final class DefaultPersister implements Persister {
 
             SpiTransaction t = request.getTransaction();
             t.log(sqlDelete.getSql());
-            sqlDelete.execute();
+            executeSqlUpdate(sqlDelete, t);
         }
     }
    

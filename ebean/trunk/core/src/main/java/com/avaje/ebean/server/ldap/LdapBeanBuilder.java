@@ -21,6 +21,7 @@ package com.avaje.ebean.server.ldap;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -35,6 +36,8 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 
 public class LdapBeanBuilder<T> {
 
+    private static final Logger logger = Logger.getLogger(LdapBeanBuilder.class.getName());
+    
     private final BeanDescriptor<T> beanDescriptor;
     
     private final boolean vanillaMode;
@@ -61,17 +64,20 @@ public class LdapBeanBuilder<T> {
 
         while (all.hasMoreElements()) {
             Attribute attr = all.nextElement();
-            String propName = attr.getID();
+            String attrName = attr.getID();
 
-            BeanProperty prop = beanDescriptor.getBeanPropertyFromDbColumn(propName);
+            BeanProperty prop = beanDescriptor.getBeanPropertyFromDbColumn(attrName);
             if (prop == null) {
-                Object objValue = attr.get();
-                System.out.println("... hmm, " + propName + " not found? "+objValue);
+            	if ("objectclass".equalsIgnoreCase(attrName)) {
+            		// this is expected
+            	} else {
+	                logger.info("... hmm, no property to map to attribute[" + attrName + "] value["+attr.get()+"]");
+            	}
                 
             } else {
                 prop.setAttributeValue(bean, attr);
                 if (setLoadedProps) {
-                    loadedProps.add(propName);
+                    loadedProps.add(prop.getName());
                 }
             }
         }
