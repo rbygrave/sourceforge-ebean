@@ -22,7 +22,6 @@ package com.avaje.tests.ldap;
 import java.util.List;
 
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 import junit.framework.TestCase;
 
@@ -45,19 +44,22 @@ public class TestLdapQuery extends TestCase {
             // turn this test off for the moment
             return;
         }
-        LdapContextFactory contextFactory = new MockContextFactory();
 
-        DirContext ctx = contextFactory.createContext();
-        ctx.close();
-
+//        GlobalProperties.put("ebean.ldapContextFactory", MockContextFactory.class.getName());
+        
         ServerConfig config = new ServerConfig();
         config.setName("ldap");
         config.setRegister(false);
         config.setDefaultServer(false);
         config.loadFromProperties();
 
+//        // built automatically from ebean.ldapContextFactory
+//        LdapContextFactory ldapContextFactory = config.getLdapConfig().getContextFactory();
+//        Assert.assertNotNull(ldapContextFactory);
+        
+        LdapContextFactory contextFactory = new MockContextFactory();
+        
         LdapConfig ldapConfig = new LdapConfig();
-
         ldapConfig.setContextFactory(contextFactory);
         config.setLdapConfig(ldapConfig);
         config.getDataSourceConfig().setOffline(true);

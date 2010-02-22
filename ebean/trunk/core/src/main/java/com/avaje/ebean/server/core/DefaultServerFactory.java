@@ -375,6 +375,14 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			throw new PersistenceException(m);			
 		}
 		
+		if (dsConfig.isOffline()){
+		    if (config.getDatabasePlatformName() == null){
+	            String m = "You MUST specify a DatabasePlatformName on ServerConfig when offline";
+	            throw new PersistenceException(m);          
+		    }
+		    return null;
+		}
+		
 		if (dsConfig.getHeartbeatSql() == null){
 			// use default heartbeatSql from the DatabasePlatform
 			String heartbeatSql = getHeartbeatSql(dsConfig.getDriver());
