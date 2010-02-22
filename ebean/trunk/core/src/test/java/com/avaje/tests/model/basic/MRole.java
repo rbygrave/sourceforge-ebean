@@ -27,6 +27,14 @@ public class MRole {
 	)
 	List<MUser> users;
 	
+    public MRole() {
+        
+    }
+    
+    public MRole(String roleName) {
+        this.roleName = roleName;
+    }
+    
 	public Integer getRoleid() {
 		return roleid;
 	}

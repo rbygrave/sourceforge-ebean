@@ -1367,7 +1367,8 @@ public class ServerConfig {
         debugSql = p.getBoolean("debug.sql", false);
         debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
-        transactionLogDirectory = p.get("log.directory", "logs");
+        s = p.get("logging.directory", "logs");
+        transactionLogDirectory = p.get("log.directory", s);
 
         transactionDebugLevel = getIntDebugLevel(p);
         if (transactionDebugLevel == null){
@@ -1380,6 +1381,12 @@ public class ServerConfig {
         classes = getClasses(p);
     }
 
+    /**
+     * Support previous versions of this debug level.
+     * <p>
+     * Changing to NONE, DEBUG and VERBOSE from NONE, LOG_ROLLBACKS and LOG_ALL. 
+     * </p>
+     */
     private TxDebugLevel getIntDebugLevel(ConfigPropertyMap p) {
         String dt = p.get("debug.transaction", null);
         if (dt != null){
@@ -1389,12 +1396,22 @@ public class ServerConfig {
                 case 0:
                     return TxDebugLevel.NONE;
                 case 1:
-                    return TxDebugLevel.LOG_ROLLBACKS;
+                    return TxDebugLevel.DEBUG;
     
                 default:
-                    return TxDebugLevel.LOG_ALL;
+                    return TxDebugLevel.VERBOSE;
                 }
             } catch (NumberFormatException e){
+                dt = dt.toLowerCase();
+                if (dt.indexOf("all") > -1){
+                    return TxDebugLevel.VERBOSE;
+                }
+                if (dt.indexOf("rollback") > -1){
+                    return TxDebugLevel.DEBUG;
+                }
+                if (dt.indexOf("none") > -1){
+                    return TxDebugLevel.NONE;
+                }
                 return null;
             }
         }

@@ -473,7 +473,6 @@ public final class DefaultPersister implements Persister {
 			request.unregisterBean();
 		}
 
-		deleteAssocManyIntersection(request);
 		request.executeOrQueue();
 
 		if (request.isPersistCascade()) {
@@ -637,6 +636,13 @@ public final class DefaultPersister implements Persister {
 		}
 	}
 
+    public int deleteManyToManyAssociations(Object ownerBean, String propertyName, Transaction t) {
+
+        BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
+        BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)descriptor.getBeanProperty(propertyName);
+        return deleteAssocManyIntersection(ownerBean, prop, t);
+    }
+    
     public void saveManyToManyAssociations(Object ownerBean, String propertyName, Transaction t) {
 
         BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
@@ -762,21 +768,14 @@ public final class DefaultPersister implements Persister {
 		t.depth(-1);
 	}
 
-    private void deleteAssocManyIntersection(PersistRequestBean<?> request) {
+    private int deleteAssocManyIntersection(Object bean, BeanPropertyAssocMany<?> many, Transaction t) {
 
+        // delete all intersection rows for this bean
+        IntersectionRow intRow = many.buildManyToManyDeleteChildren(bean);
+        SqlUpdate sqlDelete = intRow.createDeleteChildren(server);
 
-        // Many's with delete cascade
-        BeanDescriptor<?> desc = request.getBeanDescriptor();
-        BeanPropertyAssocMany<?>[] manys = desc.propertiesManyToMany();
-        for (int i = 0; i < manys.length; i++) {
-            // delete all intersection rows for this bean
-            IntersectionRow intRow = manys[i].buildManyToManyDeleteChildren(request.getBean());
-            SqlUpdate sqlDelete = intRow.createDeleteChildren(server);
-
-            SpiTransaction t = request.getTransaction();
-            t.log(sqlDelete.getSql());
-            executeSqlUpdate(sqlDelete, t);
-        }
+        t.log(sqlDelete.getSql());
+        return executeSqlUpdate(sqlDelete, t);
     }
    
 	/**
@@ -817,8 +816,8 @@ public final class DefaultPersister implements Persister {
 			// in getDetailsIterator().
 
 			if (manys[i].isManyToMany()) {
-			    // deleted by deleteManyIntersection without
-			    // needing any persist cascade
+			    // delete associated rows from intersection table
+			    deleteAssocManyIntersection(parentBean, manys[i], t);
                 
 			} else {
 				Object details = manys[i].getValue(parentBean);

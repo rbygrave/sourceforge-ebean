@@ -107,14 +107,12 @@ public interface ExpressionList<T> extends Serializable {
     public List<T> findList();
 
     /**
-     * Return a PagingList for this query using the page size.
+     * Return the count of entities this query should return.
+     * <p>
+     * This is the number of 'top level' or 'root level' entities.
+     * </p>
      */
-    public PagingList<T> findPagingList(int pageSize);
-
-    /**
-     * Execute find list query in a background thread.
-     */
-    public FutureList<T> findFutureList();
+    public int findRowCount();
 
     /**
      * Execute the query returning a set.
@@ -136,6 +134,61 @@ public interface ExpressionList<T> extends Serializable {
      * @see Query#findUnique()
      */
     public T findUnique();
+
+    /**
+     * Execute find row count query in a background thread.
+     * <p>
+     * This returns a Future object which can be used to cancel, check the
+     * execution status (isDone etc) and get the value (with or without a
+     * timeout).
+     * </p>
+     * 
+     * @return a Future object for the row count query
+     */
+    public FutureRowCount<T> findFutureRowCount();
+
+    /**
+     * Execute find Id's query in a background thread.
+     * <p>
+     * This returns a Future object which can be used to cancel, check the
+     * execution status (isDone etc) and get the value (with or without a
+     * timeout).
+     * </p>
+     * 
+     * @return a Future object for the list of Id's
+     */
+    public FutureIds<T> findFutureIds();
+
+    /**
+     * Execute find list query in a background thread.
+     * <p>
+     * This returns a Future object which can be used to cancel, check the
+     * execution status (isDone etc) and get the value (with or without a
+     * timeout).
+     * </p>
+     * 
+     * @return a Future object for the list result of the query
+     */
+    public FutureList<T> findFutureList();
+
+    /**
+     * Return a PagingList for this query.
+     * <p>
+     * This can be used to break up a query into multiple queries to fetch the
+     * data a page at a time.
+     * </p>
+     * <p>
+     * This typically works by using a query per page and setting
+     * {@link Query#setFirstRow(int)} and and {@link Query#setMaxRows(int)} on
+     * the query. This usually would translate into SQL that uses limit offset,
+     * rownum or row_number function to limit the result set.
+     * </p>
+     * 
+     * @param pageSize
+     *            the number of beans fetched per Page
+     * 
+     */
+    public PagingList<T> findPagingList(int pageSize);
 
     /**
      * Specify specific properties to fetch on the main/root bean (aka partial
