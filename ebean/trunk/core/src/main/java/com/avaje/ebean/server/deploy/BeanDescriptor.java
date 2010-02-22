@@ -367,6 +367,7 @@ public class BeanDescriptor<T> {
 
     private final String defaultSelectClause;
     private final Set<String> defaultSelectClauseSet;
+    private final String[] defaultSelectDbArray;
 
     private SpiEbeanServer ebeanServer;
 
@@ -402,7 +403,8 @@ public class BeanDescriptor<T> {
 
         this.defaultSelectClause = deploy.getDefaultSelectClause();
         this.defaultSelectClauseSet = deploy.parseDefaultSelectClause(defaultSelectClause);
-
+        this.defaultSelectDbArray = deploy.getDefaultSelectDbArray(defaultSelectClauseSet);
+        
         this.idType = deploy.getIdType();
         this.idGenerator = deploy.getIdGenerator();
         this.ldapBaseDn = deploy.getLdapBaseDn();
@@ -804,6 +806,14 @@ public class BeanDescriptor<T> {
      */
     public Set<String> getDefaultSelectClauseSet() {
         return defaultSelectClauseSet;
+    }
+
+    
+    /**
+     * For LDAP return array of (DB) attributes to include in query by default.
+     */
+    public String[] getDefaultSelectDbArray() {
+        return defaultSelectDbArray;
     }
 
     /**

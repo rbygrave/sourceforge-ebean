@@ -147,7 +147,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 
 		setDataSource(serverConfig);
 		// check the autoCommit and Transaction Isolation
-		checkDataSource(serverConfig);
+		boolean online = checkDataSource(serverConfig);
 		
 		// determine database platform (Oracle etc)
 		setDatabasePlatform(serverConfig);
@@ -206,17 +206,19 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		server.registerMBeans(mbeanServer, uniqueServerId);
 		
 		// generate and run DDL if required
-		executeDDL(server);
+		executeDDL(server, online);
 		
 		server.initialise();
 		
-		// warm the cache in 30 seconds 
-		int delaySecs = GlobalProperties.getInt("ebean.cacheWarmingDelay", 30);
-		long sleepMillis = 1000 * delaySecs;
-
-		if (sleepMillis > 0){
-			Timer t = new Timer("EbeanCacheWarmer", true);
-			t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
+		if (online){
+    		// warm the cache in 30 seconds 
+    		int delaySecs = GlobalProperties.getInt("ebean.cacheWarmingDelay", 30);
+    		long sleepMillis = 1000 * delaySecs;
+    
+    		if (sleepMillis > 0){
+    			Timer t = new Timer("EbeanCacheWarmer", true);
+    			t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
+    		}
 		}
 		return server;
 	}
@@ -305,9 +307,9 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	/**
 	 * Execute the DDL if required.
 	 */
-	private void executeDDL(SpiEbeanServer server) {
+	private void executeDDL(SpiEbeanServer server, boolean online) {
 		
-		server.getDdlGenerator().execute();	
+		server.getDdlGenerator().execute(online);	
 	}
 
 	/**
@@ -372,7 +374,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 			String m = "No DataSourceConfig definded for "+config.getName();
 			throw new PersistenceException(m);			
 		}
-			
+		
 		if (dsConfig.getHeartbeatSql() == null){
 			// use default heartbeatSql from the DatabasePlatform
 			String heartbeatSql = getHeartbeatSql(dsConfig.getDriver());
@@ -406,10 +408,14 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	 * checking may not work as expected.
 	 * </p>
 	 */
-	private void checkDataSource(ServerConfig serverConfig) {
+	private boolean checkDataSource(ServerConfig serverConfig) {
 
 		if (serverConfig.getDataSource() == null){
-			throw new RuntimeException("DataSource not set?");
+		    if (serverConfig.getDataSourceConfig().isOffline()){
+		        // this is ok - offline DDL generation etc
+	            return false;
+		    }
+            throw new RuntimeException("DataSource not set?");
 		}
 		
 		Connection c = null;
@@ -430,9 +436,11 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 						+ "] rather than READ_COMMITTED!";
 				logger.warning(m);
 			}
+			return true;
+			
 		} catch (SQLException ex) {
-			logger.log(Level.SEVERE, null, ex);
-
+			throw new PersistenceException(ex);
+			
 		} finally {
 			if (c != null) {
 				try {

@@ -26,6 +26,8 @@ import javax.naming.directory.DirContext;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.ServerConfig;
@@ -58,9 +60,18 @@ public class TestLdapQuery extends TestCase {
 
         ldapConfig.setContextFactory(contextFactory);
         config.setLdapConfig(ldapConfig);
-
+        config.getDataSourceConfig().setOffline(true);
+        config.setDatabasePlatformName("oracle");
+        
         EbeanServer server = EbeanServerFactory.create(config);
 
+        LDPerson pRob = server.find(LDPerson.class)
+            .select("userId, cn")
+            .setId("rbygraveTest01")
+            .findUnique();
+        
+        Assert.assertNotNull(pRob);
+        
         List<LDPerson> list = server.find(LDPerson.class)
             .select("userId,status")
             .where().like("userId","lz*").eq("status", LDPerson.Status.ACTIVE)

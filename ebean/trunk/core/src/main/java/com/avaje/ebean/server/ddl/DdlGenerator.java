@@ -55,9 +55,11 @@ public class DdlGenerator {
 	/**
 	 * Generate the DDL and then run the DDL based on property settings (ebean.ddl.generate and ebean.ddl.run etc).
 	 */
-	public void execute() {
+	public void execute(boolean online) {
 		generateDdl();
-		runDdl();
+		if (online){
+		    runDdl();
+		}
 	}
 
 	/**

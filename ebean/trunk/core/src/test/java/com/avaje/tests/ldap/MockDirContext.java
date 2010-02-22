@@ -29,6 +29,7 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
@@ -53,7 +54,9 @@ public class MockDirContext implements DirContext {
     }
 
     public Attributes getAttributes(Name name, String[] attrIds) throws NamingException {
-        return null;
+        BasicAttributes a = new BasicAttributes();
+        a.put("uid", "rbygraveTest01");
+        return a;
     }
 
     public Attributes getAttributes(Name name) throws NamingException {

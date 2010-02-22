@@ -60,10 +60,14 @@ public class DatabasePlatformFactory {
 				// choose based on dbName
 				return byDatabaseName(serverConfig.getDatabasePlatformName());
 				
-			} else {
-				// guess using meta data from driver
-				return byDataSource(serverConfig.getDataSource());
+			} 
+			if (serverConfig.getDataSourceConfig().isOffline()){
+			    String m = "You must specify a DatabasePlatformName when you are offline";
+			    throw new PersistenceException(m);
 			}
+			// guess using meta data from driver
+			return byDataSource(serverConfig.getDataSource());
+		
 
 		} catch (Exception ex) {
 			throw new PersistenceException(ex);
