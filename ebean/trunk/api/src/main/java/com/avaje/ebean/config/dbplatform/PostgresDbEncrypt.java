@@ -19,54 +19,21 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
 
 /**
  * Postgres pgp_sym_encrypt pgp_sym_decrypt based encryption support.
  * 
  * @author rbygrave
  */
-public class PostgresDbEncrypt implements DbEncrypt {
+public class PostgresDbEncrypt extends AbstractDbEncrypt {
 
-    private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
     
-    private static final DbEncryptFunction DATE_ENCRYPT_FUNCTION = new DateFunction();
-    
-    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
-        switch (jdbcType) {
-        case Types.VARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-        case Types.CLOB:
-            return VARCHAR_ENCRYPT_FUNCTION;
-        case Types.CHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-        case Types.LONGVARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-            
-            
-        case Types.DATE:
-            return DATE_ENCRYPT_FUNCTION;
-            
-        default:
-            // we can not encrypt this type using DB functions
-            // so it will be encrypted/decrypted on Java client side
-            return null;
-        }
+    public PostgresDbEncrypt() {
+        this.varcharEncryptFunction = new PgVarcharFunction();
+        this.dateEncryptFunction = new PgDateFunction();
     }
-    
-
-    public int getEncryptDbType() {
-        return Types.VARBINARY;
-    }
-    
-    /**
-     * For pgp_sym_encrypt returns true binding the data before the key.
-     */
-    public boolean isBindEncryptDataFirst() {
-        return true;
-    }
-
-    static class VarcharFunction implements DbEncryptFunction {
+        
+    private static class PgVarcharFunction implements DbEncryptFunction {
         
         public String getDecryptSql(String columnWithTableAlias) {
             return "pgp_sym_decrypt(" + columnWithTableAlias + ",?)";
@@ -77,7 +44,7 @@ public class PostgresDbEncrypt implements DbEncrypt {
         }
     }
 
-    static class DateFunction implements DbEncryptFunction {
+    private static class PgDateFunction implements DbEncryptFunction {
         
         public String getDecryptSql(String columnWithTableAlias) {
             return "to_date(pgp_sym_decrypt(" + columnWithTableAlias + ",?),'YYYYMMDD')";

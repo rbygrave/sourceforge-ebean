@@ -19,40 +19,17 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
 
 /**
- * H2 encryption support via encrypt decrypt function .
+ * H2 encryption support via encrypt decrypt function.
  * 
  * @author rbygrave
  */
-public class H2DbEncrypt implements DbEncrypt {
+public class H2DbEncrypt extends AbstractDbEncrypt {
 
-    private static final DbEncryptFunction H2_VARCHAR_ENCRYPT = new H2VarcharFunction();
-    private static final DbEncryptFunction H2_DATE_ENCRYPT = new H2DateFunction();
-    
-    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
-        switch (jdbcType) {
-        case Types.VARCHAR:
-            return H2_VARCHAR_ENCRYPT;
-        case Types.CLOB:
-            return H2_VARCHAR_ENCRYPT;
-        case Types.CHAR:
-            return H2_VARCHAR_ENCRYPT;
-        case Types.LONGVARCHAR:
-            return H2_VARCHAR_ENCRYPT;
-
-        case Types.DATE:
-            return H2_DATE_ENCRYPT;
-
-        default:
-            return null;
-        }
-    }
-
-
-    public int getEncryptDbType() {
-        return Types.VARBINARY;
+    public H2DbEncrypt() {
+        this.varcharEncryptFunction = new H2VarcharFunction();
+        this.dateEncryptFunction = new H2DateFunction();
     }
     
     /**
@@ -61,8 +38,8 @@ public class H2DbEncrypt implements DbEncrypt {
     public boolean isBindEncryptDataFirst() {
         return false;
     }
-    
-    static class H2VarcharFunction implements DbEncryptFunction {
+        
+    private static class H2VarcharFunction implements DbEncryptFunction {
 
         public String getDecryptSql(String columnWithTableAlias) {
             // Hmmm, this looks ugly - checking with H2 Database folks.
@@ -75,7 +52,7 @@ public class H2DbEncrypt implements DbEncrypt {
         
     }
     
-    static class H2DateFunction implements DbEncryptFunction {
+    private static class H2DateFunction implements DbEncryptFunction {
 
         public String getDecryptSql(String columnWithTableAlias) {
             return "PARSEDATETIME(TRIM(CHAR(0) FROM UTF8TOSTRING(DECRYPT('AES', STRINGTOUTF8(?), " + columnWithTableAlias + "))),'yyyyMMdd')";
