@@ -19,50 +19,20 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
 
 /**
  * MySql aes_encrypt aes_decrypt based encryption support.
  * 
  * @author rbygrave
  */
-public class MySqlDbEncrypt implements DbEncrypt {
+public class MySqlDbEncrypt extends AbstractDbEncrypt {
 
-    private static final DbEncryptFunction VARCHAR_ENCRYPT_FUNCTION = new VarcharFunction();
-    private static final DbEncryptFunction DATE_ENCRYPT_FUNCTION = new DateFunction();
+    public MySqlDbEncrypt() {
+        this.varcharEncryptFunction = new MyVarcharFunction();
+        this.dateEncryptFunction = new MyDateFunction();
+    }    
     
-    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
-        switch (jdbcType) {
-        case Types.VARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-        case Types.CLOB:
-            return VARCHAR_ENCRYPT_FUNCTION;
-        case Types.CHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-        case Types.LONGVARCHAR:
-            return VARCHAR_ENCRYPT_FUNCTION;
-            
-        case Types.DATE:
-            return DATE_ENCRYPT_FUNCTION;
-
-        default:
-            return null;
-        }
-    }
-
-    public int getEncryptDbType() {
-        return Types.VARBINARY;
-    }
-
-    /**
-     * For AES_ENCRYPT returns true binding the data before the key.
-     */
-    public boolean isBindEncryptDataFirst() {
-        return true;
-    }
-    
-    
-    static class VarcharFunction implements DbEncryptFunction {
+    private static class MyVarcharFunction implements DbEncryptFunction {
 
         public String getDecryptSql(String columnWithTableAlias) {
             return "AES_DECRYPT(" + columnWithTableAlias + ",?)";
@@ -73,7 +43,7 @@ public class MySqlDbEncrypt implements DbEncrypt {
         }        
     }
     
-    static class DateFunction implements DbEncryptFunction {
+    private static class MyDateFunction implements DbEncryptFunction {
 
         public String getDecryptSql(String columnWithTableAlias) {
             return "STR_TO_DATE(AES_DECRYPT(" + columnWithTableAlias + ",?),'%Y%d%m')";

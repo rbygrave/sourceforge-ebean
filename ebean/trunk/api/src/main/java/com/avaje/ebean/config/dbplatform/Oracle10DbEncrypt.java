@@ -19,7 +19,8 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
+import com.avaje.ebean.config.GlobalProperties;
+
 
 /**
  * Oracle encryption support.
@@ -64,88 +65,62 @@ import java.sql.Types;
  * 
  * @author rbygrave
  */
-public class Oracle10DbEncrypt implements DbEncrypt {
-
-    protected DbEncryptFunction varcharEncryptFunction = new EbVarcharFunction();
-    protected DbEncryptFunction dateEncryptFunction = new EbDateFunction();
-    
-    public DbEncryptFunction getDbEncryptFunction(int jdbcType) {
-        switch (jdbcType) {
-        case Types.VARCHAR:
-            return varcharEncryptFunction;
-        case Types.CLOB:
-            return varcharEncryptFunction;
-        case Types.CHAR:
-            return varcharEncryptFunction;
-        case Types.LONGVARCHAR:
-            return varcharEncryptFunction;
-            
-        case Types.DATE:
-            return dateEncryptFunction;
-            
-        default:
-            return null;
-        }
-    }
+public class Oracle10DbEncrypt extends AbstractDbEncrypt {
 
     /**
-     * Create.
+     * Constructs the Oracle10DbEncrypt.
      */
     public Oracle10DbEncrypt() {
-
-    }
-
-    /**
-     * Set the Function to encrypt/decrypt Varchars.
-     */
-    public void setVarcharEncryptFunction(DbEncryptFunction varcharEncryptFunction) {
-        this.varcharEncryptFunction = varcharEncryptFunction;
-    }
-
-    /**
-     * Set the Function to encrypt/decrypt Dates.
-     */
-    public void setDateEncryptFunction(DbEncryptFunction dateEncryptFunction) {
-        this.dateEncryptFunction = dateEncryptFunction;
-    }
-
-    public int getEncryptDbType() {
-        return Types.VARBINARY;
-    }
-
-    /**
-     * Depends on your oracle function.
-     */
-    public boolean isBindEncryptDataFirst() {
-        return true;
-    }
-
-    /**
-     * Ebean example VARCHAR encryption/decryption function.
-     */
-    private static class EbVarcharFunction implements DbEncryptFunction {
         
+        String encryptfunction = GlobalProperties.get("ebean.oracle.encryptfunction", "eb_encrypt");
+        String decryptfunction = GlobalProperties.get("ebean.oracle.decryptfunction", "eb_decrypt");
+        
+        this.varcharEncryptFunction = new OraVarcharFunction(encryptfunction, decryptfunction);
+        this.dateEncryptFunction = new OraDateFunction(encryptfunction, decryptfunction);
+    }
+
+    /**
+     * VARCHAR encryption/decryption function.
+     */
+    private static class OraVarcharFunction implements DbEncryptFunction {
+
+        private final String encryptfunction;
+        private final String decryptfunction;
+        
+        public OraVarcharFunction(String encryptfunction, String decryptfunction) {
+            this.encryptfunction = encryptfunction;
+            this.decryptfunction = decryptfunction;
+        }
+
         public String getDecryptSql(String columnWithTableAlias) {
-            return "eb_decrypt(" + columnWithTableAlias + ",?)";
+            return decryptfunction+"(" + columnWithTableAlias + ",?)";
         }
 
         public String getEncryptBindSql() {
-            return "eb_encrypt(?,?)";
+            return encryptfunction+"(?,?)";
         }
         
     }
 
     /**
-     * Ebean example DATE encryption/decryption function.
+     * DATE encryption/decryption function.
      */
-    private static class EbDateFunction implements DbEncryptFunction {
+    private static class OraDateFunction implements DbEncryptFunction {
+        
+        private final String encryptfunction;
+        private final String decryptfunction;
+        
+        public OraDateFunction(String encryptfunction, String decryptfunction) {
+            this.encryptfunction = encryptfunction;
+            this.decryptfunction = decryptfunction;
+        }
         
         public String getDecryptSql(String columnWithTableAlias) {
-            return "to_date(eb_decrypt(" + columnWithTableAlias + ",?),'YYYYMMDD')";
+            return "to_date("+decryptfunction+"(" + columnWithTableAlias + ",?),'YYYYMMDD')";
         }
 
         public String getEncryptBindSql() {
-            return "eb_encrypt(to_char(?,'YYYYMMDD'),?)";
+            return encryptfunction+"(to_char(?,'YYYYMMDD'),?)";
         }
         
     }
