@@ -35,6 +35,7 @@ import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.ldap.LdapConfig;
+import com.avaje.ebean.config.ldap.LdapContextFactory;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
@@ -1321,6 +1322,14 @@ public class ServerConfig {
         }
         dataSourceConfig.loadSettings(p.getServerName());
 
+        if (ldapConfig == null){
+            LdapContextFactory ctxFact = createInstance(p, LdapContextFactory.class, "ldapContextFactory");
+            if (ctxFact != null){
+                ldapConfig = new LdapConfig();
+                ldapConfig.setContextFactory(ctxFact);
+                ldapConfig.setVanillaMode(p.getBoolean("ldapVanillaMode", false));
+            }
+        }
         namingConvention = createInstance(p, NamingConvention.class, "namingconvention");
         databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
