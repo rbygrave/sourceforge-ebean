@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -586,6 +587,23 @@ public final class Ebean {
     }
 
     /**
+     * Save all the beans from a Collection.
+     */
+    public static int save(Collection<?> c) throws OptimisticLockException {
+        return save(c.iterator());
+    }
+
+    /**
+     * Delete the associations (from the intersection table) of a ManyToMany
+     * given the owner bean and the propertyName of the ManyToMany collection.
+     * 
+     * @return the number of associations deleted (from the intersection table).
+     */
+    public static int deleteManyToManyAssociations(Object ownerBean, String propertyName){
+        return serverMgr.getPrimaryServer().deleteManyToManyAssociations(ownerBean, propertyName);
+    }
+
+    /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
      * <p>
@@ -643,6 +661,13 @@ public final class Ebean {
         return serverMgr.getPrimaryServer().delete(it);
     }
 
+    /**
+     * Delete all the beans from a Collection.
+     */
+    public static int delete(Collection<?> c) throws OptimisticLockException {
+        return delete(c.iterator());
+    }
+    
     /**
      * Refresh the values of a bean.
      * <p>

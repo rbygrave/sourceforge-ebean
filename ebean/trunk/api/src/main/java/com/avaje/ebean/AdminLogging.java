@@ -22,14 +22,14 @@ public interface AdminLogging {
         NONE,
         
         /**
-         * Log Rollback events.
+         * Log Commit and Rollback events.
          */
-        LOG_ROLLBACKS,
+        DEBUG,
         
         /**
          * Log all begin, commit and rollback events.
          */
-        LOG_ALL
+        VERBOSE
 
     }
     

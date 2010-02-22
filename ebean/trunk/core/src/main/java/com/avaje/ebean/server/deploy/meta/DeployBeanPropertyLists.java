@@ -340,10 +340,7 @@ public class DeployBeanPropertyLists {
                 }
                 break;
             case Delete:
-                if (prop.isManyToMany()) {
-                    // never cascade for manyToMany but will always
-                    // delete the intersection rows
-                } else if (prop.getCascadeInfo().isDelete()
+                if (prop.getCascadeInfo().isDelete()
                         || ModifyListenMode.REMOVALS.equals(prop.getModifyListenMode())) {
                     // REMOVALS means including PrivateOwned relationships
                     list.add(prop);

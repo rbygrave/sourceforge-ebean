@@ -16,9 +16,19 @@ public class MUser {
 	
 	String userName;
 
+	// Cascade remove will delete from intersection table
+	// but will not delete the actual Roles
 	@ManyToMany(mappedBy="users",cascade=CascadeType.ALL)
 	List<MRole> roles;
 	
+    public MUser() {
+        
+    }
+    
+    public MUser(String userName) {
+        this.userName = userName;
+    }
+    
 	public Integer getUserid() {
 		return userid;
 	}

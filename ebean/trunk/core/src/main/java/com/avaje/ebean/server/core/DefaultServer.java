@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -1479,6 +1480,39 @@ public final class DefaultServer implements SpiEbeanServer {
     }
 
     /**
+     * Delete the associations (from the intersection table) of a ManyToMany
+     * given the owner bean and the propertyName of the ManyToMany collection.
+     * <p>
+     * This returns the number of associations deleted.
+     * </p>
+     */
+    public int deleteManyToManyAssociations(Object ownerBean, String propertyName) {
+        return deleteManyToManyAssociations(ownerBean, propertyName, null);
+    }
+        
+    /**
+     * Delete the associations (from the intersection table) of a ManyToMany
+     * given the owner bean and the propertyName of the ManyToMany collection.
+     * <p>
+     * This returns the number of associations deleted.
+     * </p>
+     */
+    public int deleteManyToManyAssociations(Object ownerBean, String propertyName, Transaction t) {
+
+        TransWrapper wrap = initTransIfRequired(t);
+        try {
+            SpiTransaction trans = wrap.transaction;
+            int rc = persister.deleteManyToManyAssociations(ownerBean, propertyName, trans);
+            wrap.commitIfCreated();
+            return rc;
+            
+        } catch (RuntimeException e) {
+            wrap.rollbackIfCreated();
+            throw e;
+        }
+    }
+    
+    /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
      */
@@ -1542,6 +1576,14 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     public int save(Iterator<?> it) {
         return save(it, null);
+    }
+
+    /**
+     * Perform an update or insert on each bean in the collection. Returns the
+     * number of beans that where saved.
+     */
+    public int save(Collection<?> c) {
+        return save(c.iterator(), null);
     }
 
     /**
@@ -1612,6 +1654,13 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     public int delete(Iterator<?> it) {
         return delete(it, null);
+    }
+
+    /**
+     * Delete all the beans in the collection.
+     */
+    public int delete(Collection<?> c) {
+        return delete(c.iterator(), null);
     }
 
     /**
