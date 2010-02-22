@@ -64,7 +64,7 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
      *  The EbeanServer name. 
      */
     private String serverName;
-
+    
     /**
      * Instantiates a new spring aware transaction scope manager.
      */
@@ -104,7 +104,7 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
                 logger.log(Level.WARNING, msg);
                 
             } else if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "SpringTransaction - no current transaction ");
+                logger.log(Level.FINEST, "Spring Txn - no current transaction ");
             }
             return currentEbeanTransaction;
         }
@@ -206,12 +206,16 @@ public class SpringAwareJdbcTransactionManager implements ExternalTransactionMan
             
             switch (status) {
             case STATUS_COMMITTED:
-                logger.info("Txn committed");
+                if (logger.isLoggable(Level.FINE)){
+                    logger.fine("Spring Txn ["+transaction.getId()+"] committed");                    
+                }
                 transactionManager.notifyOfCommit(transaction);
                 break;
                 
             case STATUS_ROLLED_BACK:
-                logger.info("Txn rolled back");
+                if (logger.isLoggable(Level.FINE)){
+                    logger.fine("Spring Txn ["+transaction.getId()+"] rollback");                    
+                }
                 transactionManager.notifyOfRollback(transaction, null);
                 break;
                 
