@@ -76,10 +76,15 @@ public class LdapOrmQueryExecute<T> {
         try {
             LdapName dn = beanDescriptor.createLdapNameById(id);
 
+            String[] findAttrs = selectProps;
+            if (findAttrs == null){
+                findAttrs = beanDescriptor.getDefaultSelectDbArray();
+            }
+            
             // build a string describing the query
-            String debugQuery = "Name:"+dn;
+            String debugQuery = "Name:"+dn+" attrs:"+Arrays.toString(findAttrs);
 
-            Attributes attrs = dc.getAttributes(dn, selectProps);
+            Attributes attrs = dc.getAttributes(dn, findAttrs);
 
             T bean = beanBuilder.readAttributes(attrs);
             

@@ -777,6 +777,26 @@ public class DeployBeanDescriptor<T> {
 		return selectClause.substring(0, selectClause.length()-1);
 	}
 	
+	/**
+     * Return an Array of properties to include in default fetch (for LDAP).
+     */
+	public String[] getDefaultSelectDbArray(Set<String> defaultSelect) {
+	    
+	    ArrayList<String> list = new ArrayList<String>();
+	    for (DeployBeanProperty p : propMap.values()) {
+	        if (defaultSelect != null) {
+	            if (defaultSelect.contains(p.getName())){
+	                // properties in defaultSelect
+	                list.add(p.getDbColumn());   
+	            }
+	        } else if (!p.isTransient() && p.isDbRead()) {
+	            // non transient db properties
+	            list.add(p.getDbColumn());	            
+	        }
+        }
+	    return list.toArray(new String[list.size()]);
+	}
+	
     /**
      * Parse the include separating by comma or semicolon.
      */

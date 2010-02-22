@@ -22,8 +22,10 @@ package com.avaje.tests.model.ldap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 
 import org.joda.time.LocalDateTime;
@@ -62,8 +64,10 @@ public class LDPerson {
 
     private String userPassword;
 
+    @Basic(fetch=FetchType.LAZY)
     private LocalDateTime modifiedTime;
 
+    @Basic(fetch=FetchType.LAZY)
     @LdapAttribute(adapter=SimpleLdapSetAdapater.class)
     private Set<Long> accounts;
     

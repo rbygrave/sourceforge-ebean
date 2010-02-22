@@ -11,33 +11,34 @@ package com.avaje.ebean.config;
  */
 public class DataSourceConfig {
 	
-	String url;
+	private String url;
 	
-	String username;
+	private String username;
 	
-	String password;
+	private String password;
 	
-	String driver;
+	private String driver;
 	
-	int minConnections = 2;
+	private int minConnections = 2;
 	
-	int maxConnections = 20;
+	private int maxConnections = 20;
 	
-	String heartbeatSql;
+	private String heartbeatSql;
 	
-	boolean captureStackTrace;
+	private boolean captureStackTrace;
 
-	int leakTimeMinutes = 30;
+	private int leakTimeMinutes = 30;
 	
-	int maxInactiveTimeSecs = 900;
+	private int maxInactiveTimeSecs = 900;
 
-	int pstmtCacheSize = 20;
-	int cstmtCacheSize = 20;
+	private int pstmtCacheSize = 20;
+	private int cstmtCacheSize = 20;
 	
-	int waitTimeoutMillis = 1000;
+	private int waitTimeoutMillis = 1000;
 	
-	String poolListener;
-	
+	private String poolListener;
+
+	private boolean offline;
 
 	/**
 	 * Return the connection URL.
@@ -271,7 +272,33 @@ public class DataSourceConfig {
 		this.poolListener = poolListener;
 	}
 
+	
 	/**
+	 * Return true if the DataSource should be left offline.
+	 * <p>
+	 * This is to support DDL generation etc without having a real database.
+	 * </p>
+	 */
+	public boolean isOffline() {
+        return offline;
+    }
+
+    /**
+     * Set to true if the DataSource should be left offline.
+     * <p>
+     * This is to support DDL generation etc without having a real database.
+     * </p>
+     * <p>
+     * Note that you MUST specify the database platform name (oracle, postgres,
+     * h2, mysql etc) using {@link ServerConfig#setDatabasePlatformName(String)}
+     * when you do this.
+     * </p>
+     */
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
+    /**
 	 * Load the settings from ebean.properties.
 	 */
 	public void loadSettings(String serverName){
@@ -303,6 +330,7 @@ public class DataSourceConfig {
 		
 		heartbeatSql = GlobalProperties.get(prefix+"heartbeatSql", null);
 		poolListener = GlobalProperties.get(prefix+"poolListener", null);
+        offline = GlobalProperties.getBoolean(prefix+"offline", false);
 
 	}
 }
