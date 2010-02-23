@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.avaje.ebean.AdminLogging.TxLogSharing;
-import com.avaje.ebean.AdminLogging.TxLogLevel;
+import com.avaje.ebean.AdminLogging.LogFileSharing;
+import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.internal.SpiTransaction;
@@ -81,9 +81,9 @@ public class TransactionLogManager {
 	
 	private final String serverName;
 
-	private TxLogLevel logLevel;
+	private LogLevel logLevel;
 
-	private TxLogSharing logSharing;
+	private LogFileSharing logSharing;
 
 	private final boolean transactionLogToJavaLogger;
 	
@@ -103,17 +103,17 @@ public class TransactionLogManager {
 		this.serverName = serverConfig.getName();
 		this.sharedLogFileName = GlobalProperties.get("log.filename", "trans");
 		
-		this.logLevel = serverConfig.getTransactionLogging();
-		this.logSharing = serverConfig.getTransactionLogSharing();
-		this.transactionLogToJavaLogger = serverConfig.isTransactionLogToJavaLogger();
+		this.logLevel = serverConfig.getLoggingLevel();
+		this.logSharing = serverConfig.getLoggingLogFileSharing();
+		this.transactionLogToJavaLogger = serverConfig.isLoggingToJavaLogger();
 		
-		String dir = serverConfig.getTransactionLogDirectoryWithEval();
+		String dir = serverConfig.getLoggingDirectoryWithEval();
 		if (dir == null) {
 			dir = createDefaultLogsDirectory();
 		}
 		this.baseDir = dir;
 
-		if (logLevel == TxLogLevel.NONE){
+		if (logLevel == LogLevel.NONE){
 			String m = "Transaction logging is OFF  ... ebean.log.level=0";
 			logger.info(m);
 		} else {
@@ -136,21 +136,21 @@ public class TransactionLogManager {
 	/**
 	 * Set the logging level.
 	 */
-	public void setLogLevel(TxLogLevel logLevel) {
+	public void setLogLevel(LogLevel logLevel) {
 		this.logLevel = logLevel;
 	}
 
 	/**
 	 * Return the log level.
 	 */
-	public TxLogLevel getLogLevel() {
+	public LogLevel getLogLevel() {
 		return logLevel;
 	}
 
 	/**
 	 * Return the log sharing mode.
 	 */
-	public TxLogSharing getLogSharing() {
+	public LogFileSharing getLogSharing() {
 		return logSharing;
 	}
 
@@ -163,7 +163,7 @@ public class TransactionLogManager {
 	 * log.
 	 * </p>
 	 */
-	public void setLogSharing(TxLogSharing logSharing) {
+	public void setLogSharing(LogFileSharing logSharing) {
 		this.logSharing = logSharing;
 	}
 
@@ -227,10 +227,10 @@ public class TransactionLogManager {
 			return sharedLogger;
 		}
 		
-		if (logSharing == TxLogSharing.ALL) {
+		if (logSharing == LogFileSharing.ALL) {
 			return sharedLogger;
 		}
-		if (logSharing == TxLogSharing.EXPLICIT && !t.isExplicit()) {
+		if (logSharing == LogFileSharing.EXPLICIT && !t.isExplicit()) {
 			return sharedLogger;
 		}
 

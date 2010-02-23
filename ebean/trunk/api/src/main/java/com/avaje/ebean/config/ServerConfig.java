@@ -24,13 +24,14 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.Query;
-import com.avaje.ebean.AdminLogging.StmtLogLevel;
-import com.avaje.ebean.AdminLogging.TxDebugLevel;
-import com.avaje.ebean.AdminLogging.TxLogLevel;
-import com.avaje.ebean.AdminLogging.TxLogSharing;
+import com.avaje.ebean.AdminLogging.LogLevelStmt;
+import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
+import com.avaje.ebean.AdminLogging.LogLevel;
+import com.avaje.ebean.AdminLogging.LogFileSharing;
 import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
@@ -157,47 +158,59 @@ public class ServerConfig {
     /** The default batch size for lazy loading */
     private int lazyLoadBatchSize = 1;
 
-    /** The ddl generate. */
     private boolean ddlGenerate;
 
-    /** The ddl run. */
     private boolean ddlRun;
 
-    /** The debug sql. */
     private boolean debugSql;
 
-    /** The debug lazy load. */
     private boolean debugLazyLoad;
 
-    /** The external transaction manager. */
+    /**
+     * The external transaction manager (like Spring).
+     */
     private ExternalTransactionManager externalTransactionManager;
 
-    /** The transaction debug level. */
-    private TxDebugLevel transactionDebugLevel;
+    /**
+     * Set to true to log using java.util.logging and otherwise uses ebean
+     * transaction loggers.
+     */
+    private boolean loggingToJavaLogger;
 
     /**
-     * Set to true to log using java.util.logging and otherwise uses ebean txn
-     * logging.
+     * The directory transaction logs go (when loggingToJavaLogger is false).
      */
-    private boolean transactionLogToJavaLogger;
+    private String loggingDirectory = "logs";
 
-    /** The transaction log directory. */
-    private String transactionLogDirectory = "logs";
+    /**
+     * The log file sharing.
+     */
+    private LogFileSharing loggingLogFileSharing = LogFileSharing.EXPLICIT;
 
-    /** The transaction logging. */
-    private TxLogLevel transactionLogging = TxLogLevel.ALL;
+    /**
+     * The overall transaction logging level.
+     */
+    private LogLevel loggingLevel = LogLevel.ALL;
 
-    /** The transaction log sharing. */
-    private TxLogSharing transactionLogSharing = TxLogSharing.EXPLICIT;
+    /**
+     * The insert update delete log level.
+     */
+    private LogLevelStmt loggingLevelIud = LogLevelStmt.SQL;
 
-    /** The insert update delete log level. */
-    private StmtLogLevel iudLogLevel = StmtLogLevel.SQL;
+    /**
+     * The Query log level.
+     */
+    private LogLevelStmt loggingLevelQuery = LogLevelStmt.SQL;
 
-    /** The find id log level. */
-    private StmtLogLevel queryLogLevel = StmtLogLevel.SQL;
+    /**
+     * The Sql Query log level.
+     */
+    private LogLevelStmt loggingLevelSqlQuery = LogLevelStmt.SQL;
 
-    /** The find many log level. */
-    private StmtLogLevel sqlQueryLogLevel = StmtLogLevel.SQL;
+    /**
+     * The transaction commit log level (was transactionDebugLevel).
+     */
+    private LogLevelTxnCommit loggingLevelTxnCommit;
 
     /**
      * Used to unwrap PreparedStatements to perform JDBC Driver specific
@@ -695,6 +708,17 @@ public class ServerConfig {
      * If none is set then the platform is determined automatically via the JDBC
      * driver information.
      * </p>
+     * <p>
+     * This can be used when the Database Platform can not be automatically
+     * detected from the JDBC driver (possibly 3rd party JDBC driver). It is
+     * also useful when you want to do offline DDL generation for a database
+     * platform that you don't have access to.
+     * </p>
+     * <p>
+     * Values are oracle, h2, postgres, mysql, mssqlserver2005.
+     * </p>
+     * 
+     * @see DataSourceConfig#setOffline(boolean)
      */
     public void setDatabasePlatformName(String databasePlatformName) {
         this.databasePlatformName = databasePlatformName;
@@ -727,6 +751,18 @@ public class ServerConfig {
 
     /**
      * Set the EncryptKeyManager.
+     * <p>
+     * This is required when you want to use encrypted properties.
+     * </p>
+     * <p>
+     * You can also set this in ebean.proprerties:
+     * </p>
+     * 
+     * <pre class="code">
+     * # set via ebean.properties
+     * 
+     * ebean.encryptKeyManager=com.avaje.tests.basic.encrypt.BasicEncyptKeyManager
+     * </pre>
      */
     public void setEncryptKeyManager(EncryptKeyManager encryptKeyManager) {
         this.encryptKeyManager = encryptKeyManager;
@@ -765,6 +801,10 @@ public class ServerConfig {
     /**
      * Set the Encryptor used to encrypt data on the java client side (as
      * opposed to DB encryption functions).
+     * <p>
+     * Ebean has a default implementation that it will use if you do not set
+     * your own Encryptor implementation.
+     * </p>
      */
     public void setEncryptor(Encryptor encryptor) {
         this.encryptor = encryptor;
@@ -774,7 +814,7 @@ public class ServerConfig {
      * Return the DbEncrypt used to encrypt and decrypt properties.
      * <p>
      * Note that if this is not set then the DbPlatform may already have a
-     * DbEncrypt set.
+     * DbEncrypt set and that will be used.
      * </p>
      */
     public DbEncrypt getDbEncrypt() {
@@ -785,45 +825,11 @@ public class ServerConfig {
      * Set the DbEncrypt used to encrypt and decrypt properties.
      * <p>
      * Note that if this is not set then the DbPlatform may already have a
-     * DbEncrypt set (H2, MySql, Postgres platforms have a DbEncrypt)
+     * DbEncrypt set (H2, MySql, Postgres and Oracle platforms have a DbEncrypt)
      * </p>
      */
     public void setDbEncrypt(DbEncrypt dbEncrypt) {
         this.dbEncrypt = dbEncrypt;
-    }
-
-    /**
-     * Return the amount of transaction logging.
-     */
-    public TxLogLevel getTransactionLogging() {
-        return transactionLogging;
-    }
-
-    /**
-     * Set the amount (None, Explict, All) of transaction logging.
-     */
-    public void setTransactionLogging(TxLogLevel logging) {
-        this.transactionLogging = logging;
-    }
-
-    /**
-     * Return how transactions should share log files.
-     */
-    public TxLogSharing getTransactionLogSharing() {
-        if (externalTransactionManager != null) {
-            // with external transaction managers we need to share a
-            // single transaction log file as we don't get notified
-            // of commit/rollback events
-            return TxLogSharing.ALL;
-        }
-        return transactionLogSharing;
-    }
-
-    /**
-     * Set how the transaction should share log files.
-     */
-    public void setTransactionLogSharing(TxLogSharing logSharing) {
-        this.transactionLogSharing = logSharing;
     }
 
     /**
@@ -863,43 +869,139 @@ public class ServerConfig {
     }
 
     /**
-     * Return the debug level for transaction begin, commit and rollback events.
+     * Return the overall transaction logging level.
      */
-    public TxDebugLevel getTransactionDebugLevel() {
-        return transactionDebugLevel;
+    public LogLevel getLoggingLevel() {
+        return loggingLevel;
     }
 
     /**
-     * Set a debug level for transaction begin, commit and rollback events.
+     * Set the overall transaction logging level.
      * <p>
-     * When this is set transaction begin, commit and rollback events logged to
-     * java util logging.
+     * Set this to LogLevel.NONE to turn off transaction logging. Alternatively
+     * you can change the log level for specific functions.
+     * </p>
+     * 
+     * @see #setLoggingLevelIud(LogLevelStmt)
+     * @see #setLoggingLevelQuery(LogLevelStmt)
+     * @see #setLoggingLevelSqlQuery(LogLevelStmt)
+     */
+    public void setLoggingLevel(LogLevel logging) {
+        this.loggingLevel = logging;
+    }
+
+    /**
+     * Return the logging level on Insert Update and Delete statements.
+     */
+    public LogLevelStmt getLoggingLevelIud() {
+        return loggingLevelIud;
+    }
+
+    /**
+     * Set the logging level on Insert Update and Delete statements.
+     * <p>
+     * Note this logging level can be changed at runtime via
+     * {@link EbeanServer#getAdminLogging()} and
+     * {@link AdminLogging#setLoggingLevelIud(LogLevelStmt)}
      * </p>
      */
-    public void setTransactionDebugLevel(TxDebugLevel transactionDebugLevel) {
-        this.transactionDebugLevel = transactionDebugLevel;
+    public void setLoggingLevelIud(LogLevelStmt iudLoglevel) {
+        this.loggingLevelIud = iudLoglevel;
+    }
+
+    /**
+     * Return the logging level for query statements.
+     */
+    public LogLevelStmt getLoggingLevelQuery() {
+        return loggingLevelQuery;
+    }
+
+    /**
+     * Set the logging level for query statements.
+     * <p>
+     * Note this logging level can be changed at runtime via
+     * {@link EbeanServer#getAdminLogging()} and
+     * {@link AdminLogging#setLoggingQuery(LogLevelStmt)}
+     * </p>
+     */
+    public void setLoggingLevelQuery(LogLevelStmt queryLogLevel) {
+        this.loggingLevelQuery = queryLogLevel;
+    }
+
+    /**
+     * Return the logging level on SqlQuery statements.
+     */
+    public LogLevelStmt getLoggingLevelSqlQuery() {
+        return loggingLevelSqlQuery;
+    }
+
+    /**
+     * Set the logging level on SqlQuery statements.
+     */
+    public void setLoggingLevelSqlQuery(LogLevelStmt sqlQueryLogLevel) {
+        this.loggingLevelSqlQuery = sqlQueryLogLevel;
+    }
+
+    /**
+     * Return the logging level for transaction begin, commit and rollback
+     * events.
+     */
+    public LogLevelTxnCommit getLoggingLevelTxnCommit() {
+        return loggingLevelTxnCommit;
+    }
+
+    /**
+     * Set the logging level for transaction begin, commit and rollback events.
+     */
+    public void setLoggingLevelTxnCommit(LogLevelTxnCommit transactionDebugLevel) {
+        this.loggingLevelTxnCommit = transactionDebugLevel;
+    }
+
+    /**
+     * Return how transaction logging should share log files.
+     */
+    public LogFileSharing getLoggingLogFileSharing() {
+        if (externalTransactionManager != null) {
+            // with external transaction managers we need to share a
+            // single transaction log file as we don't get notified
+            // of commit/rollback events
+            return LogFileSharing.ALL;
+        }
+        return loggingLogFileSharing;
+    }
+
+    /**
+     * Set how the transaction logging should share log files.
+     * <p>
+     * Transactions can each have a separate transaction log or they can share
+     * one single transaction log. Alternatively explicit transactions can have
+     * their own transaction log.
+     * </p>
+     */
+    public void setLoggingLogFileSharing(LogFileSharing logSharing) {
+        this.loggingLogFileSharing = logSharing;
     }
 
     /**
      * Return the directory where transaction logs go.
      */
-    public String getTransactionLogDirectory() {
-        return transactionLogDirectory;
+    public String getLoggingDirectory() {
+        return loggingDirectory;
     }
 
     /**
      * Return the transaction log directory substituting any expressions such as
      * ${catalina.base} etc.
      */
-    public String getTransactionLogDirectoryWithEval() {
-        return PropertyExpression.eval(transactionLogDirectory);
+    public String getLoggingDirectoryWithEval() {
+        return PropertyExpression.eval(loggingDirectory);
     }
 
     /**
      * Set the directory that the transaction logs go in.
      * <p>
      * This will not be used if the transaction logging is going to java util
-     * logging (via {@link #setTransactionLogToJavaLogger(boolean)}).
+     * logging (via {@link #setLoggingToJavaLogger(boolean)}).
      * </p>
      * <p>
      * This can contain expressions like ${catalina.base} with environment
@@ -909,11 +1011,11 @@ public class ServerConfig {
      * e.g. ${catalina.base}/logs/trans
      * </p>
      * 
-     * @param transactionLogDirectory
+     * @param loggingDirectory
      *            the transaction log directory
      */
-    public void setTransactionLogDirectory(String transactionLogDirectory) {
-        this.transactionLogDirectory = transactionLogDirectory;
+    public void setLoggingDirectory(String loggingDirectory) {
+        this.loggingDirectory = loggingDirectory;
     }
 
     /**
@@ -924,8 +1026,8 @@ public class ServerConfig {
      * the transaction details to separate transaction log files.
      * </p>
      */
-    public boolean isTransactionLogToJavaLogger() {
-        return transactionLogToJavaLogger;
+    public boolean isLoggingToJavaLogger() {
+        return loggingToJavaLogger;
     }
 
     /**
@@ -933,8 +1035,8 @@ public class ServerConfig {
      * java.util.logging.Logger to log the statements and bind variables etc
      * rather than the default one which creates separate transaction log files.
      */
-    public void setTransactionLogToJavaLogger(boolean transactionLogToJavaLogger) {
-        this.transactionLogToJavaLogger = transactionLogToJavaLogger;
+    public void setLoggingToJavaLogger(boolean transactionLogToJavaLogger) {
+        this.loggingToJavaLogger = transactionLogToJavaLogger;
     }
 
     /**
@@ -943,7 +1045,7 @@ public class ServerConfig {
      * @deprecated
      */
     public boolean isUseJuliTransactionLogger() {
-        return isTransactionLogToJavaLogger();
+        return isLoggingToJavaLogger();
     }
 
     /**
@@ -952,49 +1054,7 @@ public class ServerConfig {
      * @deprecated
      */
     public void setUseJuliTransactionLogger(boolean transactionLogToJavaLogger) {
-        setTransactionLogToJavaLogger(transactionLogToJavaLogger);
-    }
-
-    /**
-     * Return the logging level on Insert Update and Delete statements.
-     */
-    public StmtLogLevel getIudLogLevel() {
-        return iudLogLevel;
-    }
-
-    /**
-     * Set the logging level on Insert Update and Delete statements.
-     */
-    public void setIudLogLevel(StmtLogLevel iudLoglevel) {
-        this.iudLogLevel = iudLoglevel;
-    }
-
-    /**
-     * Return the logging level for query statements.
-     */
-    public StmtLogLevel getQueryLogLevel() {
-        return queryLogLevel;
-    }
-
-    /**
-     * set the logging level for query statements.
-     */
-    public void setQueryLogLevel(StmtLogLevel queryLogLevel) {
-        this.queryLogLevel = queryLogLevel;
-    }
-
-    /**
-     * Return the logging level on SqlQuery statements.
-     */
-    public StmtLogLevel getSqlQueryLogLevel() {
-        return sqlQueryLogLevel;
-    }
-
-    /**
-     * Set the logging level on SqlQuery statements.
-     */
-    public void setSqlQueryLogLevel(StmtLogLevel sqlQueryLogLevel) {
-        this.sqlQueryLogLevel = sqlQueryLogLevel;
+        setLoggingToJavaLogger(transactionLogToJavaLogger);
     }
 
     /**
@@ -1103,6 +1163,17 @@ public class ServerConfig {
      * <p>
      * This is only used if classes have not been explicitly specified.
      * </p>
+     * <p>
+     * If you are using ebean.properties you can specify jars to search by
+     * setting a ebean.search.jars property.
+     * </p>
+     * 
+     * <pre class="code">
+     * # EBean will search through classes for entities, but will not search jar files 
+     * # unless you tell it to do so, for performance reasons.  Set this value to a 
+     * # comma-delimited list of jar files you want ebean to search.
+     * ebean.search.jars=example.jar
+     * </pre>
      */
     public void addJar(String jarName) {
         if (searchJars == null) {
@@ -1322,9 +1393,9 @@ public class ServerConfig {
         }
         dataSourceConfig.loadSettings(p.getServerName());
 
-        if (ldapConfig == null){
+        if (ldapConfig == null) {
             LdapContextFactory ctxFact = createInstance(p, LdapContextFactory.class, "ldapContextFactory");
-            if (ctxFact != null){
+            if (ctxFact != null) {
                 ldapConfig = new LdapConfig();
                 ldapConfig.setContextFactory(ctxFact);
                 ldapConfig.setVanillaMode(p.getBoolean("ldapVanillaMode", false));
@@ -1365,68 +1436,89 @@ public class ServerConfig {
 
         ddlGenerate = p.getBoolean("ddl.generate", false);
         ddlRun = p.getBoolean("ddl.run", false);
-
-        transactionLogging = p.getEnum(TxLogLevel.class, "logging", TxLogLevel.ALL);
-        transactionLogSharing = p.getEnum(TxLogSharing.class, "logsharing", TxLogSharing.EXPLICIT);
-
-        String s = p.get("useJuliTransactionLogger", null);
-        s = p.get("transactionLogToJavaLogger", s);
-        transactionLogToJavaLogger = "true".equalsIgnoreCase(s);
-
         debugSql = p.getBoolean("debug.sql", false);
         debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
-        s = p.get("logging.directory", "logs");
-        transactionLogDirectory = p.get("log.directory", s);
+        loggingLevel = p.getEnum(LogLevel.class, "logging", LogLevel.ALL);
+        loggingLogFileSharing = getLogFileSharing(p);
 
-        transactionDebugLevel = getIntDebugLevel(p);
-        if (transactionDebugLevel == null){
-            transactionDebugLevel = p.getEnum(TxDebugLevel.class, "debug.transaction", TxDebugLevel.NONE);
+        String s = p.get("useJuliTransactionLogger", null);
+        s = p.get("loggingToJavaLogger", s);
+        loggingToJavaLogger = "true".equalsIgnoreCase(s);
+
+        s = p.get("log.directory", "logs");
+        loggingDirectory = p.get("logging.directory", s);
+
+        loggingLevelIud = p.getEnum(LogLevelStmt.class, "logging.iud", LogLevelStmt.SQL);
+        loggingLevelSqlQuery = p.getEnum(LogLevelStmt.class, "logging.sqlquery", LogLevelStmt.SQL);
+        loggingLevelQuery = p.getEnum(LogLevelStmt.class, "logging.query", LogLevelStmt.SQL);
+        loggingLevelTxnCommit = getOldTxnCommitLogLevel(p);
+        if (loggingLevelTxnCommit == null) {
+            loggingLevelTxnCommit = getTxnCommitLogLevel(p);
         }
-        iudLogLevel = p.getEnum(StmtLogLevel.class, "logging.iud", StmtLogLevel.SQL);
-        sqlQueryLogLevel = p.getEnum(StmtLogLevel.class, "logging.sqlquery", StmtLogLevel.SQL);
-        queryLogLevel = p.getEnum(StmtLogLevel.class, "logging.query", StmtLogLevel.SQL);
 
         classes = getClasses(p);
     }
 
     /**
-     * Support previous versions of this debug level.
+     * Return the LogFileSharing (with support for the previous "logsharing"
+     * property name.
+     */
+    private LogFileSharing getLogFileSharing(ConfigPropertyMap p) {
+        if (p.get("logging.logfilesharing", null) != null) {
+            return p.getEnum(LogFileSharing.class, "logging.logfilesharing", LogFileSharing.EXPLICIT);
+        }
+        // additionally support the old property setting
+        return p.getEnum(LogFileSharing.class, "logsharing", LogFileSharing.EXPLICIT);
+    }
+
+    private LogLevelTxnCommit getTxnCommitLogLevel(ConfigPropertyMap p) {
+        return p.getEnum(LogLevelTxnCommit.class, "logging.txnCommit", LogLevelTxnCommit.NONE);
+    }
+
+    /**
+     * Support previous versions of this property.
      * <p>
-     * Changing to NONE, DEBUG and VERBOSE from NONE, LOG_ROLLBACKS and LOG_ALL. 
+     * Changing to NONE, DEBUG and VERBOSE from NONE, LOG_ROLLBACKS and LOG_ALL.
      * </p>
      */
-    private TxDebugLevel getIntDebugLevel(ConfigPropertyMap p) {
+    private LogLevelTxnCommit getOldTxnCommitLogLevel(ConfigPropertyMap p) {
+
+        if (p.get("logging.txnCommit", null) != null) {
+            return getTxnCommitLogLevel(p);
+        }
+
+        // try to get the value from the old property
         String dt = p.get("debug.transaction", null);
-        if (dt != null){
+        if (dt != null) {
             try {
                 int i = Integer.parseInt(dt);
                 switch (i) {
                 case 0:
-                    return TxDebugLevel.NONE;
+                    return LogLevelTxnCommit.NONE;
                 case 1:
-                    return TxDebugLevel.DEBUG;
-    
+                    return LogLevelTxnCommit.DEBUG;
+
                 default:
-                    return TxDebugLevel.VERBOSE;
+                    return LogLevelTxnCommit.VERBOSE;
                 }
-            } catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 dt = dt.toLowerCase();
-                if (dt.indexOf("all") > -1){
-                    return TxDebugLevel.VERBOSE;
+                if (dt.indexOf("all") > -1) {
+                    return LogLevelTxnCommit.VERBOSE;
                 }
-                if (dt.indexOf("rollback") > -1){
-                    return TxDebugLevel.DEBUG;
+                if (dt.indexOf("rollback") > -1) {
+                    return LogLevelTxnCommit.DEBUG;
                 }
-                if (dt.indexOf("none") > -1){
-                    return TxDebugLevel.NONE;
+                if (dt.indexOf("none") > -1) {
+                    return LogLevelTxnCommit.NONE;
                 }
                 return null;
             }
         }
         return null;
     }
-    
+
     /**
      * Build the list of classes from the comma delimited string.
      * 

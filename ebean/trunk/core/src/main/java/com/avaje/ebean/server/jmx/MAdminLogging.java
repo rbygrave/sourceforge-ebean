@@ -32,20 +32,20 @@ import com.avaje.ebean.server.transaction.TransactionManager;
  */
 public class MAdminLogging implements MAdminLoggingMBean, AdminLogging {
 
-	public static final int NONE = StmtLogLevel.NONE.ordinal();
-	public static final int SQL = StmtLogLevel.SQL.ordinal();
-	public static final int BIND = StmtLogLevel.BINDING.ordinal();
-	public static final int SUMMARY = StmtLogLevel.SUMMARY.ordinal();
+	public static final int NONE = LogLevelStmt.NONE.ordinal();
+	public static final int SQL = LogLevelStmt.SQL.ordinal();
+	public static final int BIND = LogLevelStmt.BINDING.ordinal();
+	public static final int SUMMARY = LogLevelStmt.SUMMARY.ordinal();
 
 	private final TransactionManager transactionManager;
 
-	StmtLogLevel queryLevel;
+	LogLevelStmt queryLevel;
 	int ordinalQuery;
 	
-	StmtLogLevel sqlQueryLevel;
+	LogLevelStmt sqlQueryLevel;
 	int ordinalSqlQuery;
 	
-	StmtLogLevel iudLevel;
+	LogLevelStmt iudLevel;
 	int ordinalIud;
 	
 	boolean debugSql;
@@ -63,29 +63,29 @@ public class MAdminLogging implements MAdminLoggingMBean, AdminLogging {
 		debugSql = serverConfig.isDebugSql();
 		debugLazyLoad = serverConfig.isDebugLazyLoad();
 		
-		sqlQueryLevel = serverConfig.getSqlQueryLogLevel();
+		sqlQueryLevel = serverConfig.getLoggingLevelSqlQuery();
 		ordinalSqlQuery = sqlQueryLevel == null ? 0 : sqlQueryLevel.ordinal();
 		
-		queryLevel = serverConfig.getQueryLogLevel();
+		queryLevel = serverConfig.getLoggingLevelQuery();
 		ordinalQuery = queryLevel == null ? 0 : queryLevel.ordinal();
 		
-		iudLevel = serverConfig.getIudLogLevel();
+		iudLevel = serverConfig.getLoggingLevelIud();
 		ordinalIud = iudLevel == null ? 0 : iudLevel.ordinal();
 	}
 
-	public void setTransactionLogLevel(TxLogLevel txLogLevel){
+	public void setLoggingLevel(LogLevel txLogLevel){
 		transactionManager.setTransactionLogLevel(txLogLevel);
 	}
 	
-	public TxLogLevel getTransactionLogLevel() {
+	public LogLevel getLoggingLevel() {
 		return transactionManager.getTransactionLogLevel();
 	}
 	
-	public void setTransactionLogSharing(TxLogSharing txLogSharing){
+	public void setLogFileSharing(LogFileSharing txLogSharing){
 		transactionManager.setTransactionLogSharing(txLogSharing);
 	}
 	
-	public TxLogSharing getTransactionLogSharing() {
+	public LogFileSharing getLogFileSharing() {
 		return transactionManager.getTransactionLogSharing();
 	}
 
@@ -101,29 +101,29 @@ public class MAdminLogging implements MAdminLoggingMBean, AdminLogging {
 	}
 	
 	
-	public boolean isLogBind(StmtLogLevel l){
-		return l.ordinal() >= StmtLogLevel.BINDING.ordinal();
+	public boolean isLogBind(LogLevelStmt l){
+		return l.ordinal() >= LogLevelStmt.BINDING.ordinal();
 	}
 
-	public boolean isLogSummary(StmtLogLevel l){
-		return l.ordinal() >= StmtLogLevel.SUMMARY.ordinal();
+	public boolean isLogSummary(LogLevelStmt l){
+		return l.ordinal() >= LogLevelStmt.SUMMARY.ordinal();
 	}
 
-	public StmtLogLevel getQueryLevel() {
+	public LogLevelStmt getLoggingLevelQuery() {
 		return queryLevel;
 	}
 
-	public void setQueryLevel(StmtLogLevel queryLevel) {
+	public void setLoggingLevelQuery(LogLevelStmt queryLevel) {
 		this.queryLevel = queryLevel;
 		this.ordinalQuery = queryLevel == null ? 0 : queryLevel.ordinal();
 
 	}
 
-	public StmtLogLevel getSqlQueryLevel() {
+	public LogLevelStmt getLoggingLevelSqlQuery() {
 		return sqlQueryLevel;
 	}
 
-	public void setSqlQueryLevel(StmtLogLevel sqlQueryLevel) {
+	public void setLoggingLevelSqlQuery(LogLevelStmt sqlQueryLevel) {
 		this.sqlQueryLevel = sqlQueryLevel;
 		this.ordinalSqlQuery = sqlQueryLevel == null ? 0 : sqlQueryLevel.ordinal();
 	}
@@ -132,11 +132,11 @@ public class MAdminLogging implements MAdminLoggingMBean, AdminLogging {
 		return ordinalIud;
 	}
 	
-	public StmtLogLevel getIudLevel() {
+	public LogLevelStmt getLoggingLevelIud() {
 		return iudLevel;
 	}
 
-	public void setIudLevel(StmtLogLevel iudLevel) {
+	public void setLoggingLevelIud(LogLevelStmt iudLevel) {
 		this.iudLevel = iudLevel;
 		this.ordinalIud = iudLevel == null ? 0 : iudLevel.ordinal();
 	}

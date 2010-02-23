@@ -1,28 +1,28 @@
 package com.avaje.ebean.server.jmx;
 
-import com.avaje.ebean.AdminLogging.StmtLogLevel;
+import com.avaje.ebean.AdminLogging.LogLevelStmt;
 
 public interface MAdminLoggingMBean {
 
 	/**
 	 * The current log level for native sql queries.
 	 */
-	public StmtLogLevel getQueryLevel();
+	public LogLevelStmt getLoggingLevelQuery();
 
 	/**
 	 * Set the log level for native sql queries.
 	 */
-	public void setQueryLevel(StmtLogLevel sqlQueryLevel);
+	public void setLoggingLevelQuery(LogLevelStmt sqlQueryLevel);
 
 	/**
 	 * The current log level for bean update.
 	 */
-	public StmtLogLevel getIudLevel();
+	public LogLevelStmt getLoggingLevelIud();
 
 	/**
 	 * Set the log level for bean update.
 	 */
-	public void setIudLevel(StmtLogLevel updateLevel);
+	public void setLoggingLevelIud(LogLevelStmt updateLevel);
 
 	/**
 	 * If true Log generated sql to the console.

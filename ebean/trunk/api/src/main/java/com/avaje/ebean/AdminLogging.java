@@ -9,28 +9,29 @@ package com.avaje.ebean;
  */
 public interface AdminLogging {
 
+
     /**
-     * A Debug Level that can be set to additionally get
-     * transaction begin, commit and rollback events logged
-     * to java util logging.
+     * The transaction logging level.
+     * <p>
+     * Defines which transactions will log.
+     * </p>
      */
-    public enum TxDebugLevel {
-        
+    public enum LogLevel {
+
         /**
-         * Don't log any begin, commit and rollback events
+         * No transaction logging.
          */
         NONE,
-        
-        /**
-         * Log Commit and Rollback events.
-         */
-        DEBUG,
-        
-        /**
-         * Log all begin, commit and rollback events.
-         */
-        VERBOSE
 
+        /**
+         * Transaction logging only for explicit transactions.
+         */
+        EXPLICIT,
+
+        /**
+         * Transaction logging for all types of transactions.
+         */
+        ALL,
     }
     
 	/**
@@ -40,7 +41,7 @@ public interface AdminLogging {
 	 * statements.
 	 * </p>
 	 */
-	public enum StmtLogLevel {
+	public enum LogLevelStmt {
 
 		/**
 		 * No logging.
@@ -62,36 +63,34 @@ public interface AdminLogging {
 		 */
 		SQL
 	}
+ 
+    /**
+     * A log level for transaction begin, commit and rollback events.
+     */
+    public enum LogLevelTxnCommit {
+        
+        /**
+         * Don't log any begin, commit and rollback events
+         */
+        NONE,
+        
+        /**
+         * Log Commit and Rollback events.
+         */
+        DEBUG,
+        
+        /**
+         * Log all begin, commit and rollback events.
+         */
+        VERBOSE
 
-	/**
-	 * The transaction logging level.
-	 * <p>
-	 * Defines which transactions will log.
-	 * </p>
-	 */
-	public enum TxLogLevel {
-
-		/**
-		 * No transaction logging.
-		 */
-		NONE,
-
-		/**
-		 * Have transaction logging only for explicit transactions.
-		 */
-		EXPLICIT,
-
-		/**
-		 * Have transaction logging for all types of transactions.
-		 */
-		ALL,
-	}
-
+    }
+    
 	/**
 	 * Defines if transactions share a single log file or each have their own
 	 * transaction log file.
 	 */
-	public enum TxLogSharing {
+	public enum LogFileSharing {
 
 		/**
 		 * Every transaction has its own log file.
@@ -111,54 +110,54 @@ public interface AdminLogging {
 	}
 
 	/**
-	 * Set the transaction logging level.
+	 * Set the overall transaction logging level.
 	 */
-	public void setTransactionLogLevel(TxLogLevel txLogLevel);
+	public void setLoggingLevel(LogLevel txLogLevel);
 	
 	/**
-	 * Return the current transaction logging.
+	 * Return the overall transaction logging level.
 	 */
-	public TxLogLevel getTransactionLogLevel();
+	public LogLevel getLoggingLevel();
 	
 	/**
 	 * Set whether transactions share log files.
 	 */
-	public void setTransactionLogSharing(TxLogSharing txLogSharing);
+	public void setLogFileSharing(LogFileSharing txLogSharing);
 	
 	/**
 	 * Return the log sharing mode for transactions.
 	 */
-	public TxLogSharing getTransactionLogSharing();
+	public LogFileSharing getLogFileSharing();
 		
 	/**
 	 * Return the current log level for queries.
 	 */
-	public StmtLogLevel getQueryLevel();
+	public LogLevelStmt getLoggingLevelQuery();
 
 	/**
 	 * Set the log level for queries.
 	 */
-	public void setQueryLevel(StmtLogLevel sqlQueryLevel);
+	public void setLoggingLevelQuery(LogLevelStmt sqlQueryLevel);
 
 	/**
 	 * Return the current log level for native sql queries.
 	 */
-	public StmtLogLevel getSqlQueryLevel();
+	public LogLevelStmt getLoggingLevelSqlQuery();
 
 	/**
 	 * Set the log level for native sql queries.
 	 */
-	public void setSqlQueryLevel(StmtLogLevel sqlQueryLevel);
+	public void setLoggingLevelSqlQuery(LogLevelStmt sqlQueryLevel);
 
 	/**
 	 * The current log level for inserts updates and deletes.
 	 */
-	public StmtLogLevel getIudLevel();
+	public LogLevelStmt getLoggingLevelIud();
 
 	/**
 	 * Set the log level for inserts updates and deletes.
 	 */
-	public void setIudLevel(StmtLogLevel updateLevel);
+	public void setLoggingLevelIud(LogLevelStmt updateLevel);
 
 	/**
 	 * Returns true if generated sql is logged to the console.

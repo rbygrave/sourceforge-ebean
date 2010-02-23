@@ -45,7 +45,7 @@ public class DefaultAutoFetchManagerLogging {
 			// a separate log file just like the transaction logging
 			// for putting the profiling log messages. The benefit is that
 			// this doesn't pollute the main log with heaps of messages.
-			String baseDir = serverConfig.getTransactionLogDirectoryWithEval();
+			String baseDir = serverConfig.getLoggingDirectoryWithEval();
 			fileLogger = new DefaultTransactionLogger(baseDir, "autofetch", true, "csv");
 		}
 
