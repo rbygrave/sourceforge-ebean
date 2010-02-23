@@ -29,9 +29,9 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.AdminLogging.TxDebugLevel;
-import com.avaje.ebean.AdminLogging.TxLogLevel;
-import com.avaje.ebean.AdminLogging.TxLogSharing;
+import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
+import com.avaje.ebean.AdminLogging.LogLevel;
+import com.avaje.ebean.AdminLogging.LogFileSharing;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.internal.SpiTransaction;
@@ -148,12 +148,12 @@ public class TransactionManager implements Constants {
 		
 		this.dataSource = config.getDataSource();
 		
-		if (config.isTransactionLogToJavaLogger()){
+		if (config.isLoggingToJavaLogger()){
 			// turn this off as already logging these using a java util logger
 			this.debugLevel = 0;
 		} else {
 			// log some transaction events using a java util logger
-		    TxDebugLevel txDebugLevel = config.getTransactionDebugLevel();
+		    LogLevelTxnCommit txDebugLevel = config.getLoggingLevelTxnCommit();
 			int debug = txDebugLevel == null ? 0 : txDebugLevel.ordinal();
 			if (debug < 1 && GlobalProperties.getBoolean("log.commit", false)){
 				debug = 1;
@@ -175,28 +175,28 @@ public class TransactionManager implements Constants {
 	/**
 	 * Return the logging level for transactions.
 	 */
-	public TxLogLevel getTransactionLogLevel(){
+	public LogLevel getTransactionLogLevel(){
 		return transLogger.getLogLevel();
 	}
 	
 	/**
 	 * Set the log level for transactions.
 	 */
-	public void setTransactionLogLevel(TxLogLevel txLogLevel){
+	public void setTransactionLogLevel(LogLevel txLogLevel){
 		transLogger.setLogLevel(txLogLevel);
 	}
 
 	/**
 	 * Return the log sharing mode.
 	 */
-	public TxLogSharing getTransactionLogSharing(){
+	public LogFileSharing getTransactionLogSharing(){
 		return transLogger.getLogSharing();
 	}
 	
 	/**
 	 * Set the log sharing mode.
 	 */
-	public void setTransactionLogSharing(TxLogSharing txLogSharing){
+	public void setTransactionLogSharing(LogFileSharing txLogSharing){
 		transLogger.setLogSharing(txLogSharing);
 	}
 	

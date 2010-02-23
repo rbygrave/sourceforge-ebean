@@ -94,9 +94,10 @@ public class ClassPathSearch {
 				logger.warning(msg);
 			}
 			
-			if (logger.isLoggable(Level.FINER)) {
+			boolean debug = GlobalProperties.getBoolean("ebean.debug.classpath", false);
+			if (debug || logger.isLoggable(Level.FINER)) {
 				String msg = "Classpath " + Arrays.toString(classPaths);
-				logger.fine(msg);
+				logger.info(msg);
 			}
 			
 		} catch (Exception e) {

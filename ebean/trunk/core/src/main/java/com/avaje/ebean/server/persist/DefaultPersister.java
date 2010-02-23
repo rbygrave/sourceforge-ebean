@@ -203,8 +203,7 @@ public final class DefaultPersister implements Persister {
         
         BeanManager<?> mgr = getBeanManager(bean);
         if (mgr == null){
-            String msg = "No BeanManager found for type ["+bean.getClass()+"]. Is it a registered entity?";
-            throw new PersistenceException(msg);
+            throw new PersistenceException(errNotRegistered(bean.getClass()));
         }
         
         forceUpdate(bean, t, null, mgr, updateProps);
@@ -1002,12 +1001,18 @@ public final class DefaultPersister implements Persister {
     private <T> PersistRequestBean<T> createRequest(T bean, Transaction t, Object parentBean) {
         BeanManager<T> mgr = getBeanManager(bean);
         if (mgr == null) {
-            String msg = "No BeanManager found for type [" + bean.getClass() + "]. Is it a registered entity?";
-            throw new PersistenceException(msg);
+            throw new PersistenceException(errNotRegistered(bean.getClass()));
         }
         return (PersistRequestBean<T>)createRequest(bean, t, parentBean, mgr);
     }
 
+    private String errNotRegistered(Class<?> beanClass) {
+        String msg = "The type [" + beanClass + "] is not a registered entity?";
+        msg += " If you don't explicitly list the entity classes to use Ebean will search for them in the classpath.";
+        msg += " If the entity is in a Jar check the ebean.search.jars property in ebean.properties file or check ServerConfig.addJar().";
+        return msg;
+    }
+    
     /**
      * Create the Persist Request Object that wraps all the objects used to
      * perform an insert, update or delete.
