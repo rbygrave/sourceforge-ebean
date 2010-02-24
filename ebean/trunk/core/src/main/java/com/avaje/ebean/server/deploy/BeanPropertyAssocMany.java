@@ -535,12 +535,17 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		throw new PersistenceException(msg);
 	}
 
+    public IntersectionRow buildManyDeleteChildren(Object parentBean) {
+
+        IntersectionRow row = new IntersectionRow(tableJoin.getTable());
+        buildExport(row, parentBean);
+        return row;
+    }
+
     public IntersectionRow buildManyToManyDeleteChildren(Object parentBean) {
 
         IntersectionRow row = new IntersectionRow(intersectionJoin.getTable());
-
         buildExport(row, parentBean);
-
         return row;
     }
    
