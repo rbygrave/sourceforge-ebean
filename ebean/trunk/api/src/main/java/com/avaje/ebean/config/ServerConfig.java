@@ -166,6 +166,8 @@ public class ServerConfig {
 
     private boolean debugLazyLoad;
 
+    private boolean useJtaTransactionManager;
+    
     /**
      * The external transaction manager (like Spring).
      */
@@ -417,6 +419,20 @@ public class ServerConfig {
      */
     public void setDatabaseSequenceBatchSize(int databaseSequenceBatchSize) {
         this.databaseSequenceBatchSize = databaseSequenceBatchSize;
+    }
+
+    /**
+     * Return true if we are running in a JTA Transaction manager.
+     */
+    public boolean isUseJtaTransactionManager() {
+        return useJtaTransactionManager;
+    }
+
+    /**
+     * Set to true if we are running in a JTA Transaction manager.
+     */
+    public void setUseJtaTransactionManager(boolean useJtaTransactionManager) {
+        this.useJtaTransactionManager = useJtaTransactionManager;
     }
 
     /**
@@ -1401,6 +1417,9 @@ public class ServerConfig {
                 ldapConfig.setVanillaMode(p.getBoolean("ldapVanillaMode", false));
             }
         }
+        
+        useJtaTransactionManager = p.getBoolean("useJtaTransactionManager", false);
+        
         namingConvention = createInstance(p, NamingConvention.class, "namingconvention");
         databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
