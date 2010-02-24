@@ -50,6 +50,7 @@ import com.avaje.ebean.server.resource.ResourceManagerFactory;
 import com.avaje.ebean.server.subclass.SubClassManager;
 import com.avaje.ebean.server.transaction.DefaultTransactionScopeManager;
 import com.avaje.ebean.server.transaction.ExternalTransactionScopeManager;
+import com.avaje.ebean.server.transaction.JtaTransactionManager;
 import com.avaje.ebean.server.transaction.TransactionManager;
 import com.avaje.ebean.server.transaction.TransactionScopeManager;
 import com.avaje.ebean.server.type.DefaultTypeManager;
@@ -142,11 +143,13 @@ public class InternalConfiguration {
 
 		
 		ExternalTransactionManager externalTransactionManager = serverConfig.getExternalTransactionManager();
+		if (externalTransactionManager == null && serverConfig.isUseJtaTransactionManager()){
+		    externalTransactionManager = new JtaTransactionManager();
+		}
 		if (externalTransactionManager != null){
-			
 			externalTransactionManager.setTransactionManager(transactionManager);
 			this.transactionScopeManager = new ExternalTransactionScopeManager(transactionManager,externalTransactionManager);
-			logger.info("Using external Transaction Manager");
+			logger.info("Using Transaction Manager ["+externalTransactionManager.getClass()+"]");
 		} else {
 			this.transactionScopeManager = new DefaultTransactionScopeManager(transactionManager);			
 		}
