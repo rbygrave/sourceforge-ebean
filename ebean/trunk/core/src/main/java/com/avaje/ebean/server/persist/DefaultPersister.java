@@ -844,10 +844,16 @@ public final class DefaultPersister implements Persister {
 					}
 				}
 				
+				
 				// cascade delete the beans in the collection
 				Collection<?> collection = getDetailsIterator(details);
 				 
-				if (collection != null) {
+				if (collection == null) {
+	                IntersectionRow intRow = manys[i].buildManyDeleteChildren(parentBean);
+	                SqlUpdate sqlDelete = intRow.createDelete(server);
+	                executeSqlUpdate(sqlDelete, t);
+				    
+				} else {
 					// decrease depth for batched processing
 					// lowest depth executes first
 					t.depth(-1);
