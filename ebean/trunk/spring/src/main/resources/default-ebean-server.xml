@@ -14,7 +14,7 @@
 			</bean>
 		</property>
 
-		<property name="transactionLogDirectory" value="log"></property>
+		<property name="loggingDirectory" value="log"></property>
 
 		<property name="externalTransactionManager">
 			<bean class="com.avaje.ebean.springsupport.txn.SpringAwareJdbcTransactionManager"/>
