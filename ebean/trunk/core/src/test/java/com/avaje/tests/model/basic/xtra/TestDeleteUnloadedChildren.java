@@ -84,7 +84,7 @@ public class TestDeleteUnloadedChildren extends TestCase {
         Ebean.beginTransaction();
         try {
             EdExtendedParent extendedParent = Ebean.find(EdExtendedParent.class).where().eq("name","My second computer").findUnique();
-//            int x = extendedParent.getChildren().size();
+            extendedParent.getChildren().size();
             Ebean.delete(extendedParent);
             Ebean.commitTransaction();
         } finally {
