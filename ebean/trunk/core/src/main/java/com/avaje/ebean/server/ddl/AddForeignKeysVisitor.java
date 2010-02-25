@@ -10,7 +10,7 @@ import com.avaje.ebean.server.deploy.TableJoinColumn;
 /**
  * Used to generate the foreign key DDL and related indexes.
  */
-public class AddForeignKeysVisitor implements BeanVisitor {
+public class AddForeignKeysVisitor extends AbstractBeanVisitor {
 
 	final DdlGenContext ctx;
 
@@ -28,9 +28,11 @@ public class AddForeignKeysVisitor implements BeanVisitor {
 		}
 		return true;
 	}
+    
+    public void visitBeanEnd(BeanDescriptor<?> descriptor) {
 
-	public void visitBeanEnd(BeanDescriptor<?> descriptor) {
-	}
+        visitInheritanceProperties(descriptor, pv);
+    }
 
 	public void visitBegin() {
 	}

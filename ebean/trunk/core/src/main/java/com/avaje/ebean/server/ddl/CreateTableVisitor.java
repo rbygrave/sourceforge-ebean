@@ -12,13 +12,12 @@ import com.avaje.ebean.server.deploy.BeanProperty;
 import com.avaje.ebean.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebean.server.deploy.BeanPropertyCompound;
 import com.avaje.ebean.server.deploy.InheritInfo;
-import com.avaje.ebean.server.deploy.InheritInfoVisitor;
 import com.avaje.ebean.server.deploy.parse.SqlReservedWords;
 
 /**
  * Used to generated the create table DDL script.
  */
-public class CreateTableVisitor implements BeanVisitor {
+public class CreateTableVisitor extends AbstractBeanVisitor {
 	
 	protected static final Logger logger = Logger.getLogger(CreateTableVisitor.class.getName());
 	
@@ -131,27 +130,10 @@ public class CreateTableVisitor implements BeanVisitor {
 		return true;
 	}
 	
-	/**
-	 * Helper used to visit all the inheritInfo/BeanDescriptor in
-	 * the inheritance hierarchy (to add their 'local' properties).
-	 */
-	class InheritChildVisitor implements InheritInfoVisitor {
-
-		public void visit(InheritInfo inheritInfo) {
-			BeanProperty[] propertiesLocal = inheritInfo.getBeanDescriptor().propertiesLocal();
-			VisitorUtil.visit(propertiesLocal, pv);			
-		}
-	}
-	
 	public void visitBeanEnd(BeanDescriptor<?> descriptor) {
 
-		InheritInfo inheritInfo = descriptor.getInheritInfo();
-		if (inheritInfo != null && inheritInfo.isRoot()){
-			// add all properties on the children objects
-			InheritChildVisitor childVisitor = new InheritChildVisitor();
-			inheritInfo.visitChildren(childVisitor);
-		}
-		
+	    visitInheritanceProperties(descriptor, pv);
+	    		
 		if (checkConstraints.size() > 0){
 			for (String checkConstraint : checkConstraints) {
 				ctx.write("  ").write(checkConstraint).write(",").writeNewLine();
