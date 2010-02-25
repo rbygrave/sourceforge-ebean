@@ -374,7 +374,7 @@ public class BeanDescriptor<T> {
     private ServerCache beanCache;
 
     private ServerCache queryCache;
-
+    
     /**
      * Construct the BeanDescriptor.
      */
@@ -632,6 +632,14 @@ public class BeanDescriptor<T> {
                 namedUpdate.initialise(parser);
             }
         }
+    }
+
+    protected boolean hasInheritance() {
+        return inheritInfo != null;
+    }
+    
+    protected boolean isDynamicSubclass() {
+        return !beanType.equals(factoryType);
     }
     
     /**
@@ -1651,6 +1659,13 @@ public class BeanDescriptor<T> {
         return prop;
     }
 
+    protected Object getBeanPropertyWithInheritance(Object bean, String propName) {
+        
+        BeanDescriptor<?> desc = getBeanDescriptor(bean.getClass());
+        BeanProperty beanProperty = desc.findBeanProperty(propName);
+        return beanProperty.getValue(bean);
+    }
+    
     /**
      * Return the name of the server this BeanDescriptor belongs to.
      */

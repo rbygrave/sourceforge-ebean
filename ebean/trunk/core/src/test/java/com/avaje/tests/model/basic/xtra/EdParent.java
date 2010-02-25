@@ -2,7 +2,6 @@
 package com.avaje.tests.model.basic.xtra;
 
 
-
 import javax.persistence.*;
 import java.util.List;
 

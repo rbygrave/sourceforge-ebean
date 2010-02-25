@@ -51,10 +51,14 @@ public final class ImportedIdSimple implements ImportedId {
 	public String getDbColumn(){
 		return localDbColumn;
 	}
+	
+	private Object getIdValue(Object bean) {
+        return foreignProperty.getValueWithInheritance(bean);
+	}
 
 	public void buildImport(IntersectionRow row, Object other){
 
-		Object value = foreignProperty.getValue(other);
+	    Object value = getIdValue(other);
 		if (value == null){
 			String msg = "Foreign Key value null?";
 			throw new PersistenceException(msg);
@@ -76,7 +80,7 @@ public final class ImportedIdSimple implements ImportedId {
 
 		Object value = null;
 		if (bean != null){
-			value = foreignProperty.getValue(bean);
+			value = getIdValue(bean);
 		}
 		if (value == null){
 			request.appendColumnIsNull(localDbColumn);
@@ -87,10 +91,10 @@ public final class ImportedIdSimple implements ImportedId {
 
 	public boolean hasChanged(Object bean, Object oldValues) {
 		
-		Object id = foreignProperty.getValue(bean);
+		Object id = getIdValue(bean);
 
 		if (oldValues != null){
-			Object oldId = foreignProperty.getValue(oldValues);
+			Object oldId = getIdValue(oldValues);
 			return !ValueUtil.areEqual(id, oldId);
 		}
 
@@ -101,7 +105,7 @@ public final class ImportedIdSimple implements ImportedId {
 
 		Object value = null;
 		if (bean != null){
-			value = foreignProperty.getValue(bean);
+			value = getIdValue(bean);
 		}
 		request.bind(value, foreignProperty, localDbColumn, bindNull);
 	}

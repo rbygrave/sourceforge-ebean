@@ -268,6 +268,8 @@ public class BeanProperty implements ElPropertyValue {
     
     final DbEncryptFunction dbEncryptFunction; 
 
+    final boolean dynamicSubclassWithInheritance;
+
     public BeanProperty(DeployBeanProperty deploy) {
         this(null, null, deploy);
     }
@@ -276,7 +278,11 @@ public class BeanProperty implements ElPropertyValue {
 
         this.descriptor = descriptor;
         this.name = InternString.intern(deploy.getName());
-        
+        if (descriptor != null){
+            this.dynamicSubclassWithInheritance = (descriptor.isDynamicSubclass() && descriptor.hasInheritance());
+        } else {
+            this.dynamicSubclassWithInheritance = false;
+        }
         this.localEncrypted = deploy.isLocalEncrypted();
         this.dbEncrypted = deploy.isDbEncrypted();
         this.dbEncryptedType = deploy.getDbEncryptedType();
@@ -365,7 +371,8 @@ public class BeanProperty implements ElPropertyValue {
 
         this.descriptor = source.descriptor;
         this.name = InternString.intern(source.getName());
-
+        this.dynamicSubclassWithInheritance = source.dynamicSubclassWithInheritance;
+        
         this.dbColumn = InternString.intern(override.getDbColumn());
         this.sqlFormulaJoin = InternString.intern(override.getSqlFormulaJoin());
         this.sqlFormulaSelect = InternString.intern(override.getSqlFormulaSelect());
@@ -764,7 +771,17 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     private static Object[] NO_ARGS = new Object[0];
-
+    
+    /**
+     * Return the property value taking inheritance into account.
+     */
+    public Object getValueWithInheritance(Object bean) {
+        if (dynamicSubclassWithInheritance) {
+            return descriptor.getBeanPropertyWithInheritance(bean, name);            
+        }
+        return getValue(bean);
+    }
+    
     /**
      * Return the value of the property method.
      */
