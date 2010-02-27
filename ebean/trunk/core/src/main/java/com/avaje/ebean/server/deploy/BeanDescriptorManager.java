@@ -1349,10 +1349,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
                 testBean = beanClass.newInstance();
             } catch (InstantiationException e){
                 // expected when no default constructor
-                e.printStackTrace();
+                logger.fine("no default constructor on "+beanClass+" e:"+e);
             } catch (IllegalAccessException e){
-                // expected when no default constructor   
-                e.printStackTrace();
+                // expected when no default constructor
+                logger.fine("no default constructor on "+beanClass+" e:"+e);
             }
             if (testBean instanceof EntityBean == false) {
                 checkSubclass(desc, beanClass);
