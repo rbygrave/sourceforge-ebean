@@ -484,6 +484,11 @@ public interface ExpressionList<T> extends Serializable {
      * The raw expression should contain a single ? at the location of the
      * parameter.
      * </p>
+     * <p>
+     * When properties in the clause are fully qualified as table-column names
+     * then they are not translated. logical property name names (not fully qualified)
+     * will still be translated to their physical name.
+     * </p>
      */
     public ExpressionList<T> raw(String raw, Object value);
 
@@ -493,11 +498,21 @@ public interface ExpressionList<T> extends Serializable {
      * The raw expression should contain the same number of ? as there are
      * parameters.
      * </p>
+     * <p>
+     * When properties in the clause are fully qualified as table-column names
+     * then they are not translated. logical property name names (not fully qualified)
+     * will still be translated to their physical name.
+     * </p>
      */
     public ExpressionList<T> raw(String raw, Object[] values);
 
     /**
      * Add raw expression with no parameters.
+     * <p>
+     * When properties in the clause are fully qualified as table-column names
+     * then they are not translated. logical property name names (not fully qualified)
+     * will still be translated to their physical name.
+     * </p>
      */
     public ExpressionList<T> raw(String raw);
 
