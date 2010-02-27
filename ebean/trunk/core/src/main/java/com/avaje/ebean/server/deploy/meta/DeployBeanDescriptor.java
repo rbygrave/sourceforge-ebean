@@ -256,6 +256,7 @@ public class DeployBeanDescriptor<T> {
 					m += " missing writeMethod ";
 				}
 				if (!"".equals(m)){
+				    m += ". Should it be transient?";
 					String msg = "Bean property "+getFullName()+"."+prop.getName()+" has "+m;
 					logger.log(Level.SEVERE, msg);
 					missingMethods = true;
