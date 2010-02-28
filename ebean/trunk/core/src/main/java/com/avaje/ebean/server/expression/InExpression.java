@@ -29,6 +29,13 @@ class InExpression extends AbstractExpression {
 	}
 
 	public void addSql(SpiExpressionRequest request) {
+	    
+	    if (values.length == 0){
+	        // 'no match' for in empty collection
+            request.append("1=0");
+            return;
+	    }
+	    
 		request.append(propertyName).append(" in ( ?");
 		for (int i = 1; i < values.length; i++) {
 			
