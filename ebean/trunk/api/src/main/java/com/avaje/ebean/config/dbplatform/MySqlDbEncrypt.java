@@ -35,7 +35,7 @@ public class MySqlDbEncrypt extends AbstractDbEncrypt {
     private static class MyVarcharFunction implements DbEncryptFunction {
 
         public String getDecryptSql(String columnWithTableAlias) {
-            return "AES_DECRYPT(" + columnWithTableAlias + ",?)";
+            return "CONVERT(AES_DECRYPT(" + columnWithTableAlias + ",?) USING UTF8)";
         }
 
         public String getEncryptBindSql() {
