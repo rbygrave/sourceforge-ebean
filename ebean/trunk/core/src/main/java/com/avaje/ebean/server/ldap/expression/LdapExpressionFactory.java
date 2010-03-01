@@ -31,6 +31,7 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.server.ldap.LdapPersistenceException;
 import com.avaje.ebean.server.ldap.expression.LdSimpleExpression.Op;
 
 public class LdapExpressionFactory implements ExpressionFactory {
@@ -143,6 +144,10 @@ public class LdapExpressionFactory implements ExpressionFactory {
     }
 
     public Expression in(String propertyName, Collection<?> values) {
+
+        if (values == null || values.isEmpty()){
+            throw new LdapPersistenceException("collection can't be empty for Ldap");
+        }
         
         Junction disjunction = disjunction();
         for (Object v : values) {
@@ -154,6 +159,10 @@ public class LdapExpressionFactory implements ExpressionFactory {
 
     public Expression in(String propertyName, Object[] values) {
 
+        if (values == null || values.length == 0){
+            throw new LdapPersistenceException("values can't be empty for Ldap");
+        }
+        
         Junction disjunction = disjunction();
         for (Object v : values) {
             disjunction.add(eq(propertyName, v));
