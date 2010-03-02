@@ -118,9 +118,8 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public void initialise() {
 		super.initialise();
 
-	    this.help = BeanCollectionHelpFactory.create(this);
-
 		if (!isTransient){
+	        this.help = BeanCollectionHelpFactory.create(this);
 
 			if (manyToMany){
 				// only manyToMany's have imported properties
