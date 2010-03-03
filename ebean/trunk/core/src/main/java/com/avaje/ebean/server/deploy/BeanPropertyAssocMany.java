@@ -150,6 +150,17 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 	}
 
+	@Override
+    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+        
+	    if (vanillaMode){
+	        // hmmm, leave null
+	    } else {
+            BeanCollection<?> reference = createReference(sourceBean);
+            setValue(destBean, reference);
+	    }
+    }
+
 	public SqlUpdate deleteByParentId(Object parentId) {
 	    DefaultSqlUpdate sqlDelete = new DefaultSqlUpdate(deleteByParentIdSql);
 	    bindWhereParendId(sqlDelete, parentId);

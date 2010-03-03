@@ -81,7 +81,17 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		collection.internalAdd(bean);
 	}
 
-	public Object createEmpty(boolean vanilla) {
+    @SuppressWarnings("unchecked")
+    public Object copyShallow(Object source, boolean vanilla) {
+        if (source instanceof Set<?> == false){
+            return null;
+        }
+        Set<T> s = vanilla ? new LinkedHashSet<T>() : new BeanSet<T>();
+        s.addAll((Set<T>)source);
+	    return s;
+    }
+
+    public Object createEmpty(boolean vanilla) {
 	    return vanilla ? new LinkedHashSet<T>() : new BeanSet<T>();
 	}
 

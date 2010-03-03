@@ -502,6 +502,18 @@ public class BeanDescriptor<T> {
         }
     }
 
+    private Object copyBean(Object source, boolean vanillaMode, boolean shallow) {
+        Object destBean = createBean(vanillaMode);
+        for (int i = 0; i < propertiesNonTransient.length; i++) {
+            if (shallow){
+                propertiesNonTransient[i].copyShallow(source, destBean, vanillaMode);                
+            } else {
+                propertiesNonTransient[i].copyProperty(source, destBean);
+            }
+        }
+        return destBean;
+    }
+
     /**
      * Create a copy of this bean.
      * <p>
@@ -509,11 +521,17 @@ public class BeanDescriptor<T> {
      * instance) from the cache - where the app may want to change the data.
      * </p>
      */
-    @SuppressWarnings("unchecked")
     public T createCopy(Object bean) {
+        return createCopy(bean, true);
+    }
+        
+    @SuppressWarnings("unchecked")
+    private T createCopy(Object bean, boolean shallow) {
 
         EntityBean orig = ((EntityBean) bean);
-        EntityBean copy = (EntityBean) orig._ebean_createCopy();
+        
+        EntityBean copy = (EntityBean)copyBean(orig, false, shallow);
+        
         EntityBeanIntercept origEbi = orig._ebean_getIntercept();
         EntityBeanIntercept copyEbi = copy._ebean_getIntercept();
 

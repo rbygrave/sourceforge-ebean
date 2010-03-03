@@ -76,6 +76,16 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
         return ((List<?>)collection).iterator();
     }
 
+	@SuppressWarnings("unchecked")
+    public Object copyShallow(Object source, boolean vanilla) {
+	    if (source instanceof List<?> == false){
+	        return null;
+	    }
+        List<T> l = vanilla ? new ArrayList<T>() : new BeanList<T>();
+        l.addAll((List<T>)source);
+        return l;
+    }
+	
     public Object createEmpty(boolean vanilla) {
 		return vanilla ? new ArrayList<T>() : new BeanList<T>();
 	}
