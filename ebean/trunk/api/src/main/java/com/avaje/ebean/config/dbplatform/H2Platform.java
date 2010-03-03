@@ -22,6 +22,7 @@ package com.avaje.ebean.config.dbplatform;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.config.GlobalProperties;
 
 /**
  * H2 specific platform.
@@ -34,9 +35,13 @@ public class H2Platform extends DatabasePlatform {
         this.dbEncrypt = new H2DbEncrypt();
         
         // only support getGeneratedKeys with non-batch JDBC 
-        // so generally use SEQUENCE instead for H2
+        // so generally use SEQUENCE instead of IDENTITY for H2
+        boolean useIdentity = GlobalProperties.getBoolean("ebean.h2platform.useIdentity", false);
+        
+        IdType idType = useIdentity ? IdType.IDENTITY : IdType.SEQUENCE;
+        this.dbIdentity.setIdType(idType);        
+        
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
-        this.dbIdentity.setIdType(IdType.SEQUENCE);        
         this.dbIdentity.setSupportsSequence(true);
         this.dbIdentity.setSupportsIdentity(true);
 
