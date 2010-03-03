@@ -146,11 +146,12 @@ public class DefaultBeanLoader {
 		
 		List<?> list = server.findList(query, loadRequest.getTransaction());
 		
-		if (list.size() != batch.size()) {
-			String msg = "Batch lazy loading on Many returned incorrect row count?";
-			msg += " "+list.size() +" <> "+batch.size();
-			throw new RuntimeException();
-		}
+        if (list.size() != batch.size()) {
+        	String msg = "Batch lazy loading on Many "+many.getFullBeanName();
+        	msg += " returned incorrect row count? "+list.size() +" <> "+batch.size();
+        	msg += ". idList["+idList+"] sql:"+query.getGeneratedSql();
+        	throw new RuntimeException(msg);
+        }
 	}
 	
 	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx, boolean onlyIds) {
