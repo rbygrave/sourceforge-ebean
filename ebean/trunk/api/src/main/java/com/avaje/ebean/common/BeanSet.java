@@ -90,6 +90,12 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
         return set != null;
     }
 	
+    protected void checkLazyLoad() {
+        if (set == null){
+            set = new LinkedHashSet<E>();
+        }
+    }
+
 	private void initClear() {
 		synchronized (this) {
 			if (set == null) {

@@ -88,11 +88,17 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 		list.add((E) bean);
 	}
 
+	protected void checkLazyLoad() {
+	    if (list == null){
+	        list = new ArrayList<E>();
+	    }
+	}
+	
 	private void initClear() {
 		synchronized (this) {
 			if (list == null) {
 				if (modifyListening){
-					lazyLoadCollection(true);						
+					lazyLoadCollection(true);
 				} else {
 					list = new ArrayList<E>();
 				}
