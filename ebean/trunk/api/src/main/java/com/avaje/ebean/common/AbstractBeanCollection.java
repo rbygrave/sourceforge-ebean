@@ -128,6 +128,12 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		return loaderIndex;
 	}
 
+	/**
+	 * Check after the lazy load that the underlying collection
+	 * is not null (handle case where join to many not outer).
+	 */
+	protected abstract void checkLazyLoad();
+	
 	protected void lazyLoadCollection(boolean onlyIds) {
 		if (loader == null){
 			loader = (BeanCollectionLoader)Ebean.getServer(ebeanServerName);
@@ -140,6 +146,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		}
 	
 		loader.loadMany(this, onlyIds);
+		checkLazyLoad();
 	}
 	
 	protected void touched() {

@@ -84,6 +84,12 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 		return map != null;
 	}
 
+    protected void checkLazyLoad() {
+        if (map == null) {
+            map = new LinkedHashMap<K,E>();
+        }
+    }
+
 	private void initClear() {
 		synchronized (this) {
 			if (map == null) {
