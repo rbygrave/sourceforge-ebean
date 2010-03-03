@@ -24,6 +24,7 @@ import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
+import com.avaje.ebean.annotation.Where;
 import com.avaje.ebean.validation.NotNull;
 
 /**
@@ -101,6 +102,7 @@ public class Order implements Serializable {
     @Version
     Timestamp updtime;
 
+    @Where(clause="${ta}.id > 0")
     @OneToMany(cascade=CascadeType.ALL, mappedBy="order")
 	@OrderBy("id asc, orderQty asc, cretime desc")
     List<OrderDetail> details;
