@@ -118,6 +118,13 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             }
         }
     }
+
+    @Override
+    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+        
+        localHelp.copyShallow(sourceBean, destBean, vanillaMode);
+    }
+    
     
     public SqlUpdate deleteByParentId(Object parentId) {
         
@@ -402,6 +409,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private abstract class LocalHelp {
 
+        abstract void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode);
+        
         abstract void loadIgnore(DbReadContext ctx);
 
         abstract Object read(DbReadContext ctx, int parentState) throws SQLException;
@@ -414,6 +423,17 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     }
 
     private final class Embedded extends LocalHelp {
+
+        void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+            Object srcEmb = getValue(sourceBean);
+            if (srcEmb != null){
+                Object dstEmb = targetDescriptor.createBean(vanillaMode);
+                for (int i = 0; i < embeddedProps.length; i++) {
+                    embeddedProps[i].copyShallow(srcEmb, dstEmb, vanillaMode);
+                }
+                setValue(destBean, dstEmb);
+            }
+        }
 
         void loadIgnore(DbReadContext ctx) {
             for (int i = 0; i < embeddedProps.length; i++) {
@@ -484,6 +504,16 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             this.beanProp = beanProp;
         }
 
+        void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+            Object value = getValue(sourceBean);
+            if (value != null){
+                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
+                Object refId = refDesc.getId(value);
+                Object dstRef = refDesc.createReference(vanillaMode, refId, destBean, null);
+                setValue(destBean, dstRef);
+            }
+        }
+        
         void loadIgnore(DbReadContext ctx) {
             targetIdBinder.loadIgnore(ctx);
             if (targetInheritInfo != null) {
@@ -611,6 +641,16 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private final class ReferenceExported extends LocalHelp {
 
+        void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+            Object value = getValue(sourceBean);
+            if (value != null){
+                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
+                Object refId = refDesc.getId(value);
+                Object dstRef = refDesc.createReference(vanillaMode, refId, destBean, null);
+                setValue(destBean, dstRef);
+            }
+        }
+        
         @Override
         void loadIgnore(DbReadContext ctx) {
             targetDescriptor.getIdBinder().loadIgnore(ctx);

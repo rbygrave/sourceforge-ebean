@@ -16,6 +16,11 @@ import com.avaje.ebean.bean.BeanCollectionLoader;
  */
 public interface BeanCollectionHelp<T> {
 
+    /**
+     * Create and return a shallow copy of the collection.
+     */
+    public Object copyShallow(Object source, boolean vanilla);
+
 	/**
 	 * Set the EbeanServer that owns the configuration.
 	 */

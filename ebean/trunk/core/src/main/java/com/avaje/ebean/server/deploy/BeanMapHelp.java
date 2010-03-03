@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
@@ -56,9 +57,8 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	public void setLoader(BeanCollectionLoader loader){
 		this.loader = loader;
 	}
-	
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
 	public BeanCollectionAdd getBeanCollectionAdd(Object bc, String mapKey) {
 		
 		if(mapKey == null){
@@ -100,6 +100,21 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 		}
 	}
 	
+
+    @SuppressWarnings("unchecked")
+    public Object copyShallow(Object source, boolean vanilla) {
+        if (source instanceof Map<?,?> == false){
+            return null;
+        }
+        Map<Object,Object> m = vanilla ? new LinkedHashMap() : new BeanMap();
+        
+        Map<?,?> sourceMap = (Map<?,?>)source;
+        for (Entry<?, ?> entry: sourceMap.entrySet()) {
+            m.put(entry.getKey(), entry.getValue());
+        }
+        return m;
+    }
+    
 	@SuppressWarnings("unchecked")
     public Object createEmpty(boolean vanilla) {
 		return vanilla ? new LinkedHashMap() : new BeanMap();

@@ -466,6 +466,16 @@ public class BeanProperty implements ElPropertyValue {
         return !ValueUtil.areEqual(value, oldVal);
     }
 
+    public void copyProperty(Object sourceBean, Object destBean){
+        Object value = getValue(sourceBean);
+        setValue(destBean, value);
+    }
+
+    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+        Object value = getValue(sourceBean);
+        setValue(destBean, value);
+    }
+    
     /**
      * Return the encrypt key for the column matching this property.
      */
