@@ -215,7 +215,7 @@ public class ClassAdpaterEntity extends ClassAdapter implements EnhanceConstants
 				if (isLog(4)){
 					log("... add intercept and identity fields");					
 				}
-				InterceptField.addField(cv);
+				InterceptField.addField(cv, enhanceContext.isTransientInternalFields());
 				MethodEquals.addIdentityField(cv);
 				
 			}

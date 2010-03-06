@@ -59,6 +59,7 @@ public class TestSerialization extends TestCase {
 			Assert.assertTrue("throws exception",true);
 		}
 		
+		SerializeControl.setVanilla(true);
 		Assert.assertTrue(SerializeControl.isVanillaBeans());
 		Assert.assertTrue(SerializeControl.isVanillaCollections());
 		

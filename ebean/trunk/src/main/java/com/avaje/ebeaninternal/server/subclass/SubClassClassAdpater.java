@@ -158,7 +158,7 @@ public class SubClassClassAdpater extends ClassAdapter implements EnhanceConstan
 			}
 			
 			// always add these fields for subclass generation
-			InterceptField.addField(cv);
+			InterceptField.addField(cv, enhanceContext.isTransientInternalFields());
 			MethodEquals.addIdentityField(cv);
 			firstMethod = false;
 		}
