@@ -19,7 +19,7 @@ public class ArgParser {
 			for (String nameValuePair : split) {
 				String[] nameValue = nameValuePair.split("=");
 				if (nameValue.length == 2){
-					map.put(nameValue[0], nameValue[1]);
+					map.put(nameValue[0].toLowerCase(), nameValue[1]);
 				}
 			}
 		}

@@ -20,6 +20,8 @@ public class EnhanceContext {
 
 	private final boolean readOnly;
 
+	private final boolean transientInternalFields;
+
 	private final ClassMetaReader reader;
 
 	private final ClassBytesReader classBytesReader;
@@ -60,12 +62,8 @@ public class EnhanceContext {
 			}
 		}
 
-		String readonlyValue = agentArgsMap.get("readonly");
-		if (readonlyValue != null) {
-			readOnly = readonlyValue.trim().equalsIgnoreCase("true");
-		} else {
-			readOnly = false;
-		}
+        this.readOnly = getPropertyBoolean("readonly", false);		
+		this.transientInternalFields = getPropertyBoolean("transientInternalFields", false);
 	}
 	
 	public byte[] getClassBytes(String className, ClassLoader classLoader){
@@ -76,7 +74,7 @@ public class EnhanceContext {
 	 * Return a value from the agent arguments using its key.
 	 */
 	public String getProperty(String key){
-		return agentArgsMap.get(key);
+		return agentArgsMap.get(key.toLowerCase());
 	}
 
 	public boolean getPropertyBoolean(String key, boolean dflt){
@@ -202,5 +200,12 @@ public class EnhanceContext {
 	public boolean isReadOnly() {
 		return readOnly;
 	}
+
+	/**
+	 * Return true if internal ebean fields in entity classes should be transient.
+	 */
+    public boolean isTransientInternalFields() {
+        return transientInternalFields;
+    }
 
 }

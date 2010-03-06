@@ -73,6 +73,21 @@ public interface EntityBean extends Serializable {
 	 */
 	public EntityBeanIntercept _ebean_getIntercept();
 
+    /**
+     * Similar to _ebean_getIntercept() except it checks to see if the intercept
+     * field is null and will create it if required.
+     * <p>
+     * This is really only required when transientInternalFields=true as an
+     * enhancement option. In this case the intercept field is transient and
+     * will be null after a bean has been deserialised.
+     * </p>
+     * <p>
+     * This transientInternalFields=true option was to support some
+     * serialization frameworks that can't take into account our ebean fields.
+     * </p>
+     */
+    public EntityBeanIntercept _ebean_intercept();
+
 	/**
 	 * Create a copy of this entity bean.
 	 * <p>
