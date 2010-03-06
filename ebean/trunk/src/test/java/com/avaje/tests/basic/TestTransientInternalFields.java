@@ -37,6 +37,10 @@ public class TestTransientInternalFields extends TestCase {
             }
         }
         
+        File serTestFile = new File("serTransTest");
+        if (serTestFile.exists()){
+            serTestFile.delete();
+        }
     }
     
     private Object serialWriteRead(Object inputObject, boolean vanilla){
