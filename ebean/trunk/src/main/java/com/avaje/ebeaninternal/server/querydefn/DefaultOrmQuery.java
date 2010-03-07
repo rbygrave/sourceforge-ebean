@@ -282,17 +282,17 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		} 
 	}
 
-	/**
-	 * Return true if the where expressions contains a many property.
-	 */
-	public boolean isManyInWhere() {
-		
-    	if (whereExpressions != null){
-    		return whereExpressions.containsMany(beanDescriptor);
-    	} else {
-    		return false;
-    	}
-	}
+    /**
+     * Return true if the where expressions contains a many property.
+     */
+    public boolean isManyInWhere() {
+        
+        if (whereExpressions != null){
+            return whereExpressions.containsMany(beanDescriptor);
+        } else {
+            return false;
+        }
+    }
 
 	public List<OrmQueryProperties> removeSecondaryQueries() {
 		return detail.removeSecondaryQueries();
@@ -302,14 +302,14 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return detail.removeSecondaryLazyQueries();
 	}
 	
-	/**
-	 * Remove any many joins from the select. Joins to Manys may still
-	 * be required to support the where or order by clauses and in this 
-	 * case typically distinct must be used.
-	 */
-	public void removeManyJoins() {
-		detail.removeManyJoins(beanDescriptor);
-	}
+    /**
+     * Remove any many joins from the select. Joins to Manys may still
+     * be required to support the where or order by clauses and in this 
+     * case typically distinct must be used.
+     */
+    public void removeManyJoins() {
+        detail.removeManyJoins(beanDescriptor);
+    }
 	
 	/**
 	 * Set the select clause to select the Id property.
@@ -539,6 +539,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		hc = hc * 31 + (mapKey == null ? 0 : mapKey.hashCode());
 		hc = hc * 31 + (id == null ? 0 : 1);
 
+		if (bindParams != null) {
+		    hc = hc * 31 + bindParams.getQueryPlanHash();
+		}
+		
 		if (request == null){
 			// for AutoFetch...
 			hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryAutoFetchHash());

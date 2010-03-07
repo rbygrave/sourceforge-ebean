@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.api;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +43,11 @@ public class BindParams implements Serializable {
 
 	private HashMap<String, Param> namedParameters = new HashMap<String, Param>();
 
+	/**
+	 * Need to create a hash when binding collection values (for in clauses). 
+	 */
+	private int queryPlanHash = 1;
+	
 	/**
 	 * This is the sql. For named parameters this is the sql after the named
 	 * parameters have been replaced with question mark place holders and the
@@ -128,7 +134,10 @@ public class BindParams implements Serializable {
 	 * Set an In Out parameter using position.
 	 */
 	public void setParameter(int position, Object value, int outType) {
-		Param p = getParam(position);
+		
+	    addToQueryPlanHash(String.valueOf(position), value);
+
+	    Param p = getParam(position);
 		p.setInValue(value);
 		p.setOutType(outType);
 	}
@@ -138,7 +147,10 @@ public class BindParams implements Serializable {
 	 * must use setNullParameter.
 	 */
 	public void setParameter(int position, Object value) {
-		Param p = getParam(position);
+		
+	    addToQueryPlanHash(String.valueOf(position), value);
+
+	    Param p = getParam(position);
 		p.setInValue(value);
 	}
 
@@ -173,7 +185,10 @@ public class BindParams implements Serializable {
 	 * Set a named In Out parameter.
 	 */
 	public void setParameter(String name, Object value, int outType) {
-		Param p = getParam(name);
+		
+	    addToQueryPlanHash(name, value);
+
+	    Param p = getParam(name);
 		p.setInValue(value);
 		p.setOutType(outType);
 	}
@@ -190,12 +205,39 @@ public class BindParams implements Serializable {
 	 * Set a named In parameter that is not null.
 	 */
 	public Param setParameter(String name, Object value) {
-		Param p = getParam(name);
+	    
+	    addToQueryPlanHash(name, value);
+
+	    Param p = getParam(name);
 		p.setInValue(value);
 		return p;
 	}
 
 	/**
+	 * For binding collections calculate a hash to be used for the query plan.
+	 */
+	private void addToQueryPlanHash(String name, Object value){
+	    if (value != null){
+	        if (value instanceof Collection<?>){
+	            queryPlanHash = queryPlanHash * 31 + name.hashCode();
+                queryPlanHash = queryPlanHash * 31 + ((Collection<?>)value).size();
+	        }
+	    }
+	}
+		
+	/**
+	 * Return the hash that should be included with the query plan.
+	 * <p>
+	 * This is to handle binding collections to in clauses. The number
+	 * of values in the collection effects the query (number of bind values)
+	 * and so must be taken into account when calculating the query hash.
+	 * </p>
+	 */
+	public int getQueryPlanHash() {
+        return queryPlanHash;
+    }
+
+    /**
 	 * Set an encryption key as a bind value.
 	 * <p>
 	 * Needs special treatment as the value should not be included in a log. 
