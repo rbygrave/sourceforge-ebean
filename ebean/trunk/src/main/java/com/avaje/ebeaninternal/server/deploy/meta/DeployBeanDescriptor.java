@@ -760,7 +760,9 @@ public class DeployBeanDescriptor<T> {
 		Iterator<DeployBeanProperty> it  = propMap.values().iterator();
 		while (it.hasNext()) {
 			DeployBeanProperty prop = it.next();
-			if (prop instanceof DeployBeanPropertyAssocMany<?>){
+			if (prop.isTransient() || !prop.isDbRead()) {
+			    // ignore transient props etc
+			} else if (prop instanceof DeployBeanPropertyAssocMany<?>){
 				// ignore the associated many properties
 			} else {
 				if (prop.isFetchEager()){
