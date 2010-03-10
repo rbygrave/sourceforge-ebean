@@ -4,6 +4,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.avaje.tests.model.basic.MRole;
@@ -51,9 +53,15 @@ public class TestManyWhereJoinM2M extends TestCase {
             // of a fetch join (if there is a fetch join) 
             .where().eq("roles.roleName", "role2special")
             .query();
-        
+                
         List<MUser> list = query.findList();
         System.out.println(list);
+        
+        String sql = query.getGeneratedSql();
+        Assert.assertTrue(sql.indexOf("select distinct") > -1);
+        Assert.assertTrue(sql.indexOf("left outer join mrole mr") > -1);
+        Assert.assertTrue(sql.indexOf("join mrole xr") > -1);
+        Assert.assertTrue(sql.indexOf("xr.role_name = ?") > -1);
         
     }
 }
