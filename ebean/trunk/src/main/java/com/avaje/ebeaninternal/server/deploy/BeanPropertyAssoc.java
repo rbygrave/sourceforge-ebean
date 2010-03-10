@@ -139,6 +139,12 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
     	tableJoin.addJoin(forceOuterJoin, a1, a2, ctx);
     }
     	
+    /**
+     * Add table join with explicit table alias.
+     */
+    public void addInnerJoin(String a1, String a2, DbSqlContext ctx) {
+        tableJoin.addInnerJoin(a1, a2, ctx);
+    }
     
 	/**
 	 * Return false.

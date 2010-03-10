@@ -98,10 +98,15 @@ public class ElPropertyChain implements ElPropertyValue {
 	    if (prefix == null){
 	        return lastElPropertyValue.getElPlaceholder(encrypted);
 	    }
-	    String p = "${"+prefix+"}";
+	    
 	    String el = lastElPropertyValue.getElPlaceholder(encrypted);
 	    
-	    return StringHelper.replaceString(el, ROOT_ELPREFIX, p);
+	    if (!el.contains("${}")){
+	        // typically a secondary table property
+            return StringHelper.replaceString(el, "${", "${"+prefix+".");
+	    } else {
+	        return StringHelper.replaceString(el, ROOT_ELPREFIX, "${"+prefix+"}");
+	    }
 	}
 		
 	/**

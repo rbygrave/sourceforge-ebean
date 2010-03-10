@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.expression;
 
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -40,15 +41,14 @@ public abstract class AbstractExpression implements SpiExpression {
 		this.propertyName = propertyName;
 	}
 
-	public boolean containsMany(BeanDescriptor<?> desc) {
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 
 		if (propertyName != null){
 			ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 			if (elProp != null && elProp.containsMany()){
-				return true;
+			    manyWhereJoin.add(elProp);
 			}
 		}
-		return false;
 	}
 	
 	protected ElPropertyValue getElProp(SpiExpressionRequest request) {

@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -19,11 +20,8 @@ class RawExpression implements SpiExpression {
 		this.values = values;
 	}
 		
-	/**
-	 * Always returns false.
-	 */
-	public boolean containsMany(BeanDescriptor<?> desc) {
-		return false;
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+		
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {

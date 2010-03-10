@@ -95,7 +95,16 @@ public interface DbSqlContext {
      */
     public void popJoin();
 
+    /**
+     * Return a table alias without many where clause joins.
+     * Typically this is for the select clause (fetch joins).
+     */
     public String getTableAlias(String prefix);
+
+    /**
+     * Return a table alias that takes into account many where joins. 
+     */
+    public String getTableAliasManyWhere(String prefix);
 
     public String getRelativePrefix(String propName);
 

@@ -1073,19 +1073,22 @@ public final class DefaultServer implements SpiEbeanServer {
             }
         }
 
+        // determine extra joins required to support where clause
+        // predicates on *ToMany properties
+        if (query.initManyWhereJoins()) {
+            // we need a sql distinct now
+            query.setDistinct(true);
+        }
+
+        if (query.hasMaxRowsOrFirstRow() && !query.isSqlSelect() && query.getBackgroundFetchAfter() == 0) {
+
+            // convert fetch joins to Many's so that
+            // limit offset type SQL clauses work
+            query.convertManyFetchJoinsToQueryJoins();
+        }
+                
         SpiTransaction serverTrans = (SpiTransaction) t;
         OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);
-
-        if (query.hasMaxRowsOrFirstRow() && !request.isSqlSelect() && query.getBackgroundFetchAfter() == 0) {
-
-            // ensure there are no joins to Many's so that
-            // limit offset type SQL clauses work etc
-            query.removeManyJoins();
-
-            if (query.isManyInWhere()) {
-                query.setDistinct(true);
-            }
-        }
 
         BeanQueryAdapter queryAdapter = desc.getQueryAdapter();
         if (queryAdapter != null) {

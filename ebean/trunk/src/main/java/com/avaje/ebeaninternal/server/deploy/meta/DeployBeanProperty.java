@@ -620,6 +620,9 @@ public class DeployBeanProperty {
         } else if (EntityType.LDAP.equals(et)){
             return dbColumn;
         } else {
+            if (secondaryTableJoinPrefix != null){
+                return "${"+secondaryTableJoinPrefix+"}"+dbColumn;
+            }
             // prepend table alias placeholder
             return ElPropertyValue.ROOT_ELPREFIX + dbColumn;
         }

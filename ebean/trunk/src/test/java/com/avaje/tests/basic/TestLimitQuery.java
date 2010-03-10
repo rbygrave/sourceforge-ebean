@@ -39,7 +39,7 @@ public class TestLimitQuery extends TestCase {
 		Assert.assertTrue("sz > 0", list.size() > 0);
 	
 		String sql = query.getGeneratedSql();
-		boolean hasDetailsJoin = sql.indexOf("left outer join o_order_detail") > -1;
+		boolean hasDetailsJoin = sql.indexOf("join o_order_detail") > -1;
 		boolean hasLimit = sql.indexOf("limit 11") > -1;
 		boolean hasSelectedDetails = sql.indexOf("od.id,") > -1;
 		boolean hasDistinct = sql.indexOf("select distinct") > -1;

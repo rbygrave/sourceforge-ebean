@@ -200,7 +200,7 @@ public final class TableJoin {
     public boolean isOuterJoin() {
         return type.equals(LEFT_OUTER);
     }
-
+    
     public void addJoin(boolean forceOuterJoin, String prefix, DbSqlContext ctx) {
 
     	String[] names = SplitName.split(prefix);
@@ -212,5 +212,12 @@ public final class TableJoin {
     
     public void addJoin(boolean forceOuterJoin, String a1, String a2, DbSqlContext ctx) {
     	ctx.addJoin(forceOuterJoin?LEFT_OUTER:type, table, columns(), a1, a2);
+    }
+    
+    /**
+     * Explicitly add a (non-outer) join.
+     */
+    public void addInnerJoin(String a1, String a2, DbSqlContext ctx) {
+        ctx.addJoin("join", table, columns(), a1, a2);
     }
 }

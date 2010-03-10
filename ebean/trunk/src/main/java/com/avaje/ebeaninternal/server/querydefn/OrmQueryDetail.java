@@ -30,9 +30,15 @@ public class OrmQueryDetail implements Serializable {
 
 	private static final long serialVersionUID = -2510486880141461806L;
 
+	/**
+	 * Root level properties.
+	 */
 	private OrmQueryProperties baseProps = new OrmQueryProperties();
 
-	private HashMap<String, OrmQueryProperties> fetchJoins = new HashMap<String, OrmQueryProperties>(8);
+	/**
+	 * Contains the fetch/lazy/query joins and their properties.
+	 */
+	private HashMap<String, OrmQueryProperties> joins = new HashMap<String, OrmQueryProperties>(8);
 
 	private HashSet<String> includes = new HashSet<String>(8);
 
@@ -42,10 +48,10 @@ public class OrmQueryDetail implements Serializable {
 	public OrmQueryDetail copy() {
 		OrmQueryDetail copy = new OrmQueryDetail();
 		copy.baseProps = baseProps.copy();
-		Iterator<Entry<String, OrmQueryProperties>> it = fetchJoins.entrySet().iterator();
+		Iterator<Entry<String, OrmQueryProperties>> it = joins.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, OrmQueryProperties> entry = it.next();
-			copy.fetchJoins.put(entry.getKey(), entry.getValue().copy());
+			copy.joins.put(entry.getKey(), entry.getValue().copy());
 		}
 		copy.includes = new HashSet<String>(includes);
 		return copy;
@@ -58,8 +64,8 @@ public class OrmQueryDetail implements Serializable {
 
 		int hc = (baseProps == null ? 1 : baseProps.queryPlanHash());
 
-		if (fetchJoins != null) {
-			Iterator<OrmQueryProperties> it = fetchJoins.values().iterator();
+		if (joins != null) {
+			Iterator<OrmQueryProperties> it = joins.values().iterator();
 			while (it.hasNext()) {
 				OrmQueryProperties p = it.next();
 				hc = hc * 31 + p.queryPlanHash();
@@ -71,13 +77,13 @@ public class OrmQueryDetail implements Serializable {
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		if (baseProps == null) {
-
-		} else {
-			sb.append("select ").append(baseProps);
-		}
-		for (OrmQueryProperties join : fetchJoins.values()) {
-			sb.append(" join ").append(join);
+		if (baseProps != null) {
+            sb.append("select ").append(baseProps);
+		} 
+		if (joins != null){
+    		for (OrmQueryProperties join : joins.values()) {
+    			sb.append(" join ").append(join);
+    		}
 		}
 		return sb.toString();
 	}
@@ -120,7 +126,7 @@ public class OrmQueryDetail implements Serializable {
 		
 		ArrayList<String> matchingPaths = new ArrayList<String>(2);
 		
-		Iterator<OrmQueryProperties> it = fetchJoins.values().iterator();
+		Iterator<OrmQueryProperties> it = joins.values().iterator();
 		while (it.hasNext()) {
 			OrmQueryProperties chunk = it.next();
 			boolean match = lazyQuery ? chunk.isLazyJoin() : chunk.isQueryJoin();
@@ -143,7 +149,7 @@ public class OrmQueryDetail implements Serializable {
 		for (int i = 0; i < matchingPaths.size(); i++) {
 			String path = matchingPaths.get(i);
 			includes.remove(path);
-			OrmQueryProperties secQuery = fetchJoins.remove(path);
+			OrmQueryProperties secQuery = joins.remove(path);
 			if (secQuery == null){
 				// the path has already been removed by another
 				// secondary query
@@ -152,7 +158,7 @@ public class OrmQueryDetail implements Serializable {
 				props.add(secQuery);
 				
 				// remove any child properties for this path
-				Iterator<OrmQueryProperties> pass2It = fetchJoins.values().iterator();
+				Iterator<OrmQueryProperties> pass2It = joins.values().iterator();
 				while (pass2It.hasNext()) {
 					OrmQueryProperties pass2Prop = pass2It.next();
 					if (secQuery.isChild(pass2Prop)){
@@ -184,9 +190,9 @@ public class OrmQueryDetail implements Serializable {
 	/**
 	 * Matches a join() method of the query.
 	 */
-	public void addFetchJoin(OrmQueryProperties chunk) {
+	public void addJoin(OrmQueryProperties chunk) {
 		String property = chunk.getPath();//.toLowerCase();
-		fetchJoins.put(property, chunk);
+		joins.put(property, chunk);
 		includes.add(property);
 	}
 	
@@ -198,7 +204,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	public void clear() {
 		includes.clear();
-		fetchJoins.clear();		
+		joins.clear();		
 	}
 
 	/**
@@ -206,31 +212,29 @@ public class OrmQueryDetail implements Serializable {
 	 * @param property the property to join
 	 * @param partialProps the properties on the join property to include
 	 */
-	public OrmQueryProperties addFetchJoin(String property, String partialProps, JoinConfig joinConfig) {
+	public OrmQueryProperties addJoin(String property, String partialProps, JoinConfig joinConfig) {
 		OrmQueryProperties chunk = new OrmQueryProperties(property, partialProps, joinConfig);
-		addFetchJoin(chunk);
+		addJoin(chunk);
 		return chunk;
 	}
 	
-	public void removeManyJoins(BeanDescriptor<?> beanDescriptor) {
-		
-		ArrayList<String> removeList = new ArrayList<String>();
-		
-		Iterator<String> it = fetchJoins.keySet().iterator();
+	/**
+     * Convert 'fetch joins' to 'many' properties over to 'query joins'.
+     */
+	public void convertManyFetchJoinsToQueryJoins(BeanDescriptor<?> beanDescriptor) {
+				
+		Iterator<String> it = joins.keySet().iterator();
 		while (it.hasNext()) {
-			String joinProp = (String) it.next();
+			String joinProp =  it.next();
 			ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(joinProp);
 			if (elProp.containsMany()){
-				removeList.add(joinProp);
+				OrmQueryProperties chunk = joins.get(joinProp);
+				if (chunk.isFetchJoin()) {
+				    // use a query join instead
+				    chunk.setQueryJoinBatch(0);
+				}
 			}
 		}
-		
-		for (int i = 0; i < removeList.size(); i++) {
-			String manyJoinProp = removeList.get(i);
-			includes.remove(manyJoinProp);
-			fetchJoins.remove(manyJoinProp);
-		}
-		
 	}
 
 	/**
@@ -249,7 +253,7 @@ public class OrmQueryDetail implements Serializable {
 			baseProps.setProperties(desc.getDefaultSelectClause(), desc.getDefaultSelectClauseSet());
 		}
 		
-		Iterator<OrmQueryProperties> it = fetchJoins.values().iterator();
+		Iterator<OrmQueryProperties> it = joins.values().iterator();
 		while (it.hasNext()) {
 			OrmQueryProperties joinProps = it.next();
 			if (!joinProps.hasSelectClause()){
@@ -271,14 +275,14 @@ public class OrmQueryDetail implements Serializable {
 	 * or any joins defined.
 	 */
 	public boolean isEmpty() {
-		return fetchJoins.isEmpty() && (baseProps == null || !baseProps.hasProperties());
+		return joins.isEmpty() && (baseProps == null || !baseProps.hasProperties());
 	}
 
 	/**
-	 * Return true if there are no fetch joins.
+	 * Return true if there are no joins.
 	 */
-	public boolean isFetchJoinsEmpty() {
-		return fetchJoins.isEmpty();
+	public boolean isJoinsEmpty() {
+		return joins.isEmpty();
 	}
 
 	/**
@@ -298,9 +302,9 @@ public class OrmQueryDetail implements Serializable {
 		if (propertyName == null) {
 			return baseProps;
 		}
-		OrmQueryProperties props = fetchJoins.get(propertyName);
+		OrmQueryProperties props = joins.get(propertyName);
 		if (create && props == null) {
-			return addFetchJoin(propertyName, null, null);
+			return addJoin(propertyName, null, null);
 		} else {
 			return props;
 		}
@@ -311,7 +315,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	public boolean includes(String propertyName) {
 		
-		OrmQueryProperties chunk = fetchJoins.get(propertyName);
+		OrmQueryProperties chunk = joins.get(propertyName);
 		
 		// may not have fetch properties if just +cache etc
 		return chunk != null && chunk.isFetchInclude();

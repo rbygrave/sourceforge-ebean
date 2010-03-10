@@ -18,6 +18,7 @@ import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
@@ -85,15 +86,11 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     /**
      * Return true if one of the expressions is related to a Many property.
      */
-    public boolean containsMany(BeanDescriptor<?> desc) {
+    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins whereManyJoins) {
 
         for (int i = 0; i < list.size(); i++) {
-
-            if (list.get(i).containsMany(desc)) {
-                return true;
-            }
+            list.get(i).containsMany(desc, whereManyJoins);
         }
-        return false;
     }
 
     public Query<T> query() {

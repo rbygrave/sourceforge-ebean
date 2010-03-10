@@ -512,8 +512,16 @@ public class BeanProperty implements ElPropertyValue {
             String relativePrefix = ctx.getRelativePrefix(secondaryTableJoinPrefix);
             secondaryTableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
         }
-
     }
+    
+    /**
+     * Returns null unless this property is using a secondary table.
+     * In that case this returns the logical property prefix.
+     */
+    public String getSecondaryTableJoinPrefix() {
+        return secondaryTableJoinPrefix;
+    }
+
 
     public void appendSelect(DbSqlContext ctx) {
         if (formula) {
@@ -889,7 +897,7 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     public String getElPrefix() {
-        return null;
+        return secondaryTableJoinPrefix;
     }
 
     /**
