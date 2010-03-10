@@ -121,15 +121,7 @@ public class CQueryBuilder implements Constants {
 
     	SpiQuery<T> query = request.getQuery();
     	
-    	boolean hasMany = query.isManyInWhere();
-    	
     	query.setSelectId();
-    	    	
-    	//String sqlSelect = "select count(*)";
-    	if (hasMany){
-    		// need to count distinct id's ...
-        	query.setDistinct(true);
-    	}
     	
 		CQueryPredicates predicates = new CQueryPredicates(binder, request);
 		predicates.prepare(true);
@@ -153,7 +145,7 @@ public class CQueryBuilder implements Constants {
     	// always set the order by to null for row count query
     	query.setOrder(null);
     	
-    	boolean hasMany = query.isManyInWhere();
+    	boolean hasMany = !query.getManyWhereJoins().isEmpty();
     	
     	query.setSelectId();
     	    	

@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -46,19 +47,17 @@ class BetweenPropertyExpression implements SpiExpression {
         this.value = value;
     }
 
-    public boolean containsMany(BeanDescriptor<?> desc) {
+    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 
         ElPropertyDeploy elProp = desc.getElPropertyDeploy(lowProperty);
         if (elProp != null && elProp.containsMany()) {
-            return true;
+            manyWhereJoin.add(elProp);
         }
 
         elProp = desc.getElPropertyDeploy(highProperty);
         if (elProp != null && elProp.containsMany()) {
-            return true;
+            manyWhereJoin.add(elProp);
         }
-
-        return false;
     }
 
     public void addBindValues(SpiExpressionRequest request) {

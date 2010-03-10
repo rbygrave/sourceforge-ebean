@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -21,18 +22,17 @@ class AllEqualsExpression implements SpiExpression {
 		this.propMap = propMap;
 	}
 	
-	public boolean containsMany(BeanDescriptor<?> desc) {
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 		if (propMap != null){
 			Iterator<String> it = propMap.keySet().iterator();
 			while (it.hasNext()) {
 				String propertyName = it.next();
 				ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 				if (elProp != null && elProp.containsMany()){
-					return true;
+				    manyWhereJoin.add(elProp);
 				}
 			}
 		}
-		return false;
 	}
 
 	public String getPropertyName() {

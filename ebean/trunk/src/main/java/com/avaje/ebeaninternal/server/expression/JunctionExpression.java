@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -43,14 +44,11 @@ abstract class JunctionExpression implements Junction, SpiExpression {
 		this.joinType = joinType;
 	}
 	
-	public boolean containsMany(BeanDescriptor<?> desc) {
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 		
 		for (int i = 0; i < list.size(); i++) {
-			if (list.get(i).containsMany(desc)) {
-				return true;
-			}
+			list.get(i).containsMany(desc, manyWhereJoin);
 		}
-		return false;
 	}
 
 	public Junction add(Expression item){

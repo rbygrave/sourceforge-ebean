@@ -290,10 +290,10 @@ public class CQueryPredicates {
 	 */
 	public void parseTableAlias(SqlTreeAlias alias){
 		if (dbWhere != null){
-			dbWhere = alias.parse(dbWhere);
+			dbWhere = alias.parseWhere(dbWhere);
 		}
 		if (dbHaving != null){
-			dbHaving = alias.parse(dbHaving);
+			dbHaving = alias.parseWhere(dbHaving);
 		}
 		if (dbOrderBy != null){
 			dbOrderBy = alias.parse(dbOrderBy);

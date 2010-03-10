@@ -59,7 +59,7 @@ public class OrmQueryDetailParser {
 	private void process() {
 		if (parser.isMatch("join")) {
 			OrmQueryProperties props = readFindJoin();
-			detail.addFetchJoin(props);
+			detail.addJoin(props);
 
 		} else if (parser.isMatch("where")) {
 			readWhere();

@@ -20,7 +20,6 @@
 package com.avaje.ebeaninternal.server.el;
 
 import com.avaje.ebean.text.StringParser;
-import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 
 /**
  * The expression language object that can get values.
@@ -57,12 +56,6 @@ public interface ElPropertyValue extends ElPropertyDeploy {
      * Return true if the property is encrypted in the DB.
      */
     public boolean isDbEncrypted();
-
-
-    /**
-     * Return the underlying bean property.
-     */
-    public BeanProperty getBeanProperty();
 
     /**
      * Return the default StringParser for the scalar property.

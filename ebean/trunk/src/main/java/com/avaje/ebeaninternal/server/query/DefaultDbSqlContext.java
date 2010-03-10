@@ -141,8 +141,11 @@ public class DefaultDbSqlContext implements DbSqlContext {
     }
 
     public String getTableAlias(String prefix) {
-
         return alias.getTableAlias(prefix);
+    }
+
+    public String getTableAliasManyWhere(String prefix) {
+        return alias.getTableAliasManyWhere(prefix);
     }
 
     public void pushSecondaryTableAlias(String alias) {

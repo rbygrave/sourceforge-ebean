@@ -28,6 +28,7 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.BindParams;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
@@ -208,6 +209,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	private transient PersistenceContext persistenceContext;
 
 	private final String exprLang;
+
+    private ManyWhereJoins manyWhereJoins;
 	
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory, String query) {
 		this.beanType = beanType;
@@ -285,30 +288,32 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
     /**
      * Return true if the where expressions contains a many property.
      */
-    public boolean isManyInWhere() {
-        
+    public boolean initManyWhereJoins() {
+        manyWhereJoins = new ManyWhereJoins();
         if (whereExpressions != null){
-            return whereExpressions.containsMany(beanDescriptor);
-        } else {
-            return false;
+            whereExpressions.containsMany(beanDescriptor, manyWhereJoins);
         }
+        return !manyWhereJoins.isEmpty();
     }
+    
+    public ManyWhereJoins getManyWhereJoins() {
+        return manyWhereJoins;
+    }
+    
 
-	public List<OrmQueryProperties> removeSecondaryQueries() {
-		return detail.removeSecondaryQueries();
-	}
-	
-	public List<OrmQueryProperties> removeSecondaryLazyQueries() {
-		return detail.removeSecondaryLazyQueries();
-	}
-	
+    public List<OrmQueryProperties> removeSecondaryQueries() {
+        return detail.removeSecondaryQueries();
+    }
+    
+    public List<OrmQueryProperties> removeSecondaryLazyQueries() {
+        return detail.removeSecondaryLazyQueries();
+    }
+    
     /**
-     * Remove any many joins from the select. Joins to Manys may still
-     * be required to support the where or order by clauses and in this 
-     * case typically distinct must be used.
+     * Convert any many joins fetch joins to query joins.
      */
-    public void removeManyJoins() {
-        detail.removeManyJoins(beanDescriptor);
+    public void convertManyFetchJoinsToQueryJoins() {
+        detail.convertManyFetchJoinsToQueryJoins(beanDescriptor);
     }
 	
 	/**
@@ -747,7 +752,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 	
 	public DefaultOrmQuery<T> join(String property, String columns, JoinConfig joinConfig) {
-		detail.addFetchJoin(property, columns, joinConfig);
+		detail.addJoin(property, columns, joinConfig);
 		return this;
 	}
 	

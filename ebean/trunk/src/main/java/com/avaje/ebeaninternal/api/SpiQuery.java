@@ -153,9 +153,14 @@ public interface SpiQuery<T> extends Query<T> {
     public void setBeanDescriptor(BeanDescriptor<?> desc);
 
     /**
-     * Return true if the where expressions contains a many.
+     * Initialise/determine the joins required to support 'many' where clause predicates.
      */
-    public boolean isManyInWhere();
+    public boolean initManyWhereJoins();
+
+    /**
+     * Return the joins required to support predicates on the many properties.
+     */
+    public ManyWhereJoins getManyWhereJoins();
 
     /**
      * Set the query to select the id property only.
@@ -167,11 +172,9 @@ public interface SpiQuery<T> extends Query<T> {
     public List<OrmQueryProperties> removeSecondaryLazyQueries();
 
     /**
-     * Remove any many joins from the select. Joins to Manys may still be
-     * required to support the where or order by clauses and in this case
-     * typically distinct must be used.
+     * Convert any many joins fetch joins to query joins.
      */
-    public void removeManyJoins();
+    public void convertManyFetchJoinsToQueryJoins();
 
     /**
      * Return the TransactionContext.

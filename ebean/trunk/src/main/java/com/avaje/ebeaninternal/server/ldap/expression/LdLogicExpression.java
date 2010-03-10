@@ -2,6 +2,7 @@ package com.avaje.ebeaninternal.server.ldap.expression;
 
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -48,8 +49,9 @@ abstract class LdLogicExpression implements SpiExpression {
 	}
 
 	
-	public boolean containsMany(BeanDescriptor<?> desc) {
-		return expOne.containsMany(desc) || expTwo.containsMany(desc);
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+		expOne.containsMany(desc, manyWhereJoin);
+		expTwo.containsMany(desc, manyWhereJoin);
 	}
 	
 	public void addBindValues(SpiExpressionRequest request) {

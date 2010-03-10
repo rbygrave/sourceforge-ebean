@@ -91,9 +91,8 @@ public class Order implements Serializable {
     @JoinColumn(name="kcustomer_id")
     Customer customer;
     
+    //@Basic(fetch=FetchType.LAZY)
     @Column(name="name",table="o_customer")
-    //@Transient
-    //@Formula(select="sj_${ta}.name",join="join o_customer sj_${ta} where sj_${ta}.id = ${ta}.kcustomer_id")
     String customerName;
     
     @CreatedTimestamp

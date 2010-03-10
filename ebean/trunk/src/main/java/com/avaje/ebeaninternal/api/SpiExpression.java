@@ -11,13 +11,13 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 public interface SpiExpression extends Expression {
 
 	/**
-	 * Return true if this expression is for a "Many" property.
+	 * Process "Many" properties populating ManyWhereJoins.
 	 * <p>
-	 * This can be used to handle some implementations that are 
-	 * dependent on the requirement for a join to a "Many".
+	 * Predicates on Many properties require an extra independent
+     * join clause.
 	 * </p>
 	 */
-	public boolean containsMany(BeanDescriptor<?> desc);
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins whereManyJoins);
 	
 	/**
 	 * Calculate a hash value used to identify a query for AutoFetch tuning.

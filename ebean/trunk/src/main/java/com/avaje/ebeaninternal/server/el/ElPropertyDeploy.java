@@ -1,5 +1,7 @@
 package com.avaje.ebeaninternal.server.el;
 
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+
 /**
  * Used to parse expressions in queries (where, orderBy etc).
  * <p>
@@ -46,4 +48,10 @@ public interface ElPropertyDeploy {
 	 * Return the deployment db column for this property.
 	 */
 	public String getDbColumn();
+	
+
+    /**
+     * Return the underlying bean property.
+     */
+    public BeanProperty getBeanProperty();
 }

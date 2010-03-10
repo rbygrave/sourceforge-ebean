@@ -6,6 +6,7 @@ import java.util.Iterator;
 import com.avaje.ebean.ExampleExpression;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
@@ -82,62 +83,39 @@ public class DefaultExampleExpression implements SpiExpression, ExampleExpressio
 		this.likeType = likeType;
 	}
 	
-	public boolean containsMany(BeanDescriptor<?> desc) {
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins whereManyJoins) {
 		if (list != null){
 			for (int i = 0; i < list.size(); i++) {
-				if (list.get(i).containsMany(desc)) {
-					return true;
-				}
+				list.get(i).containsMany(desc, whereManyJoins);
 			}
 		}
-		return false;
 	}
 
-
-
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.expression.IExampleExpression#includeZeros()
-	 */
 	public ExampleExpression includeZeros() {
 		includeZeros = true;
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.expression.IExampleExpression#caseInsensitive()
-	 */
 	public ExampleExpression caseInsensitive() {
 		caseInsensitive = true;
 		return this;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.expression.IExampleExpression#useStartsWith()
-	 */
 	public ExampleExpression useStartsWith() {
 		likeType = LikeType.STARTS_WITH;
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.expression.IExampleExpression#useContains()
-	 */
 	public ExampleExpression useContains() {
 		likeType = LikeType.CONTAINS;
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.expression.IExampleExpression#useEndsWith()
-	 */
 	public ExampleExpression useEndsWith() {
 		likeType = LikeType.ENDS_WITH;
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.avaje.ebean.expression.IExampleExpression#useEqualTo()
-	 */
 	public ExampleExpression useEqualTo() {
 		likeType = LikeType.EQUAL_TO;
 		return this;

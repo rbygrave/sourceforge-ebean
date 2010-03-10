@@ -16,10 +16,14 @@ public interface SpiExpressionList<T> extends ExpressionList<T> {
 	 */
 	public void setExpressionFactory(ExpressionFactory expr);
 
-	/**
-	 * Returns true if the expression list contains a many property.
-	 */
-	public boolean containsMany(BeanDescriptor<?> desc);
+    /**
+     * Process "Many" properties populating ManyWhereJoins.
+     * <p>
+     * Predicates on Many properties require an extra independent
+     * join clause.
+     * </p>
+     */
+	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoins);
 	
 	/**
 	 * Return true if this list is empty.
