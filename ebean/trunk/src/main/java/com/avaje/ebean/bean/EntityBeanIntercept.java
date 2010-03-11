@@ -272,8 +272,11 @@ public final class EntityBeanIntercept implements Serializable {
 	public void setParentBean(Object parentBean) {
 		this.parentBean = parentBean;
 	}
-
-	public int getBeanLoaderIndex() {
+	
+	/**
+	 * Return the index position for batch loading via BeanLoader.
+	 */
+    public int getBeanLoaderIndex() {
 		return beanLoaderIndex;
 	}
 

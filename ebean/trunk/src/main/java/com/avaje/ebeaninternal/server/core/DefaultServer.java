@@ -422,6 +422,10 @@ public final class DefaultServer implements SpiEbeanServer {
 
         beanLoader.refreshMany(parentBean, propertyName);
     }
+    
+    public void configureFilter(Query<?> query) {
+        // do nothing when just using DefaultServer
+    }
 
     public void loadMany(LoadManyRequest loadRequest) {
 

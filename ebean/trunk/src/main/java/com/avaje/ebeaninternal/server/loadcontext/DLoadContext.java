@@ -134,7 +134,7 @@ public class DLoadContext implements LoadContext {
 	 */
 	public void registerSecondaryQueries(SpiQuery<?> query) {
 	
-		secQuery = query.removeSecondaryQueries();
+		secQuery = query.removeQueryJoins();
 		if (secQuery != null){
 			for (int i = 0; i < secQuery.size(); i++) {
 				OrmQueryProperties props = secQuery.get(i);
@@ -142,7 +142,7 @@ public class DLoadContext implements LoadContext {
 			}
 		}
 		
-		List<OrmQueryProperties> lazyQueries = query.removeSecondaryLazyQueries();
+		List<OrmQueryProperties> lazyQueries = query.removeLazyJoins();
 		if (lazyQueries != null){
 			for (int i = 0; i < lazyQueries.size(); i++) {
 				OrmQueryProperties lazyProps = lazyQueries.get(i);

@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.expression;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -18,8 +19,16 @@ class AllEqualsExpression implements SpiExpression {
 	
 	private final Map<String, Object> propMap;
 
-	AllEqualsExpression(Map<String, Object> propMap) {
-		this.propMap = propMap;
+	AllEqualsExpression(Map<String, Object> map, String propertyNamePrefix) {
+	    if (propertyNamePrefix == null){
+	        this.propMap = map;
+	    } else {
+	        this.propMap = new LinkedHashMap<String,Object>();
+	        for (Entry<String,Object> entry : map.entrySet()) {
+                String pn = propertyNamePrefix+"."+entry.getKey();
+                propMap.put(pn, entry.getValue());
+            }
+	    }
 	}
 	
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {

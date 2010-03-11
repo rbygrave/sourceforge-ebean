@@ -208,15 +208,12 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private transient PersistenceContext persistenceContext;
 
-	private final String exprLang;
-
     private ManyWhereJoins manyWhereJoins;
 	
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory, String query) {
 		this.beanType = beanType;
 		this.server = server;
 		this.expressionFactory = expressionFactory;
-		this.exprLang = expressionFactory == null ? "sql" : expressionFactory.getLang();
 		this.detail = new OrmQueryDetail();
 		this.name = "";
 		if (query != null){
@@ -233,7 +230,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.beanType = beanType;
 		this.server = server;
 		this.expressionFactory = expressionFactory;
-        this.exprLang = expressionFactory == null ? "sql" : expressionFactory.getLang();
 		this.name = namedQuery.getName();
 		this.sqlSelect = namedQuery.isSqlSelect();
 		if (sqlSelect) {
@@ -301,11 +297,11 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
     }
     
 
-    public List<OrmQueryProperties> removeSecondaryQueries() {
+    public List<OrmQueryProperties> removeQueryJoins() {
         return detail.removeSecondaryQueries();
     }
     
-    public List<OrmQueryProperties> removeSecondaryLazyQueries() {
+    public List<OrmQueryProperties> removeLazyJoins() {
         return detail.removeSecondaryLazyQueries();
     }
     
@@ -536,7 +532,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		hc = hc * 31 + (rawWhereClause == null ? 0 : rawWhereClause.hashCode());
 
 		
-		hc = hc * 31 + detail.queryPlanHash();
+		hc = hc * 31 + detail.queryPlanHash(request);
 		hc = hc * 31 + (query == null ? 0 : query.hashCode());
 
 		hc = hc * 31 + (additionalWhere == null ? 0 : additionalWhere.hashCode());
@@ -1068,7 +1064,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> where(Expression expression) {
 		if (whereExpressions == null) {
-			whereExpressions = new DefaultExpressionList<T>(this, exprLang);
+			whereExpressions = new DefaultExpressionList<T>(this);
 		}
 		whereExpressions.add(expression);
 		return this;
@@ -1076,9 +1072,23 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public ExpressionList<T> where() {
 		if (whereExpressions == null) {
-			whereExpressions = new DefaultExpressionList<T>(this, exprLang);
+			whereExpressions = new DefaultExpressionList<T>(this);
 		}
 		return whereExpressions;
+	}
+	
+	public ExpressionList<T> filterMany(String prop){
+	    
+	    OrmQueryProperties chunk = detail.getChunk(prop, true);
+	    return chunk.filterMany(this);
+	}
+	
+
+	public void setFilterMany(String prop, ExpressionList<?> filterMany){
+	    if (filterMany != null){
+    	    OrmQueryProperties chunk = detail.getChunk(prop, true);
+    	    chunk.setFilterMany((SpiExpressionList<?>)filterMany);
+	    }
 	}
 
 	public DefaultOrmQuery<T> addHaving(String addToHavingClause) {
@@ -1104,7 +1114,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> having(Expression expression) {
 		if (havingExpressions == null) {
-			havingExpressions = new DefaultExpressionList<T>(this, exprLang);
+			havingExpressions = new DefaultExpressionList<T>(this);
 		}
 		havingExpressions.add(expression);
 		return this;
@@ -1112,7 +1122,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public ExpressionList<T> having() {
 		if (havingExpressions == null) {
-			havingExpressions = new DefaultExpressionList<T>(this, exprLang);
+			havingExpressions = new DefaultExpressionList<T>(this);
 		}
 		return havingExpressions;
 	}

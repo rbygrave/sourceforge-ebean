@@ -42,10 +42,14 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     private final String listAndEnd;
     private final String listAndJoin;
 
-    public DefaultExpressionList(Query<T> query, String exprLang) {
+    public DefaultExpressionList(Query<T> query) {
+        this(query, query.getExpressionFactory());
+    }
+    
+    public DefaultExpressionList(Query<T> query, ExpressionFactory expr) {
         this.query = query;
-        this.expr = query.getExpressionFactory();
-        this.exprLang = exprLang;
+        this.expr = expr;
+        this.exprLang = expr.getLang();
         
         if ("ldap".equals(exprLang)){
             // Language is LDAP
@@ -59,7 +63,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
             listAndJoin = " and ";
         }
     }
-
+    
     /**
      * Set the ExpressionFactory.
      * <p>
@@ -78,7 +82,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
      * </p>
      */
     public DefaultExpressionList<T> copy(Query<T> query) {
-        DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query, exprLang);
+        DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query, expr);
         copy.list.addAll(list);
         return copy;
     }
@@ -153,6 +157,10 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     public T findUnique() {
         return query.findUnique();
     }
+    
+    public ExpressionList<T> filterMany(String prop) {
+        return query.filterMany(prop);
+    }
 
     public Query<T> select(String fetchProperties) {
         return query.select(fetchProperties);
@@ -194,7 +202,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         return query.having();
     }
 
-    public DefaultExpressionList<T> add(Expression expr) {
+    public ExpressionList<T> add(Expression expr) {
         list.add((SpiExpression) expr);
         return this;
     }

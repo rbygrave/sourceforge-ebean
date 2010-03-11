@@ -107,7 +107,7 @@ public class TunedQueryInfo implements Serializable {
 		if (tunedDetail == null) {
 			return false;
 		}
-		return tunedDetail.queryPlanHash() == newQueryDetail.queryPlanHash();
+		return tunedDetail.isAutoFetchEqual(newQueryDetail);
 	}
 
 	/**

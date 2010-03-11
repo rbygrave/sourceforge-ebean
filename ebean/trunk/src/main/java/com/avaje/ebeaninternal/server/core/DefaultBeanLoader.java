@@ -26,6 +26,7 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
@@ -182,7 +183,8 @@ public class DefaultBeanLoader {
 
         EntityBeanIntercept ebi = null;
         PersistenceContext pc = null;
-		
+        BeanCollectionLoader beanCollectionLoader = null;
+        
 		if (!vanilla){
 	        ebi = ((EntityBean)parentBean)._ebean_getIntercept();
             pc = ebi.getPersistenceContext();
@@ -191,13 +193,18 @@ public class DefaultBeanLoader {
         BeanDescriptor<?> parentDesc = server.getBeanDescriptor(parentBean.getClass());
         BeanPropertyAssocMany<?> many = (BeanPropertyAssocMany<?>) parentDesc.getBeanProperty(propertyName);
 
+        Object currentValue = many.getValue(parentBean);
+        if (currentValue instanceof BeanCollection<?>){
+            beanCollectionLoader = ((BeanCollection<?>)currentValue).getLoader();
+        }
+
         Object parentId = parentDesc.getId(parentBean);
         
 		if (pc == null){
             pc = new DefaultPersistenceContext();    
             pc.put(parentId, parentBean);
         }
-
+		
 		if (refresh){
 		    // populate a new collection
 			Object emptyCollection = many.createEmpty(vanilla);
@@ -216,13 +223,15 @@ public class DefaultBeanLoader {
 
 		String idProperty = parentDesc.getIdBinder().getIdProperty();
 		query.select(idProperty);
-		
+
 		if (onlyIds){
 			query.join(many.getName(), many.getTargetIdProperty());
-			
 		} else {
 			query.join(many.getName());
 		}
+        if (beanCollectionLoader != null) {
+            beanCollectionLoader.configureFilter(query);
+        }
 		
 		query.where().idEq(parentId);
 		query.setMode(Mode.LAZYLOAD_MANY);

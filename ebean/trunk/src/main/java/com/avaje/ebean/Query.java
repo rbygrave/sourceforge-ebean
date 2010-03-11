@@ -870,6 +870,8 @@ public interface Query<T> extends Serializable {
 	 */
 	public ExpressionList<T> where();
 
+    public ExpressionList<T> filterMany(String prop);
+
 	/**
 	 * Add Expressions to the Having clause return the ExpressionList.
 	 * <p>

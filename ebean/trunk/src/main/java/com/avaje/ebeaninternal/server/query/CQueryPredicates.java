@@ -15,6 +15,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
 import com.avaje.ebeaninternal.server.persist.Binder;
+import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.util.BindParamsParser;
 import com.avaje.ebeaninternal.util.DefaultExpressionRequest;
@@ -57,6 +58,16 @@ public class CQueryPredicates {
 	 */
 	private OrderedList havingNamedParams;
 
+    /**
+     * Bind values from the where expressions.
+     */
+    private ArrayList<Object> filterManyExprBindValues;
+
+    /**
+     * SQL generated from the where expressions.
+     */
+    private String filterManyExprSql;
+
 	/**
 	 * Bind values from the where expressions.
 	 */
@@ -93,6 +104,11 @@ public class CQueryPredicates {
 	 * logicalWhere with property names converted to db columns.
 	 */
 	private String dbWhere;
+	
+	/**
+	 * Filter than can apply to a many fetch join.
+	 */
+    private String dbFilterMany;
 
 	/**
 	 * The order by clause.
@@ -140,6 +156,18 @@ public class CQueryPredicates {
 				bindLog.append(bindValue);
 			}
 		}
+		
+        if (filterManyExprBindValues != null) {
+
+            for (int i = 0; i < filterManyExprBindValues.size(); i++) {
+                Object bindValue = filterManyExprBindValues.get(i);
+                binder.bindObject(dataBind, bindValue);
+                if (i > 0 || idValue != null) {
+                    bindLog.append(", ");
+                }
+                bindLog.append(bindValue);
+            }
+        }
 
 		if (havingNamedParams != null) {
 			// bind named parameters in having...
@@ -241,6 +269,19 @@ public class CQueryPredicates {
 				whereExprSql = whereExp.buildSql(whereReq);
 			}
 		}
+		
+		BeanPropertyAssocMany<?> manyProperty = request.getManyProperty();
+		if (manyProperty != null){
+		    OrmQueryProperties chunk = query.getDetail().getChunk(manyProperty.getName(), false);
+		    SpiExpressionList<?> filterMany = chunk.getFilterMany();
+		    if (filterMany != null){
+		        DefaultExpressionRequest filterReq = new DefaultExpressionRequest(request, deployParser);
+	            filterManyExprBindValues = filterMany.buildBindValues(filterReq);
+	            if (buildSql) {
+	                filterManyExprSql = filterMany.buildSql(filterReq);
+	            }
+		    }
+		}
 
         // having expression
         SpiExpressionList<?> havingExpr = query.getHavingExpressions();
@@ -264,7 +305,8 @@ public class CQueryPredicates {
 	 */
 	private void parsePropertiesToDbColumns(DeployParser deployParser) {
 		
-		dbWhere = deriveWhere(deployParser);		
+		dbWhere = deriveWhere(deployParser);
+		dbFilterMany = deriveFilterMany(deployParser);
 		dbHaving = deriveHaving(deployParser);
 
 		// order by is dependent on the manyProperty (if there is one)
@@ -275,23 +317,31 @@ public class CQueryPredicates {
 
 		predicateIncludes = deployParser.getIncludes();
 	}
+    
+    private String deriveFilterMany(DeployParser deployParser) {
+        if (isEmpty(filterManyExprSql)) {
+            return null;
+        } else {
+            return deployParser.parse(filterManyExprSql);
+        }
+    }
 
-	 
-  private String deriveWhere(DeployParser deployParser) {
-      if (whereRawSql == null || whereRawSql.trim().length() == 0) {
-          return deployParser.parse(whereExprSql);
-      } else {
-          return parse(whereRawSql, whereExprSql, deployParser);
-      }
-  }
-	
+    private String deriveWhere(DeployParser deployParser) {
+        return parse(whereRawSql, whereExprSql, deployParser);
+    }
+  
 	/**
 	 * Replace the table alias place holders.
 	 */
 	public void parseTableAlias(SqlTreeAlias alias){
 		if (dbWhere != null){
+		    // use the where table alias
 			dbWhere = alias.parseWhere(dbWhere);
 		}
+		if (dbFilterMany != null){
+		    // use the select table alias
+            dbFilterMany = alias.parse(dbFilterMany);
+        }
 		if (dbHaving != null){
 			dbHaving = alias.parseWhere(dbHaving);
 		}
@@ -306,20 +356,21 @@ public class CQueryPredicates {
 	
 	private String parse(String raw, String expr, DeployParser deployParser){
 
-		if (isEmpty(expr)) {
-			return raw; 
-						
-		} else{
-			return raw +" and "+deployParser.parse(expr);			
-		} 
+	    StringBuilder sb = new StringBuilder();
+	    if (!isEmpty(raw)){
+	        sb.append(raw);
+	    }
+	    if (!isEmpty(expr)){
+	        if (sb.length() > 0){
+	            sb.append(" and ");
+	        }
+	        sb.append(deployParser.parse(expr));
+	    }
+	    return sb.toString();
 	}
 	
 	private String deriveHaving(DeployParser deployParser) {
-		if (havingRawSql == null || havingRawSql.trim().length() == 0) {
-			return deployParser.parse(havingExprSql);
-		} else {
-			return parse(havingRawSql, havingExprSql, deployParser);
-		} 
+	    return parse(havingRawSql, havingExprSql, deployParser);
 	}
 
 	/**
@@ -411,7 +462,15 @@ public class CQueryPredicates {
 		return dbWhere;
 	}
 
+	
 	/**
+	 * Return a db filter for filtering many fetch joins.
+	 */
+	public String getDbFilterMany() {
+        return dbFilterMany;
+    }
+
+    /**
 	 * Return the db column version of the order by clause.
 	 */
 	public String getDbOrderBy() {
@@ -456,14 +515,24 @@ public class CQueryPredicates {
 	public String getLogWhereSql() {
 		if (rawSql) {
 			return "";
-		} else {
-			String logPred = getDbWhere();
-			if (logPred == null) {
-				return "";
-			} else if (logPred.length() > 400) {
-				logPred = logPred.substring(0, 400) + " ...";
-			}
-			return logPred;
+		} 
+		if (dbWhere == null && dbFilterMany == null) {
+			return "";
 		}
+		StringBuilder sb = new StringBuilder();
+		if (dbWhere != null){
+		    sb.append(dbWhere);
+		}
+		if (dbFilterMany != null){
+		    if (sb.length() > 0){
+		        sb.append(" and ");
+		    }
+		    sb.append(dbFilterMany);
+		}
+		String logPred = sb.toString();
+		if (logPred.length() > 400) {
+			logPred = logPred.substring(0, 400) + " ...";
+		}
+		return logPred;
 	}
 }

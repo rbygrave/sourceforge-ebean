@@ -23,23 +23,33 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Expression factory for creating standard expressions.
  * <p>
- * Creates standard common expressions for using in a Query Where or Having clause.
+ * Creates standard common expressions for using in a Query Where or Having
+ * clause.
  * </p>
  * <p>
+ * You will often not use this class directly but instead just add expressions
+ * via the methods on ExpressionList such as {@link ExpressionList#gt(String, Object)}.
  * </p>
+ * <p>
+ * The ExpressionList is returned from {@link Query#where()}.
+ * </p>
+ * 
  * <pre class="code">
- *  // Example: fetch orders where status equals new and orderDate > lastWeek.
+ *  // Example: fetch orders where status equals new or orderDate > lastWeek.
+ *  
+ * Expression newOrLastWeek = 
+ *   Expr.or(Expr.eq(&quot;status&quot;, Order.Status.NEW), 
+ *           Expr.gt(&quot;orderDate&quot;, lastWeek));
+ * 
  * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
- * query.where()
- *     .add(Expr.eq(&quot;status&quot;, Order.NEW))
- *     .add(Expr.gt(&quot;orderDate&quot;, lastWeek));
+ * query.where().add(newOrLastWeek);
  * List&lt;Order&gt; list = query.findList();
  * ...
  * </pre>
+ * 
  * @see Query#where()
  */
 public interface ExpressionFactory {
