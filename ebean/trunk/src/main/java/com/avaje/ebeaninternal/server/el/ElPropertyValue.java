@@ -43,9 +43,19 @@ public interface ElPropertyValue extends ElPropertyDeploy {
     public String getAssocOneIdExpr(String prefix, String operator);
 
     /**
+     * Return the logical id value expression taking into account embedded id's.
+     */
+    public String getAssocIdInValueExpr();
+        
+    /**
+     * Return the logical id in expression taking into account embedded id's.
+     */
+    public String getAssocIdInExpr(String prefix);
+    
+    /**
      * Return true if this is an ManyToOne or OneToOne associated bean property.
      */
-    public boolean isAssocOneId();
+    public boolean isAssocId();
 
     /**
      * Return true if the property is encrypted via Java.

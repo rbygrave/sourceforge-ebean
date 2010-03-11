@@ -887,7 +887,17 @@ public class BeanProperty implements ElPropertyValue {
         return null;
     }
 
-    public boolean isAssocOneId() {
+    public String getAssocIdInExpr(String prefix) {
+        // Returns null as not an AssocOne.
+        return null;
+    }
+
+    public String getAssocIdInValueExpr() {
+        // Returns null as not an AssocOne.
+        return null;
+    }
+
+    public boolean isAssocId() {
         // Returns false - override in BeanPropertyAssocOne.
         return false;
     }

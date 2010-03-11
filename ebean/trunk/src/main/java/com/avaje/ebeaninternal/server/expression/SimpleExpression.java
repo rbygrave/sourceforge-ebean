@@ -60,7 +60,7 @@ class SimpleExpression extends AbstractExpression {
 		
 	    ElPropertyValue prop = getElProp(request);
 		if (prop != null){
-		    if (prop.isAssocOneId()){
+		    if (prop.isAssocId()){
 	            Object[] ids = prop.getAssocOneIdValues(value);
 	            if (ids != null){
 	                for (int i = 0; i < ids.length; i++) {
@@ -86,7 +86,7 @@ class SimpleExpression extends AbstractExpression {
 	public void addSql(SpiExpressionRequest request) {
 		ElPropertyValue prop = getElProp(request);
 		if (prop != null){
-		    if (prop.isAssocOneId()){
+		    if (prop.isAssocId()){
 	            request.append(prop.getAssocOneIdExpr(propertyName,type.toString()));
 	            return;
 		    }

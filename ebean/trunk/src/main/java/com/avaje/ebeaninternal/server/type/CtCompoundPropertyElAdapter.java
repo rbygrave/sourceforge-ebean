@@ -67,6 +67,14 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
     public Object[] getAssocOneIdValues(Object bean) {
         throw new RuntimeException("Not Supported or Expected");
     }
+    
+    public String getAssocIdInExpr(String prefix) {
+        throw new RuntimeException("Not Supported or Expected");
+    }
+
+    public String getAssocIdInValueExpr() {
+        throw new RuntimeException("Not Supported or Expected");
+    }
 
     public BeanProperty getBeanProperty() {
         return null;
@@ -84,7 +92,7 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         return false;
     }
 
-    public boolean isAssocOneId() {
+    public boolean isAssocId() {
         return false;
     }
 

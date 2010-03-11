@@ -27,15 +27,15 @@ public final class IdBinderEmbedded implements IdBinder {
     private BeanDescriptor<?> idDesc;
 
     private String idInValueSql;
-
+    
     public IdBinderEmbedded(BeanPropertyAssocOne<?> embIdProperty) {
 
         this.embIdProperty = embIdProperty;
     }
 
     public void initialise() {
-        idDesc = embIdProperty.getTargetDescriptor();
-        props = embIdProperty.getProperties();
+        this.idDesc = embIdProperty.getTargetDescriptor();
+        this.props = embIdProperty.getProperties();
 
         StringBuilder sb = new StringBuilder();
         sb.append("(");
@@ -47,7 +47,7 @@ public final class IdBinderEmbedded implements IdBinder {
         }
         sb.append(")");
 
-        idInValueSql = sb.toString();
+        this.idInValueSql = sb.toString();
     }
     
     public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {
@@ -193,6 +193,28 @@ public final class IdBinderEmbedded implements IdBinder {
         for (int i = 0; i < props.length; i++) {
             props[i].appendSelect(ctx);
         }
+    }
+        
+    public String getAssocIdInValueExpr() {
+        return idInValueSql;
+    }
+        
+    public String getAssocIdInExpr(String prefix) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for (int i = 0; i < props.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            if (prefix != null) {
+                sb.append(prefix);
+                sb.append(".");
+            }
+            sb.append(props[i].getName());
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
     public String getAssocOneIdExpr(String prefix, String operator) {

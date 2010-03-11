@@ -91,9 +91,23 @@ public final class BeanFkeyProperty implements ElPropertyValue {
     }
 
     /**
+     * Returns null as not an AssocOne.
+     */
+    public String getAssocIdInExpr(String prefix) {
+        return null;
+    }
+
+    /**
+     * Returns null as not an AssocOne.
+     */
+    public String getAssocIdInValueExpr() {
+        return null;
+    }
+
+    /**
      * Returns false as not an AssocOne.
      */
-    public boolean isAssocOneId() {
+    public boolean isAssocId() {
         return false;
     }
 

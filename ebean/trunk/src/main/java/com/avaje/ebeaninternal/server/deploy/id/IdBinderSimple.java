@@ -162,6 +162,21 @@ public final class IdBinderSimple implements IdBinder {
 		sb.append(" ? ");
 		return sb.toString();		
 	}
+
+    public String getAssocIdInValueExpr() {
+        return "?";
+    }
+    
+    public String getAssocIdInExpr(String prefix) {
+
+        StringBuilder sb = new StringBuilder();
+        if (prefix != null) {
+            sb.append(prefix);
+            sb.append(".");
+        }
+        sb.append(idProperty.getName());
+        return sb.toString();
+    }
 	
 	public Object convertSetId(Object idValue, Object bean) {
 		

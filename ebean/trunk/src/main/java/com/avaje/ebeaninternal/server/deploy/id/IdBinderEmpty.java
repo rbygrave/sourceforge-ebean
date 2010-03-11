@@ -67,7 +67,13 @@ public final class IdBinderEmpty implements IdBinder {
 		return null;
 	}
 	
-	
+    public String getAssocIdInValueExpr() {
+        return null;
+    }
+        
+    public String getAssocIdInExpr(String prefix) {
+        return null;
+    }
 	
 	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
 		

@@ -273,6 +273,28 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 	
+    public String getAssocIdInValueExpr() {
+        return idInValueSql;
+    }
+        
+    public String getAssocIdInExpr(String prefix) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for (int i = 0; i < props.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            if (prefix != null) {
+                sb.append(prefix);
+                sb.append(".");
+            }
+            sb.append(props[i].getName());
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+	
 	public String getAssocOneIdExpr(String prefix, String operator){
 
 		StringBuilder sb = new StringBuilder();
