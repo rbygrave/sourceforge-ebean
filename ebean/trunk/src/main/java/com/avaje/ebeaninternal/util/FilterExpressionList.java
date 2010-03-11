@@ -48,6 +48,10 @@ public class FilterExpressionList<T> extends DefaultExpressionList<T> {
     
     private String notAllowedMessage = "This method is not allowed on a filter";
         
+    public ExpressionList<T> filterMany(String prop) {
+        return rootQuery.filterMany(prop);
+    }
+    
     public FutureIds<T> findFutureIds() {
         return rootQuery.findFutureIds();
     }

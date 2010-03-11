@@ -870,7 +870,45 @@ public interface Query<T> extends Serializable {
 	 */
 	public ExpressionList<T> where();
 
-    public ExpressionList<T> filterMany(String prop);
+    /**
+     * This applies a filter on the 'many' property list rather than the root
+     * level objects.
+     * <p>
+     * Typically you will use this in a scenario where the cardinality is high
+     * on the 'many' property you wish to join to. Say you want to fetch
+     * customers and their associated orders... but instead of getting all the
+     * orders for each customer you only want to get the new orders they placed
+     * since last week. In this case you can use filterMany() to filter the
+     * orders.
+     * </p>
+     * 
+     * <pre class="code">
+     * 
+     * List&lt;Customer&gt; list = Ebean.find(Customer.class)
+     *   // .join(&quot;orders&quot;, new JoinConfig().lazy())
+     *   // .join(&quot;orders&quot;, new JoinConfig().query())
+     *   .join(&quot;orders&quot;)
+     *   .where().ilike(&quot;name&quot;, &quot;rob%&quot;)
+     *   .filterMany(&quot;orders&quot;)
+     *       .eq(&quot;status&quot;, Order.Status.NEW)
+     *       .gt(&quot;orderDate&quot;, lastWeek)
+     *   .findList();
+     * 
+     * </pre>
+     * 
+     * <p>
+     * Please note you have to be careful that you add expressions to 
+     * the correct expression list - as there is one for the 'root level'
+     * and one for each filterMany that you have.  
+     * </p>
+     * 
+     * @param propertyName the name of the many property that you 
+     *         want to have a filter on.
+     * 
+     * @return the expression list that you add filter expressions 
+     *         for the many to.
+     */
+    public ExpressionList<T> filterMany(String propertyName);
 
 	/**
 	 * Add Expressions to the Having clause return the ExpressionList.
