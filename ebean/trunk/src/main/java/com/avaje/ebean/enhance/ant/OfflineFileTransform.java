@@ -20,6 +20,7 @@ public class OfflineFileTransform {
 	final String inDir;
 
 	final String outDir;
+	private TransformationListener listener;
 
 	/**
 	 * Note that the inDir and outDir can be the same and typically are. That
@@ -41,6 +42,11 @@ public class OfflineFileTransform {
 		inDir = trimSlash(inDir);
 		this.inDir = inDir;
 		this.outDir = outDir == null ? inDir : outDir;
+	}
+
+	/** Register a listner to receive event notification */
+	public void setListener(TransformationListener v) {
+		this.listener = v;
 	}
 
 	private String trimSlash(String dir) {
@@ -136,6 +142,13 @@ public class OfflineFileTransform {
 
 		if (result != null) {
 			InputStreamTransform.writeBytes(result, file);
+			if(listener!=null) {
+				listener.logEvent("Enhanced "+file);
+			}
+		} else {
+			if(listener!=null) {
+				listener.logError("Unable to enhance "+file);
+			}
 		}
 	}
 
