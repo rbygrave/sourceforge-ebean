@@ -290,16 +290,25 @@ public class CQueryBuilder implements Constants {
 		}
 
 		String dbWhere = predicates.getDbWhere();
-		if (dbWhere != null) {
-			if (dbWhere.length() > 0) {
-				if (!hasWhere) {
-					sb.append(" ").append(NEW_LINE).append("where ");
-				} else {
-					sb.append("and ");
-				}
-				sb.append(dbWhere);
+		if (!isEmpty(dbWhere)) {
+			if (!hasWhere) {
+			    hasWhere = true;
+				sb.append(" ").append(NEW_LINE).append("where ");
+			} else {
+				sb.append("and ");
 			}
+			sb.append(dbWhere);
 		}
+		
+		String dbFilterMany = predicates.getDbFilterMany();
+        if (!isEmpty(dbFilterMany)) {
+            if (!hasWhere) {
+                sb.append(" ").append(NEW_LINE).append("where ");
+            } else {
+                sb.append("and ");
+            }
+            sb.append(dbFilterMany);
+        }
 
 		String dbOrderBy = predicates.getDbOrderBy();
 		if (dbOrderBy != null) {
@@ -319,5 +328,8 @@ public class CQueryBuilder implements Constants {
 		
 	}
 
+	private boolean isEmpty(String s){
+	    return s == null || s.length() == 0;
+	}
 
 }

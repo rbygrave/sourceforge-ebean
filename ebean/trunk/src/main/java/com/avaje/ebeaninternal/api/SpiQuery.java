@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollectionTouched;
@@ -167,9 +168,26 @@ public interface SpiQuery<T> extends Query<T> {
      */
     public void setSelectId();
 
-    public List<OrmQueryProperties> removeSecondaryQueries();
+    /**
+     * Set a filter to a join path.
+     */
+    public void setFilterMany(String prop, ExpressionList<?> filterMany);
+    
+    /**
+     * Remove the query joins from query detail.
+     * <p>
+     * These are registered with the Load Context.
+     * </p>
+     */
+    public List<OrmQueryProperties> removeQueryJoins();
 
-    public List<OrmQueryProperties> removeSecondaryLazyQueries();
+    /**
+     * Remove the lazy joins from query detail.
+     * <p>
+     * These are registered with the Load Context.
+     * </p>
+     */
+    public List<OrmQueryProperties> removeLazyJoins();
 
     /**
      * Convert any many joins fetch joins to query joins.

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 
 /**
@@ -49,4 +50,11 @@ public interface SpiExpressionList<T> extends ExpressionList<T> {
 	 * @return the list of all the bind values in order.
 	 */
 	public ArrayList<Object> buildBindValues(SpiExpressionRequest request);
+	
+    /**
+     * Calculate a hash based on the expressions but excluding the actual bind
+     * values.
+     */
+    public int queryPlanHash(BeanQueryRequest<?> request);
+
 }

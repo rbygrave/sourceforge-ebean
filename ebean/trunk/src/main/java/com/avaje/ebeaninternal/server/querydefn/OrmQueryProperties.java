@@ -10,9 +10,14 @@ import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.Query;
+import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
+import com.avaje.ebeaninternal.server.expression.DefaultExpressionFactory;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
+import com.avaje.ebeaninternal.util.FilterExpressionList;
 
 /**
  * Represents the Properties of an Object Relational query.
@@ -63,6 +68,12 @@ public class OrmQueryProperties implements Serializable {
 
     private List<OrmQueryProperties> secondaryChildren;
 
+    /**
+     * A filter that can be applied to the fetch of this path in the object graph.
+     */
+    @SuppressWarnings("unchecked")
+    private SpiExpressionList filterMany;
+    
     public OrmQueryProperties() {
         this(null, null, null);
     }
@@ -87,6 +98,23 @@ public class OrmQueryProperties implements Serializable {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> SpiExpressionList<T> filterMany(Query<T> rootQuery) {
+        if (filterMany == null){
+            DefaultExpressionFactory expr = new DefaultExpressionFactory(path);
+            filterMany = new FilterExpressionList(expr, rootQuery);
+        }
+        return filterMany;
+    }
+    
+    public SpiExpressionList<?> getFilterMany() {
+        return filterMany;
+    }
+
+    public void setFilterMany(SpiExpressionList<?> filterMany) {
+        this.filterMany =  filterMany;
+    }
+
     /**
      * Set the properties from deployment default FetchTypes.
      */
@@ -104,6 +132,9 @@ public class OrmQueryProperties implements Serializable {
 
         if (trimmedProperties != null && trimmedProperties.length() > 0) {
             query.select(trimmedProperties);
+            if (filterMany != null){
+                query.setFilterMany(path, filterMany);
+            }
         }
 
         if (secondaryChildren != null) {
@@ -113,6 +144,7 @@ public class OrmQueryProperties implements Serializable {
                 String path = p.getPath();
                 path = path.substring(trimPath);
                 query.join(path, p.getProperties());
+                query.setFilterMany(path, p.getFilterMany());
             }
         }
     }
@@ -125,13 +157,16 @@ public class OrmQueryProperties implements Serializable {
         if (trimmedProperties != null && trimmedProperties.length() > 0) {
             query.join(path, trimmedProperties);
         }
-
+        if (filterMany != null){
+            query.setFilterMany(path, filterMany);
+        }   
         if (secondaryChildren != null) {
 
             for (int i = 0; i < secondaryChildren.size(); i++) {
                 OrmQueryProperties p = secondaryChildren.get(i);
                 String path = p.getPath();
                 query.join(path, p.getProperties());
+                query.setFilterMany(path, p.getFilterMany());
             }
         }
     }
@@ -148,6 +183,7 @@ public class OrmQueryProperties implements Serializable {
         copy.queryJoinBatch = queryJoinBatch;
         copy.lazyJoinBatch = lazyJoinBatch;
         copy.allProperties = allProperties;
+        copy.filterMany = filterMany;
         if (included != null) {
             copy.included = new HashSet<String>(included);
         }
@@ -191,12 +227,24 @@ public class OrmQueryProperties implements Serializable {
         secondaryChildren.add(child);
     }
 
+    public int autofetchPlanHash() {
+        
+        int hc = (path != null ? path.hashCode() : 1);
+        hc = hc * 31 + (properties != null ? properties.hashCode() : 1);
+        
+        return hc;
+    }
+
     /**
      * Calculate the query plan hash.
      */
-    public int queryPlanHash() {
+    @SuppressWarnings("unchecked")
+    public int queryPlanHash(BeanQueryRequest<?> request) {
+        
         int hc = (path != null ? path.hashCode() : 1);
         hc = hc * 31 + (properties != null ? properties.hashCode() : 1);
+        hc = hc * 31 + (filterMany != null ? filterMany.queryPlanHash(request) : 1);
+        
         return hc;
     }
 

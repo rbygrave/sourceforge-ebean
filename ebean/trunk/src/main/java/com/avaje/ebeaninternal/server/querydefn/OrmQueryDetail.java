@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.query.SplitName;
@@ -60,21 +61,46 @@ public class OrmQueryDetail implements Serializable {
 	/**
 	 * Calculate the hash for the query plan.
 	 */
-	public int queryPlanHash() {
+	public int queryPlanHash(BeanQueryRequest<?> request) {
 
-		int hc = (baseProps == null ? 1 : baseProps.queryPlanHash());
+		int hc = (baseProps == null ? 1 : baseProps.queryPlanHash(request));
 
 		if (joins != null) {
 			Iterator<OrmQueryProperties> it = joins.values().iterator();
 			while (it.hasNext()) {
 				OrmQueryProperties p = it.next();
-				hc = hc * 31 + p.queryPlanHash();
+				hc = hc * 31 + p.queryPlanHash(request);
 			}
 		}
 
 		return hc;
 	}
 
+	/**
+	 * Return true if equal in terms of autofetch (select and joins).
+	 */
+	public boolean isAutoFetchEqual(OrmQueryDetail otherDetail){
+	    return autofetchPlanHash() == otherDetail.autofetchPlanHash();
+	}
+	
+	/**
+     * Calculate the hash for the query plan.
+     */
+    private int autofetchPlanHash() {
+
+        int hc = (baseProps == null ? 1 : baseProps.autofetchPlanHash());
+
+        if (joins != null) {
+            Iterator<OrmQueryProperties> it = joins.values().iterator();
+            while (it.hasNext()) {
+                OrmQueryProperties p = it.next();
+                hc = hc * 31 + p.autofetchPlanHash();
+            }
+        }
+
+        return hc;
+    }
+    
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		if (baseProps != null) {

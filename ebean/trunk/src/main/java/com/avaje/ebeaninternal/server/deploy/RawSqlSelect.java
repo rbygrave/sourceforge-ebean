@@ -211,7 +211,7 @@ public class RawSqlSelect {
 
 		String dbHaving = predicates.getDbHaving();
 		
-		if (dbHaving != null) {
+		if (dbHaving != null && dbHaving.length() > 0) {
 			if (andHavingExpr) {
 				sb.append(" and ");
 			} else {

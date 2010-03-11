@@ -128,7 +128,11 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		return loaderIndex;
 	}
 
-	/**
+	public BeanCollectionLoader getLoader() {
+        return loader;
+    }
+	
+    /**
 	 * Check after the lazy load that the underlying collection
 	 * is not null (handle case where join to many not outer).
 	 */

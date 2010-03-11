@@ -190,6 +190,8 @@ public interface ExpressionList<T> extends Serializable {
      */
     public PagingList<T> findPagingList(int pageSize);
 
+    public ExpressionList<T> filterMany(String prop);
+
     /**
      * Specify specific properties to fetch on the main/root bean (aka partial
      * object).

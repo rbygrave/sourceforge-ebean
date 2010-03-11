@@ -72,6 +72,11 @@ public interface BeanCollection<E> extends Serializable {
 	public int getLoaderIndex();
 
 	/**
+	 * Return the associated loader (could be null).
+	 */
+    public BeanCollectionLoader getLoader();
+
+	/**
 	 * Set when this collection is being loaded via a background thread.
 	 * <p>
 	 * Refer to {@link Query#setBackgroundFetchAfter(int)}
