@@ -86,6 +86,16 @@ public interface IdBinder {
 	 */
 	public String getAssocOneIdExpr(String prefix, String operator);
 	
+    /**
+     * Return the logical id value expression taking into account embedded id's.
+     */
+    public String getAssocIdInValueExpr();
+        
+    /**
+     * Return the logical id in expression taking into account embedded id's.
+     */
+    public String getAssocIdInExpr(String prefix);
+
 	/**
 	 * Binds an id value to a prepared statement.
 	 */

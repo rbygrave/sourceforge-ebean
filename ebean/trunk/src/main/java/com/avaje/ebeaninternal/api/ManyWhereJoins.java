@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.query.SplitName;
 
@@ -40,13 +41,30 @@ public class ManyWhereJoins {
     public void add(ElPropertyDeploy elProp) {
         
         String join = elProp.getElPrefix();
-        BeanProperty p = elProp.getBeanProperty(); 
-        joins.add(join);
-        String secondaryTableJoinPrefix = p.getSecondaryTableJoinPrefix();
-        if (secondaryTableJoinPrefix != null) {
-            joins.add(join+"."+secondaryTableJoinPrefix);
+        BeanProperty p = elProp.getBeanProperty();
+        if (p instanceof BeanPropertyAssocMany<?>){
+            join = addManyToJoin(join, p.getName());
         }
-        addParentJoins(join);
+        if (join != null){
+            joins.add(join);
+            String secondaryTableJoinPrefix = p.getSecondaryTableJoinPrefix();
+            if (secondaryTableJoinPrefix != null) {
+                joins.add(join+"."+secondaryTableJoinPrefix);
+            }
+            addParentJoins(join);
+        }
+    }
+    
+    /**
+     * For 'many' properties we also need to add the name of the 
+     * many property to get the full logical name of the join.
+     */
+    private String addManyToJoin(String join, String manyPropName){
+        if (join == null){
+            return manyPropName;
+        } else {
+            return join+"."+manyPropName;
+        }
     }
     
     private void addParentJoins(String join) {

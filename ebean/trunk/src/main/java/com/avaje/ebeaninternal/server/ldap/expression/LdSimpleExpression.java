@@ -61,7 +61,7 @@ class LdSimpleExpression extends LdAbstractExpression {
 		
 	    ElPropertyValue prop = getElProp(request);
 		if (prop != null){
-		    if (prop.isAssocOneId()){
+		    if (prop.isAssocId()){
 	            Object[] ids = prop.getAssocOneIdValues(value);
 	            if (ids != null){
 	                for (int i = 0; i < ids.length; i++) {
@@ -81,7 +81,7 @@ class LdSimpleExpression extends LdAbstractExpression {
 	public void addSql(SpiExpressionRequest request) {
 		ElPropertyValue prop = getElProp(request);
 		if (prop != null){
-		    if (prop.isAssocOneId()){
+		    if (prop.isAssocId()){
 		        String rawExpr = prop.getAssocOneIdExpr(propertyName,type.toString());
 		        String parsed = request.parseDeploy(rawExpr);
 	            request.append(parsed);

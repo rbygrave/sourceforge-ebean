@@ -251,9 +251,24 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     public String getAssocOneIdExpr(String prefix, String operator) {
         return targetDescriptor.getIdBinder().getAssocOneIdExpr(prefix, operator);
     }
+    
+    /**
+     * Return the logical id value expression taking into account embedded id's.
+     */
+    public String getAssocIdInValueExpr(){
+        return targetDescriptor.getIdBinder().getAssocIdInValueExpr();        
+    }
+    
+    /**
+     * Return the logical id in expression taking into account embedded id's.
+     */
+    public String getAssocIdInExpr(String prefix){
+        return targetDescriptor.getIdBinder().getAssocIdInExpr(prefix);
+    }
+
 
     @Override
-    public boolean isAssocOneId() {
+    public boolean isAssocId() {
         return !embedded;
     }
 

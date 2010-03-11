@@ -52,7 +52,7 @@ public class ElPropertyChain implements ElPropertyValue {
 	
 	private final ElPropertyValue[] chain;
 
-	private final boolean assocOneId;
+	private final boolean assocId;
 	private final int last;
 	private final BeanProperty lastBeanProperty;
 	private final ScalarType<?> scalarType;
@@ -79,7 +79,7 @@ public class ElPropertyChain implements ElPropertyValue {
 			this.name = expression;
 		}		
 
-		this.assocOneId = chain[chain.length-1].isAssocOneId();
+		this.assocId = chain[chain.length-1].isAssocId();
 		
 		this.last = chain.length-1;
 		this.lastBeanProperty = chain[chain.length-1].getBeanProperty();
@@ -150,9 +150,17 @@ public class ElPropertyChain implements ElPropertyValue {
 	public String getAssocOneIdExpr(String prefix, String operator) {
 		return lastElPropertyValue.getAssocOneIdExpr(expression, operator);
 	}
+	
+	public String getAssocIdInExpr(String prefix) {
+        return lastElPropertyValue.getAssocIdInExpr(prefix);
+    }
 
-	public boolean isAssocOneId() {
-		return assocOneId;
+    public String getAssocIdInValueExpr() {
+        return lastElPropertyValue.getAssocIdInValueExpr();
+    }
+
+    public boolean isAssocId() {
+		return assocId;
 	}
 
 	public String getDbColumn() {

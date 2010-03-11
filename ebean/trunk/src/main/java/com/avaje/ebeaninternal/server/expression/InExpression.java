@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 class InExpression extends AbstractExpression {
 
@@ -22,9 +23,25 @@ class InExpression extends AbstractExpression {
 	}
 
 	public void addBindValues(SpiExpressionRequest request) {
-
+	    
+        ElPropertyValue prop = getElProp(request);
+	    if (prop != null && !prop.isAssocId()){
+	        prop = null;
+	    }
+	    
 		for (int i = 0; i < values.length; i++) {
-			request.addBindValue(values[i]);
+		    if (prop == null){
+	            request.addBindValue(values[i]);
+		        
+		    } else {
+		        // extract the id values from the bean
+	            Object[] ids = prop.getAssocOneIdValues(values[i]);
+		        if (ids != null){
+                    for (int j = 0; j < ids.length; j++) {
+                        request.addBindValue(ids[j]);
+                    }
+                }
+		    }
 		}
 	}
 
@@ -36,11 +53,25 @@ class InExpression extends AbstractExpression {
             return;
 	    }
 	    
-		request.append(propertyName).append(" in ( ?");
+        ElPropertyValue prop = getElProp(request);
+        if (prop != null && !prop.isAssocId()) {
+            prop = null;
+        } 
+        
+        if (prop == null){
+            request.append(propertyName);  
+        } else {
+            request.append(prop.getAssocIdInExpr(propertyName));
+        }
+	    
+		request.append(" in ( ");
+		
+		String inVal = prop == null ? "?" : prop.getAssocIdInValueExpr();
+		
+	    request.append(inVal);
 		for (int i = 1; i < values.length; i++) {
-			
-			request.append(", ?");
-		}
+			request.append(", ").append(inVal);
+		} 
 		
 		request.append(" ) ");
 	}
@@ -49,7 +80,9 @@ class InExpression extends AbstractExpression {
 	 * Based on the number of values in the in clause.
 	 */
 	public int queryAutoFetchHash() {
-		return InExpression.class.getName().hashCode() + 31 * values.length;
+		int hc = InExpression.class.getName().hashCode() + 31 * values.length;
+	    hc = hc * 31 + propertyName.hashCode();
+	    return hc;
 	}
 
 	public int queryPlanHash(BeanQueryRequest<?> request) {

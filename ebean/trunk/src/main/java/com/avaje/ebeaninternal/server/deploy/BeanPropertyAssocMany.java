@@ -256,6 +256,41 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
 	/**
+     * Return the Id values from the given bean.
+     */
+    @Override
+    public Object[] getAssocOneIdValues(Object bean) {
+        return targetDescriptor.getIdBinder().getIdValues(bean);
+    }
+
+    /**
+     * Return the Id expression to add to where clause etc.
+     */
+    public String getAssocOneIdExpr(String prefix, String operator) {
+        return targetDescriptor.getIdBinder().getAssocOneIdExpr(prefix, operator);
+    }
+    
+    /**
+     * Return the logical id value expression taking into account embedded id's.
+     */
+    public String getAssocIdInValueExpr(){
+        return targetDescriptor.getIdBinder().getAssocIdInValueExpr();        
+    }
+    
+    /**
+     * Return the logical id in expression taking into account embedded id's.
+     */
+    public String getAssocIdInExpr(String prefix){
+        return targetDescriptor.getIdBinder().getAssocIdInExpr(prefix);
+    }
+
+
+    @Override
+    public boolean isAssocId() {
+        return true;
+    }
+	
+	/**
 	 * Returns true.
 	 */
 	@Override

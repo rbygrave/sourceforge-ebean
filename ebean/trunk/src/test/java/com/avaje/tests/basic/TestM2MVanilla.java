@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Query;
 import com.avaje.tests.model.basic.MRole;
 import com.avaje.tests.model.basic.MUser;
 
@@ -56,7 +57,19 @@ public class TestM2MVanilla extends TestCase {
         List<MRole> checkRoles2 = checkUser2.getRoles();
         Assert.assertNotNull(checkRoles2);
         Assert.assertEquals("added a role", 3, checkRoles2.size());
+
+        Query<MUser> rolesQuery0 = Ebean.find(MUser.class)
+            .where().eq("roles", r1)
+            .query();
         
+        rolesQuery0.findList();
+
+        Query<MUser> rolesQuery = Ebean.find(MUser.class)
+            .where().in("roles", roleList)
+            .query();
+        
+        List<MUser> userInRolesList = rolesQuery.findList();
+        Assert.assertTrue(userInRolesList.size() > 0);
         
         checkRoles2.remove(0);
         checkRoles2.remove(0);
