@@ -64,7 +64,7 @@ public class WeakValueMap<K, V> {
         this.backing = new HashMap<K, WeakReferenceWithKey<K, V>>();
     }
 
-    protected WeakReferenceWithKey<K, V> createReference(K key, V value) {
+    private WeakReferenceWithKey<K, V> createReference(K key, V value) {
         return new WeakReferenceWithKey<K, V>(key, value, refQueue);
     }
 
@@ -89,16 +89,20 @@ public class WeakValueMap<K, V> {
         if (ref != null) {
             V existingValue = ref.get();
             if (existingValue != null) {
+                // it is not absent
                 return existingValue;
             }
         }
-        return backing.put(key, createReference(key, value));
+        // put the new value and return null
+        // indicating the put was successful
+        backing.put(key, createReference(key, value));
+        return null;
     }
 
-    public Object put(K key, V value) {
+    public void put(K key, V value) {
         expunge();
 
-        return backing.put(key, createReference(key, value));
+        backing.put(key, createReference(key, value));
     }
 
     public V get(K key) {
