@@ -187,6 +187,36 @@
 				<artifactId>maven-install-plugin</artifactId>
 				<version>2.3</version>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.6.1</version>
+				<executions>
+					<execution>
+						<id>main</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+						<configuration>
+							<groups>
+								<group>
+									<title>Public Facing</title>
+									<packages>com.avaje.ebean:com.avaje.ebean.a*:com.avaje.ebean.b*:com.avaje.ebean.c*:com.avaje.ebean.m*:com.avaje.ebean.t*:com.avaje.ebean.v*</packages>
+								</group>
+								<group>
+									<title>Byte Code Enhancement / Dynamic Proxy Generation</title>
+									<packages>com.avaje.ebean.e*</packages>
+								</group>
+								<group>
+									<title>Internally Focused</title>
+									<packages>com.avaje.ebeani*</packages>
+								</group>
+							</groups>
+						</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
