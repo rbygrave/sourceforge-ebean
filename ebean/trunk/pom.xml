@@ -201,19 +201,25 @@
 					</execution>
 				</executions>
 						<configuration>
+							<overview>${basedir}/src/main/java/com/avaje/ebean/overview.html</overview>
+							<stylesheetfile>${basedir}/src/main/java/com/avaje/ebean/stylesheet.css</stylesheetfile>
+						
+							<excludePackageNames>com.avaje.ebean.en*:com.avaje.ebeani*</excludePackageNames>
 							<groups>
 								<group>
-									<title>Public Facing</title>
-									<packages>com.avaje.ebean:com.avaje.ebean.a*:com.avaje.ebean.b*:com.avaje.ebean.c*:com.avaje.ebean.m*:com.avaje.ebean.t*:com.avaje.ebean.v*</packages>
+									<title>Public API</title>
+									<packages>com.avaje.ebean:com.avaje.ebean.event:com.avaje.ebean.a*:com.avaje.ebean.b*:com.avaje.ebean.c*:com.avaje.ebean.m*:com.avaje.ebean.t*:com.avaje.ebean.v*</packages>
 								</group>
+								<!-- 
 								<group>
 									<title>Byte Code Enhancement / Dynamic Proxy Generation</title>
-									<packages>com.avaje.ebean.e*</packages>
+									<packages>com.avaje.ebean.en*</packages>
 								</group>
 								<group>
 									<title>Internally Focused</title>
 									<packages>com.avaje.ebeani*</packages>
 								</group>
+								 -->
 							</groups>
 						</configuration>
 			</plugin>
