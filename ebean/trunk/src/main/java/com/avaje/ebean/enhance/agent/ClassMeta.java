@@ -70,13 +70,23 @@ public class ClassMeta {
 
 	private ArrayList<MethodMeta> methodMetaList = new ArrayList<MethodMeta>();
 
-	public ClassMeta(boolean subclassing, int logLevel, PrintStream logout) {
-		this.subclassing = subclassing;
+	private final EnhanceContext enhanceContext;
+	
+	public ClassMeta(EnhanceContext enhanceContext, boolean subclassing, int logLevel, PrintStream logout) {
+		this.enhanceContext = enhanceContext;
+	    this.subclassing = subclassing;
 		this.logLevel = logLevel;
 		this.logout = logout;
 	}
-
+	
 	/**
+	 * Return the enhance context which has options for enhancement.
+	 */
+	public EnhanceContext getEnhanceContext() {
+        return enhanceContext;
+    }
+	
+    /**
 	 * Return the class level annotations.
 	 */
 	public Set<String> getClassAnnotations() {

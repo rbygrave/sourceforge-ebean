@@ -22,6 +22,8 @@ public class EnhanceContext {
 
 	private final boolean transientInternalFields;
 
+    private final boolean checkNullManyFields;
+
 	private final ClassMetaReader reader;
 
 	private final ClassBytesReader classBytesReader;
@@ -64,6 +66,7 @@ public class EnhanceContext {
 
         this.readOnly = getPropertyBoolean("readonly", false);		
 		this.transientInternalFields = getPropertyBoolean("transientInternalFields", false);
+        this.checkNullManyFields = getPropertyBoolean("checkNullManyFields", true);      
 	}
 	
 	public byte[] getClassBytes(String className, ClassLoader classLoader){
@@ -106,7 +109,7 @@ public class EnhanceContext {
 	 * Create a new meta object for enhancing a class.
 	 */
 	public ClassMeta createClassMeta() {
-		return new ClassMeta(subclassing, logLevel, logout);
+		return new ClassMeta(this, subclassing, logLevel, logout);
 	}
 
 	/**
@@ -206,6 +209,17 @@ public class EnhanceContext {
 	 */
     public boolean isTransientInternalFields() {
         return transientInternalFields;
+    }
+
+    /**
+     * Return true if we should add null checking on *ToMany fields.
+     * <p>
+     * On getting a many that is null Ebean will create an empty List, Set or
+     * Map. If it is a ManyToMany it will turn on Modify listening.
+     * </p>
+     */
+    public boolean isCheckNullManyFields() {
+        return checkNullManyFields;
     }
 
 }
