@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.BeanCollectionTouched;
@@ -50,6 +51,8 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	 */
 	protected transient BeanCollectionLoader loader;
 	
+	protected transient ExpressionList<?> filterMany;
+
 	protected int loaderIndex;
 	
 	protected String ebeanServerName;
@@ -127,11 +130,15 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	public int getLoaderIndex() {
 		return loaderIndex;
 	}
-
-	public BeanCollectionLoader getLoader() {
-        return loader;
-    }
 	
+    public ExpressionList<?> getFilterMany() {
+        return filterMany;
+    }
+
+    public void setFilterMany(ExpressionList<?> filterMany) {
+        this.filterMany = filterMany;
+    }
+
     /**
 	 * Check after the lazy load that the underlying collection
 	 * is not null (handle case where join to many not outer).

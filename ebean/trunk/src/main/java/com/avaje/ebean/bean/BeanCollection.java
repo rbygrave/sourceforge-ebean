@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Query;
 
 /**
@@ -72,9 +73,18 @@ public interface BeanCollection<E> extends Serializable {
 	public int getLoaderIndex();
 
 	/**
-	 * Return the associated loader (could be null).
+	 * Return the filter (if any) that was used in building
+	 * this collection.
+	 * <p>
+	 * This is so that the filter can be applied on refresh.
+	 * </p>
 	 */
-    public BeanCollectionLoader getLoader();
+    public ExpressionList<?> getFilterMany();
+
+    /**
+     * Set the filter that was used in building this collection.
+     */
+    public void setFilterMany(ExpressionList<?> filterMany);
 
 	/**
 	 * Set when this collection is being loaded via a background thread.

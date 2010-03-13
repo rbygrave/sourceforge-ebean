@@ -1644,7 +1644,7 @@ public class BeanDescriptor<T> {
             return property;
         }
         if (property == null) {
-            throw new NullPointerException("No property found for [" + propName + "] in expression "
+            throw new PersistenceException("No property found for [" + propName + "] in expression "
                     + chain.getExpression());
         }
         return chain.add(property).build();

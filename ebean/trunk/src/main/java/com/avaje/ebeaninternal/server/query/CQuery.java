@@ -25,7 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +41,7 @@ import com.avaje.ebean.bean.NodeUsageListener;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.api.LoadContext;
+import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
@@ -230,12 +230,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private final CQueryPlan queryPlan;
 
-	/**
-	 * A double check to make sure the beans are being loaded in the correct
-	 * order. This is not necessary so could be removed at some point.
-	 */
-	private HashSet<Object> loadBeanOrderCheck;
-
 	private long startNano;
 	
 	private final Mode queryMode;
@@ -252,6 +246,8 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private int executionTimeMicros;
 	
 	private final int parentState;
+	
+	private final SpiExpressionList<?> filterMany;
 	
 	/**
 	 * Create the Sql select based on the request.
@@ -284,11 +280,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.manyProperty = selectClause.getManyProperty();
 		this.manyIncluded = selectClause.isManyIncluded();
 		if (manyIncluded) {
-			// a error checking mechanism... that I will
-			// probably remove at some point - checks order
-			// of the duplicate master beans in a master/detail
-			// type query...
-		    this.loadBeanOrderCheck = new HashSet<Object>(200);
+		    // get filter to put on the collection for reuse with refresh
+		    OrmQueryProperties chunk = query.getDetail().getChunk(manyProperty.getName(), false);
+		    this.filterMany = chunk.getFilterMany();
+		} else {
+		    this.filterMany = null;
 		}
 
 		this.sql = queryPlan.getSql();
@@ -493,11 +489,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 				}
 				this.prevLoadedBean = loadedBean;
 				this.loadedBeanId = id;
-				if (!loadBeanOrderCheck.add(id)) {
-					String msg = "The ordering of beans being loaded is not correct? id:" + id
-							+ " already loaded at rowCount:" + rowCount;
-					throw new PersistenceException(msg);
-				}
 			}
 			this.loadedBean = bean;
 		}
@@ -635,8 +626,14 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		} else {
 			// create a new collection to populate and assign to the bean
 			currentDetailCollection = manyProperty.createEmpty(request.isVanillaMode());
-			manyProperty.setValue(loadedBean, currentDetailCollection);
+			manyProperty.setValue(loadedBean, currentDetailCollection);			
 		}
+		
+        if (filterMany != null && !request.isVanillaMode()){
+            // remember the for use with a refresh
+            ((BeanCollection<?>)currentDetailCollection).setFilterMany(filterMany);
+        }
+
 		// the manyKey is always null for this case, just using default mapKey on the property
 		currentDetailAdd = manyProperty.getBeanCollectionAdd(currentDetailCollection, null);
 		addToCurrentDetailCollection();
