@@ -76,10 +76,10 @@ public interface CsvCallback<T> {
      * 
      * @param row
      *            the index of the content being processed
+     * @param line
+     *            the content that has been used to load the bean
      * @param bean
      *            the entity bean after it has been loaded from the csv content
-     * @param lineContent
-     *            the content that has been used to load the bean
      */
     public void processBean(int row, String[] line, T bean);
 

@@ -10,7 +10,7 @@ import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 /**
  * Implementation of the AutoFetchControl.
  * <p>
- * This is accessible via {@link EbeanServer#getServerControl()} or via JMX
+ * This is accessible via {@link EbeanServer#getAdminAutofetch()} or via JMX
  * MBeans.
  * </p>
  */

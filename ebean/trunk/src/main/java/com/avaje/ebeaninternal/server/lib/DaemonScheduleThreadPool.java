@@ -45,14 +45,6 @@ public final class DaemonScheduleThreadPool extends ScheduledThreadPoolExecutor 
 
 	/**
 	 * Construct the DaemonScheduleThreadPool.
-	 * 
-	 * @param coreSize
-	 *            the core size of the thread pool.
-	 * @param keepAliveSecs
-	 *            the time in seconds idle threads are keep alive
-	 * @param shutdownWaitSeconds
-	 *            the time in seconds allowed for the pool to shutdown nicely.
-	 *            After this the pool is forced to shutdown.
 	 */
     public DaemonScheduleThreadPool(int coreSize, int shutdownWaitSeconds, String namePrefix) {
         super(coreSize, new DaemonThreadFactory(namePrefix));

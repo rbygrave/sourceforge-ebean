@@ -79,9 +79,6 @@ public interface ExpressionList<T> extends Serializable {
      * This will never return a null. If no order by clause exists then an
      * 'empty' OrderBy object is returned.
      * </p>
-     * <p>
-     * This is EXACTLY the same as {@link #orderBy()}.
-     * </p>
      */
     public OrderBy<T> order();
 

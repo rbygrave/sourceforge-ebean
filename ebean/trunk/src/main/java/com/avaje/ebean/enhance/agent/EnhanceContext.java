@@ -38,7 +38,7 @@ public class EnhanceContext {
 	/**
 	 * Construct a context for enhancement or subclass generation.
 	 * 
-	 * @param subclassGeneration
+	 * @param subclassing
 	 *            true if generating subclasses (false for javaagent etc)
 	 * @param agentArgs
 	 *            parameters for enhancement such as log level
