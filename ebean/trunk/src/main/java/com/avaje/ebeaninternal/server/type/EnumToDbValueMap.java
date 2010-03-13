@@ -29,11 +29,6 @@ import java.util.LinkedHashMap;
  * Useful for building Enum converters where you want to map the DB values an
  * Enum gets converter to.
  * </p>
- * 
- * @param <B>
- *            The Bean value types
- * @param <D>
- *            The DB value type
  */
 public abstract class EnumToDbValueMap<T> {
 

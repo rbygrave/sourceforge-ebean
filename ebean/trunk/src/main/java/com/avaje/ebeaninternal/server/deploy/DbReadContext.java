@@ -11,9 +11,6 @@ import com.avaje.ebeaninternal.server.type.DataReader;
 
 /**
  * Context provided when a BeanProperty reads from a ResultSet.
- * 
- * @see {@link BeanProperty#readSet(DbReadContext, Object)}
- * @see {@link BeanProperty#read(DbReadContext)}
  */
 public interface DbReadContext {
 	

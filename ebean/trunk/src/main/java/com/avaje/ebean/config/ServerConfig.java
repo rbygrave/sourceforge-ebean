@@ -897,10 +897,10 @@ public class ServerConfig {
      * Set this to LogLevel.NONE to turn off transaction logging. Alternatively
      * you can change the log level for specific functions.
      * </p>
-     * 
-     * @see #setLoggingLevelIud(LogLevelStmt)
-     * @see #setLoggingLevelQuery(LogLevelStmt)
-     * @see #setLoggingLevelSqlQuery(LogLevelStmt)
+     * <p>
+     * See also setLoggingLevelIud(...), setLoggingLevelQuery(...)
+     * and setLoggingLevelSqlQuery(...).
+     * </p>
      */
     public void setLoggingLevel(LogLevel logging) {
         this.loggingLevel = logging;
@@ -937,7 +937,7 @@ public class ServerConfig {
      * <p>
      * Note this logging level can be changed at runtime via
      * {@link EbeanServer#getAdminLogging()} and
-     * {@link AdminLogging#setLoggingQuery(LogLevelStmt)}
+     * {@link AdminLogging#setLoggingLevelQuery(LogLevelStmt)}
      * </p>
      */
     public void setLoggingLevelQuery(LogLevelStmt queryLogLevel) {
@@ -1272,7 +1272,7 @@ public class ServerConfig {
     /**
      * Register a BeanQueryAdapter instance.
      * <p>
-     * Note alternatively you can use {@link #setBeanQueryAdapter(List)} to set
+     * Note alternatively you can use {@link #setQueryAdapters(List)} to set
      * all the BeanQueryAdapter instances.
      * </p>
      */

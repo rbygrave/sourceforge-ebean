@@ -32,7 +32,7 @@ import java.util.Map;
  * automatically removed when they are not referenced externally.
  * </p>
  * 
- * @authors mario, rbygrave
+ * @author mario, rbygrave
  */
 public class WeakValueMap<K, V> {
 

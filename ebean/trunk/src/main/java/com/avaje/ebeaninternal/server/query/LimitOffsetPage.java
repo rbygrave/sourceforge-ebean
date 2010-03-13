@@ -31,11 +31,6 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 
 /**
  * Page implementation based on limit offset types of queries.
- * <p>
- * Note that {@link SpiQuery#setRemoveManyJoins(boolean)} is used to ensure the
- * sql limit offset clauses etc can be used to limit the result set via sql
- * (rather than limiting on the client side).
- * </p>
  * 
  * @author rbygrave
  * 

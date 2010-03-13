@@ -38,7 +38,7 @@ public class DefaultBackgroundExecutor implements BackgroundExecutor {
 	/**
 	 * Construct the default implementation of BackgroundExecutor.
 	 * 
-	 * @param coreSize
+	 * @param mainPoolSize
 	 *            the core size of the thread pool.
 	 * @param keepAliveSecs
 	 *            the time in seconds idle threads are keep alive

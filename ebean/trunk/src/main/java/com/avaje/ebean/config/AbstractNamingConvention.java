@@ -176,8 +176,7 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
     /**
      * Return the tableName using the naming convention (rather than deployed
-     * 
-     * @Table annotation).
+     * Table annotation).
      */
     protected abstract TableName getTableNameByConvention(Class<?> beanClass);
 
