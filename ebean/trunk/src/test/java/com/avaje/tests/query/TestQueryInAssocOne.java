@@ -20,7 +20,7 @@ public class TestQueryInAssocOne extends TestCase {
         ResetBasicData.reset();
         
         List<Customer> list = Ebean.find(Customer.class)
-            .where().lt("id",2)
+            .where().lt("id",200)
             .findList();
         
         Query<Order> query = Ebean.find(Order.class)
@@ -30,8 +30,8 @@ public class TestQueryInAssocOne extends TestCase {
         query.findList();
         String sql = query.getGeneratedSql();
         
-        Assert.assertTrue(sql.indexOf("join o_customer oc on oc.id = o.kcustomer_id") > -1);
-        Assert.assertTrue(sql.indexOf("o.kcustomer_id in ( ?") > -1);
+        Assert.assertTrue(sql, sql.indexOf("join o_customer oc on oc.id = o.kcustomer_id") > -1);
+        Assert.assertTrue(sql, sql.indexOf("o.kcustomer_id in ( ?") > -1);
         
     }
 }

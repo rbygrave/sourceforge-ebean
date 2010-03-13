@@ -21,14 +21,12 @@ package com.avaje.ebeaninternal.server.loadcontext;
 
 import java.util.List;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.api.LoadManyContext;
 import com.avaje.ebeaninternal.api.LoadManyRequest;
-import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -72,16 +70,6 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 
 	}
 	
-	
-	public void configureFilter(Query<?> query) {
-	    if (queryProps != null){
-	        SpiExpressionList<?> filterMany = queryProps.getFilterMany();
-	        if (filterMany != null){
-	            ((SpiQuery<?>)query).setFilterMany(property.getName(), filterMany);
-	        }
-        }
-    }
-
     public void configureQuery(SpiQuery<?> query){
 		
 		// propagate the sharedInstance/ReadOnly state

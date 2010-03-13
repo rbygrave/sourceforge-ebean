@@ -1,8 +1,11 @@
 package com.avaje.tests.basic;
 
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.common.BeanList;
 import com.avaje.tests.model.basic.MRole;
 import com.avaje.tests.model.basic.MUser;
 
@@ -12,6 +15,14 @@ public class TestM2MCascadeOne extends TestCase {
         
         MUser u = new MUser();
         u.setUserName("testM2M");
+        
+        List<MRole> roles = u.getRoles();
+        if (roles != null){
+            if (roles instanceof BeanList<?>){
+                System.out.println("enhancement checkNullManyFields=true successful");
+            }
+        }
+        
         Ebean.save(u);
         
         MRole r0 = new MRole();

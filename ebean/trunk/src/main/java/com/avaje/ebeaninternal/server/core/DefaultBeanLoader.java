@@ -24,9 +24,9 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
@@ -183,7 +183,7 @@ public class DefaultBeanLoader {
 
         EntityBeanIntercept ebi = null;
         PersistenceContext pc = null;
-        BeanCollectionLoader beanCollectionLoader = null;
+        ExpressionList<?> filterMany = null;
         
 		if (!vanilla){
 	        ebi = ((EntityBean)parentBean)._ebean_getIntercept();
@@ -195,7 +195,8 @@ public class DefaultBeanLoader {
 
         Object currentValue = many.getValue(parentBean);
         if (currentValue instanceof BeanCollection<?>){
-            beanCollectionLoader = ((BeanCollection<?>)currentValue).getLoader();
+            BeanCollection<?> bc = (BeanCollection<?>)currentValue;
+            filterMany = bc.getFilterMany();
         }
 
         Object parentId = parentDesc.getId(parentBean);
@@ -229,9 +230,9 @@ public class DefaultBeanLoader {
 		} else {
 			query.join(many.getName());
 		}
-        if (beanCollectionLoader != null) {
-            beanCollectionLoader.configureFilter(query);
-        }
+		if (filterMany != null){
+            query.setFilterMany(many.getName(), filterMany);
+		}
 		
 		query.where().idEq(parentId);
 		query.setMode(Mode.LAZYLOAD_MANY);

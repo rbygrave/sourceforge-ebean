@@ -19,7 +19,6 @@
  */
 package com.avaje.ebean.bean;
 
-import com.avaje.ebean.Query;
 
 
 
@@ -41,8 +40,4 @@ public interface BeanCollectionLoader {
 	 */
 	public void loadMany(BeanCollection<?> collection, boolean onlyIds);
 
-	/**
-	 * Configure a filter if one is specified for this path.
-	 */
-	public void configureFilter(Query<?> query);
 }

@@ -71,6 +71,19 @@ public class TestM2MVanilla extends TestCase {
         List<MUser> userInRolesList = rolesQuery.findList();
         Assert.assertTrue(userInRolesList.size() > 0);
         
+        List<MUser> list = Ebean.find(MUser.class)
+            .where().in("roles", roleList)
+            .filterMany("roles").eq("roleName", "role1")
+            .findList();
+        
+        MUser mUser = list.get(0);
+        List<MRole> roles = mUser.getRoles();
+        Assert.assertEquals(1, roles.size());
+        
+        Ebean.refreshMany(mUser, "roles");
+        Assert.assertEquals(1, mUser.getRoles().size());
+        
+        
         checkRoles2.remove(0);
         checkRoles2.remove(0);
         Ebean.saveManyToManyAssociations(checkUser2,"roles");
