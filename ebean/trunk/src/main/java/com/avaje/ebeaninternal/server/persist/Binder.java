@@ -19,9 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.persist;
 
-import java.io.ByteArrayInputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
@@ -351,9 +348,7 @@ public class Binder {
 			throws SQLException {
 
 		String sd = (String) data;
-		Reader stringReader = new StringReader(sd);
-		b.getPstmt().setCharacterStream(b.nextPos(), stringReader, sd.length());
-		return;
+		b.setClob(sd);
 	}
 
 	/**
@@ -363,8 +358,7 @@ public class Binder {
 			throws SQLException {
 
 		byte[] bytes = (byte[]) data;
-		b.getPstmt().setBinaryStream(b.nextPos(), new ByteArrayInputStream(bytes), bytes.length);
-		return;
+		b.setBlob(bytes);
 	}
 
 	/**
@@ -373,8 +367,7 @@ public class Binder {
 	private void bindClob(DataBind b, Object data) throws SQLException {
 
 		String sd = (String) data;
-		Reader reader = new StringReader(sd);
-		b.getPstmt().setCharacterStream(b.nextPos(), reader, sd.length());
+		b.setClob(sd);
 	}
 
 	/**
@@ -383,8 +376,7 @@ public class Binder {
 	private void bindBlob(DataBind b, Object data) throws SQLException {
 
 		byte[] bytes = (byte[]) data;
-		ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-		b.getPstmt().setBinaryStream(b.nextPos(), is, bytes.length);
+		b.setBlob(bytes);
 	}
 
 	private boolean isLob(int dbType) {

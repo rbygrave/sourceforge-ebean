@@ -144,7 +144,7 @@ public class InsertHandler extends DmlHandler {
 	 * getGeneratedKeys if required.
 	 */
 	public int execute() throws SQLException {
-		int rc = dataBind.getPstmt().executeUpdate();
+		int rc = dataBind.executeUpdate();
 		if (useGeneratedKeys) {
 			// get the auto-increment value back and set into the bean
 			getGeneratedKeys();

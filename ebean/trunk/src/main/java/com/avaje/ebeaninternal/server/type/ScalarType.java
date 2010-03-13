@@ -158,7 +158,7 @@ public interface ScalarType<T> extends StringParser, ScalarDataReader<T> {
 	 * For non dateTime types this will throw an exception.
 	 * </p>
 	 */
-	public T parseDateTime(long systemTimeMillis);
+	public T parseDateTime(long dateTime);
 
 	/**
 	 * Return true if the type can accept long systemTimeMillis input.
