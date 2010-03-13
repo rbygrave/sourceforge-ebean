@@ -48,7 +48,9 @@ public interface EnhanceConstants {
     public static final String C_GROOVYOBJECT = "groovy/lang/GroovyObject";
     
     public static final String C_INTERCEPT = "com/avaje/ebean/bean/EntityBeanIntercept";
-
+    
+    public static final String C_BEANCOLLECTION = "com/avaje/ebean/bean/BeanCollection";
+    
     public static final String L_INTERCEPT = "Lcom/avaje/ebean/bean/EntityBeanIntercept;";
 
     public static final String L_EMBEDDEDCOLUMNS = "Lcom/avaje/ebean/annotation/EmbeddedColumns;";

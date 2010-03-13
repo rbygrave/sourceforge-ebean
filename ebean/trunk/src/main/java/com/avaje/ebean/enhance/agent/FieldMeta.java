@@ -265,6 +265,10 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 				|| annotations.contains("Ljavax/persistence/ManyToMany;");
 	}
 
+    public boolean isManyToMany() {
+        return annotations.contains("Ljavax/persistence/ManyToMany;");
+    }
+
 	/**
 	 * Return true if this is an Embedded field.
 	 */
@@ -603,47 +607,151 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 		addSetNoIntercept(cv, classMeta);
 	}
 	
+	private String getEbeanCollectionClass(){
+	    if (fieldDesc.equals("Ljava/util/List;")){
+	        return "com/avaje/ebean/common/BeanList";
+	    }
+        if (fieldDesc.equals("Ljava/util/Set;")){
+            return "com/avaje/ebean/common/BeanSet";
+        }
+        if (fieldDesc.equals("Ljava/util/Map;")){
+            return "com/avaje/ebean/common/BeanMap";
+        }
+        return null;
+	}
+	
+	/**
+	 * Return true if null check should be added to this many field.
+	 */
+	private boolean isInterceptMany() {
+	    
+        if (isMany() && !isTransient()){
+
+            String ebCollection = getEbeanCollectionClass();
+            if (ebCollection != null){
+                return true;
+            } else {
+                classMeta.log("Error unepxected many type "+fieldDesc);
+            }
+        }	    
+        return false;
+	}
+	
 	/**
 	 * Add a get field method with interception.
 	 */
 	private void addGet(ClassVisitor cw, ClassMeta classMeta) {
-
-		// ARETURN or IRETURN
-		int iReturnOpcode = asmType.getOpcode(Opcodes.IRETURN);
-
+	    
 		if (classMeta.isLog(3)) {
 			classMeta.log(getMethodName + " " + getMethodDesc + " intercept:" + isInterceptGet() + " " + annotations);
 		}
 
-		String className = classMeta.getClassName();
-
 		MethodVisitor mv = cw.visitMethod(ACC_PROTECTED, getMethodName, getMethodDesc, null, null);
 		mv.visitCode();
 
-		Label l0 = null;
-		if (isInterceptGet()) {
-			l0 = new Label();
-			mv.visitLabel(l0);
-			mv.visitLineNumber(1, l0);
-			mv.visitVarInsn(ALOAD, 0);
-			mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, L_INTERCEPT);
-			mv.visitLdcInsn(fieldName);
-			mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preGetter", "(Ljava/lang/String;)V");
+		if (isInterceptMany()){
+		    addGetForMany(mv);
+		    return;
 		}
-		Label l1 = new Label();
-		if (l0 == null) {
-			l0 = l1;
+		
+	    // ARETURN or IRETURN
+        int iReturnOpcode = asmType.getOpcode(Opcodes.IRETURN);
+
+        String className = classMeta.getClassName();
+		
+        Label labelEnd = new Label();
+		Label labelStart = null;
+		
+		if (isInterceptGet()) {    
+            labelStart = new Label();
+            mv.visitLabel(labelStart);
+            mv.visitLineNumber(4, labelStart);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, L_INTERCEPT);
+            mv.visitLdcInsn(fieldName);
+            mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preGetter", "(Ljava/lang/String;)V");
 		}
-		mv.visitLabel(l1);
-		mv.visitLineNumber(1, l1);
+		if (labelStart == null) {
+			labelStart = labelEnd;
+		}
+		mv.visitLabel(labelEnd);
+		mv.visitLineNumber(5, labelEnd);
+		mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitFieldInsn(GETFIELD, className, fieldName, fieldDesc);
 		mv.visitInsn(iReturnOpcode);// ARETURN or IRETURN
-		Label l2 = new Label();
-		mv.visitLabel(l2);
-		mv.visitLocalVariable("this", "L" + className + ";", null, l0, l2, 0);
+		Label labelEnd1 = new Label();
+		mv.visitLabel(labelEnd1);
+		mv.visitLocalVariable("this", "L" + className + ";", null, labelStart, labelEnd1, 0);
 		mv.visitMaxs(2, 1);
 		mv.visitEnd();
+	}
+	   
+	private void addGetForMany(MethodVisitor mv) {
+	    
+       String className = classMeta.getClassName();
+       String ebCollection = getEbeanCollectionClass();
+
+       Label l0 = new Label();
+       mv.visitLabel(l0);
+       mv.visitLineNumber(1, l0);
+       mv.visitVarInsn(ALOAD, 0);
+       mv.visitFieldInsn(GETFIELD, className, INTERCEPT_FIELD, L_INTERCEPT);
+       mv.visitLdcInsn(fieldName);
+       mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preGetter", "(Ljava/lang/String;)V");
+              
+       Label l4 = new Label();
+       if (classMeta.getEnhanceContext().isCheckNullManyFields()) {
+           
+           if (classMeta.isLog(3)) {
+               classMeta.log("... add Many null check on "+fieldName+" ebtype:"+ebCollection);
+           }
+           
+           Label l3 = new Label();
+           mv.visitLabel(l3);
+           mv.visitLineNumber(2, l3);
+           mv.visitVarInsn(ALOAD, 0);
+           mv.visitFieldInsn(GETFIELD, className, fieldName, fieldDesc);
+           
+           mv.visitJumpInsn(IFNONNULL, l4);
+           Label l5 = new Label();
+           mv.visitLabel(l5);
+           mv.visitLineNumber(3, l5);
+           mv.visitVarInsn(ALOAD, 0);
+           mv.visitTypeInsn(NEW, ebCollection);
+           mv.visitInsn(DUP);
+           mv.visitMethodInsn(INVOKESPECIAL, ebCollection, "<init>", "()V");
+           mv.visitFieldInsn(PUTFIELD, className, fieldName, fieldDesc);
+           
+           if (isManyToMany()){
+               // turn on modify listening for ManyToMany
+               if (classMeta.isLog(3)) {
+                   classMeta.log("... add ManyToMany modify listening to "+fieldName);
+               }
+
+               Label l6 = new Label();
+               mv.visitLabel(l6);
+               mv.visitLineNumber(4, l6);
+               mv.visitVarInsn(ALOAD, 0);
+               mv.visitFieldInsn(GETFIELD, className, fieldName, fieldDesc);
+               mv.visitTypeInsn(CHECKCAST, C_BEANCOLLECTION);
+               mv.visitFieldInsn(GETSTATIC, C_BEANCOLLECTION+"$ModifyListenMode", "ALL", "L"+C_BEANCOLLECTION+"$ModifyListenMode;");
+               mv.visitMethodInsn(INVOKEINTERFACE, C_BEANCOLLECTION, "setModifyListening", "(L"+C_BEANCOLLECTION+"$ModifyListenMode;)V");
+           }
+       }
+       
+       mv.visitLabel(l4);
+       mv.visitLineNumber(5, l4);
+       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+       mv.visitVarInsn(ALOAD, 0);
+       mv.visitFieldInsn(GETFIELD, className, fieldName, fieldDesc);
+       mv.visitInsn(ARETURN);
+       Label l7 = new Label();
+       mv.visitLabel(l7);
+       mv.visitLocalVariable("this", "L"+className+";", null, l0, l7, 0);
+       mv.visitMaxs(3, 1);
+       mv.visitEnd();
 	}
 	
 	/**
