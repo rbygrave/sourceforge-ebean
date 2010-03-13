@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.ByteArrayInputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -65,6 +68,10 @@ public class DataBind {
 
     public int decrementPos() {
         return ++pos;
+    }
+    
+    public int executeUpdate() throws SQLException {
+        return pstmt.executeUpdate();
     }
 
     public PreparedStatement getPstmt() {
@@ -126,4 +133,15 @@ public class DataBind {
     public void setChar(char v) throws SQLException {
         pstmt.setString(++pos, String.valueOf(v));
     }
+    
+    public void setBlob(byte[] bytes) throws SQLException {
+        ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+        pstmt.setBinaryStream(++pos, is, bytes.length);
+    }
+    
+    public void setClob(String content) throws SQLException {        
+        Reader reader = new StringReader(content);
+        pstmt.setCharacterStream(++pos, reader, content.length());
+    }
+
 }

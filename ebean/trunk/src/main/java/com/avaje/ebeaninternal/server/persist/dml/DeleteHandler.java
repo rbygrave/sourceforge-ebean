@@ -75,7 +75,7 @@ public class DeleteHandler extends DmlHandler {
 	 * Execute the delete non-batch.
 	 */
 	public int execute() throws SQLException {
-		int rowCount = dataBind.getPstmt().executeUpdate();
+		int rowCount = dataBind.executeUpdate();
 		persistRequest.checkRowCount(rowCount);
 		persistRequest.postExecute();
 		return rowCount;

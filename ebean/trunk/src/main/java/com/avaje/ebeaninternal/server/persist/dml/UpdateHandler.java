@@ -84,7 +84,7 @@ public class UpdateHandler extends DmlHandler {
 	 * Execute the update in non-batch.
 	 */
 	public int execute() throws SQLException {
-		int rowCount = dataBind.getPstmt().executeUpdate();
+		int rowCount = dataBind.executeUpdate();
 		persistRequest.checkRowCount(rowCount);
 		persistRequest.postExecute();
 		return rowCount;
