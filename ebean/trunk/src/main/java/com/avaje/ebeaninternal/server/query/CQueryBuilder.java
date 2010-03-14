@@ -124,14 +124,25 @@ public class CQueryBuilder implements Constants {
     	query.setSelectId();
     	
 		CQueryPredicates predicates = new CQueryPredicates(binder, request);
+		CQueryPlan queryPlan = request.getQueryPlan();
+		if (queryPlan != null){
+		    // skip building the SqlTree and Sql string
+	        predicates.prepare(false);
+	        String sql = queryPlan.getSql();
+	        return new CQueryFetchIds(request, predicates, sql, backgroundExecutor);
+		    
+		}
+		
 		predicates.prepare(true);
 
 		SqlTree sqlTree = createSqlTree(request, predicates);
-
 		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
-
 		String sql = s.getSql();
 		
+	    // cache the query plan
+        queryPlan = new CQueryPlan(sql, sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
+        request.putQueryPlan(queryPlan);
+
 		return new CQueryFetchIds(request, predicates, sql, backgroundExecutor);
 	}
 	
@@ -157,17 +168,26 @@ public class CQueryBuilder implements Constants {
     	}
     	
 		CQueryPredicates predicates = new CQueryPredicates(binder, request);
+		CQueryPlan queryPlan = request.getQueryPlan();
+		if (queryPlan != null){
+	        // skip building the SqlTree and Sql string
+	        predicates.prepare(false);
+	        String sql = queryPlan.getSql();
+	        return new CQueryRowCount(request, predicates, sql);
+		}
+		
 		predicates.prepare(true);
 
 		SqlTree sqlTree = createSqlTree(request, predicates);
-
 		SqlLimitResponse s = buildSql(sqlSelect, request, predicates, sqlTree);
-
 		String sql = s.getSql();
-		
 		if (hasMany){
 			sql = "select count(*) from ( "+sql+")";			
 		}
+		
+		// cache the query plan
+        queryPlan = new CQueryPlan(sql, sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
+		request.putQueryPlan(queryPlan);
 		
 		return new CQueryRowCount(request, predicates, sql);
 	}
@@ -184,9 +204,7 @@ public class CQueryBuilder implements Constants {
 		
 		CQueryPredicates predicates = new CQueryPredicates(binder, request);
 		
-		
 		CQueryPlan queryPlan = request.getQueryPlan();
-		
 		if (queryPlan != null){
 			// Reuse the query plan so skip generating SqlTree and SQL.
 			// We do prepare and bind the new parameters
@@ -204,9 +222,7 @@ public class CQueryBuilder implements Constants {
 
 		// Build the tree structure that represents the query.
 		SqlTree sqlTree = createSqlTree(request, predicates);
-		
 		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
-
 		queryPlan = new CQueryPlan(request, s.getSql(), sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
 		
 		// cache the query plan because we can reuse it and also 

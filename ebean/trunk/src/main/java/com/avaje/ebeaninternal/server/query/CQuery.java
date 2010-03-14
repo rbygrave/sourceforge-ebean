@@ -171,7 +171,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	/**
 	 * Object handling the SELECT generation and reading.
 	 */
-	private final SqlTree selectClause;
+	private final SqlTree sqlTree;
 
 	private final boolean rawSql;
 
@@ -275,10 +275,10 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		// so its available to the user...
 		query.setGeneratedSql(queryPlan.getSql());
 
-		this.selectClause = queryPlan.getSelectClause();
-		this.rootNode = selectClause.getRootNode();
-		this.manyProperty = selectClause.getManyProperty();
-		this.manyIncluded = selectClause.isManyIncluded();
+		this.sqlTree = queryPlan.getSqlTree();
+		this.rootNode = sqlTree.getRootNode();
+		this.manyProperty = sqlTree.getManyProperty();
+		this.manyIncluded = sqlTree.isManyIncluded();
 		if (manyIncluded) {
 		    // get filter to put on the collection for reuse with refresh
 		    OrmQueryProperties chunk = query.getDetail().getChunk(manyProperty.getName(), false);
@@ -758,15 +758,15 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	 * Get the summary of the sql.
 	 */
 	public String getSummary() {
-		return selectClause.getSummary();
+		return sqlTree.getSummary();
 	}
 
 	/**
 	 * Return the SqlSelectChain. This is the flattened structure that
 	 * represents this query.
 	 */
-	public SqlTree getSelectClause() {
-		return selectClause;
+	public SqlTree getSqlTree() {
+		return sqlTree;
 	}
 
 	public String getBindLog() {

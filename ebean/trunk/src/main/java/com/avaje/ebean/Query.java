@@ -358,11 +358,6 @@ public interface Query<T> extends Serializable {
 	public enum Type {
 
 		/**
-		 * Find rowCount.
-		 */
-		ROWCOUNT,
-
-		/**
 		 * Find by Id or unique returning a single bean.
 		 */
 		BEAN,
@@ -385,8 +380,17 @@ public interface Query<T> extends Serializable {
 		/**
 		 * Find the Id's.
 		 */
-		ID_LIST
+		ID_LIST,
+		
+        /**
+         * Find rowCount.
+         */
+        ROWCOUNT,
 
+        /**
+         * A subquery used as part of a where clause.
+         */
+        SUBQUERY
 	}
 
 	/**

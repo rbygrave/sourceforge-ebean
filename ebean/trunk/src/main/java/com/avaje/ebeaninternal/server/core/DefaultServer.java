@@ -65,6 +65,7 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.TxType;
 import com.avaje.ebean.Update;
 import com.avaje.ebean.ValuePair;
+import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
@@ -386,7 +387,7 @@ public final class DefaultServer implements SpiEbeanServer {
      * Compile a query. Only valid for ORM queries (not LDAP)
      */
     public <T> CQuery<T> compileQuery(Query<T> query, Transaction t) {
-        SpiOrmQueryRequest<T> qr = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> qr = createQueryRequest(Type.SUBQUERY, query, t);
         OrmQueryRequest<T> orm = (OrmQueryRequest<T>)qr;
         return cqueryEngine.buildQuery(orm);
     }
@@ -1032,9 +1033,10 @@ public final class DefaultServer implements SpiEbeanServer {
         return findId(query, t);
     }
     
-    public <T> SpiOrmQueryRequest<T> createQueryRequest(Query<T> q, Transaction t) {
+    public <T> SpiOrmQueryRequest<T> createQueryRequest(Type type, Query<T> q, Transaction t) {
 
         SpiQuery<T> query = (SpiQuery<T>) q;
+        query.setType(type);
 
         // check other combinations that make this a sharedInstance query
         query.deriveSharedInstance();
@@ -1106,7 +1108,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     private <T> T findId(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.BEAN, query, t);
 
         // First have a look in the persistence context and then
         // the bean cache (if we are using caching)
@@ -1155,7 +1157,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest request = createQueryRequest(query, t);
+        SpiOrmQueryRequest request = createQueryRequest(Type.SET, query, t);
 
         Object result = request.getFromQueryCache();
         if (result != null) {
@@ -1179,7 +1181,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest request = createQueryRequest(query, t);
+        SpiOrmQueryRequest request = createQueryRequest(Type.MAP, query, t);
 
         Object result = request.getFromQueryCache();
         if (result != null) {
@@ -1204,7 +1206,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
         SpiQuery<T> copy = ((SpiQuery<T>) query).copy();
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(copy, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.ROWCOUNT, copy, t);
         try {
             request.initTransIfRequired();
             int rowCount = request.findRowCount();
@@ -1227,7 +1229,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
     public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.ID_LIST, query, t);
         try {
             request.initTransIfRequired();
             List<Object> list = request.findIds();
@@ -1331,7 +1333,7 @@ public final class DefaultServer implements SpiEbeanServer {
     @SuppressWarnings("unchecked")
     public <T> List<T> findList(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(query, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.LIST, query, t);
 
         Object result = request.getFromQueryCache();
         if (result != null) {

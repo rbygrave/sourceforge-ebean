@@ -44,7 +44,6 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
-import com.avaje.ebeaninternal.server.query.SqlTreeAlias;
 
 /**
  * Wraps the objects involved in executing a Query.
@@ -60,8 +59,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	private final boolean vanillaMode;
 	
 	private final BeanFinder<T> finder;
-
-	private final SqlTreeAlias sqlTreeAlias;
 	
 	private final LoadContext graphContext;
 	
@@ -100,9 +97,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;
 		this.query = query;
-		this.vanillaMode = query.isVanillaMode(server.isVanillaMode());
-		this.sqlTreeAlias = new SqlTreeAlias(beanDescriptor.getBaseTableAlias());
-		
+		this.vanillaMode = query.isVanillaMode(server.isVanillaMode());		
 		this.parentState = determineParentState(query);
 		
 		int defaultBatchSize = server.getLazyLoadBatchSize();
@@ -145,13 +140,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public LoadContext getGraphContext() {
 		return graphContext;
-	}
-
-	/**
-	 * Return the SQL alias tree.
-	 */
-	public SqlTreeAlias getSqlTreeAlias() {
-		return sqlTreeAlias;
 	}
 
 	/**
@@ -260,17 +248,14 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Execute the query as findById.
 	 */
 	public Object findId() {
-		query.setType(Query.Type.BEAN);
 		return queryEngine.findId(this);
 	}
 
 	public int findRowCount() {
-		query.setType(Query.Type.ROWCOUNT);
 		return queryEngine.findRowCount(this);
 	}
 
 	public List<Object> findIds() {
-		query.setType(Query.Type.ID_LIST);
 		BeanIdList idList = queryEngine.findIds(this);
 		return idList.getIdList();
 	}
@@ -280,7 +265,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	@SuppressWarnings("unchecked")
 	public List<T> findList() {
-		query.setType(Query.Type.LIST);
 		BeanCollection<T> bc = queryEngine.findMany(this);
 		return (List<T>) (vanillaMode ? bc.getActualCollection() : bc);
 	}
@@ -290,7 +274,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	@SuppressWarnings("unchecked")
 	public Set<?> findSet() {
-		query.setType(Query.Type.SET);
 		BeanCollection<T> bc =  queryEngine.findMany(this);
 		return (Set<T>) (vanillaMode ? bc.getActualCollection() : bc);
 	}
@@ -299,7 +282,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Execute the query as findMap.
 	 */
 	public Map<?, ?> findMap() {
-		query.setType(Query.Type.MAP);
 		String mapKey = query.getMapKey();
 		if (mapKey == null){
 			BeanProperty[] ids = beanDescriptor.propertiesId();
