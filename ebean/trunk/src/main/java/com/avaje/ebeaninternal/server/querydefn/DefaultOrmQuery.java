@@ -523,6 +523,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// can change between JVM restarts.
 		int hc = beanType.getName().hashCode();
 
+        hc = hc * 31 + (type == null ? 0 : type.hashCode());
 		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
 
@@ -531,7 +532,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		hc = hc * 31 + (orderBy == null ? 0 : orderBy.hash());
 		hc = hc * 31 + (rawWhereClause == null ? 0 : rawWhereClause.hashCode());
 
-		
 		hc = hc * 31 + detail.queryPlanHash(request);
 		hc = hc * 31 + (query == null ? 0 : query.hashCode());
 

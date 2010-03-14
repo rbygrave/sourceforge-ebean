@@ -44,7 +44,7 @@ public class CQueryPlan {
 
 	private final String logWhereSql;
 
-	private final SqlTree selectClause;
+	private final SqlTree sqlTree;
 
 	/**
 	 * Encrypted properties required additional binding.
@@ -64,7 +64,7 @@ public class CQueryPlan {
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
 		this.sql = sql;
-		this.selectClause = sqlTree;
+		this.sqlTree = sqlTree;
 		this.rawSql = rawSql;
 		this.rowNumberIncluded = rowNumberIncluded;
 		this.logWhereSql = logWhereSql;
@@ -81,7 +81,7 @@ public class CQueryPlan {
 		this.hash = 0;
 		this.autofetchTuned = false;
 		this.sql = sql;
-		this.selectClause = sqlTree;
+		this.sqlTree = sqlTree;
 		this.rawSql = rawSql;
 		this.rowNumberIncluded = rowNumberIncluded;
 		this.logWhereSql = logWhereSql;
@@ -113,8 +113,8 @@ public class CQueryPlan {
 		return sql;
 	}
 
-	public SqlTree getSelectClause() {
-		return selectClause;
+	public SqlTree getSqlTree() {
+		return sqlTree;
 	}
 
 	public boolean isRawSql() {
