@@ -104,6 +104,12 @@ public class BeanRefreshFromCacheHelp {
 		return true;
 	}
 	
+	private void propagateParentState(Object bean) {
+        if (bean != null && parentState > 0){
+            ((EntityBean)bean)._ebean_getIntercept().setState(parentState);
+        }
+	}
+	
 	/**
 	 * Refresh the bean from property values in dbBean.
 	 */
@@ -139,7 +145,7 @@ public class BeanRefreshFromCacheHelp {
 				Object val = prop.getValue(cacheBean);
 				if (!sharedInstance){
 					// create a copy so that we can change its state...
-					val = prop.getTargetDescriptor().createCopy(val);
+					val = prop.getTargetDescriptor().createCopyForUpdate(val, false);
 				}
 				if (isLazyLoad){
 					prop.setValue(bean, val);					
@@ -150,10 +156,7 @@ public class BeanRefreshFromCacheHelp {
 					// maintain original oldValues for partially loaded bean
 					prop.setValue(originalOldValues, val);
 				}
-				if (val != null && parentState > 0){
-					((EntityBean)val)._ebean_getIntercept().propagateParentState(parentState);
-				}
-				
+				propagateParentState(val);				
 			}
 		}
 
@@ -197,11 +200,9 @@ public class BeanRefreshFromCacheHelp {
 						prop.setValueIntercept(bean, null);
 						
 					} else {
-						Object copyEmb = prop.getTargetDescriptor().createCopy(cacheEmb);
+						Object copyEmb = prop.getTargetDescriptor().createCopyForUpdate(cacheEmb, false);
 						prop.setValueIntercept(bean, copyEmb);
-						if (copyEmb != null && parentState > 0){
-							((EntityBean)copyEmb)._ebean_getIntercept().propagateParentState(parentState);
-						}
+			            propagateParentState(copyEmb);
 					}
 					
 				} else {
@@ -217,12 +218,7 @@ public class BeanRefreshFromCacheHelp {
 					for (int j = 0; j < props.length; j++) {
 						Object v = props[j].getValue(cacheEmb);
 						props[j].setValueIntercept(oEmb, v);
-					}
-		
-					// No longer calling setLoaded() on embedded bean
-					// as the EntityBean itself
-					// .. calls setEmbeddedLoaded() on each of
-					// .. its embedded beans itself.					
+					}				
 				}
 			}
 		}

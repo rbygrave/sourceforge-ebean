@@ -124,10 +124,11 @@ public class DeployBeanPropertyLists {
             transients.add(prop);
             return;
         }
-        nonTransients.add(prop);
         if (prop.isId()) {
             ids.add(prop);
             return;
+        } else {
+            nonTransients.add(prop);
         }
 
         if (desc.getInheritInfo() != null && prop.isLocal()) {

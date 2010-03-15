@@ -219,7 +219,7 @@ public final class IdBinderMultiple implements IdBinder {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 		boolean notNull = false;
 		for (int i = 0; i < props.length; i++) {
-			Object value = props[i].read(ctx, 0);
+			Object value = props[i].read(ctx);
 			if (value != null){
 				map.put(props[i].getName(), value);
 				notNull = true;

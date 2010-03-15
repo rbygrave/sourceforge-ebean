@@ -32,6 +32,7 @@ import com.avaje.ebeaninternal.server.core.OrmQueryEngine;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
+import com.avaje.ebeaninternal.server.deploy.CopyContext;
 
 /**
  * Main Finder implementation.
@@ -95,10 +96,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	Iterator<T> it = c.iterator();
         	while (it.hasNext()) {
 				T bean = it.next();
-				if (!query.isSharedInstance()){
-					bean = descriptor.createCopy(bean);
-				}
-				descriptor.cachePut(bean);
+				descriptor.cachePut(bean, query.isSharedInstance());
 			}
         }
 
@@ -109,7 +107,8 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	}
         	if (Boolean.FALSE.equals(query.isReadOnly())){
         		// create a copy of the collection and beans that is mutable
-        		result = new CopyBeanCollection<T>(result, request.getBeanDescriptor()).copy();
+        	    CopyContext ctx = new CopyContext(request.isVanillaMode(), false);
+        		result = new CopyBeanCollection<T>(result, request.getBeanDescriptor(), ctx, 5).copy();
         	}
         }
         
@@ -142,12 +141,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         
         if (result != null && request.isUseBeanCache()){
         	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
-        	T cacheBean = result;
-        	if (!request.isUseBeanCacheReadOnly()){
-        		// put a copy into the cache
-        		cacheBean = descriptor.createCopy(result);
-        	} 
-            descriptor.cachePut(cacheBean);        		
+            descriptor.cachePut(result, request.isUseBeanCacheReadOnly());        		
         }
         
         return result;

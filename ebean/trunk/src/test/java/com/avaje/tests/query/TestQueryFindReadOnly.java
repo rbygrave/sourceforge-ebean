@@ -31,20 +31,20 @@ public class TestQueryFindReadOnly extends TestCase {
         Section s1 = ar0sections.get(0);
         Assert.assertTrue("readonly true",Ebean.getBeanState(s1).isReadOnly());
 
-//        Article ar1 = Ebean.find(Article.class)
-//            .setReadOnly(false)
-//            .setId(a0.getId())
-//            .findUnique();
-//        
-//        Assert.assertNotNull(ar1);
-//        Assert.assertFalse("readonly",Ebean.getBeanState(ar1).isReadOnly());
-//        
-//        
-//        List<Section> ar1sections = ar1.getSections();
-//        Assert.assertEquals(1, ar1sections.size());
-//        
-//        Section s2 = ar1sections.get(0);
-//        Assert.assertFalse("readonly cascading",Ebean.getBeanState(s2).isReadOnly());
+        Article ar1 = Ebean.find(Article.class)
+            .setReadOnly(false)
+            .setId(a0.getId())
+            .findUnique();
+        
+        Assert.assertNotNull(ar1);
+        Assert.assertFalse("readonly",Ebean.getBeanState(ar1).isReadOnly());
+        
+        
+        List<Section> ar1sections = ar1.getSections();
+        Assert.assertEquals(1, ar1sections.size());
+        
+        Section s2 = ar1sections.get(0);
+        Assert.assertFalse("readonly cascading",Ebean.getBeanState(s2).isReadOnly());
         
         
         

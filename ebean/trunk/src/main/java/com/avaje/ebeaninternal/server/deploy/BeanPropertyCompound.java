@@ -132,7 +132,7 @@ public class BeanPropertyCompound extends BeanProperty {
      * null.
      */
     @Override
-    public Object read(DbReadContext ctx, int parentState) throws SQLException {
+    public Object read(DbReadContext ctx) throws SQLException {
 
         return compoundType.read(ctx.getDataReader());
     }

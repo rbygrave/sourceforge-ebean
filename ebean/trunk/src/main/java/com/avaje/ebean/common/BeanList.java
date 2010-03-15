@@ -155,9 +155,9 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("BeanList ");
-		if (sharedInstance){
+		if (isSharedInstance()){
 			sb.append("sharedInstance ");
-		} else if (readOnly){
+		} else if (isReadOnly()){
 			sb.append("readOnly ");
 		}
 		if (list == null) {
@@ -283,7 +283,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 
 	public Iterator<E> iterator() {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return new ReadOnlyListIterator<E>(list.listIterator());
 		}
 		if (modifyListening) {
@@ -300,7 +300,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 
 	public ListIterator<E> listIterator() {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return new ReadOnlyListIterator<E>(list.listIterator());
 		}
 		if (modifyListening) {
@@ -312,7 +312,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 
 	public ListIterator<E> listIterator(int index) {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return new ReadOnlyListIterator<E>(list.listIterator(index));
 		}
 		if (modifyListening) {
@@ -402,7 +402,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 
 	public List<E> subList(int fromIndex, int toIndex) {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return Collections.unmodifiableList(list.subList(fromIndex, toIndex));
 		}
 		if (modifyListening) {

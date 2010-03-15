@@ -45,6 +45,22 @@ import com.avaje.ebean.Query;
  */
 public interface BeanCollection<E> extends Serializable {
 	
+    /**
+     * The default state (CacheStrategy readOnly can be applied).
+     */
+    public static final int DEFAULT = EntityBeanIntercept.DEFAULT;
+    
+    /**
+     * Bean is READ ONLY (not editable).
+     */
+    public static final int READONLY = EntityBeanIntercept.READONLY;
+    
+    /**
+     * Read Only immutable state and can't be made
+     * editable (in cache and sharable).
+     */
+    public static final int SHARED = EntityBeanIntercept.SHARED;
+
 	public enum ModifyListenMode {
 		/** The common mode */
 		NONE,

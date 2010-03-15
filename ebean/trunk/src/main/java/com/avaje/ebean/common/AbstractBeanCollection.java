@@ -40,11 +40,12 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
  */
 public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 
-	private static final long serialVersionUID = 3365725236140187589L;
+	private static final long serialVersionUID = 3365725236140187588L;
 
-	protected boolean sharedInstance;
-	
-	protected boolean readOnly;
+	/**
+	 * The state (DEFAULT, READONLY or SHARED).
+	 */
+	protected int state;
 	
 	/**
 	 * The EbeanServer this is associated with. (used for lazy fetch).
@@ -110,15 +111,13 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		
 		if (ownerBean instanceof EntityBean ){
     		EntityBeanIntercept ebi = ((EntityBean)ownerBean)._ebean_getIntercept();
-    		
-    		if (ebi.isSharedInstance()){
-    			setSharedInstance();
-    		} else if (ebi.isReadOnly()){
-    			setReadOnly(true);
+    		int parentState = ebi.getState();
+    		if (parentState != EntityBeanIntercept.DEFAULT) {
+    		    this.state = parentState;
     		}
 		}
 	}
-
+	
 	public Object getOwnerBean() {
 		return ownerBean;
 	}
@@ -180,24 +179,27 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	
 	
 	public boolean isSharedInstance() {
-		return sharedInstance;
+		return state == SHARED;
 	}
 
 	public void setSharedInstance() {
-		this.sharedInstance = true;
-		this.readOnly = true;
+	    this.state = SHARED;
 	}
 
 	public boolean isReadOnly() {
-		return readOnly;
+	    // READONLY or SHARED
+		return state >= READONLY;
 	}
 
 	public void setReadOnly(boolean readOnly) {
-		if (sharedInstance && !readOnly){
-			String msg = "This collection is a sharedInstance and must always be read only";
-			throw new IllegalStateException(msg);
-		}
-		this.readOnly = readOnly;
+	    if (state == SHARED){
+	        if (!readOnly){
+	            String msg = "This collection is a sharedInstance and must always be read only";
+	            throw new IllegalStateException(msg);
+	        }
+	    } else {
+	        this.state = readOnly ? READONLY : DEFAULT;
+	    }
 	}
 
 
@@ -265,7 +267,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 
 
 	protected void checkReadOnly() {
-		if (readOnly){
+		if (state >= READONLY){
 			String msg = "This collection is in ReadOnly mode";
 			throw new IllegalStateException(msg);
 		}

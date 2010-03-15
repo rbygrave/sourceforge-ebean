@@ -41,6 +41,7 @@ import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebeaninternal.server.deploy.CopyContext;
 import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
@@ -109,14 +110,27 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	private int determineParentState(SpiQuery<T> query) {
 		if (query.isSharedInstance()){
 			return EntityBeanIntercept.SHARED;
-					
-		} else if (isReadOnly()) {
-			return EntityBeanIntercept.READONLY;
-		}
+		} 
 		
-		return EntityBeanIntercept.NORMAL;
+		Boolean queryReadOnly = query.isReadOnly();
+		if (queryReadOnly != null){
+		    // explicit readOnly set on query
+		    if (Boolean.TRUE.equals(queryReadOnly)){
+		        return EntityBeanIntercept.READONLY;
+		    } else {
+		        return EntityBeanIntercept.UPDATE;
+		    }
+		}
+        if (query.getMode().equals(Mode.NORMAL)){
+            // check CacheStrategy readOnly ...
+            if (beanDescriptor.calculateReadOnly(query.isReadOnly())) {
+                return EntityBeanIntercept.READONLY;
+            }
+        }
+		
+		return EntityBeanIntercept.DEFAULT;
 	}
-	
+
 	public void executeSecondaryQueries(int defaultQueryBatch){
 		graphContext.executeSecondaryQueries(this, defaultQueryBatch);
 	}
@@ -357,23 +371,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return useBeanCacheReadOnly;
 	}
 	
-
-	
-	/**
-	 * Return true if the query is defined as read only.
-	 * <p>
-	 * If there is no explicit readOnly setting on the query then
-	 * the cache setting on BeanDescriptor is used.
-	 * </p>
-	 */
-	public boolean isReadOnly() {
-		if (query.getMode().equals(Mode.NORMAL)){
-			return beanDescriptor.calculateReadOnly(query.isReadOnly());
-		} else {
-			return Boolean.TRUE.equals(query.isReadOnly());
-		}
-	}
-	
 	private boolean calculateUseBeanCache() {
 		useBeanCache = beanDescriptor.calculateUseCache(query.isUseBeanCache());
 		if (useBeanCache){
@@ -426,7 +423,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		} else {
 			// need to create a copy as the application 
 			// may modify the instance (so can't be shared)
-			return beanDescriptor.createCopy(cachedBean);
+			return beanDescriptor.createCopyForUpdate(cachedBean, vanillaMode);
 		}
 	}
 	
@@ -451,7 +448,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		BeanCollection<T> bc = beanDescriptor.queryCacheGet(cacheKey);
 		if (bc != null && Boolean.FALSE.equals(query.isReadOnly())){
 			// Explicit readOnly=false for query cache
-			return new CopyBeanCollection<T>(bc, beanDescriptor).copy();
+		    CopyContext ctx = new CopyContext(vanillaMode, false);
+			return new CopyBeanCollection<T>(bc, beanDescriptor, ctx, 5).copy();
 		}
 		return bc;
 	}

@@ -51,7 +51,7 @@ public class DefaultBeanLoader {
 	private final DebugLazyLoad debugLazyLoad;
 	
 	private final DefaultServer server;
-	
+		
 	protected DefaultBeanLoader(DefaultServer server, DebugLazyLoad debugLazyLoad){
 		this.server = server;
 		this.debugLazyLoad = debugLazyLoad;
@@ -210,7 +210,7 @@ public class DefaultBeanLoader {
 		    // populate a new collection
 			Object emptyCollection = many.createEmpty(vanilla);
 			many.setValue(parentBean, emptyCollection);
-			if (ebi != null && ebi.isSharedInstance()){
+			if (!vanilla && ebi != null && ebi.isSharedInstance()){
 				((BeanCollection<?>)emptyCollection).setSharedInstance();
 			}
 		}
@@ -324,10 +324,7 @@ public class DefaultBeanLoader {
 		
 		if (desc.calculateUseCache(null)){
 			for (int i = 0; i < list.size(); i++) {
-				Object loadedBean = list.get(i);
-				// put a copy into the cache
-	        	Object cacheBean = desc.createCopy(loadedBean);
-	            desc.cachePutObject(cacheBean);	
+	            desc.cachePutObject(list.get(i));	
 			}
 		}
 	}
@@ -412,9 +409,7 @@ public class DefaultBeanLoader {
 		}
 		
 		if (desc.calculateUseCache(null) && !vanilla){
-			// put a copy into the cache
-        	Object cacheBean = desc.createCopy(dbBean);
-            desc.cachePutObject(cacheBean);	
+			desc.cachePutObject(dbBean);	
 		}
 	}
 }

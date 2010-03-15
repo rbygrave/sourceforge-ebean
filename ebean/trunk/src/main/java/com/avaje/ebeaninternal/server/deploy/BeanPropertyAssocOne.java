@@ -120,9 +120,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     }
 
     @Override
-    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
         
-        localHelp.copyShallow(sourceBean, destBean, vanillaMode);
+        localHelp.copyProperty(sourceBean, destBean, ctx, maxDepth);
     }
     
     
@@ -392,10 +392,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 	 * Read the data from the resultSet effectively ignoring it and returning null.
      */
     @Override
-    public Object read(DbReadContext ctx, int parentState) throws SQLException {
+    public Object read(DbReadContext ctx) throws SQLException {
         // just read the resultSet incrementing the column index
         // pass in null for the bean so any data read is ignored
-        return localHelp.read(ctx, parentState);
+        return localHelp.read(ctx);
     }
 
     @Override
@@ -424,27 +424,47 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private abstract class LocalHelp {
 
-        abstract void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode);
+        abstract void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth);
         
         abstract void loadIgnore(DbReadContext ctx);
 
-        abstract Object read(DbReadContext ctx, int parentState) throws SQLException;
+        abstract Object read(DbReadContext ctx) throws SQLException;
 
         abstract Object readSet(DbReadContext ctx, Object bean, boolean assignAble) throws SQLException;
 
         abstract void appendSelect(DbSqlContext ctx);
 
         abstract void appendFrom(DbSqlContext ctx, boolean forceOuterJoin);
+        
+        void copy(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
+            Object value = getValue(sourceBean);
+            if (value != null){
+                Class<?> valueClass = value.getClass();
+                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(valueClass);
+                Object refId = refDesc.getId(value);
+                Object destRef = ctx.get(valueClass, refId);
+                if (destRef != null){
+                    // use value from the persistence context
+                } else if (maxDepth > 1){
+                    // recursively copy ...
+                    destRef = refDesc.createCopy(value, ctx, maxDepth - 1);
+                    
+                } else {
+                    destRef = refDesc.createReference(ctx.isVanillaMode(), refId, destBean, null);
+                }
+                setValue(destBean, destRef);
+            }
+        }
     }
 
     private final class Embedded extends LocalHelp {
 
-        void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+        void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
             Object srcEmb = getValue(sourceBean);
             if (srcEmb != null){
-                Object dstEmb = targetDescriptor.createBean(vanillaMode);
+                Object dstEmb = targetDescriptor.createBean(ctx.isVanillaMode());
                 for (int i = 0; i < embeddedProps.length; i++) {
-                    embeddedProps[i].copyShallow(srcEmb, dstEmb, vanillaMode);
+                    embeddedProps[i].copyProperty(srcEmb, dstEmb, ctx, maxDepth);
                 }
                 setValue(destBean, dstEmb);
             }
@@ -458,16 +478,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
         @Override
         Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
-            Object dbVal = read(ctx, 0);
+            Object dbVal = read(ctx);
             if (bean != null && assignable) {
                 // set back to the parent bean
                 setValue(bean, dbVal);
-                // propagate sharedInstance and readOnly state
-                ((EntityBean) bean)._ebean_getIntercept().propagateState((EntityBean) dbVal);
-
-                // Handled by the EntityBean itself now (since 1.2)
-                // make sure it is intercepting setters etc
-                // embeddedBean._ebean_getIntercept().setLoaded();
+                ctx.propagateState(dbVal);
                 return dbVal;
 
             } else {
@@ -475,7 +490,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             }
         }
 
-        Object read(DbReadContext ctx, int parentState) throws SQLException {
+        Object read(DbReadContext ctx) throws SQLException {
 
             EntityBean embeddedBean = targetDescriptor.createEntityBean();
 
@@ -487,9 +502,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                 }
             }
             if (notNull) {
-                if (parentState != 0) {
-                    embeddedBean._ebean_getIntercept().propagateParentState(parentState);
-                }
+                ctx.propagateState(embeddedBean);
                 return embeddedBean;
             } else {
                 return null;
@@ -519,14 +532,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             this.beanProp = beanProp;
         }
 
-        void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
-            Object value = getValue(sourceBean);
-            if (value != null){
-                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
-                Object refId = refDesc.getId(value);
-                Object dstRef = refDesc.createReference(vanillaMode, refId, destBean, null);
-                setValue(destBean, dstRef);
-            }
+        void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
+            copy(sourceBean, destBean, ctx, maxDepth);
         }
         
         void loadIgnore(DbReadContext ctx) {
@@ -537,11 +544,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         }
 
         Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
-            Object val = read(ctx, 0);
+            Object val = read(ctx);
             if (bean != null && assignable) {
                 setValue(bean, val);
-                // propagate sharedInstance and readOnly state
-                ((EntityBean) bean)._ebean_getIntercept().propagateState((EntityBean) val);
+                ctx.propagateState(val);
             }
             return val;
         }
@@ -550,7 +556,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
          * Read and set a Reference bean.
          */
         @Override
-        Object read(DbReadContext ctx, int parentState) throws SQLException {
+        Object read(DbReadContext ctx) throws SQLException {
 
             BeanDescriptor<?> rowDescriptor = null;
             Class<?> rowType = targetType;
@@ -565,7 +571,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
             // read the foreign key column(s)
             Object id = targetIdBinder.read(ctx);
-            if (id == null) {// || bean == null || !assignable) {
+            if (id == null) {
                 return null;
             }
 
@@ -573,57 +579,66 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             Object existing = ctx.getPersistenceContext().get(rowType, id);
 
             if (existing != null) {
-                // setValue(bean, existing);
                 return existing;
+            } 
+            
+            // parent always null for this case (but here to document)
+            Object parent = null;
+            Object ref = null;
 
-            } else {
-                // parent always null for this case (but here to document)
-                Object parent = null;
-                Object ref = null;
+            boolean vanillaMode = ctx.isVanillaMode();
+            int parentState = ctx.getParentState();
 
-                ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
-                if (options != null && options.isUseCache()) {
-                    ref = targetDescriptor.cacheGet(id);
-                    if (ref != null && !options.isReadOnly()) {
-                        // create a copy as the user may mutate it
-                        ref = targetDescriptor.createCopy(ref);
+            ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
+            if (options != null && options.isUseCache()) {
+                ref = targetDescriptor.cacheGet(id);
+                if (ref != null) {
+                    if (vanillaMode){
+                        ref = targetDescriptor.createCopy(ref, new CopyContext(true), 5);  
+                        
+                    } else if (parentState == EntityBeanIntercept.UPDATE){
+                        ref = targetDescriptor.createCopy(ref, new CopyContext(false), 5);
+                        
+                    } else if (parentState == EntityBeanIntercept.DEFAULT && !options.isReadOnly()) {
+                        ref = targetDescriptor.createCopy(ref, new CopyContext(false), 5);                                                        
                     }
                 }
-
-                boolean vanillaMode = ctx.isVanillaMode();
-                
-                boolean createReference = false;
-                if (ref == null) {
-                    // create a lazy loading reference/proxy
-                    createReference = true;
-                    if (targetInheritInfo != null) {
-						// for inheritance hierarchy create the correct type for this row...
-                        ref = rowDescriptor.createReference(vanillaMode, id, parent, options);
-                    } else {
-                        ref = targetDescriptor.createReference(vanillaMode, id, parent, options);
-                    }
-                }
-
-                Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
-                if (existingBean != null) {
-                    // advanced case when we use multiple concurrent threads to
-                    // build a single object graph, and another thread has since
-                    // loaded a matching bean so we will use that instead.
-                    ref = existingBean;
-                    createReference = false;
-                }
-
-                if (!vanillaMode){
-                    EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept();
-    
-                    if (createReference) {
-                        ebi.propagateParentState(parentState);
-                        ctx.register(name, ebi);
-                    }
-                }
-
-                return ref;
             }
+            
+            boolean createReference = false;
+            if (ref == null) {
+                // create a lazy loading reference/proxy
+                createReference = true;
+                if (targetInheritInfo != null) {
+					// for inheritance hierarchy create the correct type for this row...
+                    ref = rowDescriptor.createReference(vanillaMode, id, parent, options);
+                } else {
+                    ref = targetDescriptor.createReference(vanillaMode, id, parent, options);
+                }
+            }
+
+            Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
+            if (existingBean != null) {
+                // advanced case when we use multiple concurrent threads to
+                // build a single object graph, and another thread has since
+                // loaded a matching bean so we will use that instead.
+                ref = existingBean;
+                createReference = false;
+            }
+
+            if (!vanillaMode){
+                EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept();
+
+                if (createReference) {
+                    if (parentState != 0){
+                        ebi.setState(parentState);
+                    }
+                    ctx.register(name, ebi);
+                }
+            }
+
+            return ref;
+        
         }
 
         @Override
@@ -656,14 +671,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private final class ReferenceExported extends LocalHelp {
 
-        void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
-            Object value = getValue(sourceBean);
-            if (value != null){
-                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
-                Object refId = refDesc.getId(value);
-                Object dstRef = refDesc.createReference(vanillaMode, refId, destBean, null);
-                setValue(destBean, dstRef);
-            }
+        void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
+            copy(sourceBean, destBean, ctx, maxDepth);
         }
         
         @Override
@@ -677,17 +686,16 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         @Override
         Object readSet(DbReadContext ctx, Object bean, boolean assignable) throws SQLException {
 
-            Object dbVal = read(ctx, 0);
+            Object dbVal = read(ctx);
             if (bean != null && assignable) {
                 setValue(bean, dbVal);
-                // propagate sharedInstance and readOnly state
-                ((EntityBean) bean)._ebean_getIntercept().propagateState((EntityBean) dbVal);
-
+                ctx.propagateState(dbVal);
             }
             return dbVal;
         }
 
-        Object read(DbReadContext ctx, int parentState) throws SQLException {
+        @Override
+        Object read(DbReadContext ctx) throws SQLException {
 
             // TODO: Support for Inheritance hierarchy on exported OneToOne ?
             IdBinder idBinder = targetDescriptor.getIdBinder();
@@ -708,8 +716,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             
             if (!vanillaMode){
                 EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 
-                if (parentState != 0) {
-                    ebi.propagateParentState(parentState);
+                if (ctx.getParentState() != 0) {
+                    ebi.setState(ctx.getParentState());
                 }
                 persistCtx.put(id, ref);
                 ctx.register(name, ebi);

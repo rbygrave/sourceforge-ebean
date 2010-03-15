@@ -29,15 +29,24 @@ import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.common.BeanMap;
 import com.avaje.ebean.common.BeanSet;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.CopyContext;
 
+/**
+ * Helper to copy collections when using query cache.
+ */
 public class CopyBeanCollection<T> {
 
-	BeanCollection<T> bc;
-	BeanDescriptor<T> desc;
+	private final BeanCollection<T> bc;
+	private final BeanDescriptor<T> desc;
 	
-	public CopyBeanCollection(BeanCollection<T> bc, BeanDescriptor<T> desc) {
+	private final CopyContext ctx;
+	private final int maxDepth;
+	
+	public CopyBeanCollection(BeanCollection<T> bc, BeanDescriptor<T> desc, CopyContext ctx, int maxDepth) {
 		this.bc = bc;
 		this.desc = desc;
+		this.ctx = ctx;
+		this.maxDepth = maxDepth;
 	}
 	
 	public BeanCollection<T> copy(){
@@ -62,7 +71,7 @@ public class CopyBeanCollection<T> {
 		
 		for (int i = 0; i < actualList.size(); i++) {
 			T t = actualList.get(i);
-			newList.add(desc.createCopy(t));
+			newList.add(desc.createCopy(t, ctx, maxDepth));
 		}
 		return newList;
 	}
@@ -71,7 +80,7 @@ public class CopyBeanCollection<T> {
 		BeanSet<T> newSet = new BeanSet<T>();
 		Set<T> actualSet = ((BeanSet<T>)bc).getActualSet();
 		for (T t : actualSet) {
-			newSet.add(desc.createCopy(t));
+			newSet.add(desc.createCopy(t, ctx, maxDepth));
 		}
 		return newSet;
 	}
@@ -83,7 +92,7 @@ public class CopyBeanCollection<T> {
 		Iterator<Map.Entry<Object, T>> iterator = actualMap.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<Object,T> entry = iterator.next();
-			newMap.put(entry.getKey(), desc.createCopy(entry.getValue()));
+			newMap.put(entry.getKey(), desc.createCopy(entry.getValue(), ctx, maxDepth));
 		}
 		return newMap;
 	}

@@ -548,7 +548,7 @@ public final class DefaultServer implements SpiEbeanServer {
             throw new PersistenceException(e);
         }
     }
-
+    
     /**
      * Return a Reference bean.
      * <p>
@@ -583,7 +583,7 @@ public final class DefaultServer implements SpiEbeanServer {
             if (opts != null && opts.isUseCache()) {
                 ref = desc.cacheGet(id);
                 if (ref != null && !opts.isReadOnly()) {
-                    ref = desc.createCopy(ref);
+                    ref = desc.createCopyForUpdate(ref, vanillaMode);
                 }
             }
         }

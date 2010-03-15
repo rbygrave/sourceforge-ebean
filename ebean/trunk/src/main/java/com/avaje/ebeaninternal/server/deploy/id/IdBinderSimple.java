@@ -135,7 +135,7 @@ public final class IdBinderSimple implements IdBinder {
     }
 
     public Object readSet(DbReadContext ctx, Object bean) throws SQLException {
-		Object id = idProperty.read(ctx, 0);
+		Object id = idProperty.read(ctx);
 		if (id != null){
 		    idProperty.setValue(bean, id);
 		}
@@ -143,7 +143,7 @@ public final class IdBinderSimple implements IdBinder {
 	}
 	
 	public Object read(DbReadContext ctx) throws SQLException {
-		return idProperty.read(ctx, 0);
+		return idProperty.read(ctx);
 	}
 	
 	public void appendSelect(DbSqlContext ctx) {

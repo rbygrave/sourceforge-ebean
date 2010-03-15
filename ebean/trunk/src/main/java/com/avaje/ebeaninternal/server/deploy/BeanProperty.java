@@ -471,7 +471,7 @@ public class BeanProperty implements ElPropertyValue {
         setValue(destBean, value);
     }
 
-    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
         Object value = getValue(sourceBean);
         setValue(destBean, value);
     }
@@ -579,7 +579,7 @@ public class BeanProperty implements ElPropertyValue {
         sqlBeanLoad.load(this);
     }
 
-    public Object read(DbReadContext ctx, int parentState) throws SQLException {
+    public Object read(DbReadContext ctx) throws SQLException {
         return scalarType.read(ctx.getDataReader());
     }
 

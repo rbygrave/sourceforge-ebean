@@ -148,9 +148,9 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("BeanMap ");
-		if (sharedInstance){
+		if (isSharedInstance()){
 			sb.append("sharedInstance ");			
-		} else if (readOnly){
+		} else if (isReadOnly()){
 			sb.append("readOnly ");			
 		}
 		if (map == null) {
@@ -202,7 +202,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	@SuppressWarnings("unchecked")
 	public Set<Entry<K, E>> entrySet() {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return Collections.unmodifiableSet(map.entrySet());
 		}
 		if (modifyListening) {
@@ -224,7 +224,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 
 	public Set<K> keySet() {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return Collections.unmodifiableSet(map.keySet());
 		}
 		// we don't really care about modifications to the ketSet?
@@ -276,7 +276,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 
 	public Collection<E> values() {
 		init();
-		if (readOnly){
+		if (isReadOnly()){
 			return Collections.unmodifiableCollection(map.values());
 		}
 		if (modifyListening) {

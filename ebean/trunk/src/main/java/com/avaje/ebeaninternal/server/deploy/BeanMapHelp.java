@@ -14,6 +14,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.common.BeanMap;
+import com.avaje.ebean.common.BeanSet;
 
 /**
  * Helper specifically for dealing with Maps.
@@ -102,18 +103,40 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	
 
     @SuppressWarnings("unchecked")
-    public Object copyShallow(Object source, boolean vanilla) {
+    public Object copyCollection(Object source, CopyContext ctx, int maxDepth, Object parentBean) {
         if (source instanceof Map<?,?> == false){
             return null;
         }
-        Map<Object,Object> m = vanilla ? new LinkedHashMap() : new BeanMap();
+        Map<Object,Object> m = ctx.isVanillaMode() ? new LinkedHashMap() : new BeanMap();
         
         Map<?,?> sourceMap = (Map<?,?>)source;
-        for (Entry<?, ?> entry: sourceMap.entrySet()) {
-            m.put(entry.getKey(), entry.getValue());
+        if (source instanceof BeanSet<?> == false){
+            for (Entry<?, ?> entry: sourceMap.entrySet()) {
+                m.put(entry.getKey(), entry.getValue());
+            }
+            return m;
+        } 
+
+        BeanMap<?,?> bc = (BeanMap<?,?>)source;
+        if (!bc.isPopulated()) {
+            if (ctx.isVanillaMode() || parentBean == null){
+                return null;
+            } else {
+                return createReference(parentBean, many.getName());
+            }
         }
+        
+        Map<?,?> actual = bc.getActualMap();
+        for (Entry<?, ?> entry: actual.entrySet()) {
+            Object sourceDetail = entry.getValue();
+            Object destDetail = targetDescriptor.createCopy(sourceDetail, ctx, maxDepth-1);
+            m.put(entry.getKey(), destDetail);
+        }
+        
         return m;
     }
+
+        
     
 	@SuppressWarnings("unchecked")
     public Object createEmpty(boolean vanilla) {

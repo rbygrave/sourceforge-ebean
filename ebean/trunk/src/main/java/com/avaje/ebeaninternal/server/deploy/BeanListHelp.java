@@ -75,14 +75,34 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 	public Iterator<?> getIterator(Object collection) {
         return ((List<?>)collection).iterator();
     }
-
+	
 	@SuppressWarnings("unchecked")
-    public Object copyShallow(Object source, boolean vanilla) {
+    public Object copyCollection(Object source, CopyContext ctx, int maxDepth, Object parentBean) {
 	    if (source instanceof List<?> == false){
 	        return null;
 	    }
-        List<T> l = vanilla ? new ArrayList<T>() : new BeanList<T>();
-        l.addAll((List<T>)source);
+
+        List<T> l = ctx.isVanillaMode()? new ArrayList<T>() : new BeanList<T>();
+
+	    if (source instanceof BeanList<?> == false){
+	        l.addAll((List<T>)source);
+	        return l;
+	        
+	    } 
+        BeanList<?> bl = (BeanList<?>)source;
+        if (!bl.isPopulated()) {
+            if (ctx.isVanillaMode() || parentBean == null){
+                return null;
+            } else {
+                return createReference(parentBean, many.getName());
+            }
+        }
+        List<?> actualList = bl.getActualList();
+        for (int i = 0; i < actualList.size(); i++) {
+            Object sourceDetail = actualList.get(i);
+            Object destDetail = targetDescriptor.createCopy(sourceDetail, ctx, maxDepth-1);
+            l.add((T)destDetail);
+        }
         return l;
     }
 	
