@@ -405,6 +405,12 @@ public class StringHelper {
 		if (replace == null){
 			return source;
 		}
+		if (match == null){
+		    throw new NullPointerException("match is null?");
+		}
+		if (match.equals(replace)){
+		    return source;
+		}
 		return replaceString(source, match, replace, 30, 0, source.length());
 	}
 

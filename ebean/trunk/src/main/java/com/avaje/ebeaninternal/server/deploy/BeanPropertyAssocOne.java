@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.deploy;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.persistence.PersistenceException;
 
@@ -34,6 +35,8 @@ import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedId;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocOne;
+import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 
 /**
@@ -53,6 +56,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
     private final BeanProperty[] embeddedProps;
 
+    private final HashMap<String,BeanProperty> embeddedPropsMap;
+    
     /**
      * The information for Imported foreign Keys.
      */
@@ -90,8 +95,14 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             } else {
                 embeddedVersion = overrideMeta.isEmbeddedVersion();
             }
+            embeddedPropsMap = new HashMap<String, BeanProperty>();
+            for (int i = 0; i < embeddedProps.length; i++) {
+                embeddedPropsMap.put(embeddedProps[i].getName(), embeddedProps[i]);
+            }
+
         } else {
             embeddedProps = null;
+            embeddedPropsMap = null;
             embeddedVersion = false;
         }
         localHelp = createHelp(embedded, oneToOneExported);
@@ -117,6 +128,24 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                 deleteByParentIdSql = s;
             }
         }
+    }
+
+    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+        
+        if (embedded){
+            BeanProperty embProp = embeddedPropsMap.get(remainder);
+            if (embProp == null){
+                String msg = "Embedded Property "+remainder+" not found in "+getFullBeanName();
+                throw new PersistenceException(msg);
+            }
+            if (chain == null) {
+                chain = new ElPropertyChainBuilder(true, propName);
+            }
+            chain.add(this);
+            return chain.add(embProp).build();
+        }
+        
+        return createElPropertyValue(propName, remainder, chain, propertyDeploy);
     }
 
     @Override
