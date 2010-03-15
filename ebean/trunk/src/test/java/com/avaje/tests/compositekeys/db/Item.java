@@ -16,6 +16,15 @@ public class Item
 
     private int region;
 
+	@Embedded
+	@AttributeOverrides({
+		@AttributeOverride(name = "lastUpdated", column = @Column(name = "DATE_MODIFIED")),
+		@AttributeOverride(name = "created", column = @Column(name = "DATE_CREATED")),
+		@AttributeOverride(name = "updatedBy", column = @Column(name = "MODIFIED_BY")),
+		@AttributeOverride(name = "createdBy", column = @Column(name = "CREATED_BY"))
+	})
+	private AuditInfo auditInfo = new AuditInfo();
+
     @Version
     private Long version;
 
@@ -101,4 +110,9 @@ public class Item
     {
         this.eRegion = eRegion;
     }
+
+	public AuditInfo getAuditInfo()
+	{
+		return auditInfo;
+	}
 }
