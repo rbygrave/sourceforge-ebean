@@ -143,7 +143,6 @@ public class TestCore extends EbeanTestCase
 		assertNotNull(subType.getDescription());
 	}
 
-	/*
 	public void testEmbeddedWithOrder()
 	{
 		List<Item> items = getServer().find(Item.class).order("auditInfo.created asc, type asc").findList();
@@ -151,5 +150,5 @@ public class TestCore extends EbeanTestCase
 		assertNotNull(items);
 		assertEquals(2, items.size());
 	}
-	*/
+	
 }
