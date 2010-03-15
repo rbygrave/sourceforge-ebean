@@ -1588,10 +1588,19 @@ public class BeanDescriptor<T> {
         return new ElComparatorProperty<T>(elGetValue, sortProp.isAscending(), nullsHigh);
     }
 
+    /**
+     * Get an Expression language Value object.
+     */
     public ElPropertyValue getElGetValue(String propName) {
         return getElPropertyValue(propName, false);
     }
 
+    /**
+     * Similar to ElPropertyValue but also uses foreign key shortcuts.
+     * <p>
+     * The foreign key shortcuts means we can avoid unnecessary joins.
+     * </p>
+     */
     public ElPropertyDeploy getElPropertyDeploy(String propName) {
         ElPropertyDeploy fk = fkeyMap.get(propName);
         if (fk != null) {
@@ -1617,7 +1626,7 @@ public class BeanDescriptor<T> {
         return elGetValue;
     }
 
-    private ElPropertyValue buildElGetValue(String propName, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+    protected ElPropertyValue buildElGetValue(String propName, ElPropertyChainBuilder chain, boolean propertyDeploy) {
 
         if (propertyDeploy && chain != null) {
             BeanFkeyProperty fk = fkeyMap.get(propName);
@@ -1636,27 +1645,7 @@ public class BeanDescriptor<T> {
             if (assocProp == null) {
                 return null;
             }
-            if (assocProp instanceof BeanPropertyCompound) {
-                // compound value object
-                BeanPropertyCompound compound = (BeanPropertyCompound) assocProp;
-                if (chain == null) {
-                    chain = new ElPropertyChainBuilder(true, propName);
-                }
-                return compound.buildElGetValue(remainder, chain).build();
-
-            } else {
-                // associated or embedded bean
-                BeanDescriptor<?> embDesc = ((BeanPropertyAssoc<?>) assocProp).getTargetDescriptor();
-
-                if (chain == null) {
-                    chain = new ElPropertyChainBuilder(assocProp.isEmbedded(), propName);
-                }
-                chain.add(assocProp);
-                if (assocProp.containsMany()) {
-                    chain.setContainsMany(true);
-                }
-                return embDesc.buildElGetValue(remainder, chain, propertyDeploy);
-            }
+            return assocProp.buildElPropertyValue(propName, remainder, chain, propertyDeploy);
         }
 
         BeanProperty property = _findBeanProperty(propName);

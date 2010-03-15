@@ -33,6 +33,8 @@ import com.avaje.ebeaninternal.server.deploy.id.ImportedIdEmbedded;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedIdMultiple;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedIdSimple;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssoc;
+import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 /**
  * Abstract base for properties mapped to an associated bean, list, set or map.
@@ -124,6 +126,24 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 			}
 		}
 	}
+	
+	/**
+     * Create a ElPropertyValue for a *ToOne or *ToMany.
+     */
+    protected ElPropertyValue createElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+        
+        // associated or embedded bean
+        BeanDescriptor<?> embDesc = getTargetDescriptor();
+    
+        if (chain == null) {
+            chain = new ElPropertyChainBuilder(isEmbedded(), propName);
+        }
+        chain.add(this);
+        if (containsMany()) {
+            chain.setContainsMany(true);
+        }
+        return embDesc.buildElGetValue(remainder, chain, propertyDeploy);
+    }
 	
     /**
 	 * Add table join with table alias based on prefix.

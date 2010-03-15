@@ -38,6 +38,8 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedId;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocMany;
+import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 
@@ -149,6 +151,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			}
 		}
 	}
+    
+    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+        return createElPropertyValue(propName, remainder, chain, propertyDeploy);
+    }
 
 	@Override
     public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){

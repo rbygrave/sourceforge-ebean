@@ -44,6 +44,7 @@ import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.deploy.generatedproperty.GeneratedProperty;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
+import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.ldap.LdapPersistenceException;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
@@ -421,8 +422,8 @@ public class BeanProperty implements ElPropertyValue {
         this.validators = source.getValidators();
         this.hasLocalValidators = validators.length > 0;
 
-        this.elPlaceHolder = source.elPlaceHolder;
-        this.elPlaceHolderEncrypted = source.elPlaceHolderEncrypted;
+        this.elPlaceHolder = override.replace(source.elPlaceHolder, source.dbColumn);
+        this.elPlaceHolderEncrypted = override.replace(source.elPlaceHolderEncrypted, source.dbColumn);
     }
 
     /**
@@ -438,6 +439,10 @@ public class BeanProperty implements ElPropertyValue {
         }
     }
 
+    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+        throw new PersistenceException("Not valid on scalar bean property "+getFullBeanName());
+    }
+    
     /**
      * Return the BeanDescriptor that owns this property.
      */

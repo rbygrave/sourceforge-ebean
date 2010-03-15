@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.type.CtCompoundProperty;
 import com.avaje.ebeaninternal.server.type.CtCompoundPropertyElAdapter;
@@ -83,7 +84,11 @@ public class BeanPropertyCompound extends BeanProperty {
         }
     }
 
-    public ElPropertyChainBuilder buildElGetValue(String remainder, ElPropertyChainBuilder chain) {
+    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+
+        if (chain == null) {
+            chain = new ElPropertyChainBuilder(true, propName);
+        }
 
         // first add this property
         chain.add(this);
@@ -92,13 +97,13 @@ public class BeanPropertyCompound extends BeanProperty {
         // BeanProperty (all depth for nested compound type)
         BeanProperty p = propertyMap.get(remainder);
         if (p != null) {
-            return chain.add(p);
+            return chain.add(p).build();
         }
         CtCompoundPropertyElAdapter elAdapter = nonScalarMap.get(remainder);
         if (elAdapter == null) {
             throw new RuntimeException("property [" + remainder + "] not found in " + getFullBeanName());
         }
-        return chain.add(elAdapter);
+        return chain.add(elAdapter).build();
     }
 
     @Override
