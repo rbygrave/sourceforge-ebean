@@ -284,6 +284,10 @@ public class BeanDescriptor<T> {
     private final BeanPropertyCompound[] propertiesBaseCompound;
 
     private final BeanProperty[] propertiesTransient;
+    
+    /**
+     * All non transient properties excluding the id properties.
+     */
     private final BeanProperty[] propertiesNonTransient;
 
     /**
@@ -502,18 +506,7 @@ public class BeanDescriptor<T> {
         }
     }
 
-    private Object copyBean(Object source, boolean vanillaMode, boolean shallow) {
-        Object destBean = createBean(vanillaMode);
-        for (int i = 0; i < propertiesNonTransient.length; i++) {
-            if (shallow){
-                propertiesNonTransient[i].copyShallow(source, destBean, vanillaMode);                
-            } else {
-                propertiesNonTransient[i].copyProperty(source, destBean);
-            }
-        }
-        return destBean;
-    }
-
+    
     /**
      * Create a copy of this bean.
      * <p>
@@ -521,25 +514,46 @@ public class BeanDescriptor<T> {
      * instance) from the cache - where the app may want to change the data.
      * </p>
      */
-    public T createCopy(Object bean) {
-        return createCopy(bean, true);
-    }
-        
     @SuppressWarnings("unchecked")
-    private T createCopy(Object bean, boolean shallow) {
-
-        EntityBean orig = ((EntityBean) bean);
+    public T createCopy(Object source, CopyContext ctx, int maxDepth) {
         
-        EntityBean copy = (EntityBean)copyBean(orig, false, shallow);
+        Object destBean = createBean(ctx.isVanillaMode());
+        for (int j = 0; j < propertiesId.length; j++) {
+            propertiesId[j].copyProperty(source, destBean, ctx, maxDepth);                            
+        }
         
-        EntityBeanIntercept origEbi = orig._ebean_getIntercept();
-        EntityBeanIntercept copyEbi = copy._ebean_getIntercept();
+        Object destId = getId(destBean);
+        Object existing = ctx.putIfAbsent(destId, destBean);
+        if (existing != null) {
+            return (T)existing;
+        } 
+        for (int i = 0; i < propertiesNonTransient.length; i++) {
+            propertiesNonTransient[i].copyProperty(source, destBean, ctx, maxDepth);                
+        }
+        
+        if (destBean instanceof EntityBean){
+            EntityBeanIntercept copyEbi = ((EntityBean)destBean)._ebean_getIntercept();
+            if (source instanceof EntityBean){
+                EntityBeanIntercept origEbi = ((EntityBean)source)._ebean_getIntercept();        
+                origEbi.copyStateTo(copyEbi);
+            }
+            copyEbi.setBeanLoader(0, ebeanServer);
+            copyEbi.setPersistenceContext(ctx.getPersistenceContext());
+            
+            if (ctx.isSharing()){
+                copyEbi.setSharedInstance();
+            }
+        }
 
-        origEbi.copyStateTo(copyEbi);
+        return (T)destBean;
+    }
 
-        copyEbi.setBeanLoader(0, ebeanServer);
+    public T createCopyForUpdate(Object orig, boolean vanilla) {
+        return createCopy(orig, new CopyContext(false, false), 3);
+    }
 
-        return (T) copy;
+    public T createCopyForSharing(Object orig) {
+        return createCopy(orig, new CopyContext(false, true), 3);
     }
 
     /**
@@ -562,6 +576,11 @@ public class BeanDescriptor<T> {
         
         HashSet<String> nonNullProps = new HashSet<String>();
         
+        for (int j = 0; j < propertiesId.length; j++) {
+            if (propertiesId[j].getValue(bean) != null){
+                nonNullProps.add(propertiesId[j].getName());
+            }
+        }
         for (int i = 0; i < propertiesNonTransient.length; i++) {
             if (propertiesNonTransient[i].getValue(bean) != null){
                 nonNullProps.add(propertiesNonTransient[i].getName());
@@ -918,22 +937,23 @@ public class BeanDescriptor<T> {
 
     @SuppressWarnings("unchecked")
     public T cachePutObject(Object bean) {
-        return cachePut((T) bean);
+        Object cacheBean = createCopyForSharing(bean);
+        return cachePut((T) cacheBean, true);
     }
 
     /**
      * Put a bean into the bean cache.
      */
     @SuppressWarnings("unchecked")
-    public T cachePut(T bean) {
+    public T cachePut(T bean, boolean alreadyShared) {
         if (beanCache == null) {
             beanCache = cacheManager.getBeanCache(beanType);
         }
+
+        if (!alreadyShared){
+            bean = createCopyForSharing(bean);
+        }
         Object id = getId(bean);
-
-        // make sure beans put in the cache are always going to be readOnly
-        ((EntityBean) bean)._ebean_getIntercept().setSharedInstance();
-
         return (T) beanCache.put(id, bean);
     }
 

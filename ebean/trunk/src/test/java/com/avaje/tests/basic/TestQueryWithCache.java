@@ -30,8 +30,7 @@ public class TestQueryWithCache extends TestCase {
 		
 		Order order = query.findUnique();
 		Customer customer = order.getCustomer();
-		BeanState custState = Ebean.getBeanState(customer);
-		Assert.assertTrue(custState.isReadOnly());
+		Assert.assertTrue(Ebean.getBeanState(customer).isReadOnly());
 		
 //		// invoke lazy loading
 //		customer.getName();

@@ -35,6 +35,7 @@ import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.NodeUsageListener;
@@ -149,10 +150,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final OrmQueryDetail queryDetail;
 
 	private final QueryListener<T> queryListener;
-
-	private final boolean sharedInstance;
-	
-	private final boolean readOnly;
 	
 	private Map<String,String> currentPathMap;
 
@@ -260,9 +257,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.queryDetail = query.getDetail();
 		this.queryMode = query.getMode();
 		
-		this.sharedInstance = query.isSharedInstance();
-		this.readOnly = request.isReadOnly();
-		
 		this.parentState = request.getParentState();
 		
 		this.autoFetchManager = query.getAutoFetchManager();
@@ -325,7 +319,19 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 		
-	public DataReader getDataReader() {
+	public int getParentState() {
+        return parentState;
+    }
+
+    public void propagateState(Object e) {
+        if (parentState != EntityBeanIntercept.DEFAULT){
+            if (e instanceof EntityBean){
+                ((EntityBean)e)._ebean_getIntercept().setState(parentState);
+            }
+        }
+    }
+    
+    public DataReader getDataReader() {
         return dataReader;
     }
 
@@ -339,20 +345,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	public boolean isVanillaMode() {
         return request.isVanillaMode();
     }
-
-    /**
-	 * Return true if the query is to a lazy load for a bean in the cache.
-	 */
-	public boolean isSharedInstance() {
-		return sharedInstance;
-	}
-
-	/**
-	 * The entities should be returned in readOnly mode.
-	 */
-	public boolean isReadOnly() {
-		return readOnly;
-	}
 
 	public CQueryPredicates getPredicates() {
 		return predicates;

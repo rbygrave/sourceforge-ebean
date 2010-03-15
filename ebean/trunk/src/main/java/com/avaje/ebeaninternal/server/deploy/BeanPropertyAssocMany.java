@@ -151,14 +151,13 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
 	@Override
-    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
         
-	    if (vanillaMode){
-	        // hmmm, leave null
-	    } else {
-            BeanCollection<?> reference = createReference(sourceBean);
-            setValue(destBean, reference);
-	    }
+	    Object sourceCollection = getValue(sourceBean);
+	    if (sourceCollection != null){
+	        Object copyCollection = help.copyCollection(sourceCollection, ctx, maxDepth, destBean);
+	        setValue(destBean, copyCollection);
+	    }	    
     }
 
 	public SqlUpdate deleteByParentId(Object parentId) {
@@ -212,7 +211,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
 	@Override
-	public Object read(DbReadContext ctx, int parentState) throws SQLException {
+	public Object read(DbReadContext ctx) throws SQLException {
 		return null;
 	}
 

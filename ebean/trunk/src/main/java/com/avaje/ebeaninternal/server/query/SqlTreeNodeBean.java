@@ -250,11 +250,9 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 
 		ctx.setCurrentPrefix(prefix, pathMap);
 		
-		if (parentState != 0 && localBean instanceof EntityBean){
-			((EntityBean)localBean)._ebean_getIntercept().propagateParentState(parentState);			
-		} 
+		ctx.propagateState(localBean);
 		
-		SqlBeanLoad sqlBeanLoad = new SqlBeanLoad(ctx, localType, localBean, queryMode, parentState);
+		SqlBeanLoad sqlBeanLoad = new SqlBeanLoad(ctx, localType, localBean, queryMode);
 		
 		if (inheritInfo == null){
 			// normal behaviour with no inheritance

@@ -15,6 +15,16 @@ import com.avaje.ebeaninternal.server.type.DataReader;
 public interface DbReadContext {
 	
     /**
+     * Return the state of the object graph.
+     */
+    public int getParentState();
+    
+    /**
+     * Propagate the state to the bean.
+     */
+    public void propagateState(Object e);
+    
+    /**
      * Return the DataReader.
      */
     public DataReader getDataReader();
@@ -23,16 +33,6 @@ public interface DbReadContext {
      * Return true if vanilla objects should be returned.
      */
     public boolean isVanillaMode();
-    
-	/**
-	 * Return true if this is a lazy loading query for a shared instance.
-	 */
-	public boolean isSharedInstance();
-	
-	/**
-	 * Return true if the objects built should be readOnly.
-	 */
-	public boolean isReadOnly();
 	
 	/**
 	 * Return true if the query is using supplied SQL rather than generated SQL.

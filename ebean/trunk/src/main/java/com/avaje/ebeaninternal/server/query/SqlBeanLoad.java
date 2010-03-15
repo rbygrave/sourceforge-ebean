@@ -45,8 +45,7 @@ public class SqlBeanLoad {
 	private final Class<?> type;
 	private final Object originalOldValues;
 	private final boolean isLazyLoad;
-	private final int parentState;
-
+	
 	// set of properties to exclude from the refresh because it is
 	// not a refresh but rather a lazyLoading event.
 	private final Set<String> excludes;
@@ -54,9 +53,8 @@ public class SqlBeanLoad {
 	
 	private final boolean rawSql;
 	
-	public SqlBeanLoad(DbReadContext ctx, Class<?> type, Object bean, Mode queryMode, int parentState) {
+	public SqlBeanLoad(DbReadContext ctx, Class<?> type, Object bean, Mode queryMode) {
 	
-		this.parentState = parentState;
 		this.ctx = ctx;
 		this.rawSql = ctx.isRawSql();
 		this.type = type;
@@ -110,7 +108,7 @@ public class SqlBeanLoad {
 		}
 		
 		try {
-			Object dbVal = prop.read(ctx, parentState);
+			Object dbVal = prop.read(ctx);
 			if (isLazyLoad){
 				prop.setValue(bean, dbVal);					
 			} else {

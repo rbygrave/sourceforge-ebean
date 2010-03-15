@@ -45,10 +45,10 @@ public class BeanPropertySimpleCollection<T> extends BeanPropertyAssocMany<T> {
     }
     
     @Override
-    public void copyShallow(Object sourceBean, Object destBean, boolean vanillaMode){
+    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
         
         Object srcValue = getValue(sourceBean);
-        Object dstValue = help.copyShallow(srcValue, vanillaMode);
+        Object dstValue = help.copyCollection(srcValue, ctx, maxDepth, destBean);
         setValue(destBean, dstValue);
     }
     

@@ -19,7 +19,7 @@ public interface BeanCollectionHelp<T> {
     /**
      * Create and return a shallow copy of the collection.
      */
-    public Object copyShallow(Object source, boolean vanilla);
+    public Object copyCollection(Object sourceCollection, CopyContext ctx, int maxDepth, Object parentBean);
 
 	/**
 	 * Set the EbeanServer that owns the configuration.

@@ -148,9 +148,9 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("BeanSet ");
-        if (sharedInstance){
+        if (isSharedInstance()){
             sb.append("sharedInstance ");
-        } else if (readOnly){
+        } else if (isReadOnly()){
             sb.append("readOnly ");
         }
         if (set == null) {
@@ -244,7 +244,7 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
 
     public Iterator<E> iterator() {
         init();
-        if (readOnly){
+        if (isReadOnly()){
         	return new ReadOnlyIterator<E>(set.iterator());
         }
         if (modifyListening){

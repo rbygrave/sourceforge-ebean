@@ -264,8 +264,16 @@ public class CQueryFetchIds {
 
 	
 	class DbContext implements DbReadContext {
-		
-		public Mode getQueryMode() {
+			    
+        public int getParentState() {
+            return EntityBeanIntercept.DEFAULT;
+        }
+
+        public void propagateState(Object e) {
+            throw new RuntimeException("Not Called");
+        }
+
+        public Mode getQueryMode() {
 			return Mode.NORMAL;
 		}
 		
