@@ -2,7 +2,6 @@ package com.avaje.tests.query;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
-import com.avaje.tests.model.basic.CKeyParent;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
 import junit.framework.TestCase;
@@ -51,6 +50,7 @@ public class TestSubQuery extends TestCase {
 
 		Query<CKeyParent> sq = Ebean.createQuery(CKeyParent.class)
 			.select("id.oneKey")
+			.setAutofetch(false)
 			.where()
 			.query();
 
