@@ -1205,8 +1205,12 @@ public final class DefaultServer implements SpiEbeanServer {
     public <T> int findRowCount(Query<T> query, Transaction t) {
 
         SpiQuery<T> copy = ((SpiQuery<T>) query).copy();
+        return findRowCountWithCopy(copy, t);
+    }
+    
+    public <T> int findRowCountWithCopy(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(Type.ROWCOUNT, copy, t);
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.ROWCOUNT, query, t);
         try {
             request.initTransIfRequired();
             int rowCount = request.findRowCount();
@@ -1243,17 +1247,17 @@ public final class DefaultServer implements SpiEbeanServer {
         }
     }
 
-    public <T> FutureRowCount<T> findFutureRowCount(Query<T> query, Transaction t) {
+    public <T> FutureRowCount<T> findFutureRowCount(Query<T> q, Transaction t) {
 
-        SpiQuery<T> spiQuery = (SpiQuery<T>) query;
-        spiQuery.setFutureFetch(true);
+        SpiQuery<T> copy = ((SpiQuery<T>) q).copy();
+        copy.setFutureFetch(true);
 
         Transaction newTxn = createTransaction();
-        CallableQueryRowCount<T> call = new CallableQueryRowCount<T>(this, query, newTxn);
-
+        
+        CallableQueryRowCount<T> call = new CallableQueryRowCount<T>(this, copy, newTxn);
         FutureTask<Integer> futureTask = new FutureTask<Integer>(call);
 
-        QueryFutureRowCount<T> queryFuture = new QueryFutureRowCount<T>(query, futureTask);
+        QueryFutureRowCount<T> queryFuture = new QueryFutureRowCount<T>(copy, futureTask);
         backgroundExecutor.execute(futureTask);
 
         return queryFuture;

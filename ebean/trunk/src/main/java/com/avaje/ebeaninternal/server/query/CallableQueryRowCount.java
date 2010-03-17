@@ -41,7 +41,7 @@ public class CallableQueryRowCount<T> extends CallableQuery<T> implements Callab
 	 * Execute the query returning the row count.
 	 */
 	public Integer call() throws Exception {
-		return server.findRowCount(query, t);
+		return server.findRowCountWithCopy(query, t);
 	}
 
 	

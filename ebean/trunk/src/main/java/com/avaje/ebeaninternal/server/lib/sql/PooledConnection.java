@@ -874,6 +874,14 @@ public class PooledConnection implements Connection {
 	private boolean skipElement(String methodLine) {
 	    if (methodLine.startsWith("java.lang.")) {
             return true;
+	    } else if (methodLine.startsWith("java.util.")) {
+	        return true;
+        } else if (methodLine.startsWith("com.avaje.ebeaninternal.server.query.CallableQuery.<init>")) {
+            // creating connection on future...
+            return true;
+        } else if (methodLine.startsWith("com.avaje.ebeaninternal.server.query.Callable")) {
+            // it is a future task being executed...
+            return false;
         } else if (methodLine.startsWith("com.avaje.ebeaninternal")) {
             return true;
         } else {

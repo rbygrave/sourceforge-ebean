@@ -162,6 +162,11 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	public <T> List<Object> findIdsWithCopy(Query<T> query, Transaction t);
 
 	/**
+	 * Execute the findRowCount query but without copying the query.
+	 */
+    public <T> int findRowCountWithCopy(Query<T> query, Transaction t);
+
+	/**
 	 * Load a batch of Associated One Beans.
 	 */
 	public void loadBean(LoadBeanRequest loadRequest);
@@ -171,18 +176,9 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 */
 	public void loadMany(LoadManyRequest loadRequest);
 
-//	/**
-//	 * Lazy load a Many not using batch loading.
-//	 */
-//	public void loadMany(BeanCollection<?> batch, LoadManyContext ctx);
-
 	/**
 	 * Return the default batch size for lazy loading.
 	 */
 	public int getLazyLoadBatchSize();
 	
-//	/**
-//	 * Set the default batch size for lazy loading.
-//	 */
-//	public void setLazyLoadBatchSize(int loadBatchSize);
 }
