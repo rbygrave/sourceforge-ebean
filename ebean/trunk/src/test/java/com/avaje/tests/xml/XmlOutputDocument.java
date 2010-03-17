@@ -19,18 +19,33 @@
  */
 package com.avaje.tests.xml;
 
-import java.io.IOException;
-
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-public interface XoNode {
+public class XmlOutputDocument {
 
-    public String getNodeName();
+    private final Document document;
+
+    public XmlOutputDocument(Document document) {
+        this.document = document;
+    }
     
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException;
-
-    public void writeNode(XmlOutputWriter o, Object bean) throws IOException;
-
-    public void readNode(Node node, XoWriteContext ctx);
-
+    public Document getDocument() {
+        return document;
+    }
+    
+    
+    public void appendChild(Node node, Node newChild) {
+        if (node != null){
+            node.appendChild(newChild);
+        } else {
+            node = document.getDocumentElement();
+            if (node == null){
+                document.appendChild(newChild);
+            } else {
+                node.appendChild(newChild);
+            }
+        }
+    }
+    
 }

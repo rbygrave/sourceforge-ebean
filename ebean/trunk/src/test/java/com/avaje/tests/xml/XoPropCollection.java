@@ -26,7 +26,12 @@ import java.util.Map;
 
 import javax.persistence.PersistenceException;
 
+import org.w3c.dom.Node;
+
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollectionAdd;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public class XoPropCollection extends XoPropNode implements XoNode {
@@ -34,24 +39,85 @@ public class XoPropCollection extends XoPropNode implements XoNode {
     private final XoNode childNode;
     
     private final boolean invokeFetch;
+    
+    private final BeanPropertyAssocMany<?> manyProp;
 
+    private final String mapKey;
+
+    private final BeanDescriptor<?> targetDescriptor;
+    
+    /**
+     * Construct with no mapKey and no attributes.
+     */
     public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch) {
-        this(name, prop, childNode, invokeFetch, null);
+        this(name, prop, childNode, invokeFetch, null, null);
+    }
+
+    /**
+     * Construct with no attributes.
+     */
+    public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch, String mapKey) {
+        this(name, prop, childNode, invokeFetch, mapKey, null);
     }
     
     /**
-     * Create as a property based node.
+     * Construct with all options.
      */
-    public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch, XoAttribute[] attributes) {
+    public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch, String mapKey, XoAttribute[] attributes) {
 
-        super(name, prop, null, attributes);
+        super(name, prop, null, null, null, attributes);
         this.childNode = childNode;
         this.invokeFetch = invokeFetch;
         this.decreaseDepth = true;
+        this.mapKey = mapKey;
+        this.manyProp = (BeanPropertyAssocMany<?>)prop.getBeanProperty();
+        this.targetDescriptor = manyProp.getTargetDescriptor();
     }
 
+    
     @Override
-    public void writeContent(XmlWriterOutput o, Object bean, Object val) throws IOException {
+    public void readNode(Node node, XoWriteContext ctx) {
+        
+        Object parentBean = ctx.getBean();
+        
+        // create a List/Set/Map to hold the details
+        Object details = manyProp.createEmpty(ctx.isVanillaMode());
+        
+        // Wrapper used to add to the collection
+        BeanCollectionAdd bcAdd = manyProp.getBeanCollectionAdd(details, mapKey);
+        
+        Node detailNode = nextElement(node.getFirstChild());
+        do {
+            Object detailBean = targetDescriptor.createBean(ctx.isVanillaMode());
+            ctx.setBean(detailBean);
+            
+            childNode.readNode(detailNode, ctx);
+            
+            bcAdd.addBean(detailBean);
+            
+            detailNode = nextElement(detailNode.getNextSibling());
+            
+        } while(detailNode != null);
+        
+        setObjectValue(parentBean, details);
+        ctx.setBean(parentBean);
+    }
+
+    private Node nextElement(Node node) {
+        
+        while (node != null) {
+            int type = node.getNodeType();
+            if (type == Node.ELEMENT_NODE){
+                return node;
+            }
+            node = node.getNextSibling();   
+        }
+        return null;
+    }
+    
+    
+    @Override
+    public void writeContent(XmlOutputWriter o, Object bean, Object val) throws IOException {
         
         Collection<?> collection = (Collection<?>)val;
         Iterator<?> it = collection.iterator();
@@ -59,6 +125,22 @@ public class XoPropCollection extends XoPropNode implements XoNode {
             Object childBean = it.next();
             childNode.writeNode(o, childBean);
         }
+    }
+
+    @Override
+    public void writeContent(XmlOutputDocument out, Node e, Object bean, Object value) throws IOException {
+        
+        Collection<?> collection = (Collection<?>)value;
+        Iterator<?> it = collection.iterator();
+        while (it.hasNext()) {
+            Object childBean = it.next();
+            childNode.writeNode(out, e, childBean);
+        }
+    }
+
+    @Override
+    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException {
+        super.writeNode(out, node, bean);
     }
 
     @Override

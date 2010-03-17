@@ -21,28 +21,31 @@ package com.avaje.tests.xml;
 
 import java.io.IOException;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class XoCompoundNode implements XoNode {
 
     private final XoNode[] nodes;
 
-    private final String name;
+    private final String nodeName;
     private final String beginTag;
     private final String endTag;
     
     public XoCompoundNode(XoNode... nodes) {
         this(null, nodes);
     }
-    public XoCompoundNode(String name, XoNode... nodes) {
-        this.name = name;
+    public XoCompoundNode(String nodeName, XoNode... nodes) {
+        this.nodeName = nodeName;
         this.nodes = nodes;
-        this.beginTag = name == null ? "" : "<"+name+">";
-        this.endTag = name == null ? "" : "</"+name+">";
+        this.beginTag = nodeName == null ? "" : "<"+nodeName+">";
+        this.endTag = nodeName == null ? "" : "</"+nodeName+">";
+    }
+        
+    public String getNodeName() {
+        return nodeName;
     }
     
-    public void writeNode(XmlWriterOutput o, Object bean) throws IOException {
+    public void writeNode(XmlOutputWriter o, Object bean) throws IOException {
         o.increaseDepth();
         o.write(beginTag);
         for (int i = 0; i < nodes.length; i++) {
@@ -52,18 +55,45 @@ public class XoCompoundNode implements XoNode {
         o.write(endTag);
     }
     
-    public void writeNode(XmlDocumentOutput out, Node node, Object bean) throws IOException {
+    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException {
 
-        Element e = null;
-        if (name != null){
-            e = out.getDocument().createElement(name);
-        }
-        out.appendChild(node, e);
+        Node e;
+        if (nodeName == null){
+            e = node;
+        } else {
+            e = out.getDocument().createElement(nodeName);
+            out.appendChild(node, e);
+        } 
         
         for (int i = 0; i < nodes.length; i++) {
             nodes[i].writeNode(out, e, bean);
         }
 
+    }
+    
+    public void readNode(Node node, XoWriteContext ctx) {
+        
+//        String processNodeName = node.getNodeName();
+//        if (!processNodeName.equals(nodeName)){
+//            throw new RuntimeException(processNodeName+" <> "+nodeName);
+//        }
+        Node childNode = node.getFirstChild();        
+        int pos = -1;
+        
+        do {
+            for (; ++pos < nodes.length;) {
+                if (childNode.getNodeName().equals(nodes[pos].getNodeName())){
+                    nodes[pos].readNode(childNode, ctx);
+                    break;
+                } else {
+                    System.out.println("no element for "+nodes[pos].getNodeName());
+                }
+            }
+            
+            childNode = childNode.getNextSibling();
+            
+        } while(childNode != null);
+        
     }
 
     

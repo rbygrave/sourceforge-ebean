@@ -19,18 +19,15 @@
  */
 package com.avaje.tests.xml;
 
-import java.io.IOException;
+/**
+ * Naming convention used in XML to Object mapping.
+ * 
+ * @author rbygrave
+ */
+public interface XomNamingConvention {
 
-import org.w3c.dom.Node;
-
-public interface XoNode {
-
-    public String getNodeName();
-    
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException;
-
-    public void writeNode(XmlOutputWriter o, Object bean) throws IOException;
-
-    public void readNode(Node node, XoWriteContext ctx);
-
+    /**
+     * Returns the default node/element/attribute name for the given property name.
+     */
+    public String getNodeName(String propertyName);
 }

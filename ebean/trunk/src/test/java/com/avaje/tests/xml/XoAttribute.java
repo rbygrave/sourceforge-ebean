@@ -22,11 +22,15 @@ package com.avaje.tests.xml;
 import java.io.IOException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 public interface XoAttribute {
 
-    public void writeAttribute(XmlWriterOutput o, Object bean) throws IOException;
+    public void writeAttribute(XmlOutputWriter o, Object bean) throws IOException;
     
-    public void writeAttribute(XmlDocumentOutput out, Element e, Object bean) throws IOException;
+    public void writeAttribute(XmlOutputDocument out, Element e, Object bean) throws IOException;
 
+    public void readNode(Node node, NamedNodeMap attributes, XoWriteContext ctx);
+    
 }

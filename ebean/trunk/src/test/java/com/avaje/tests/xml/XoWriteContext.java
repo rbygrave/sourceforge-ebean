@@ -19,33 +19,26 @@
  */
 package com.avaje.tests.xml;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+public class XoWriteContext {
 
-public class XmlDocumentOutput {
+    boolean vanillaMode;
+    
+    Object bean;
+    
+    public Object getBean() {
+        return bean;
+    }
 
-    private final Document document;
+    public void setBean(Object bean) {
+        this.bean = bean;
+    }
 
-    public XmlDocumentOutput(Document document) {
-        this.document = document;
+    public boolean isVanillaMode() {
+        return vanillaMode;
     }
-    
-    public Document getDocument() {
-        return document;
+
+    public void setVanillaMode(boolean vanillaMode) {
+        this.vanillaMode = vanillaMode;
     }
-    
-    
-    public void appendChild(Node node, Node newChild) {
-        if (node != null){
-            node.appendChild(newChild);
-        } else {
-            node = document.getDocumentElement();
-            if (node == null){
-                document.appendChild(newChild);
-            } else {
-                node.appendChild(newChild);
-            }
-        }
-    }
-    
+
 }
