@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
@@ -152,6 +153,8 @@ public class PooledConnection implements Connection {
 	 */
 	StackTraceElement[] stackTrace;
 
+	int maxStackTrace;
+	
 	/**
 	 * Construct the connection that can refer back to the pool it belongs to.
 	 * <p>
@@ -165,7 +168,7 @@ public class PooledConnection implements Connection {
 		this.connection = connection;
 		this.name = pool.getName() + "." + uniqueId;
 		this.pstmtCache = new PstmtCache(name, pool.getPstmtCacheSize());
-
+		this.maxStackTrace = pool.getMaxStackTraceSize();
 		this.creationTime = System.currentTimeMillis();
 		this.lastUseTime = creationTime;
 	}
@@ -857,8 +860,8 @@ public class PooledConnection implements Connection {
 
 		for (int j = 0; j < stackTrace.length; j++) {
 			String methodLine = stackTrace[j].toString();
-			if (methodLine.startsWith("com.avaje.")) {
-				// ignore these methods...
+			if (skipElement(methodLine)) {
+                // ignore these methods...
 			} else {
 				createdByMethod = methodLine;
 				return createdByMethod;
@@ -868,6 +871,16 @@ public class PooledConnection implements Connection {
 		return null;
 	}
 
+	private boolean skipElement(String methodLine) {
+	    if (methodLine.startsWith("java.lang.")) {
+            return true;
+        } else if (methodLine.startsWith("com.avaje.ebeaninternal")) {
+            return true;
+        } else {
+            return false;
+        }
+	}
+	
 	/**
 	 * Set the stack trace to help find connection pool leaks.
 	 */
@@ -880,7 +893,24 @@ public class PooledConnection implements Connection {
 	 * could use this if getCreatedByMethod() doesn't work for you.
 	 */
 	public StackTraceElement[] getStackTrace() {
-		return stackTrace;
+	    
+	    if (stackTrace == null){
+	        return null;
+	    } 
+	    
+	    // filter off the top of the stack that we are not interested in
+        ArrayList<StackTraceElement> filteredList = new ArrayList<StackTraceElement>();
+        boolean include = false;
+        for (int i = 0; i < stackTrace.length; i++) {
+            if (!include && !skipElement(stackTrace[i].toString())){
+                include = true;
+            }
+            if (include && filteredList.size() < maxStackTrace){
+                filteredList.add(stackTrace[i]);
+            }
+        }
+        return filteredList.toArray(new StackTraceElement[filteredList.size()]);
+	    	    
 	}
 
 }

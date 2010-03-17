@@ -27,6 +27,8 @@ public class DataSourceConfig {
 	
 	private boolean captureStackTrace;
 
+	private int maxStackTraceSize = 5;
+	
 	private int leakTimeMinutes = 30;
 	
 	private int maxInactiveTimeSecs = 900;
@@ -172,8 +174,22 @@ public class DataSourceConfig {
 	public void setCaptureStackTrace(boolean captureStackTrace) {
 		this.captureStackTrace = captureStackTrace;
 	}
+	
+	/**
+	 * Return the max size for reporting stack traces on busy connections.
+	 */
+	public int getMaxStackTraceSize() {
+        return maxStackTraceSize;
+    }
 
 	/**
+	 * Set the max size for reporting stack traces on busy connections.
+	 */
+    public void setMaxStackTraceSize(int maxStackTraceSize) {
+        this.maxStackTraceSize = maxStackTraceSize;
+    }
+
+    /**
 	 * Return the time in minutes after which a connection could
 	 * be considered to have leaked.
 	 */
@@ -305,32 +321,33 @@ public class DataSourceConfig {
 		
 		String prefix = "datasource."+serverName+".";
 		
-		username = GlobalProperties.get(prefix+"username", null);
-		password = GlobalProperties.get(prefix+"password", null);
+		this.username = GlobalProperties.get(prefix+"username", null);
+		this.password = GlobalProperties.get(prefix+"password", null);
 		
 		String v;
 		
 		v = GlobalProperties.get(prefix+"databaseDriver", null);
-		driver = GlobalProperties.get(prefix+"driver", v);
+		this.driver = GlobalProperties.get(prefix+"driver", v);
 		
 		
 		v = GlobalProperties.get(prefix+"databaseUrl", null);
-		url = GlobalProperties.get(prefix+"url", v);
+		this.url = GlobalProperties.get(prefix+"url", v);
 		
-		captureStackTrace = GlobalProperties.getBoolean(prefix+"captureStackTrace", false);
-		leakTimeMinutes = GlobalProperties.getInt(prefix+"leakTimeMinutes", 30);
-		maxInactiveTimeSecs = GlobalProperties.getInt(prefix+"maxInactiveTimeSecs", 900);
+		this.captureStackTrace = GlobalProperties.getBoolean(prefix+"captureStackTrace", false);
+		this.maxStackTraceSize = GlobalProperties.getInt(prefix+"maxStackTraceSize", 5);
+		this.leakTimeMinutes = GlobalProperties.getInt(prefix+"leakTimeMinutes", 30);
+		this.maxInactiveTimeSecs = GlobalProperties.getInt(prefix+"maxInactiveTimeSecs", 900);
 
-		minConnections = GlobalProperties.getInt(prefix+"minConnections", 0);
-		maxConnections = GlobalProperties.getInt(prefix+"maxConnections", 20);
-		pstmtCacheSize = GlobalProperties.getInt(prefix+"pstmtCacheSize", 20);
-		cstmtCacheSize = GlobalProperties.getInt(prefix+"cstmtCacheSize", 20);
+		this.minConnections = GlobalProperties.getInt(prefix+"minConnections", 0);
+		this.maxConnections = GlobalProperties.getInt(prefix+"maxConnections", 20);
+		this.pstmtCacheSize = GlobalProperties.getInt(prefix+"pstmtCacheSize", 20);
+		this.cstmtCacheSize = GlobalProperties.getInt(prefix+"cstmtCacheSize", 20);
 		
-		waitTimeoutMillis = GlobalProperties.getInt(prefix+"waitTimeout", 1);
+		this.waitTimeoutMillis = GlobalProperties.getInt(prefix+"waitTimeout", 1);
 		
-		heartbeatSql = GlobalProperties.get(prefix+"heartbeatSql", null);
-		poolListener = GlobalProperties.get(prefix+"poolListener", null);
-        offline = GlobalProperties.getBoolean(prefix+"offline", false);
+		this.heartbeatSql = GlobalProperties.get(prefix+"heartbeatSql", null);
+		this.poolListener = GlobalProperties.get(prefix+"poolListener", null);
+		this.offline = GlobalProperties.getBoolean(prefix+"offline", false);
 
 	}
 }

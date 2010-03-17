@@ -107,6 +107,11 @@ public class DataSourcePool implements DataSource {
 	private boolean captureStackTrace;
 	
 	/**
+	 * The max size of the stack trace to report.
+	 */
+	private int maxStackTraceSize;
+	
+	/**
 	 * flag to indicate we have sent an alert message.
 	 */
 	private boolean dataSourceDownAlertSent;
@@ -186,39 +191,6 @@ public class DataSourcePool implements DataSource {
 	 * connection is used it sets it's lastUsedTime.
 	 */
 	private long leakTimeMinutes;
-
-	/**
-	 * Create the pool.
-	 */
-	public DataSourcePool(DataSourceNotify notify, DataSourceParams params) {
-
-		this.notify = notify;
-		this.name = params.getName();
-		this.poolListener = createPoolListener(params.getPoolListener());
-		
-		this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
-		this.leakTimeMinutes = params.getLeakTimeMinutes();
-		this.captureStackTrace = params.isCaptureStackTrace();
-		this.autoCommit = params.isAutoCommit();
-		this.databaseDriver = params.getDriver();
-		this.databaseUrl = params.getUrl();
-		this.pstmtCacheSize = params.getPstmtCacheSize();
-		this.minConnections = params.getMinConnections();
-		this.maxConnections = params.getMaxConnections();
-		this.waitTimeoutMillis = params.getWaitTimeout();
-		this.transactionIsolation = params.getIsolationLevel();
-		this.heartbeatsql = params.getHeartBeatSql();
-		
-        connectionProps = new Properties();
-        connectionProps.setProperty("user", params.getUsername());
-        connectionProps.setProperty("password", params.getPassword());
-        
-		try {
-			initialise();
-		} catch (SQLException ex) {
-			throw new DataSourceException(ex);
-		}
-	}
 	
 	public DataSourcePool(DataSourceNotify notify, String name, DataSourceConfig params) {
 
@@ -232,6 +204,7 @@ public class DataSourcePool implements DataSource {
 		this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
 		this.leakTimeMinutes = params.getLeakTimeMinutes();
 		this.captureStackTrace = params.isCaptureStackTrace();
+	    this.maxStackTraceSize = params.getMaxStackTraceSize();
 		this.databaseDriver = params.getDriver();
 		this.databaseUrl = params.getUrl();
 		this.pstmtCacheSize = params.getPstmtCacheSize();
@@ -317,6 +290,10 @@ public class DataSourcePool implements DataSource {
 		return name;
 	}
 
+	public int getMaxStackTraceSize() {
+	    return maxStackTraceSize;
+	}
+	
 	/**
 	 * Returns false when the dataSource is down.
 	 */
@@ -595,13 +572,9 @@ public class DataSourcePool implements DataSource {
 			
 			Iterator<PooledConnection> i = busyList.iterator();
 			while (i.hasNext()) {
-				PooledConnection pc = (PooledConnection) i.next();
-				StackTraceElement[] stackTrace = pc.getStackTrace();
-				
+				PooledConnection pc = i.next();
 				logger.info(pc.getDescription());
-				if (stackTrace != null){
-					logger.info("Connect["+pc.getName()+"] stackTrace: "+Arrays.toString(stackTrace));
-				}
+				logStackElement(pc, "Busy Connection: ");				
 			}
 		}
 	}
@@ -654,7 +627,8 @@ public class DataSourcePool implements DataSource {
 							+ "] lastStmt[" + pc.getLastStatement() + "]";
 
 					logger.warning(msg);
-
+					logStackElement(pc, "Possible Leaked Connection: ");
+					
 					pc.close();
 
 				} catch (SQLException ex) {
@@ -665,6 +639,18 @@ public class DataSourcePool implements DataSource {
 		}
 	}
 
+	private void logStackElement(PooledConnection pc, String prefix) {
+	    StackTraceElement[] stackTrace = pc.getStackTrace();
+	    if (stackTrace != null){
+	        String s = Arrays.toString(stackTrace);
+	        String msg = prefix+" name["+pc.getName()+"] stackTrace: "+s;
+	        logger.warning(msg);
+	        // also send to syserr ... as the loggers get turned 
+	        // off early in JVM shutdown
+	        System.err.println(msg);
+	    }
+	}
+	
 	/**
 	 * Grow the pool by creating a new connection. The connection can either be
 	 * added to the available list, or returned.
