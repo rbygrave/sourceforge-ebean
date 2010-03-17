@@ -28,9 +28,9 @@ public class XbAttribute extends XbBase {
         super(propertyName, nodeName, builder);
     }
 
-    public XoAttribute create(BeanDescriptor<?> descriptor) {
+    public XoiAttribute create(BeanDescriptor<?> descriptor) {
         
         ElPropertyValue prop = descriptor.getElGetValue(propertyName);
-        return new XoPropAttribute(nodeName, prop, formatter, parser);
+        return new XopAttribute(nodeName, prop, formatter, parser);
     }
 }

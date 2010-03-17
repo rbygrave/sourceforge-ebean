@@ -37,6 +37,16 @@ public class XbNode extends XbBase {
         super(propertyName, nodeName, builder);
     }
 
+    public void addElement(String propertyName){
+        String elementName = getNamingConventionNodeName(propertyName);
+        addElement(propertyName, elementName);
+    }
+    
+    public void addElement(String propertyName, String elementName){
+        XbNode n = new XbNode(propertyName, elementName, builder);
+        childNodes.add(n);
+    }
+    
     public XbNode addAttribute(String propertyName){
         String attrName = getNamingConventionNodeName(propertyName);
         return addAttribute(propertyName, attrName);
@@ -51,27 +61,27 @@ public class XbNode extends XbBase {
         return this;
     }
     
-    public XoNode createNode(BeanDescriptor<?> descriptor) {
+    public XoiNode createNode(BeanDescriptor<?> descriptor) {
     
-        XoAttribute[] attrs = new XoAttribute[attributes.size()];
+        XoiAttribute[] attrs = new XoiAttribute[attributes.size()];
         
         int i = 0;
         for (XbAttribute attrBuilder : attributes.values()) {
-            XoAttribute xoAttr = attrBuilder.create(descriptor);
+            XoiAttribute xoAttr = attrBuilder.create(descriptor);
             attrs[i++] = xoAttr;
         }
         
         ElPropertyValue prop = descriptor.getElGetValue(propertyName);
         
-        XoNode[] children = null;
+        XoiNode[] children = null;
         if (!childNodes.isEmpty()){
-            children = new XoNode[childNodes.size()];
+            children = new XoiNode[childNodes.size()];
             for (int j = 0; j < children.length; j++) {
                 XbNode xbNode = childNodes.get(j);
                 children[j] = xbNode.createNode(descriptor);
             }
         }
         
-        return new XoPropNode(nodeName, prop, formatter, parser, children, attrs);
+        return new XopNode(nodeName, prop, formatter, parser, children, attrs);
     }
 }

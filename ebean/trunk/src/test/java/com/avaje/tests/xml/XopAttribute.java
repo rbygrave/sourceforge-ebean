@@ -30,16 +30,16 @@ import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public class XoPropAttribute extends XoBaseProp implements XoAttribute {
+public class XopAttribute extends XopBase implements XoiAttribute {
 
     /**
      * Create as an property based attribute.
      */
-    public XoPropAttribute(String attrName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
+    public XopAttribute(String attrName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
         super(attrName, prop, formatter, parser);
     }
 
-    public XoPropAttribute(String attrName, ElPropertyValue prop) {
+    public XopAttribute(String attrName, ElPropertyValue prop) {
         this(attrName, prop, null, null);
     }
     
