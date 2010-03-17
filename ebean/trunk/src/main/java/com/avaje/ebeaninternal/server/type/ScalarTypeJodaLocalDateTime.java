@@ -69,7 +69,7 @@ public class ScalarTypeJodaLocalDateTime extends ScalarTypeBase<LocalDateTime> {
 		return (LocalDateTime)value;
 	}
 
-    public String format(LocalDateTime t) {
+    public String formatValue(LocalDateTime t) {
         Timestamp ts = new Timestamp(t.toDateTime().getMillis());
         return ts.toString();
     }

@@ -45,7 +45,7 @@ public class ScalarTypeTimeZone extends ScalarTypeBaseVarchar<TimeZone> {
         return ((TimeZone)beanValue).getID();
     }
 
-	public String format(TimeZone v) {
+	public String formatValue(TimeZone v) {
         return v.toString();
     }
 

@@ -132,8 +132,11 @@ public class ScalarTypeEnumStandard {
 			return Enum.valueOf(enumType, (String)dbValue);
 		}
 
-		
 		public String format(Object t) {
+            return t.toString();
+        }
+		
+		public String formatValue(Object t) {
             return t.toString();
         }
 
@@ -242,6 +245,10 @@ public class ScalarTypeEnumStandard {
             return t.toString();
         }
 
+        public String formatValue(Object t) {
+            return t.toString();
+        }
+        
 		public Object parse(String value) {	
 			return Enum.valueOf(enumType, value);
 		}

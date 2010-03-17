@@ -46,7 +46,7 @@ public class ScalarTypeLocale extends ScalarTypeBaseVarchar<Locale> {
         return ((Locale) beanValue).toString();
     }
 
-    public String format(Locale t) {
+    public String formatValue(Locale t) {
         return t.toString();
     }
 

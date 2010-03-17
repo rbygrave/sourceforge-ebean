@@ -55,7 +55,7 @@ public class ScalarTypeTimestamp extends ScalarTypeBase<Timestamp> {
 		return BasicTypeConverter.toTimestamp(value);
 	}
 
-	public String format(Timestamp v) {
+	public String formatValue(Timestamp v) {
         return v.toString();
     }
 

@@ -69,7 +69,7 @@ public class ScalarTypeJodaLocalDate extends ScalarTypeBase<LocalDate> {
 		return (LocalDate)value;
 	}
 
-    public String format(LocalDate v) {
+    public String formatValue(LocalDate v) {
         Date sqlDate = new Date(v.toDateTimeAtStartOfDay().getMillis());
         return sqlDate.toString();
     }

@@ -54,7 +54,7 @@ public class ScalarTypeLong extends ScalarTypeBase<Long> {
 		return BasicTypeConverter.toLong(value);
 	}
 	
-	public String format(Long t) {
+	public String formatValue(Long t) {
         return t.toString();
     }
 

@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.type;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 
 /**
@@ -45,7 +46,7 @@ import com.avaje.ebean.text.StringParser;
  * other databases.
  * </p>
  */
-public interface ScalarType<T> extends StringParser, ScalarDataReader<T> {
+public interface ScalarType<T> extends StringParser, StringFormatter, ScalarDataReader<T> {
 
 	/**
 	 * Return the default DB column length for this type.
@@ -139,15 +140,26 @@ public interface ScalarType<T> extends StringParser, ScalarDataReader<T> {
 	 * Reciprocal of parse().
 	 * </p>
 	 */
-	public String format(T v);
-	
+	public String formatValue(T v);
+
+    /**
+     * Convert the type into a string representation.
+     * <p>
+     * This assumes the value is of the correct type.
+     * </p>
+     * <p>
+     * This is so that ScalarType also implements the StringFormatter interface.
+     * </p>
+     */
+	public String format(Object v);
+
 	/**
 	 * Convert the string value to the appropriate java object.
 	 * <p>
 	 * Mostly used to support CSV, JSON and XML parsing.
 	 * </p>
      * <p>
-     * Reciprocal of format().
+     * Reciprocal of formatValue().
      * </p>
 	 */
 	public T parse(String value);

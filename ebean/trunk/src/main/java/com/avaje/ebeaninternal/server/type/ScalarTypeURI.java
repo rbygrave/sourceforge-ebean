@@ -71,7 +71,7 @@ public class ScalarTypeURI extends ScalarTypeBase<URI> {
 		return value.toString();
 	}
 	
-	public String format(URI v) {
+	public String formatValue(URI v) {
         return v.toString();
     }
 

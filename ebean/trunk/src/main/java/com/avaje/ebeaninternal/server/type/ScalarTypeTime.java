@@ -56,7 +56,7 @@ public class ScalarTypeTime extends ScalarTypeBase<Time> {
 	}
 
 	
-	public String format(Time v) {
+	public String formatValue(Time v) {
         return v.toString();
     }
 

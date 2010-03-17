@@ -45,7 +45,7 @@ public class ScalarTypeCurrency extends ScalarTypeBaseVarchar<Currency> {
         return ((Currency)beanValue).getCurrencyCode();
     }
 
-	public String format(Currency v) {
+	public String formatValue(Currency v) {
         return v.toString();
     }
 

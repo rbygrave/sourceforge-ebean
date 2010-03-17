@@ -61,7 +61,7 @@ public class ScalarTypeChar extends ScalarTypeBase<Character> {
 		return s.charAt(0);
 	}
 		
-	public String format(Character t) {
+	public String formatValue(Character t) {
         return t.toString();
     }
 

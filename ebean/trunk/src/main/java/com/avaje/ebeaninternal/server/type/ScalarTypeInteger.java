@@ -55,7 +55,7 @@ public class ScalarTypeInteger extends ScalarTypeBase<Integer> {
 		return BasicTypeConverter.toInteger(value);
 	}
 
-    public String format(Integer v) {
+    public String formatValue(Integer v) {
         return v.toString();
     }
 

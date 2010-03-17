@@ -127,6 +127,10 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
         return t.toString();
     }
 
+    public String formatValue(Object t) {
+        return t.toString();
+    }
+    
 	public Object parse(String value) {
 		return Enum.valueOf(enumType, value);
 	}

@@ -38,6 +38,7 @@ import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
+import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.validation.factory.Validator;
 import com.avaje.ebeaninternal.server.core.InternString;
@@ -926,6 +927,10 @@ public class BeanProperty implements ElPropertyValue {
      * Return the scalarType.
      */
     public ScalarType<?> getScalarType() {
+        return scalarType;
+    }
+
+    public StringFormatter getStringFormatter() {
         return scalarType;
     }
 

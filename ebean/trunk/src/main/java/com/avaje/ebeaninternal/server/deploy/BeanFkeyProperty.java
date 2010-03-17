@@ -1,5 +1,6 @@
 package com.avaje.ebeaninternal.server.deploy;
 
+import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
@@ -124,6 +125,10 @@ public final class BeanFkeyProperty implements ElPropertyValue {
     }
 
     public Object parseDateTime(long systemTimeMillis) {
+        throw new RuntimeException("ElPropertyDeploy only - not implemented");
+    }
+
+    public StringFormatter getStringFormatter() {
         throw new RuntimeException("ElPropertyDeploy only - not implemented");
     }
 

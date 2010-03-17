@@ -55,7 +55,7 @@ public class ScalarTypeByte extends ScalarTypeBase<Byte> {
 	}
 
 	
-	public String format(Byte t) {
+	public String formatValue(Byte t) {
         return t.toString();
     }
 

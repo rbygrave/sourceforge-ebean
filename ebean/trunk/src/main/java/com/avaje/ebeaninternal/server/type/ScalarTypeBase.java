@@ -55,7 +55,12 @@ public abstract class ScalarTypeBase<T> implements ScalarType<T> {
 		return type;
 	}
 
-	/**
+	@SuppressWarnings("unchecked")
+    public String format(Object v) {
+        return formatValue((T)v);
+    }
+
+    /**
 	 * Return true if the value is null.
 	 */
 	public boolean isDbNull(Object value) {

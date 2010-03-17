@@ -70,7 +70,7 @@ public class ScalarTypeJodaLocalTime extends ScalarTypeBase<LocalTime> {
 		return (LocalTime)value;
 	}
 	
-	public String format(LocalTime v) {
+	public String formatValue(LocalTime v) {
 	    return v.toString();
     }
 

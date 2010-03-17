@@ -68,7 +68,11 @@ public class ScalarTypeBytesEncrypted implements ScalarType<byte[]> {
         baseType.loadIgnore(dataReader);
     }
 
-    public String format(byte[] v) {
+    public String format(Object v) {
+        throw new RuntimeException("Not used");
+    }
+    
+    public String formatValue(byte[] v) {
         throw new RuntimeException("Not used");
     }
 

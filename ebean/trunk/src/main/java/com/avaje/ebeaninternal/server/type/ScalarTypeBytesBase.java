@@ -49,7 +49,7 @@ public abstract class ScalarTypeBytesBase extends ScalarTypeBase<byte[]> {
 	}
 
 	
-	public String format(byte[] t) {
+	public String formatValue(byte[] t) {
         throw new TextException("Not supported");
     }
 

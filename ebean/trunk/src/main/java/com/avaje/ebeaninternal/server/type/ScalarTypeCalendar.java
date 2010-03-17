@@ -70,7 +70,7 @@ public class ScalarTypeCalendar extends ScalarTypeBase<Calendar> {
 		return BasicTypeConverter.toCalendar(value);
 	}
 	
-	public String format(Calendar t) {
+	public String formatValue(Calendar t) {
 	    Timestamp ts = new Timestamp(t.getTimeInMillis());
 	    return ts.toString();
     }

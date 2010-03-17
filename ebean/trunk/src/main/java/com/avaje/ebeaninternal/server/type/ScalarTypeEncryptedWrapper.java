@@ -46,7 +46,7 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
     }
 
     private byte[] encrypt(T value){
-        String formatValue = wrapped.format(value);
+        String formatValue = wrapped.formatValue(value);
         return dataEncryptSupport.encryptObject(formatValue);
     }
     
@@ -80,8 +80,13 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
         wrapped.loadIgnore(dataReader);
     }
     
-    public String format(T v) {
-        return wrapped.format(v);
+    @SuppressWarnings("unchecked")
+    public String format(Object v) {
+        return formatValue((T)v);
+    }
+
+    public String formatValue(T v) {
+        return wrapped.formatValue(v);
     }
 
     public T parse(String value) {

@@ -55,7 +55,7 @@ public class ScalarTypeDouble extends ScalarTypeBase<Double> {
 	}
 
 	
-	public String format(Double t) {
+	public String formatValue(Double t) {
         return t.toString();
     }
 

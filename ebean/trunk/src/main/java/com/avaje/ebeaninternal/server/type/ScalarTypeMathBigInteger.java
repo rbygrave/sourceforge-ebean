@@ -60,7 +60,7 @@ public class ScalarTypeMathBigInteger extends ScalarTypeBase<BigInteger> {
 	}
 
 	
-	public String format(BigInteger v) {
+	public String formatValue(BigInteger v) {
         return v.toString();
     }
 
