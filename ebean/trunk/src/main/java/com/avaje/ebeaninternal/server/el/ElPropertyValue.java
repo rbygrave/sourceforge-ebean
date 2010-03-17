@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.el;
 
+import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 
 /**
@@ -71,6 +72,11 @@ public interface ElPropertyValue extends ElPropertyDeploy {
      * Return the default StringParser for the scalar property.
      */
     public StringParser getStringParser();
+
+    /**
+     * Return the default StringFormatter for the scalar property.
+     */
+    public StringFormatter getStringFormatter();
 
     /**
      * Return true if the last type is "DateTime capable" - can support

@@ -54,7 +54,7 @@ public class ScalarTypeFloat extends ScalarTypeBase<Float> {
 		return BasicTypeConverter.toFloat(value);
 	}
 
-    public String format(Float t) {
+    public String formatValue(Float t) {
         return t.toString();
     }
 	

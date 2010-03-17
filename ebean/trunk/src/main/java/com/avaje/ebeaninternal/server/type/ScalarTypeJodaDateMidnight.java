@@ -71,7 +71,7 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
 		return (DateMidnight)value;
 	}
 	
-    public String format(DateMidnight v) {
+    public String formatValue(DateMidnight v) {
         Date sqlDate = new Date(v.getMillis());
         return sqlDate.toString();
     }

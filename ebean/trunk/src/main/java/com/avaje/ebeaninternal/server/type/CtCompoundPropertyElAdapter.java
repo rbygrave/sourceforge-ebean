@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
@@ -77,6 +78,10 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
     }
 
     public BeanProperty getBeanProperty() {
+        return null;
+    }
+
+    public StringFormatter getStringFormatter() {
         return null;
     }
 

@@ -55,7 +55,7 @@ public class ScalarTypeShort extends ScalarTypeBase<Short> {
 		return BasicTypeConverter.toShort(value);
 	}
 	
-	public String format(Short v) {
+	public String formatValue(Short v) {
         return v.toString();
     }
 

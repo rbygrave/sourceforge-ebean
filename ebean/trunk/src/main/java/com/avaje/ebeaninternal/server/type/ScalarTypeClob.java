@@ -63,7 +63,7 @@ public class ScalarTypeClob extends ScalarTypeBase<String> {
 	}
 
 	
-	public String format(String t) {
+	public String formatValue(String t) {
         return t;
     }
 

@@ -65,7 +65,7 @@ public class ScalarTypeUtilDate {
 			return BasicTypeConverter.toUtilDate(value);
 		}
 
-		public String format(Date v) {
+		public String formatValue(Date v) {
             Timestamp ts = new Timestamp(v.getTime());
 		    return ts.toString();
         }
@@ -118,7 +118,7 @@ public class ScalarTypeUtilDate {
 			return BasicTypeConverter.toUtilDate(value);
 		}
 
-        public String format(Date v) {
+        public String formatValue(Date v) {
             java.sql.Date sqlDate = new java.sql.Date(v.getTime());
             return sqlDate.toString();
         }

@@ -63,7 +63,7 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
 	}
 
 	
-	public String format(char[] t) {
+	public String formatValue(char[] t) {
         return String.valueOf(t);
     }
 

@@ -82,9 +82,14 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
         return false;
     }
 
-    public String format(B v) {
+    @SuppressWarnings("unchecked")
+    public String format(Object v) {
+        return formatValue((B)v);
+    }
+
+    public String formatValue(B v) {
         S sv = converter.unwrapValue(v);
-        return scalarType.format(sv);
+        return scalarType.formatValue(sv);
     }
 
     public B parse(String value) {

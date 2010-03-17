@@ -56,7 +56,7 @@ public class ScalarTypeDate extends ScalarTypeBase<java.sql.Date> {
 		return BasicTypeConverter.toDate(value);
 	}
 
-	public String format(Date t) {
+	public String formatValue(Date t) {
         return t.toString();
     }
 

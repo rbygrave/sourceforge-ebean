@@ -102,7 +102,7 @@ public class ScalarTypeLdapBoolean extends ScalarTypeBase<Boolean> {
         }
     }
     
-    public String format(Boolean t) {
+    public String formatValue(Boolean t) {
         return t.toString();
     }
 

@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.el;
 
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
@@ -183,7 +184,11 @@ public class ElPropertyChain implements ElPropertyValue {
 	public StringParser getStringParser() {
 		return scalarType;
 	}
-	
+
+    public StringFormatter getStringFormatter() {
+        return scalarType;
+    }
+
 	public Object elConvertType(Object value){
 		// just convert using the last one in the chain
 		return lastElPropertyValue.elConvertType(value);

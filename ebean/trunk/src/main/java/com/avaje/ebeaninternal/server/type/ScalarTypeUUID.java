@@ -66,7 +66,7 @@ public class ScalarTypeUUID extends ScalarTypeBase<UUID> {
 		return BasicTypeConverter.convert(value, jdbcType);
 	}
 	
-	public String format(UUID v) {
+	public String formatValue(UUID v) {
         return v.toString();
     }
 

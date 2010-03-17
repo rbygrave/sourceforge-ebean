@@ -51,7 +51,7 @@ public class ScalarTypeBoolean {
 			return BasicTypeConverter.convert(value, jdbcType);
 		}
 		
-        public String format(Boolean t) {
+        public String formatValue(Boolean t) {
             return t.toString();
         }
 
@@ -107,7 +107,7 @@ public class ScalarTypeBoolean {
 			return BasicTypeConverter.toBoolean(value);
 		}
 		
-		public String format(Boolean t) {
+		public String formatValue(Boolean t) {
             return t.toString();
         }
 
@@ -212,7 +212,7 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
-        public String format(Boolean t) {
+        public String formatValue(Boolean t) {
             return t.toString();
         }
 
@@ -307,7 +307,7 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
-        public String format(Boolean t) {
+        public String formatValue(Boolean t) {
             return t.toString();
         }
 
