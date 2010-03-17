@@ -44,25 +44,25 @@ public class TestXmlSimpleOutput extends TestCase {
         ElPropertyValue elcre = beanDescriptor.getElGetValue("cretime");
         ElPropertyValue elDetails = beanDescriptor.getElGetValue("details");
 
-        XoAttribute xst = new XoPropAttribute("status", elSt);
-        XoNode xid = new XoPropNode("id", elId, null, null, null, new XoAttribute[]{xst});
-        XoNode xdt = new XoPropNode("ship-date", eldate);
-        XoNode xcr = new XoPropNode("created-ts", elcre);
+        XoiAttribute xst = new XopAttribute("status", elSt);
+        XoiNode xid = new XopNode("id", elId, null, null, null, new XoiAttribute[]{xst});
+        XoiNode xdt = new XopNode("ship-date", eldate);
+        XoiNode xcr = new XopNode("created-ts", elcre);
 
 
         BeanDescriptor<OrderDetail> detailDescriptor = server.getBeanDescriptor(OrderDetail.class);
 
-        XoNode detailId = new XoPropNode("id",detailDescriptor.getElGetValue("id"));
-        XoNode detailProdName = new XoPropNode("product-name",detailDescriptor.getElGetValue("product.name"));
+        XoiNode detailId = new XopNode("id",detailDescriptor.getElGetValue("id"));
+        XoiNode detailProdName = new XopNode("product-name",detailDescriptor.getElGetValue("product.name"));
         
         //XoCompoundNode details = new XoCompoundNode("line", detailId, detailProdName);
-        XoPropNode details = new XoPropNode("line", detailId, detailProdName);
+        XopNode details = new XopNode("line", detailId, detailProdName);
         
         
-        XoPropCollection xlist = new XoPropCollection("order-details", elDetails, details, true);
+        XopCollection xlist = new XopCollection("order-details", elDetails, details, true);
 
         
-        XoCompoundNode orderNode = new XoCompoundNode("order",xid, xcr, xdt, xlist);
+        XopNode orderNode = new XopNode("order",xid, xcr, xdt, xlist);
 
         
         List<Order> list = Ebean.find(Order.class)

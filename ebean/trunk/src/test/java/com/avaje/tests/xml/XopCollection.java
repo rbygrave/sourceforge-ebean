@@ -34,9 +34,9 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public class XoPropCollection extends XoPropNode implements XoNode {
+public class XopCollection extends XopNode implements XoiNode {
 
-    private final XoNode childNode;
+    private final XoiNode childNode;
     
     private final boolean invokeFetch;
     
@@ -49,21 +49,21 @@ public class XoPropCollection extends XoPropNode implements XoNode {
     /**
      * Construct with no mapKey and no attributes.
      */
-    public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch) {
+    public XopCollection(String name, ElPropertyValue prop, XoiNode childNode, boolean invokeFetch) {
         this(name, prop, childNode, invokeFetch, null, null);
     }
 
     /**
      * Construct with no attributes.
      */
-    public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch, String mapKey) {
+    public XopCollection(String name, ElPropertyValue prop, XoiNode childNode, boolean invokeFetch, String mapKey) {
         this(name, prop, childNode, invokeFetch, mapKey, null);
     }
     
     /**
      * Construct with all options.
      */
-    public XoPropCollection(String name, ElPropertyValue prop, XoNode childNode, boolean invokeFetch, String mapKey, XoAttribute[] attributes) {
+    public XopCollection(String name, ElPropertyValue prop, XoiNode childNode, boolean invokeFetch, String mapKey, XoiAttribute[] attributes) {
 
         super(name, prop, null, null, null, attributes);
         this.childNode = childNode;

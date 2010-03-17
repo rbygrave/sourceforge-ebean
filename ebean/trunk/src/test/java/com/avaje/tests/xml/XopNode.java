@@ -29,31 +29,31 @@ import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public class XoPropNode extends XoBaseProp implements XoNode, XoContent {
+public class XopNode extends XopBase implements XoiNode {
 
-    protected final XoAttribute[] attributes;
+    protected final XoiAttribute[] attributes;
     protected final boolean hasAttributes;
 
     protected final String beginTag;
     protected final String beginTagEnd;
     protected final String endTag;
     
-    protected final XoNode[] childNodes;
+    protected final XoiNode[] childNodes;
     protected final boolean hasChildNodes;
 
-    public XoPropNode(String nodeName, XoNode... nodes) {
+    public XopNode(String nodeName, XoiNode... nodes) {
         this(nodeName, null, null, null, nodes, null);
     }
     
-    public XoPropNode(String nodeName, ElPropertyValue prop) {
+    public XopNode(String nodeName, ElPropertyValue prop) {
         this(nodeName, prop, null, null, null, null);
     }
     
     /**
      * Create as a property based node.
      */
-    public XoPropNode(String nodeName, ElPropertyValue prop, StringFormatter formatter,
-            StringParser parser, XoNode[] childNodes, XoAttribute[] attributes) {
+    public XopNode(String nodeName, ElPropertyValue prop, StringFormatter formatter,
+            StringParser parser, XoiNode[] childNodes, XoiAttribute[] attributes) {
 
         super(nodeName, prop, formatter, parser);
         

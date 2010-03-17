@@ -23,7 +23,7 @@ import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public abstract class XoBaseProp {
+public abstract class XopBase {
 
     protected final String nodeName;
     protected final ElPropertyValue prop;
@@ -35,7 +35,7 @@ public abstract class XoBaseProp {
     protected boolean decreaseDepth = false;
 
 
-    protected XoBaseProp(String nodeName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
+    protected XopBase(String nodeName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
         
         if (formatter == null && prop != null){
             formatter = prop.getStringFormatter();
