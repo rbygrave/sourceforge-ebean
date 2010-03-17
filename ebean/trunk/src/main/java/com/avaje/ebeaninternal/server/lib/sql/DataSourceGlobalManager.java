@@ -58,14 +58,6 @@ public final class DataSourceGlobalManager {
 	public static DataSourcePool getDataSource(String name) {
 		return manager.getDataSource(name);
 	}
-
-//	/**
-//	 * Return the named DataSourcePool additionally supplying configuration
-//	 * properties.
-//	 */
-//	public static DataSourcePool getDataSource(String name, ConfigProperties configProps) {
-//		return manager.getDataSource(name, configProps);
-//	}
 	
 	public static DataSourcePool getDataSource(String name, DataSourceConfig dsConfig) {
 		return manager.getDataSource(name, dsConfig);
