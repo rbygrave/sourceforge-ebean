@@ -20,34 +20,54 @@
 package com.avaje.tests.xml;
 
 import com.avaje.ebean.text.StringFormatter;
+import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public abstract class XoBaseProp {
 
+    protected final String nodeName;
     protected final ElPropertyValue prop;
-
     protected final StringFormatter stringFormatter;
-
-    protected final String name;
+    protected final StringParser stringParser;
 
     protected final boolean encode;
 
     protected boolean decreaseDepth = false;
 
 
-    protected XoBaseProp(String name, ElPropertyValue prop, StringFormatter stringFormatter) {
+    protected XoBaseProp(String nodeName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
         
-        this.name = name;
+        if (formatter == null && prop != null){
+            formatter = prop.getStringFormatter();
+        }
+        if (parser == null && prop != null){
+            parser = prop.getStringParser();
+        }
+        
+        this.nodeName = nodeName;
         this.prop = prop;
-        this.stringFormatter = stringFormatter;
-        this.encode = false;//FIXME encode = true...
-
-////        this.content = selfContent ? this : content;
-//        this.selfClosing = (!selfContent && content == null);
+        this.stringFormatter = formatter;
+        this.stringParser = parser;
+        this.encode = false;
     }
 
+    protected void setObjectValue(Object bean, Object value){
+        prop.elSetValue(bean, value, true, false);
+    }
+    
     protected Object getObjectValue(Object bean) {
         return prop.elGetValue(bean);
+    }
+
+    protected Object getParsedValue(String value) {
+        if (value == null || value.length() == 0) {
+            return null;
+        }
+        //FIXME xml decode the string
+        if (stringParser != null){
+            return stringParser.parse(value);
+        }
+        return value;
     }
     
     protected String getFormattedValue(Object value) {

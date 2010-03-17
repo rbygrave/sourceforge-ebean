@@ -23,8 +23,11 @@ import java.io.IOException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 import com.avaje.ebean.text.StringFormatter;
+import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public class XoPropAttribute extends XoBaseProp implements XoAttribute {
@@ -32,31 +35,45 @@ public class XoPropAttribute extends XoBaseProp implements XoAttribute {
     /**
      * Create as an property based attribute.
      */
-    public XoPropAttribute(String name, ElPropertyValue prop, StringFormatter stringFormatter) {
-
-        super(name, prop, stringFormatter);
+    public XoPropAttribute(String attrName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
+        super(attrName, prop, formatter, parser);
     }
 
-    public void writeAttribute(XmlDocumentOutput out, Element e, Object bean) throws IOException {
+    public XoPropAttribute(String attrName, ElPropertyValue prop) {
+        this(attrName, prop, null, null);
+    }
+    
+    public void writeAttribute(XmlOutputDocument out, Element e, Object bean) throws IOException {
 
         Object v = getObjectValue(bean);
         String sv = getFormattedValue(v);
-        Attr attr = out.getDocument().createAttribute(name);
+        Attr attr = out.getDocument().createAttribute(nodeName);
         attr.setValue(sv);
 
         e.setAttributeNode(attr);
     }
 
-    public void writeAttribute(XmlWriterOutput o, Object bean) throws IOException {
+    public void writeAttribute(XmlOutputWriter o, Object bean) throws IOException {
 
         Object v = getObjectValue(bean);
         String sv = getFormattedValue(v);
 
         o.write(" ");
-        o.write(name);
+        o.write(nodeName);
         o.write("=\"");
         o.write(sv);
         o.write("\"");
     }
 
+    public void readNode(Node node, NamedNodeMap attributes, XoWriteContext ctx) {
+        
+        Node namedItem = attributes.getNamedItem(nodeName);
+        if (namedItem != null){
+            String c = namedItem.getTextContent();
+            Object v = getParsedValue(c);
+            setObjectValue(ctx.getBean(), v);
+        }
+    }
+
+    
 }

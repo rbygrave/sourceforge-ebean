@@ -22,11 +22,11 @@ package com.avaje.tests.xml;
 import java.io.IOException;
 import java.io.Writer;
 
-public class XmlWriterOutput {
+public class XmlOutputWriter {
 
     final Writer writer;
     
-    public XmlWriterOutput(Writer writer) {
+    public XmlOutputWriter(Writer writer) {
         this.writer = writer;
     }
     

@@ -19,18 +19,16 @@
  */
 package com.avaje.tests.xml;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.w3c.dom.Node;
+public class XbCompoundElement {
 
-public interface XoNode {
-
-    public String getNodeName();
+    String nodeName;
     
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException;
-
-    public void writeNode(XmlOutputWriter o, Object bean) throws IOException;
-
-    public void readNode(Node node, XoWriteContext ctx);
-
+    List<XbNode> nodes = new ArrayList<XbNode>();
+    
+    public XbCompoundElement(String nodeName) {
+        
+    }
 }

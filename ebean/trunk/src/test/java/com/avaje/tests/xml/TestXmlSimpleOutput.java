@@ -10,6 +10,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.TestCase;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -29,24 +31,33 @@ public class TestXmlSimpleOutput extends TestCase {
         
         BeanDescriptor<Order> beanDescriptor = server.getBeanDescriptor(Order.class);
         
+        XomBuilder builder = new XomBuilder(beanDescriptor, null);
+        
+        builder.addElement("id").addAttribute("status");
+        builder.addElement("cretime","created-ts");
+        builder.addElement("orderDate","ship-date");
+        //builder.addCollection("details","order-details");
+        
         ElPropertyValue elId = beanDescriptor.getElGetValue("id");
         ElPropertyValue elSt = beanDescriptor.getElGetValue("status");
         ElPropertyValue eldate = beanDescriptor.getElGetValue("orderDate");
         ElPropertyValue elcre = beanDescriptor.getElGetValue("cretime");
         ElPropertyValue elDetails = beanDescriptor.getElGetValue("details");
 
-        XoAttribute xst = new XoPropAttribute("status", elSt, null);
-        XoNode xid = new XoPropNode("id", elId, null, xst);
-        XoNode xdt = new XoPropNode("ship-date", eldate, null);
-        XoNode xcr = new XoPropNode("created-ts", elcre, null);
+        XoAttribute xst = new XoPropAttribute("status", elSt);
+        XoNode xid = new XoPropNode("id", elId, null, null, null, new XoAttribute[]{xst});
+        XoNode xdt = new XoPropNode("ship-date", eldate);
+        XoNode xcr = new XoPropNode("created-ts", elcre);
 
 
         BeanDescriptor<OrderDetail> detailDescriptor = server.getBeanDescriptor(OrderDetail.class);
 
-        XoNode detailId = new XoPropNode("id",detailDescriptor.getElGetValue("id"), null);
-        XoNode detailProdName = new XoPropNode("product-name",detailDescriptor.getElGetValue("product.name"), null);
+        XoNode detailId = new XoPropNode("id",detailDescriptor.getElGetValue("id"));
+        XoNode detailProdName = new XoPropNode("product-name",detailDescriptor.getElGetValue("product.name"));
         
-        XoCompoundNode details = new XoCompoundNode("line", detailId, detailProdName);
+        //XoCompoundNode details = new XoCompoundNode("line", detailId, detailProdName);
+        XoPropNode details = new XoPropNode("line", detailId, detailProdName);
+        
         
         XoPropCollection xlist = new XoPropCollection("order-details", elDetails, details, true);
 
@@ -62,7 +73,7 @@ public class TestXmlSimpleOutput extends TestCase {
         Order bean = list.get(0);
         
         Writer writer = new StringWriter();
-        XmlWriterOutput output = new XmlWriterOutput(writer);
+        XmlOutputWriter output = new XmlOutputWriter(writer);
         
         orderNode.writeNode(output, bean);
         
@@ -73,12 +84,29 @@ public class TestXmlSimpleOutput extends TestCase {
         Document doc = docBuilder.newDocument();
 
         
-        XmlDocumentOutput docOut = new XmlDocumentOutput(doc);
+        XmlOutputDocument docOut = new XmlOutputDocument(doc);
         
         
         orderNode.writeNode(docOut, null, bean);
         
         System.out.println(docOut.getDocument().getDocumentElement());
+        
+        XoWriteContext ctx = new XoWriteContext();
+        
+        Document document = docOut.getDocument();
+        NodeList childNodes = document.getChildNodes();
+        int len = childNodes.getLength();
+        for (int i = 0; i < len; i++) {
+            ctx.setBean(new Order());
+            Node childNode = childNodes.item(i);
+            orderNode.readNode(childNode, ctx);
+            Order o = (Order)ctx.getBean();
+            System.out.println(o);
+            System.out.println(o.getDetails());
+            
+            
+        }
+        
         
     }
     

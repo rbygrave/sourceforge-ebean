@@ -24,27 +24,28 @@ import java.io.IOException;
 import org.w3c.dom.Element;
 
 import com.avaje.ebean.text.StringFormatter;
+import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public class XoPropContent extends XoBaseProp implements XoContent {
+public abstract class XoPropContent extends XoBaseProp implements XoContent {
 
 
     /**
      * Create as an property based attribute.
      */
-    public XoPropContent(String name, ElPropertyValue prop, StringFormatter stringFormatter) {
+    public XoPropContent(String name, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
 
-        super(name, prop, stringFormatter);
+        super(name, prop, formatter, parser);
     }
 
-    public void writeContent(XmlDocumentOutput out, Element e, Object bean, Object value) throws IOException {
+    public void writeContent(XmlOutputDocument out, Element e, Object bean, Object value) throws IOException {
 
         String sv = getFormattedValue(value);
         //TODO encode string
         e.setTextContent(sv);
 
     }
-    public void writeContent(XmlWriterOutput o, Object bean, Object value) throws IOException {
+    public void writeContent(XmlOutputWriter o, Object bean, Object value) throws IOException {
 
         String sv = getFormattedValue(value);
         o.writeEncoded(sv);

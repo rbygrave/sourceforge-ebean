@@ -19,14 +19,11 @@
  */
 package com.avaje.tests.xml;
 
-import java.io.IOException;
-
-import org.w3c.dom.Element;
 
 public interface XoContent {
 
-    public void writeContent(XmlWriterOutput o, Object bean, Object value) throws IOException;
-
-    public void writeContent(XmlDocumentOutput out, Element e, Object bean, Object value) throws IOException;
+//    public void writeContent(XmlOutputWriter o, Object bean, Object value) throws IOException;
+//
+//    public void writeContent(XmlOutputDocument out, Node e, Object bean, Object value) throws IOException;
 
 }

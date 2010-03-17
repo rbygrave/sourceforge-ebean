@@ -19,18 +19,18 @@
  */
 package com.avaje.tests.xml;
 
-import java.io.IOException;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-import org.w3c.dom.Node;
+public class XbAttribute extends XbBase {
 
-public interface XoNode {
+    public XbAttribute(String propertyName, String nodeName, XomBuilder builder){
+        super(propertyName, nodeName, builder);
+    }
 
-    public String getNodeName();
-    
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException;
-
-    public void writeNode(XmlOutputWriter o, Object bean) throws IOException;
-
-    public void readNode(Node node, XoWriteContext ctx);
-
+    public XoAttribute create(BeanDescriptor<?> descriptor) {
+        
+        ElPropertyValue prop = descriptor.getElGetValue(propertyName);
+        return new XoPropAttribute(nodeName, prop, formatter, parser);
+    }
 }
