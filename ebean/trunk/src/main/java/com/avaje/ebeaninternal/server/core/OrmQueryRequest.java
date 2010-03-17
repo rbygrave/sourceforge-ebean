@@ -251,7 +251,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * Return true if this is a subquery (as part of InQueryExpression).
 	 */
 	public boolean isSubQuery() {
-		return query.getType() == null;
+		return Type.SUBQUERY.equals(query.getType());
 	}
 	
 	public boolean isVanillaMode() {
