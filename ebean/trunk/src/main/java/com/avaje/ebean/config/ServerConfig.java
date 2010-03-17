@@ -1447,6 +1447,7 @@ public class ServerConfig {
         int batchSize = p.getInt("batch.size", 20);
         persistBatchSize = p.getInt("persistBatchSize", batchSize);
 
+        dataSourceJndiName = p.get("dataSourceJndiName", null);
         databaseSequenceBatchSize = p.getInt("databaseSequenceBatchSize", 20);
         databaseBooleanTrue = p.get("databaseBooleanTrue", null);
         databaseBooleanFalse = p.get("databaseBooleanFalse", null);
