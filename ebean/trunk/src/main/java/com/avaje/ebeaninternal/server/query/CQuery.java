@@ -56,6 +56,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
@@ -198,6 +199,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	 */
 	private final BeanPropertyAssocMany<?> manyProperty;
 
+	/**
+	 * The many property Expression language object.
+	 */
+	private final ElPropertyValue manyPropertyEl;
+	
 	private final int backgroundFetchAfter;
 
 	private final int maxRowsLimit;
@@ -261,8 +267,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		
 		this.autoFetchManager = query.getAutoFetchManager();
 		this.autoFetchProfiling = autoFetchManager != null;
-		this.autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;
-		
+		this.autoFetchParentNode = autoFetchProfiling ? query.getParentNode() : null;		
 		this.autoFetchManagerRef = autoFetchProfiling ? new WeakReference<NodeUsageListener>(autoFetchManager) : null;
 		
 		// set the generated sql back to the query
@@ -271,11 +276,14 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 		this.sqlTree = queryPlan.getSqlTree();
 		this.rootNode = sqlTree.getRootNode();
+		
 		this.manyProperty = sqlTree.getManyProperty();
+		this.manyPropertyEl = sqlTree.getManyPropertyEl();
 		this.manyIncluded = sqlTree.isManyIncluded();
-		if (manyIncluded) {
+		if (manyIncluded) {	        
 		    // get filter to put on the collection for reuse with refresh
-		    OrmQueryProperties chunk = query.getDetail().getChunk(manyProperty.getName(), false);
+            String manyPropertyName = sqlTree.getManyPropertyName();
+		    OrmQueryProperties chunk = query.getDetail().getChunk(manyPropertyName, false);
 		    this.filterMany = chunk.getFilterMany();
 		} else {
 		    this.filterMany = null;
@@ -614,11 +622,11 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		prevDetailCollection = currentDetailCollection;
 		if (queryMode.equals(Mode.LAZYLOAD_MANY)){
 			// just populate the current collection
-			currentDetailCollection = manyProperty.getValue(loadedBean);
+		    currentDetailCollection = manyPropertyEl.elGetValue(loadedBean);
 		} else {
 			// create a new collection to populate and assign to the bean
 			currentDetailCollection = manyProperty.createEmpty(request.isVanillaMode());
-			manyProperty.setValue(loadedBean, currentDetailCollection);			
+			manyPropertyEl.elSetValue(loadedBean, currentDetailCollection, false, false);
 		}
 		
         if (filterMany != null && !request.isVanillaMode()){

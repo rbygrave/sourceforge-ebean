@@ -55,8 +55,6 @@ public class SqlTreeBuilder {
 
     private final OrmQueryDetail queryDetail;
 
-    private final SqlTree clause = new SqlTree();
-
     private final StringBuilder summary = new StringBuilder();
 
     private final CQueryPredicates predicates;
@@ -68,6 +66,8 @@ public class SqlTreeBuilder {
      */
     private BeanPropertyAssocMany<?> manyProperty;
 
+    private String manyPropertyName;
+    
     private final OrmQueryRequest<?> request;
 
     private final SqlTreeAlias alias;
@@ -103,29 +103,35 @@ public class SqlTreeBuilder {
 
         BeanDescriptor<?> desc = request.getBeanDescriptor();
 
+        SqlTree sqlTree = new SqlTree();
+
         summary.append(desc.getName());
 
         // build the appropriate chain of SelectAdapter's
-        buildRoot(desc);
+        buildRoot(desc, sqlTree);
         
         // build the actual String
-        SqlTreeNode rootNode = clause.getRootNode();
+        SqlTreeNode rootNode = sqlTree.getRootNode();
 
-        clause.setSelectSql(buildSelectClause(rootNode));
-        clause.setFromSql(buildFromClause(rootNode));
-        clause.setInheritanceWhereSql(buildWhereClause(rootNode));
+        sqlTree.setSelectSql(buildSelectClause(rootNode));
+        sqlTree.setFromSql(buildFromClause(rootNode));
+        sqlTree.setInheritanceWhereSql(buildWhereClause(rootNode));
 
         if (query.isAutofetchTuned()) {
             summary.append(" autoFetchTuned[true]");
         }
 
-        clause.setIncludes(queryDetail.getIncludes());
-        clause.setSummary(summary.toString());
-        clause.setManyProperty(manyProperty);
+        
+        sqlTree.setIncludes(queryDetail.getIncludes());
+        sqlTree.setSummary(summary.toString());
+        sqlTree.setEncryptedProps(ctx.getEncryptedProps());
 
-        clause.setEncryptedProps(ctx.getEncryptedProps());
+        if (manyPropertyName != null){
+            ElPropertyValue manyPropEl = desc.getElGetValue(manyPropertyName);
+            sqlTree.setManyProperty(manyProperty, manyPropertyName, manyPropEl);
+        }
 
-        return clause;
+        return sqlTree;
     }
 
     private String buildSelectClause(SqlTreeNode rootNode) {
@@ -156,10 +162,10 @@ public class SqlTreeBuilder {
         return ctx.toString();
     }
 
-    private void buildRoot(BeanDescriptor<?> desc) {
+    private void buildRoot(BeanDescriptor<?> desc, SqlTree sqlTree) {
 
         SqlTreeNode selectRoot = buildSelectChain(null, null, desc, null);
-        clause.setRootNode(selectRoot);
+        sqlTree.setRootNode(selectRoot);
 
         alias.addJoin(queryDetail.getIncludes());
         alias.addJoin(predicates.getPredicateIncludes());
@@ -455,19 +461,7 @@ public class SqlTreeBuilder {
         }
 
         if (queryDetail.includes(propName)) {
-            // add the 'many' property to the baseProps list
-            // as we are going to set/populate these many'ies
-            // when reading the resultSet data
-            // queryDetail.addBaseProperty(propName);
 
-            if (prefix != null) {
-                // many must be directly associated with root object
-                if (logger.isLoggable(Level.FINE)) {
-                    String msg = "Not joining to Many [" + propName + "] as not at root level.";
-                    logger.fine(msg);
-                }
-                return false;
-            }
             if (manyProperty != null) {
                 // only one many associated allowed to be included in fetch
                 if (logger.isLoggable(Level.FINE)) {
@@ -478,6 +472,7 @@ public class SqlTreeBuilder {
             }
 
             manyProperty = manyProp;
+            manyPropertyName = propName;
             summary.append(" +many:").append(propName);
             return true;
         }

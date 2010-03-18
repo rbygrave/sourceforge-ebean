@@ -23,6 +23,7 @@ import java.util.Set;
 
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 /**
  * Represents the SELECT clause part of the SQL query.
@@ -31,10 +32,13 @@ public class SqlTree {
 
     private SqlTreeNode rootNode;
 
+    
     /**
      * Property if resultSet contains master and detail rows.
      */
     private BeanPropertyAssocMany<?> manyProperty;
+    private String manyPropertyName;
+    private ElPropertyValue manyPropEl;
 
     private Set<String> includes;
 
@@ -77,12 +81,14 @@ public class SqlTree {
     public void setIncludes(Set<String> includes) {
 		this.includes = includes;
 	}
-
+    
     /**
      * Set the manyProperty used for this query.
      */
-	public void setManyProperty(BeanPropertyAssocMany<?> manyProperty) {
+	public void setManyProperty(BeanPropertyAssocMany<?> manyProperty, String manyPropertyName, ElPropertyValue manyPropEl) {
 		this.manyProperty = manyProperty;
+		this.manyPropertyName = manyPropertyName;
+		this.manyPropEl = manyPropEl;
 	}
 
     /**
@@ -150,6 +156,14 @@ public class SqlTree {
      */
     public BeanPropertyAssocMany<?> getManyProperty() {
         return manyProperty;
+    }
+
+    public String getManyPropertyName() {
+        return manyPropertyName;
+    }
+
+    public ElPropertyValue getManyPropertyEl() {
+        return manyPropEl;
     }
 
     /**
