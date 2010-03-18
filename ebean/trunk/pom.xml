@@ -51,15 +51,6 @@
 			<version>4.4</version>
 			<scope>test</scope>
 		</dependency>
-<!--		
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>oracle</artifactId>
-			<version>10.2.0.2.0</version>
-			<scope>compile</scope>
-			<optional>true</optional>
-		</dependency>
--->		
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -70,11 +61,18 @@
 			<groupId>postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>8.4-701.jdbc4</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.0.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>oracle</artifactId>
+			<version>10.2.0.2.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
