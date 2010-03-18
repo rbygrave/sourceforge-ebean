@@ -23,6 +23,8 @@ import com.avaje.ebean.config.PstmtDelegate;
 import com.avaje.ebeaninternal.server.core.PstmtBatch;
 
 import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
@@ -36,33 +38,40 @@ import java.sql.SQLException;
  * </p>
  * 
  * @author rbygrave
+ * @author imario
  */
 public class OraclePstmtBatch implements PstmtBatch {
 
 	private final PstmtDelegate pstmtDelegate;
 
+    /**
+     * OraclePreparedStatement.setExecuteBatch() method.
+     */
 	private static final Method METHOD_SET_EXECUTE_BATCH;
+	
+	/**
+	 * OraclePreparedStatement.sendBatch() method.
+	 */
 	private static final Method METHOD_SEND_BATCH;
 
 	private static final RuntimeException INIT_EXCEPTION;
 
-	static
-	{
+	static {
 		RuntimeException initException = null;
 		Method mSetExecuteBatch = null;
 		Method mSendBatch = null;
 
 		try {
-			Class ops = Class.forName("oracle.jdbc.OraclePreparedStatement");
+			Class<?> ops = Class.forName("oracle.jdbc.OraclePreparedStatement");
 
 			mSetExecuteBatch = ops.getMethod("setExecuteBatch", new Class[] { int.class });
 			mSendBatch = ops.getMethod("sendBatch");
-		}
-		catch (NoSuchMethodException e) {
+		
+		} catch (NoSuchMethodException e) {
 			initException = new RuntimeException("problems initializing oracle reflection", e);
 			initException.fillInStackTrace();
-		}
-		catch (ClassNotFoundException e) {
+		
+		} catch (ClassNotFoundException e) {
 			initException = new RuntimeException("problems initializing oracle reflection", e);
 			initException.fillInStackTrace();
 		}
@@ -82,24 +91,15 @@ public class OraclePstmtBatch implements PstmtBatch {
 		}
 
 		try {
+            // invoke setExecuteBatch(batchSize+1);
 			METHOD_SET_EXECUTE_BATCH.invoke(pstmtDelegate.unwrap(pstmt), batchSize+1);
-		}
-		catch (IllegalAccessException e) {
+		} catch (IllegalAccessException e) {
+			String m = "Error with Oracle setExecuteBatch "+(batchSize+1);
+			throw new RuntimeException(m, e);
+		} catch (InvocationTargetException e) {
 			String m = "Error with Oracle setExecuteBatch "+(batchSize+1);
 			throw new RuntimeException(m, e);
 		}
-		catch (InvocationTargetException e) {
-			String m = "Error with Oracle setExecuteBatch "+(batchSize+1);
-			throw new RuntimeException(m, e);
-		}
-		/*
-		try {
-			getOraStmt(pstmt).setExecuteBatch(batchSize+1);
-		} catch (SQLException e){
-			String m = "Error with Oracle setExecuteBatch "+(batchSize+1);
-			throw new RuntimeException(m, e);
-		}
-		*/
 	}
 	
 	/**
@@ -115,30 +115,25 @@ public class OraclePstmtBatch implements PstmtBatch {
 			throw INIT_EXCEPTION;
 		}
 
-		// OraclePreparedStatement oStmt = getOraStmt(pstmt);
-		// int rows = oStmt.sendBatch();
-
 		int rows;
 		try {
+		    // invoke sendBatch();
 			rows = ((Integer) METHOD_SEND_BATCH.invoke(pstmtDelegate.unwrap(pstmt))).intValue();
-		}
-		catch (IllegalAccessException e) {
-			throw new SQLException(e);
-		}
-		catch (InvocationTargetException e) {
-			throw new SQLException(e);
+		
+		} catch (IllegalAccessException e) {
+            String msg = "Error invoking Oracle sendBatch method via reflection";
+			throw new PersistenceException(msg,e);
+		
+		} catch (InvocationTargetException e) {
+		    String msg = "Error invoking Oracle sendBatch method via reflection";
+			throw new PersistenceException(msg, e);
 		}
 		if (occCheck && rows != expectedRows) {
-			throw new OptimisticLockException("Batch execution expected "+expectedRows+" but got "+rows+"  sql:"+sql);
+		    String msg = "Batch execution expected "+expectedRows+" but got "+rows+"  sql:"+sql;
+			throw new OptimisticLockException(msg);
 		}
 		
 		return rows;
 	}
 
-	/*
-	protected OraclePreparedStatement getOraStmt(PreparedStatement pstmt) {
-		
-		return (OraclePreparedStatement)pstmtDelegate.unwrap(pstmt);		
-	}
-	*/
 }
