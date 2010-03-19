@@ -11,6 +11,20 @@ public class SplitName {
 	}
 
 	/**
+     * Return the number of occurrences of char in name.
+     */
+	public static int count(char c, String name){
+	    
+	    int count = 0;
+	    for (int i = 0; i < name.length(); i++) {
+	        if (c == name.charAt(i)){
+	            count++;
+	        }
+        }
+	    return count;
+	}
+	
+	/**
      * Return the parent part of the path.
      */
     public static String parent(String name) {

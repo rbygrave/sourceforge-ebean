@@ -68,6 +68,10 @@ public final class BeanFkeyProperty implements ElPropertyValue {
     public boolean containsMany() {
         return false;
     }
+    
+    public boolean containsManySince(String sinceProperty) {
+        return containsMany();
+    }
 
     public String getDbColumn() {
         return dbColumn;

@@ -24,6 +24,7 @@ import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
+import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 
 
@@ -117,8 +118,30 @@ public class ElPropertyChain implements ElPropertyValue {
 		return false;
 	}
 
-	
-	public boolean containsMany() {
+	/**
+     * Return true if there is a many property from sinceProperty to 
+     * the end of this chain.
+     */
+	public boolean containsManySince(String sinceProperty) {
+	    if (sinceProperty == null){
+	        return containsMany;
+	    }
+	    if (!expression.startsWith(sinceProperty)){
+	        return containsMany;
+	    }
+	    
+	    int i = 1 + SplitName.count('.', sinceProperty);
+	    
+	    for (; i < chain.length; i++) {
+            if (chain[i].getBeanProperty().containsMany()) {
+                return true;
+            }            
+        }
+	    
+        return false;
+    }
+
+    public boolean containsMany() {
 		return containsMany;
 	}
 
