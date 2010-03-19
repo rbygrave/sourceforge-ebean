@@ -62,24 +62,34 @@ public class DefaultBeanLoader {
 	 * <p>
 	 * This means we can have large and variable requestedBatchSizes.
 	 * </p>
+	 * <p>
+	 * We want to restrict the number of different batch sizes as we want to
+	 * re-use the query plan cache and get DB statement re-use.
+	 * </p>
 	 */
 	private int getBatchSize(int batchListSize, int requestedBatchSize) {
 		if (batchListSize == requestedBatchSize){
 			return batchListSize;
 		}
 		if (batchListSize == 1) {
+		    // there is only one bean/collection to load
 			return 1;
 		}
-		if (requestedBatchSize == 5 && batchListSize < 5){
+		if (requestedBatchSize <= 5) {
+            // anything less than 5 becomes 5
 			return 5;
 		}
-		if (requestedBatchSize == 10 && batchListSize < 10){
+		if (batchListSize <= 10 || requestedBatchSize <= 10){
+            // 10 or less to load 
+		    // ... or we wanted a batch size between 6 and 10
 			return 10;
 		}
-		if (batchListSize < 20){
+		if (batchListSize <= 20 || requestedBatchSize <= 20){
+            // 20 or less to load 
+            // ... or we wanted a batch size between 11 and 20
 			return 20;
 		}
-		if (batchListSize < 50){
+		if (batchListSize <= 50){
 			return 50;
 		}
 		return requestedBatchSize;
