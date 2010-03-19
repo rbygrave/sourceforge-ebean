@@ -108,11 +108,15 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
     public Object parseDateTime(long systemTimeMillis) {
         throw new RuntimeException("Not Supported or Expected");
     }
-
+    
     public boolean containsMany() {
         return false;
     }
 
+    public boolean containsManySince(String sinceProperty) {
+        return containsMany();
+    }
+    
     public String getDbColumn() {
         return null;
     }

@@ -252,30 +252,36 @@ public class OrmQueryDetail implements Serializable {
 				
 	    ArrayList<OrmQueryProperties> manyChunks = new ArrayList<OrmQueryProperties>(3);
 	    
+	    // the name of the many fetch property if there is one
+	    String manyFetchProperty = null;
+	    
+	    // flag that is set once the many fetch property is chosen
+	    boolean fetchJoinFirstMany = allowOne;
+	    
 		Iterator<String> it = joins.keySet().iterator();
 		while (it.hasNext()) {
 			String joinProp =  it.next();
 			ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(joinProp);
-			if (elProp.containsMany()){
+			if (elProp.containsManySince(manyFetchProperty)){
 				OrmQueryProperties chunk = joins.get(joinProp);
 				if (chunk.isFetchJoin() 
 				        && !isLazyLoadManyRoot(lazyLoadManyPath, chunk)
 				        && !hasParentQueryJoin(lazyLoadManyPath, chunk)) {
 				    
-                    manyChunks.add(chunk);
+				    if (fetchJoinFirstMany){
+				        fetchJoinFirstMany = false;
+				        manyFetchProperty = joinProp;
+				    } else {
+				        manyChunks.add(chunk);
+				    }
 				}
 			}
 		}
 
-        // if allowOne then the first one is allowed 
-		// to remain a normal fetch join
-		int i = allowOne ? 1: 0;
-
-		for (; i < manyChunks.size(); i++) {
+		for (int i = 0; i < manyChunks.size(); i++) {
 		    // convert over to query joins
 		    manyChunks.get(i).setQueryJoinBatch(queryBatch).setLazyJoinBatch(lazyBatch);            
         }
-		
 	}
 
 	/**

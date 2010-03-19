@@ -18,9 +18,15 @@ public interface ElPropertyDeploy {
 	public static final String ROOT_ELPREFIX = "${}";
 
 	/**
-	 * Return true if the property is on the path of a many property.
+	 * Return true if there is a property on the path that is a many property.
 	 */
 	public boolean containsMany();
+
+    /**
+     * Return true if there is a property is on the path after sinceProperty
+     * that is a 'many' property.
+     */
+	public boolean containsManySince(String sinceProperty);
 
 	/**
 	 * Return the prefix path of the property.

@@ -879,6 +879,10 @@ public class BeanProperty implements ElPropertyValue {
         return false;
     }
 
+    public boolean containsManySince(String sinceProperty) {
+        return containsMany();
+    }
+    
     public boolean containsMany() {
         return false;
     }
