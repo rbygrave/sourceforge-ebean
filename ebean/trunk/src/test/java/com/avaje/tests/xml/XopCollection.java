@@ -35,8 +35,6 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public class XopCollection extends XopNode implements XoiNode {
-
-    private final XoiNode childNode;
     
     private final boolean invokeFetch;
     
@@ -49,24 +47,23 @@ public class XopCollection extends XopNode implements XoiNode {
     /**
      * Construct with no mapKey and no attributes.
      */
-    public XopCollection(String name, ElPropertyValue prop, XoiNode childNode, boolean invokeFetch) {
-        this(name, prop, childNode, invokeFetch, null, null);
+    public XopCollection(String name, ElPropertyValue prop, XoiNode[] children, boolean invokeFetch) {
+        this(name, prop, children, null, invokeFetch, null);
     }
 
     /**
      * Construct with no attributes.
      */
-    public XopCollection(String name, ElPropertyValue prop, XoiNode childNode, boolean invokeFetch, String mapKey) {
-        this(name, prop, childNode, invokeFetch, mapKey, null);
+    public XopCollection(String name, ElPropertyValue prop, XoiNode[] children, boolean invokeFetch, String mapKey) {
+        this(name, prop, children, null, invokeFetch, mapKey);
     }
     
     /**
      * Construct with all options.
      */
-    public XopCollection(String name, ElPropertyValue prop, XoiNode childNode, boolean invokeFetch, String mapKey, XoiAttribute[] attributes) {
+    public XopCollection(String name, ElPropertyValue prop, XoiNode[] children, XoiAttribute[] attributes, boolean invokeFetch, String mapKey) {
 
-        super(name, prop, null, null, null, attributes);
-        this.childNode = childNode;
+        super(name, prop, null, null, null, children, attributes);
         this.invokeFetch = invokeFetch;
         this.decreaseDepth = true;
         this.mapKey = mapKey;
@@ -91,7 +88,9 @@ public class XopCollection extends XopNode implements XoiNode {
             Object detailBean = targetDescriptor.createBean(ctx.isVanillaMode());
             ctx.setBean(detailBean);
             
-            childNode.readNode(detailNode, ctx);
+            for (int i = 0; i < childNodes.length; i++) {
+                childNodes[i].readNode(detailNode, ctx);
+            }
             
             bcAdd.addBean(detailBean);
             
@@ -115,7 +114,6 @@ public class XopCollection extends XopNode implements XoiNode {
         return null;
     }
     
-    
     @Override
     public void writeContent(XmlOutputWriter o, Object bean, Object val) throws IOException {
         
@@ -123,7 +121,9 @@ public class XopCollection extends XopNode implements XoiNode {
         Iterator<?> it = collection.iterator();
         while (it.hasNext()) {
             Object childBean = it.next();
-            childNode.writeNode(o, childBean);
+            for (int i = 0; i < childNodes.length; i++) {
+                childNodes[i].writeNode(o, childBean);
+            }
         }
     }
 
@@ -134,7 +134,9 @@ public class XopCollection extends XopNode implements XoiNode {
         Iterator<?> it = collection.iterator();
         while (it.hasNext()) {
             Object childBean = it.next();
-            childNode.writeNode(out, e, childBean);
+            for (int i = 0; i < childNodes.length; i++) {
+                childNodes[i].writeNode(out, e, childBean);
+            }
         }
     }
 
@@ -142,6 +144,16 @@ public class XopCollection extends XopNode implements XoiNode {
     public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException {
         super.writeNode(out, node, bean);
     }
+    
+//    protected void writeNodeChildren(XmlOutputDocument out, Node childNode, Object bean, Object val) throws IOException {
+//        
+//        if (hasChildNodes) {
+//            for (int i = 0; i < childNodes.length; i++) {
+//                childNodes[i].writeNode(out, childNode, bean);
+//            }
+//        }        
+//    }
+
 
     @Override
     protected Object getObjectValue(Object bean) {

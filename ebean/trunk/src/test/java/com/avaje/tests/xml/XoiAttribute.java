@@ -27,9 +27,9 @@ import org.w3c.dom.Node;
 
 public interface XoiAttribute {
 
-    public void writeAttribute(XmlOutputWriter o, Object bean) throws IOException;
+    public void writeAttribute(XmlOutputWriter o, Object bean, Object value) throws IOException;
     
-    public void writeAttribute(XmlOutputDocument out, Element e, Object bean) throws IOException;
+    public void writeAttribute(XmlOutputDocument out, Element e, Object bean, Object value) throws IOException;
 
     public void readNode(Node node, NamedNodeMap attributes, XoWriteContext ctx);
     

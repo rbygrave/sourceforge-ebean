@@ -28,24 +28,30 @@ import org.w3c.dom.Node;
 
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public class XopAttribute extends XopBase implements XoiAttribute {
 
+    private boolean parentAssocBean;
+    
     /**
      * Create as an property based attribute.
      */
-    public XopAttribute(String attrName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
-        super(attrName, prop, formatter, parser);
+    public XopAttribute(String attrName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, boolean parentAssocBean, StringFormatter formatter, StringParser parser) {
+        super(attrName, prop, parentDesc, formatter, parser);
+        this.parentAssocBean = parentAssocBean;
     }
 
-    public XopAttribute(String attrName, ElPropertyValue prop) {
-        this(attrName, prop, null, null);
+    public XopAttribute(String attrName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, boolean parentAssocBean) {
+        this(attrName, prop, parentDesc, parentAssocBean, null, null);
     }
     
-    public void writeAttribute(XmlOutputDocument out, Element e, Object bean) throws IOException {
+    public void writeAttribute(XmlOutputDocument out, Element e, Object bean, Object value) throws IOException {
 
-        Object v = getObjectValue(bean);
+        Object beanToUse = parentAssocBean ? value : bean;
+
+        Object v = getObjectValue(beanToUse);
         String sv = getFormattedValue(v);
         Attr attr = out.getDocument().createAttribute(nodeName);
         attr.setValue(sv);
@@ -53,9 +59,10 @@ public class XopAttribute extends XopBase implements XoiAttribute {
         e.setAttributeNode(attr);
     }
 
-    public void writeAttribute(XmlOutputWriter o, Object bean) throws IOException {
+    public void writeAttribute(XmlOutputWriter o, Object bean, Object value) throws IOException {
 
-        Object v = getObjectValue(bean);
+        Object beanToUse = parentAssocBean ? value : bean;
+        Object v = getObjectValue(beanToUse);
         String sv = getFormattedValue(v);
 
         o.write(" ");

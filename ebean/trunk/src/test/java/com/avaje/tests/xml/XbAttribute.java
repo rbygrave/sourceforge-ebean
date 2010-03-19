@@ -24,13 +24,14 @@ import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public class XbAttribute extends XbBase {
 
-    public XbAttribute(String propertyName, String nodeName, XomBuilder builder){
-        super(propertyName, nodeName, builder);
+    
+    public XbAttribute(XbNode rootNode, String nodeName, String propertyName){
+        super(rootNode, nodeName, propertyName);
     }
 
-    public XoiAttribute create(BeanDescriptor<?> descriptor) {
+    public XoiAttribute create(BeanDescriptor<?> descriptor, boolean parentAssocBean) {
         
         ElPropertyValue prop = descriptor.getElGetValue(propertyName);
-        return new XopAttribute(nodeName, prop, formatter, parser);
+        return new XopAttribute(nodeName, prop, descriptor, parentAssocBean, formatter, parser);
     }
 }
