@@ -133,6 +133,7 @@ public class DefaultBeanLoader {
 
 		SpiQuery<?> query = (SpiQuery<?>)server.createQuery(desc.getBeanType());
 		query.setMode(Mode.LAZYLOAD_MANY);
+        query.setLazyLoadManyPath(many.getName());
 		query.setPersistenceContext(pc);
 		query.select(idProperty);
 		query.join(many.getName());
@@ -246,6 +247,7 @@ public class DefaultBeanLoader {
 		
 		query.where().idEq(parentId);
 		query.setMode(Mode.LAZYLOAD_MANY);
+		query.setLazyLoadManyPath(many.getName());
 		query.setPersistenceContext(pc);
 		query.setVanillaMode(vanilla);
 		

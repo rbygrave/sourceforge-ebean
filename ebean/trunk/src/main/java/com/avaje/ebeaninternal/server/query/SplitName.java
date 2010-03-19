@@ -10,6 +10,18 @@ public class SplitName {
 		}
 	}
 
+	/**
+     * Return the parent part of the path.
+     */
+    public static String parent(String name) {
+        if (name == null){
+            return null;
+        } else {
+            String[] s = split(name, true);
+            return s[0];
+        }
+    }
+
 	public static String[] split(String name){
 		return split(name, true);
 	}

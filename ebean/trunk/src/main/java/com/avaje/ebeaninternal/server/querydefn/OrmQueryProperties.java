@@ -17,6 +17,7 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.expression.DefaultExpressionFactory;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
+import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.util.FilterExpressionList;
 
 /**
@@ -26,6 +27,7 @@ public class OrmQueryProperties implements Serializable {
 
     private static final long serialVersionUID = -8785582703966455658L;
 
+    private String parentPath;
     private String path;
 
     private String properties;
@@ -80,6 +82,7 @@ public class OrmQueryProperties implements Serializable {
 
     public OrmQueryProperties(String path, String properties, JoinConfig joinConfig) {
         this.path = path;
+        this.parentPath = SplitName.parent(path);
         this.properties = properties;
 
         this.trimmedProperties = properties;
@@ -90,12 +93,16 @@ public class OrmQueryProperties implements Serializable {
             queryJoinBatch = joinConfig.getQueryBatchSize();
         }
 
-        this.allProperties = trimmedProperties == null || "*".equals(trimmedProperties);
+        this.allProperties = isAllProperties();
         if (!allProperties) {
             this.included = parseIncluded(trimmedProperties);
         } else {
             this.included = null;
         }
+    }
+    
+    private boolean isAllProperties() {
+        return (trimmedProperties == null) || (trimmedProperties.length() == 0) || "*".equals(trimmedProperties);
     }
 
     @SuppressWarnings("unchecked")
@@ -176,6 +183,7 @@ public class OrmQueryProperties implements Serializable {
      */
     public OrmQueryProperties copy() {
         OrmQueryProperties copy = new OrmQueryProperties();
+        copy.parentPath = parentPath;
         copy.path = path;
         copy.properties = properties;
         copy.cache = cache;
@@ -375,10 +383,19 @@ public class OrmQueryProperties implements Serializable {
      *            where -1 means not a query join and 0 means use the default
      *            batch size.
      */
-    public void setQueryJoinBatch(int queryJoinBatch) {
+    public OrmQueryProperties setQueryJoinBatch(int queryJoinBatch) {
         this.queryJoinBatch = queryJoinBatch;
+        return this;
     }
 
+    /**
+     * Set the lazy loading batch size.
+     */
+    public OrmQueryProperties setLazyJoinBatch(int lazyJoinBatch) {
+        this.lazyJoinBatch = lazyJoinBatch;
+        return this;
+    }
+    
     public boolean isFetchJoin() {
         return !isQueryJoin() && !isLazyJoin();
     }
@@ -405,6 +422,10 @@ public class OrmQueryProperties implements Serializable {
 
     public boolean isCache() {
         return cache;
+    }
+
+    public String getParentPath() {
+        return parentPath;
     }
 
     public String getPath() {
@@ -435,6 +456,9 @@ public class OrmQueryProperties implements Serializable {
         }
 
         trimmedProperties = trimmedProperties.trim();
+        while (trimmedProperties.startsWith(",")) {
+            trimmedProperties = trimmedProperties.substring(1).trim();            
+        }
     }
 
     private int parseBatchHint(int pos, String option) {

@@ -1656,6 +1656,9 @@ public class BeanDescriptor<T> {
             throw new PersistenceException("No property found for [" + propName + "] in expression "
                     + chain.getExpression());
         }
+        if (property.containsMany()){
+            chain.setContainsMany(true);
+        }
         return chain.add(property).build();
     }
 

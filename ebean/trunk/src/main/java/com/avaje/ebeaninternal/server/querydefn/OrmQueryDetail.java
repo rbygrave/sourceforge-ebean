@@ -3,9 +3,9 @@ package com.avaje.ebeaninternal.server.querydefn;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +39,7 @@ public class OrmQueryDetail implements Serializable {
 	/**
 	 * Contains the fetch/lazy/query joins and their properties.
 	 */
-	private HashMap<String, OrmQueryProperties> joins = new HashMap<String, OrmQueryProperties>(8);
+	private LinkedHashMap<String, OrmQueryProperties> joins = new LinkedHashMap<String, OrmQueryProperties>(8);
 
 	private HashSet<String> includes = new HashSet<String>(8);
 
@@ -247,22 +247,73 @@ public class OrmQueryDetail implements Serializable {
 	/**
      * Convert 'fetch joins' to 'many' properties over to 'query joins'.
      */
-	public void convertManyFetchJoinsToQueryJoins(BeanDescriptor<?> beanDescriptor) {
+	public void convertManyFetchJoinsToQueryJoins(BeanDescriptor<?> beanDescriptor, 
+	        String lazyLoadManyPath, boolean allowOne, int queryBatch, int lazyBatch) {
 				
+	    ArrayList<OrmQueryProperties> manyChunks = new ArrayList<OrmQueryProperties>(3);
+	    
 		Iterator<String> it = joins.keySet().iterator();
 		while (it.hasNext()) {
 			String joinProp =  it.next();
 			ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(joinProp);
 			if (elProp.containsMany()){
 				OrmQueryProperties chunk = joins.get(joinProp);
-				if (chunk.isFetchJoin()) {
-				    // use a query join instead
-				    chunk.setQueryJoinBatch(0);
+				if (chunk.isFetchJoin() 
+				        && !isLazyLoadManyRoot(lazyLoadManyPath, chunk)
+				        && !hasParentQueryJoin(lazyLoadManyPath, chunk)) {
+				    
+                    manyChunks.add(chunk);
 				}
 			}
 		}
+
+        // if allowOne then the first one is allowed 
+		// to remain a normal fetch join
+		int i = allowOne ? 1: 0;
+
+		for (; i < manyChunks.size(); i++) {
+		    // convert over to query joins
+		    manyChunks.get(i).setQueryJoinBatch(queryBatch).setLazyJoinBatch(lazyBatch);            
+        }
+		
 	}
 
+	/**
+	 * Return true if this is actually the root level of a +query/+lazy loading query.
+	 */
+	private boolean isLazyLoadManyRoot(String lazyLoadManyPath, OrmQueryProperties chunk) {
+        if (lazyLoadManyPath != null && lazyLoadManyPath.equals(chunk.getPath())){
+            return true;
+        }
+	    return false;
+	}
+	
+	/**
+	 * If the chunk has a parent that is a query join.. then it does not need to be converted.
+	 */
+	private boolean hasParentQueryJoin(String lazyLoadManyPath, OrmQueryProperties chunk) {
+	    OrmQueryProperties parent = getParent(chunk);
+	    if (parent == null){
+	        return false;
+	    } else {
+	        if (lazyLoadManyPath != null && lazyLoadManyPath.equals(parent.getPath())){
+	            return false;
+	        } else if (parent.isQueryJoin()){
+	            return true;
+	        } else {
+	            return hasParentQueryJoin(lazyLoadManyPath, parent);
+	        }
+	    }
+	}
+	
+	/**
+	 * Return the parent chunk.
+	 */
+	private OrmQueryProperties getParent(OrmQueryProperties chunk) {
+	    String parentPath = chunk.getParentPath();
+        return parentPath == null ? null : joins.get(parentPath);
+	}
+	
 	/**
 	 * Set any default select clauses for the main bean and any joins that have
 	 * not explicitly defined a select clause.

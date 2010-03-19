@@ -160,7 +160,7 @@ public class DLoadContext implements LoadContext {
 		String propName = props.getPath();
 		ElPropertyValue elGetValue = rootDescriptor.getElGetValue(propName);
 
-		boolean many = elGetValue.containsMany();
+		boolean many = elGetValue.getBeanProperty().containsMany();
 		registerSecondaryNode(many, props);
 	}
 
