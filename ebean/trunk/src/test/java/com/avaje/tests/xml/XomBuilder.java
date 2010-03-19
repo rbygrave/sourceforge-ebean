@@ -19,23 +19,25 @@
  */
 package com.avaje.tests.xml;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 
 public class XomBuilder {
     
-    //private final BeanDescriptor<?> descriptor;
+    private final SpiEbeanServer ebeanServer;
 
     private final XomNamingConvention namingConvention;
         
     String rootNodeName;
     
-    ArrayList<XbNode> nodes = new ArrayList<XbNode>();
+    Map<String,XbNode> rootNodes = new HashMap<String,XbNode>();
 
 
-    public XomBuilder(BeanDescriptor<?> descriptor, XomNamingConvention namingConvention){
-        //this.descriptor = descriptor;
+    public XomBuilder(SpiEbeanServer ebeanServer, XomNamingConvention namingConvention){
+        this.ebeanServer = ebeanServer;
         this.namingConvention = namingConvention;
     }
     
@@ -48,15 +50,13 @@ public class XomBuilder {
         }
     }
     
-    public XbNode addElement(String propertyName){
-
-        String nodeName = getNamingConventionNodeName(propertyName);
-        return addElement(propertyName, nodeName);
+    public XbNode addRootElement(String rootElementName, Class<?> rootType) {
+        
+        BeanDescriptor<?> descriptor = ebeanServer.getBeanDescriptor(rootType);
+        XbNode rootNode = new XbNode(rootElementName, descriptor);
+        rootNodes.put(rootElementName, rootNode);
+        
+        return rootNode;
     }
     
-    public XbNode addElement(String propertyName, String nodeName){
-        XbNode node = new XbNode(nodeName, propertyName, this);
-        nodes.add(node);
-        return node;
-    }
 }

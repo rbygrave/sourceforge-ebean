@@ -24,23 +24,28 @@ import com.avaje.ebean.text.StringParser;
 
 public abstract class XbBase {
 
-    protected XomBuilder builder;
+    protected XbNode rootNode;
     protected final String nodeName;
     protected final String propertyName;
     protected StringParser parser;
     protected StringFormatter formatter;
     protected boolean requiresXmlEncoding;
-    
-    public XbBase(String propertyName, String nodeName, XomBuilder builder) {
-        this.propertyName = propertyName;
+
+    public XbBase(String nodeName) {
         this.nodeName = nodeName;
-        this.builder = builder;
+        this.propertyName = null;
+    }
+    
+    public XbBase(XbNode rootNode, String nodeName, String propertyName) {
+        this.rootNode = rootNode;
+        this.nodeName = nodeName;
+        this.propertyName = propertyName;
     }
 
     public String getNamingConventionNodeName(String propertyName) {
-        if (builder != null){
-            return builder.getNamingConventionNodeName(propertyName);
-        }
+//        if (rootNode != null){
+//            return rootNode.getNamingConventionNodeName(propertyName);
+//        }
         return propertyName;
     }
     

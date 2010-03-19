@@ -21,6 +21,9 @@ package com.avaje.tests.xml;
 
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public abstract class XopBase {
@@ -34,8 +37,9 @@ public abstract class XopBase {
 
     protected boolean decreaseDepth = false;
 
+    protected BeanDescriptor<?> beanDescriptor;
 
-    protected XopBase(String nodeName, ElPropertyValue prop, StringFormatter formatter, StringParser parser) {
+    protected XopBase(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter, StringParser parser) {
         
         if (formatter == null && prop != null){
             formatter = prop.getStringFormatter();
@@ -49,8 +53,20 @@ public abstract class XopBase {
         this.stringFormatter = formatter;
         this.stringParser = parser;
         this.encode = false;
+        
+        this.beanDescriptor = getBeanDescriptor(parentDesc, prop);
     }
 
+    private BeanDescriptor<?> getBeanDescriptor(BeanDescriptor<?> parent, ElPropertyValue prop){
+        if (prop != null){
+            BeanProperty beanProperty = prop.getBeanProperty();
+            if (beanProperty instanceof BeanPropertyAssoc<?>){
+                return ((BeanPropertyAssoc<?>)beanProperty).getTargetDescriptor();
+            }
+        }
+        return parent;
+    }
+    
     protected void setObjectValue(Object bean, Object value){
         prop.elSetValue(bean, value, true, false);
     }

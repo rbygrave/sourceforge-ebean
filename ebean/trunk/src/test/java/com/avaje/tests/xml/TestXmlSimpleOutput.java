@@ -15,10 +15,7 @@ import org.w3c.dom.NodeList;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.tests.model.basic.Order;
-import com.avaje.tests.model.basic.OrderDetail;
 import com.avaje.tests.model.basic.ResetBasicData;
 
 public class TestXmlSimpleOutput extends TestCase {
@@ -28,46 +25,35 @@ public class TestXmlSimpleOutput extends TestCase {
         ResetBasicData.reset();
         
         SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(null);
+                
+        XomBuilder builder = new XomBuilder(server, null);
         
-        BeanDescriptor<Order> beanDescriptor = server.getBeanDescriptor(Order.class);
+        XbNode orderRoot = builder.addRootElement("order", Order.class);
         
-        XomBuilder builder = new XomBuilder(beanDescriptor, null);
+        orderRoot.addElement("id").addAttribute("status");
+        orderRoot.addElement("cretime","created-ts");
+        orderRoot.addElement("orderDate","ship-date");
+        XbNode cust = orderRoot.addElement("customer","cust");
+        cust.addAttribute("id");
+        cust.addElement("name");
         
-        builder.addElement("id").addAttribute("status");
-        builder.addElement("cretime","created-ts");
-        builder.addElement("orderDate","ship-date");
-        //builder.addCollection("details","order-details");
+        XbNode orderDetails = orderRoot.addElement("details","order-details");
+        XbNode line = orderDetails.addWrapperElement("line");
+        line.addElement("id");
+        line.addElement("orderQty","order-quantity");
+        line.addElement("unitPrice","unit-price");
         
-        ElPropertyValue elId = beanDescriptor.getElGetValue("id");
-        ElPropertyValue elSt = beanDescriptor.getElGetValue("status");
-        ElPropertyValue eldate = beanDescriptor.getElGetValue("orderDate");
-        ElPropertyValue elcre = beanDescriptor.getElGetValue("cretime");
-        ElPropertyValue elDetails = beanDescriptor.getElGetValue("details");
-
-        XoiAttribute xst = new XopAttribute("status", elSt);
-        XoiNode xid = new XopNode("id", elId, null, null, null, new XoiAttribute[]{xst});
-        XoiNode xdt = new XopNode("ship-date", eldate);
-        XoiNode xcr = new XopNode("created-ts", elcre);
-
-
-        BeanDescriptor<OrderDetail> detailDescriptor = server.getBeanDescriptor(OrderDetail.class);
-
-        XoiNode detailId = new XopNode("id",detailDescriptor.getElGetValue("id"));
-        XoiNode detailProdName = new XopNode("product-name",detailDescriptor.getElGetValue("product.name"));
-        
-        //XoCompoundNode details = new XoCompoundNode("line", detailId, detailProdName);
-        XopNode details = new XopNode("line", detailId, detailProdName);
-        
-        
-        XopCollection xlist = new XopCollection("order-details", elDetails, details, true);
+        XbNode product = line.addElement("product");
+        product.addElement("name","prodname");
+        product.addElement("sku","sku");
 
         
-        XopNode orderNode = new XopNode("order",xid, xcr, xdt, xlist);
-
+        XoiNode orderNode = orderRoot.createNode();
+        
         
         List<Order> list = Ebean.find(Order.class)
             .join("details")
-            .join("details.product","name")
+            .join("details.product","sku,name")
             .findList();
         
         Order bean = list.get(0);

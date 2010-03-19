@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 public class XbNode extends XbBase {
@@ -33,18 +37,40 @@ public class XbNode extends XbBase {
 
     private List<XbNode> childNodes = new ArrayList<XbNode>();
     
-    public XbNode(String propertyName, String nodeName, XomBuilder builder) {
-        super(propertyName, nodeName, builder);
-    }
-
-    public void addElement(String propertyName){
-        String elementName = getNamingConventionNodeName(propertyName);
-        addElement(propertyName, elementName);
+    private final String rootElementName;
+    private final BeanDescriptor<?> rootDescriptor;
+    
+    public XbNode(String rootElementName, BeanDescriptor<?> rootDescriptor) {
+        super(rootElementName);
+        this.rootElementName = rootElementName;
+        this.rootDescriptor = rootDescriptor;
+        this.rootNode = this;
     }
     
-    public void addElement(String propertyName, String elementName){
-        XbNode n = new XbNode(propertyName, elementName, builder);
+    public XbNode(XbNode rootNode, String propertyName, String nodeName) {
+        super(rootNode, nodeName, propertyName);
+        this.rootElementName = null;
+        this.rootDescriptor = null;
+    }
+
+    public String getRootElementName() {
+        return rootElementName;
+    }
+
+    public XbNode addWrapperElement(String elementName){
+        return addElement(null, elementName);
+    }
+    
+    public XbNode addElement(String propertyName){
+        String elementName = getNamingConventionNodeName(propertyName);
+        return addElement(propertyName, elementName);
+    }
+    
+    public XbNode addElement(String propertyName, String elementName){
+        
+        XbNode n = new XbNode(rootNode, propertyName, elementName);
         childNodes.add(n);
+        return n;
     }
     
     public XbNode addAttribute(String propertyName){
@@ -57,31 +83,64 @@ public class XbNode extends XbBase {
         if (xbAttribute != null){
             throw new RuntimeException("Attribute with this name ["+attrName+"]already exists");
         } 
-        xbAttribute = new XbAttribute(attrName, propertyName, builder);
+        xbAttribute = new XbAttribute(rootNode, attrName, propertyName);
         return this;
     }
+
+    public XoiNode createNode() {
+        return createNode(rootDescriptor);
+    }
     
-    public XoiNode createNode(BeanDescriptor<?> descriptor) {
+    protected XoiNode createNode(BeanDescriptor<?> d) {
     
         XoiAttribute[] attrs = new XoiAttribute[attributes.size()];
         
+        boolean assocManyProperty = false;
+        boolean assocOneProperty = false;
+        
+        ElPropertyValue prop = null;
+        
+        if (propertyName != null){
+            prop = d.getElGetValue(propertyName);
+            if (prop == null){
+                throw new RuntimeException("Property "+propertyName+" not found from "+d.getFullName());
+            }
+            BeanProperty p = prop.getBeanProperty();
+            if (p instanceof BeanPropertyAssoc<?>){
+                // move to the relative/target descriptor before 
+                // evaluating the attributes and children for this node
+                BeanDescriptor<?> targetDescriptor = ((BeanPropertyAssoc<?>)p).getTargetDescriptor();
+                if (targetDescriptor != null){
+                    d = targetDescriptor;
+                }
+                assocManyProperty = (p instanceof BeanPropertyAssocMany<?>);
+                assocOneProperty = (p instanceof BeanPropertyAssocOne<?>);
+            }
+        }   
+
         int i = 0;
         for (XbAttribute attrBuilder : attributes.values()) {
-            XoiAttribute xoAttr = attrBuilder.create(descriptor);
+            XoiAttribute xoAttr = attrBuilder.create(d, assocOneProperty);
             attrs[i++] = xoAttr;
         }
-        
-        ElPropertyValue prop = descriptor.getElGetValue(propertyName);
         
         XoiNode[] children = null;
         if (!childNodes.isEmpty()){
             children = new XoiNode[childNodes.size()];
             for (int j = 0; j < children.length; j++) {
                 XbNode xbNode = childNodes.get(j);
-                children[j] = xbNode.createNode(descriptor);
+                children[j] = xbNode.createNode(d);
             }
         }
-        
-        return new XopNode(nodeName, prop, formatter, parser, children, attrs);
+
+        if (assocManyProperty){
+            boolean invokeFetch = false;
+            return new XopCollection(nodeName, prop, children, invokeFetch);
+        }
+        if (assocOneProperty){
+            return new XopNode(nodeName, prop, d, children, attrs);            
+        }
+     
+        return new XopNode(nodeName, prop, d, formatter, parser, children, attrs);
     }
 }
