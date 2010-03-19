@@ -18,6 +18,7 @@ public class TestQueryJoinManyNonRoot extends TestCase {
         
         List<Order> list = Ebean.find(Order.class)
             .join("details")
+            .join("details.product")
             .join("customer")
             .join("customer.contacts")
             .where().gt("id", 0)
