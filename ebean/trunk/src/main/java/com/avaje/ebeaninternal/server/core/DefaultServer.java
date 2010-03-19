@@ -1082,12 +1082,15 @@ public final class DefaultServer implements SpiEbeanServer {
             query.setDistinct(true);
         }
 
+         
+        boolean allowOneManyFetch = true;
         if (query.hasMaxRowsOrFirstRow() && !query.isSqlSelect() && query.getBackgroundFetchAfter() == 0) {
-
-            // convert fetch joins to Many's so that
-            // limit offset type SQL clauses work
-            query.convertManyFetchJoinsToQueryJoins();
+            // convert ALL fetch joins to Many's to be query joins
+            // so that limit offset type SQL clauses work
+            allowOneManyFetch = false;
         }
+        
+        query.convertManyFetchJoinsToQueryJoins(allowOneManyFetch, 100, 100);
                 
         SpiTransaction serverTrans = (SpiTransaction) t;
         OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);

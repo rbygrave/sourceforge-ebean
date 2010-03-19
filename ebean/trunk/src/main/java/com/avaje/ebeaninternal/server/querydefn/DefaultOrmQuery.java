@@ -116,6 +116,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private String lazyLoadProperty;
 	
+    private String lazyLoadManyPath;
+
 	/**
 	 * Set to true when we want to return vanilla (not enhanced) objects.
 	 */
@@ -304,12 +306,16 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
     public List<OrmQueryProperties> removeLazyJoins() {
         return detail.removeSecondaryLazyQueries();
     }
-    
+        
+    public void setLazyLoadManyPath(String lazyLoadManyPath) {
+        this.lazyLoadManyPath = lazyLoadManyPath;
+    }
+
     /**
      * Convert any many joins fetch joins to query joins.
      */
-    public void convertManyFetchJoinsToQueryJoins() {
-        detail.convertManyFetchJoinsToQueryJoins(beanDescriptor);
+    public void convertManyFetchJoinsToQueryJoins(boolean allowOne, int queryBatch, int lazyBatch) {
+        detail.convertManyFetchJoinsToQueryJoins(beanDescriptor, lazyLoadManyPath, allowOne, queryBatch, lazyBatch);
     }
 	
 	/**

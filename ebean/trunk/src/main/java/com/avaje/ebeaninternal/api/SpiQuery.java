@@ -190,9 +190,14 @@ public interface SpiQuery<T> extends Query<T> {
     public List<OrmQueryProperties> removeLazyJoins();
 
     /**
+     * Set the path of the many when +query/+lazy loading query is executed.
+     */
+    public void setLazyLoadManyPath(String lazyLoadManyPath);
+    
+    /**
      * Convert any many joins fetch joins to query joins.
      */
-    public void convertManyFetchJoinsToQueryJoins();
+    public void convertManyFetchJoinsToQueryJoins(boolean allowOne, int queryBatch, int lazyBatch);
 
     /**
      * Return the TransactionContext.
