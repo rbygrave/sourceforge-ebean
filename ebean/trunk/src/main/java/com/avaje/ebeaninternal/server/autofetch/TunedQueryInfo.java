@@ -116,18 +116,28 @@ public class TunedQueryInfo implements Serializable {
 	 * @return true if the query was tuned, otherwise false.
 	 */
 	public boolean autoFetchTune(SpiQuery<?> query) {
-		if (tunedDetail != null) {
-			//Note: tunedDetail is immutable by convention
-			query.setDetail(tunedDetail);	
-			query.setAutoFetchTuned(true);
-			synchronized (countMonitor) {
-				// a case for AtomicInteger
-				tunedCount++;	
-			}
-			return true;
-		} else {
-			return false;
+		if (tunedDetail == null) {
+		    return false;
 		}
+		
+		boolean tuned = false;
+		//Note: tunedDetail is immutable by convention
+	    if (query.isDetailEmpty()) {
+            tuned = true;
+            // tune by 'replacement'
+            query.setDetail(tunedDetail);  
+	    } else {
+	        // tune by 'addition'
+	        tuned = query.tuneFetchProperties(tunedDetail);
+	    }
+	    if (tuned){
+            query.setAutoFetchTuned(true);
+    		synchronized (countMonitor) {
+    			// a case for AtomicInteger
+    			tunedCount++;	
+    		}
+	    }
+		return tuned;
 	}
 	
 	/**

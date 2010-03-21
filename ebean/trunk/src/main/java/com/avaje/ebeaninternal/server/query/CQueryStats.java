@@ -70,7 +70,7 @@ public final class CQueryStats {
 	}
 
 	public MetaQueryStatistic createMetaQueryStatistic(String beanName, CQueryPlan qp) {
-		return new MetaQueryStatistic(qp.isAutofetchTuned(), qp.getObjectGraphOrigin(), beanName, qp.getHash(),
+		return new MetaQueryStatistic(qp.isAutofetchTuned(), beanName, qp.getHash(),
 			qp.getSql(), count, totalLoadedBeanCount, totalTimeMicros, startCollecting, lastQueryTime);
 	}
 

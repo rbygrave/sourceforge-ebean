@@ -267,6 +267,11 @@ public interface SpiQuery<T> extends Query<T> {
     public void setLazyLoadProperty(String lazyLoadProperty);
 
     /**
+     * Return the lazy load path.
+     */
+    public String getLazyLoadManyPath();
+
+    /**
      * Used to hook back a lazy loading query to the original query (query
      * point).
      * <p>
@@ -432,6 +437,12 @@ public interface SpiQuery<T> extends Query<T> {
      * </p>
      */
     public void setDetail(OrmQueryDetail detail);
+
+    /**
+     * Autofetch tune the detail specifying properties to select on already defined joins
+     * and adding extra joins where they are missing.
+     */
+    public boolean tuneFetchProperties(OrmQueryDetail detail);
 
     /**
      * Set to true if this query has been tuned by autoFetch.

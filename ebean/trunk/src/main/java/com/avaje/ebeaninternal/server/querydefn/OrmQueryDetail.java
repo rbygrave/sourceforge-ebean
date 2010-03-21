@@ -213,6 +213,31 @@ public class OrmQueryDetail implements Serializable {
 		return props;
 	}
 	
+	public boolean tuneFetchProperties(OrmQueryDetail tunedDetail){
+	    
+	    boolean tuned = false;
+	    
+	    OrmQueryProperties tunedRoot = tunedDetail.getChunk(null, false);
+	    if (tunedRoot != null && tunedRoot.hasProperties()){
+	        tuned = true;
+	        baseProps.setTunedProperties(tunedRoot);
+	    
+    	    Iterator<OrmQueryProperties> it = tunedDetail.joins.values().iterator();    	    
+    	    while (it.hasNext()) {
+                OrmQueryProperties tunedChunk = it.next();
+                OrmQueryProperties chunk = getChunk(tunedChunk.getPath(), false);
+                if (chunk != null){
+                    // set the properties to select
+                    chunk.setTunedProperties(tunedChunk);
+                } else {
+                    // add a missing join
+                    addJoin(tunedChunk.copy());
+                }
+            }
+	    }
+	    return tuned;
+	}
+	
 	/**
 	 * Matches a join() method of the query.
 	 */
@@ -266,7 +291,7 @@ public class OrmQueryDetail implements Serializable {
 				OrmQueryProperties chunk = joins.get(joinProp);
 				if (chunk.isFetchJoin() 
 				        && !isLazyLoadManyRoot(lazyLoadManyPath, chunk)
-				        && !hasParentQueryJoin(lazyLoadManyPath, chunk)) {
+				        && !hasParentSecJoin(lazyLoadManyPath, chunk)) {
 				    
 				    if (fetchJoinFirstMany){
 				        fetchJoinFirstMany = false;
@@ -295,19 +320,19 @@ public class OrmQueryDetail implements Serializable {
 	}
 	
 	/**
-	 * If the chunk has a parent that is a query join.. then it does not need to be converted.
+	 * If the chunk has a parent that is a query or lazy join. In this case it does not need to be converted.
 	 */
-	private boolean hasParentQueryJoin(String lazyLoadManyPath, OrmQueryProperties chunk) {
+	private boolean hasParentSecJoin(String lazyLoadManyPath, OrmQueryProperties chunk) {
 	    OrmQueryProperties parent = getParent(chunk);
 	    if (parent == null){
 	        return false;
 	    } else {
 	        if (lazyLoadManyPath != null && lazyLoadManyPath.equals(parent.getPath())){
 	            return false;
-	        } else if (parent.isQueryJoin()){
+	        } else if (!parent.isFetchJoin()){
 	            return true;
 	        } else {
-	            return hasParentQueryJoin(lazyLoadManyPath, parent);
+	            return hasParentSecJoin(lazyLoadManyPath, parent);
 	        }
 	    }
 	}

@@ -316,66 +316,22 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 		synchronized (statisticsMonitor) {
 
-			int countNewPlan = 0;
-			int countModified = 0;
-			int countUnchanged = 0;
-
+		    Counters counters = new Counters();
+		    
 			Iterator<Statistics> it = statisticsMap.values().iterator();
 			while (it.hasNext()) {
 				Statistics queryPointStatistics = it.next();
-				ObjectGraphOrigin queryPoint = queryPointStatistics.getOrigin();
-				String beanType = queryPoint.getBeanType();
-
-				try {
-
-					Class<?> beanClass = Class.forName(beanType);
-					BeanDescriptor<?> beanDescriptor = server.getBeanDescriptor(beanClass);
-					if (beanDescriptor == null){
-						// previously was an entity but not longer
-						
-					} else {
-						// Determine the fetch plan from the latest statistics.
-						// Use this to compare with current "tuned fetch plan".
-						OrmQueryDetail newFetchDetail = queryPointStatistics.buildTunedFetch(beanDescriptor);
-	
-						// get the current tuned fetch info...
-						TunedQueryInfo currentFetch = tunedQueryInfoMap.get(queryPoint.getKey());
-	
-						if (currentFetch == null) {
-							// its a new fetch plan, add it.
-							countNewPlan++;
-	
-							currentFetch = queryPointStatistics.createTunedFetch(newFetchDetail);
-							logging.logNew(currentFetch);
-							tunedQueryInfoMap.put(queryPoint.getKey(), currentFetch);
-	
-						} else if (!currentFetch.isSame(newFetchDetail)) {
-							// the fetch plan has changed, update it.
-							countModified++;
-							logging.logChanged(currentFetch, newFetchDetail);
-							currentFetch.setTunedDetail(newFetchDetail);
-	
-						} else {
-							// the fetch plan has not changed...
-							countUnchanged++;
-						}
-	
-						currentFetch.setProfileCount(queryPointStatistics.getCounter());
-					}
-
-				} catch (ClassNotFoundException e) {
-					// expected after renaming/moving an entity bean
-					String msg = e.toString()+" updating autoFetch tuned query for " + beanType
-						+". It isLikely this bean has been renamed or moved";
-					logging.logError(Level.INFO, msg, null);
-					statisticsMap.remove(queryPointStatistics.getOrigin().getKey());
+				if (!queryPointStatistics.hasUsage()){
+				    // no usage statistics collected yet...
+				    counters.incrementNoUsage();
+				} else {
+				    updateTunedQueryFromUsage(counters, queryPointStatistics);
 				}
 			}
 
-			Object[] a = new Object[] { countNewPlan, countModified, countUnchanged };
-			String summaryInfo = String.format("new[%d] modified[%d] unchanged[%d]", a);
+			String summaryInfo = counters.toString();
 
-			if (countNewPlan > 0 || countModified > 0){
+			if (counters.isInteresting()){
 				// only log it if its interesting
 				logging.logSummary(summaryInfo);
 			}
@@ -384,6 +340,84 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		}
 	}
 
+	private static class Counters {
+	    
+        int newPlan;
+        int modified;
+        int unchanged;
+        int noUsage;
+        
+        void incrementNoUsage(){
+            noUsage++;
+        }
+        void incrementNew(){
+            newPlan++;
+        }
+        void incrementModified(){
+            modified++;
+        }
+        void incrementUnchanged(){
+            unchanged++;
+        }
+        boolean isInteresting() {
+            return newPlan > 0 || modified > 0;
+        }
+        public String toString() {
+            return "new["+newPlan+"] modified["+modified+"] unchanged["+unchanged+"] nousage["+noUsage+"]";
+        }
+	}
+	
+	private void updateTunedQueryFromUsage(Counters counters, Statistics statistics) {
+	    
+	    ObjectGraphOrigin queryPoint = statistics.getOrigin();
+        String beanType = queryPoint.getBeanType();
+
+        try {
+            Class<?> beanClass = Class.forName(beanType);
+            BeanDescriptor<?> beanDescriptor = server.getBeanDescriptor(beanClass);
+            if (beanDescriptor == null){
+                // previously was an entity but not longer
+                
+            } else {
+                // Determine the fetch plan from the latest statistics.
+                // Use this to compare with current "tuned fetch plan".
+                OrmQueryDetail newFetchDetail = statistics.buildTunedFetch(beanDescriptor);
+                
+                // get the current tuned fetch info...
+                TunedQueryInfo currentFetch = tunedQueryInfoMap.get(queryPoint.getKey());
+
+                if (currentFetch == null) {
+                    // its a new fetch plan, add it.
+                    counters.incrementNew();
+
+                    currentFetch = statistics.createTunedFetch(newFetchDetail);
+                    logging.logNew(currentFetch);
+                    tunedQueryInfoMap.put(queryPoint.getKey(), currentFetch);
+
+                } else if (!currentFetch.isSame(newFetchDetail)) {
+                    // the fetch plan has changed, update it.
+                    counters.incrementModified();
+                    
+                    logging.logChanged(currentFetch, newFetchDetail);
+                    currentFetch.setTunedDetail(newFetchDetail);
+
+                } else {
+                    // the fetch plan has not changed...
+                    counters.incrementUnchanged();
+                }
+
+                currentFetch.setProfileCount(statistics.getCounter());
+            }
+
+        } catch (ClassNotFoundException e) {
+            // expected after renaming/moving an entity bean
+            String msg = e.toString()+" updating autoFetch tuned query for " + beanType
+                +". It isLikely this bean has been renamed or moved";
+            logging.logError(Level.INFO, msg, null);
+            statisticsMap.remove(statistics.getOrigin().getKey());
+        }
+	}
+	
 	/**
 	 * Return true if we should try to use autoFetch for this query.
 	 */
@@ -434,11 +468,9 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 		ObjectGraphNode parentAutoFetchNode = query.getParentNode();
 		if (parentAutoFetchNode != null) {
-			// This is a lazy loading query with profiling on.
+			// This is a +lazy/+query query with profiling on.
 			// We continue to collect the profiling information.
 			query.setAutoFetchManager(this);
-
-			// TODO: Future feature - tune a lazy loading query?
 			return false;
 		}
 
@@ -509,13 +541,17 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 
 		ObjectGraphOrigin origin = usageCollector.getNode().getOriginQueryPoint();
 
-		Statistics queryPointStats = getQueryPointStats(origin);
+		Statistics stats = getQueryPointStats(origin);
 
 		if (logging.isTraceUsageCollection()){
 			System.out.println("... NodeUsageCollector "+usageCollector);
 		}
 		
-		queryPointStats.collectUsageInfo(usageCollector);
+		stats.collectUsageInfo(usageCollector);
+		
+		if (logging.isTraceUsageCollection()){
+            System.out.println("stats\n"+stats);
+        }
 	}
 
 	private Statistics getQueryPointStats(ObjectGraphOrigin originQueryPoint) {

@@ -133,6 +133,16 @@ public class OrmQueryProperties implements Serializable {
     }
 
     /**
+     * Set the properties from a matching autofetch tuned properties.
+     */
+    public void setTunedProperties(OrmQueryProperties tunedProperties) {
+        this.properties = tunedProperties.properties;
+        this.trimmedProperties = tunedProperties.trimmedProperties;
+        this.included = tunedProperties.included;
+        this.allProperties = tunedProperties.allProperties;
+    }
+    
+    /**
      * Define the select and joins for this query.
      */
     public void configureBeanQuery(SpiQuery<?> query) {
@@ -162,16 +172,19 @@ public class OrmQueryProperties implements Serializable {
     public void configureManyQuery(SpiQuery<?> query) {
 
         if (trimmedProperties != null && trimmedProperties.length() > 0) {
-            query.join(path, trimmedProperties);
+            query.join(query.getLazyLoadManyPath(), trimmedProperties);
         }
         if (filterMany != null){
             query.setFilterMany(path, filterMany);
         }   
         if (secondaryChildren != null) {
 
+            int trimlen = path.length() - query.getLazyLoadManyPath().length();
+
             for (int i = 0; i < secondaryChildren.size(); i++) {
                 OrmQueryProperties p = secondaryChildren.get(i);
                 String path = p.getPath();
+                path = path.substring(trimlen);
                 query.join(path, p.getProperties());
                 query.setFilterMany(path, p.getFilterMany());
             }

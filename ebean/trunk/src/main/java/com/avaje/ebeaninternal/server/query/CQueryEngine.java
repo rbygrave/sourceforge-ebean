@@ -274,6 +274,9 @@ public class CQueryEngine {
 
 		StringBuilder sb = new StringBuilder(1000);
 		sb.append("<sql ");
+		if (query.isAutofetchTuned()) {
+		    sb.append("tuned='true' ");
+		}
 		if (loadMode != null) {
 			sb.append("mode='").append(loadMode).append("' ");
 		}

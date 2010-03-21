@@ -85,15 +85,27 @@ public class Statistics implements Serializable {
 		return counter;
 	}
 	
+	/**
+	 * Return true if this has usage statistics.
+	 */
+	public boolean hasUsage() {
+        synchronized (monitor) {
+            return !nodeUsageMap.isEmpty();
+        }	    
+	}
+	
 	public OrmQueryDetail buildTunedFetch(BeanDescriptor<?> rootDesc){
 		
 		synchronized (monitor) {
-			
+			if (nodeUsageMap.isEmpty()){
+			    return null;
+			}
+		    
 			OrmQueryDetail detail = new OrmQueryDetail();
 			
 			Iterator<StatisticsNodeUsage> it = nodeUsageMap.values().iterator();
 			while (it.hasNext()) {
-				StatisticsNodeUsage statsNode = (StatisticsNodeUsage) it.next();
+				StatisticsNodeUsage statsNode = it.next();
 				statsNode.buildTunedFetch(detail, rootDesc);
 			}
 			
@@ -129,10 +141,14 @@ public class Statistics implements Serializable {
 	 */
 	public void collectUsageInfo(NodeUsageCollector profile) {
 
-		ObjectGraphNode node = profile.getNode();
-
-		StatisticsNodeUsage nodeStats = getNodeStats(node.getPath());
-		nodeStats.publish(profile);
+	    if (profile.isEmpty()){
+	        // no usage was collected
+	    } else {
+    		ObjectGraphNode node = profile.getNode();
+    
+    		StatisticsNodeUsage nodeStats = getNodeStats(node.getPath());
+    		nodeStats.publish(profile);
+	    }
 	}
 
 	private StatisticsNodeUsage getNodeStats(String path) {
@@ -147,21 +163,31 @@ public class Statistics implements Serializable {
 		}
 	}
 
+    public String getUsageDebug() {
+        synchronized (monitor) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("root[").append(origin.getBeanType()).append("] ");
+            for (StatisticsNodeUsage node : nodeUsageMap.values()) {
+                sb.append(node.toString()).append("\n");
+            }
+            return sb.toString();
+        }
+    }
+
+    public String getQueryStatDebug() {
+        synchronized (monitor) {
+            StringBuilder sb = new StringBuilder();
+            for (StatisticsQuery queryStat : queryStatsMap.values()) {
+                sb.append(queryStat.toString()).append("\n");
+            }       
+            return sb.toString();
+        }
+    }
+
 	public String toString() {
 
 		synchronized (monitor) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("\norigin[").append(origin).append("]");
-			sb.append(" counter[").append(counter).append("]");
-
-			for (StatisticsQuery queryStat : queryStatsMap.values()) {
-				sb.append("\n").append(queryStat.toString());
-			}		
-		
-			for (StatisticsNodeUsage node : nodeUsageMap.values()) {
-				sb.append("\n").append(node.toString());
-			}
-			return sb.toString();
+		    return getUsageDebug();
 		}
 	}
 
