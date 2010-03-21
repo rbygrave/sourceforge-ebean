@@ -28,19 +28,23 @@ import java.util.Set;
  */
 public class ClassPathSearchFilter {
 
-	boolean defaultPackageMatch = true;
+	private static final String COM_AVAJE_EBEANINTERNAL_SERVER_BEAN = "com.avaje.ebeaninternal.server.bean";
 
-	boolean defaultJarMatch = false;
+    private static final String COM_AVAJE_EBEAN_META = "com.avaje.ebean.meta";
 
-	String ebeanJarPrefix = "ebean";
+    private boolean defaultPackageMatch = true;
 
-	HashSet<String> includePackageSet = new HashSet<String>();
+	private boolean defaultJarMatch = false;
 
-	HashSet<String> excludePackageSet = new HashSet<String>();
+	private String ebeanJarPrefix = "ebean";
 
-	HashSet<String> includeJarSet = new HashSet<String>();
+	private HashSet<String> includePackageSet = new HashSet<String>();
 
-	HashSet<String> excludeJarSet = new HashSet<String>();
+	private HashSet<String> excludePackageSet = new HashSet<String>();
+
+	private HashSet<String> includeJarSet = new HashSet<String>();
+
+	private HashSet<String> excludeJarSet = new HashSet<String>();
 
 	public ClassPathSearchFilter() {
 		addDefaultExcludePackages();
@@ -152,11 +156,11 @@ public class ClassPathSearchFilter {
 	 */
 	public boolean isSearchPackage(String packageName) {
 		// special case... "meta" entity beans.
-		if ("com.avaje.ebean.meta".equals(packageName)) {
+		if (COM_AVAJE_EBEAN_META.equals(packageName)) {
 			return true;
 		}
 		// special case... BeanFinders etc for "meta" beans.
-		if ("com.avaje.ebean.server.bean".equals(packageName)) {
+		if (COM_AVAJE_EBEANINTERNAL_SERVER_BEAN.equals(packageName)) {
 			return true;
 		}
 		if (containedIn(includePackageSet, packageName)) {
