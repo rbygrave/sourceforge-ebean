@@ -37,19 +37,21 @@ import java.io.Serializable;
  */
 public final class CallStack implements Serializable {
 
-	private static final long serialVersionUID = -8590644046907438579L;
+	private static final long serialVersionUID = -8590644046907438578L;
 
-	private final int hash;
+    private final int zeroHash;
+	private final int pathHash;
 
 	private final StackTraceElement[] callStack;
 
 	public CallStack(StackTraceElement[] callStack) {
 		this.callStack = callStack;
+		this.zeroHash = callStack[0].hashCode();
 		int hc = 0;
-		for (int i = 0; i < callStack.length; i++) {
+		for (int i = 1; i < callStack.length; i++) {
 			hc = 31 * hc + callStack[i].hashCode();
 		}
-		hash = hc;
+		this.pathHash = hc;
 	}
 
 	/**
@@ -67,14 +69,22 @@ public final class CallStack implements Serializable {
 	}
 
 	/**
-	 * Return the hash value.
+	 * Return the hash for the first stack element.
 	 */
-	public int getHash() {
-		return hash;
+	public int getZeroHash() {
+		return zeroHash;
 	}
+	
+	
+	/**
+	 * Return the hash for the stack elements (excluding first stack element).
+	 */
+    public int getPathHash() {
+        return pathHash;
+    }
 
-	public String toString() {
-		return hash + ":" + callStack[0];
-	}
+    public String toString() {
+        return zeroHash + ":" + pathHash + ":" + callStack[0];
+    }
 
 }

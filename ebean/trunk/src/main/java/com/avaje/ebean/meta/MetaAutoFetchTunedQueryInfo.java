@@ -23,9 +23,7 @@ public class MetaAutoFetchTunedQueryInfo implements Serializable {
 
 	@Id
 	private String id;
-	
-	private int origQueryPlanHash;
-	
+		
 	private String beanType;
 	
 	/**
@@ -58,7 +56,6 @@ public class MetaAutoFetchTunedQueryInfo implements Serializable {
 			int profileCount, int tunedCount, long lastTuneTime) {
 		
 		this.origin = origin;
-		this.origQueryPlanHash = origin == null ? 0 : origin.getQueryPlanHash();
 		this.beanType = origin == null ? null : origin.getBeanType();
 		this.id = origin == null ? null : origin.getKey();
 		this.tunedDetail = tunedDetail;
@@ -79,13 +76,6 @@ public class MetaAutoFetchTunedQueryInfo implements Serializable {
 	 */
 	public String getBeanType() {
 		return beanType;
-	}
-
-	/**
-	 * Return the original query plan hash (calculated prior to autofetch tuning).
-	 */
-	public int getOrigQueryPlanHash() {
-		return origQueryPlanHash;
 	}
 
 	/**
