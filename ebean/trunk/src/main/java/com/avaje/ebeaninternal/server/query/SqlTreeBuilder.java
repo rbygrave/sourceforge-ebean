@@ -116,11 +116,6 @@ public class SqlTreeBuilder {
         sqlTree.setSelectSql(buildSelectClause(rootNode));
         sqlTree.setFromSql(buildFromClause(rootNode));
         sqlTree.setInheritanceWhereSql(buildWhereClause(rootNode));
-
-        if (query.isAutofetchTuned()) {
-            summary.append(" autoFetchTuned[true]");
-        }
-
         
         sqlTree.setIncludes(queryDetail.getIncludes());
         sqlTree.setSummary(summary.toString());

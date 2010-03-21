@@ -76,7 +76,10 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		
 		if (queryProps != null){
 			queryProps.configureBeanQuery(query);
-		} 
+		}
+		if (parent.isUseAutofetchManager()){
+		    query.setAutofetch(true);
+		}
 	}
 
 	public String getFullPath() {

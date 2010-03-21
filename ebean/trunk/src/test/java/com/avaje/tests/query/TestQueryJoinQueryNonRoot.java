@@ -8,7 +8,6 @@ import org.junit.Assert;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.JoinConfig;
-import com.avaje.ebean.Query;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
@@ -32,7 +31,8 @@ public class TestQueryJoinQueryNonRoot extends TestCase {
         
         List<Order> list = Ebean.find(Order.class)
             .join("customer")
-            .join("customer.contacts", new JoinConfig().query().lazy(10))
+            .join("customer.contacts", "firstName",  new JoinConfig().query().lazy(10))
+            .join("customer.contacts.group")
             .where().lt("id", 3)
             .findList();
 
@@ -47,12 +47,12 @@ public class TestQueryJoinQueryNonRoot extends TestCase {
         }
   
     
-        String oq = "find order join customer join customer.contacts join details (+query(4),+lazy(5))";
-        Query<Order> q = Ebean.createQuery(Order.class, oq);
-        q.setAutofetch(false);
-        List<Order> list2 = q.findList();
-        
-        Assert.assertTrue(list2.size() > 0);
+//        String oq = "find order join customer join customer.contacts join details (+query(4),+lazy(5))";
+//        Query<Order> q = Ebean.createQuery(Order.class, oq);
+//        q.setAutofetch(false);
+//        List<Order> list2 = q.findList();
+//        
+//        Assert.assertTrue(list2.size() > 0);
      
     }
 }

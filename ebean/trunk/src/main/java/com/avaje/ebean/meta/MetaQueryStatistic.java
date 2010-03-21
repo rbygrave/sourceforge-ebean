@@ -4,22 +4,15 @@ import java.io.Serializable;
 
 import javax.persistence.Entity;
 
-import com.avaje.ebean.bean.ObjectGraphOrigin;
-
 /**
  * Query execution statistics Meta data.
  */
 @Entity
 public class MetaQueryStatistic implements Serializable {
 
-	private static final long serialVersionUID = -8746524372894472584L;
+	private static final long serialVersionUID = -8746524372894472583L;
 
 	boolean autofetchTuned;
-	
-	/**
-	 * Information defining the origin of the query (Call Stack and original query plan hash).
-	 */
-	ObjectGraphOrigin objectGraphOrigin;
 	
 	String beanType;
 
@@ -29,7 +22,7 @@ public class MetaQueryStatistic implements Serializable {
 	int origQueryPlanHash;
 	
 	/**
-	 * The final query plan hash (calculated prior to autofetch tuning).
+	 * The final query plan hash (calculated after to autofetch tuning).
 	 */
 	int finalQueryPlanHash;
 	
@@ -56,12 +49,10 @@ public class MetaQueryStatistic implements Serializable {
 	/**
 	 * Create a MetaQueryStatistic.
 	 */
-	public MetaQueryStatistic(boolean autofetchTuned, ObjectGraphOrigin objectGraphOrigin, String beanType, int plan, String sql, 
+	public MetaQueryStatistic(boolean autofetchTuned, String beanType, int plan, String sql, 
 			int executionCount, int totalLoadedBeans, int totalTimeMicros, long collectionStart, long lastQueryTime) {
 		
 		this.autofetchTuned = autofetchTuned;
-		this.objectGraphOrigin = objectGraphOrigin;
-		this.origQueryPlanHash = objectGraphOrigin == null ? 0 : objectGraphOrigin.getQueryPlanHash();
 		this.beanType = beanType;
 		this.finalQueryPlanHash = plan;
 		this.sql = sql;
@@ -84,14 +75,6 @@ public class MetaQueryStatistic implements Serializable {
 	 */
 	public boolean isAutofetchTuned() {
 		return autofetchTuned;
-	}
-	
-	/**
-	 * If tuned via Autofetch this returns the origin point for the query (Call stack and 
-	 * original queryPlan) and otherwise returns null.
-	 */
-	public ObjectGraphOrigin getObjectGraphOrigin() {
-		return objectGraphOrigin;
 	}
 
 	/**

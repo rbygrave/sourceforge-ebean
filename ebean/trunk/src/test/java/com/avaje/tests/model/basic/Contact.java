@@ -1,10 +1,12 @@
 package com.avaje.tests.model.basic;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
@@ -26,6 +28,12 @@ public class Contact {
 
     @ManyToOne
     Customer customer;
+    
+    @ManyToOne(optional=true)
+    ContactGroup group;
+    
+    @OneToMany
+    List<ContactNote> notes;
 
     @CreatedTimestamp
     Timestamp cretime;
@@ -113,6 +121,22 @@ public class Contact {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+    
+    public ContactGroup getGroup() {
+        return group;
+    }
+
+    public void setGroup(ContactGroup group) {
+        this.group = group;
+    }
+
+    public List<ContactNote> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<ContactNote> notes) {
+        this.notes = notes;
     }
 
 }

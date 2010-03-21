@@ -27,6 +27,7 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebeaninternal.api.BindParams;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
@@ -271,7 +272,11 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.lazyLoadProperty = lazyLoadProperty;
 	}
 
-	public ExpressionFactory getExpressionFactory() {
+	public String getLazyLoadManyPath() {
+        return lazyLoadManyPath;
+    }
+
+    public ExpressionFactory getExpressionFactory() {
 		return expressionFactory;
 	}
 	
@@ -283,6 +288,14 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		} 
 	}
 
+	public MetaAutoFetchStatistic getMetaAutoFetchStatistic() {
+	    if (parentNode != null && server != null){
+	        ObjectGraphOrigin origin = parentNode.getOriginQueryPoint();
+	        return server.find(MetaAutoFetchStatistic.class, origin.getKey());
+	    }
+	    return null;
+	}
+	
     /**
      * Return true if the where expressions contains a many property.
      */
@@ -529,7 +542,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// can change between JVM restarts.
 		int hc = beanType.getName().hashCode();
 
-        hc = hc * 31 + (type == null ? 0 : type.hashCode());
+        hc = hc * 31 + (type == null ? 0 : type.ordinal());
 		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
 
@@ -947,8 +960,12 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public void setDetail(OrmQueryDetail detail) {
 		this.detail = detail;
 	}
+	
+	public boolean tuneFetchProperties(OrmQueryDetail tunedDetail) {
+        return detail.tuneFetchProperties(tunedDetail);
+    }
 
-	public OrmQueryDetail getDetail() {
+    public OrmQueryDetail getDetail() {
 		return detail;
 	}
 

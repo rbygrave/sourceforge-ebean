@@ -2,8 +2,6 @@ package com.avaje.ebeaninternal.server.query;
 
 import java.sql.SQLException;
 
-import com.avaje.ebean.bean.ObjectGraphNode;
-import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -31,9 +29,7 @@ import com.avaje.ebeaninternal.server.type.DataBind;
 public class CQueryPlan {
 
 	private final boolean autofetchTuned;
-	
-	private final ObjectGraphOrigin objectGraphOrigin;
-	
+		
 	private final int hash;
 	
 	private final boolean rawSql;
@@ -54,13 +50,11 @@ public class CQueryPlan {
 	private CQueryStats queryStats = new CQueryStats();
 
 	/**
-	 * Create a query plan based on a Orm query request.
+	 * Create a query plan based on a OrmQueryRequest.
 	 */
 	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree sqlTree, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
-		ObjectGraphNode node = request.getQuery().getParentNode();
-		this.objectGraphOrigin = node != null ? node.getOriginQueryPoint() : null;
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
 		this.sql = sql;
@@ -77,7 +71,6 @@ public class CQueryPlan {
 	public CQueryPlan(String sql, SqlTree sqlTree, 
 			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
 		
-		this.objectGraphOrigin = null;
 		this.hash = 0;
 		this.autofetchTuned = false;
 		this.sql = sql;
@@ -99,10 +92,6 @@ public class CQueryPlan {
 	
 	public boolean isAutofetchTuned() {
 		return autofetchTuned;
-	}
-
-	public ObjectGraphOrigin getObjectGraphOrigin() {
-		return objectGraphOrigin;
 	}
 
 	public int getHash() {
@@ -149,6 +138,13 @@ public class CQueryPlan {
 	 */
 	public CQueryStats getQueryStats() {
 		return queryStats;
+	}
+	
+	/**
+	 * Return the time this query plan was last used.
+	 */
+	public long getLastQueryTime(){
+	    return queryStats.getLastQueryTime();
 	}
 	
 	public MetaQueryStatistic createMetaQueryStatistic(String beanName) {
