@@ -524,12 +524,29 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	public ObjectGraphNode setOrigin(CallStack callStack) {
 
-		// calculate base query hash prior to it being tuned
-		ObjectGraphOrigin o =  new ObjectGraphOrigin(queryAutofetchHash(), callStack, beanType.getName());
+		// create a 'origin' which links this query to the profiling information 
+		ObjectGraphOrigin o =  new ObjectGraphOrigin(calculateOriginQueryHash(), callStack, beanType.getName());
 		parentNode = new ObjectGraphNode(o, null);
 		return parentNode;
 	}
-	
+
+	/**
+	 * Calculate a hash for use in determining the ObjectGraphOrigin.
+	 * <p>
+	 * This should be quite a stable hash as most uniqueness is determined
+	 * by the CallStack, so we only use the bean type and overall query type.
+	 * </p>
+	 * <p>
+	 * This stable hash allows the query to be changed (joins added etc) without
+	 * losing the already collected usage profiling.
+	 * </p>
+	 */
+    private int calculateOriginQueryHash() {
+        int hc = beanType.getName().hashCode();
+        hc = hc * 31 + (type == null ? 0 : type.ordinal());
+        return hc;
+    }
+    
 	/**
 	 * Calculate the query hash for either AutoFetch query tuning or Query Plan caching.
 	 */

@@ -18,14 +18,12 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 @Entity
 public class MetaAutoFetchStatistic implements Serializable {
 
-	private static final long serialVersionUID = -6640406753257176804L;
+	private static final long serialVersionUID = -6640406753257176803L;
 
 	@Id
 	private String id;
 	
 	private ObjectGraphOrigin origin;
-
-	private int origQueryPlanHash;
 	
 	private String beanType;
 	
@@ -43,7 +41,6 @@ public class MetaAutoFetchStatistic implements Serializable {
 	public MetaAutoFetchStatistic(ObjectGraphOrigin origin, int counter, List<QueryStats> queryStats, List<NodeUsageStats> nodeUsageStats) {
 		
 		this.origin = origin;
-		this.origQueryPlanHash = origin == null ? 0 : origin.getQueryPlanHash();
 		this.beanType = origin == null ? null : origin.getBeanType();
 		this.id = origin == null ? null : origin.getKey();
 		this.counter = counter;
@@ -63,13 +60,6 @@ public class MetaAutoFetchStatistic implements Serializable {
 	 */
 	public String getBeanType() {
 		return beanType;
-	}
-
-	/**
-	 * Return the original query plan hash (calculated prior to autofetch tuning).
-	 */
-	public int getOrigQueryPlanHash() {
-		return origQueryPlanHash;
 	}
 	
 	/**

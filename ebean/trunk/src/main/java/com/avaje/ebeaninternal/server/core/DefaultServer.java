@@ -135,7 +135,7 @@ public final class DefaultServer implements SpiEbeanServer {
      * Used when no errors are found validating a property.
      */
     private static final InvalidValue[] EMPTY_INVALID_VALUES = new InvalidValue[0];
-
+    
     private final String serverName;
 
     private final DatabasePlatform databasePlatform;
@@ -147,6 +147,8 @@ public final class DefaultServer implements SpiEbeanServer {
     private final TransactionManager transactionManager;
 
     private final TransactionScopeManager transactionScopeManager;
+
+    private final int maxCallStack;
 
     /**
      * Ebean defaults this to true but for EJB compatible behaviour set this to
@@ -214,6 +216,8 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     private PstmtBatch pstmtBatch;
 
+    
+    
     /**
      * Create the DefaultServer.
      */
@@ -236,6 +240,8 @@ public final class DefaultServer implements SpiEbeanServer {
         this.beanDescriptorManager = config.getBeanDescriptorManager();
         beanDescriptorManager.setEbeanServer(this);
 
+        this.maxCallStack = GlobalProperties.getInt("ebean.maxCallStack", 5);
+        
         this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
         this.transactionManager = config.getTransactionManager();
         this.transactionScopeManager = config.getTransactionScopeManager();
@@ -1842,9 +1848,9 @@ public final class DefaultServer implements SpiEbeanServer {
         }
 
         int stackLength = stackTrace.length - startIndex;
-        if (stackLength > 20) {
-            // maximum of 20 stackTrace elements
-            stackLength = 20;
+        if (stackLength > maxCallStack) {
+            // maximum of maxCallStack stackTrace elements
+            stackLength = maxCallStack;
         }
 
         // create the 'interesting' part of the stackTrace
