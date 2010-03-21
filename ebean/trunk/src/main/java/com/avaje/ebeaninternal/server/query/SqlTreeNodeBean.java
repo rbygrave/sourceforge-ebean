@@ -470,15 +470,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		ctx.pushJoin(prefix);
 		ctx.pushTableAlias(prefix);
 
-		appendFromBaseTable(ctx, forceOuterJoin);
-		
-//		// NB: properties based on secondary tables are not 
-//		// included for 'partial' object queries...
-//		String baseAlias = ctx.getTableAlias(prefix);
-//		for (int i = 0, x = tableJoins.length; i < x; i++) {
-//			String alias = baseAlias+i;
-//		    tableJoins[i].addJoin(forceOuterJoin, alias, baseAlias, ctx);
-//		}
+		forceOuterJoin = appendFromBaseTable(ctx, forceOuterJoin);
 		
 		for (int i = 0; i < properties.length; i++) {
 			// usually nothing... except for 1-1 Exported
@@ -497,15 +489,11 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	 * Join to base table for this node. This includes a join to
 	 * the intersection table if this is a ManyToMany node.
 	 */
-	public void appendFromBaseTable(DbSqlContext ctx, boolean forceOuterJoin) {
-		
-		boolean manyToMany = false;
-		
+	public boolean appendFromBaseTable(DbSqlContext ctx, boolean forceOuterJoin) {
+				
 		if (nodeBeanProp instanceof BeanPropertyAssocMany<?>){
 			BeanPropertyAssocMany<?> manyProp = (BeanPropertyAssocMany<?>)nodeBeanProp;
 			if (manyProp.isManyToMany()){
-				
-				manyToMany = true;
 				
 				String alias = ctx.getTableAlias(prefix);
 				String[] split = SplitName.split(prefix);
@@ -515,13 +503,12 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();
 				manyToManyJoin.addJoin(forceOuterJoin, parentAlias, alias2, ctx);
 				
-				nodeBeanProp.addJoin(forceOuterJoin, alias2, alias, ctx);
+				return nodeBeanProp.addJoin(forceOuterJoin, alias2, alias, ctx);
 			}
+			
 		}
         
-		if (!manyToMany){
-			nodeBeanProp.addJoin(forceOuterJoin, prefix, ctx);
-		}
+		return nodeBeanProp.addJoin(forceOuterJoin, prefix, ctx);
 	}
 
     
