@@ -12,6 +12,7 @@ public class TestJoinOptOneCascade extends TestCase {
 
     public void test() {
         
+        // the left outer join cascades to the join for c
         Query<EOptOneA> query = Ebean.find(EOptOneA.class)
             .join("b")
             .join("b.c");
