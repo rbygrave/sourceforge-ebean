@@ -1,0 +1,26 @@
+package com.avaje.tests.query;
+
+import junit.framework.TestCase;
+
+import org.junit.Assert;
+
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Query;
+import com.avaje.tests.model.basic.EOptOneA;
+
+public class TestJoinOptOneCascade extends TestCase {
+
+    public void test() {
+        
+        Query<EOptOneA> query = Ebean.find(EOptOneA.class)
+            .join("b")
+            .join("b.c");
+        
+        query.findList();
+        String sql = query.getGeneratedSql();
+        
+        Assert.assertTrue(sql.contains("left outer join eopt_one_b"));
+        Assert.assertTrue(sql.contains("left outer join eopt_one_c ebc"));
+    }
+    
+}
