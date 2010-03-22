@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><archetype>
+  <id>simple-maven-demo</id>
+  <sources>
+    <source>src/main/java/model/BasicEntity.java</source>
+  </sources>
+  <testSources>
+    <source>src/test/java/test/TestDbConnection.java</source>
+    <source>src/test/java/test/TestIUD.java</source>
+  </testSources>
+  <resources>
+  </resources>
+  <testResources>
+    <resource>src/test/resources/ebean.properties</resource>
+    <resource>src/test/resources/orm.xml</resource>
+  </testResources>
+</archetype>
