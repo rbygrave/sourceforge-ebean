@@ -76,6 +76,34 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.6.1</version>
+				<configuration>
+					<show>public</show>
+					<overview>${basedir}/src/main/java/com/avaje/ebean/overview.html</overview>
+					<stylesheetfile>${basedir}/src/main/java/com/avaje/ebean/stylesheet.css</stylesheetfile>
+
+					<excludePackageNames>com.avaje.ebean.en*:com.avaje.ebeani*</excludePackageNames>
+					<groups>
+						<group>
+							<title>Public API</title>
+							<packages>com.avaje.ebean:com.avaje.ebean.event:com.avaje.ebean.a*:com.avaje.ebean.b*:com.avaje.ebean.c*:com.avaje.ebean.m*:com.avaje.ebean.t*:com.avaje.ebean.v*</packages>
+						</group>
+						<!--
+							<group> <title>Byte Code Enhancement / Dynamic Proxy
+							Generation</title> <packages>com.avaje.ebean.en*</packages>
+							</group> <group> <title>Internally Focused</title>
+							<packages>com.avaje.ebeani*</packages> </group>
+						-->
+					</groups>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
 	<distributionManagement>
 		<repository>
 			<id>avaje.repo</id>
@@ -186,8 +214,8 @@
 						<descriptor>src/assemble/distribution.xml</descriptor>
 					</descriptors>
 					<archive>
-			            <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
-			        </archive>
+						<manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -208,29 +236,25 @@
 						</goals>
 					</execution>
 				</executions>
-						<configuration>
-							<show>public</show>
-							<overview>${basedir}/src/main/java/com/avaje/ebean/overview.html</overview>
-							<stylesheetfile>${basedir}/src/main/java/com/avaje/ebean/stylesheet.css</stylesheetfile>
-						
-							<excludePackageNames>com.avaje.ebean.en*:com.avaje.ebeani*</excludePackageNames>
-							<groups>
-								<group>
-									<title>Public API</title>
-									<packages>com.avaje.ebean:com.avaje.ebean.event:com.avaje.ebean.a*:com.avaje.ebean.b*:com.avaje.ebean.c*:com.avaje.ebean.m*:com.avaje.ebean.t*:com.avaje.ebean.v*</packages>
-								</group>
-								<!-- 
-								<group>
-									<title>Byte Code Enhancement / Dynamic Proxy Generation</title>
-									<packages>com.avaje.ebean.en*</packages>
-								</group>
-								<group>
-									<title>Internally Focused</title>
-									<packages>com.avaje.ebeani*</packages>
-								</group>
-								 -->
-							</groups>
-						</configuration>
+				<configuration>
+					<show>public</show>
+					<overview>${basedir}/src/main/java/com/avaje/ebean/overview.html</overview>
+					<stylesheetfile>${basedir}/src/main/java/com/avaje/ebean/stylesheet.css</stylesheetfile>
+
+					<excludePackageNames>com.avaje.ebean.en*:com.avaje.ebeani*</excludePackageNames>
+					<groups>
+						<group>
+							<title>Public API</title>
+							<packages>com.avaje.ebean:com.avaje.ebean.event:com.avaje.ebean.a*:com.avaje.ebean.b*:com.avaje.ebean.c*:com.avaje.ebean.m*:com.avaje.ebean.t*:com.avaje.ebean.v*</packages>
+						</group>
+						<!--
+							<group> <title>Byte Code Enhancement / Dynamic Proxy
+							Generation</title> <packages>com.avaje.ebean.en*</packages>
+							</group> <group> <title>Internally Focused</title>
+							<packages>com.avaje.ebeani*</packages> </group>
+						-->
+					</groups>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
