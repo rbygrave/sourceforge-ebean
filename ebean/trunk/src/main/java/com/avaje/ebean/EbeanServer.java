@@ -880,6 +880,10 @@ public interface EbeanServer {
     /**
      * Delete the associations (from the intersection table) of a ManyToMany
      * given the owner bean and the propertyName of the ManyToMany collection.
+     * <p>
+     * Typically these deletions occur automatically when persisting a ManyToMany
+     * collection and this provides a way to invoke those deletions directly.
+     * </p>
      * 
      * @return the number of associations deleted (from the intersection table).
      */
@@ -891,6 +895,10 @@ public interface EbeanServer {
      * <p>
      * Additionally specify a transaction to use.
      * </p>
+     * <p>
+     * Typically these deletions occur automatically when persisting a ManyToMany
+     * collection and this provides a way to invoke those deletions directly.
+     * </p>
      * 
      * @return the number of associations deleted (from the intersection table).
      */
@@ -899,12 +907,22 @@ public interface EbeanServer {
     /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
+     * <p>
+     * Typically the saving of these associations (inserting into the
+     * intersection table) occurs automatically when persisting a ManyToMany.
+     * This provides a way to invoke those insertions directly.
+     * </p>
      */
     public void saveManyToManyAssociations(Object ownerBean, String propertyName);
 
     /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
+     * <p>
+     * Typically the saving of these associations (inserting into the
+     * intersection table) occurs automatically when persisting a ManyToMany.
+     * This provides a way to invoke those insertions directly.
+     * </p>
      */
     public void saveManyToManyAssociations(Object ownerBean, String propertyName, Transaction t);
 

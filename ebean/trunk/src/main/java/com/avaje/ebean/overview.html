@@ -31,12 +31,12 @@ EXAMPLE 2: Fetch an Object with associations
 </h3>
 <pre class="code">
 // fetch Customer 7 including their billing and shipping addresses
-Query&lt;Customer&gt; query = Ebean.createQuery(Customer.class);
-query.join("billingAddress");
-query.join("shippingAddress");
-query.setId(7);
+Customer customer = Ebean.find(Customer.class)
+    .join("billingAddress");
+    .join("shippingAddress");
+    .setId(7)
+    .findUnique();
 	
-Customer customer = query.findUnique();
 		
 Address billAddr = customer.getBillingAddress();
 Address shipAddr = customer.getShippingAddress();
@@ -52,31 +52,29 @@ EXAMPLE 3: Fetch a list of Objects with associations
 //       fetched (the product objects are partially populated).
 		
 // fetch orders for customer.id = 2
-Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
-query.join("customer");
-query.join("customer.shippingAddress");
-query.join("details");
-query.join("details.product","name");
+List&lt;Order&gt; orderList = Ebean.find(Order.class);
+    .join("customer")
+    .join("customer.shippingAddress")
+    .join("details")
+    .join("details.product","name")
+    .where().eq("customer.id",2)
+    .findList();
 
-query.where().eq("customer.id",2);
 
-List&lt;Order&gt; orderList = query.findList();
-
-// Note: * means fetch all the properties of that bean.
 // Note: Only the product id and name is fetched for the
 //       product details. This is referred to as a 
 //       "Partial Object" (one that is partially populated).  
 
 
-// dumb code that traverses the object graph...
+// code that traverses the object graph...
 
-Order order0 = orderList.get(0);
-Customer customer = order0.getCustomer();	
+Order order = orderList.get(0);
+Customer customer = order.getCustomer();	
 Address shipAddr = customer.getShippingAddress();
 
-List&lt;OrderDetail&gt; details = order0.getDetails();
-OrderDetail detail0 = details.get(0);
-Product product = detail0.getProduct();
+List&lt;OrderDetail&gt; details = order.getDetails();
+OrderDetail detail = details.get(0);
+Product product = detail.getProduct();
 String productName = product.getName();
 
 </pre>

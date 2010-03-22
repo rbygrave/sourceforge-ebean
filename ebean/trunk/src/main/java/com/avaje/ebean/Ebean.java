@@ -42,6 +42,14 @@ import com.avaje.ebean.text.csv.CsvReader;
  * {@link EbeanServer}s. It additionally provides a convenient way to use the
  * 'default/primary' EbeanServer.
  * <p>
+ * If you are using a Dependency Injection framework such as
+ * <strong>Spring</strong> or <strong>Guice</strong> you will probably
+ * <strong>NOT</strong> use this Ebean singleton object. Instead you will
+ * configure and construct EbeanServer instances using {@link ServerConfig} and
+ * {@link EbeanServerFactory} and inject those EbeanServer instances into your
+ * data access objects.
+ * </p>
+ * <p>
  * In documentation "Ebean singleton" refers to this object.
  * </p>
  * <ul>
@@ -596,6 +604,10 @@ public final class Ebean {
     /**
      * Delete the associations (from the intersection table) of a ManyToMany
      * given the owner bean and the propertyName of the ManyToMany collection.
+     * <p>
+     * Typically these deletions occur automatically when persisting a ManyToMany
+     * collection and this provides a way to invoke those deletions directly.
+     * </p>
      * 
      * @return the number of associations deleted (from the intersection table).
      */
@@ -606,6 +618,11 @@ public final class Ebean {
     /**
      * Save the associations of a ManyToMany given the owner bean and the
      * propertyName of the ManyToMany collection.
+     * <p>
+     * Typically the saving of these associations (inserting into the
+     * intersection table) occurs automatically when persisting a ManyToMany.
+     * This provides a way to invoke those insertions directly.
+     * </p>
      * <p>
      * You can use this when the collection is new and in this case all the
      * entries in the collection are treated as additions are result in inserts
