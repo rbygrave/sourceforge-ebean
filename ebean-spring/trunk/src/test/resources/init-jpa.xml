@@ -27,9 +27,8 @@
 	</bean>
 	<bean id="entityManagerFactory"
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
-		p:dataSource-ref="dataSource"
-		 p:persistence-xml-location="META-INF/test-persistence.xml"
-		p:persistenceUnitName="testtt">
+		p:dataSource-ref="dataSource" p:persistence-xml-location="META-INF/test-persistence.xml"
+		p:persistenceUnitName="test">
 		<property name="jpaVendorAdapter">
 			<bean class="com.avaje.ebean.springsupport.spi.jpa.EbeanJpaVendorAdapter" />
 		</property>
@@ -37,7 +36,7 @@
 
 
 	<bean id="serverConfig" parent="defaultEbeanServerConfig">
-		<property name="name" value="testtt" />
+		<property name="name" value="test" />
 		<property name="classes">
 			<list>
 				<value>com.avaje.ebean.springsupport.User</value>
