@@ -17,6 +17,11 @@
  */
 package com.avaje.ebeaninternal.server.lib.sql;
 
+import com.avaje.ebean.config.DataSourceConfig;
+import com.avaje.ebeaninternal.server.lib.cron.CronManager;
+
+import javax.persistence.PersistenceException;
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,12 +35,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.persistence.PersistenceException;
-import javax.sql.DataSource;
-
-import com.avaje.ebean.config.DataSourceConfig;
-import com.avaje.ebeaninternal.server.lib.cron.CronManager;
 
 /**
  * A robust DataSource.
@@ -665,7 +664,8 @@ public class DataSourcePool implements DataSource {
 			uniqueConnectionID++;
 			Connection c = createUnpooledConnection();
 			
-			connection = new PooledConnection(this, uniqueConnectionID, c);
+			ConnectionDecorator connectionDecorator = new ConnectionDecorator(this, uniqueConnectionID, c);
+			connection = connectionDecorator.buildDecorator();
 			connection.resetForUse();
 
 			if (!dataSourceUp) {

@@ -17,25 +17,32 @@
  */
 package com.avaje.ebeaninternal.server.lib.sql;
 
-import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
- * Is a connection that belongs to a DataSourcePool.
- * 
- * <p>
- * It is designed to be part of DataSourcePool. Closing the connection puts it
- * back into the pool.
- * </p>
- * 
- * <p>
- * It defaults autoCommit and Transaction Isolation to the defaults of the
- * DataSourcePool.
- * </p>
- * 
- * <p>
- * It has caching of Statements and PreparedStatements. Remembers the last
- * statement that was executed. Keeps statistics on how long it is in use.
- * </p>
+ * Methods for the ExtendedPreparedStatement.
+ *
+ * This interfaced is used to compose the ExtendedPreparedStatement and for the decorator to easily cache
+ * these specific methods and fast {@link MethodHandler} lookup.
  */
-public interface PooledConnection extends Connection, PooledConnectionMethods {
+public interface ExtendedPreparedStatementMethods {
+
+	public PreparedStatement getDelegate();
+
+	/**
+	 * Return the key used to cache this on the Connection.
+	 */
+	public String getCacheKey();
+
+	/**
+	 * Return the SQL used to create this PreparedStatement.
+	 */
+	public String getSql();
+
+	/**
+	 * Fully close the underlying PreparedStatement. After this we can no longer
+	 * reuse the PreparedStatement.
+	 */
+	public void closeDestroy() throws SQLException;
 }
