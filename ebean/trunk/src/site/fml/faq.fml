@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+  title="Frequently Asked Questions"
+  toplink="false">
+
+  <part id="general">
+    <title>General</title>
+
+    <faq id="different">
+      <question>
+        How is EBean different from other ORMs?
+      </question>
+      <answer>
+        <p>some markup goes here</p>
+
+        <source>some source code</source>
+
+        <p>some markup goes here</p>
+      </answer>
+    </faq>
+
+    <faq id="jpa">
+      <question>
+        Is EBean fully JPA compliant?
+      </question>
+      <answer>
+        <p>some markup goes here</p>
+      </answer>
+    </faq>
+  </part>
+
+  <part id="spring">
+
+    <title>Spring</title>
+
+    <faq id="how-install">
+      <question>
+        What do I need to configure to configure ebean through spring?
+      </question>
+      <answer>
+        <p>The key components in a spring configuration file are</p><ol>
+<li>A bean that specifies the SpringAwareJdbcTransactionManager</li>
+<li>A bean that defines each ebean server.  That configuration requires a DataSource and ddl generation options etc.</li>
+</ol>
+      </answer>
+    </faq>
+
+  </part>
+
+</faqs>
