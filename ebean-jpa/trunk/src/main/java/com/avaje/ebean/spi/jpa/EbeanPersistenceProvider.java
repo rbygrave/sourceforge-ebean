@@ -1,4 +1,4 @@
-package com.avaje.ebean.springsupport.jpa;
+package com.avaje.ebean.spi.jpa;
 
 import java.util.Map;
 import java.util.logging.Logger;

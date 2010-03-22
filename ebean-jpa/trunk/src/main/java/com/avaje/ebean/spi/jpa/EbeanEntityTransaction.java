@@ -1,4 +1,4 @@
-package com.avaje.ebean.springsupport.jpa;
+package com.avaje.ebean.spi.jpa;
 
 import javax.persistence.EntityTransaction;
 
