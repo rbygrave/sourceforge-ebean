@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebean.springsupport;
+package com.avaje.ebean.spi.jpa;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+
+import com.avaje.ebean.testdata.User;
 
 /**
  * Unit test for Ebean Spring Module.

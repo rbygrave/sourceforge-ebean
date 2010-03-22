@@ -1,4 +1,4 @@
-package com.avaje.ebean.springsupport.jpa;
+package com.avaje.ebean.spi.jpa;
 
 import java.util.Calendar;
 import java.util.Date;

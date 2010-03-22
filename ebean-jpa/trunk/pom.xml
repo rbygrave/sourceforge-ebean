@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.avaje</groupId>
 	<artifactId>ebean-jpa</artifactId>
-	<version>${release}.${build}${suffix}</version>
+	<version>3.0-SNAPSHOT</version>
 	<build>
 		<resources>
 			<resource>
@@ -76,11 +76,25 @@
 			<artifactId>ebean</artifactId>
 			<version>${version.ebean}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.avaje</groupId>
+			<artifactId>ebean-spring</artifactId>
+			<version>${version.ebean}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 	<properties>
 		<release>1.0</release>
-		<build>2</build>
-		<suffix>-SNAPSHOT</suffix>
-		<version.ebean>1.0.1</version.ebean>
+		<version.ebean>2.6.0-SNAPSHOT</version.ebean>
+		<version.junit>4.8.1</version.junit>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 </project>
