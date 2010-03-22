@@ -209,6 +209,7 @@
 					</execution>
 				</executions>
 						<configuration>
+							<show>public</show>
 							<overview>${basedir}/src/main/java/com/avaje/ebean/overview.html</overview>
 							<stylesheetfile>${basedir}/src/main/java/com/avaje/ebean/stylesheet.css</stylesheetfile>
 						
