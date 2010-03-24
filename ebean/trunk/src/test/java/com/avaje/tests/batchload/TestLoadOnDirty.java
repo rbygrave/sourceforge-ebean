@@ -37,7 +37,7 @@ public class TestLoadOnDirty extends TestCase {
         customer.setStatus(Customer.Status.INACTIVE);
         
         Assert.assertTrue(beanState.isDirty());
-        Assert.assertTrue(beanState.getChangedProps().contains("state"));
+        Assert.assertTrue(beanState.getChangedProps().contains("status"));
         Assert.assertTrue(beanState.getChangedProps().contains("name"));
         
     }
