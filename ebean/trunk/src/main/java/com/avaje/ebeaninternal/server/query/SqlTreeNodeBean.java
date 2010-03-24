@@ -238,6 +238,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 						// refresh it anyway (lazy loading for example)
 						localBean = contextBean;
 						if (localBean instanceof EntityBean){
+						    // temporarily turn off interception during load
 						    ((EntityBean)localBean)._ebean_getIntercept().setIntercepting(false);
 						}
 					} else {
@@ -310,7 +311,13 @@ public class SqlTreeNodeBean implements SqlTreeNode {
                 EntityBeanIntercept ebi = ((EntityBean)localBean)._ebean_getIntercept();
                 ebi.setPersistenceContext(persistenceContext);
                 ebi.setLoadedProps(includedProps);
-                ebi.setLoaded();
+                if (queryMode.isLoadContextBean()){
+                    // interception back on for Lazy Load and Refresh
+                    ebi.setIntercepting(true);
+                } else {
+                    // normal bean loading
+                    ebi.setLoaded();                    
+                }
 
                 if (partialObject) {
                     ctx.register(null, ebi);
