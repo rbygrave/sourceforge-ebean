@@ -43,11 +43,13 @@ public class DefaultBeanState implements BeanState {
 	}
 	
 	public Set<String> getLoadedProps() {
-	    return Collections.unmodifiableSet(intercept.getLoadedProps());
+	    Set<String> props = intercept.getLoadedProps();
+	    return props == null ? null : Collections.unmodifiableSet(props);
 	}
 	
 	public Set<String> getChangedProps() {
-        return Collections.unmodifiableSet(intercept.getChangedProps());
+	    Set<String> props = intercept.getChangedProps();
+        return props == null ? null : Collections.unmodifiableSet(props);
     }
 	
 	public boolean isReadOnly() {
