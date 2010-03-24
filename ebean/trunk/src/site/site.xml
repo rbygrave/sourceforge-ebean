@@ -42,8 +42,9 @@
 			<item name="API Guilde" href="apidocs/index.html" />
 		</menu>
 		<menu name="Information">
+			<item name="FAQ" href="faq.html" />
 			<item name="Spring" href="spring2.html" />
-			<item name="Frequently Asked Questions" href="faq.html" />
+			<item name="Create EBean Proj" href="maven1.html" />
 			<item name="API Guilde" href="apidocs/index.html" />
 		</menu>
 		<!--
