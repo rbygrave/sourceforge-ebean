@@ -17,6 +17,8 @@
  */
 package com.avaje.ebeaninternal.server.lib.sql;
 
+import com.avaje.ebeaninternal.jdbc.ConnectionDelegator;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -49,7 +51,8 @@ import java.util.logging.Logger;
  * statement that was executed. Keeps statistics on how long it is in use.
  * </p>
  */
-public class PooledConnection implements Connection {
+public class PooledConnection extends ConnectionDelegator
+{
 
 	private static final Logger logger = Logger.getLogger(PooledConnection.class.getName());
 
@@ -163,7 +166,8 @@ public class PooledConnection implements Connection {
 	 * </p>
 	 */
 	public PooledConnection(DataSourcePool pool, int uniqueId, Connection connection) throws SQLException {
-
+		super(connection);
+		
 		this.pool = pool;
 		this.connection = connection;
 		this.name = pool.getName() + "." + uniqueId;
