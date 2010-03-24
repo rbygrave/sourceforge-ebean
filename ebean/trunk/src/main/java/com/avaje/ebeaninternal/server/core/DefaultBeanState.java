@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.core;
 
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.Set;
 
 import com.avaje.ebean.BeanState;
@@ -42,8 +43,12 @@ public class DefaultBeanState implements BeanState {
 	}
 	
 	public Set<String> getLoadedProps() {
-		return intercept.getLoadedProps();
+	    return Collections.unmodifiableSet(intercept.getLoadedProps());
 	}
+	
+	public Set<String> getChangedProps() {
+        return Collections.unmodifiableSet(intercept.getChangedProps());
+    }
 	
 	public boolean isReadOnly() {
 		return intercept.isReadOnly();
