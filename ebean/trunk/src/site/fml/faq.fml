@@ -34,7 +34,7 @@ and CallableSql objects.</p>
         <ol><li><p>Object to Entity Mapping: EBean supports all of the Entity definition orient annotations in the javax.persisitance package.
         like most other JPA applications we also support additional EBean specific annotations that allow additional data semantics (see ddlfaq).
         ***Fact check: Begin*** Ebean does not support Orm via persistence.xml because no user has requested it.***Fact check: End***</p></li>
-        <li><p>Session Management: EBean can be viewed as a &#8220;Stateless alternative to JPA.&#8221;
+        <li><p>Session Management: EBean can be viewed as a "Stateless alternative to JPA."
         In other words, EBean supports all aspects of JTA as well as DBMS transaction models but it does not require the notion of an underlying user session.
         Any user who has run into a lazy loading exception using session oriented JPA providers will recognize the advantage of the ebean approach.
         ***Attempt to describe a possible EM strategy w/o committing to it: Begin*** There is an experimental EBean EntityManager facade that allows a client to use the EntityManager programming model while Ebean implements those calls immediately.
@@ -48,20 +48,10 @@ and CallableSql objects.</p>
 
     <faq id="jpql">
       <question>
-        What is the difference between Ebean Query Language and Java Perisistence Query Language (JPQL)?
+        What is the difference between Ebean Query Language and Java Persistence Query Language (JPQL)?
       </question>
       <answer>
-        <p>We look at the Java Persistance API (JPA) as Some simple tests will pass but I think the full merge/persist/remove/flush would need to be implemented. After that you have the large difference in approach to the query language to deal with.
-
-Then, when you do all that (and have a JPA provider) as I see it you still end up with the same issues that you have in JPA now (which is really our entire reason to exist, to give people a realistic stateless alternative to JPA).
-
-At that point why would someone use Ebean and not Eclipselink or OpenJPA (or Hibernate) which are all much better resourced, marketed and backed by large companies (and built with the JPA architecture in mind).
-
-Although JPA is an API ... it is an API with an implied architecture attached (EntityManager is a per user session object that needs to be managed and has beans that are attached/detached/merged to it). I'd say the JPA EG vision is that generally people would handle the management of those EntityManager instances via JEE Stateful Session Beans or Seam/WebBeans (which is perhaps why JPA is so aweful to use outside a container). I'd say Ebean is at the opposite end pushing effectively a Stateless approach.
-
-I'm don't think glossing over this difference is going to be technically easy.
-
-Maybe our marketing tagline could be "Stateless alternative to JPA".</p>
+        <p>*** ToDo: Essay that outlines difference JpQL and EbQL. ***</p>
       </answer>
     </faq>
 
