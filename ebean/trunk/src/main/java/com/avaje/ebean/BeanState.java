@@ -61,6 +61,11 @@ public interface BeanState {
 	public Set<String> getLoadedProps();
 
 	/**
+	 * Return the set of changed properties.
+	 */
+    public Set<String> getChangedProps();
+
+	/**
 	 * Return true if the bean is readOnly.
 	 * <p>
 	 * If a setter is called on a readOnly bean it will throw an exception.
