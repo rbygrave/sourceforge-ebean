@@ -1,0 +1,24 @@
+ ------
+ Introduction
+ ------
+ ------
+
+EBean v2.6.0 Documentation
+
+ Provides current usage information about the EBean ORM.
+
+* General Information
+
+ * {{{apidocs} EBean API}}
+
+ * {{{faq.html} Frequently Asked Questions}}
+
+ []
+
+* Getting Started
+
+ [[1]] {{{spring2.html}Instructions on how to use the Spring}}.
+
+ [[2]] {{{maven1.html}Create new EBean aware project in Maven}}.
+
+ []
