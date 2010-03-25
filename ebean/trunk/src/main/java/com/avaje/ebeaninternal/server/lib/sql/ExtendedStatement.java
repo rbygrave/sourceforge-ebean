@@ -39,12 +39,12 @@ public abstract class ExtendedStatement extends PreparedStatementDelegator
 	/**
 	 * The pooled connection this Statement belongs to.
 	 */
-	PooledConnection pooledConnection;
+    protected final PooledConnection pooledConnection;
 
 	/**
 	 * The underlying Statement that this object wraps.
 	 */
-	PreparedStatement pstmt;
+	protected final PreparedStatement pstmt;
 
 	/**
 	 * Create the ExtendedStatement for a given pooledConnection.

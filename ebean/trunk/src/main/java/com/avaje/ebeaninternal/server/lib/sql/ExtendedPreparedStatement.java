@@ -48,12 +48,12 @@ public class ExtendedPreparedStatement extends ExtendedStatement implements Prep
 	/**
 	 * The SQL used to create the underlying PreparedStatement.
 	 */
-	String sql;
+    final String sql;
 
 	/**
 	 * The key used to cache this in the connection.
 	 */
-	String cacheKey;
+    final String cacheKey;
 
 	/**
 	 * Create a wrapped PreparedStatement that can be cached.
