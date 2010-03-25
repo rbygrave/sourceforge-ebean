@@ -428,6 +428,16 @@ public final class EntityBeanIntercept implements Serializable {
 		this.lazyLoadProperty = null;
 		this.changedProps = null;
 	}
+	
+    /**
+     * When finished loading for lazy or refresh on an already partially
+     * populated bean.
+     */
+	public void setLoadedLazy() {
+        this.loaded = true;
+	    this.intercepting = true;
+        this.lazyLoadProperty = null;
+	}
 
 	/**
 	 * Return true if lazy loading is disabled.
