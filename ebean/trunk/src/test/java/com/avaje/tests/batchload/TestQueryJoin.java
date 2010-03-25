@@ -32,7 +32,8 @@ public class TestQueryJoin extends TestCase {
 			.select("status")
 			//.join("details","+query(10)")
 			.join("customer","+lazy(10) name, status")
-			.join("customer.contacts");
+			.join("customer.contacts")
+			.orderBy().asc("id");
 			//.join("customer.billingAddress");
 		
 		List<Order> list = query.findList();
