@@ -148,7 +148,8 @@ public class PreparedStatementDelegator implements PreparedStatement
 		delegate.setAsciiStream(parameterIndex, x, length);
 	}
 
-	public void setUnicodeStream(int parameterIndex, InputStream x, int length)
+	@SuppressWarnings("deprecation")
+    public void setUnicodeStream(int parameterIndex, InputStream x, int length)
 		throws SQLException
 	{
 		delegate.setUnicodeStream(parameterIndex, x, length);
