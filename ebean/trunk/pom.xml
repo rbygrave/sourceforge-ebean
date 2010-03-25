@@ -124,7 +124,10 @@
             <id>jdk1.5</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-                <jdk>1.5</jdk>
+                <property>
+                    <name>jdk</name>
+                    <value>1.5</value>
+                </property>
             </activation>
             <properties>
                 <jdkDepSource>1.5</jdkDepSource>
@@ -134,13 +137,17 @@
             <id>jdk1.6</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <jdk>1.6</jdk>
+                <property>
+                    <name>jdk</name>
+                    <value>1.6</value>
+                </property>
             </activation>
             <properties>
                 <jdkDepSource>1.6</jdkDepSource>
             </properties>
         </profile>
     </profiles>
+
     <!-- Enhance the test classes -->
     <build>
         <pluginManagement>
@@ -175,7 +182,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/jdk_1.5/java</source>
+                                <source>src/jdk_${jdkDepSource}/java</source>
                             </sources>
                         </configuration>
                     </execution>
