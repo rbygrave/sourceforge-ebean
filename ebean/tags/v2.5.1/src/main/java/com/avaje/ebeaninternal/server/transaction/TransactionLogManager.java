@@ -1,0 +1,272 @@
+/**
+ * Copyright (C) 2006  Robin Bygrave
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
+package com.avaje.ebeaninternal.server.transaction;
+
+import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+
+import com.avaje.ebean.AdminLogging.LogFileSharing;
+import com.avaje.ebean.AdminLogging.LogLevel;
+import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebeaninternal.api.SpiTransaction;
+import com.avaje.ebeaninternal.server.transaction.log.DefaultTransactionLogger;
+import com.avaje.ebeaninternal.server.transaction.log.JuliTransactionLogger;
+import com.avaje.ebeaninternal.server.transaction.log.LogTime;
+import com.avaje.ebeaninternal.server.transaction.log.TransactionLogger;
+
+/**
+ * Manages the transaction logs.
+ */
+public class TransactionLogManager {
+
+	static final Logger logger = Logger.getLogger(TransactionLogManager.class.getName());
+	
+	/**
+	 * Turn off logging with this logLevel.
+	 */
+	public static final int LOG_NONE = 0;
+
+	/**
+	 * Log only explicitly created transactions with this logLevel.
+	 */
+	public static final int LOG_EXPLICIT = 1;
+
+	/**
+	 * Log all transactions with this logLevel.
+	 */
+	public static final int LOG_ALL = 2;
+
+	/**
+	 * Every transaction has its own separate log.
+	 */
+	public static final int NONE_SHARE_LOGGER = 0;
+
+	/**
+	 * All implicit transactions share a single log file.
+	 */
+	public static final int IMPLICIT_SHARE_LOGGER = 1;
+
+	/**
+	 * Every transaction shares the same log file.
+	 */
+	public static final int ALL_SHARE_LOGGER = 2;
+
+	private final String[] logSep = { "", "_" };
+
+	private final Map<String, TransactionLogger> loggerMap = new ConcurrentHashMap<String, TransactionLogger>(200);
+
+	private final String sharedLogFileName;
+
+	private final String baseDir;
+	
+	private final String serverName;
+
+	private LogLevel logLevel;
+
+	private LogFileSharing logSharing;
+
+	private final boolean transactionLogToJavaLogger;
+	
+	private final TransactionLogger sharedLogger;
+
+
+	/**
+	 * Create the TransactionLogger.
+	 * <p>
+	 * DevNote: This registers a shutdown hook to flush and close the
+	 * sharedLogger. Alternate option would be to flush() the log after each
+	 * write to the log.
+	 * </p>
+	 */
+	public TransactionLogManager(ServerConfig serverConfig) {
+
+		this.serverName = serverConfig.getName();
+		this.sharedLogFileName = GlobalProperties.get("log.filename", "trans");
+		
+		this.logLevel = serverConfig.getLoggingLevel();
+		this.logSharing = serverConfig.getLoggingLogFileSharing();
+		this.transactionLogToJavaLogger = serverConfig.isLoggingToJavaLogger();
+		
+		String dir = serverConfig.getLoggingDirectoryWithEval();
+		if (dir == null) {
+			dir = createDefaultLogsDirectory();
+		}
+		this.baseDir = dir;
+
+		if (logLevel == LogLevel.NONE){
+			String m = "Transaction logging is OFF  ... ebean.log.level=0";
+			logger.info(m);
+		} else {
+			String m = "Transaction logs in: "+baseDir;
+			logger.info(m);			
+		}
+		
+		this.sharedLogger = createSharedLogger();
+	}
+
+	private String createDefaultLogsDirectory() {
+		String dftlDir = "logs/trans";
+		File f = new File(dftlDir);
+		if (f.mkdirs()) {
+			return dftlDir;
+		}
+		return "logs";
+	}
+
+	/**
+	 * Set the logging level.
+	 */
+	public void setLogLevel(LogLevel logLevel) {
+		this.logLevel = logLevel;
+	}
+
+	/**
+	 * Return the log level.
+	 */
+	public LogLevel getLogLevel() {
+		return logLevel;
+	}
+
+	/**
+	 * Return the log sharing mode.
+	 */
+	public LogFileSharing getLogSharing() {
+		return logSharing;
+	}
+
+	/**
+	 * Set the log sharing to one of ALL_SHARE_LOGGER, NONE_SHARE_LOGGER or
+	 * IMPLICIT_SHARE_LOGGER.
+	 * <p>
+	 * The default is IMPLICIT_SHARE_LOGGER where explicit transactions each
+	 * have their own separate logs and implicit transactions all share a common
+	 * log.
+	 * </p>
+	 */
+	public void setLogSharing(LogFileSharing logSharing) {
+		this.logSharing = logSharing;
+	}
+
+	/**
+	 * If this transaction has its own Logger close it.
+	 */
+	public void transactionEnded(SpiTransaction t, String msg) {
+		TransactionLogger logger = removeLogger(t);
+		if (logger != null) {
+			if (msg != null) {
+				msg = "Trans[" + t.getId() + "] " + msg;
+				logger.log(t.getId(), msg, null);
+			}
+			logger.close();
+		}
+	}
+
+	public void log(SpiTransaction t, String msg, Throwable error) {
+		switch (logLevel) {
+		case NONE:
+			break;
+
+		case ALL:
+			logInfo(t, msg, error);
+			break;
+
+		case EXPLICIT:
+			if (t.isExplicit()) {
+				logInfo(t, msg, error);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void logInfo(SpiTransaction t, String msg, Throwable error) {
+
+		getLogger(t).log(t.getId(), msg, error);
+	}
+
+	private TransactionLogger removeLogger(SpiTransaction t) {
+		
+		if (transactionLogToJavaLogger){
+			return sharedLogger;
+		}
+		String id = t.getId();
+		if (id != null){
+			return loggerMap.remove(id);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Get the Logger for a given transaction.
+	 */
+	private TransactionLogger getLogger(SpiTransaction t) {
+		
+		if (transactionLogToJavaLogger){
+			return sharedLogger;
+		}
+		
+		if (logSharing == LogFileSharing.ALL) {
+			return sharedLogger;
+		}
+		if (logSharing == LogFileSharing.EXPLICIT && !t.isExplicit()) {
+			return sharedLogger;
+		}
+
+		TransactionLogger logger = loggerMap.get(t.getId());
+		if (logger == null) {
+			logger = createLogger(t);
+			loggerMap.put(t.getId(), logger);
+		}
+		return logger;
+	}
+
+	private TransactionLogger createLogger(SpiTransaction t) {
+
+		if (transactionLogToJavaLogger){
+			return sharedLogger;
+		}
+		
+		LogTime logTime = LogTime.getWithCheck();
+
+		String logFileName = serverName+ "_"+ t.getId() + "_" 
+			+ logTime.getYMD() + "_" + logTime.getNow(logSep);
+
+		return new DefaultTransactionLogger(baseDir, logFileName, false);
+	}
+
+	/**
+	 * Return the shared logger.
+	 */
+	private TransactionLogger createSharedLogger() {
+
+		if (transactionLogToJavaLogger){
+			return new JuliTransactionLogger();
+		}
+		
+		String logFileName = serverName+"_" + sharedLogFileName;
+		return new DefaultTransactionLogger(baseDir, logFileName, true);
+	}
+
+}
