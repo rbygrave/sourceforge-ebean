@@ -13,12 +13,14 @@ EBean v2.6.0 Documentation
 
  * {{{faq.html} Frequently Asked Questions}}
 
- []
+ * {{{l2cache.html}EBean Caching Features}}.
 
+ []
+ 
 * Getting Started
 
  [[1]] {{{spring2.html}Instructions on how to use the Spring}}.
 
- [[2]] {{{maven1.html}Create new EBean aware project in Maven}}.
+ [[1]] {{{maven1.html}Create new EBean aware project in Maven}}.
 
  []
