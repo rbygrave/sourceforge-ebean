@@ -242,6 +242,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.5</version>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
@@ -306,6 +307,14 @@
                       <packages>com.avaje.ebeani*</packages> </group>
                   -->
                     </groups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>2.0</version>
+                <configuration>
+                    <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
             </plugin>
         </plugins>
