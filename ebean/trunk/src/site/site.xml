@@ -24,11 +24,11 @@
 		<src>images/logo-avaje.gif</src>
 		<href>http://www.avaje.org</href>
 	</bannerLeft>
-	<links>
-		<item name="Apache" href="http://www.apache.org" />
-		<item name="Maven" href="http://maven.apache.org" />
-	</links>
 	<body>
+		<links>
+			<item name="Apache" href="http://www.apache.org" />
+			<item name="Maven" href="http://maven.apache.org" />
+		</links>
 		<menu name="Overview">
 			<item name="Introduction" href="index.html" />
 			<item name="Dependencies" href="dependencies.html" />
@@ -44,6 +44,7 @@
 		<menu name="Information">
 			<item name="FAQ" href="faq.html" />
 			<item name="Spring" href="spring2.html" />
+			<item name="Caching (L2 cache)" href="l2cache.html" />
 			<item name="Create EBean Proj" href="maven1.html" />
 			<item name="API Guilde" href="apidocs/index.html" />
 		</menu>

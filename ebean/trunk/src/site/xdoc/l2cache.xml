@@ -45,6 +45,8 @@ IllegalStateException being thrown.</p>
 @Entity
 @Table(name="o_country")
 public class Country {
+    // Various attributes and java methods
+}
 ]]>
 </source>
 Note that Countries is a good candidate for a default setting of readOnly=true. This is
@@ -179,7 +181,7 @@ The warming query will typically be executed at startup time after a short delay
 <![CDATA[
 // Cache countries. Use readOnly=true so unless explicitly
 // stated in the query we will return read only/shared instances
-@CacheStrategy(readOnly=true,warmingQuery="order by name")
+@CacheStrategy(readOnly=true,warmingQuery="order by name",useBeanCache=true)
 @Entity
 @Table(name="o_country")
 public class Country {
@@ -291,18 +293,18 @@ Controling properties are:
 <dl>
 <dt>cluster.local</dt>
 <dd>
-The url of this ebean instance (eg. 121.1.1.10:9001)
+The url of this ebean instance <span style="white-space:nowrap">(eg. 121.1.1.10:9001)</span>
 </dd>
 <dt>cluster.members</dt>
 <dd>
 Comma separated list of URLs of all notes in the EBean cluster.
-(eg. 121.1.1.10:9001,121.1.1.10:9002,121.1.1.11:9001)
+<span style="white-space:nowrap">(eg. 121.1.1.10:9001,121.1.1.10:9002,121.1.1.11:9001)</span>
 </dd>
 <dt>cluster.broadcast</dt>
 <dd>
 The broadcast implementation of the braodcast protocal,
 defaults to SocketBroadcast 
-(eg. com.avaje.lib.cluster.SocketBroadcast)
+<span style="white-space:nowrap">(eg. com.avaje.lib.cluster.SocketBroadcast)</span>
 </dd>
 </dl>
 </subsection>
