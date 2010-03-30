@@ -9,7 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
@@ -37,12 +37,12 @@ public class OrmQueryProperties implements Serializable {
     /**
      * NB: -1 means no +query, 0 means use the default batch size.
      */
-    private int queryJoinBatch = -1;
+    private int queryFetchBatch = -1;
 
     /**
      * NB: -1 means no +lazy, 0 means use the default batch size.
      */
-    private int lazyJoinBatch = -1;
+    private int lazyFetchBatch = -1;
 
     private boolean cache;
 
@@ -80,7 +80,7 @@ public class OrmQueryProperties implements Serializable {
         this(null, null, null);
     }
 
-    public OrmQueryProperties(String path, String properties, JoinConfig joinConfig) {
+    public OrmQueryProperties(String path, String properties, FetchConfig fetchConfig) {
         this.path = path;
         this.parentPath = SplitName.parent(path);
         this.properties = properties;
@@ -88,9 +88,9 @@ public class OrmQueryProperties implements Serializable {
         this.trimmedProperties = properties;
         parseProperties();
 
-        if (joinConfig != null) {
-            lazyJoinBatch = joinConfig.getLazyBatchSize();
-            queryJoinBatch = joinConfig.getQueryBatchSize();
+        if (fetchConfig != null) {
+            lazyFetchBatch = fetchConfig.getLazyBatchSize();
+            queryFetchBatch = fetchConfig.getQueryBatchSize();
         }
 
         this.allProperties = isAllProperties();
@@ -201,8 +201,8 @@ public class OrmQueryProperties implements Serializable {
         copy.properties = properties;
         copy.cache = cache;
         copy.readOnly = readOnly;
-        copy.queryJoinBatch = queryJoinBatch;
-        copy.lazyJoinBatch = lazyJoinBatch;
+        copy.queryFetchBatch = queryFetchBatch;
+        copy.lazyFetchBatch = lazyFetchBatch;
         copy.allProperties = allProperties;
         copy.filterMany = filterMany;
         if (included != null) {
@@ -397,7 +397,7 @@ public class OrmQueryProperties implements Serializable {
      *            batch size.
      */
     public OrmQueryProperties setQueryJoinBatch(int queryJoinBatch) {
-        this.queryJoinBatch = queryJoinBatch;
+        this.queryFetchBatch = queryJoinBatch;
         return this;
     }
 
@@ -405,7 +405,7 @@ public class OrmQueryProperties implements Serializable {
      * Set the lazy loading batch size.
      */
     public OrmQueryProperties setLazyJoinBatch(int lazyJoinBatch) {
-        this.lazyJoinBatch = lazyJoinBatch;
+        this.lazyFetchBatch = lazyJoinBatch;
         return this;
     }
     
@@ -414,19 +414,19 @@ public class OrmQueryProperties implements Serializable {
     }
     
     public boolean isQueryJoin() {
-        return queryJoinBatch > -1;
+        return queryFetchBatch > -1;
     }
 
-    public int getQueryJoinBatch() {
-        return queryJoinBatch;
+    public int getQueryFetchBatch() {
+        return queryFetchBatch;
     }
 
     public boolean isLazyJoin() {
-        return lazyJoinBatch > -1;
+        return lazyFetchBatch > -1;
     }
 
-    public int getLazyJoinBatch() {
-        return lazyJoinBatch;
+    public int getLazyFetchBatch() {
+        return lazyFetchBatch;
     }
 
     public boolean isReadOnly() {
@@ -461,11 +461,11 @@ public class OrmQueryProperties implements Serializable {
         }
         pos = trimmedProperties.indexOf("+query");
         if (pos > -1) {
-            queryJoinBatch = parseBatchHint(pos, "+query");
+            queryFetchBatch = parseBatchHint(pos, "+query");
         }
         pos = trimmedProperties.indexOf("+lazy");
         if (pos > -1) {
-            lazyJoinBatch = parseBatchHint(pos, "+lazy");
+            lazyFetchBatch = parseBatchHint(pos, "+lazy");
         }
 
         trimmedProperties = trimmedProperties.trim();

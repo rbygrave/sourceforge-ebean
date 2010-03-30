@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
@@ -231,7 +231,7 @@ public class OrmQueryDetail implements Serializable {
                     chunk.setTunedProperties(tunedChunk);
                 } else {
                     // add a missing join
-                    addJoin(tunedChunk.copy());
+                    addFetch(tunedChunk.copy());
                 }
             }
 	    }
@@ -241,7 +241,7 @@ public class OrmQueryDetail implements Serializable {
 	/**
 	 * Matches a join() method of the query.
 	 */
-	public void addJoin(OrmQueryProperties chunk) {
+	public void addFetch(OrmQueryProperties chunk) {
 		String property = chunk.getPath();//.toLowerCase();
 		joins.put(property, chunk);
 		includes.add(property);
@@ -263,9 +263,9 @@ public class OrmQueryDetail implements Serializable {
 	 * @param property the property to join
 	 * @param partialProps the properties on the join property to include
 	 */
-	public OrmQueryProperties addJoin(String property, String partialProps, JoinConfig joinConfig) {
-		OrmQueryProperties chunk = new OrmQueryProperties(property, partialProps, joinConfig);
-		addJoin(chunk);
+	public OrmQueryProperties addFetch(String property, String partialProps, FetchConfig fetchConfig) {
+		OrmQueryProperties chunk = new OrmQueryProperties(property, partialProps, fetchConfig);
+		addFetch(chunk);
 		return chunk;
 	}
 	
@@ -412,7 +412,7 @@ public class OrmQueryDetail implements Serializable {
 		}
 		OrmQueryProperties props = joins.get(propertyName);
 		if (create && props == null) {
-			return addJoin(propertyName, null, null);
+			return addFetch(propertyName, null, null);
 		} else {
 			return props;
 		}

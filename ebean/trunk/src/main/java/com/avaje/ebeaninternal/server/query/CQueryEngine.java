@@ -29,6 +29,7 @@ import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebeaninternal.api.BeanIdList;
 import com.avaje.ebeaninternal.api.SpiQuery;
@@ -243,7 +244,7 @@ public class CQueryEngine {
 			}
 
 			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
-				logFindSummary(cquery);
+				logFindBeanSummary(cquery);
 			}
 
 			request.executeSecondaryQueries(defaultSecondaryQueryBatchSize);
@@ -305,12 +306,31 @@ public class CQueryEngine {
 	/**
 	 * Log the FindById summary to the transaction log.
 	 */
-	private void logFindSummary(CQuery<?> q) {
+	private void logFindBeanSummary(CQuery<?> q) {
 
-		StringBuilder msg = new StringBuilder(200);
-		msg.append("FindById exeMicros[").append("" + q.getQueryExecutionTimeMicros());
+        SpiQuery<?> query = q.getQueryRequest().getQuery();
+        String loadMode = query.getLoadMode();
+        String loadDesc = query.getLoadDescription();
+        ObjectGraphNode node = query.getParentNode();
+        String originKey = node == null ? null : node.getOriginQueryPoint().getKey();
+        
+        StringBuilder msg = new StringBuilder(200);
+        msg.append("FindBean ");
+        if (loadMode != null) {
+            msg.append("mode[").append(loadMode).append("] ");
+        }
+        msg.append("type[").append(q.getBeanName()).append("] ");
+        if (query.isAutofetchTuned()) {
+            msg.append("tuned[true] ");
+        }
+        if (originKey != null) {
+            msg.append("origin[").append(originKey).append("] ");
+        }
+        if (loadDesc != null) {
+            msg.append("load[").append(loadDesc).append("] ");
+        }
+		msg.append("exeMicros[").append(q.getQueryExecutionTimeMicros());
 		msg.append("] rows[").append(q.getLoadedRowDetail());
-		msg.append("] type[").append(q.getBeanName());
 		msg.append("] bind[").append(q.getBindLog()).append("]");
 
 		q.getTransaction().log(msg.toString());
@@ -321,10 +341,29 @@ public class CQueryEngine {
 	 */
 	private void logFindManySummary(CQuery<?> q) {
 
+        SpiQuery<?> query = q.getQueryRequest().getQuery();
+        String loadMode = query.getLoadMode();
+        String loadDesc = query.getLoadDescription();
+        ObjectGraphNode node = query.getParentNode();
+        String originKey = node == null ? null : node.getOriginQueryPoint().getKey();
+        
 		StringBuilder msg = new StringBuilder(200);
-		msg.append("FindMany exeMicros[").append(q.getQueryExecutionTimeMicros());
+        msg.append("FindMany ");
+        if (loadMode != null) {
+            msg.append("mode[").append(loadMode).append("] ");
+        }
+        msg.append("type[").append(q.getBeanName()).append("] ");
+        if (query.isAutofetchTuned()) {
+            msg.append("tuned[true] ");
+        }
+        if (originKey != null) {
+            msg.append("origin[").append(originKey).append("] ");
+        }
+        if (loadDesc != null) {
+            msg.append("load[").append(loadDesc).append("] ");
+        }
+		msg.append("exeMicros[").append(q.getQueryExecutionTimeMicros());
 		msg.append("] rows[").append(q.getLoadedRowDetail());
-		msg.append("] type[").append(q.getBeanName());
 		msg.append("] name[").append(q.getName());
 		msg.append("] predicates[").append(q.getLogWhereSql());
 		msg.append("] bind[").append(q.getBindLog()).append("]");

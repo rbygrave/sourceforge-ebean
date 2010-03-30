@@ -35,28 +35,18 @@ import com.avaje.ebean.config.ServerConfig;
  * </p>
  * 
  * <pre class="code">
- * Query&lt;Order&gt; query = Ebean.createQuery(Order.class)
- *   .join(&quot;customer&quot;)
- *   .join(&quot;details&quot;)
- *   .where()
- *     .like(&quot;customer.name&quot;,&quot;rob%&quot;)
- *     .gt(&quot;orderDate&quot;,lastWeek)
- *   .orderBy(&quot;customer.id, id desc&quot;)
- *   .setMaxRows(50);
+ * List&lt;Order&gt; orderList = 
+ *   Ebean.find(Order.class)
+ *     .fetch(&quot;customer&quot;)
+ *     .fetch(&quot;details&quot;)
+ *     .where()
+ *       .like(&quot;customer.name&quot;,&quot;rob%&quot;)
+ *       .gt(&quot;orderDate&quot;,lastWeek)
+ *     .orderBy(&quot;customer.id, id desc&quot;)
+ *     .setMaxRows(50)
+ *     .findList();
  *   
- * List&lt;Order&gt; orderList = query.findList();
  * ...
- * </pre>
- * 
- * The where clause could also have been coded as ...
- * 
- * <pre class="code">
- * ...
- * query.where(&quot;customer.name LIKE :custName and orderDate &gt; :lastWeek&quot;);
- * query.setParameter(&quot;custName&quot;, &quot;rob%&quot;);
- * query.setParameter(&quot;lastWeek&quot;, lastWeek);
- * ...
- * 
  * </pre>
  * 
  * <p>
@@ -65,15 +55,14 @@ import com.avaje.ebean.config.ServerConfig;
  * 
  * <pre class="code">
  * String oql = 
- *   	&quot;  find order &quot;
- *   	+&quot; join customer &quot;
- *   	+&quot; join details &quot;
+ *   	&quot;  find  order &quot;
+ *   	+&quot; fetch customer &quot;
+ *   	+&quot; fetch details &quot;
  *   	+&quot; where customer.name like :custName and orderDate &gt; :minOrderDate &quot;
  *   	+&quot; order by customer.id, id desc &quot;
  *   	+&quot; limit 50 &quot;;
  *   
- * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
- * query.setQuery(oql);
+ * Query&lt;Order&gt; query = Ebean.createQuery(Order.class, oql);
  * query.setParameter(&quot;custName&quot;, &quot;Rob%&quot;);
  * query.setParameter(&quot;minOrderDate&quot;, lastWeek);
  *   
@@ -86,7 +75,7 @@ import com.avaje.ebean.config.ServerConfig;
  * </p>
  * 
  * <pre class="code">
- * Query&lt;Order&gt; query = Ebean.createQuery(Order.class,&quot;with.cust.and.details&quot;);
+ * Query&lt;Order&gt; query = Ebean.createNamedQuery(Order.class,&quot;with.cust.and.details&quot;);
  * query.setParameter(&quot;custName&quot;, &quot;Rob%&quot;);
  * query.setParameter(&quot;minOrderDate&quot;, lastWeek);
  *   
@@ -100,7 +89,7 @@ import com.avaje.ebean.config.ServerConfig;
  * can be automatically tuned based on profiling information that is collected.
  * </p>
  * <p>
- * This is effectively the same as automatically using select() and join() to
+ * This is effectively the same as automatically using select() and fetch() to
  * build a query that will fetch all the data required by the application and no
  * more.
  * </p>
@@ -113,15 +102,10 @@ import com.avaje.ebean.config.ServerConfig;
  * 
  * <h3>Query Language</h3>
  * <p>
- * Ebean includes its own query language. The intention is for future versions
- * of Ebean to <em>additionally</em> support the query language of JPA (JPAQL) -
- * hence the query language uses "FIND" rather than "SELECT".
- * </p>
- * <p>
  * <b>Partial Objects</b>
  * </p>
  * <p>
- * The <em>find</em> and <em>join</em> clauses support specifying a list of
+ * The <em>find</em> and <em>fetch</em> clauses support specifying a list of
  * properties to fetch. This results in objects that are "partially populated".
  * If you try to get a property that was not populated a "lazy loading" query
  * will automatically fire and load the rest of the properties of the bean (This
@@ -134,38 +118,10 @@ import com.avaje.ebean.config.ServerConfig;
  * concurrency checking will occur but only include the fetched properties.
  * Refer to "ALL Properties/Columns" mode of Optimistic Concurrency checking.
  * </p>
- * <p>
- * <b>How <em>join</em> works</b>
- * </p>
- * <p>
- * With <em>join</em> you do not specify the join type (LEFT OUTER, INNER etc).
- * Ebean works out the appropriate join types for you depending on the
- * cardinality of the relationship and whether properties are "nullable" (which
- * is different to JPAQL).
- * </p>
- * <p>
- * You only specify a <em>join</em> for fetching purposes (that is equivalent to
- * a JPAQL fetch joins). If you include an association in the <em>where</em> or
- * <em>order by</em> clause (that does not have a matching <em>join</em> clause)
- * then Ebean automatically detects this and adds the appropriate SQL JOIN
- * clauses as required.
- * </p>
- * <p>
- * <b>Start with <em>join</em>, <em>where</em> or even <em>order by</em></b>
- * </p>
- * <p>
- * You do not need to start a query with <em>find</em>. You can start a query
- * with <em>join</em> <em>where</em> or <em>order by</em>. This is due to the
- * way {@link Ebean#createQuery(Class)} requires a beanType for supporting java
- * generics. In this way it is known the type of object you are finding without
- * specifying a <em>find</em> clause. Essentially the only thing in the
- * <em>find</em> clause that Ebean is interested in is the fetch properties (to
- * fetch all the properties or just some).
- * </p>
  * 
  * <pre class="code">
- * [ find {bean type} [ ( * | {fetch properties} ) ] ]
- * [ join {associated bean} [ ( * | {fetch properties} ) ] ]
+ * [ find  {bean type} [ ( * | {fetch properties} ) ] ]
+ * [ fetch {associated bean} [ ( * | {fetch properties} ) ] ]
  * [ where {predicates} ]
  * [ order by {order by properties} ]
  * [ limit {max rows} [ offset {first row} ] ]
@@ -181,20 +137,20 @@ import com.avaje.ebean.config.ServerConfig;
  * </p>
  * <p>
  * In object graph terms the <em>find</em> clause specifies the type of bean at
- * the root level and the <em>join</em> clauses specify the nodes of the object
+ * the root level and the <em>fetch</em> clauses specify the paths of the object
  * graph to populate.
  * </p>
  * <p>
- * <b>JOIN</b> <b>{associated property}</b> [ ( <i>*</i> | <i>{fetch
+ * <b>FETCH</b> <b>{associated property}</b> [ ( <i>*</i> | <i>{fetch
  * properties}</i> ) ]
  * </p>
  * <p>
- * With the join you specify the associated property to join and populate. The
- * associated property is a OneToOne OneToMany or ManyToMany property. When the
- * query is executed Ebean will fetch the associated data.
+ * With the fetch you specify the associated property to fetch and populate. The
+ * associated property is a OneToOnem, ManyToOne, OneToMany or ManyToMany property. 
+ * When the query is executed Ebean will fetch the associated data.
  * </p>
  * <p>
- * For a join we can optionally specify a list of properties to fetch. If you do
+ * For fetch of a path we can optionally specify a list of properties to fetch. If you do
  * not specify a list of properties ALL the properties for that bean type are
  * fetched.
  * </p>
@@ -249,10 +205,7 @@ import com.avaje.ebean.config.ServerConfig;
  * 
  * <p>
  * Find orders with a named bind variable (that will need to be bound via
- * {@link Query#setParameter(String, Object)}). Note that you DO NOT need to
- * specify a join to customer even though it is being used in the <em>where</em>
- * clause. Ebean will detect this and automatically add an appropriate SQL JOIN
- * clause to the generated sql.
+ * {@link Query#setParameter(String, Object)}). 
  * </p>
  * 
  * <pre class="code">
@@ -266,8 +219,8 @@ import com.avaje.ebean.config.ServerConfig;
  * </p>
  * 
  * <pre class="code">
- * find order
- * join customer
+ * find  order
+ * fetch customer
  * where customer.id = :custId
  * </pre>
  * 
@@ -281,11 +234,11 @@ import com.avaje.ebean.config.ServerConfig;
  * </p>
  * 
  * <pre class="code">
- * find order
- * join customer (name)
- * join customer.shippingAddress
- * join details
- * join details.product (sku, name)
+ * find  order
+ * fetch customer (name)
+ * fetch customer.shippingAddress
+ * fetch details
+ * fetch details.product (sku, name)
  * </pre>
  * 
  * <h3>Early parsing of the Query</h3>
@@ -298,11 +251,6 @@ import com.avaje.ebean.config.ServerConfig;
  * <p>
  * The thought is that you can use named queries as a 'starting point' and then
  * modify the query to suit specific needs.
- * </p>
- * <p>
- * In the same way {@link #setQuery(String)} will be parsed immediately and you
- * can later modify the query (add joins, add to the where clause etc) as
- * required.
  * </p>
  * <h3>Building the Where clause</h3>
  * <p>
@@ -329,7 +277,7 @@ import com.avaje.ebean.config.ServerConfig;
  * <p>
  * This query language is NOT designed to be a replacement for SQL. It is
  * designed to be a simple way to describe the "Object Graph" you want Ebean to
- * build for you. Each find/join represents a node in that "Object Graph" which
+ * build for you. Each find/fetch represents a node in that "Object Graph" which
  * makes it easy to define for each node which properties you want to fetch.
  * </p>
  * <p>
@@ -471,14 +419,8 @@ public interface Query<T> extends Serializable {
 	public Query<T> select(String fetchProperties);
 
 	/**
-	 * Specify a property (associated bean) to join and <em>fetch</em> with its
+	 * Specify a path to <em>fetch</em> with its
 	 * specific properties to include (aka partial object).
-	 * <p>
-	 * Note that you do <em>NOT</em> need to specify a join just for the
-	 * purposes of a where clause (predicate) or order by clause. Ebean will
-	 * automatically add appropriate joins to satisfy conditions in where and
-	 * order by clauses.
-	 * </p>
 	 * <p>
 	 * When you specify a join this means that property (associated bean(s))
 	 * will be fetched and populated. If you specify "*" then all the properties
@@ -492,16 +434,16 @@ public interface Query<T> extends Serializable {
 	 * // query orders...
 	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
 	 * 
-	 * // join fetch the customer... 
+	 * // fetch the customer... 
 	 * // ... getting the customer's name and phone number
-	 * query.join(&quot;customer&quot;, &quot;name, phNumber&quot;);
+	 * query.fetch(&quot;customer&quot;, &quot;name, phNumber&quot;);
 	 * 
-	 * // ... also join fetch the customers billing address (* = all properties)
-	 * query.join(&quot;customer.billingAddress&quot;, &quot;*&quot;);
+	 * // ... also fetch the customers billing address (* = all properties)
+	 * query.fetch(&quot;customer.billingAddress&quot;, &quot;*&quot;);
 	 * </pre>
 	 * 
 	 * <p>
-	 * If columns is null or "*" then all columns/properties of the joined bean
+	 * If columns is null or "*" then all columns/properties for that path
 	 * are fetched.
 	 * </p>
 	 * 
@@ -510,41 +452,72 @@ public interface Query<T> extends Serializable {
 	 * Query&lt;Customer&gt; query = Ebean.createQuery(Customer.class);
 	 * 
 	 * // only fetch some of the properties of the customers
-	 * query.setProperties(&quot;name, status&quot;);
+	 * query.select(&quot;name, status&quot;);
 	 * List&lt;Customer&gt; list = query.findList();
 	 * </pre>
 	 * 
-	 * @param assocProperty
-	 *            the property of an associated (1-1,1-M,M-1,M-M) bean.
+	 * @param path
+	 *            the path of an associated (1-1,1-M,M-1,M-M) bean.
 	 * @param fetchProperties
 	 *            properties of the associated bean that you want to include in
 	 *            the fetch (* means all properties, null also means all
 	 *            properties).
 	 */
+	public Query<T> fetch(String path, String fetchProperties);
+
+	/**
+	 * Same as {@link #fetch(String, String)}.
+     * <p>
+     * This will eventually be deprecated in favour of the matching "fetch" method.
+     * </p>
+	 */
 	public Query<T> join(String assocProperty, String fetchProperties);
 
 	/**
-	 * Additionally specify a JoinConfig to specify a "query join" and or define the lazy loading query.
+	 * Additionally specify a FetchConfig to use a separate query or lazy loading to load this path.
 	 */
-	public Query<T> join(String assocProperty, String fetchProperties, JoinConfig joinConfig);
+	public Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig);
+
+    /**
+     * Additionally specify a JoinConfig to specify a "query join" and or define
+     * the lazy loading query.
+     * <p>
+     * This will eventually be deprecated in favour of the matching "fetch" method.
+     * </p>
+     */
+    public Query<T> join(String assocProperty, String fetchProperties, JoinConfig joinConfig);
 
 	/**
-	 * Specify a property (associated bean) to join including all its
-	 * properties.
+	 * Specify a path to load including all its properties.
 	 * <p>
-	 * The same as {@link #join(String, String)} with the fetchProperties as
-	 * "*".
+	 * The same as {@link #fetch(String, String)} with the fetchProperties as "*".
 	 * </p>
 	 * 
-	 * @param assocProperty
+	 * @param path
 	 *            the property of an associated (1-1,1-M,M-1,M-M) bean.
 	 */
-	public Query<T> join(String assocProperty);
+	public Query<T> fetch(String path);
+
+	/**
+	 * Same as {@link #fetch(String)}
+     * <p>
+     * This will eventually be deprecated in favour of the matching "fetch" method.
+     * </p>
+	 */
+    public Query<T> join(String path);
 
 	/**
 	 * Additionally specify a JoinConfig to specify a "query join" and or define the lazy loading query.
 	 */
-	public Query<T> join(String assocProperty, JoinConfig joinConfig);
+	public Query<T> fetch(String path, FetchConfig joinConfig);
+
+	/**
+	 * Same as {@link #fetch(String, FetchConfig)}
+	 * <p>
+	 * This will eventually be deprecated in favour of the matching "fetch" method.
+	 * </p>
+	 */
+    public Query<T> join(String path, JoinConfig joinConfig);
 
 	/**
 	 * Execute the query returning the list of Id's.
@@ -614,9 +587,11 @@ public interface Query<T> extends Serializable {
 	 * 
 	 * <pre class="code">
 	 * // assuming the sku of products is unique...
-	 * Query&lt;Product&gt; query = Ebean.createQuery(Product.class);
-	 * query.where(&quot;sku = ?&quot;).set(1, &quot;aa113&quot;);
-	 * Product product = query.findUnique();
+	 * Product product =
+	 *     Ebean.find(Product.class)
+	 *         .where(&quot;sku = ?&quot;)
+	 *         .set(1, &quot;aa113&quot;)
+	 *         .findUnique();
 	 * ...
 	 * </pre>
 	 * 
@@ -627,10 +602,12 @@ public interface Query<T> extends Serializable {
 	 * 
 	 * <pre class="code">
 	 * // Fetch order 1 and additionally fetch join its order details...
-	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
-	 * query.setId(1);
-	 * query.join(&quot;details&quot;);
-	 * Order order = query.findUnique();
+	 * Order order = 
+	 *     Ebean.find(Order.class)
+	 *       .setId(1)
+	 *       .fetch(&quot;details&quot;)
+	 *       .findUnique();
+	 *       
 	 * List&lt;OrderDetail&gt; details = order.getDetails();
 	 * ...
 	 * </pre>
@@ -730,7 +707,7 @@ public interface Query<T> extends Serializable {
 	 * // a query with a named parameter
 	 * String oql = &quot;find order where status = :orderStatus&quot;;
 	 * 
-	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
+	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class, oql);
 	 * 
 	 * // bind the named parameter
 	 * query.bind(&quot;orderStatus&quot;, OrderStatus.NEW);
@@ -753,10 +730,10 @@ public interface Query<T> extends Serializable {
 	 * // a query with a positioned parameter
 	 * String oql = &quot;where status = ? order by id desc&quot;;
 	 * 
-	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
+	 * Query&lt;Order&gt; query = Ebean.createQuery(Order.class, oql);
 	 * 
 	 * // bind the parameter
-	 * query.set(1, OrderStatus.NEW);
+	 * query.setParameter(1, OrderStatus.NEW);
 	 * 
 	 * List&lt;Order&gt; list = query.findList();
 	 * </pre>
@@ -846,8 +823,9 @@ public interface Query<T> extends Serializable {
 	 * Add a single Expression to the where clause returning the query.
 	 * 
 	 * <pre class="code">
-	 * List&lt;Order&gt; newOrders = Ebean.createQuery(Order.class)
-	 * 		.where(Expr.eq(&quot;status&quot;, Order.NEW))
+	 * List&lt;Order&gt; newOrders = 
+	 *     Ebean.find(Order.class)
+	 * 		.where().eq(&quot;status&quot;, Order.NEW)
 	 * 		.findList();
 	 * ...
 	 * </pre>
@@ -889,9 +867,9 @@ public interface Query<T> extends Serializable {
      * <pre class="code">
      * 
      * List&lt;Customer&gt; list = Ebean.find(Customer.class)
-     *   // .join(&quot;orders&quot;, new JoinConfig().lazy())
-     *   // .join(&quot;orders&quot;, new JoinConfig().query())
-     *   .join(&quot;orders&quot;)
+     *   // .fetch(&quot;orders&quot;, new FetchConfig().lazy())
+     *   // .fetch(&quot;orders&quot;, new FetchConfig().query())
+     *   .fetch(&quot;orders&quot;)
      *   .where().ilike(&quot;name&quot;, &quot;rob%&quot;)
      *   .filterMany(&quot;orders&quot;)
      *       .eq(&quot;status&quot;, Order.Status.NEW)

@@ -46,7 +46,7 @@ public class OrmQueryDetailParser {
 
 	private void processInitial() {
 		if (parser.isMatch("find")) {
-			OrmQueryProperties props = readFindJoin();
+			OrmQueryProperties props = readFindFetch();
 			detail.setBase(props);
 		} else {
 			process();
@@ -56,10 +56,14 @@ public class OrmQueryDetailParser {
 		}
 	}
 
+	private boolean isFetch() {
+	    return parser.isMatch("fetch") || parser.isMatch("join");
+	}
+	
 	private void process() {
-		if (parser.isMatch("join")) {
-			OrmQueryProperties props = readFindJoin();
-			detail.addJoin(props);
+		if (isFetch()) {
+			OrmQueryProperties props = readFindFetch();
+			detail.addFetch(props);
 
 		} else if (parser.isMatch("where")) {
 			readWhere();
@@ -72,7 +76,7 @@ public class OrmQueryDetailParser {
 
 		} else {
 			throw new PersistenceException(
-					"Query expected 'join', 'where','order by' or 'limit' keyword but got ["
+					"Query expected 'fetch', 'where','order by' or 'limit' keyword but got ["
 							+ parser.getWord() + "] \r " + parser.getOql());
 		}
 	}
@@ -146,7 +150,7 @@ public class OrmQueryDetailParser {
 		}
 	}
 
-	private OrmQueryProperties readFindJoin() {
+	private OrmQueryProperties readFindFetch() {
 
 		boolean readAlias = false;
 
@@ -164,14 +168,14 @@ public class OrmQueryDetailParser {
 				parser.nextWord();
 				break;
 
-			} else if (isFindJoinEnd()) {
+			} else if (isFindFetchEnd()) {
 				break;
 
 			} else if (!readAlias) {
 				readAlias = true;
 
 			} else {
-				throw new PersistenceException("Expected (props) or new 'join' 'where' but got "
+				throw new PersistenceException("Expected (props) or new 'fetch' 'where' but got "
 						+ token);
 			}
 		}
@@ -181,8 +185,8 @@ public class OrmQueryDetailParser {
 		return new OrmQueryProperties(entity, props, null);
 	}
 
-	private boolean isFindJoinEnd() {
-		if (parser.isMatch("join")) {
+	private boolean isFindFetchEnd() {
+		if (isFetch()) {
 			return true;
 		}
 		if (parser.isMatch("where")) {
