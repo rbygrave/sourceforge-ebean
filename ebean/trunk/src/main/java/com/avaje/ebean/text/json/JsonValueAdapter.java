@@ -17,28 +17,18 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.ebean.text.json;
 
-public class XoWriteContext {
+import java.sql.Timestamp;
 
-    boolean vanillaMode;
+public interface JsonValueAdapter {
+
+    public String jsonFromDate(java.sql.Date date);
     
-    Object bean;
+    public String jsonFromTimestamp(java.sql.Timestamp date);
     
-    public Object getBean() {
-        return bean;
-    }
+    public java.sql.Date jsonToDate(String jsonDate);
 
-    public void setBean(Object bean) {
-        this.bean = bean;
-    }
-
-    public boolean isVanillaMode() {
-        return vanillaMode;
-    }
-
-    public void setVanillaMode(boolean vanillaMode) {
-        this.vanillaMode = vanillaMode;
-    }
+    public Timestamp jsonToTimestamp(String jsonDateTime);
 
 }

@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 
 /**
  * Base ScalarType for types which converts to and from a VARCHAR database column.
@@ -85,4 +86,12 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
 		return false;
 	}
 	
+    public T jsonFromString(String value, JsonValueAdapter ctx) {
+        return parse(value);
+    }
+
+    public String toJsonString(Object value, JsonValueAdapter ctx) {
+        String s = format(value);
+        return EscapeJson.escapeQuote(s);
+    }
 }

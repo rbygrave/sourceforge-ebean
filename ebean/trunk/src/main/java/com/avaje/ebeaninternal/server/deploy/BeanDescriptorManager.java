@@ -1253,7 +1253,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
                 DeployBeanProperty prop = it.next();
                 String propName = prop.getName();
 
-                if (desc.isAbstract()) {
+                if (desc.isAbstract() || beanReflect.isVanillaOnly()) {
                     // use reflection in the case of imported abstract class
                     // with
                     // inheritance. Refer Bug 166
@@ -1404,10 +1404,14 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         subclassClassCount++;
 
-        Class<?> subClass = subClassManager.resolve(beanClass.getName());
-        desc.setFactoryType(subClass);
-
-        subclassedEntities.add(desc.getName());
+        EntityType entityType = desc.getEntityType();
+        if (EntityType.XMLELEMENT.equals(entityType)){
+            desc.setFactoryType(beanClass);
+        } else {
+            Class<?> subClass = subClassManager.resolve(beanClass.getName());
+            desc.setFactoryType(subClass);
+            subclassedEntities.add(desc.getName());
+        }
     }
 
     /**

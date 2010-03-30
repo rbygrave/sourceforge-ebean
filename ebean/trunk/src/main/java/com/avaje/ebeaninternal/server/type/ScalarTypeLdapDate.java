@@ -26,6 +26,8 @@ import java.util.Date;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
+
 /**
  * Wrapper type that wraps all java.sql.Date types for LDAP.
  * 
@@ -130,5 +132,14 @@ public class ScalarTypeLdapDate<T> implements ScalarType<T> {
     public void accumulateScalarTypes(String propName, CtCompoundTypeScalarList list) {
         baseType.accumulateScalarTypes(propName, list);
     }
+
+    public String jsonToString(T value, JsonValueAdapter ctx) {
+        return baseType.jsonToString(value, ctx);
+    }
+
+    public T jsonFromString(String value, JsonValueAdapter ctx) {
+        return baseType.jsonFromString(value, ctx);
+    }
+    
     
 }

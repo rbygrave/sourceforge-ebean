@@ -55,6 +55,7 @@ import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebean.text.json.JsonWriteBeanVisitor;
 import com.avaje.ebean.validation.factory.Validator;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
@@ -80,6 +81,9 @@ import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext.WriteBeanState;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.TypeManager;
 import com.avaje.ebeaninternal.util.SortByClause;
@@ -108,7 +112,8 @@ public class BeanDescriptor<T> {
         EMBEDDED,
         SQL,
         META,
-        LDAP
+        LDAP,
+        XMLELEMENT
     }
     
     /**
@@ -224,7 +229,7 @@ public class BeanDescriptor<T> {
     /**
      * Derived list of properties that make up the unique id.
      */
-    private final BeanProperty[] propertiesId;
+    final BeanProperty[] propertiesId;
 
     /**
      * Derived list of properties that are used for version concurrency
@@ -288,7 +293,7 @@ public class BeanDescriptor<T> {
     /**
      * All non transient properties excluding the id properties.
      */
-    private final BeanProperty[] propertiesNonTransient;
+    final BeanProperty[] propertiesNonTransient;
 
     /**
      * Set to true if the bean has version properties or an embedded bean has
@@ -2145,5 +2150,82 @@ public class BeanDescriptor<T> {
      */
     public BeanProperty[] propertiesLocal() {
         return propertiesLocal;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void jsonWrite(WriteJsonContext ctx, Object bean) {
+
+        if (bean != null){
+            JsonWriteBeanVisitor<T> beanVisitor = (JsonWriteBeanVisitor<T>)ctx.getBeanVisitor();
+            
+            ctx.appendObjectBegin();
+            WriteBeanState prevState = ctx.pushBeanState(bean);
+            boolean loaded = ctx.isLoadedBean();
+            
+            for (int i = 0; i < propertiesId.length; i++) {
+                propertiesId[i].jsonWrite(ctx, bean);
+            }
+            if (loaded){
+                Set<String> props = null;
+                if (beanVisitor != null){
+                    props = beanVisitor.getIncludeProperties();
+                }
+                if (props == null){
+                    props = ctx.getLoadedProps();
+                }
+                if (props != null){
+                    for (String prop : props) {
+                        BeanProperty p = getBeanProperty(prop);
+                        if (!p.isId()){
+                            p.jsonWrite(ctx, bean);
+                        }
+                    }
+                } else {
+                    for (int j = 0; j < propertiesNonTransient.length; j++) {
+                        propertiesNonTransient[j].jsonWrite(ctx, bean);
+                    }
+                }
+            }
+            if (beanVisitor != null){
+                beanVisitor.visit((T)bean, ctx);
+            }
+            ctx.pushPreviousState(prevState);
+            ctx.appendObjectEnd();
+        }
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+    public T jsonRead(ReadJsonContext ctx){
+        if (!ctx.readObjectBegin()) {
+            // the object is null
+            return null;
+        }
+        T bean = (T)createEntityBean();
+        ctx.pushBean(bean);
+        
+        do {
+            if (!ctx.readKeyNext()){
+                break;
+            } else {
+                // we read a property key ...
+                String propName = ctx.getTokenKey();
+                BeanProperty p  = getBeanProperty(propName);
+                if (p != null){
+                    p.jsonRead(ctx, bean);                    
+                    ctx.setProperty(propName);                    
+                } else {
+                    // unknown property key ...
+                    ctx.readUnmappedJson(propName);
+                }
+                
+                if (!ctx.readValueNext()){
+                    break;
+                }
+            } 
+        } while(true);
+        
+        ctx.popBean();
+        return bean;
     }
 }

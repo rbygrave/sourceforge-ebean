@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.runtime;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ import com.avaje.ebean.text.StringParser;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public class XopNode extends XopBase implements XoiNode {
+public class XrNode extends XrBase implements XoiNode {
 
     protected final boolean assocBeanValue;
 
@@ -44,11 +44,11 @@ public class XopNode extends XopBase implements XoiNode {
     protected final XoiNode[] childNodes;
     protected final boolean hasChildNodes;
     
-    public XopNode(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, XoiNode[] childNodes, XoiAttribute[] attributes) {
+    public XrNode(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, XoiNode[] childNodes, XoiAttribute[] attributes) {
         this(nodeName, prop, parentDesc, null, null, childNodes, attributes, true);
     }
 
-    public XopNode(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter,
+    public XrNode(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter,
             StringParser parser, XoiNode[] childNodes, XoiAttribute[] attributes) {
 
         this(nodeName, prop, parentDesc, formatter,parser, childNodes, attributes, false);
@@ -57,7 +57,7 @@ public class XopNode extends XopBase implements XoiNode {
     /**
      * Create as a property based node.
      */
-    private XopNode(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter,
+    private XrNode(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter,
             StringParser parser, XoiNode[] childNodes, XoiAttribute[] attributes, boolean assocBeanValue) {
 
         super(nodeName, prop, parentDesc, formatter, parser);
@@ -80,11 +80,15 @@ public class XopNode extends XopBase implements XoiNode {
         return nodeName;
     }
     
+    public Object createBean(boolean vanillaMode) {
+        return beanDescriptor.createBean(vanillaMode);
+    }
+    
     public String getNodeName() {
         return nodeName;
     }
 
-    public void readNode(Node node, XoWriteContext ctx) {
+    public void readNode(Node node, XrReadContext ctx) {
 
         Object parentBean = null;
         if (assocBeanValue){
@@ -117,7 +121,7 @@ public class XopNode extends XopBase implements XoiNode {
         }
     }
 
-    private void readChildNodes(Node node, XoWriteContext ctx) {
+    private void readChildNodes(Node node, XrReadContext ctx) {
 
         Node childNode = node.getFirstChild();
         int pos = -1;
@@ -139,7 +143,7 @@ public class XopNode extends XopBase implements XoiNode {
     }
 
 
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException {
+    public void writeNode(XrOutputDocument out, Node node, Object bean) throws IOException {
 
         Object val = prop == null ? null : getObjectValue(bean);
         
@@ -162,7 +166,7 @@ public class XopNode extends XopBase implements XoiNode {
         writeContent(out, childNode, bean, val);
     }
     
-    public void writeNode(XmlOutputWriter o, Object bean) throws IOException {
+    public void writeNode(XrOutputWriter o, Object bean) throws IOException {
         
         Object val = null;
         if (prop != null){
@@ -192,7 +196,7 @@ public class XopNode extends XopBase implements XoiNode {
         o.write(endTag);
     }
 
-    public void writeContent(XmlOutputDocument out, Node e, Object bean, Object value) throws IOException {
+    public void writeContent(XrOutputDocument out, Node e, Object bean, Object value) throws IOException {
 
         if (!assocBeanValue && value != null){
             String sv = getFormattedValue(value);
@@ -208,7 +212,7 @@ public class XopNode extends XopBase implements XoiNode {
         }
     }
     
-    public void writeContent(XmlOutputWriter o, Object bean, Object value) throws IOException {
+    public void writeContent(XrOutputWriter o, Object bean, Object value) throws IOException {
 
         if (!assocBeanValue && value != null){
             String sv = getFormattedValue(value);

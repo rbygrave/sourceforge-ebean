@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 
 
 
@@ -169,6 +170,14 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 
     public ScalarType<?> getScalarType() {
         return this;
+    }
+    
+    public Object jsonFromString(String value, JsonValueAdapter ctx) {
+        return parse(value);
+    }
+
+    public String jsonToString(Object value, JsonValueAdapter ctx) {
+        return EscapeJson.escapeQuote(format(value));
     }
 
 }

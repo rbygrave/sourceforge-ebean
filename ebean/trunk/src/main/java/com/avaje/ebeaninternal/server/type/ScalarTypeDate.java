@@ -23,6 +23,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -72,4 +73,14 @@ public class ScalarTypeDate extends ScalarTypeBase<java.sql.Date> {
 		return true;
 	}
 
+    @Override
+    public String jsonToString(Date value, JsonValueAdapter ctx) {
+        return ctx.jsonFromDate(value);
+    }
+
+    @Override
+    public Date jsonFromString(String value, JsonValueAdapter ctx) {
+        return ctx.jsonToDate(value);
+    }
+	
 }

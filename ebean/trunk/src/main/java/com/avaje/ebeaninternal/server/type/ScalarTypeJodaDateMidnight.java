@@ -25,6 +25,7 @@ import java.sql.Types;
 
 import org.joda.time.DateMidnight;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -89,4 +90,9 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
 		return true;
 	}
 
+    @Override
+    public String jsonToString(DateMidnight value, JsonValueAdapter ctx) {
+        java.sql.Date d = (java.sql.Date)toJdbcType(value);
+        return ctx.jsonFromDate(d);
+    }
 }

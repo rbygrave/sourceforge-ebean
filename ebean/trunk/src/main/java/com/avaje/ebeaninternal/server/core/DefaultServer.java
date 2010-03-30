@@ -79,6 +79,7 @@ import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.text.csv.CsvReader;
+import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.LoadBeanRequest;
 import com.avaje.ebeaninternal.api.LoadManyRequest;
 import com.avaje.ebeaninternal.api.ScopeTrans;
@@ -195,6 +196,8 @@ public final class DefaultServer implements SpiEbeanServer {
     private final DefaultBeanLoader beanLoader;
 
     private final EncryptKeyManager encryptKeyManager;
+    
+    private final JsonContext jsonContext;
 
     /**
      * The MBean name used to register Ebean.
@@ -255,6 +258,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
         this.ddlGenerator = new DdlGenerator(this, config.getDatabasePlatform(), config.getServerConfig());
         this.beanLoader = new DefaultBeanLoader(this, config.getDebugLazyLoad());
+        this.jsonContext = config.createJsonContext(this);
 
         LdapConfig ldapConfig = config.getServerConfig().getLdapConfig();
         if (ldapConfig == null){
@@ -263,7 +267,7 @@ public final class DefaultServer implements SpiEbeanServer {
             this.ldapQueryEngine = new LdapOrmQueryEngine(ldapConfig.isVanillaMode(), ldapConfig.getContextFactory());            
         }
         
-        ShutdownManager.register(new Shutdown());
+        ShutdownManager.register(new Shutdown());        
     }
     
     public boolean isVanillaMode() {
@@ -1865,6 +1869,11 @@ public final class DefaultServer implements SpiEbeanServer {
         }
 
         return new CallStack(finalTrace);
+    }
+
+    public JsonContext createJsonContext() {
+        // immutable thread safe so return shared instance
+        return jsonContext;
     }
 
 }

@@ -24,6 +24,7 @@ import java.sql.Types;
 import java.util.UUID;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -81,5 +82,14 @@ public class ScalarTypeUUID extends ScalarTypeBase<UUID> {
 	public boolean isDateTimeCapable() {
 		return false;
 	}
+	
+    public UUID jsonFromString(String value, JsonValueAdapter ctx) {
+        return parse(value);
+    }
+
+    public String jsonToString(UUID value, JsonValueAdapter ctx) {
+        String s = format(value);
+        return EscapeJson.escapeQuote(s);
+    }
 
 }

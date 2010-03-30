@@ -70,5 +70,4 @@ public class ScalarTypeLong extends ScalarTypeBase<Long> {
 		return true;
 	}
 
-
 }

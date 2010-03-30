@@ -71,4 +71,11 @@ public class ScalarTypeDouble extends ScalarTypeBase<Double> {
 		return true;
 	}
 
+    public String toJsonString(Double value) {
+        if(value.isInfinite() || value.isNaN()) {
+            return "null";
+        } else {
+            return value.toString();
+        }
+    }
 }

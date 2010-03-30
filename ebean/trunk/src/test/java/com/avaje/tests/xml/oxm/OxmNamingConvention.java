@@ -17,14 +17,14 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.oxm;
 
 /**
  * Naming convention used in XML to Object mapping.
  * 
  * @author rbygrave
  */
-public interface XomNamingConvention {
+public interface OxmNamingConvention {
 
     /**
      * Returns the default node/element/attribute name for the given property name.

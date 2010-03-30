@@ -27,6 +27,7 @@ public final class EnhanceBeanReflect implements BeanReflect {
 	private final Constructor<?> constructor;
 	private final Constructor<?> vanillaConstructor;
 	private final boolean hasNewInstanceMethod;
+	private final boolean vanillaOnly;
 	
 	public EnhanceBeanReflect(Class<?> vanillaType, Class<?> clazz) {
 		try {
@@ -36,11 +37,22 @@ public final class EnhanceBeanReflect implements BeanReflect {
 				this.constructor = null;
 				this.vanillaConstructor = null;
 				this.hasNewInstanceMethod = false;
+				this.vanillaOnly = false;
 			} else {
                 this.vanillaConstructor = defaultConstructor(vanillaType);
-				this.entityBean = (EntityBean) clazz.newInstance();
-				this.constructor = defaultConstructor(clazz);
-				this.hasNewInstanceMethod = hasNewInstanceMethod(clazz);
+                this.constructor = defaultConstructor(clazz);
+                
+                Object newInstance = clazz.newInstance();
+                if (newInstance instanceof EntityBean){
+                    this.entityBean = (EntityBean)newInstance;
+                    this.vanillaOnly = false;
+                    this.hasNewInstanceMethod = hasNewInstanceMethod(clazz);
+                } else {
+                    // probably an XmlElement
+                    this.entityBean = null;
+                    this.vanillaOnly = true;
+                    this.hasNewInstanceMethod = false;
+                }
 			}
 		} catch (InstantiationException e) {
 			throw new PersistenceException(e);
@@ -86,7 +98,13 @@ public final class EnhanceBeanReflect implements BeanReflect {
         }
     }
 
-	public Object createEntityBean() {
+    
+    
+	public boolean isVanillaOnly() {
+        return vanillaOnly;
+    }
+
+    public Object createEntityBean() {
 	    if (hasNewInstanceMethod){
 	        return entityBean._ebean_newInstance();
 	    } else {

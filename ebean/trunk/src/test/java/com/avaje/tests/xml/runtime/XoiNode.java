@@ -17,35 +17,23 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.runtime;
 
-import org.w3c.dom.Document;
+import java.io.IOException;
+
 import org.w3c.dom.Node;
 
-public class XmlOutputDocument {
 
-    private final Document document;
+public interface XoiNode {
 
-    public XmlOutputDocument(Document document) {
-        this.document = document;
-    }
+    public String getNodeName();
     
-    public Document getDocument() {
-        return document;
-    }
-    
-    
-    public void appendChild(Node node, Node newChild) {
-        if (node != null){
-            node.appendChild(newChild);
-        } else {
-            node = document.getDocumentElement();
-            if (node == null){
-                document.appendChild(newChild);
-            } else {
-                node.appendChild(newChild);
-            }
-        }
-    }
-    
+    public Object createBean(boolean vanillaMode);
+
+    public void writeNode(XrOutputDocument out, Node node, Object bean) throws IOException;
+
+    public void writeNode(XrOutputWriter o, Object bean) throws IOException;
+
+    public void readNode(Node node, XrReadContext ctx);
+
 }

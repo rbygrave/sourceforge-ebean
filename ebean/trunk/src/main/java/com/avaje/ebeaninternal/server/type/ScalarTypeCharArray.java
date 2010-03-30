@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -79,4 +80,13 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
 		return false;
 	}
 	
+    @Override
+    public char[] jsonFromString(String value, JsonValueAdapter ctx) {
+        return value.toCharArray();
+    }
+
+    @Override
+    public String jsonToString(char[] value, JsonValueAdapter ctx) {
+        return EscapeJson.escapeQuote(String.valueOf(value));
+    }
 }

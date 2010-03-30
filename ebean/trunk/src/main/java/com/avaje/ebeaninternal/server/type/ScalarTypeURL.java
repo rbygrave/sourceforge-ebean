@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 
 /**
  * ScalarType for java.net.URL which converts to and from a VARCHAR database column.
@@ -91,4 +92,12 @@ public class ScalarTypeURL extends ScalarTypeBase<URL> {
 		return false;
 	}
 	
+    public URL jsonFromString(String value, JsonValueAdapter ctx) {
+        return parse(value);
+    }
+
+    public String jsonToString(URL value, JsonValueAdapter ctx) {
+        String s = format(value);
+        return EscapeJson.escapeQuote(s);
+    }
 }

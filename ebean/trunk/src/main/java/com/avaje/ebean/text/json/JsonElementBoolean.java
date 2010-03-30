@@ -17,21 +17,25 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.ebean.text.json;
 
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+public class JsonElementBoolean implements JsonElement {
 
-public class XbAttribute extends XbBase {
-
+    public static final JsonElementBoolean TRUE = new JsonElementBoolean(true);
     
-    public XbAttribute(XbNode rootNode, String nodeName, String propertyName){
-        super(rootNode, nodeName, propertyName);
+    public static final JsonElementBoolean FALSE = new JsonElementBoolean(false);
+    
+    private final boolean value;
+    
+    private JsonElementBoolean(boolean value) {
+        this.value = value;
     }
 
-    public XoiAttribute create(BeanDescriptor<?> descriptor, boolean parentAssocBean) {
-        
-        ElPropertyValue prop = descriptor.getElGetValue(propertyName);
-        return new XopAttribute(nodeName, prop, descriptor, parentAssocBean, formatter, parser);
+    public boolean getValue() {
+        return value;
+    }
+    
+    public String toString() {
+        return Boolean.toString(value);
     }
 }

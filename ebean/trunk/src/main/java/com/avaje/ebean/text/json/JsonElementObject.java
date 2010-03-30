@@ -17,20 +17,34 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.ebean.text.json;
 
-import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+public class JsonElementObject implements JsonElement {
 
-public interface XoiAttribute {
-
-    public void writeAttribute(XmlOutputWriter o, Object bean, Object value) throws IOException;
+    private final Map<String,JsonElement> map = new LinkedHashMap<String, JsonElement>();
     
-    public void writeAttribute(XmlOutputDocument out, Element e, Object bean, Object value) throws IOException;
+    public void put(String key, JsonElement value){
+        map.put(key, value);
+    }
+        
+    public JsonElement getValue(String key){
+        return map.get(key);
+    }
+    
+    public Set<String> keySet() {
+        return map.keySet();
+    }
 
-    public void readNode(Node node, NamedNodeMap attributes, XoWriteContext ctx);
+    public Set<Map.Entry<String, JsonElement>> entrySet() {
+        return map.entrySet();
+    }
+    
+    public String toString() {
+        return map.toString();
+    }
     
 }

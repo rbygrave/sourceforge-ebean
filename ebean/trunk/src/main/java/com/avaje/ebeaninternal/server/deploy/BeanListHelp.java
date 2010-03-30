@@ -12,6 +12,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.common.BeanList;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
  * Helper object for dealing with Lists.
@@ -166,4 +167,33 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 			many.setValue(parentBean, newBeanList);
 		}
 	}
+	
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection) {
+        
+        List<?> list;
+        if (collection instanceof BeanCollection<?>){
+            BeanList<?> beanList = (BeanList<?>)collection;
+            if (!beanList.isPopulated()){
+                return;
+            } 
+            list = beanList.getActualList();
+        } else {
+            list = (List<?>)collection;
+        }
+        
+        ctx.beginAssocMany(name);
+        for (int j = 0; j < list.size(); j++) {
+            if (j > 0){
+                ctx.appendComma();
+            }
+            Object detailBean = list.get(j);
+            targetDescriptor.jsonWrite(ctx, detailBean);
+        }
+        ctx.endAssocMany();     
+    }
+    
+//    // on the BeanPropertyAssocMany object
+//    public void jsonRead(JsonReadContext ctx, Object bean){
+//    }
+    
 }

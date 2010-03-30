@@ -25,6 +25,7 @@ import java.sql.Types;
 
 import org.joda.time.DateTime;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -87,4 +88,9 @@ public class ScalarTypeJodaDateTime extends ScalarTypeBase<DateTime> {
 		return true;
 	}
 
+    @Override
+    public String jsonToString(DateTime value, JsonValueAdapter ctx) {
+        Timestamp d = (Timestamp)toJdbcType(value);
+        return ctx.jsonFromTimestamp(d);
+    }
 }

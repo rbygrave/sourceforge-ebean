@@ -17,16 +17,16 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.runtime;
 
 import java.io.IOException;
 import java.io.Writer;
 
-public class XmlOutputWriter {
+public class XrOutputWriter {
 
     final Writer writer;
     
-    public XmlOutputWriter(Writer writer) {
+    public XrOutputWriter(Writer writer) {
         this.writer = writer;
     }
     

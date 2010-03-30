@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -60,7 +61,12 @@ public class ScalarTypeTimestamp extends ScalarTypeBase<Timestamp> {
     }
 
     public Timestamp parse(String value) {
-		return Timestamp.valueOf(value);
+        try {
+            return Timestamp.valueOf(value);
+        } catch (IllegalArgumentException e){
+            String m = "Error paring ["+value+"]";
+            throw new RuntimeException(m, e);
+        }
 	}
 
 	public Timestamp parseDateTime(long systemTimeMillis) {
@@ -71,5 +77,14 @@ public class ScalarTypeTimestamp extends ScalarTypeBase<Timestamp> {
 		return true;
 	}
 
+    @Override
+    public String jsonToString(Timestamp value, JsonValueAdapter ctx) {
+        return ctx.jsonFromTimestamp(value);
+    }
+    
+    @Override
+    public Timestamp jsonFromString(String value, JsonValueAdapter ctx) {
+        return ctx.jsonToTimestamp(value);
+    }
 	
 }
