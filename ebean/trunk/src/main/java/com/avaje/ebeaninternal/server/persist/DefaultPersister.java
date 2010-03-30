@@ -190,8 +190,16 @@ public final class DefaultPersister implements Persister {
             if (ebi.isDirty()) {
                 // normal update of an enhanced bean
                 PersistRequestBean<?> req = createRequest(bean, t, null);
-                update(req);
-                return;
+                try {
+                    req.initTransIfRequired();
+                    update(req);
+                    req.commitTransIfRequired();
+                    return;
+
+                } catch (RuntimeException ex) {
+                    req.rollbackTransIfRequired();
+                    throw ex;
+                }
             } else if (ebi.isLoaded()) {
                 // fetched/loaded but not dirty so skip update
                 return;
