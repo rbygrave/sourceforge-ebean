@@ -40,6 +40,10 @@ public class ReadJsonSourceReader implements ReadJsonSource {
         this.localBuffer = new char[localBufferSize];
     }
     
+    public String toString() {
+        return String.valueOf(localBuffer);
+    }
+    
     public int pos() {
         return totalPos+localPos;
     }
