@@ -36,6 +36,7 @@ import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.text.csv.CsvReader;
+import com.avaje.ebean.text.json.JsonContext;
 
 /**
  * This Ebean object is effectively a singleton that holds a map of registered
@@ -1413,4 +1414,13 @@ public final class Ebean {
 
         serverMgr.getPrimaryServer().runCacheWarming(beanType);
     }
+    
+    /**
+     * Create a JsonContext that will use the default
+     * configuration options.
+     */
+    public static JsonContext createJsonContext(){
+        return serverMgr.getPrimaryServer().createJsonContext();
+    }
+
 }
