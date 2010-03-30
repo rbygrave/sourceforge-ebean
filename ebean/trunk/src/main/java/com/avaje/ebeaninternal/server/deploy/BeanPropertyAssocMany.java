@@ -670,6 +670,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
         BeanCollectionAdd add = getBeanCollectionAdd(collection, null);
         do {
             Object detailBean = targetDescriptor.jsonRead(ctx);
+            if (detailBean == null){
+                // probably empty array
+                break;
+            } 
             add.addBean(detailBean);
             if (!ctx.readArrayNext()){
                 break;

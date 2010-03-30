@@ -125,6 +125,7 @@ public class ResetBasicData {
 				Customer cust1 = insertCustomer("Rob");
 				Customer cust2 = insertCustomerNoAddress();
 				insertCustomerFiona();
+				insertCustomerNoContacts("NocCust");
 				
 				createOrder1(cust1);
 				createOrder2(cust2);
@@ -161,6 +162,16 @@ public class ResetBasicData {
 		Ebean.save(c);
 		return c;
 	}
+	
+	   private Customer insertCustomerNoContacts(String name) {
+	        
+	        Customer c = new Customer();
+	        c.setName(name);
+	        c.setStatus(Customer.Status.ACTIVE);
+
+	        Ebean.save(c);
+	        return c;
+	    }
 	
 	private Customer insertCustomerNoAddress() {
 		

@@ -32,6 +32,15 @@ public class ReadJsonSourceString implements ReadJsonSource {
         this.sourceLength = source.length();
     }
     
+    public String getErrorHelp() {
+        int prev = pos - 50;
+        if (prev < 0){
+            prev = 0;
+        }
+        String c = source.substring(prev, pos);
+        return "pos:"+pos+" precedingcontent:"+c;
+    }
+
     public String toString() {
         return source;
     }
