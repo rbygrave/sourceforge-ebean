@@ -101,7 +101,7 @@ public class DLoadContext implements LoadContext {
 			for (int i = 0; i < secQuery.size(); i++) {
 				OrmQueryProperties properties = secQuery.get(i);
 				
-				int batchSize = properties.getQueryJoinBatch();
+				int batchSize = properties.getQueryFetchBatch();
 				if (batchSize == 0){
 					batchSize = defaultQueryBatch;
 				}
@@ -235,7 +235,7 @@ public class DLoadContext implements LoadContext {
 	private void registerSecondaryNode(boolean many, OrmQueryProperties props) {
 		
 		String path = props.getPath();
-		int lazyJoinBatch = props.getLazyJoinBatch();
+		int lazyJoinBatch = props.getLazyFetchBatch();
 		int batchSize = lazyJoinBatch > 0 ? lazyJoinBatch : defaultBatchSize;
 		
 		if (many){

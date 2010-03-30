@@ -11,6 +11,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.FutureIds;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.FutureRowCount;
@@ -784,10 +785,37 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	}
 	
 	public DefaultOrmQuery<T> join(String property, String columns, JoinConfig joinConfig) {
-		detail.addJoin(property, columns, joinConfig);
+
+        FetchConfig c;
+        if (joinConfig == null){
+            c = null;
+        } else {
+            c = new FetchConfig();
+            c.lazy(joinConfig.getLazyBatchSize());
+            c.query(joinConfig.getQueryBatchSize());
+        }
+        
+	    detail.addFetch(property, columns, c);
 		return this;
 	}
+
+    public DefaultOrmQuery<T> fetch(String property) {
+        return fetch(property, null, null);
+    }
+
+    public DefaultOrmQuery<T> fetch(String property, FetchConfig joinConfig) {
+        return fetch(property, null, joinConfig);
+    }
+
+    public DefaultOrmQuery<T> fetch(String property, String columns) {
+        return fetch(property, columns, null);
+    }
 	
+    public DefaultOrmQuery<T> fetch(String property, String columns, FetchConfig config) {
+        detail.addFetch(property, columns, config);
+        return this;
+    }
+    
 	public List<Object> findIds() {
 		// a copy of this query is made in the server
 		// as the query needs to modified (so we modify
