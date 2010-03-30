@@ -26,7 +26,9 @@ public class TestTextJsonSimple extends TestCase {
             .fetch("billingAddress","line1, city")
             .fetch("billingAddress.country","*")
             .fetch("contacts", "firstName,email")
-            .orderBy().desc("id")
+            //.filterMany("contacts").raw("(cc.first_name is null or cc.first_name like 'J%')").query()
+            //.where().lt("id", 3)
+            .order().desc("id")
             .findList();
         
         EbeanServer server = Ebean.getServer(null);

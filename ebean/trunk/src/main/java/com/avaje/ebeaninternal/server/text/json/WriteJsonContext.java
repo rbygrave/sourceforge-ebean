@@ -147,15 +147,6 @@ public class WriteJsonContext implements JsonWriter {
         assocOne = false;
     }
     
-//    private void pushPathKey(String key) {
-//        if (pathStack.isEmpty()){
-//            pathStack.push(key);                
-//        } else {
-//            String prefix = pathStack.peek();
-//            pathStack.push(prefix+"."+key);
-//        }        
-//    }
-    
     public void beginAssocMany(String key) {
         if (pathStack != null){
             pathStack.pushPathKey(key);

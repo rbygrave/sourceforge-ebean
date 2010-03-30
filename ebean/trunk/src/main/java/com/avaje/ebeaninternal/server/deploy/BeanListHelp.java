@@ -192,8 +192,4 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
         ctx.endAssocMany();     
     }
     
-//    // on the BeanPropertyAssocMany object
-//    public void jsonRead(JsonReadContext ctx, Object bean){
-//    }
-    
 }

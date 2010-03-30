@@ -91,8 +91,11 @@ public class ReadJsonContext {
             return true;
         } else if ('n' == tokenStart) {
             return false;
+        } else if (']' == tokenStart) {
+            // an empty array
+            return false;
         }
-        throw new RuntimeException("Expected object begin at "+src.pos());
+        throw new RuntimeException("Expected object begin at "+src.getErrorHelp());
     }
  
     public boolean readKeyNext() {
@@ -102,7 +105,7 @@ public class ReadJsonContext {
         } else if ('}' == tokenStart) {
             return false;
         }
-        throw new RuntimeException("Expected '\"' or '}' at "+src.pos());        
+        throw new RuntimeException("Expected '\"' or '}' at "+src.getErrorHelp());        
     }
     
     public boolean readValueNext() {
@@ -112,7 +115,7 @@ public class ReadJsonContext {
         } else if ('}' == tokenStart) {
             return false;
         }
-        throw new RuntimeException("Expected ',' or '}' at "+src.pos()+" but got "+tokenStart);        
+        throw new RuntimeException("Expected ',' or '}' at "+src.getErrorHelp()+" but got "+tokenStart);        
     }
     
     public boolean readArrayBegin() {
@@ -122,7 +125,7 @@ public class ReadJsonContext {
         } else if ('n' == tokenStart) {
             return false;
         }
-        throw new RuntimeException("Expected array begin at "+src.pos());
+        throw new RuntimeException("Expected array begin at "+src.getErrorHelp());
     }
     
     public boolean readArrayNext() {
@@ -133,7 +136,7 @@ public class ReadJsonContext {
         if (']' == tokenStart){
             return false;
         }
-        throw new RuntimeException("Expected ',' or ']' at "+src.pos());
+        throw new RuntimeException("Expected ',' or ']' at "+src.getErrorHelp());
     }
     
     public String readScalarValue() {
@@ -170,7 +173,7 @@ public class ReadJsonContext {
             break; // not expected
 
         default:
-            throw new RuntimeException("Unexpected tokenStart["+tokenStart+"] at position "+src.pos());
+            throw new RuntimeException("Unexpected tokenStart["+tokenStart+"] "+src.getErrorHelp());
         }
         
     }
@@ -253,11 +256,11 @@ public class ReadJsonContext {
         StringBuilder sb = new StringBuilder(4);
         sb.append(tokenStart);
         for (int i = 0; i < 3; i++) {
-            char c = src.nextChar("EOF reading null");
+            char c = src.nextChar("EOF reading null ");
             sb.append(c);
         }
         if (!"null".equals(sb.toString())){
-            throw new TextException("Expected 'null' but got "+sb.toString());
+            throw new TextException("Expected 'null' but got "+sb.toString()+" "+src.getErrorHelp());
         }
     }
     
@@ -277,7 +280,7 @@ public class ReadJsonContext {
         
         char c = src.nextChar("EOF reading ':'");
         if (':' != c){
-            throw new TextException("Expected to find colon after key at "+(src.pos()-1)+" but found ["+c+"]");
+            throw new TextException("Expected to find colon after key at "+(src.pos()-1)+" but found ["+c+"]"+src.getErrorHelp());
         }
     }
     

@@ -28,4 +28,7 @@ public interface ReadJsonSource {
     public void back();
 
     public int pos();
+
+    public String getErrorHelp();
+
 }

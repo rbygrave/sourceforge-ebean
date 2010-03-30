@@ -44,6 +44,17 @@ public class ReadJsonSourceReader implements ReadJsonSource {
         return String.valueOf(localBuffer);
     }
     
+    
+    
+    public String getErrorHelp() {
+        int prev = localPos - 30;
+        if (prev < 0){
+            prev = 0;
+        }
+        String c = new String(localBuffer, prev, (localPos-prev));
+        return "pos:"+pos()+" preceding:"+c;
+    }
+
     public int pos() {
         return totalPos+localPos;
     }
