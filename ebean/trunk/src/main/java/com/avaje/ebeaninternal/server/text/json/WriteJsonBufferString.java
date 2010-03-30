@@ -36,4 +36,7 @@ public class WriteJsonBufferString implements WriteJsonBuffer {
         return buffer.toString();
     }
     
+    public String toString() {
+        return buffer.toString();
+    }
 }

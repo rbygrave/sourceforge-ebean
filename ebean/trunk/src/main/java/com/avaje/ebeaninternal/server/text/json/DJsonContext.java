@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonReadOptions;
 import com.avaje.ebean.text.json.JsonValueAdapter;
@@ -98,23 +99,27 @@ public class DJsonContext implements JsonContext {
     
     private <T> List<T> toList(Class<T> cls, ReadJsonSource src, JsonReadOptions options){
 
-        BeanDescriptor<T> d = getDecriptor(cls);
-
-        List<T> list = new ArrayList<T>();
-        
-        ReadJsonContext ctx = new ReadJsonContext(src, dfltValueAdapter, options);
-        ctx.readArrayBegin();
-        do {
-            T bean = d.jsonRead(ctx);
-            if (bean != null){
-                list.add(bean);
-            }
-            if (!ctx.readArrayNext()){
-                break;
-            }
-        } while(true);
-        
-        return list;
+        try {
+            BeanDescriptor<T> d = getDecriptor(cls);
+    
+            List<T> list = new ArrayList<T>();
+            
+            ReadJsonContext ctx = new ReadJsonContext(src, dfltValueAdapter, options);
+            ctx.readArrayBegin();
+            do {
+                T bean = d.jsonRead(ctx);
+                if (bean != null){
+                    list.add(bean);
+                }
+                if (!ctx.readArrayNext()){
+                    break;
+                }
+            } while(true);
+            
+            return list;
+        } catch (RuntimeException e){
+            throw new TextException("Error parsing "+src, e);
+        }
     }
     
     
