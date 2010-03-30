@@ -23,6 +23,8 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.annotation.LdapDomain;
@@ -74,6 +76,18 @@ public class AnnotationClass extends AnnotationParser {
 	    return objectclasses.split(",");
 	}
 	
+	private boolean isXmlElement(Class<?> cls) {
+	    XmlRootElement rootElement = cls.getAnnotation(XmlRootElement.class);
+	    if (rootElement != null){
+	        return true;
+	    }
+	    XmlType xmlType = cls.getAnnotation(XmlType.class);
+        if (xmlType != null){
+            return true;
+        }
+        return false;
+	}
+	
 	private void read(Class<?> cls) {
 
         LdapDomain ldapDomain = cls.getAnnotation(LdapDomain.class);
@@ -93,6 +107,9 @@ public class AnnotationClass extends AnnotationParser {
 			} else {
 				descriptor.setName(entity.name());
 			}
+		} else if (isXmlElement(cls)) {
+		    descriptor.setName(cls.getSimpleName());
+		    descriptor.setEntityType(EntityType.XMLELEMENT);
 		}
 
 		Embeddable embeddable = cls.getAnnotation(Embeddable.class);

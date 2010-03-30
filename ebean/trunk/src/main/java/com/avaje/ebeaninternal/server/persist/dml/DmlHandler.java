@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +69,8 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	protected final SpiTransaction transaction;
 	
 	protected final boolean emptyStringToNull;
+	
+    private Set<String> additionalProps;
 
 	protected DmlHandler(PersistRequestBean<?> persistRequest, boolean emptyStringToNull) {
 		this.persistRequest = persistRequest;
@@ -237,7 +240,33 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		}
 	}
 
-	/**
+    /**
+     * For generated properties set on insert register as additional
+     * loaded properties if required.
+     */
+    public final void registerAdditionalProperty(String propertyName) {
+        if (loadedProps != null && !loadedProps.contains(propertyName)){
+            if (additionalProps == null){
+                additionalProps = new HashSet<String>();
+            }
+            additionalProps.add(propertyName);
+        }
+    }
+
+    /**
+     * Set any additional (generated) properties to the set of loaded properties
+     * if required.
+     */
+    protected void setAdditionalProperties() {
+        if (additionalProps != null){
+            // additional generated properties set on insert
+            // added to the set of loaded properties
+            additionalProps.addAll(loadedProps);
+            persistRequest.setLoadedProps(additionalProps);
+        }
+    }
+
+    /**
 	 * Register a generated value on a update. This can not be set to the bean
 	 * until after the where clause has been bound for concurrency checking.
 	 * <p>
@@ -251,6 +280,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 			updateGenValues = new ArrayList<UpdateGenValue>();
 		}
 		updateGenValues.add(new UpdateGenValue(prop, bean, value));
+        registerAdditionalProperty(prop.getName());
 	}
 
 

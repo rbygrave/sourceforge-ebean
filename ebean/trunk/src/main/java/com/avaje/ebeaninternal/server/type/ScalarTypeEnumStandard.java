@@ -24,6 +24,7 @@ import java.sql.Types;
 import java.util.EnumSet;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 
 
 /**
@@ -151,6 +152,17 @@ public class ScalarTypeEnumStandard {
 		public boolean isDateTimeCapable() {
 			return false;
 		}
+		
+	    @Override
+	    public String jsonFromString(String value, JsonValueAdapter ctx) {
+	        return value;
+	    }
+
+	    @Override
+	    public String jsonToString(Object value, JsonValueAdapter ctx) {
+	        return EscapeJson.escapeQuote(value.toString());
+	    }
+
 	}
 	
 	@SuppressWarnings("unchecked")

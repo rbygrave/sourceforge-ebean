@@ -33,6 +33,7 @@ import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.text.csv.CsvReader;
+import com.avaje.ebean.text.json.JsonContext;
 
 /**
  * Provides the API for fetching and saving beans to a particular DataSource.
@@ -1047,14 +1048,10 @@ public interface EbeanServer {
      */
     public void runCacheWarming(Class<?> beanType);
 
-    // /**
-    // * Register the BeanPersistController.
-    // */
-    // public void register(BeanPersistController c);
-    //
-    // /**
-    // * De-register the BeanPersistController.
-    // */
-    // public void deregister(BeanPersistController c);
+    /**
+     * Create a JsonContext that will use the default
+     * configuration options.
+     */
+    public JsonContext createJsonContext();
 
 }

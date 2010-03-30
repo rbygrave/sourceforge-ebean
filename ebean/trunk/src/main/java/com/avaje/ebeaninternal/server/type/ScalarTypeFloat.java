@@ -70,4 +70,11 @@ public class ScalarTypeFloat extends ScalarTypeBase<Float> {
 		return true;
 	}
 
+    public String toJsonString(Float value) {
+        if(value.isInfinite() || value.isNaN()) {
+            return "null";
+        } else {
+            return value.toString();
+        }
+    }
 }

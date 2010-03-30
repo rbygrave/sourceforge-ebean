@@ -17,14 +17,15 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.build;
 
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
+import com.avaje.tests.xml.oxm.OxmNode;
 
 public abstract class XbBase {
 
-    protected XbNode rootNode;
+    protected OxmNode rootNode;
     protected final String nodeName;
     protected final String propertyName;
     protected StringParser parser;
@@ -36,7 +37,7 @@ public abstract class XbBase {
         this.propertyName = null;
     }
     
-    public XbBase(XbNode rootNode, String nodeName, String propertyName) {
+    public XbBase(OxmNode rootNode, String nodeName, String propertyName) {
         this.rootNode = rootNode;
         this.nodeName = nodeName;
         this.propertyName = propertyName;

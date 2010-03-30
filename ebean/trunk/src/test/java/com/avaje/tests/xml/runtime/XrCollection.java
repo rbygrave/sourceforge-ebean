@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.runtime;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -34,7 +34,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public class XopCollection extends XopNode implements XoiNode {
+public class XrCollection extends XrNode implements XoiNode {
     
     private final boolean invokeFetch;
     
@@ -47,21 +47,21 @@ public class XopCollection extends XopNode implements XoiNode {
     /**
      * Construct with no mapKey and no attributes.
      */
-    public XopCollection(String name, ElPropertyValue prop, XoiNode[] children, boolean invokeFetch) {
+    public XrCollection(String name, ElPropertyValue prop, XoiNode[] children, boolean invokeFetch) {
         this(name, prop, children, null, invokeFetch, null);
     }
 
     /**
      * Construct with no attributes.
      */
-    public XopCollection(String name, ElPropertyValue prop, XoiNode[] children, boolean invokeFetch, String mapKey) {
+    public XrCollection(String name, ElPropertyValue prop, XoiNode[] children, boolean invokeFetch, String mapKey) {
         this(name, prop, children, null, invokeFetch, mapKey);
     }
     
     /**
      * Construct with all options.
      */
-    public XopCollection(String name, ElPropertyValue prop, XoiNode[] children, XoiAttribute[] attributes, boolean invokeFetch, String mapKey) {
+    public XrCollection(String name, ElPropertyValue prop, XoiNode[] children, XoiAttribute[] attributes, boolean invokeFetch, String mapKey) {
 
         super(name, prop, null, null, null, children, attributes);
         this.invokeFetch = invokeFetch;
@@ -73,7 +73,7 @@ public class XopCollection extends XopNode implements XoiNode {
 
     
     @Override
-    public void readNode(Node node, XoWriteContext ctx) {
+    public void readNode(Node node, XrReadContext ctx) {
         
         Object parentBean = ctx.getBean();
         
@@ -115,7 +115,7 @@ public class XopCollection extends XopNode implements XoiNode {
     }
     
     @Override
-    public void writeContent(XmlOutputWriter o, Object bean, Object val) throws IOException {
+    public void writeContent(XrOutputWriter o, Object bean, Object val) throws IOException {
         
         Collection<?> collection = (Collection<?>)val;
         Iterator<?> it = collection.iterator();
@@ -128,7 +128,7 @@ public class XopCollection extends XopNode implements XoiNode {
     }
 
     @Override
-    public void writeContent(XmlOutputDocument out, Node e, Object bean, Object value) throws IOException {
+    public void writeContent(XrOutputDocument out, Node e, Object bean, Object value) throws IOException {
         
         Collection<?> collection = (Collection<?>)value;
         Iterator<?> it = collection.iterator();
@@ -141,7 +141,7 @@ public class XopCollection extends XopNode implements XoiNode {
     }
 
     @Override
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException {
+    public void writeNode(XrOutputDocument out, Node node, Object bean) throws IOException {
         super.writeNode(out, node, bean);
     }
     

@@ -17,20 +17,28 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.ebeaninternal.server.text.json;
 
 import java.io.IOException;
+import java.io.Writer;
 
-import org.w3c.dom.Node;
+import com.avaje.ebean.text.TextException;
 
-public interface XoiNode {
+public class WriteJsonBufferWriter implements WriteJsonBuffer {
 
-    public String getNodeName();
+    private final Writer buffer;
     
-    public void writeNode(XmlOutputDocument out, Node node, Object bean) throws IOException;
-
-    public void writeNode(XmlOutputWriter o, Object bean) throws IOException;
-
-    public void readNode(Node node, XoWriteContext ctx);
-
+    public WriteJsonBufferWriter(Writer buffer){
+        this.buffer = buffer;
+    }
+    
+    public WriteJsonBufferWriter append(String content){
+        try {
+            buffer.write(content);
+            return this;
+        } catch (IOException e) {
+            throw new TextException(e);
+        }
+    }
+    
 }

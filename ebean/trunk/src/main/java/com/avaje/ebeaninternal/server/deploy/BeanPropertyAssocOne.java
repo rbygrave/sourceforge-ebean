@@ -38,6 +38,8 @@ import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
  * Property mapped to a joined bean.
@@ -778,5 +780,36 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             String relativePrefix = ctx.getRelativePrefix(getName());
             tableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
         }
+    }
+    
+    @Override
+    public void jsonWrite(WriteJsonContext ctx, Object bean) {
+        
+        if (ctx.includedProp(name)) {
+            Object value = getValue(bean);
+            if (value == null){
+                ctx.beginAssocOneIsNull(name);
+                
+            } else {
+                if (ctx.isParentBean(value)){
+                    // bi-directional and already rendered parent
+                    
+                } else {
+                    ctx.pushParentBean(bean);
+                    ctx.beginAssocOne(name);
+                    BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
+                    refDesc.jsonWrite(ctx, value);
+                    ctx.endAssocOne();
+                    ctx.popParentBean();
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void jsonRead(ReadJsonContext ctx, Object bean){
+        
+        T assocBean = targetDescriptor.jsonRead(ctx);
+        setValue(bean, assocBean);
     }
 }

@@ -126,7 +126,11 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         this.vanilla = true;
         this.isDirty = true;
         this.oldValues = bean;
-        this.intercept = null;
+        if (bean instanceof EntityBean) {
+            this.intercept = ((EntityBean)bean)._ebean_getIntercept();
+        } else {
+            this.intercept = null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -302,6 +306,16 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         return concurrencyMode;
     }
 
+    /**
+     * Set loaded properties when generated values has added properties
+     * such as created and updated timestamps.
+     */
+    public void setLoadedProps(Set<String> additionalProps){
+        if (intercept != null){
+            intercept.setLoadedProps(additionalProps);
+        }
+    }
+    
     public Set<String> getLoadedProperties() {
         return loadedProps;
     }

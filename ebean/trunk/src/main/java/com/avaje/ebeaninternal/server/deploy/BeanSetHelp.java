@@ -13,6 +13,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.common.BeanSet;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
  * Helper specifically for dealing with Sets.
@@ -171,4 +172,30 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 			many.setValue(parentBean, newBeanSet);
 		}
 	}
+	
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection) {
+        
+        Set<?> set;
+        if (collection instanceof BeanCollection<?>){
+            BeanSet<?> bc = (BeanSet<?>)collection;
+            if (!bc.isPopulated()){
+                return;
+            } 
+            set = bc.getActualSet();
+        } else {
+            set = (Set<?>)collection;
+        }
+        
+        int count = 0;
+        ctx.beginAssocMany(name);
+        Iterator<?> it = set.iterator();
+        while (it.hasNext()) {
+            Object detailBean = it.next();
+            if (count++ > 0){
+                ctx.appendComma();
+            }
+            targetDescriptor.jsonWrite(ctx, detailBean);
+        }
+        ctx.endAssocMany();        
+    }
 }

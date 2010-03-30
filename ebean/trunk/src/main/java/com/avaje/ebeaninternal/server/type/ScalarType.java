@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 
 /**
  * Describes a scalar type.
@@ -185,5 +186,9 @@ public interface ScalarType<T> extends StringParser, StringFormatter, ScalarData
 	 * </p>
 	 */
 	public boolean isDateTimeCapable();
+
+	public String jsonToString(T value, JsonValueAdapter ctx);
+
+    public T jsonFromString(String value, JsonValueAdapter ctx);
 
 }

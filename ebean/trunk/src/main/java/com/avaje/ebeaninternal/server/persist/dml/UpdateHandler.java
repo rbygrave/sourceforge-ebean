@@ -87,6 +87,7 @@ public class UpdateHandler extends DmlHandler {
 		int rowCount = dataBind.executeUpdate();
 		persistRequest.checkRowCount(rowCount);
 		persistRequest.postExecute();
+		setAdditionalProperties();
 		return rowCount;
 	}
 

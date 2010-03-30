@@ -52,6 +52,8 @@ import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectGetter;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectSetter;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.util.ValueUtil;
@@ -1180,4 +1182,28 @@ public class BeanProperty implements ElPropertyValue {
         return name;
     }
 
+    @SuppressWarnings("unchecked")
+    public void jsonWrite(WriteJsonContext ctx, Object bean) {
+        
+        Object value = getValue(bean);
+        if (value == null){
+            ctx.appendNull(name);
+        } else {
+            String jv = scalarType.jsonToString(value, ctx.getValueAdapter());
+            ctx.appendKeyValue(name, jv);
+        }
+    }
+
+    public void jsonRead(ReadJsonContext ctx, Object bean){
+        
+        String jsonValue = ctx.readScalarValue();
+        
+        Object objValue;
+        if (jsonValue == null){
+            objValue = null;
+        } else {
+            objValue = scalarType.jsonFromString(jsonValue, ctx.getValueAdapter());
+        }
+        setValue(bean, objValue);
+    }
 }

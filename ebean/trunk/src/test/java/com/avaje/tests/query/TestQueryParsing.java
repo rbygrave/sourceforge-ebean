@@ -54,8 +54,8 @@ public class TestQueryParsing extends TestCase {
         Assert.assertTrue(detail.getChunk("details", false).isQueryJoin());
         Assert.assertTrue(detail.getChunk("details", false).isLazyJoin());
 
-        Assert.assertEquals(4, detail.getChunk("details", false).getQueryJoinBatch());
-        Assert.assertEquals(5, detail.getChunk("details", false).getLazyJoinBatch());
+        Assert.assertEquals(4, detail.getChunk("details", false).getQueryFetchBatch());
+        Assert.assertEquals(5, detail.getChunk("details", false).getLazyFetchBatch());
 
         Assert.assertTrue(detail.getChunk("details", false).allProperties());
         

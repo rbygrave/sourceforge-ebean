@@ -25,6 +25,7 @@ import java.sql.Types;
 
 import org.joda.time.LocalDateTime;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -87,4 +88,9 @@ public class ScalarTypeJodaLocalDateTime extends ScalarTypeBase<LocalDateTime> {
 		return true;
 	}
 
+    @Override
+    public String jsonToString(LocalDateTime value, JsonValueAdapter ctx) {
+        Timestamp d = (Timestamp)toJdbcType(value);
+        return ctx.jsonFromTimestamp(d);
+    }
 }

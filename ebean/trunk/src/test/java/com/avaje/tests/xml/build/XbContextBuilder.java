@@ -17,26 +17,32 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.build;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.tests.xml.oxm.OxmContext;
+import com.avaje.tests.xml.oxm.OxmContextBuilder;
+import com.avaje.tests.xml.oxm.OxmNamingConvention;
+import com.avaje.tests.xml.runtime.XoiNode;
+import com.avaje.tests.xml.runtime.XrContext;
 
-public class XomBuilder {
+public class XbContextBuilder implements OxmContextBuilder {
     
     private final SpiEbeanServer ebeanServer;
 
-    private final XomNamingConvention namingConvention;
+    private final OxmNamingConvention namingConvention;
         
     String rootNodeName;
     
     Map<String,XbNode> rootNodes = new HashMap<String,XbNode>();
 
 
-    public XomBuilder(SpiEbeanServer ebeanServer, XomNamingConvention namingConvention){
+    public XbContextBuilder(SpiEbeanServer ebeanServer, OxmNamingConvention namingConvention){
         this.ebeanServer = ebeanServer;
         this.namingConvention = namingConvention;
     }
@@ -58,5 +64,23 @@ public class XomBuilder {
         
         return rootNode;
     }
+
+    public OxmContext createContext() {
+        
+        Map<Class<?>,XoiNode> classNodeMap = new HashMap<Class<?>, XoiNode>(rootNodes.size()+4);
+        Map<String,XoiNode> tagNodeMap = new HashMap<String, XoiNode>(rootNodes.size()+4);
+        
+        Iterator<XbNode> it = rootNodes.values().iterator();
+        while (it.hasNext()) {
+            XbNode xbNode = it.next();
+            XoiNode xoiNode = xbNode.createNode();
+            
+            classNodeMap.put(xbNode.getRootBeanType(), xoiNode);
+            tagNodeMap.put(xbNode.getRootElementName(), xoiNode);
+        }
+        
+        return new XrContext(tagNodeMap, classNodeMap);
+    }
+    
     
 }

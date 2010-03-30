@@ -60,7 +60,7 @@ public class InsertHandler extends DmlHandler {
 	 * supported.
 	 */
 	private String selectLastInsertedId;
-
+	    
 	/**
 	 * Create to handle the insert execution.
 	 */
@@ -69,7 +69,7 @@ public class InsertHandler extends DmlHandler {
 		this.meta = meta;
 		this.concatinatedKey = meta.isConcatinatedKey();
 	}
-
+	
 	/**
 	 * Generate and bind the insert statement.
 	 */
@@ -156,9 +156,10 @@ public class InsertHandler extends DmlHandler {
 
 		persistRequest.checkRowCount(rc);
 		persistRequest.postExecute();
+		setAdditionalProperties();
 		return rc;
 	}
-
+	
 	/**
 	 * For non batch insert with generated keys.
 	 */

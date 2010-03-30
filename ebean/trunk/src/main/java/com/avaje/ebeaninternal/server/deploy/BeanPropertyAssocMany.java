@@ -42,6 +42,8 @@ import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
  * Property mapped to a List Set or Map.
@@ -645,4 +647,36 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
         return null != targetDescriptor.getId(otherBean);
     }
 
+    public void jsonWrite(WriteJsonContext ctx, Object bean) {
+        
+        if (ctx.includedProp(name)) {
+            Object value = getValue(bean);
+            if (value != null){
+                ctx.pushParentBeanMany(bean);
+                help.jsonWrite(ctx, name, value);
+                ctx.popParentBeanMany();
+            }
+        }
+    }
+    
+    public void jsonRead(ReadJsonContext ctx, Object bean){
+          
+        if (!ctx.readArrayBegin()) {
+            // the array is null
+            return;
+        }
+        
+        Object collection = help.createEmpty(false);
+        BeanCollectionAdd add = getBeanCollectionAdd(collection, null);
+        do {
+            Object detailBean = targetDescriptor.jsonRead(ctx);
+            add.addBean(detailBean);
+            if (!ctx.readArrayNext()){
+                break;
+            }
+        } while(true);
+        
+        setValue(bean, collection);
+    
+    }
 }

@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.runtime;
 
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
@@ -26,7 +26,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
-public abstract class XopBase {
+public abstract class XrBase {
 
     protected final String nodeName;
     protected final ElPropertyValue prop;
@@ -39,7 +39,7 @@ public abstract class XopBase {
 
     protected BeanDescriptor<?> beanDescriptor;
 
-    protected XopBase(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter, StringParser parser) {
+    protected XrBase(String nodeName, ElPropertyValue prop, BeanDescriptor<?> parentDesc, StringFormatter formatter, StringParser parser) {
         
         if (formatter == null && prop != null){
             formatter = prop.getStringFormatter();

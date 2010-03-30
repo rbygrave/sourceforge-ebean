@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.tests.xml;
+package com.avaje.tests.xml.build;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,9 +29,15 @@ import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.tests.xml.oxm.OxmNode;
+import com.avaje.tests.xml.runtime.XoiAttribute;
+import com.avaje.tests.xml.runtime.XoiNode;
+import com.avaje.tests.xml.runtime.XrCollection;
+import com.avaje.tests.xml.runtime.XrNode;
 
-public class XbNode extends XbBase {
+public class XbNode extends XbBase implements OxmNode {
 
     private Map<String,XbAttribute> attributes = new LinkedHashMap<String, XbAttribute>();
 
@@ -47,38 +53,42 @@ public class XbNode extends XbBase {
         this.rootNode = this;
     }
     
-    public XbNode(XbNode rootNode, String propertyName, String nodeName) {
+    public XbNode(OxmNode rootNode, String propertyName, String nodeName) {
         super(rootNode, nodeName, propertyName);
         this.rootElementName = null;
         this.rootDescriptor = null;
     }
 
+    public Class<?> getRootBeanType() {
+        return rootDescriptor.getBeanType();
+    }
+    
     public String getRootElementName() {
         return rootElementName;
     }
 
-    public XbNode addWrapperElement(String elementName){
+    public OxmNode addWrapperElement(String elementName){
         return addElement(null, elementName);
     }
     
-    public XbNode addElement(String propertyName){
+    public OxmNode addElement(String propertyName){
         String elementName = getNamingConventionNodeName(propertyName);
         return addElement(propertyName, elementName);
     }
     
-    public XbNode addElement(String propertyName, String elementName){
+    public OxmNode addElement(String propertyName, String elementName){
         
         XbNode n = new XbNode(rootNode, propertyName, elementName);
         childNodes.add(n);
         return n;
     }
     
-    public XbNode addAttribute(String propertyName){
+    public OxmNode addAttribute(String propertyName){
         String attrName = getNamingConventionNodeName(propertyName);
         return addAttribute(propertyName, attrName);
     }
     
-    public XbNode addAttribute(String propertyName, String attrName){
+    public OxmNode addAttribute(String propertyName, String attrName){
         XbAttribute xbAttribute = attributes.get(attrName);
         if (xbAttribute != null){
             throw new RuntimeException("Attribute with this name ["+attrName+"]already exists");
@@ -110,6 +120,13 @@ public class XbNode extends XbBase {
                 // move to the relative/target descriptor before 
                 // evaluating the attributes and children for this node
                 BeanDescriptor<?> targetDescriptor = ((BeanPropertyAssoc<?>)p).getTargetDescriptor();
+                if (targetDescriptor == null) {
+                    if (EntityType.XMLELEMENT.equals(d.getEntityType())){
+                        Class<?> targetType = p.getPropertyType();
+                        targetDescriptor = d.getBeanDescriptor(targetType);
+                    }
+                }
+                
                 if (targetDescriptor != null){
                     d = targetDescriptor;
                 }
@@ -135,12 +152,12 @@ public class XbNode extends XbBase {
 
         if (assocManyProperty){
             boolean invokeFetch = false;
-            return new XopCollection(nodeName, prop, children, invokeFetch);
+            return new XrCollection(nodeName, prop, children, invokeFetch);
         }
         if (assocOneProperty){
-            return new XopNode(nodeName, prop, d, children, attrs);            
+            return new XrNode(nodeName, prop, d, children, attrs);            
         }
      
-        return new XopNode(nodeName, prop, d, formatter, parser, children, attrs);
+        return new XrNode(nodeName, prop, d, formatter, parser, children, attrs);
     }
 }

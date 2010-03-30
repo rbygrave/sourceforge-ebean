@@ -78,6 +78,11 @@ public interface BindableRequest {
 	public void registerUpdateGenValue(BeanProperty prop, Object bean, Object value);
 
 	/**
+	 * Register a property into loadedProperties if required.
+	 */
+	public void registerAdditionalProperty(String propertyName);
+	
+	/**
 	 * Return the original PersistRequest.
 	 */
 	public PersistRequestBean<?> getPersistRequest();

@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.json.JsonValueAdapter;
 
 /**
  * ScalarType for java.net.URI which converts to and from a VARCHAR database column.
@@ -90,4 +91,13 @@ public class ScalarTypeURI extends ScalarTypeBase<URI> {
 	public boolean isDateTimeCapable() {
 		return false;
 	}
+	
+    public URI jsonFromString(String value, JsonValueAdapter ctx) {
+        return parse(value);
+    }
+
+    public String jsonToString(URI value, JsonValueAdapter ctx) {
+        String s = format(value);
+        return EscapeJson.escapeQuote(s);
+    }
 }

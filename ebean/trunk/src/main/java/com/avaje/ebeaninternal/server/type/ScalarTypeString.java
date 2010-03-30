@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.type;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
@@ -70,4 +71,15 @@ public class ScalarTypeString extends ScalarTypeBase<String> {
 		return true;
 	}
 
+    @Override
+    public String jsonFromString(String value, JsonValueAdapter ctx) {
+        return value;
+    }
+
+    @Override
+    public String jsonToString(String value, JsonValueAdapter ctx) {
+        return EscapeJson.escapeQuote(value);
+    }
+
+	
 }

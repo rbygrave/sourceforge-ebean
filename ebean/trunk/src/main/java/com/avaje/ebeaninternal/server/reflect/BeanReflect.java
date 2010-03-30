@@ -38,6 +38,8 @@ public interface BeanReflect {
 	 */
 	public Object createVanillaBean();
 	
+	public boolean isVanillaOnly();
+	
 	/**
 	 * Return the getter for a given bean property.
 	 */

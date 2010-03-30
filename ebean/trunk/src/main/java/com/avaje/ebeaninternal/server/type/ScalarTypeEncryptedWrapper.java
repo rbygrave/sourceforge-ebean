@@ -21,6 +21,8 @@ package com.avaje.ebeaninternal.server.type;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
+
 public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
 
     private final ScalarType<T> wrapped;
@@ -109,6 +111,12 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
         wrapped.accumulateScalarTypes(propName, list);
     }
 
-    
+    public String jsonToString(T value, JsonValueAdapter ctx) {
+        return wrapped.jsonToString(value, ctx);
+    }
+
+    public T jsonFromString(String value, JsonValueAdapter ctx) {
+        return wrapped.jsonFromString(value, ctx);
+    }
     
 }

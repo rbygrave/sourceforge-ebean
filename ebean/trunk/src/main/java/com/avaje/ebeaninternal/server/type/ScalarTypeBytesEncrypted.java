@@ -21,6 +21,8 @@ package com.avaje.ebeaninternal.server.type;
 
 import java.sql.SQLException;
 
+import com.avaje.ebean.text.json.JsonValueAdapter;
+
 /**
  * Encrypted ScalarType that wraps a byte[] types.
  * 
@@ -103,5 +105,12 @@ public class ScalarTypeBytesEncrypted implements ScalarType<byte[]> {
         baseType.accumulateScalarTypes(propName, list);
     }
 
+    public String jsonToString(byte[] value, JsonValueAdapter ctx) {
+        return baseType.jsonToString(value, ctx);
+    }
+
+    public byte[] jsonFromString(String value, JsonValueAdapter ctx) {
+        return baseType.jsonFromString(value, ctx);
+    }
     
 }

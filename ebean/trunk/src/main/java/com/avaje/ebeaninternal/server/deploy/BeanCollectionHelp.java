@@ -10,6 +10,7 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
  * Helper functions for performing tasks on Lists Sets or Maps.
@@ -68,5 +69,10 @@ public interface BeanCollectionHelp<T> {
 	 * Apply the new refreshed BeanCollection to the appropriate property of the parent bean.
 	 */
 	public void refresh(BeanCollection<?> bc, Object parentBean);
+
+	/**
+	 * Write the collection out as json.
+	 */
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection);
 
 }
