@@ -1827,7 +1827,7 @@ public final class DefaultServer implements SpiEbeanServer {
         return transactionManager.createQueryTransaction();
     }
 
-    private static final int IGNORE_LEADING_ELEMENTS = 6;
+    private static final int IGNORE_LEADING_ELEMENTS = 5;
     private static final String AVAJE_EBEAN = Ebean.class.getName().substring(0, 15);
 
     /**
