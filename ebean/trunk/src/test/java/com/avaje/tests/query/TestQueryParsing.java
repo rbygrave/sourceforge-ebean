@@ -43,16 +43,16 @@ public class TestQueryParsing extends TestCase {
         OrmQueryDetail detail = sq.getDetail();
         
         Assert.assertNotNull(detail.getChunk("customer", false));
-        Assert.assertFalse(detail.getChunk("customer", false).isQueryJoin());
-        Assert.assertFalse(detail.getChunk("customer", false).isLazyJoin());
+        Assert.assertFalse(detail.getChunk("customer", false).isQueryFetch());
+        Assert.assertFalse(detail.getChunk("customer", false).isLazyFetch());
         
         Assert.assertNotNull(detail.getChunk("customer.contacts", false));
-        Assert.assertFalse(detail.getChunk("customer.contacts", false).isQueryJoin());
-        Assert.assertFalse(detail.getChunk("customer.contacts", false).isLazyJoin());
+        Assert.assertFalse(detail.getChunk("customer.contacts", false).isQueryFetch());
+        Assert.assertFalse(detail.getChunk("customer.contacts", false).isLazyFetch());
 
         Assert.assertNotNull(detail.getChunk("details", false));
-        Assert.assertTrue(detail.getChunk("details", false).isQueryJoin());
-        Assert.assertTrue(detail.getChunk("details", false).isLazyJoin());
+        Assert.assertTrue(detail.getChunk("details", false).isQueryFetch());
+        Assert.assertTrue(detail.getChunk("details", false).isLazyFetch());
 
         Assert.assertEquals(4, detail.getChunk("details", false).getQueryFetchBatch());
         Assert.assertEquals(5, detail.getChunk("details", false).getLazyFetchBatch());

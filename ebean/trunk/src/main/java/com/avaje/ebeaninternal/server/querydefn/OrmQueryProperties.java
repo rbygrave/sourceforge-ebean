@@ -38,6 +38,7 @@ public class OrmQueryProperties implements Serializable {
      * NB: -1 means no +query, 0 means use the default batch size.
      */
     private int queryFetchBatch = -1;
+    private boolean queryFetchAll;
 
     /**
      * NB: -1 means no +lazy, 0 means use the default batch size.
@@ -101,6 +102,7 @@ public class OrmQueryProperties implements Serializable {
         if (fetchConfig != null) {
             lazyFetchBatch = fetchConfig.getLazyBatchSize();
             queryFetchBatch = fetchConfig.getQueryBatchSize();
+            queryFetchAll = fetchConfig.isQueryAll();
         }
     }
     
@@ -233,6 +235,7 @@ public class OrmQueryProperties implements Serializable {
         copy.properties = properties;
         copy.cache = cache;
         copy.readOnly = readOnly;
+        copy.queryFetchAll = queryFetchAll;
         copy.queryFetchBatch = queryFetchBatch;
         copy.lazyFetchBatch = lazyFetchBatch;
         copy.filterMany = filterMany;
@@ -420,32 +423,47 @@ public class OrmQueryProperties implements Serializable {
      *            where -1 means not a query join and 0 means use the default
      *            batch size.
      */
-    public OrmQueryProperties setQueryJoinBatch(int queryJoinBatch) {
-        this.queryFetchBatch = queryJoinBatch;
+    public OrmQueryProperties setQueryFetchBatch(int queryFetchBatch) {
+        this.queryFetchBatch = queryFetchBatch;
         return this;
     }
 
+    public OrmQueryProperties setQueryFetchAll(boolean queryFetchAll) {
+        this.queryFetchAll = queryFetchAll;
+        return this;
+    }
+
+    public OrmQueryProperties setQueryFetch(int batch, boolean queryFetchAll) {
+        this.queryFetchBatch = batch;
+        this.queryFetchAll = queryFetchAll;
+        return this;
+    }
+    
     /**
      * Set the lazy loading batch size.
      */
-    public OrmQueryProperties setLazyJoinBatch(int lazyJoinBatch) {
-        this.lazyFetchBatch = lazyJoinBatch;
+    public OrmQueryProperties setLazyFetchBatch(int lazyFetchBatch) {
+        this.lazyFetchBatch = lazyFetchBatch;
         return this;
     }
     
     public boolean isFetchJoin() {
-        return !isQueryJoin() && !isLazyJoin();
+        return !isQueryFetch() && !isLazyFetch();
     }
     
-    public boolean isQueryJoin() {
+    public boolean isQueryFetch() {
         return queryFetchBatch > -1;
     }
 
     public int getQueryFetchBatch() {
         return queryFetchBatch;
     }
+    
+    public boolean isQueryFetchAll() {
+        return queryFetchAll;
+    }
 
-    public boolean isLazyJoin() {
+    public boolean isLazyFetch() {
         return lazyFetchBatch > -1;
     }
 

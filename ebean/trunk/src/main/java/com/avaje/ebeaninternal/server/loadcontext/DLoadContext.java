@@ -106,7 +106,7 @@ public class DLoadContext implements LoadContext {
 					batchSize = defaultQueryBatch;
 				}
 				LoadSecondaryQuery load = getLoadSecondaryQuery(properties.getPath());
-				load.load(parentRequest, batchSize);
+				load.loadSecondaryQuery(parentRequest, batchSize, properties.isQueryFetchAll());
 			}
 		}
 	}

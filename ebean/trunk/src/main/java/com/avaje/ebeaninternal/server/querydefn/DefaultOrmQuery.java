@@ -328,8 +328,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
     /**
      * Convert any many joins fetch joins to query joins.
      */
-    public void convertManyFetchJoinsToQueryJoins(boolean allowOne, int queryBatch, int lazyBatch) {
-        detail.convertManyFetchJoinsToQueryJoins(beanDescriptor, lazyLoadManyPath, allowOne, queryBatch, lazyBatch);
+    public void convertManyFetchJoinsToQueryJoins(boolean allowOne, int queryBatch) {
+        detail.convertManyFetchJoinsToQueryJoins(beanDescriptor, lazyLoadManyPath, allowOne, queryBatch);
     }
 	
 	/**
@@ -792,7 +792,11 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
         } else {
             c = new FetchConfig();
             c.lazy(joinConfig.getLazyBatchSize());
-            c.query(joinConfig.getQueryBatchSize());
+            if (joinConfig.isQueryAll()){
+                c.query(joinConfig.getQueryBatchSize());                
+            } else {
+                c.queryFirst(joinConfig.getQueryBatchSize());
+            }
         }
         
 	    detail.addFetch(property, columns, c);

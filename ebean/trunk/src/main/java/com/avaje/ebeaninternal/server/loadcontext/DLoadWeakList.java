@@ -34,41 +34,50 @@ public class DLoadWeakList<T> {
 	}
 	
 	public int add(T e){
-		int i = list.size();
-		list.add(new WeakReference<T>(e));
-		return i;
+	    synchronized (this) {
+	        int i = list.size();
+	        list.add(new WeakReference<T>(e));
+	        return i;            
+        }
 	}
-	
-	public T removeEntry(int position) {
-		int relativePos = position - removedFromTop;
-		WeakReference<T> weakElement = list.get(relativePos);
 
-		if (relativePos == 0){
-			list.remove(0);
-		} else {
-			list.set(relativePos, null);			
-		}
-		return weakElement.get();
+	/**
+	 * Return the next batch of entries from the top.
+	 */
+    public List<T> getNextBatch(int batchSize) {
+        synchronized (this) {
+            return getBatch(0, batchSize);
+        }
+    }
+   
+    /**
+     * Return the batch of entries based on the position and batch size.
+     */
+	public List<T> getLoadBatch(int position, int batchSize){
+	    synchronized (this) {
+    		if (batchSize < 1){
+    			throw new RuntimeException("batchSize "+batchSize+" < 1 ??!!");
+    		}
+    		
+    		int relativePos = position - removedFromTop;
+    		if (relativePos - batchSize < 0){
+    			relativePos = 0;
+    		}
+    		if (relativePos > 0 && ((relativePos + batchSize)> list.size())){
+    			relativePos = list.size() - batchSize;
+    			if (relativePos < 0){
+    				relativePos = 0;
+    			}
+    		}
+    		
+    	    return getBatch(relativePos, batchSize);
+	    }
 	}
 	
-	public List<T> getLoadBatch(int position, int batchSize){
-		
-		if (batchSize < 1){
-			throw new RuntimeException("batchSize "+batchSize+" < 1 ??!!");
-		}
-		
-		ArrayList<T> batch = new ArrayList<T>();
-		
-		int relativePos = position - removedFromTop;
-		if (relativePos - batchSize < 0){
-			relativePos = 0;
-		}
-		if (relativePos > 0 && ((relativePos + batchSize)> list.size())){
-			relativePos = list.size() - batchSize;
-			if (relativePos < 0){
-				relativePos = 0;
-			}
-		}
+    private List<T> getBatch(int relativePos, int batchSize) {
+
+        ArrayList<T> batch = new ArrayList<T>();
+
 		int count = 0;
 		boolean removeFromTop = relativePos == 0;
 		

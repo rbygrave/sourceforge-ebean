@@ -158,6 +158,8 @@ public class FetchConfig {
 	
 	private int queryBatchSize = -1;
 	
+	private boolean queryAll;
+	
 	/**
 	 * Construct the fetch configuration object.
 	 */
@@ -193,22 +195,46 @@ public class FetchConfig {
 	 */
 	public FetchConfig query() {
 		this.queryBatchSize = 0;
+        this.queryAll = true;
 		return this;
 	}
 
     /**
-     * Specify that this path should be loaded as a separate query
-     * (rather than as part of the main query).
+     * Specify that this path should be loaded as a separate query (rather than
+     * as part of the main query).
      * <p>
-	 * The queryBatchSize is the number of parent id's that this 
-	 * separate query will load.
-	 * </p>
-	 */
+     * The queryBatchSize is the number of parent id's that this separate query
+     * will load per batch.
+     * </p>
+     * <p>
+     * This will load all beans on this path eagerly.
+     * </p>
+     * 
+     * @param queryBatchSize
+     *            the batch size used to load beans on this path
+     */
 	public FetchConfig query(int queryBatchSize) {
 		this.queryBatchSize = queryBatchSize;
+		this.queryAll = true;
 		return this;
 	}
 
+    /**
+     * Similar to {@link #query(int)} but only fetches the first batch.
+     * <p>
+     * If there are more parent beans than the batch size then they will not be
+     * loaded eagerly but instead use lazy loading.
+     * </p>
+     * 
+     * @param queryBatchSize
+     *            the number of parent beans this path is populated for
+     */
+    public FetchConfig queryFirst(int queryBatchSize) {
+        this.queryBatchSize = queryBatchSize;
+        this.queryAll = false;
+        return this;
+    }
+	
 	/**
 	 * Return the batch size for lazy loading.
 	 */
@@ -222,4 +248,14 @@ public class FetchConfig {
 	public int getQueryBatchSize() {
 		return queryBatchSize;
 	}
+
+    /**
+     * Return true if the query fetch should fetch 'all' rather than just the
+     * 'first' batch.
+     */
+    public boolean isQueryAll() {
+        return queryAll;
+    }
+	
+	
 }
