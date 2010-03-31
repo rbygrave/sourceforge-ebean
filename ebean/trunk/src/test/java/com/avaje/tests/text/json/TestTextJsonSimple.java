@@ -10,8 +10,8 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonWriteBeanVisitor;
-import com.avaje.ebean.text.json.JsonWriter;
 import com.avaje.ebean.text.json.JsonWriteOptions;
+import com.avaje.ebean.text.json.JsonWriter;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.ResetBasicData;
 
@@ -25,8 +25,8 @@ public class TestTextJsonSimple extends TestCase {
             .select("id, name, status, shippingAddress")
             .fetch("billingAddress","line1, city")
             .fetch("billingAddress.country","*")
-            .fetch("contacts", "firstName,email")
-            //.filterMany("contacts").raw("(cc.first_name is null or cc.first_name like 'J%')").query()
+            .fetch("contacts", "firstName,email")//, new FetchConfig().query())
+            .filterMany("contacts").ilike("firstName", "J%").query()
             //.where().lt("id", 3)
             .order().desc("id")
             .findList();
@@ -55,7 +55,8 @@ public class TestTextJsonSimple extends TestCase {
             
         });
         
-        String s = json.toJsonString(list, options);
+        String s = json.toJsonStringPretty(list, true);//(list);//, options);
+        //String s = json.toJsonString(list);//, options);
         System.out.println(s);
         
         List<Customer> mList = json.toList(Customer.class, s);
