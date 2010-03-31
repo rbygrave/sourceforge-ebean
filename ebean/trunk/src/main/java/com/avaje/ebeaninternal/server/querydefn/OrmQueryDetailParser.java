@@ -63,7 +63,7 @@ public class OrmQueryDetailParser {
 	private void process() {
 		if (isFetch()) {
 			OrmQueryProperties props = readFindFetch();
-			detail.addFetch(props);
+			detail.putFetchPath(props);
 
 		} else if (parser.isMatch("where")) {
 			readWhere();
@@ -155,7 +155,7 @@ public class OrmQueryDetailParser {
 		boolean readAlias = false;
 
 		String props = null;
-		String entity = parser.nextWord();
+		String path = parser.nextWord();
 		String token = null;
 		while ((token = parser.nextWord()) != null) {
 			if (!readAlias && parser.isMatch("as")) {
@@ -182,7 +182,7 @@ public class OrmQueryDetailParser {
 		if (props != null) {
 			props = props.substring(1, props.length() - 1);
 		}
-		return new OrmQueryProperties(entity, props, null);
+		return new OrmQueryProperties(path, props);
 	}
 
 	private boolean isFindFetchEnd() {
