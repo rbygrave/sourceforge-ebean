@@ -88,6 +88,16 @@ public interface BeanCollection<E> extends Serializable {
 	 */
 	public int getLoaderIndex();
 
+    /**
+     * Check after the lazy load that the underlying collection
+     * is not null (handle case where join to many not outer).
+     * <p>
+     * That is, if the collection was not loaded due to filterMany
+     * predicates etc then make sure the collection is set to empty.
+     * </p>
+     */
+    public boolean checkEmptyLazyLoad();
+
 	/**
 	 * Return the filter (if any) that was used in building
 	 * this collection.

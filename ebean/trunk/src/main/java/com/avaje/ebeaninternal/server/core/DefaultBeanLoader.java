@@ -21,6 +21,8 @@ package com.avaje.ebeaninternal.server.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
@@ -48,6 +50,8 @@ import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
  */
 public class DefaultBeanLoader {
 
+    private static final Logger logger = Logger.getLogger(DefaultBeanLoader.class.getName());
+    
 	private final DebugLazyLoad debugLazyLoad;
 	
 	private final DefaultServer server;
@@ -144,7 +148,6 @@ public class DefaultBeanLoader {
 			query.where().idIn(idList);			
 		}
 		
-		
 		String mode = loadRequest.isLazy() ? "+lazy" : "+query";
 		query.setLoadDescription(mode, loadRequest.getDescription());
 
@@ -157,6 +160,16 @@ public class DefaultBeanLoader {
 		}
 		
 		server.findList(query, loadRequest.getTransaction());
+		
+		// check for BeanCollection's that where never processed
+		// in the +query or +lazy load due to no rows (predicates)
+		for (int i = 0; i < batch.size(); i++) {
+		    if (batch.get(i).checkEmptyLazyLoad()) {
+		        if (logger.isLoggable(Level.FINE)){
+	                logger.fine("BeanCollection after load was empty. Owner:"+batch.get(i).getOwnerBean());
+		        }
+		    }
+        }
 	}
 	
 	public void loadMany(BeanCollection<?> bc, LoadManyContext ctx, boolean onlyIds) {
@@ -194,6 +207,7 @@ public class DefaultBeanLoader {
 
         EntityBeanIntercept ebi = null;
         PersistenceContext pc = null;
+        BeanCollection<?> beanCollection = null;
         ExpressionList<?> filterMany = null;
         
 		if (!vanilla){
@@ -206,8 +220,8 @@ public class DefaultBeanLoader {
 
         Object currentValue = many.getValue(parentBean);
         if (currentValue instanceof BeanCollection<?>){
-            BeanCollection<?> bc = (BeanCollection<?>)currentValue;
-            filterMany = bc.getFilterMany();
+            beanCollection = (BeanCollection<?>)currentValue;
+            filterMany = beanCollection.getFilterMany();
         }
 
         Object parentId = parentDesc.getId(parentBean);
@@ -260,6 +274,14 @@ public class DefaultBeanLoader {
 		}
 
 		server.findUnique(query, t);
+		
+		if (beanCollection != null){
+		    if (beanCollection.checkEmptyLazyLoad()) {
+                if (logger.isLoggable(Level.FINE)){
+                    logger.fine("BeanCollection after load was empty. Owner:"+beanCollection.getOwnerBean());
+                }
+		    }
+		}
 	}
 
 
