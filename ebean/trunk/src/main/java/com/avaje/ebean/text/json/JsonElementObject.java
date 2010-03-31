@@ -23,6 +23,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * JSON Object element.
+ * <p>
+ * You will only use the JsonElements when you register a JsonReadBeanVisitor.
+ * The JSON elements that are not mapped to a bean property are made available
+ * to the JsonReadBeanVisitor.
+ * </p>
+ * 
+ * @see JsonReadBeanVisitor
+ * 
+ * @author rbygrave
+ */
 public class JsonElementObject implements JsonElement {
 
     private final Map<String,JsonElement> map = new LinkedHashMap<String, JsonElement>();

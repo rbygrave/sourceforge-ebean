@@ -2196,13 +2196,13 @@ public class BeanDescriptor<T> {
     
     
     @SuppressWarnings("unchecked")
-    public T jsonRead(ReadJsonContext ctx){
+    public T jsonRead(ReadJsonContext ctx, String path){
         if (!ctx.readObjectBegin()) {
             // the object is null
             return null;
         }
         T bean = (T)createEntityBean();
-        ctx.pushBean(bean);
+        ctx.pushBean(bean, path);
         
         do {
             if (!ctx.readKeyNext()){

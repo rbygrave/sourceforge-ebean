@@ -669,7 +669,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
         Object collection = help.createEmpty(false);
         BeanCollectionAdd add = getBeanCollectionAdd(collection, null);
         do {
-            Object detailBean = targetDescriptor.jsonRead(ctx);
+            Object detailBean = targetDescriptor.jsonRead(ctx, name);
             if (detailBean == null){
                 // probably empty array
                 break;

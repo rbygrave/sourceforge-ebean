@@ -53,13 +53,12 @@ public class WriteJsonContext implements JsonWriter {
 
     public WriteJsonContext(WriteJsonBuffer buffer, boolean pretty, JsonValueAdapter dfltValueAdapter, JsonWriteOptions options){
         this.buffer = buffer;
-        if (options == null){
-            this.pretty = pretty;
+        this.pretty = pretty;
+        if (options == null){            
             this.valueAdapter = dfltValueAdapter;
             this.visitorMap = null;
             this.pathStack = null;
         } else {
-            this.pretty = options.isPretty();
             this.valueAdapter = getValueAdapter(dfltValueAdapter, options.getValueAdapter());
             this.visitorMap = options.getVisitorMap();
             this.pathStack = (visitorMap == null || visitorMap.isEmpty()) ? null : new PathStack();

@@ -19,6 +19,18 @@
  */
 package com.avaje.ebean.text.json;
 
+/**
+ * JSON number element.
+ * <p>
+ * You will only use the JsonElements when you register a JsonReadBeanVisitor.
+ * The JSON elements that are not mapped to a bean property are made available
+ * to the JsonReadBeanVisitor.
+ * </p>
+ * 
+ * @see JsonReadBeanVisitor
+ * 
+ * @author rbygrave
+ */
 public class JsonElementNumber implements JsonElement {
 
     private final String value;

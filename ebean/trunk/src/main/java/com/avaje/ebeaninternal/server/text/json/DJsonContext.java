@@ -78,7 +78,7 @@ public class DJsonContext implements JsonContext {
 
         BeanDescriptor<T> d = getDecriptor(cls);
         ReadJsonContext ctx = new ReadJsonContext(src, dfltValueAdapter, options);
-        return d.jsonRead(ctx);
+        return d.jsonRead(ctx, null);
     }
 
     public <T> List<T> toList(Class<T> cls, String json){
@@ -107,7 +107,7 @@ public class DJsonContext implements JsonContext {
             ReadJsonContext ctx = new ReadJsonContext(src, dfltValueAdapter, options);
             ctx.readArrayBegin();
             do {
-                T bean = d.jsonRead(ctx);
+                T bean = d.jsonRead(ctx, null);
                 if (bean != null){
                     list.add(bean);
                 }
@@ -125,32 +125,28 @@ public class DJsonContext implements JsonContext {
     
     
     public void toJsonWriter(Object o, Writer writer) {
-        toJsonInternal(o, new WriteJsonBufferWriter(writer), dfltPretty, null);
+        toJsonWriter(o, writer, dfltPretty, null);
     }
 
-    public void toJsonWriter(Object o, Writer writer, JsonWriteOptions options) {
-        toJsonInternal(o, new WriteJsonBufferWriter(writer), dfltPretty, options);
+    public void toJsonWriter(Object o, Writer writer, boolean pretty) {
+        toJsonWriter(o, writer, pretty, null);
     }    
 
-    public void toJsonWriterPretty(Object o, Writer writer, boolean pretty){
-        toJsonInternal(o, new WriteJsonBufferWriter(writer), pretty, null);
+    public void toJsonWriter(Object o, Writer writer, boolean pretty, JsonWriteOptions options){
+        toJsonInternal(o, new WriteJsonBufferWriter(writer), pretty, options);
     }
     
     public String toJsonString(Object o){
-        WriteJsonBufferString b = new WriteJsonBufferString();
-        toJsonInternal(o, b, dfltPretty, null);
-        return b.getBufferOutput();
+        return toJsonString(o, dfltPretty, null);
     }
 
-    public String toJsonString(Object o, JsonWriteOptions options){
-        WriteJsonBufferString b = new WriteJsonBufferString();
-        toJsonInternal(o, b, dfltPretty, options);
-        return b.getBufferOutput();
+    public String toJsonString(Object o, boolean pretty){
+        return toJsonString(o, pretty, null);
     }
-
-    public String toJsonStringPretty(Object bean, boolean pretty){
+    
+    public String toJsonString(Object o, boolean pretty, JsonWriteOptions options){
         WriteJsonBufferString b = new WriteJsonBufferString();
-        toJsonInternal(bean, b, pretty, null);
+        toJsonInternal(o, b, pretty, options);
         return b.getBufferOutput();
     }
 

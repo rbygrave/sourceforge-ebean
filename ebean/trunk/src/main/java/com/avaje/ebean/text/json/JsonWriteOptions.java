@@ -22,41 +22,61 @@ package com.avaje.ebean.text.json;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Provides options for customising the JSON write process.
+ * <p>
+ * You can optionally provide a custom JsonValueAdapter to handle specific
+ * formatting for Date and DateTime types.
+ * </p>
+ * <p>
+ * You can optionally register JsonWriteBeanVisitors to customise the processing
+ * of the beans as they are processed and <strong>add raw JSON elements</strong>.
+ * </p>
+ * 
+ * @see JsonContext#toList(Class, String, JsonReadOptions)
+ * 
+ * @author rbygrave
+ *
+ */
 public class JsonWriteOptions {
-
-    protected boolean pretty;
     
     protected JsonValueAdapter valueAdapter;
 
     protected Map<String, JsonWriteBeanVisitor<?>> visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>();
 
-    public boolean isPretty() {
-        return pretty;
-    }
-
-    public JsonWriteOptions setPretty(boolean pretty) {
-        this.pretty = pretty;
-        return this;
-    }
-
+    /**
+     * Return the JsonValueAdapter.
+     */
     public JsonValueAdapter getValueAdapter() {
         return valueAdapter;
     }
 
+    /**
+     * Set a JsonValueAdapter for custom DateTime and Date formatting.
+     */
     public JsonWriteOptions setValueAdapter(JsonValueAdapter valueAdapter) {
         this.valueAdapter = valueAdapter;
         return this;
     }
 
+    /**
+     * Register a JsonWriteBeanVisitor for the root level.
+     */
     public JsonWriteOptions addRootVisitor(JsonWriteBeanVisitor<?> visitor) {
         return addVisitor(null, visitor);
     }
     
+    /**
+     * Register a JsonWriteBeanVisitor for the given path.
+     */
     public JsonWriteOptions addVisitor(String path, JsonWriteBeanVisitor<?> visitor) {
         visitorMap.put(path, visitor);
         return this;
     }
 
+    /**
+     * Return the Map of registered JsonWriteBeanVisitor's by path.
+     */
     public Map<String, JsonWriteBeanVisitor<?>> getVisitorMap() {
         return visitorMap;
     }

@@ -21,14 +21,41 @@ package com.avaje.ebean.text.json;
 
 import java.sql.Timestamp;
 
+/**
+ * Allows you to customise the Date and Timestamp formats.
+ * <p>
+ * There is not a standard JSON format for Date or Timestamp types. By default
+ * Ebean uses ISO8601 "yyyy-MM-dd'T'HH:mm:ss.SSSZ" and "yyyy-MM-dd".
+ * </p>
+ * <p>
+ * Note that Ebean will convert Joda types to either of the Date or Timestamp types and
+ * back for you.
+ * </p>
+ * 
+ * @see JsonReadOptions
+ * 
+ * @author rbygrave
+ */
 public interface JsonValueAdapter {
 
+    /**
+     * Convert the Date to json string.
+     */
     public String jsonFromDate(java.sql.Date date);
-    
+
+    /**
+     * Convert the DateTime to json string.
+     */
     public String jsonFromTimestamp(java.sql.Timestamp date);
-    
+
+    /**
+     * Parse the JSON string into a Date.
+     */
     public java.sql.Date jsonToDate(String jsonDate);
 
+    /**
+     * Parse the JSON DateTime into a Timestamp.
+     */
     public Timestamp jsonToTimestamp(String jsonDateTime);
 
 }

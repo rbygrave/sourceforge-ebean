@@ -19,6 +19,8 @@
  */
 package com.avaje.ebeaninternal.server.text.json;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,11 +42,13 @@ public class ReadJsonContext {
     private final Map<String, JsonReadBeanVisitor<?>> visitorMap;
 
     private final JsonValueAdapter valueAdapter;
-    
+
+    private final PathStack pathStack;
+
     private final ArrayStack<ReadBeanState> beanState;
     private ReadBeanState currentState;
 
-    private char prevChar;
+    //private char prevChar;
     private char tokenStart;
     private String tokenKey;
     
@@ -55,9 +59,11 @@ public class ReadJsonContext {
         if (options == null){
             this.valueAdapter = dfltValueAdapter;
             this.visitorMap = null;
+            this.pathStack = null;
         } else {
             this.valueAdapter = getValueAdapter(dfltValueAdapter, options.getValueAdapter());
             this.visitorMap = options.getVisitorMap();
+            this.pathStack = (visitorMap == null || visitorMap.isEmpty()) ? null : new PathStack();
         }
     }
     
@@ -143,11 +149,11 @@ public class ReadJsonContext {
         
         ignoreWhiteSpace();
         
-        prevChar = src.nextChar("EOF reading scalarValue?");
+        char prevChar = src.nextChar("EOF reading scalarValue?");
         if ('"' == prevChar){
             return readQuotedValue();
         } else {
-            return readUnquotedValue();
+            return readUnquotedValue(prevChar);
         }
     }
    
@@ -206,8 +212,8 @@ public class ReadJsonContext {
         } while (true);
     }
 
-    protected String readUnquotedValue() {
-        String v = readUnquotedValueRaw();
+    protected String readUnquotedValue(char c) {
+        String v = readUnquotedValueRaw(c);
         if ("null".equals(v)){
             return null;
         } else {
@@ -215,10 +221,10 @@ public class ReadJsonContext {
         }
     }
     
-    private String readUnquotedValueRaw() {
+    private String readUnquotedValueRaw(char c) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append(prevChar);
+        sb.append(c);
         
         do {
             tokenStart = src.nextChar("EOF reading unquoted value");
@@ -288,16 +294,27 @@ public class ReadJsonContext {
         src.ignoreWhiteSpace();
     }
         
-    public void pushBean(Object bean){
+    public void pushBean(Object bean, String path){
         currentState = new ReadBeanState(bean);
         beanState.push(currentState);
+        if (pathStack != null){
+            pathStack.pushPathKey(path);
+        }
     }
     
     public void popBean() {
-        
+        if (pathStack != null){
+            String path = pathStack.peekWithNull();
+            JsonReadBeanVisitor<?> beanVisitor = visitorMap.get(path);
+            if (beanVisitor != null){
+                currentState.visit(beanVisitor);
+            }
+            pathStack.pop();
+        }
         currentState.setLoadedState();
         beanState.pop();
         currentState = beanState.peekWithNull();
+
     }
     
     public void setProperty(String propertyName){
@@ -325,7 +342,7 @@ public class ReadJsonContext {
         return tokenStart;
     }
 
-    private static class ReadBeanState {
+    private static class ReadBeanState implements PropertyChangeListener {
         
         private final Object bean;
         private final EntityBeanIntercept ebi;
@@ -359,12 +376,29 @@ public class ReadJsonContext {
             unmapped.put(key, value);
         }
         
+        @SuppressWarnings("unchecked")
+        private <T> void visit(JsonReadBeanVisitor<T> beanVisitor) {
+            if (ebi != null){
+                ebi.addPropertyChangeListener(this);
+            }
+            beanVisitor.visit((T)bean, unmapped);
+            if (ebi != null){
+                ebi.removePropertyChangeListener(this);
+            }
+        }
+        
         private void setLoadedState(){
             if (ebi != null){
                 ebi.setLoadedProps(loadedProps);
                 //ebi.setLoaded();
             }
         }
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            loadedProps.add(propName);
+        }
+        
+        
     }
 
 }
