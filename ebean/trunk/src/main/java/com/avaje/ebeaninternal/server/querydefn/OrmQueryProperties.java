@@ -48,8 +48,6 @@ public class OrmQueryProperties implements Serializable {
 
     private boolean readOnly;
 
-    private boolean allProperties;
-
     /**
      * Note this SHOULD be a LinkedHashSet to preserve order of the properties.
      * This is to make using SqlSelect easier with predictable property/column
@@ -76,25 +74,48 @@ public class OrmQueryProperties implements Serializable {
     @SuppressWarnings("unchecked")
     private SpiExpressionList filterMany;
     
-    public OrmQueryProperties() {
-        this(null, null, null);
-    }
-
-    public OrmQueryProperties(String path, String properties, FetchConfig fetchConfig) {
+    /**
+     * Construct with a given path (null == root path).
+     */
+    public OrmQueryProperties(String path) {
         this.path = path;
         this.parentPath = SplitName.parent(path);
-        this.properties = properties;
+    }
 
-        this.trimmedProperties = properties;
-        parseProperties();
+    public OrmQueryProperties() {
+        this(null);
+    }
 
+    /**
+     * Used by query language parser.
+     */
+    public OrmQueryProperties(String path, String properties) {
+        this(path);
+        setProperties(properties);
+    }
+
+    /**
+     * Set the Fetch configuration options for this path.
+     */
+    public void setFetchConfig(FetchConfig fetchConfig) {
         if (fetchConfig != null) {
             lazyFetchBatch = fetchConfig.getLazyBatchSize();
             queryFetchBatch = fetchConfig.getQueryBatchSize();
         }
+    }
+    
+    /**
+     * Set the comma delimited properties to fetch for this path.
+     * <p>
+     * This can include the +query and +lazy type hints.
+     * </p>
+     */
+    public void setProperties(String properties) {
+        this.properties = properties;
+        this.trimmedProperties = properties;
+        parseProperties();
 
-        this.allProperties = isAllProperties();
-        if (!allProperties) {
+        if (!isAllProperties()) {
             this.included = parseIncluded(trimmedProperties);
         } else {
             this.included = null;
@@ -105,6 +126,10 @@ public class OrmQueryProperties implements Serializable {
         return (trimmedProperties == null) || (trimmedProperties.length() == 0) || "*".equals(trimmedProperties);
     }
 
+    /**
+     * Return the expressions used to filter on this path.
+     * This should be a many path to use this method.
+     */
     @SuppressWarnings("unchecked")
     public <T> SpiExpressionList<T> filterMany(Query<T> rootQuery) {
         if (filterMany == null){
@@ -114,10 +139,16 @@ public class OrmQueryProperties implements Serializable {
         return filterMany;
     }
     
+    /**
+     * Return the filterMany expression list (can be null).
+     */
     public SpiExpressionList<?> getFilterMany() {
         return filterMany;
     }
 
+    /**
+     * Set the filterMany expression list.
+     */
     public void setFilterMany(SpiExpressionList<?> filterMany) {
         this.filterMany =  filterMany;
     }
@@ -125,11 +156,10 @@ public class OrmQueryProperties implements Serializable {
     /**
      * Set the properties from deployment default FetchTypes.
      */
-    public void setProperties(String properties, Set<String> included) {
+    public void setDefaultProperties(String properties, Set<String> included) {
         this.properties = properties;
         this.trimmedProperties = properties;
         this.included = included;
-        this.allProperties = false;
     }
 
     /**
@@ -139,7 +169,6 @@ public class OrmQueryProperties implements Serializable {
         this.properties = tunedProperties.properties;
         this.trimmedProperties = tunedProperties.trimmedProperties;
         this.included = tunedProperties.included;
-        this.allProperties = tunedProperties.allProperties;
     }
     
     /**
@@ -203,7 +232,6 @@ public class OrmQueryProperties implements Serializable {
         copy.readOnly = readOnly;
         copy.queryFetchBatch = queryFetchBatch;
         copy.lazyFetchBatch = lazyFetchBatch;
-        copy.allProperties = allProperties;
         copy.filterMany = filterMany;
         if (included != null) {
             copy.included = new HashSet<String>(included);
@@ -281,14 +309,6 @@ public class OrmQueryProperties implements Serializable {
         }
     }
 
-    public boolean isFetchInclude() {
-        if (cache) {
-            return false;
-        } else {
-            return allProperties || included != null && !included.isEmpty();
-        }
-    }
-
     /**
      * Return true if this has properties.
      */
@@ -322,7 +342,7 @@ public class OrmQueryProperties implements Serializable {
     }
 
     public boolean allProperties() {
-        return allProperties;
+        return included == null;
     }
 
     /**
@@ -383,7 +403,8 @@ public class OrmQueryProperties implements Serializable {
         if (includedBeanJoin != null && includedBeanJoin.contains(propName)) {
             return false;
         }
-        if (allProperties) {
+        if (included == null) {
+            // all properties included
             return true;
         }
         return included.contains(propName);
@@ -527,6 +548,11 @@ public class OrmQueryProperties implements Serializable {
                 set.add(temp);
             }
         }
+        
+        if (set.isEmpty()){
+            return null;
+        }
+        
         return Collections.unmodifiableSet(set);
     }
 }
