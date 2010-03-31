@@ -135,6 +135,9 @@ public class OrmQueryProperties implements Serializable {
         if (filterMany == null){
             DefaultExpressionFactory expr = new DefaultExpressionFactory(path);
             filterMany = new FilterExpressionList(expr, rootQuery);
+            // by default we need to make this a 'query join' now
+            queryFetchBatch = 100;
+            lazyFetchBatch = 100;
         }
         return filterMany;
     }
