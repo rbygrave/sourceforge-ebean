@@ -1100,7 +1100,7 @@ public final class DefaultServer implements SpiEbeanServer {
             allowOneManyFetch = false;
         }
         
-        query.convertManyFetchJoinsToQueryJoins(allowOneManyFetch, 100, 100);
+        query.convertManyFetchJoinsToQueryJoins(allowOneManyFetch, 100);
                 
         SpiTransaction serverTrans = (SpiTransaction) t;
         OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);

@@ -36,5 +36,5 @@ public interface LoadSecondaryQuery {
 	 * @param parentRequest
 	 *            the originating query request
 	 */
-	public void load(OrmQueryRequest<?> parentRequest, int requestedBatchSize);
+	public void loadSecondaryQuery(OrmQueryRequest<?> parentRequest, int requestedBatchSize, boolean all);
 }

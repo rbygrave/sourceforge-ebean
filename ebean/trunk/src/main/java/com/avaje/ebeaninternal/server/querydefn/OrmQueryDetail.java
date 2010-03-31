@@ -155,7 +155,7 @@ public class OrmQueryDetail implements Serializable {
 		Iterator<OrmQueryProperties> it = joins.values().iterator();
 		while (it.hasNext()) {
 			OrmQueryProperties chunk = it.next();
-			boolean match = lazyQuery ? chunk.isLazyJoin() : chunk.isQueryJoin();
+			boolean match = lazyQuery ? chunk.isLazyFetch() : chunk.isQueryFetch();
 			if (match){
 				matchingPaths.add(chunk.getPath());
 			}
@@ -275,7 +275,7 @@ public class OrmQueryDetail implements Serializable {
      * Convert 'fetch joins' to 'many' properties over to 'query joins'.
      */
 	public void convertManyFetchJoinsToQueryJoins(BeanDescriptor<?> beanDescriptor, 
-	        String lazyLoadManyPath, boolean allowOne, int queryBatch, int lazyBatch) {
+	        String lazyLoadManyPath, boolean allowOne, int queryBatch) {
 				
 	    ArrayList<OrmQueryProperties> manyChunks = new ArrayList<OrmQueryProperties>(3);
 	    
@@ -307,7 +307,7 @@ public class OrmQueryDetail implements Serializable {
 
 		for (int i = 0; i < manyChunks.size(); i++) {
 		    // convert over to query joins
-		    manyChunks.get(i).setQueryJoinBatch(queryBatch).setLazyJoinBatch(lazyBatch);            
+		    manyChunks.get(i).setQueryFetch(queryBatch, true);
         }
 	}
 

@@ -131,36 +131,29 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		
 		int position = ebi.getBeanLoaderIndex();
 		
-//		Object id = desc.getId(ebi.getOwner());
-//		if (desc.refreshFromCache(ebi, id)) {
-//			// we hit the cache... so not even bother with 
-//			// querying the DB. Just null out the appropriate
-//			// weak reference entry out of the list...
-//			EntityBeanIntercept removeEntry = weakList.removeEntry(position);
-//			if (removeEntry != ebi){
-//				throw new RuntimeException("Different instance returned?");
-//			}
-//			return;
-//		}
-		
 		// determine the set of beans to lazy load
 		List<EntityBeanIntercept> batch = weakList.getLoadBatch(position, batchSize);
 
 		LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty());
-
 		parent.getEbeanServer().loadBean(req);
 	}
 	
-	public void load(OrmQueryRequest<?> parentRequest, int requestedBatchSize) {
+	public void loadSecondaryQuery(OrmQueryRequest<?> parentRequest, int requestedBatchSize, boolean all) {
 		
-		// determine the set of beans to load
-		List<EntityBeanIntercept> batch = weakList.getLoadBatch(0, requestedBatchSize);
-		if (batch.size() == 0){
-		    // there are no beans to load
-		} else {
-    		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null);
-    		parent.getEbeanServer().loadBean(req);
-		}
+	    do {
+    		List<EntityBeanIntercept> batch = weakList.getNextBatch(requestedBatchSize);
+    		if (batch.size() == 0){
+    		    // there are no beans to load
+    		    break;
+    		} else {
+        		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null);
+        		parent.getEbeanServer().loadBean(req);
+        		if (!all){
+        		    // queryFirst(batch)
+        		    break;
+        		}
+    		}
+	    } while(true);
 	}
 	
 }
