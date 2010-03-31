@@ -21,10 +21,37 @@ package com.avaje.ebean.text.json;
 
 import java.util.Set;
 
+/**
+ * Allows for customising the JSON write processing.
+ * <p>
+ * You can use this to add raw JSON content via {@link JsonWriter}. You can also
+ * limit the properties included in the JSON content (rather than just the
+ * loaded properties).
+ * </p>
+ * 
+ * @author rbygrave
+ * 
+ * @param <T>
+ *            the type of entity bean
+ */
 public interface JsonWriteBeanVisitor<T> {
 
+    /**
+     * Return the set of properties to write to JSON. If null is returned then
+     * the default will output the properties loaded for this bean.
+     */
     public Set<String> getIncludeProperties();
-    
-    public void visit(T bean, JsonWriter ctx);
-    
+
+    /**
+     * Visit the bean that has just been writing it's content to JSON. You can
+     * write your own additional JSON content to the JsonWriter if you wish.
+     * 
+     * @param bean
+     *            the bean that has been writing it's content
+     * @param jsonWriter
+     *            the JsonWriter which you can append custom json content to if
+     *            you wish.
+     */
+    public void visit(T bean, JsonWriter jsonWriter);
+
 }

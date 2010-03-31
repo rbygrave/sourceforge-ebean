@@ -31,16 +31,8 @@ import com.avaje.ebean.text.json.JsonElement;
 
 public class ReadJsonRawReader {
 
-    //private final String source;
-    //private final int startPosition;
     private final ReadJsonContext ctx;
     
-//    public RawJsonReader(String source, int startPosition){
-//        //this.source = source;
-//        //this.startPosition = startPosition;
-//        this.ctx = new ReadJsonContext(source, startPosition);
-//    }
-
     public ReadJsonRawReader(ReadJsonContext ctx){
         this.ctx = ctx;
     }
@@ -66,7 +58,7 @@ public class ReadJsonRawReader {
             return readString();
 
         default:
-            return readUnquoted();
+            return readUnquoted(c);
         }
     }
 
@@ -113,8 +105,8 @@ public class ReadJsonRawReader {
         return new JsonElementString(s);
     }
     
-    private JsonElement readUnquoted() {
-        String s = ctx.readUnquotedValue();
+    private JsonElement readUnquoted(char c) {
+        String s = ctx.readUnquotedValue(c);
         if ("null".equals(s)){
             return JsonElementNull.NULL;
  

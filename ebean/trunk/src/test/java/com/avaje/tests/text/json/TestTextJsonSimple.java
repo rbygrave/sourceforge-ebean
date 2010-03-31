@@ -25,8 +25,8 @@ public class TestTextJsonSimple extends TestCase {
             .select("id, name, status, shippingAddress")
             .fetch("billingAddress","line1, city")
             .fetch("billingAddress.country","*")
-            .fetch("contacts", "firstName,email")//, new FetchConfig().query())
-            .filterMany("contacts").ilike("firstName", "J%").query()
+            .fetch("contacts", "firstName,email")//, new FetchConfig().queryFirst(2))
+            //.filterMany("contacts").ilike("firstName", "J%").query()
             //.where().lt("id", 3)
             .order().desc("id")
             .findList();
@@ -36,7 +36,6 @@ public class TestTextJsonSimple extends TestCase {
         JsonContext json = server.createJsonContext();
         
         JsonWriteOptions options = new JsonWriteOptions();
-        options.setPretty(true);
         options.addRootVisitor(new JsonWriteBeanVisitor<Customer>() {
 
             
@@ -55,8 +54,8 @@ public class TestTextJsonSimple extends TestCase {
             
         });
         
-        String s = json.toJsonStringPretty(list, true);//(list);//, options);
-        //String s = json.toJsonString(list);//, options);
+        String s = json.toJsonString(list, true);
+        
         System.out.println(s);
         
         List<Customer> mList = json.toList(Customer.class, s);

@@ -22,6 +22,18 @@ package com.avaje.ebean.text.json;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JSON Array element.
+ * <p>
+ * You will only use the JsonElements when you register a JsonReadBeanVisitor.
+ * The JSON elements that are not mapped to a bean property are made available
+ * to the JsonReadBeanVisitor.
+ * </p>
+ * 
+ * @see JsonReadBeanVisitor
+ * 
+ * @author rbygrave
+ */
 public class JsonElementArray implements JsonElement {
 
     private final List<JsonElement> values = new ArrayList<JsonElement>();

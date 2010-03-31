@@ -82,8 +82,12 @@ public interface JsonContext {
     public void toJsonWriter(Object o, Writer writer);
 
     /**
-     * Write the bean or collection in JSON format to the writer with specific
-     * options.
+     * With additional pretty output option.
+     */
+    public void toJsonWriter(Object o, Writer writer, boolean pretty);
+
+    /**
+     * With additional options to specify JsonValueAdapter and JsonWriteBeanVisitor's.
      * 
      * @param o
      *            the bean or collection of beans to write
@@ -91,9 +95,8 @@ public interface JsonContext {
      *            used to write the json output to
      * @param options
      *            additional options to control the JSON output
-     * 
      */
-    public void toJsonWriter(Object o, Writer writer, JsonWriteOptions options);
+    public void toJsonWriter(Object o, Writer writer, boolean pretty, JsonWriteOptions options);
 
     /**
      * Convert a bean or collection to json string using default options. 
@@ -101,13 +104,14 @@ public interface JsonContext {
     public String toJsonString(Object o);
 
     /**
-     * Convert a bean or collection to json string using options. 
-     */
-    public String toJsonString(Object o, JsonWriteOptions options);
-
-    /**
      * Convert a bean or collection to json string with pretty format using default options. 
      */
-    public String toJsonStringPretty(Object o, boolean pretty);
+    public String toJsonString(Object o, boolean pretty);
+
+    /**
+     * Convert a bean or collection to json string using options. 
+     */
+    public String toJsonString(Object o, boolean pretty, JsonWriteOptions options);
+
 
 }

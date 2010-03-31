@@ -23,6 +23,10 @@ package com.avaje.ebean.text.json;
  * The JSON Writer made available to JsonWriteBeanVisitor's so that you can
  * append your own JSON content into the output.
  * 
+ * @see JsonWriteBeanVisitor
+ * @see JsonWriteOptions#addRootVisitor(JsonWriteBeanVisitor)
+ * @see JsonWriteOptions#addVisitor(String, JsonWriteBeanVisitor)
+ * 
  * @author rbygrave
  */
 public interface JsonWriter {
