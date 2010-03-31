@@ -331,6 +331,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	protected ImportedId createImportedId(BeanPropertyAssoc<?> owner, BeanDescriptor<?> target, TableJoin join) {
 
 		BeanProperty[] props = target.propertiesId();
+		BeanProperty[] others = target.propertiesBaseScalar();
 
 		if (descriptor.isSqlSelectBased()){
 			String dbColumn = owner.getDbColumn();
@@ -347,36 +348,36 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 					logger.log(Level.SEVERE, msg);
 					return null;
 				} else {
-					return createImportedScalar(owner, cols[0], props);
+					return createImportedScalar(owner, cols[0], props, others);
 				}
 			} else {
 				// embedded id
 				BeanPropertyAssocOne<?> embProp = (BeanPropertyAssocOne<?>)props[0];
 				BeanProperty[] embBaseProps = embProp.getTargetDescriptor().propertiesBaseScalar();
-				ImportedIdSimple[] scalars = createImportedList(owner, cols, embBaseProps);
+				ImportedIdSimple[] scalars = createImportedList(owner, cols, embBaseProps, others);
 
 				return new ImportedIdEmbedded(owner, embProp, scalars);
 			}
 
 		} else {
 			// Concatenated key that is not embedded
-			ImportedIdSimple[] scalars = createImportedList(owner, cols, props);
+			ImportedIdSimple[] scalars = createImportedList(owner, cols, props, others);
 			return new ImportedIdMultiple(owner, scalars);
 		}
 	}
 
-	private ImportedIdSimple[] createImportedList(BeanPropertyAssoc<?> owner, TableJoinColumn[] cols, BeanProperty[] props) {
+	private ImportedIdSimple[] createImportedList(BeanPropertyAssoc<?> owner, TableJoinColumn[] cols, BeanProperty[] props, BeanProperty[] others) {
 
 		ArrayList<ImportedIdSimple> list = new ArrayList<ImportedIdSimple>();
 
 		for (int i = 0; i < cols.length; i++) {
-			list.add(createImportedScalar(owner, cols[i], props));
+			list.add(createImportedScalar(owner, cols[i], props, others));
 		}
 
 		return (ImportedIdSimple[]) list.toArray(new ImportedIdSimple[list.size()]);
 	}
 
-	private ImportedIdSimple createImportedScalar(BeanPropertyAssoc<?> owner, TableJoinColumn col, BeanProperty[] props) {
+	private ImportedIdSimple createImportedScalar(BeanPropertyAssoc<?> owner, TableJoinColumn col, BeanProperty[] props, BeanProperty[] others) {
 
 		String matchColumn = col.getForeignDbColumn();
 		String localColumn = col.getLocalDbColumn();
@@ -387,6 +388,12 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 			}
 		}
 
+		for (int j = 0; j < others.length; j++) {
+            if (others[j].getDbColumn().equalsIgnoreCase(matchColumn)) {
+                return new ImportedIdSimple(owner, localColumn, others[j]);
+            }
+        }
+		
 		String msg = "Error with the Join on ["+getFullBeanName()
 			+"]. Could not find the local match for ["+matchColumn+"] "//in table["+searchTable+"]?"
 			+" Perhaps an error in a @JoinColumn";
