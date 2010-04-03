@@ -38,7 +38,7 @@ import com.avaje.ebean.BackgroundExecutor;
  * </ul>
  * </p>
  */
-public class MySqlPlatform extends DatabasePlatform {
+public class MySqlPlatform extends GenericDatabasePlatform {
 
     public MySqlPlatform(){
         super();

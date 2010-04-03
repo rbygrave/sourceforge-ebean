@@ -28,7 +28,7 @@ import com.avaje.ebean.BackgroundExecutor;
 /**
  * DB2 specific platform.
  */
-public class DB2Platform extends DatabasePlatform {
+public class DB2Platform extends GenericDatabasePlatform {
 
     public DB2Platform(){
         super();

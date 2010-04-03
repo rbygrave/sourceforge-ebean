@@ -109,6 +109,11 @@
                     </groups>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.doxia</groupId>
+                <artifactId>doxia-maven-plugin</artifactId>
+                <version>1.1.2</version>
+            </plugin>
         </plugins>
     </reporting>
     <distributionManagement>
@@ -188,6 +193,18 @@
                         <configuration>
                             <sources>
                                 <source>src/jdk_${jdkDepSource}/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-tstsource</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/jdk_${jdkDepSource}/test/java</source>
                             </sources>
                         </configuration>
                     </execution>

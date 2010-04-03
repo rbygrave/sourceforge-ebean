@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dbmsCatalog
+	xmlns="file://E:/workspace/ebean-svn/src/site/resources/DatabasePlatformSchema.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.avaje.org/DatabasePlatformSchema DatabasePlatformSchema.xsd "
+	adaptorClass="com.avaje.ebean.config.dbplatform.GenericDatabasePlatform">
+	<dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.Oracle10Platform">
+		<dbNamePrefix>oracle</dbNamePrefix>
+		<eBeanName>oracle</eBeanName>
+		<eBeanName>oracle10</eBeanName>
+		<eBeanName>oracle9</eBeanName>
+	</dbmsProduct>
+	<dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.MsSqlServer2005Platform">
+		<dbNamePrefix>microsoft</dbNamePrefix>
+		<eBeanName>sqlserver2005</eBeanName>
+		<dbmsVersion maxVersion="8" adaptorClass="com.avaje.ebean.config.dbplatform.MsSqlServer2000Platform">
+			<eBeanName>sqlserver2000</eBeanName>
+		</dbmsVersion>
+	</dbmsProduct>
+	<dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.MySqlPlatform">
+		<dbNamePrefix>mysql</dbNamePrefix>
+		<eBeanName>mysql</eBeanName>
+	</dbmsProduct>
+	<dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.PostgresPlatform">
+		<dbNamePrefix>postgres</dbNamePrefix>
+		<eBeanName>postgres83</eBeanName>
+	</dbmsProduct>
+	<dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.H2Platform">
+		<dbNamePrefix>h2</dbNamePrefix>
+		<eBeanName>h2</eBeanName>
+	</dbmsProduct>
+	<dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.DB2Platform">
+		<dbNamePrefix>db2</dbNamePrefix>
+		<dbNamePrefix>ids</dbNamePrefix>
+		<dbmsVersion adaptorClass="com.avaje.ebean.config.dbplatform.DB2Platform">
+			<dbName>DB2®</dbName>
+			<dbName>DB2/LINUXX8664</dbName>
+			<dbName>IDS/UNIX64</dbName>
+		</dbmsVersion>
+	</dbmsProduct>
+</dbmsCatalog>

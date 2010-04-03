@@ -44,12 +44,12 @@ final class PropertyMapLoader {
 	 */
 	public static PropertyMap load(PropertyMap p, String fileName){
 
-		InputStream is = findInputStream(fileName);
-		if (is == null){
+		ResourceFinder dataSource=new ResourceFinder(fileName,servletContext);
+		if (dataSource.exists()){
+			return load(p, dataSource.getInputSteram());
+		} else {
 			logger.severe(fileName+" not found");
 			return p;
-		} else {
-			return load(p, is);
 		}
 	}
 	
@@ -89,62 +89,16 @@ final class PropertyMapLoader {
 		}
 		if (otherProps != null){
 			otherProps = otherProps.replace("\\", "/");
-			InputStream is = findInputStream(otherProps);
-			if (is != null){
+			ResourceFinder dataSource=new ResourceFinder(otherProps,servletContext);
+			if (dataSource.exists()){
 				logger.fine("loading properties from "+otherProps);
-				load(p, is);
+				load(p, dataSource.getInputSteram());
 			} else {
 				logger.severe("load.properties "+otherProps+" not found.");
 			}
 		}
 
 		return p;
-	}
-
-	/**
-	 * Find the input stream given the file name.
-	 */
-	private static InputStream findInputStream(String fileName) {
-
-		if (fileName == null) {
-			throw new NullPointerException("fileName is null?");
-		}
-
-		if (servletContext == null){
-			logger.fine("No servletContext so not looking in WEB-INF for "+fileName);
-			
-		} else {
-			// first look in WEB-INF ...
-			InputStream in = servletContext.getResourceAsStream("/WEB-INF/" + fileName);
-			if (in != null){
-				logger.fine(fileName+" found in WEB-INF");
-				return in;
-			}
-		}
-
-		try {
-			File f = new File(fileName);
-
-			if (f.exists()) {
-				logger.fine(fileName+" found in file system");
-				return new FileInputStream(f);
-			} else {
-				InputStream in = findInClassPath(fileName);
-				if (in != null){
-					logger.fine(fileName+" found in classpath");	
-				}
-				return in;
-			}
-
-		} catch (FileNotFoundException ex) {
-			// already made the check so this 
-			// should never be thrown
-			throw new RuntimeException(ex);
-		} 
-	}
-
-	private static InputStream findInClassPath(String fileName) {
-		return Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
 	}
 	
 }

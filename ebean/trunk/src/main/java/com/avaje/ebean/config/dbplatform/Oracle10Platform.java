@@ -29,7 +29,7 @@ import com.avaje.ebean.BackgroundExecutor;
 /**
  * Oracle10 and greater specific platform.
  */
-public class Oracle10Platform extends DatabasePlatform {
+public class Oracle10Platform extends GenericDatabasePlatform {
 
     public Oracle10Platform() {
         super();

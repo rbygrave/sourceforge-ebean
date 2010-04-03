@@ -1,93 +1,29 @@
-/**
- * Copyright (C) 2006  Robin Bygrave
- *
- * This file is part of Ebean.
- *
- * Ebean is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * Ebean is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Ebean; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
- */
 package com.avaje.ebean.config.dbplatform;
-
-import java.sql.Types;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
 import com.avaje.ebean.BackgroundExecutor;
 
 /**
- * Database platform specific settings.
+ * Contract for a bridge between EBean and a specific DBMS.
+ * @since 2.6, 2010-Apr
+ * @author Paul Mendelson
+ * @version $Revision$, $Date$
+ *
  */
-public class DatabasePlatform {
-
-	/** The Constant logger. */
-	private static final Logger logger = Logger.getLogger(DatabasePlatform.class.getName());
-
-	/** The open quote used by quoted identifiers. */
-	protected String openQuote = "\"";
-
-	/** The close quote used by quoted identifiers. */
-	protected String closeQuote = "\"";
-
-	/** For limit/offset, row_number etc limiting of SQL queries. */
-	protected SqlLimiter sqlLimiter = new LimitOffsetSqlLimiter();
-
-	/** Mapping of JDBC to Database types. */
-	protected DbTypeMap dbTypeMap = new DbTypeMap();
-
-	/** DB specific DDL syntax. */
-	protected DbDdlSyntax dbDdlSyntax = new DbDdlSyntax();
-
-	/** Defines DB identity/sequence features. */
-	protected DbIdentity dbIdentity = new DbIdentity();
-
-	/** The JDBC type to map booleans to (by default). */
-	protected int booleanDbType = Types.BOOLEAN;
-
-	/** The JDBC type to map Blob to. */
-    protected int blobDbType = Types.BLOB;
-	
-	/** For Oracle treat empty strings as null. */
-	protected boolean treatEmptyStringsAsNull;
-
-	/** The name. */
-	protected String name = "generic";
-
-	/** Use a BackTick ` at the beginning and end of table or column names that you want to use quoted identifiers for. The backticks get converted to the appropriate characters in convertQuotedIdentifiers */
-	private static final char BACK_TICK = '`';
-	
-	protected DbEncrypt dbEncrypt;
-	
-	/**
-	 * Instantiates a new database platform.
-	 */
-	public DatabasePlatform() {
-	}
+public interface DatabasePlatform {
 
 	/**
 	 * Return the name of the DatabasePlatform.
-	 * <p>
-	 * "generic" is returned when no specific database platform
-	 * has been set or found.
-	 * </p>
 	 *
 	 * @return the name
 	 */
-	public String getName() {
-		return name;
-	}
+	public String getName();
+
+	/**
+	 * Return the DbEncrypt handler for this DB platform.
+	 */
+	public abstract DbEncrypt getDbEncrypt();
 
 	/**
 	 * Return a DB Sequence based IdGenerator.
@@ -103,98 +39,70 @@ public class DatabasePlatform {
 	 *            the number of sequences that should be loaded
 	 */
 	public IdGenerator createSequenceIdGenerator(BackgroundExecutor be, DataSource ds, 
-			String seqName, int batchSize) {
-		
-		return null;
-	}
+			String seqName, int batchSize);
 
-	/**
-	 * Return the DbEncrypt handler for this DB platform.
-	 */
-	public DbEncrypt getDbEncrypt() {
-        return dbEncrypt;
-    }
-	
-	/**
+/**
 	 * Set the DbEncrypt handler for this DB platform.
 	 */
-    public void setDbEncrypt(DbEncrypt dbEncrypt) {
-        this.dbEncrypt = dbEncrypt;
-    }
+	public abstract void setDbEncrypt(DbEncrypt dbEncrypt);
 
-    /**
+	/**
 	 * Return the mapping of JDBC to DB types.
 	 *
 	 * @return the db type map
 	 */
-	public DbTypeMap getDbTypeMap() {
-		return dbTypeMap;
-	}
+	public abstract DbTypeMap getDbTypeMap();
 
 	/**
 	 * Return the DDL syntax for this platform.
 	 *
 	 * @return the db ddl syntax
 	 */
-	public DbDdlSyntax getDbDdlSyntax() {
-		return dbDdlSyntax;
-	}
+	public abstract DbDdlSyntax getDbDdlSyntax();
 
 	/**
 	 * Return the close quote for quoted identifiers.
 	 *
 	 * @return the close quote
 	 */
-	public String getCloseQuote() {
-		return closeQuote;
-	}
+	public abstract String getCloseQuote();
 
 	/**
 	 * Return the open quote for quoted identifiers.
 	 *
 	 * @return the open quote
 	 */
-	public String getOpenQuote() {
-		return openQuote;
-	}
+	public abstract String getOpenQuote();
 
 	/**
 	 * Return the JDBC type used to store booleans.
 	 *
 	 * @return the boolean db type
 	 */
-	public int getBooleanDbType() {
-		return booleanDbType;
-	}
+	public abstract int getBooleanDbType();
 
-    /**
-     * Return the data type that should be used for Blob.
-     * <p>
-     * This is typically Types.BLOB but for Postgres is Types.LONGVARBINARY for
-     * example.
-     * </p>
-     */
-	public int getBlobDbType() {
-	    return blobDbType;
-	}
-	
+	/**
+	 * Return the data type that should be used for Blob.
+	 * <p>
+	 * This is typically Types.BLOB but for Postgres is Types.LONGVARBINARY for
+	 * example.
+	 * </p>
+	 */
+	public abstract int getBlobDbType();
+
 	/**
 	 * Return true if empty strings should be treated as null.
 	 *
 	 * @return true, if checks if is treat empty strings as null
 	 */
-	public boolean isTreatEmptyStringsAsNull() {
-		return treatEmptyStringsAsNull;
-	}
+	public abstract boolean isTreatEmptyStringsAsNull();
 
 	/**
 	 * Return the DB identity/sequence features for this platform.
 	 *
 	 * @return the db identity
 	 */
-	public DbIdentity getDbIdentity() {
-		return dbIdentity;
-	}
+	public abstract DbIdentity getDbIdentity();
 
 	/**
 	 * Return the SqlLimiter used to apply additional sql around
@@ -205,10 +113,8 @@ public class DatabasePlatform {
 	 *
 	 * @return the sql limiter
 	 */
-	public SqlLimiter getSqlLimiter() {
-		return sqlLimiter;
-	}	
-	
+	public abstract SqlLimiter getSqlLimiter();
+
 	/**
 	 * Convert backticks to the platform specific open quote and close quote
 	 *
@@ -220,23 +126,6 @@ public class DatabasePlatform {
 	 *
 	 * @return the string
 	 */
-	public String convertQuotedIdentifiers(String dbName) {
-		// Ignore null values e.g. schema name or catalog
-		if (dbName != null && dbName.length() > 0){
-			if (dbName.charAt(0) == BACK_TICK) {
-				if (dbName.charAt(dbName.length() - 1) == BACK_TICK) {
+	public abstract String convertQuotedIdentifiers(String dbName);
 
-					String quotedName = getOpenQuote();
-					quotedName += dbName.substring(1, dbName.length() - 1);
-					quotedName += getCloseQuote();
-
-					return quotedName;
-
-				} else {
-					logger.log(Level.SEVERE, "Missing backquote on [" + dbName + "]");
-				}
-			}
-		}
-		return dbName;
-	}
 }
