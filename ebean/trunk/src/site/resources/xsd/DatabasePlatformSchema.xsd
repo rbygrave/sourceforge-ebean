@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.avaje.org/DatabasePlatformSchema"
+	xmlns:ebean="http://www.avaje.org/DatabasePlatformSchema"
+	elementFormDefault="qualified">
+
+	<element name="dbmsCatalog">
+		<complexType>
+			<sequence>
+				<element maxOccurs="unbounded" minOccurs="0" ref="ebean:dbmsProduct" />
+			</sequence>
+			<attribute ref="ebean:adaptorClass" />
+		</complexType>
+	</element>
+
+
+	<attribute name="adaptorClass" type="string"></attribute>
+	<element name="dbmsVersion">
+		<complexType>
+			<sequence>
+				<element minOccurs="0" name="eBeanName" type="string" maxOccurs="unbounded"></element>
+				<element minOccurs="0" maxOccurs="unbounded"
+					name="dbName" type="string" />
+			</sequence>
+			<attribute ref="ebean:adaptorClass" />
+			<attribute name="minVersion" type="int"></attribute>
+			<attribute name="maxVersion" type="int"></attribute>
+		</complexType>
+	</element>
+	<element name="dbmsProduct">
+		<complexType>
+			<sequence>
+				<element minOccurs="0" maxOccurs="unbounded" name="dbNamePrefix"
+					type="string" />
+				<element minOccurs="0" maxOccurs="unbounded" name="eBeanName"
+					type="string" />
+				<element minOccurs="0" maxOccurs="unbounded" ref="ebean:dbmsVersion" />
+			</sequence>
+			<attribute ref="ebean:adaptorClass" />
+		</complexType>
+	</element>
+</schema>
