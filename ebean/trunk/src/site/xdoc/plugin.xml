@@ -11,7 +11,7 @@
 	<script type="text/javascript" src="scripts/shCore.js"></script>
 	<script type="text/javascript" src="scripts/shBrushBash.js"></script>
 	<script type="text/javascript" src="scripts/shBrushJava.js"></script>
-	<script type="text/javascript" src="scripts/shBrushPlain.js"></script>
+	<script type="text/javascript" src="scripts/shBrushXml.js"></script>
 	<link type="text/css" rel="stylesheet" href="styles/shCore.css"/>
 	<link type="text/css" rel="stylesheet" href="styles/shThemeDefault.css"/>
 	<script type="text/javascript">
@@ -82,7 +82,7 @@ EBean ships with a registry of, tested, DatabasePlatform implementations that su
 <li>H2 Database</li>
 </ol>
 <p>The complete registry appears as follows</p>
-<pre class="brush: plain">
+<pre class="brush: xml">
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;dbmsCatalog
     xmlns="file://E:/workspace/ebean-svn/src/site/resources/DatabasePlatformSchema.xsd"
@@ -238,7 +238,7 @@ minVersion and MaxVersion are optional but if neither is provided this entry wil
 Underneath this entity you can provide as many <code>&lt;eBeanName&gt;NAME&lt;/eBeanName&gt;</code> entities that map to this plugin.
 </li></ol>
 <p>The following is a sample XML for your plugin</p>
-<pre class="brush: plain">
+<pre class="brush: xml">
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;dbmsCatalog
     xmlns="file://E:/workspace/ebean-svn/src/site/resources/DatabasePlatformSchema.xsd"
