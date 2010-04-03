@@ -27,7 +27,7 @@ import com.avaje.ebean.config.GlobalProperties;
 /**
  * H2 specific platform.
  */
-public class H2Platform extends DatabasePlatform {
+public class H2Platform extends GenericDatabasePlatform {
 
     public H2Platform(){
         super();

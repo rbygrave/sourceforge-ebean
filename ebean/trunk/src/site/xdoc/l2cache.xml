@@ -3,8 +3,20 @@
 	xmlns="http://maven.apache.org/xsd/xdoc-2.0.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/xsd/xdoc-2.0.xsd">
-<properties></properties>
+<properties>
+	<author email="robin.bygrave@gmail.com">Rob Bygrave</author>
+	<title>Caching (L2 Server cache)</title>
+</properties>
 <body>
+	<script type="text/javascript" src="scripts/shCore.js"></script>
+	<script type="text/javascript" src="scripts/shBrushJava.js"></script>
+	<script type="text/javascript" src="scripts/shBrushPlain.js"></script>
+	<link type="text/css" rel="stylesheet" href="styles/shCore.css"/>
+	<link type="text/css" rel="stylesheet" href="styles/shThemeDefault.css"/>
+	<script type="text/javascript">
+		SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';
+		SyntaxHighlighter.all();
+	</script>
 <section name="Caching (L2 Server cache)">
 
 <p>
@@ -15,6 +27,26 @@ context is often referred to as the “Level 1 cache”.
 The goal of the L2 server cache is to gain very significant performance improvement by
 not having to hit the database.
 </p>
+<macro name="toc">
+</macro>
+<ol>
+<li><a href="Bean_and_Query_caches">Bean and Query caches</a></li>
+<li><a href="Read_Only_and_Shared_Instances">Read Only and Shared Instances</a></li>
+<li><a href="Shared_Instances">Shared Instances</a></li>
+<li><a href="Automatic_Cache_Maintenance">Automatic Cache Maintenance</a></li>
+<li><a href="Handling_External_Modification_via_stored_procedures edures_etc">Handling External Modification (via stored procedures)</a></li>
+<li><a href="aCacheStrategy_-_automatically_usingcache">@CacheStrategy - automatically using the bean cache</a></li>
+<li><a href="Manually_specifing_to_use_the_bean_c">Manually specifing to use the bean cache</a></li>
+<li><a href="Using_the_Query_Cache">Using the Query cache</a></li>
+<li><a href="Cache_Across_Multiple_Nodes">Cache across Multiple Nodes</a></li>
+</ol>
+<p>Simplified Outline</p><ol>
+<li><a href="Bean_and_Query_caches">Cache Types (Bean and Query)</a></li>
+<li><a href="Read_Only_and_Shared_Instances">Thread Safety / Shared Instances</a></li>
+<li><a href="Cache_Across_Multiple_Nodes">Cache across Multiple Nodes</a></li>
+<li><a href="Shared_Instances">@CacheStrategy - Specify Cache in Entity Bean</a></li>
+<li><a href="Automatic_Cache_Maintenance">Specifing Cache in Queries</a></li>
+</ol>
 <subsection name="Bean and Query caches">
 Ebean has 2 types of caches – Bean caches and Query caches.
 <dl><dt>Bean Caches</dt>
@@ -37,8 +69,7 @@ copying the data from the cached instance).</p>
 ensures that these instances can not be mutated. It sets flags (sharedInstance=true,
 readOnly=true) and any attempt to modify the entity (via setters or putfields) results in an
 IllegalStateException being thrown.</p>
-<source>
-<![CDATA[
+<pre class="brush: java;">
 // Cache countries. Use readOnly=true so unless explicitly
 // stated in the query we will return read only/shared instances
 @CacheStrategy(readOnly=true,warmingQuery="order by name")
@@ -47,16 +78,14 @@ IllegalStateException being thrown.</p>
 public class Country {
     // Various attributes and java methods
 }
-]]>
-</source>
+</pre>
 Note that Countries is a good candidate for a default setting of readOnly=true. This is
 because (for my application) country information is very rarely changed. The application
 code mostly treats the countries as read only.
 <p>Now, whenever we get a country (via direct query or indirectly via relationships/joins) unless
 we explictly say query.setReadOnly(false) we are going to get back readOnly instances that
 we will not be able to mutate.</p>
-<source>
-<![CDATA[
+<pre class="brush: java;">
 // we will use the cache .. and the instance
 // in the cache is returned to us (not a copy)
 Country country = Ebean.find(Country.class, "NZ");
@@ -85,8 +114,7 @@ countryCopy.setName("Nu Zilund");
 // evicting NZ from the Country bean cache and
 // clearing the Country query cache
 Ebean.save(countryCopy);
-]]>
-</source>
+</pre>
 </subsection>
 <subsection name="Shared Instances">
 Ebean sets a sharedInstance flag on a bean whenever it is put into the cache. This is
@@ -162,18 +190,17 @@ If you try to modify a readOnly bean it will throw an IllegalStateException.
 <dt>warmingQuery</dt>
 <dd>
 Specify a query that can be used to warm the cache.
-<p>
 All the beans fetched by this query will be loaded into the bean cache and
 the query itself will be loaded into the query cache.
-</p>
-<p>
 The warming query will typically be executed at startup time after a short delay 
 (defaults to a 30 seconds delay).
-</p>
 </dd>
 <dt>useBeanCache</dt>
 <dd>When set to true the bean cache will be used unless explicitly stated not to in a query
- (eg Query q=Ebean.find(Counter.class).setUseCache(false);).</dd>
+ (eg Query q=Ebean.find(Counter.class).setUseCache(false);).
+If you only wish to cache the query but not the individual beans you should specify a warming query
+and declare useBeanCache=false.
+If useBeanCache=false, and warmingQuery=null that is equivalent to not having @CacheStrategy.</dd>
 </dl>
 
 
@@ -201,15 +228,14 @@ Address billingAddress = customer.getBillingAddress();
 Country c2 = billingAddress.getCountry();
 ]]>
 </source>
-<h4>ReadOnly</h4>
+<subsection name="ReadOnly">
 The readOnly attribute of @CacheStrategy is used to determine if by default Ebean
 should return the same instance from the cache (instances in the cache are readOnly and
 effectively immutable) or whether Ebean should create a new instance and copy the data
 from the cached bean onto the new instance.
 The readOnly attribute of @CacheStrategy is the “default” Ebean will use unless you
 explicitly specify the readOnly attribute of the query.
-<source>
-<![CDATA[
+<pre class="brush: plain;">
 // explicitly state we want a MUTABLE COPY
 // … not the same instance as the one in cache
 // … a copy is made and returned instead
@@ -225,8 +251,8 @@ countryCopy.setName("Nu Zilund");
 // evicting NZ from the Country bean cache and
 // clearing the Country query cache
 Ebean.save(countryCopy);
-]]>
-</source>
+</pre>
+</subsection>
 </subsection>
 <subsection name="Manually specifing to use the bean cache">
 If you don't use @CacheStrategy you can programmatically specify to use the bean cache

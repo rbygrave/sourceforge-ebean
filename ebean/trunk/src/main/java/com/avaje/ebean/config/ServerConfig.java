@@ -34,6 +34,7 @@ import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.AdminLogging.LogFileSharing;
 import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.config.dbplatform.GenericDatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.config.ldap.LdapContextFactory;
@@ -1421,7 +1422,7 @@ public class ServerConfig {
         useJtaTransactionManager = p.getBoolean("useJtaTransactionManager", false);
         
         namingConvention = createInstance(p, NamingConvention.class, "namingconvention");
-        databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
+        databasePlatform = createInstance(p, GenericDatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
         encryptDeployManager = createInstance(p, EncryptDeployManager.class, "encryptDeployManager");
         encryptor = createInstance(p, Encryptor.class, "encryptor");

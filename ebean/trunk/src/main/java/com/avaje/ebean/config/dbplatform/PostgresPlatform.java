@@ -33,7 +33,7 @@ import com.avaje.ebean.config.GlobalProperties;
  * No support for getGeneratedKeys.
  * </p>
  */
-public class PostgresPlatform extends DatabasePlatform {
+public class PostgresPlatform extends GenericDatabasePlatform {
 
     public PostgresPlatform() {
         super();

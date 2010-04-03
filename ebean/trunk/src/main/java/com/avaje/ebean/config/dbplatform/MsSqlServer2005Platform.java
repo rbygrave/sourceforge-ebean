@@ -34,7 +34,7 @@ import java.sql.Types;
  * </ul>
  * </p>
  */
-public class MsSqlServer2005Platform extends DatabasePlatform {
+public class MsSqlServer2005Platform extends GenericDatabasePlatform {
 
     public MsSqlServer2005Platform(){
         super();

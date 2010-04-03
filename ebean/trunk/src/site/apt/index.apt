@@ -3,6 +3,8 @@
  ------
  ------
 
+%{toc}
+
 EBean v2.6.0 Documentation
 
  Provides current usage information about the EBean ORM.
@@ -22,5 +24,9 @@ EBean v2.6.0 Documentation
  [[1]] {{{spring2.html}Instructions on how to use the Spring}}.
 
  [[1]] {{{maven1.html}Create new EBean aware project in Maven}}.
+
+ [[1]] {{{config.html}How to Configure EBean Server}}.
+
+ [[1]] {{{plugin.html}How to Configure a DBMS}}.
 
  []

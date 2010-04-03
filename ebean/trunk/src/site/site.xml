@@ -40,6 +40,8 @@
 			<item name="Plugin Summary" href="plugin-info.html" />
 			<item name="Plugin Details" href="enhance-mojo.html" />
 			<item name="API Guilde" href="apidocs/index.html" />
+			<item name="DBMS Support" href="plugin.html" />
+			<item name="Configure EBean Server" href="config.html" />
 		</menu>
 		<menu name="Information">
 			<item name="FAQ" href="faq.html" />
