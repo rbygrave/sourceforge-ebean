@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document
+	xmlns="http://maven.apache.org/xsd/xdoc-2.0.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/xsd/xdoc-2.0.xsd">
+<properties>
+	<author email="robin.bygrave@gmail.com">Rob Bygrave</author>
+	<title>Configuring BasePlugin / Database specifics</title>
+</properties>
+<body>
+	<script type="text/javascript" src="scripts/shCore.js"></script>
+	<script type="text/javascript" src="scripts/shBrushBash.js"></script>
+	<script type="text/javascript" src="scripts/shBrushJava.js"></script>
+	<script type="text/javascript" src="scripts/shBrushPlain.js"></script>
+	<link type="text/css" rel="stylesheet" href="styles/shCore.css"/>
+	<link type="text/css" rel="stylesheet" href="styles/shThemeDefault.css"/>
+	<script type="text/javascript">
+		SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';
+		SyntaxHighlighter.all();
+	</script>
+<macro name="toc">
+  <param name="fromDepth" value="2"/>
+  <param name="toDepth" value="4"/>
+
+</macro>
+<section name="Setup Database Specifics">
+Ebean uses the <a href="apidocs/com/avaje/ebean/config/dbplatform/DatabasePlatform.html">DatabasePlatform interface</a>
+to determine the fine points of interfacing with a specific database management system.
+For the normal usage of interfacing with a database EBean uses the DatabaseMetaData from the JDBC connection to determine which
+DatabasePlatform implementation to use.  For "offline applications" EBean selects the platform implementation from the xxx property.
+<p>
+If Ebean is not recognising your specific Database you will want
+to configure it. You can either configure the BasePlugin through
+system.properties or build a specific "Plugin Class" that implements DatabasePlatform.
+The easiest way to create one is to extend GenericDatabasePlatform or extend the class for the most similar DBMS to your DBMS.
+</p>
+<dl>
+<p>The configuration questions you will have to answer are:</p>
+<dt>
+Q: What are the quoted identifier strings?
+</dt>
+<dd>
+The default is double quotes.
+</dd>
+
+<dt>
+Q: Does this Database use Sequences or Identity/Autoincrement?
+</dt>
+<dd>
+If it supports neither an External Id Generator must be used.
+</dd>
+
+<dt>
+Q: Does this Database support getGeneratedKeys?
+</dt>
+<dd>
+If this is not supported then you can not use 
+statement batching transparently. Things are doable but
+certainly not as nice.
+If you have a requirement for large batch inserts then I 
+would look closely at how you will be restricted by this.
+</dd>
+
+<dt>
+Q: Does this Database support ROW_NUMBER() or LIMIT or neither for limiting resultsets?
+</dt>
+<dd>
+Refer to this excellent url.
+<a href="http://troels.arvin.dk/db/rdbms/#select-limit">http://troels.arvin.dk/db/rdbms/#select-limit</a>
+</dd>
+
+
+</dl>
+<subsection name="Platform Adaptor Catalog">
+EBean ships with a registry of, tested, DatabasePlatform implementations that support recent versions of:
+<ol>
+<li>Oracle</li>
+<li>Microsoft SQL Server</li>
+<li>MySql</li>
+<li>PostgreSQL</li>
+<li>IBM DB2</li>
+<li>H2 Database</li>
+</ol>
+<p>The complete registry appears as follows</p>
+<pre class="brush: plain">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;dbmsCatalog
+    xmlns="file://E:/workspace/ebean-svn/src/site/resources/DatabasePlatformSchema.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.avaje.org/DatabasePlatformSchema DatabasePlatformSchema.xsd "
+    adaptorClass="com.avaje.ebean.config.dbplatform.GenericDatabasePlatform"&gt;
+    &lt;dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.Oracle10Platform"&gt;
+        &lt;dbNamePrefix&gt;oracle&lt;/dbNamePrefix&gt;
+        &lt;eBeanName&gt;oracle&lt;/eBeanName&gt;
+        &lt;eBeanName&gt;oracle10&lt;/eBeanName&gt;
+        &lt;eBeanName&gt;oracle9&lt;/eBeanName&gt;
+    &lt;/dbmsProduct&gt;
+    &lt;dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.MsSqlServer2005Platform"&gt;
+        &lt;dbNamePrefix&gt;microsoft&lt;/dbNamePrefix&gt;
+        &lt;eBeanName&gt;sqlserver2005&lt;/eBeanName&gt;
+        &lt;dbmsVersion maxVersion="8" adaptorClass="com.avaje.ebean.config.dbplatform.MsSqlServer2000Platform"&gt;
+            &lt;eBeanName&gt;sqlserver2000&lt;/eBeanName&gt;
+        &lt;/dbmsVersion&gt;
+    &lt;/dbmsProduct&gt;
+    &lt;dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.MySqlPlatform"&gt;
+        &lt;dbNamePrefix&gt;mysql&lt;/dbNamePrefix&gt;
+        &lt;eBeanName&gt;mysql&lt;/eBeanName&gt;
+    &lt;/dbmsProduct&gt;
+    &lt;dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.PostgresPlatform"&gt;
+        &lt;dbNamePrefix&gt;postgres&lt;/dbNamePrefix&gt;
+        &lt;eBeanName&gt;postgres83&lt;/eBeanName&gt;
+    &lt;/dbmsProduct&gt;
+    &lt;dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.H2Platform"&gt;
+        &lt;dbNamePrefix&gt;h2&lt;/dbNamePrefix&gt;
+        &lt;eBeanName&gt;h2&lt;/eBeanName&gt;
+    &lt;/dbmsProduct&gt;
+    &lt;dbmsProduct adaptorClass="com.avaje.ebean.config.dbplatform.DB2Platform"&gt;
+        &lt;dbNamePrefix&gt;db2&lt;/dbNamePrefix&gt;
+        &lt;dbNamePrefix&gt;ids&lt;/dbNamePrefix&gt;
+        &lt;dbmsVersion adaptorClass="com.avaje.ebean.config.dbplatform.DB2Platform"&gt;
+            &lt;dbName&gt;DB2®&lt;/dbName&gt;
+            &lt;dbName&gt;DB2/LINUXX8664&lt;/dbName&gt;
+            &lt;dbName&gt;IDS/UNIX64&lt;/dbName&gt;
+        &lt;/dbmsVersion&gt;
+    &lt;/dbmsProduct&gt;
+&lt;/dbmsCatalog&gt;
+</pre> 
+</subsection>
+
+<subsection name="Building a Plugin (Extend GenericDatabasePlatform)">
+<p>GenericDatabasePlatform has several protocted members that you can directly assign values to:</p>
+<table>
+<tr><th>Member</th><th>Description</th><th>Default</th></tr>
+<tr><td>openQuote</td>
+<td>The open quote used by quoted identifiers.</td><td>"</td></tr>
+<tr><td>closeQuote</td>
+<td>The close quote used by quoted identifiers.</td><td>"</td></tr>
+<tr><td>sqlLimiter</td>
+<td>For limit/offset, row_number etc limiting of SQL queries.</td><td>new LimitOffsetSqlLimiter()</td></tr>
+<tr><td>dbTypeMap</td>
+<td>Mapping of JDBC to Database types.</td></tr>
+<tr><td>dbDdlSyntax</td><td>DB specific DDL syntax.</td><td>new DbDdlSyntax()</td></tr>
+<tr><td>dbIdentity</td><td>Defines DB identity/sequence features.</td><td>new DbIdentity()</td></tr>
+<tr><td>booleanDbType</td><td>The JDBC type to map booleans to (by default).</td><td>Types.BOOLEAN</td></tr>
+<tr><td>blobDbType</td><td>The JDBC type to map Blob to.</td><td>Types.BLOB</td></tr>
+<tr><td>treatEmptyStringsAsNull</td><td>For Oracle treat empty strings as null. </td><td>false</td></tr>
+<tr><td>name</td>
+<td>The name. </td><td>generic</td></tr>
+<tr><td>dbEncrypt</td><td>Database encryption policy/strategy.</td><td>null</td></tr>
+</table>
+<p>
+Have a look at the code in <a href="apidocs/com/avaje/ebean/config/dbplatform/package-summary.html">com.avaje.ebean.config.dbplatform</a>
+</p>
+<p>
+Its fairly straight forward to build a plugin and this is the
+Oracle10 specific plugin code.
+</p>
+<pre class="brush: java;">
+public class Oracle10Platform extends com.avaje.ebean.config.dbplatform.GenericDatabasePlatform {
+    public Oracle10Platform() {
+        super();
+        this.name = "oracle";
+        this.dbEncrypt = new Oracle10DbEncrypt();
+        
+        this.sqlLimiter = new RownumSqlLimiter();
+
+        // Not using getGeneratedKeys as instead we will
+        // batch load sequences which enables JDBC batch execution
+        dbIdentity.setSupportsGetGeneratedKeys(false);
+        dbIdentity.setIdType(IdType.SEQUENCE);
+        dbIdentity.setSupportsSequence(true);
+
+        this.treatEmptyStringsAsNull = true;
+    
+        this.openQuote = "\"";
+        this.closeQuote = "\"";
+        
+        booleanDbType = Types.INTEGER;
+        dbTypeMap.put(Types.BOOLEAN, new DbType("number(1) default 0"));
+
+        dbTypeMap.put(Types.INTEGER, new DbType("number", 10));
+        dbTypeMap.put(Types.BIGINT, new DbType("number", 19));
+        dbTypeMap.put(Types.REAL, new DbType("number", 19, 4));
+        dbTypeMap.put(Types.DOUBLE, new DbType("number", 19, 4));
+        dbTypeMap.put(Types.SMALLINT, new DbType("number", 5));
+        dbTypeMap.put(Types.TINYINT, new DbType("number", 3));
+        dbTypeMap.put(Types.DECIMAL, new DbType("number", 38));
+        
+        dbTypeMap.put(Types.VARCHAR, new DbType("varchar2", 255));
+
+        dbTypeMap.put(Types.LONGVARBINARY, new DbType("blob"));
+        dbTypeMap.put(Types.LONGVARCHAR, new DbType("clob"));
+        dbTypeMap.put(Types.VARBINARY, new DbType("raw",255));
+        dbTypeMap.put(Types.BINARY, new DbType("raw",255));
+
+        dbTypeMap.put(Types.TIME, new DbType("timestamp"));
+
+        
+        dbDdlSyntax.setDropTableCascade("cascade constraints purge");
+        dbDdlSyntax.setIdentity(null);
+        dbDdlSyntax.setMaxConstraintNameLength(30);
+    }
+}
+</pre>
+</subsection>
+<subsection name="How to Register your plugin/database">
+<p>Once you created a plugin implementation or want to handle a different database product with an existing plugin,
+you will need to create your own descriptor file and add it to the list of catalogs that EBean checks
+when it sets up an EBean server.
+</p>
+<p>This specification is done in the property <code>ebean.dbplatform.registry</code>
+which is a comma separated list of resources.  In that list the string "default" is an alias for the
+default registry, <code style="whitespace:nowrap">"classpath:com/avaje/ebean/config/dbplatform/dbms.xml."</code>
+The example ebean.properties file below has a user provided registry called mycompany.xml that is
+evaluated before the entries in the default catalog.</p>
+<pre class="brush: bash;">
+# Specify a specific Plugin
+#
+ebean.dbplatform.registry=mycompany1.xml,default,mycompany2.xml
+</pre>
+<p>The outer tag for the specification is
+<code style="white-space:nowrap">&lt;dbmsCatalog adaptorClass="CLASSNAME"&gt;</code>.
+The adpatorClass at this level is the default plugin implementation.  If you are also loading the default registry you do not need to specify a default here.</p>
+<p>The next level tag is
+<code style="white-space:nowrap">&lt;dbmsCatalog adaptorClass="CLASSNAME"&gt;</code>.
+The adpatorClass at this level is the default plugin implementation for this dbms product.
+You should provide a value at this level unless you wish to specify each specific jdbc driver
+version you plan to support.</p>
+<p>For a DBMS product you should specify</p>
+<ol><li>
+<code>&lt;dbNamePrefix&gt;SUBSTRING&lt;/dbNamePrefix&gt;</code> a substring that matches the jdbc DatabaseMetadata.getProductName().
+if you specify derby and the jdbc connection returns &#8220;apache-derby-7&#8221; this adaptor will be a match.</li>
+<li><code>&lt;eBeanName&gt;NAME&lt;/eBeanName&gt;</code> a string that is used for plugin matchin
+when using ebean &#8220;offline&#8221;.</li>
+<li><code>&lt;dbmsVersion minVersion="MIN" maxVersion="MAX" adaptorClass="CLASSNAME"&gt;</code>
+This entity is only required if you use different plugins for different versions of the DBMS.
+minVersion and MaxVersion are optional but if neither is provided this entry will match all versions.
+Underneath this entity you can provide as many <code>&lt;eBeanName&gt;NAME&lt;/eBeanName&gt;</code> entities that map to this plugin.
+</li></ol>
+<p>The following is a sample XML for your plugin</p>
+<pre class="brush: plain">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;dbmsCatalog
+    xmlns="file://E:/workspace/ebean-svn/src/site/resources/DatabasePlatformSchema.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.avaje.org/DatabasePlatformSchema DatabasePlatformSchema.xsd "
+    &gt;
+    &lt;dbmsProduct adaptorClass="mycompany.MyPlatform"&gt;
+        &lt;dbNamePrefix&gt;mydbms&lt;/dbNamePrefix&gt;
+        &lt;eBeanName&gt;mydbms&lt;/eBeanName&gt;
+        &lt;dbmsVersion maxVersion="2" adaptorClass="mycompany.MyPlatformV1"&gt;
+            &lt;eBeanName&gt;mydbmsv1&lt;/eBeanName&gt;
+        &lt;/dbmsVersion&gt;
+    &lt;/dbmsProduct&gt;
+    &lt;/dbmsProduct&gt;
+&lt;/dbmsCatalog&gt;
+</pre> 
+</subsection>
+</section></body>
+</document>
+

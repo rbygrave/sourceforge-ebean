@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/xsd/xdoc-2.0.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/xsd/xdoc-2.0.xsd">
+	<properties>    <author email="user@company.com">John Doe</author>
+    <title>JPA Entity Bean Code Generator</title>
+	</properties>
+<head>
+	<script type="text/javascript" src="scripts/shCore.js"></script>
+	<script type="text/javascript" src="scripts/shBrushBash.js"></script>
+	<script type="text/javascript" src="scripts/shBrushPlain.js"></script>
+	<link type="text/css" rel="stylesheet" href="styles/shCore.css"/>
+	<link type="text/css" rel="stylesheet" href="styles/shThemeDefault.css"/>
+	<script type="text/javascript">
+		SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';
+		SyntaxHighlighter.all();
+	</script>
+</head>
+	<body>
+			<p>
+				The Code generator is used to generate annotated Entity Beans
+				from the Database schema.
+</p>
+			<ol>
+				<li>
+					<a href="Bean_and_Query_caches">Bean and Query caches</a>
+				</li>
+				<li>
+					<a href="Read_Only_and_Shared_Instances">Read Only and Shared Instances</a>
+				</li>
+				<li>
+					<a href="Shared_Instances">Shared Instances</a>
+				</li>
+				<li>
+					<a href="Automatic_Cache_Maintenance">Automatic Cache Maintenance</a>
+				</li>
+				<li>
+					<a
+						href="Handling_External_Modification_via_stored_procedures edures_etc">Handling External Modification (via stored procedures)</a>
+				</li>
+				<li>
+					<a href="aCacheStrategy_-_automatically_usingcache">@CacheStrategy - automatically using the bean cache</a>
+				</li>
+				<li>
+					<a href="Manually_specifing_to_use_the_bean_c">Manually specifing to use the bean cache</a>
+				</li>
+				<li>
+					<a href="Using_the_Query_Cache">Using the Query cache</a>
+				</li>
+				<li>
+					<a href="Cache_Across_Multiple_Nodes">Cache across Multiple Nodes</a>
+				</li>
+			</ol>
+			<section name="Installing the Code Generator">
+					<subsection name="Move the code generator files into the working directory">
+						This includes
+						<dl>
+							<dt>codegen.properties</dt>
+							<dd>properties file to configure the code generation</dd>
+							<dt>codegen.bat</dt>
+							<dd>batch file to run the code generator</dd>
+							<dt>setclasspath.bat</dt>
+							<dd>batch file to help build the classpath</dd>
+							<dt>beanGenerator.vm</dt>
+							<dd>Velocity template for Beans</dd>
+							<dt>embeddedIdGenerator.vm</dt>
+							<dd>Velocity template for EmbeddedId Beans</dd>
+						</dl>
+					</subsection>
+					<h4>
+						Edit codegen.bat file
+					</h4>
+							To run the codegen.bat we need to configure the classpath.
+							To do this there are two parameters which point to two
+							directories which can contain jar files.
+
+							All the jar files in these directories will be put into the
+							classpath using the setclasspath.bat file.
+
+							Configure the JARLIB_DIR1 &amp; JARLIB_DIR2 parameters.
+<pre class="brush: plain;">
+set JARLIB_DIR1=webapp\WEB-INF\lib
+set JARLIB_DIR2=lib
+
+REM Comment out JARLIB_DIR2 if all your jars
+REM are in a single directory
+</pre>
+					<h4>
+						Edit the codegen.properties</h4>
+							You should probably look at all the properties but take
+							special note of these ones
+
+						<pre class="brush: plain;">
+								#
+								# Need generate mode to create files
+								# test mode will not create any files
+								#
+								#ebean.codegen.mode=generate
+								ebean.codegen.mode=test
+
+								#
+								# The source code directory
+								#
+								ebean.codegen.source.directory=c:/devjava/project/appZsite/src
+
+								#
+								# The java package name for the generated beans
+								#
+								ebean.codegen.javapackage=app.data.test
+
+								#
+								# patterns for database dictionary loading
+								# by default loads all tables into the dictionary
+								#
+								#ebean.codegen.catalog
+								#ebean.codegen.schema
+								#ebean.codegen.table=b_%
+						</pre>
+					<h4>
+						run codegen.bat from a command line</h4>
+						<p>
+							And you should see something like this....
+</p>
+						<pre class="brush: bash;">
+
+C:\devjava\project\appZSite>codegen
+----------------------------------
+CLASSPATH =
+.;webapp\WEB-INF\lib\avajeCodeGen.jar;webapp\WEB-INF\lib\avajeEbean.jar;...
+----------------------------------
+INFO: Ebean Version[0.9.0-061028] Java Version[1.5.0_03]
+INFO: DataSourcePool [mysql] autoCommit[false]
+transIsolation[READ_COMMITTED] min[1] max[25]
+INFO: DataSourcePool [mysql] grow pool; busy[0] size[0] max[25]
+INFO: IoRepository initialised
+dirs[C:/devjava/project/appzsite/webapp/WEB-INF/data] zips[]
+INFO: DictionaryInfo deserialized from file -
+[C:/devjava/project/appzsite/webapp/WEB-INF/data\primarydatabase.dictionary]
+INFO: Plugin[][com.avaje.ebean.server.plugin.MySqlPlugin]
+INFO: VelocityManager initialising
+INFO: Dictionary registering [null][null][null]
+==================================================
+Generate:
+==================================================
+BugAttachment property [abstract] uses java reserved word. Set to [summary]
+Role OneToOne RoleTest test
+Role ManyToMany tables s_role to s_user via s_user_role
+Role ManyToMany User users
+User ManyToMany tables s_user to s_role via s_user_role
+User ManyToMany Role roles
+RoleTest OneToOne Role role
+==================================================
+Summary:
+==================================================
+
+
+Matched:
+-------------------------------------
+UserPreferenceId
+UserPreference
+BugType
+Topic
+UserStatus
+Comment
+BugStatus
+Forum
+Product
+BugAttachment
+RoleModuleId
+RoleModule
+Role
+BugDetail
+CommentLink
+Bug
+TopicPost
+User
+RoleTest
+BugPriority
+Module
+UserLog
+TopicType
+
+Lookup:
+-------------------------------------
+
+Hairy:
+-------------------------------------
+
+Intersection:
+-------------------------------------
+s_user_role
+
+==================================================
+INFO: Stopping []
+INFO: ThreadPool [TransactionManager] Shutting down; threadCount[1]
+busyCount[0]
+INFO: DataSourcePool [mysql] shutdown
+INFO: Closing Connection[mysql.1] psReuse[0] psCreate[0] psSize[0]
+C:\devjava\project\appZSite>
+
+						</pre>
+		</section>
+	</body>
+</document>
+

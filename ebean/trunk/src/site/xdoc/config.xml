@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document
+	xmlns="http://maven.apache.org/xsd/xdoc-2.0.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/xsd/xdoc-2.0.xsd">
+<properties>
+	<author email="robin.bygrave@gmail.com">Rob Bygrave</author>
+	<title>Install/Configure Ebean</title>
+</properties>
+<body>
+	<script type="text/javascript" src="scripts/shCore.js"></script>
+	<script type="text/javascript" src="scripts/shBrushBash.js"></script>
+	<script type="text/javascript" src="scripts/shBrushJava.js"></script>
+	<script type="text/javascript" src="scripts/shBrushPlain.js"></script>
+	<link type="text/css" rel="stylesheet" href="styles/shCore.css"/>
+	<link type="text/css" rel="stylesheet" href="styles/shThemeDefault.css"/>
+	<script type="text/javascript">
+		SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';
+		SyntaxHighlighter.all();
+	</script>
+<section name="Install/Configure Ebean">
+
+<p>
+If Ebean is not recognising your specific Database you will want
+to configure it. You can either configure the BasePlugin through
+system.properties or build a specific "Plugin Class" that extends BasePlugin.
+</p>
+<dl>
+<p>The configuration questions you will have to answer are:</p>
+<dt>
+Q: What are the quoted identifier strings?
+</dt>
+<dd>
+The default is double quotes.
+</dd>
+
+<dt>
+Q: Does this Database use Sequences or Identity/Autoincrement?
+</dt>
+<dd>
+If it supports neither an External Id Generator must be used.
+</dd>
+
+<dt>
+Q: Does this Database support getGeneratedKeys?
+</dt>
+<dd>
+If this is not supported then you can not use 
+statement batching transparently. Things are doable but
+certainly not as nice.
+If you have a requirement for large batch inserts then I 
+would look closely at how you will be restrcited by this.
+</dd>
+
+<dt>
+Q: Does this Database support ROW_NUMBER() or LIMIT or neither for limiting resultsets?
+</dt>
+<dd>
+Refer to this excellent url.
+<a href="http://troels.arvin.dk/db/rdbms/#select-limit">http://troels.arvin.dk/db/rdbms/#select-limit</a>
+</dd>
+
+
+</dl>
+<subsection name="Configure BasePlugin via system.properties">
+<h4><a id="jdk5"></a>1. Classpath</h4>
+<p>
+
+Put in your classpath
+</p>
+<pre class="brush: plain;">
+avajeEbean.jar
+avajeLib.jar
+javax.persistence.jar 
+</pre>
+
+<p>
+Also put in the classpath...
+</p>
+<pre class="brush: java;">
+jta.jar						
+
+// if you use jug for UUID Generation
+jug-lgpl-2.0.0.jar			
+
+// if you use Lucene Text Indexing
+lucene-core-1.9.1.jar		
+</pre>
+
+
+<p>
+If you are going to use the Entity Bean Code Generator to generate Annotated Entity Beans also put in the classpath...
+</p>
+avajeCodeGen.jar
+<pre class="brush: plain;">
+jxl.jar
+velocity-1.4.jar
+velocity-dep-1.4.jar
+</pre>
+
+<h4>3. Locate avaje.properties</h4>
+<p>
+Determine the appropriate <a href="configure_locateproperties.html">location</a> to put the avaje.properties file.
+</p>
+
+<h4>4. Edit avaje.properties</h4>
+<p>
+<a href="configure_editproperties.html">Edit avaje.properties</a><a> file taking special
+note of configuring the DataSource and location of logs.
+</a></p>
+
+
+<h4><a _moz-rs-heading="">5. Create a Class with a main method that contains Ebean.getServer(null);</a></h4>
+<p>
+<a>You can use code below. Run the Class.
+</a></p>
+<div class="dp-highlighter"><div class="bar"><div class="tools"><a onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;" href="#">view plain</a><a onclick="dp.sh.Toolbar.Command('About',this);return false;" href="#">?</a></div></div>
+<ol start="1" class="dp-j"><li class="alt"><span><span>
+&lt;code&gt;</span></span></li><li class=""><span>&lt;a&gt;<span class="keyword">package</span><span> test</span></span></li>
+<li class="alt"></li><li class=""><span><span class="keyword">import</span><span>com.avaje.ebean.Ebean;</span></span></li><li class="alt"></li><li class=""><span><span class="keyword">public</span><span class="keyword">class</span><span>Test{</span></span></li><li class="alt"><span></span></li><li class=""><span><span class="keyword">public</span><span></span><span class="keyword">static</span><span></span><span class="keyword">void</span><span>main(String[] args){</span></span></li><li class="alt">
+</li><li class=""><span>Ebean.getServer(<span class="keyword">null</span><span>);</span></span></li><li class="alt"><span>System.out.println(<span class="string">"DONE"</span><span>);</span></span></li><li class=""><span>}</span></li><li class="alt"><span>}</span></li><li class=""><span>&lt;/a&gt;&lt;/code&gt;</span></li></ol></div><pre style="display: none;"><code>
+<a>package test;
+
+import com.avaje.ebean.Ebean;
+
+public class Test {
+
+	public static void main(String[] args) {
+		
+		Ebean.getServer(null);
+		System.out.println("DONE");
+	}
+}
+</a></code>
+</pre>
+
+
+
+<h4><a _moz-rs-heading="">6. Running the class you should see something along the lines of...</a></h4><h4>
+<div class="dp-highlighter"><div class="bar"><div class="tools"><a onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;" href="#">view plain</a><a onclick="dp.sh.Toolbar.Command('About',this);return false;" href="#">?</a></div></div>
+<ol start="1" class="dp-j"><li class="alt"><span><span>&lt;code&gt;</span></span></li><li class=""><span>&lt;a&gt;INFO:EbeanVersion[<span class="number">0.9</span><span>.</span><span class="number">0</span><span>-</span><span class="number">061028</span><span>]JavaVersion[</span><span class="number">1.5</span><span>.0_03]</span></span></li>
+<!-- 
+ <li class="alt"><span>&nbsp;INFO:&nbsp;DataSourcePool&nbsp;[ora10]&nbsp;autoCommit[<span class="keyword">false</span><span>]&nbsp;transIsolation[READ_COMMITTED]&nbsp;min[</span><span class="number">1</span><span>]&nbsp;max[</span><span class="number">25</span><span>]&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;INFO:&nbsp;DataSourcePool&nbsp;[ora10]&nbsp;grow&nbsp;pool;&nbsp;&nbsp;busy[<span class="number">0</span><span>]&nbsp;size[</span><span class="number">0</span><span>]&nbsp;max[</span><span class="number">25</span><span>]&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;INFO:&nbsp;IoRepository&nbsp;initialised&nbsp;dirs[C:/devjava/project/appzsite/webapp/WEB-INF/data]&nbsp;zips[]&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;INFO:&nbsp;Plugin[][com.avaje.ebean.server.plugin.Oracle10Plugin]&nbsp;&nbsp;</span></li><li class="alt"><span>DONE&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;INFO:&nbsp;Stopping&nbsp;[]&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;INFO:&nbsp;ThreadPool&nbsp;[TransactionManager]&nbsp;Shutting&nbsp;down;&nbsp;threadCount[<span class="number">1</span><span>]&nbsp;busyCount[</span><span class="number">0</span><span>]&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;INFO:&nbsp;DataSourcePool&nbsp;[ora10]&nbsp;shutdown&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;INFO:&nbsp;Closing&nbsp;Connection[ora10.<span class="number">1</span><span>]&nbsp;psReuse[</span><span class="number">0</span><span>]&nbsp;psCreate[</span><span class="number">0</span><span>]&nbsp;psSize[</span><span class="number">0</span><span>]&nbsp;&nbsp;</span></span></li><li class=""><span>&lt;/a&gt;&lt;/code&gt;&nbsp;&nbsp;</span></li>
+ -->
+</ol></div><pre style="display: none;"><code>
+ a _moz-rs-heading=""> INFO: Ebean Version[0.9.0-061028] Java Version[1.5.0_03]
+ INFO: DataSourcePool [ora10] autoCommit[false] transIsolation[READ_COMMITTED] min[1] max[25]
+ INFO: DataSourcePool [ora10] grow pool;  busy[0] size[0] max[25]
+ INFO: IoRepository initialised dirs[C:/devjava/project/appzsite/webapp/WEB-INF/data] zips[]
+ INFO: Plugin[][com.avaje.ebean.server.plugin.Oracle10Plugin]
+DONE
+ INFO: Stopping []
+ INFO: ThreadPool [TransactionManager] Shutting down; threadCount[1] busyCount[0]
+ INFO: DataSourcePool [ora10] shutdown
+ INFO: Closing Connection[ora10.1] psReuse[0] psCreate[0] psSize[0]
+</code>
+</pre>
+
+</h4><h4><a _moz-rs-heading="">7. Take special note of the Plugin being used.</a></h4>
+<p>
+<a>For databases not yet tested against
+the Plugin will be com.avaje.ebean.server.plugin.BasePlugin.
+</a></p>
+<p>
+<a>If you use BasePlugin then you need to additionally set some database specific
+configuration such as quoted identifiers, supportsGetGenerated keys etc.
+</a></p>
+<p>
+<a>Refer to baseplugin_readme.txt
+</a></p>
+
+<h4><a href="getstarted.html">9. Goto Getting Started (or README.2.txt)</a></h4>
+
+
+<h3>TROUBLESHOOTING</h3>
+
+<h4>Nothing in Console</h4>
+<p>
+If you only get DONE appearing in the Console (System.out) then check the
+system.properties file to make sure "log.toconsole=true"
+</p>
+
+<h4>If Ebean can not find the system.properties file you will get something like</h4>
+<pre class="brush: plain;"><code>
+Exception in thread "main" java.lang.ExceptionInInitializerError
+	at com.avaje.ebean.Ebean.<clinit>(Ebean.java:114)
+	at unitext.ex.Test.main(Test.java:9)
+Caused by: java.lang.RuntimeException: Can not find file 
+-[C:\devjava\project\appZsite\system.properties] to load properties
+	at com.avaje.lib.SystemProperties.loadProperties(SystemProperties.java:134)
+	at com.avaje.lib.SystemProperties.defaultInit(SystemProperties.java:239)
+	at com.avaje.lib.SystemProperties.getProperty(SystemProperties.java:230)
+	at com.avaje.lib.SystemProperties.getProperty(SystemProperties.java:195)
+	at com.avaje.lib.Log.create(Log.java:66)
+	at com.avaje.lib.Log.<clinit>(Log.java:47)
+	... 2 more
+</clinit></clinit></code>
+</pre>
+
+<h4>If Ebean can not find the 'logs' directory</h4>
+<pre class="brush: plain;"><code>
+FATAL ERROR: init of FileLogger: 
+Can't get log directory [logs] from [C:\devjava\project\appZsite]
+FATAL ERROR: init of FileLogger: 
+Can't get log directory [logs] from [C:\devjava\project\appZsite]
+java.lang.RuntimeException: 
+Can't get log directory [logs] from [C:\devjava\project\appZsite]
+	at com.avaje.lib.SimpleLogger.getFilePath(SimpleLogger.java:322)
+	at com.avaje.lib.SimpleLogger.init(SimpleLogger.java:336)
+	...
+</code>
+</pre>
+</subsection>
+</section></body>
+</document>
+
