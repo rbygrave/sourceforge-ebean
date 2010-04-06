@@ -29,6 +29,7 @@ import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.parse.DeployInheritInfo;
 import com.avaje.ebeaninternal.server.query.SqlTreeProperties;
+import com.avaje.ebeaninternal.server.subclass.SubClassUtil;
 
 /**
  * Represents a node in the Inheritance tree. Holds information regarding Super
@@ -51,7 +52,15 @@ public class InheritInfo {
 
 	private final ArrayList<InheritInfo> children = new ArrayList<InheritInfo>();
 
+	/**
+	 * Map of discriminator values to InheritInfo.
+	 */
 	private final HashMap<String, InheritInfo> discMap;
+    
+    /**
+     * Map of class types to InheritInfo (taking into account subclass proxy classes).
+     */
+    private final HashMap<String, InheritInfo> typeMap;
 
 	private final InheritInfo parent;
 
@@ -75,12 +84,14 @@ public class InheritInfo {
 			// this is a root node
 			root = this;
 			discMap = new HashMap<String, InheritInfo>();
+			typeMap = new HashMap<String, InheritInfo>();
 			registerWithRoot(this);
 
 		} else {
 			this.root = r;
 			// register with the root node...
 			discMap = null;
+			typeMap = null;
 			root.registerWithRoot(this);
 		}
 	}
@@ -105,6 +116,9 @@ public class InheritInfo {
 		this.descriptor = descriptor;
 	}
 	
+	/**
+	 * Return the associated BeanDescriptor for this node.
+	 */
 	public BeanDescriptor<?> getBeanDescriptor() {
 		return descriptor;
 	}
@@ -143,23 +157,47 @@ public class InheritInfo {
 		}
 	}
 
-	public InheritInfo readType(DbReadContext ctx) throws SQLException {
-		
-	    String discValue = ctx.getDataReader().getString();
+    /**
+     * Return the associated InheritInfo for this DB row read.
+     */
+    public InheritInfo readType(DbReadContext ctx) throws SQLException {
 
-		if (discValue == null){
-			return null;
-		}
-		
-		InheritInfo typeInfo = root.getType(discValue);
-		if (typeInfo == null){
-	        String m = "A type for discriminator value ["+discValue+"] was not found?";
-	        throw new PersistenceException(m);
-	    }
-		
-		return typeInfo;
-	}
+        String discValue = ctx.getDataReader().getString();
+        return readType(discValue);
+    }
 	
+    /**
+     * Return the associated InheritInfo for this discriminator value.
+     */
+    public InheritInfo readType(String discValue) {
+
+        if (discValue == null) {
+            return null;
+        }
+
+        InheritInfo typeInfo = root.getType(discValue);
+        if (typeInfo == null) {
+            String m = "Inheritance type for discriminator value [" + discValue + "] was not found?";
+            throw new PersistenceException(m);
+        }
+
+        return typeInfo;
+    }
+
+    /**
+     * Return the associated InheritInfo for this bean type.
+     */
+    public InheritInfo readType(Class<?> beanType) {
+
+        InheritInfo typeInfo = root.getTypeByClass(beanType);
+        if (typeInfo == null) {
+            String m = "Inheritance type for bean type [" + beanType.getName() + "] was not found?";
+            throw new PersistenceException(m);
+        }
+
+        return typeInfo;
+    }
+
 	/**
 	 * Create an EntityBean for this type.
 	 */
@@ -211,12 +249,22 @@ public class InheritInfo {
 	public InheritInfo getType(String discValue) {
 		return discMap.get(discValue);
 	}
+	
+	/**
+	 * Return the InheritInfo for the given bean type.
+	 */
+    private InheritInfo getTypeByClass(Class<?> beanType) {
+        String clsName = SubClassUtil.getSuperClassName(beanType.getName());
+        return typeMap.get(clsName);
+    }
 
 	private void registerWithRoot(InheritInfo info) {
 		if (info.getDiscriminatorStringValue() != null) {
 			String stringDiscValue = info.getDiscriminatorStringValue();
 			discMap.put(stringDiscValue, info);
 		}
+        String clsName = SubClassUtil.getSuperClassName(info.getType().getName());
+		typeMap.put(clsName, info);
 	}
 
 	/**
