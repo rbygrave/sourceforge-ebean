@@ -55,6 +55,7 @@ import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonWriteBeanVisitor;
 import com.avaje.ebean.validation.factory.Validator;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -2160,37 +2161,57 @@ public class BeanDescriptor<T> {
             
             ctx.appendObjectBegin();
             WriteBeanState prevState = ctx.pushBeanState(bean);
-            boolean loaded = ctx.isLoadedBean();
             
-            for (int i = 0; i < propertiesId.length; i++) {
-                propertiesId[i].jsonWrite(ctx, bean);
+            if (inheritInfo != null){
+                InheritInfo localInheritInfo = inheritInfo.readType(bean.getClass());
+                String discValue = localInheritInfo.getDiscriminatorStringValue();
+                String discColumn = localInheritInfo.getDiscriminatorColumn();
+                ctx.appendKeyValue(discColumn, "\""+discValue+"\"");
+
+                BeanDescriptor<?> localDescriptor = localInheritInfo.getBeanDescriptor();
+                localDescriptor.jsonWriteProperties(ctx, bean, beanVisitor);
+
+            } else {
+                jsonWriteProperties(ctx, bean, beanVisitor);
             }
-            if (loaded){
-                Set<String> props = null;
-                if (beanVisitor != null){
-                    props = beanVisitor.getIncludeProperties();
-                }
-                if (props == null){
-                    props = ctx.getLoadedProps();
-                }
-                if (props != null){
-                    for (String prop : props) {
-                        BeanProperty p = getBeanProperty(prop);
-                        if (!p.isId()){
-                            p.jsonWrite(ctx, bean);
-                        }
-                    }
-                } else {
-                    for (int j = 0; j < propertiesNonTransient.length; j++) {
-                        propertiesNonTransient[j].jsonWrite(ctx, bean);
-                    }
-                }
-            }
+            
             if (beanVisitor != null){
                 beanVisitor.visit((T)bean, ctx);
             }
             ctx.pushPreviousState(prevState);
             ctx.appendObjectEnd();
+        }
+    }
+
+    
+    private void jsonWriteProperties(WriteJsonContext ctx, Object bean, JsonWriteBeanVisitor<?> beanVisitor) {
+        
+        boolean loaded = ctx.isLoadedBean();
+        
+        for (int i = 0; i < propertiesId.length; i++) {
+            propertiesId[i].jsonWrite(ctx, bean);
+        }
+        
+        if (loaded){
+            Set<String> props = null;
+            if (beanVisitor != null){
+                props = beanVisitor.getIncludeProperties();
+            }
+            if (props == null){
+                props = ctx.getLoadedProps();
+            }
+            if (props != null){
+                for (String prop : props) {
+                    BeanProperty p = getBeanProperty(prop);
+                    if (!p.isId()){
+                        p.jsonWrite(ctx, bean);
+                    }
+                }
+            } else {
+                for (int j = 0; j < propertiesNonTransient.length; j++) {
+                    propertiesNonTransient[j].jsonWrite(ctx, bean);
+                }
+            }
         }
     }
     
@@ -2201,6 +2222,41 @@ public class BeanDescriptor<T> {
             // the object is null
             return null;
         }
+        
+        if (inheritInfo == null){
+            return jsonReadObject(ctx, path);
+  
+        } else {
+            // read the discriminator value to determine the correct sub type 
+            String discColumn = inheritInfo.getRoot().getDiscriminatorColumn(); 
+            
+            if (!ctx.readKeyNext()) {
+                String msg = "Error reading inheritance discriminator - expected ["+discColumn+"] but no json key?";
+                throw new TextException(msg);
+            }
+            String propName = ctx.getTokenKey();
+            
+            if (!propName.equalsIgnoreCase(discColumn)){
+                String msg = "Error reading inheritance discriminator - expected ["+discColumn+"] but read ["+propName+"]";
+                throw new TextException(msg);
+            }
+            
+            String discValue = ctx.readScalarValue();
+            if (!ctx.readValueNext()){
+                String msg = "Error reading inheritance discriminator ["+discColumn+"]. Expected more json name values?";
+                throw new TextException(msg);
+            }
+
+            // determine the sub type for this particular json object
+            InheritInfo localInheritInfo = inheritInfo.readType(discValue);
+            BeanDescriptor<?> localDescriptor = localInheritInfo.getBeanDescriptor();
+            return (T)localDescriptor.jsonReadObject(ctx, path);
+        } 
+    }
+    
+    @SuppressWarnings("unchecked")
+    private T jsonReadObject(ReadJsonContext ctx, String path) {
+        
         T bean = (T)createEntityBean();
         ctx.pushBean(bean, path);
         
