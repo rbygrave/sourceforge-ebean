@@ -77,17 +77,21 @@ public class ImportedIdEmbedded implements ImportedId {
 		
 		if (embeddedId == null){
 			for (int i = 0; i < imported.length; i++) {
-				request.appendColumnIsNull(imported[i].localDbColumn);	
+                if (imported[i].owner.isDbUpdatable()) {
+                    request.appendColumnIsNull(imported[i].localDbColumn);
+                }
 			}
 		} else {
 		
 			for (int i = 0; i < imported.length; i++) {
-				Object value = imported[i].foreignProperty.getValue(embeddedId);
-				if (value == null){
-					request.appendColumnIsNull(imported[i].localDbColumn);	
-				} else {
-					request.appendColumn(imported[i].localDbColumn);	
-				}
+			    if (imported[i].owner.isDbUpdatable()) {
+    				Object value = imported[i].foreignProperty.getValue(embeddedId);
+    				if (value == null){
+    					request.appendColumnIsNull(imported[i].localDbColumn);	
+    				} else {
+    					request.appendColumn(imported[i].localDbColumn);	
+    				}
+			    }
 			}
 		}
 	}
@@ -101,7 +105,11 @@ public class ImportedIdEmbedded implements ImportedId {
 	
 	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 
-		Object embeddedId = foreignAssocOne.getValue(bean);
+        Object embeddedId = null;
+
+        if (bean != null) {
+            embeddedId = foreignAssocOne.getValue(bean);
+        }
 		
 		if (embeddedId == null){
 			for (int i = 0; i < imported.length; i++) {

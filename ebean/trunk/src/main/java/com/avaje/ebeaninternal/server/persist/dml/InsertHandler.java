@@ -32,6 +32,7 @@ import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.persist.DmlUtil;
 import com.avaje.ebeaninternal.server.type.DataBind;
 
@@ -69,6 +70,12 @@ public class InsertHandler extends DmlHandler {
 		this.meta = meta;
 		this.concatinatedKey = meta.isConcatinatedKey();
 	}
+	
+	
+    @Override
+    public boolean isIncluded(BeanProperty prop) {
+        return prop.isDbInsertable() && (super.isIncluded(prop));
+    }
 	
 	/**
 	 * Generate and bind the insert statement.
