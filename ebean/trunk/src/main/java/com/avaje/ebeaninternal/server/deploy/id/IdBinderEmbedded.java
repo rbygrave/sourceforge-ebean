@@ -122,6 +122,7 @@ public final class IdBinderEmbedded implements IdBinder {
     }
 
     public Object[] getIdValues(Object bean) {
+        bean = embIdProperty.getValue(bean);
         Object[] bindvalues = new Object[props.length];
         for (int i = 0; i < props.length; i++) {
             bindvalues[i] = props[i].getValue(bean);
@@ -162,12 +163,12 @@ public final class IdBinderEmbedded implements IdBinder {
     public Object read(DbReadContext ctx) throws SQLException {
 
         Object embId = idDesc.createVanillaBean();
-        boolean notNull = false;
+        boolean notNull = true;
 
         for (int i = 0; i < props.length; i++) {
             Object value = props[i].readSet(ctx, embId, null);
-            if (value != null) {
-                notNull = true;
+            if (value == null) {
+                notNull = false;
             }
         }
 
@@ -228,6 +229,9 @@ public final class IdBinderEmbedded implements IdBinder {
                 sb.append(prefix);
                 sb.append(".");
             }
+
+            sb.append(embIdProperty.getName());
+            sb.append(".");            
             sb.append(props[i].getName());
             sb.append(" ").append(operator);
             sb.append(" ? ");
