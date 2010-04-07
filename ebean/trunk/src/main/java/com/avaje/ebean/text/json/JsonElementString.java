@@ -46,4 +46,13 @@ public class JsonElementString implements JsonElement {
     public String toString() {
         return value;
     }
+
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    public String toPrimitiveString() {
+        return value;
+    }
+    
 }

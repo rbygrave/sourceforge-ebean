@@ -51,4 +51,14 @@ public class JsonElementBoolean implements JsonElement {
     public String toString() {
         return Boolean.toString(value);
     }
+
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    public String toPrimitiveString() {
+        return Boolean.toString(value);
+    }
+    
+    
 }

@@ -49,4 +49,14 @@ public class JsonElementArray implements JsonElement {
     public String toString() {
         return values.toString();
     }
+
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    public String toPrimitiveString() {
+        return null;
+    }
+    
+    
 }

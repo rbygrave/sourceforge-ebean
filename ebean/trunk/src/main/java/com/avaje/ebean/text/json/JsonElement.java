@@ -33,4 +33,16 @@ package com.avaje.ebean.text.json;
  */
 public interface JsonElement {
 
+    /**
+     * Return true if this is a JSON primitive type (null, boolean, number or string).
+     */
+    public boolean isPrimitive();
+
+    /**
+     * Return the string value of this primitive JSON element.
+     * <p>
+     * This can not be used for JsonElementObject or JsonElementArray.
+     * </p>
+     */
+    public String toPrimitiveString();
 }

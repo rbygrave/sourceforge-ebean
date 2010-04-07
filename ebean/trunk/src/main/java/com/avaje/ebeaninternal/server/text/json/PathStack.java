@@ -24,15 +24,12 @@ import com.avaje.ebeaninternal.server.util.ArrayStack;
 public class PathStack extends ArrayStack<String> {
 
     public void pushPathKey(String key) {
-//        if (isEmpty()){
-//            push(key);                
-//        } else {
-            String prefix = peekWithNull();
-            if (prefix != null){
-                key = prefix+"."+key;
-            }
-            push(key);
-//        }        
+
+        String prefix = peekWithNull();
+        if (prefix != null){
+            key = prefix+"."+key;
+        }
+        push(key);
     }
 
 }

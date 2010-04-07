@@ -42,7 +42,11 @@ public class JsonElementObject implements JsonElement {
     public void put(String key, JsonElement value){
         map.put(key, value);
     }
-        
+
+    public JsonElement get(String key){
+        return map.get(key);
+    }
+
     public JsonElement getValue(String key){
         return map.get(key);
     }
@@ -58,5 +62,14 @@ public class JsonElementObject implements JsonElement {
     public String toString() {
         return map.toString();
     }
+
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    public String toPrimitiveString() {
+        return null;
+    }
+    
     
 }
