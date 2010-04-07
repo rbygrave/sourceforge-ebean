@@ -33,6 +33,7 @@ import com.avaje.ebean.text.json.JsonElement;
 import com.avaje.ebean.text.json.JsonReadBeanVisitor;
 import com.avaje.ebean.text.json.JsonReadOptions;
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.util.ArrayStack;
 
 public class ReadJsonContext {
@@ -294,8 +295,8 @@ public class ReadJsonContext {
         src.ignoreWhiteSpace();
     }
         
-    public void pushBean(Object bean, String path){
-        currentState = new ReadBeanState(bean);
+    public void pushBean(Object bean, String path, BeanDescriptor<?> beanDescriptor){
+        currentState = new ReadBeanState(bean, beanDescriptor);
         beanState.push(currentState);
         if (pathStack != null){
             pathStack.pushPathKey(path);
@@ -345,12 +346,14 @@ public class ReadJsonContext {
     private static class ReadBeanState implements PropertyChangeListener {
         
         private final Object bean;
+        private final BeanDescriptor<?> beanDescriptor;
         private final EntityBeanIntercept ebi;
         private final Set<String> loadedProps;
         private Map<String,JsonElement> unmapped;
         
-        private ReadBeanState(Object bean) {
+        private ReadBeanState(Object bean, BeanDescriptor<?> beanDescriptor) {
             this.bean = bean;
+            this.beanDescriptor = beanDescriptor;
             if (bean instanceof EntityBean){
                 this.ebi = ((EntityBean)bean)._ebean_getIntercept();
                 this.loadedProps = new HashSet<String>();
@@ -363,6 +366,9 @@ public class ReadJsonContext {
             return bean.getClass().getSimpleName()+" loaded:"+loadedProps;
         }
         
+        /**
+         * Add a loaded/set property to the set of loadedProps.
+         */
         private void setLoaded(String propertyName){
             if (ebi != null){
                 loadedProps.add(propertyName);
@@ -378,6 +384,8 @@ public class ReadJsonContext {
         
         @SuppressWarnings("unchecked")
         private <T> void visit(JsonReadBeanVisitor<T> beanVisitor) {
+            // listen for property change events so that 
+            // we can update the loadedProps if necessary
             if (ebi != null){
                 ebi.addPropertyChangeListener(this);
             }
@@ -389,10 +397,11 @@ public class ReadJsonContext {
         
         private void setLoadedState(){
             if (ebi != null){
-                ebi.setLoadedProps(loadedProps);
-                //ebi.setLoaded();
+                // takes into account reference beans
+                beanDescriptor.setLoadedProps(ebi, loadedProps);
             }
         }
+        
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             loadedProps.add(propName);

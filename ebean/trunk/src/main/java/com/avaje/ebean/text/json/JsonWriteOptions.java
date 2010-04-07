@@ -20,7 +20,9 @@
 package com.avaje.ebean.text.json;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides options for customising the JSON write process.
@@ -30,19 +32,65 @@ import java.util.Map;
  * </p>
  * <p>
  * You can optionally register JsonWriteBeanVisitors to customise the processing
- * of the beans as they are processed and <strong>add raw JSON elements</strong>.
+ * of the beans as they are processed and <strong>add raw JSON
+ * elements</strong>.
  * </p>
+ * <p>
+ * You can explicitly state which properties to include in the JSON output for
+ * the root level and each path.
+ * </p>
+ * 
+ * <pre class="code">
+ *  // find some customers ...
+ *  
+ * List&lt;Customer&gt; list = Ebean.find(Customer.class)
+ *     .select(&quot;id, name, status, shippingAddress&quot;)
+ *     .fetch(&quot;billingAddress&quot;,&quot;line1, city&quot;)
+ *     .fetch(&quot;billingAddress.country&quot;, &quot;*&quot;)
+ *     .fetch(&quot;contacts&quot;, &quot;firstName,email&quot;)
+ *     .order().desc(&quot;id&quot;)
+ *     .findList();
+ * 
+ * JsonContext json = Ebean.createJsonContext();
+ * 
+ * JsonWriteOptions writeOptions = new JsonWriteOptions();
+ * writeOptions.setRootPathVisitor(new JsonWriteBeanVisitor&lt;Customer&gt;() {
+ * 
+ *     public void visit(Customer bean, JsonWriter ctx) {
+ *         System.out.println(&quot;write visit customer: &quot; + bean);
+ *         ctx.appendKeyValue(&quot;dummyCust&quot;, &quot;34&quot;);
+ *         ctx.appendKeyValue(&quot;smallCustObject&quot;, &quot;{\&quot;a\&quot;:34,\&quot;b\&quot;:\&quot;asdasdasd\&quot;}&quot;);
+ *     }
+ * });
+ * 
+ * writeOptions.setPathProperties(&quot;contacts&quot;, &quot;firstName,id&quot;);
+ * writeOptions.setPathVisitor(&quot;contacts&quot;, new JsonWriteBeanVisitor&lt;Contact&gt;() {
+ * 
+ *     public void visit(Contact bean, JsonWriter ctx) {
+ *         System.out.println(&quot;write additional custom json on customer: &quot; + bean);
+ *         ctx.appendKeyValue(&quot;dummy&quot;, &quot;  3400&quot; + bean.getId() + &quot;&quot;);
+ *         ctx.appendKeyValue(&quot;smallObject&quot;, &quot;{\&quot;contactA\&quot;:34,\&quot;contactB\&quot;:\&quot;banana\&quot;}&quot;);
+ *     }
+ * 
+ * });
+ * 
+ *  // output as a JSON string with pretty formatting
+ * String s = json.toJsonString(list, true, writeOptions);
+ * 
+ * </pre>
  * 
  * @see JsonContext#toList(Class, String, JsonReadOptions)
  * 
  * @author rbygrave
- *
+ * 
  */
 public class JsonWriteOptions {
-    
+
     protected JsonValueAdapter valueAdapter;
 
     protected Map<String, JsonWriteBeanVisitor<?>> visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>();
+
+    protected Map<String, Set<String>> includePropertiesMap = new HashMap<String, Set<String>>();
 
     /**
      * Return the JsonValueAdapter.
@@ -62,16 +110,71 @@ public class JsonWriteOptions {
     /**
      * Register a JsonWriteBeanVisitor for the root level.
      */
-    public JsonWriteOptions addRootVisitor(JsonWriteBeanVisitor<?> visitor) {
-        return addVisitor(null, visitor);
+    public JsonWriteOptions setRootPathVisitor(JsonWriteBeanVisitor<?> visitor) {
+        return setPathVisitor(null, visitor);
     }
-    
+
     /**
      * Register a JsonWriteBeanVisitor for the given path.
      */
-    public JsonWriteOptions addVisitor(String path, JsonWriteBeanVisitor<?> visitor) {
+    public JsonWriteOptions setPathVisitor(String path, JsonWriteBeanVisitor<?> visitor) {
         visitorMap.put(path, visitor);
         return this;
+    }
+
+    /**
+     * Set the properties to include in the JSON output for the given path.
+     * 
+     * @param propertiesToInclude
+     *            The set of properties to output
+     */
+    public JsonWriteOptions setPathProperties(String path, Set<String> propertiesToInclude) {
+        includePropertiesMap.put(path, propertiesToInclude);
+        return this;
+    }
+
+    /**
+     * Set the properties to include in the JSON output for the given path.
+     * 
+     * @param propertiesToInclude
+     *            Comma delimited list of properties to output
+     */
+    public JsonWriteOptions setPathProperties(String path, String propertiesToInclude) {
+        return setPathProperties(path, parseProps(propertiesToInclude));
+    }
+
+    /**
+     * Set the properties to include in the JSON output for the root level.
+     * 
+     * @param propertiesToInclude
+     *            Comma delimited list of properties to output
+     */
+    public JsonWriteOptions setRootPathProperties(String propertiesToInclude) {
+        return setPathProperties(null, parseProps(propertiesToInclude));
+    }
+
+    /**
+     * Set the properties to include in the JSON output for the root level.
+     * 
+     * @param propertiesToInclude
+     *            The set of properties to output
+     */
+    public JsonWriteOptions setRootPathProperties(Set<String> propertiesToInclude) {
+        return setPathProperties(null, propertiesToInclude);
+    }
+
+    private Set<String> parseProps(String propertiesToInclude) {
+
+        LinkedHashSet<String> props = new LinkedHashSet<String>();
+
+        String[] split = propertiesToInclude.split(",");
+        for (int i = 0; i < split.length; i++) {
+            String s = split[i].trim();
+            if (s.length() > 0) {
+                props.add(s);
+            }
+        }
+        return props;
     }
 
     /**
@@ -80,5 +183,12 @@ public class JsonWriteOptions {
     public Map<String, JsonWriteBeanVisitor<?>> getVisitorMap() {
         return visitorMap;
     }
- 
+
+    /**
+     * Return the Map of properties to include by path.
+     */
+    public Map<String, Set<String>> getIncludePropertiesMap() {
+        return includePropertiesMap;
+    }
+
 }
