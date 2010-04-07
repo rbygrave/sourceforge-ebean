@@ -22,13 +22,13 @@ public class TestOriginIntEncoding extends TestCase {
         Assert.assertEquals("z", CallStack.enc(51));
         Assert.assertEquals("0", CallStack.enc(52));
         Assert.assertEquals("9", CallStack.enc(61));
-        Assert.assertEquals("+", CallStack.enc(62));
-        Assert.assertEquals("/", CallStack.enc(63));
+        Assert.assertEquals("-", CallStack.enc(62));
+        Assert.assertEquals("_", CallStack.enc(63));
         Assert.assertEquals("BA", CallStack.enc(64));
         Assert.assertEquals("Bk", CallStack.enc(100));
         Assert.assertEquals("B9", CallStack.enc(125));
-        Assert.assertEquals("B+", CallStack.enc(126));
-        Assert.assertEquals("B/", CallStack.enc(127));
+        Assert.assertEquals("B-", CallStack.enc(126));
+        Assert.assertEquals("B_", CallStack.enc(127));
         Assert.assertEquals("CA", CallStack.enc(128));        
         
     }
