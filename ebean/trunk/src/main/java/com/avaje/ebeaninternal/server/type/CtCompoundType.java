@@ -25,6 +25,11 @@ import java.util.Map;
 
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.CompoundTypeProperty;
+import com.avaje.ebean.text.json.JsonElement;
+import com.avaje.ebean.text.json.JsonElementObject;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext.WriteBeanState;
 
 /**
  * The internal representation of a Compound Type (Immutable Compound Value
@@ -181,6 +186,97 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
         } else {
             return parent + "." + propName;
         }
+    }
+
+    public Object jsonRead(ReadJsonContext ctx) {
+
+        if (!ctx.readObjectBegin()) {
+            // the object is null
+            return null;
+        }
+
+        JsonElementObject jsonObject = new JsonElementObject();
+        do {
+            if (!ctx.readKeyNext()){
+                break;
+            } else {
+                // we read a property key ...
+                String propName = ctx.getTokenKey();
+                JsonElement unmappedJson = ctx.readUnmappedJson(propName);
+                jsonObject.put(propName, unmappedJson);
+                
+                if (!ctx.readValueNext()){
+                    break;
+                }
+            } 
+        } while(true);
+        
+        return readJsonElementObject(ctx, jsonObject);
+    }
+    
+    private Object readJsonElementObject(ReadJsonContext ctx, JsonElementObject jsonObject){
+            
+        boolean nullValue = false;
+        Object[] values = new Object[propReaders.length];
+
+        for (int i = 0; i < propReaders.length; i++) {
+            String propName = properties[i].getName();
+            JsonElement jsonElement = jsonObject.get(propName);
+
+            if (propReaders[i] instanceof CtCompoundType<?>) {
+                values[i] = ((CtCompoundType<?>)propReaders[i]).readJsonElementObject(ctx, (JsonElementObject)jsonElement);
+              
+            } else {
+                values[i] = ((ScalarType<?>)propReaders[i]).jsonFromString(jsonElement.toPrimitiveString(), ctx.getValueAdapter());
+            } 
+            if (values[i] == null){
+                nullValue = true;
+            }
+        }
+        
+        if (nullValue){
+            return null;
+        }
+
+        return cvoType.create(values);        
+    }
+
+    
+    public void jsonWrite(WriteJsonContext ctx, Object valueObject, String propertyName) {
+       
+        if (valueObject == null){
+            ctx.beginAssocOneIsNull(propertyName);
+            
+        } else {
+            ctx.pushParentBean(valueObject);
+            ctx.beginAssocOne(propertyName);            
+            jsonWriteProps(ctx, valueObject, propertyName);
+            ctx.endAssocOne();
+            ctx.popParentBean();
+        }
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private void jsonWriteProps(WriteJsonContext ctx, Object valueObject, String propertyName) {
+            
+        ctx.appendObjectBegin();
+        WriteBeanState prevState = ctx.pushBeanState(valueObject);
+
+        for (int i = 0; i < properties.length; i++) {
+            String propName = properties[i].getName();
+            Object value = properties[i].getValue((V)valueObject);
+            if (propReaders[i] instanceof CtCompoundType<?>) {
+                ((CtCompoundType)propReaders[i]).jsonWrite(ctx, value, propName);
+              
+            } else {
+                String js = ((ScalarType)propReaders[i]).jsonToString(value, ctx.getValueAdapter());
+                ctx.appendKeyValue(propName, js);                    
+            }   
+        }
+        
+        ctx.pushPreviousState(prevState);
+        ctx.appendObjectEnd();
     }
 
 }

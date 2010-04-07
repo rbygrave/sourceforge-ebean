@@ -2182,31 +2182,33 @@ public class BeanDescriptor<T> {
     @SuppressWarnings("unchecked")
     private void jsonWriteProperties(WriteJsonContext ctx, Object bean) {
         
-        boolean loaded = ctx.isLoadedBean();
+        boolean referenceBean = ctx.isReferenceBean();
         
         for (int i = 0; i < propertiesId.length; i++) {
-            propertiesId[i].jsonWrite(ctx, bean);
+            Object idValue = propertiesId[i].getValue(bean);
+            if (idValue != null){
+                propertiesId[i].jsonWrite(ctx, bean);
+            }
         }
 
         JsonWriteBeanVisitor<T> beanVisitor = (JsonWriteBeanVisitor<T>)ctx.getBeanVisitor();
-
-        if (loaded){
             
-            Set<String> props = ctx.getIncludeProperties();
-            if (props == null){
-                props = ctx.getLoadedProps();
-            }
-            if (props != null){
-                for (String prop : props) {
-                    BeanProperty p = getBeanProperty(prop);
-                    if (!p.isId()){
-                        p.jsonWrite(ctx, bean);
-                    }
+        Set<String> props = ctx.getIncludeProperties();
+        if (props == null){
+            props = ctx.getLoadedProps();
+        }
+        if (props != null){
+            for (String prop : props) {
+                BeanProperty p = getBeanProperty(prop);
+                if (!p.isId()){
+                    p.jsonWrite(ctx, bean);
                 }
-            } else {
+            }
+        } else {
+            if (!referenceBean){
                 for (int j = 0; j < propertiesNonTransient.length; j++) {
                     propertiesNonTransient[j].jsonWrite(ctx, bean);
-                }
+                }                    
             }
         }
         

@@ -47,4 +47,12 @@ public class JsonElementNumber implements JsonElement {
         return value;
     }
 
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    public String toPrimitiveString() {
+        return value;
+    }
+
 }

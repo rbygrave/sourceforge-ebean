@@ -32,7 +32,7 @@ import com.avaje.ebeaninternal.server.el.ElPropertyValue;
  * </p>
  * 
  * @author rbygrave
-s */
+ */
 public class CtCompoundPropertyElAdapter implements ElPropertyValue {
 
     private final CtCompoundProperty prop;

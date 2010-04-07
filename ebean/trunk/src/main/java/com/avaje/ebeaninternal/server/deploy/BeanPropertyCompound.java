@@ -27,6 +27,7 @@ import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.type.CtCompoundProperty;
 import com.avaje.ebeaninternal.server.type.CtCompoundPropertyElAdapter;
@@ -159,7 +160,14 @@ public class BeanPropertyCompound extends BeanProperty {
     }
 
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
-        //FIXME : jsonWrite on Compound IVO
-        super.jsonWrite(ctx, bean);
+        
+        Object valueObject = getValueIntercept(bean);
+        compoundType.jsonWrite(ctx, valueObject, name);
+    }
+    
+    public void jsonRead(ReadJsonContext ctx, Object bean){
+
+        Object objValue = compoundType.jsonRead(ctx);
+        setValue(bean, objValue);
     }
 }

@@ -329,13 +329,14 @@ public class ReadJsonContext {
      * Provide these values to a JsonReadBeanVisitor if registered.
      * </p>
      */
-    public void readUnmappedJson(String key) {
+    public JsonElement readUnmappedJson(String key) {
         
         ReadJsonRawReader rawReader = new ReadJsonRawReader(this);
         JsonElement rawJsonValue = rawReader.readUnknownValue();
         if (visitorMap != null){
             currentState.addUnmappedJson(key, rawJsonValue);
         }
+        return rawJsonValue;
     }
 
     protected char nextChar() {

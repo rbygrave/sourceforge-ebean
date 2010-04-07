@@ -46,4 +46,13 @@ public class JsonElementNull implements JsonElement {
         return "json null";
     }
 
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    public String toPrimitiveString() {
+        return null;
+    }
+
+    
 }
