@@ -1185,7 +1185,7 @@ public class BeanProperty implements ElPropertyValue {
     @SuppressWarnings("unchecked")
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
         
-        Object value = getValue(bean);
+        Object value = getValueIntercept(bean);
         if (value == null){
             ctx.appendNull(name);
         } else {

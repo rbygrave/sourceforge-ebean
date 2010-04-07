@@ -44,7 +44,7 @@ public final class ObjectGraphOrigin implements Serializable {
 	public ObjectGraphOrigin(int queryHash, CallStack callStack, String beanType) {
 		this.callStack = callStack;
 		this.beanType = beanType;
-		this.key = "s"+callStack.getZeroHash()+":q"+queryHash+":p"+callStack.getPathHash();
+        this.key = callStack.getOriginKey(queryHash);
 	}
 
 	/**

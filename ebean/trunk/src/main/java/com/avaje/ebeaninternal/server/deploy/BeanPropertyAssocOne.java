@@ -786,7 +786,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
         
         if (ctx.includedProp(name)) {
-            Object value = getValue(bean);
+            Object value = getValueIntercept(bean);
             if (value == null){
                 ctx.beginAssocOneIsNull(name);
                 

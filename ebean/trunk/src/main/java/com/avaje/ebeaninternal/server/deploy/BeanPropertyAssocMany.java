@@ -650,7 +650,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
         
         if (ctx.includedProp(name)) {
-            Object value = getValue(bean);
+            Object value = getValueIntercept(bean);
             if (value != null){
                 ctx.pushParentBeanMany(bean);
                 help.jsonWrite(ctx, name, value);
