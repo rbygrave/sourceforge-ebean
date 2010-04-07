@@ -1,10 +1,8 @@
 package com.avaje.tests.text.json;
 
 import java.io.StringReader;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -40,11 +38,7 @@ public class TestTextJsonBeanReadVisitorWithCustomJson extends TestCase {
         JsonContext json = Ebean.createJsonContext();
         
         JsonWriteOptions writeOptions = new JsonWriteOptions();
-        writeOptions.addRootVisitor(new JsonWriteBeanVisitor<Customer>() {
-
-            public Set<String> getIncludeProperties() {
-                return null;
-            }
+        writeOptions.setRootPathVisitor(new JsonWriteBeanVisitor<Customer>() {
 
             public void visit(Customer bean, JsonWriter ctx) {
                 System.out.println("write visit customer: "+bean);
@@ -53,14 +47,8 @@ public class TestTextJsonBeanReadVisitorWithCustomJson extends TestCase {
             }
         });
         
-        writeOptions.addVisitor("contacts", new JsonWriteBeanVisitor<Contact>() {
-
-            public Set<String> getIncludeProperties() {
-                final LinkedHashSet<String> p = new LinkedHashSet<String>();
-                p.add("firstName");
-                p.add("id");
-                return p;
-            }
+        writeOptions.setPathProperties("contacts", "firstName,id");
+        writeOptions.setPathVisitor("contacts", new JsonWriteBeanVisitor<Contact>() {
 
             public void visit(Contact bean, JsonWriter ctx) {
                 System.out.println("write additional custom json on customer: "+bean);

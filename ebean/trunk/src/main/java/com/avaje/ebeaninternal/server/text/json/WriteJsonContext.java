@@ -41,6 +41,8 @@ public class WriteJsonContext implements JsonWriter {
     
     private final ArrayStack<Object> parentBeans = new ArrayStack<Object>();
     
+    private final Map<String, Set<String>> includePropertiesMap;
+
     private final Map<String, JsonWriteBeanVisitor<?>> visitorMap;
 
     private final PathStack pathStack;
@@ -57,11 +59,25 @@ public class WriteJsonContext implements JsonWriter {
         if (options == null){            
             this.valueAdapter = dfltValueAdapter;
             this.visitorMap = null;
+            this.includePropertiesMap = null;
             this.pathStack = null;
         } else {
             this.valueAdapter = getValueAdapter(dfltValueAdapter, options.getValueAdapter());
-            this.visitorMap = options.getVisitorMap();
-            this.pathStack = (visitorMap == null || visitorMap.isEmpty()) ? null : new PathStack();
+            this.visitorMap = emptyToNull(options.getVisitorMap());
+            this.includePropertiesMap = emptyToNull(options.getIncludePropertiesMap());
+            if (includePropertiesMap != null || visitorMap != null) {
+                this.pathStack = new PathStack();
+            } else {
+                this.pathStack = null;
+            }
+        }
+    }
+    
+    private <MK,MV> Map<MK,MV> emptyToNull(Map<MK,MV> m){
+        if ( m == null || m.isEmpty()) {
+            return null;
+        } else {
+            return m;
         }
     }
 
@@ -69,8 +85,20 @@ public class WriteJsonContext implements JsonWriter {
         return valueAdapter == null ? dfltValueAdapter : valueAdapter;
     }
     
+    /**
+     * Return the set of properties to write to JSON. If null is returned then
+     * the default will output the properties loaded for this bean.
+     */
+    public Set<String> getIncludeProperties() {
+        if (includePropertiesMap != null){
+            String path = pathStack.peekWithNull();
+            return includePropertiesMap.get(path);
+        }
+        return null;
+    }
+
     public JsonWriteBeanVisitor<?> getBeanVisitor() {
-        if (pathStack != null){
+        if (visitorMap != null){
             String path = pathStack.peekWithNull();
             return visitorMap.get(path);
         }

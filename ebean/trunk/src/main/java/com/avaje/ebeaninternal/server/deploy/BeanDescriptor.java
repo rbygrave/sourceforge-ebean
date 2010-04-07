@@ -2152,12 +2152,10 @@ public class BeanDescriptor<T> {
     public BeanProperty[] propertiesLocal() {
         return propertiesLocal;
     }
-    
-    @SuppressWarnings("unchecked")
+
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
 
         if (bean != null){
-            JsonWriteBeanVisitor<T> beanVisitor = (JsonWriteBeanVisitor<T>)ctx.getBeanVisitor();
             
             ctx.appendObjectBegin();
             WriteBeanState prevState = ctx.pushBeanState(bean);
@@ -2169,34 +2167,32 @@ public class BeanDescriptor<T> {
                 ctx.appendKeyValue(discColumn, "\""+discValue+"\"");
 
                 BeanDescriptor<?> localDescriptor = localInheritInfo.getBeanDescriptor();
-                localDescriptor.jsonWriteProperties(ctx, bean, beanVisitor);
+                localDescriptor.jsonWriteProperties(ctx, bean);
 
             } else {
-                jsonWriteProperties(ctx, bean, beanVisitor);
+                jsonWriteProperties(ctx, bean);
             }
             
-            if (beanVisitor != null){
-                beanVisitor.visit((T)bean, ctx);
-            }
             ctx.pushPreviousState(prevState);
             ctx.appendObjectEnd();
         }
     }
 
     
-    private void jsonWriteProperties(WriteJsonContext ctx, Object bean, JsonWriteBeanVisitor<?> beanVisitor) {
+    @SuppressWarnings("unchecked")
+    private void jsonWriteProperties(WriteJsonContext ctx, Object bean) {
         
         boolean loaded = ctx.isLoadedBean();
         
         for (int i = 0; i < propertiesId.length; i++) {
             propertiesId[i].jsonWrite(ctx, bean);
         }
-        
+
+        JsonWriteBeanVisitor<T> beanVisitor = (JsonWriteBeanVisitor<T>)ctx.getBeanVisitor();
+
         if (loaded){
-            Set<String> props = null;
-            if (beanVisitor != null){
-                props = beanVisitor.getIncludeProperties();
-            }
+            
+            Set<String> props = ctx.getIncludeProperties();
             if (props == null){
                 props = ctx.getLoadedProps();
             }
@@ -2212,6 +2208,10 @@ public class BeanDescriptor<T> {
                     propertiesNonTransient[j].jsonWrite(ctx, bean);
                 }
             }
+        }
+        
+        if (beanVisitor != null){
+            beanVisitor.visit((T)bean, ctx);
         }
     }
     
@@ -2258,7 +2258,7 @@ public class BeanDescriptor<T> {
     private T jsonReadObject(ReadJsonContext ctx, String path) {
         
         T bean = (T)createEntityBean();
-        ctx.pushBean(bean, path);
+        ctx.pushBean(bean, path, this);
         
         do {
             if (!ctx.readKeyNext()){
@@ -2284,4 +2284,37 @@ public class BeanDescriptor<T> {
         ctx.popBean();
         return bean;
     }
+    
+    /**
+     * Set the loaded properties with additional check to see if the bean is a
+     * reference.
+     */
+    public void setLoadedProps(EntityBeanIntercept ebi, Set<String> loadedProps) {
+        if (isLoadedReference(loadedProps)) {
+            ebi.setReference();
+        } else {
+            ebi.setLoadedProps(loadedProps);
+        }
+    }
+
+    /**
+     * Return true if the loadedProperties is just the Id property and therefore
+     * this is really a reference.
+     */
+    public boolean isLoadedReference(Set<String> loadedProps) {
+
+        if (loadedProps != null) {
+            if (loadedProps.size() == propertiesId.length) {
+                for (int i = 0; i < propertiesId.length; i++) {
+                    if (!loadedProps.contains(propertiesId[i].getName())) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
 }

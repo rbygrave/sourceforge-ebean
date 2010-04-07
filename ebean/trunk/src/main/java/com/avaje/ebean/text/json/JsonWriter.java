@@ -24,8 +24,8 @@ package com.avaje.ebean.text.json;
  * append your own JSON content into the output.
  * 
  * @see JsonWriteBeanVisitor
- * @see JsonWriteOptions#addRootVisitor(JsonWriteBeanVisitor)
- * @see JsonWriteOptions#addVisitor(String, JsonWriteBeanVisitor)
+ * @see JsonWriteOptions#setRootPathVisitor(JsonWriteBeanVisitor)
+ * @see JsonWriteOptions#setPathVisitor(String, JsonWriteBeanVisitor)
  * 
  * @author rbygrave
  */

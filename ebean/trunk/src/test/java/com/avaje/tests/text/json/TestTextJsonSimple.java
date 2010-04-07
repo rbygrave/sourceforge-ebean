@@ -1,8 +1,6 @@
 package com.avaje.tests.text.json;
 
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -36,15 +34,8 @@ public class TestTextJsonSimple extends TestCase {
         JsonContext json = server.createJsonContext();
         
         JsonWriteOptions options = new JsonWriteOptions();
-        options.addRootVisitor(new JsonWriteBeanVisitor<Customer>() {
-
-            
-            public Set<String> getIncludeProperties() {
-                final LinkedHashSet<String> p = new LinkedHashSet<String>();
-                p.add("name");
-                p.add("id");
-                return null;
-            }
+        options.setRootPathProperties("name, id");
+        options.setRootPathVisitor(new JsonWriteBeanVisitor<Customer>() {
 
             public void visit(Customer bean, JsonWriter ctx) {
                 System.out.println("visiting "+bean);
@@ -54,7 +45,8 @@ public class TestTextJsonSimple extends TestCase {
             
         });
         
-        String s = json.toJsonString(list, true);
+        //String s = json.toJsonString(list, true);
+        String s = json.toJsonString(list, true, options);
         
         System.out.println(s);
         
