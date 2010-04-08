@@ -1,6 +1,9 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.persistence.PersistenceException;
 
@@ -17,8 +20,19 @@ import com.avaje.ebeaninternal.util.ValueUtil;
 /**
  * Single scalar imported id.
  */
-public final class ImportedIdSimple implements ImportedId {
+public final class ImportedIdSimple implements ImportedId, Comparable<ImportedIdSimple> {
 
+    /**
+     * Helper class to sort ImportedIdSimple. 
+     */
+    private final static class EntryComparator implements Comparator<ImportedIdSimple> {
+        public int compare(ImportedIdSimple o1, ImportedIdSimple o2) {
+            return o1.compareTo(o2);
+        }
+    }
+    
+    private static final EntryComparator COMPARATOR = new EntryComparator();    
+    
 	protected final BeanPropertyAssoc<?> owner;
 
 	protected final String localDbColumn;
@@ -26,16 +40,34 @@ public final class ImportedIdSimple implements ImportedId {
 	protected final String logicalName;
 
 	protected final BeanProperty foreignProperty;
+	
+	protected final int position;
 
-	public ImportedIdSimple(BeanPropertyAssoc<?> owner, String localDbColumn, BeanProperty foreignProperty) {
+	public ImportedIdSimple(BeanPropertyAssoc<?> owner, String localDbColumn, BeanProperty foreignProperty, int position) {
 		this.owner = owner;
 		this.localDbColumn = InternString.intern(localDbColumn);
 		this.foreignProperty = foreignProperty;
+		this.position = position;
 		this.logicalName = InternString.intern(owner.getName()+"."+foreignProperty.getName());
 	}
 
-	
-	public void addFkeys(String name) {
+    /**
+     * Return the list as an array sorted into the same order as the Bean Properties.
+     */
+    public static ImportedIdSimple[] sort(List<ImportedIdSimple> list) {
+        
+        ImportedIdSimple[] importedIds = (ImportedIdSimple[]) list.toArray(new ImportedIdSimple[list.size()]);
+    
+        // sort into the same order as the BeanProperties
+        Arrays.sort(importedIds, COMPARATOR);
+        return importedIds;
+    }
+    
+	public int compareTo(ImportedIdSimple other) {	    	    
+        return (position < other.position ? -1 : (position == other.position ? 0 : 1));
+    }
+
+    public void addFkeys(String name) {
 		BeanFkeyProperty fkey = new BeanFkeyProperty(null, name+"."+foreignProperty.getName(), localDbColumn);
 		owner.getBeanDescriptor().add(fkey);
 	}
