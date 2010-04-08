@@ -73,7 +73,7 @@ public class ScopeTransAdapter extends MethodAdviceAdapter implements EnhanceCon
 		mv.visitVarInsn(ALOAD, posTxScope);
 		mv.visitLdcInsn(txType.toString());
 		mv.visitMethodInsn(INVOKESTATIC, C_TXTYPE, "valueOf", "(Ljava/lang/String;)L"+C_TXTYPE+";");
-		mv.visitMethodInsn(INVOKEVIRTUAL, C_TXSCOPE, "setType", "(L"+C_TXSCOPE+";)L"+C_TXSCOPE+";");
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_TXSCOPE, "setType", "(L"+C_TXTYPE+";)L"+C_TXSCOPE+";");
 		mv.visitInsn(POP);
 	}
 	
