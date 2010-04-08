@@ -335,7 +335,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 
 		if (descriptor.isSqlSelectBased()){
 			String dbColumn = owner.getDbColumn();
-			return new ImportedIdSimple(owner, dbColumn, props[0]);
+			return new ImportedIdSimple(owner, dbColumn, props[0], 0);
 		}
 
 		TableJoinColumn[] cols = join.columns();
@@ -373,8 +373,8 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 		for (int i = 0; i < cols.length; i++) {
 			list.add(createImportedScalar(owner, cols[i], props, others));
 		}
-
-		return (ImportedIdSimple[]) list.toArray(new ImportedIdSimple[list.size()]);
+		
+		return ImportedIdSimple.sort(list);
 	}
 
 	private ImportedIdSimple createImportedScalar(BeanPropertyAssoc<?> owner, TableJoinColumn col, BeanProperty[] props, BeanProperty[] others) {
@@ -384,13 +384,13 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 		
 		for (int j = 0; j < props.length; j++) {
 			if (props[j].getDbColumn().equalsIgnoreCase(matchColumn)) {
-				return new ImportedIdSimple(owner, localColumn, props[j]);
+				return new ImportedIdSimple(owner, localColumn, props[j], j);
 			}
 		}
 
 		for (int j = 0; j < others.length; j++) {
             if (others[j].getDbColumn().equalsIgnoreCase(matchColumn)) {
-                return new ImportedIdSimple(owner, localColumn, others[j]);
+                return new ImportedIdSimple(owner, localColumn, others[j], j+props.length);
             }
         }
 		
