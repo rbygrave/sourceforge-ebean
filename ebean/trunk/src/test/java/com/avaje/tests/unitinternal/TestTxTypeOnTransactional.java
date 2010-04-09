@@ -1,14 +1,14 @@
 package com.avaje.tests.unitinternal;
 
-import com.avaje.tests.model.basic.xtra.TestDao;
-
 import junit.framework.TestCase;
+
+import com.avaje.tests.model.basic.xtra.DummyDao;
 
 public class TestTxTypeOnTransactional extends TestCase {
 
     public void test() {
         
-        TestDao dao = new TestDao();
+        DummyDao dao = new DummyDao();
         
         dao.doSomething();
         
