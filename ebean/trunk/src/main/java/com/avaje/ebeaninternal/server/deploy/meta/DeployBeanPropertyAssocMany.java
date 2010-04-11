@@ -19,8 +19,8 @@
  */
 package com.avaje.ebeaninternal.server.deploy.meta;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
+import com.avaje.ebeaninternal.server.deploy.ManyType;
 import com.avaje.ebeaninternal.server.deploy.TableJoin;
 
 /**
@@ -57,12 +57,12 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	/**
 	 * The type of the many, set, list or map.
 	 */
-	Query.Type manyType;
+	ManyType manyType;
 
 	/**
 	 * Create this property.
 	 */
-	public DeployBeanPropertyAssocMany(DeployBeanDescriptor<?> desc, Class<T> targetType, Query.Type manyType) {
+	public DeployBeanPropertyAssocMany(DeployBeanDescriptor<?> desc, Class<T> targetType, ManyType manyType) {
 		super(desc, targetType);
 		this.manyType = manyType;
 	}
@@ -83,7 +83,7 @@ public class DeployBeanPropertyAssocMany<T> extends DeployBeanPropertyAssoc<T> {
 	/**
 	 * Return the many type.
 	 */
-	public Query.Type getManyType() {
+	public ManyType getManyType() {
 		return manyType;
 	}
 

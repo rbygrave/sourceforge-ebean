@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import scala.collection.mutable.Buffer;
+
 /**
  * List of Expressions that make up a where or having clause.
  * <p>
@@ -102,6 +104,13 @@ public interface ExpressionList<T> extends Serializable {
      * @see Query#findList()
      */
     public List<T> findList();
+
+    /**
+     * Execute the query returning a scala Buffer.
+     * 
+     * @see Query#findBuffer()
+     */
+    public Buffer<T> findBuffer();
 
     /**
      * Return the count of entities this query should return.

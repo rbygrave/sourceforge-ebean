@@ -77,7 +77,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	/**
 	 * The type of the many, set, list or map.
 	 */
-	final Query.Type manyType;
+	final ManyType manyType;
 
 	final String serverName;
 
@@ -102,6 +102,8 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	
 	String deleteByParentIdSql;
 	
+	final CollectionTypeConverter typeConverter;
+	
 	/**
 	 * Create this property.
 	 */
@@ -111,6 +113,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		this.manyToMany = deploy.isManyToMany();
 		this.serverName = descriptor.getServerName();
 		this.manyType = deploy.getManyType();
+		this.typeConverter = manyType.getTypeConverter();
 		this.mapKey = deploy.getMapKey();
 		this.fetchOrderBy = deploy.getFetchOrderBy();
 
@@ -154,6 +157,45 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		}
 	}
     
+	/**
+	 * Get the underlying List Set or Map.
+	 * For unwrapping scala collection types etc.
+	 */
+    public Object getValueUnderlying(Object bean) {
+
+        Object value =  getValue(bean);
+        if (typeConverter != null){
+            value = typeConverter.toUnderlying(value);
+        }
+        return value;
+    }
+    
+    @Override
+    public Object getValue(Object bean) {
+        return super.getValue(bean);
+    }
+
+    @Override
+    public Object getValueIntercept(Object bean) {
+        return super.getValueIntercept(bean);
+    }
+
+    @Override
+    public void setValue(Object bean, Object value) {
+        if (typeConverter != null){
+            value = typeConverter.toWrapped(value);
+        }
+        super.setValue(bean, value);
+    }
+
+    @Override
+    public void setValueIntercept(Object bean, Object value) {
+        if (typeConverter != null){
+            value = typeConverter.toWrapped(value);
+        }
+        super.setValueIntercept(bean, value);
+    }
+
     public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
         return createElPropertyValue(propName, remainder, chain, propertyDeploy);
     }
@@ -308,7 +350,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	/**
 	 * Return the many type.
 	 */
-	public Query.Type getManyType() {
+	public ManyType getManyType() {
 		return manyType;
 	}
 

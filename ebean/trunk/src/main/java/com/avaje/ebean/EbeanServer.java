@@ -29,6 +29,8 @@ import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
 
+import scala.collection.mutable.Buffer;
+
 import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ServerConfig;
@@ -479,6 +481,11 @@ public interface EbeanServer {
      * Return the Id values of the query as a List.
      */
     public <T> List<Object> findIds(Query<T> query, Transaction t);
+
+    /**
+     * Execute q query returning a Scala Buffer.
+     */
+    public <T> Buffer<T> findBuffer(Query<T> query, Transaction t);
 
     /**
      * Execute a query returning a list of beans.

@@ -31,9 +31,9 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.persistence.Transient;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebeaninternal.server.core.Message;
-import com.avaje.ebeaninternal.server.deploy.DetermineQueryType;
+import com.avaje.ebeaninternal.server.deploy.DetermineManyType;
+import com.avaje.ebeaninternal.server.deploy.ManyType;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocMany;
@@ -268,14 +268,14 @@ public class DeployCreateProperties {
     }
     
     @SuppressWarnings("unchecked")
-    private DeployBeanProperty createManyType(DeployBeanDescriptor<?> desc, Class<?> targetType, Query.Type queryType) {
+    private DeployBeanProperty createManyType(DeployBeanDescriptor<?> desc, Class<?> targetType, ManyType manyType) {
 
         ScalarType<?> scalarType = typeManager.getScalarType(targetType);
         if (scalarType != null) {
-            return new DeployBeanPropertySimpleCollection(desc, targetType, scalarType, queryType);
+            return new DeployBeanPropertySimpleCollection(desc, targetType, scalarType, manyType);
         }
         //TODO: Handle Collection of CompoundType and Embedded Type
-        return new DeployBeanPropertyAssocMany(desc, targetType, queryType);
+        return new DeployBeanPropertyAssocMany(desc, targetType, manyType);
     }
     
     @SuppressWarnings("unchecked")
@@ -284,15 +284,15 @@ public class DeployCreateProperties {
         Class<?> propertyType = field.getType();
         
         // check for Collection type (list, set or map)
-        Query.Type queryType = DetermineQueryType.getQueryType(propertyType);
+        ManyType manyType = DetermineManyType.getManyType(propertyType);
 
-        if (queryType != null) {
+        if (manyType != null) {
             // List, Set or Map based object
             Class<?> targetType = determineTargetType(field);
             if (targetType == null){
                 logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
             }
-            return createManyType(desc, targetType, queryType);
+            return createManyType(desc, targetType, manyType);
         } 
         
         if (propertyType.isEnum() || propertyType.isPrimitive()){
