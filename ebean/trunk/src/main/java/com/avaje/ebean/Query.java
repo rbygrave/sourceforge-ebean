@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import scala.collection.mutable.Buffer;
+
 import com.avaje.ebean.annotation.Formula;
 import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.config.ServerConfig;
@@ -540,6 +542,11 @@ public interface Query<T> extends Serializable {
 	 * @see EbeanServer#findList(Query, Transaction)
 	 */
 	public List<T> findList();
+
+	/**
+	 * Execute the query returning a Scala Buffer.
+	 */
+    public Buffer<T> findBuffer();
 
 	/**
 	 * Execute the query returning the set of objects.

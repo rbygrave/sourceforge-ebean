@@ -47,7 +47,7 @@ public final class BeanCollectionWrapper {
 	/**
 	 * The type.
 	 */
-	private final Query.Type manyType;
+	private final Query.Type queryType;
 
 	/**
 	 * A property name used as key for a Map.
@@ -82,11 +82,11 @@ public final class BeanCollectionWrapper {
 	public BeanCollectionWrapper(RelationalQueryRequest request) {
 
 		this.desc = null;
-		this.manyType = request.getQueryType();
+		this.queryType = request.getQueryType();
 		this.mapKey = request.getQuery().getMapKey();
-		this.isMap = Query.Type.MAP.equals(manyType);
+		this.isMap = Query.Type.MAP.equals(queryType);
 		
-		this.beanCollection = createBeanCollection(manyType);
+		this.beanCollection = createBeanCollection(queryType);
 		this.collection = getCollection(isMap);
 		this.map = getMap(isMap);
 	}
@@ -97,11 +97,11 @@ public final class BeanCollectionWrapper {
 	public BeanCollectionWrapper(OrmQueryRequest<?> request) {
 
 		this.desc = request.getBeanDescriptor();
-		this.manyType = request.getQueryType();
+		this.queryType = request.getQueryType();
 		this.mapKey = request.getQuery().getMapKey();
-		this.isMap = Query.Type.MAP.equals(manyType);
+		this.isMap = Query.Type.MAP.equals(queryType);
 		
-		this.beanCollection = createBeanCollection(manyType);
+		this.beanCollection = createBeanCollection(queryType);
 		this.collection = getCollection(isMap);
 		this.map = getMap(isMap);
 	}
@@ -116,12 +116,12 @@ public final class BeanCollectionWrapper {
 	 */
 	public BeanCollectionWrapper(BeanPropertyAssocMany<?> manyProp) {
 		
-		this.manyType = manyProp.getManyType();
+		this.queryType = manyProp.getManyType().getQueryType();
 		this.mapKey = manyProp.getMapKey();
 		this.desc = manyProp.getTargetDescriptor();
-		this.isMap = Query.Type.MAP.equals(manyType);
+		this.isMap = Query.Type.MAP.equals(queryType);
 		
-		this.beanCollection = createBeanCollection(manyType);
+		this.beanCollection = createBeanCollection(queryType);
 		this.collection = getCollection(isMap);
 		this.map = getMap(isMap);
 	}

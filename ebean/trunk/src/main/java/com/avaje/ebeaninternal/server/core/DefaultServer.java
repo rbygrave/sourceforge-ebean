@@ -39,6 +39,9 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.persistence.PersistenceException;
 
+import scala.collection.JavaConversions;
+import scala.collection.mutable.Buffer;
+
 import com.avaje.ebean.AdminAutofetch;
 import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.BackgroundExecutor;
@@ -1347,6 +1350,11 @@ public final class DefaultServer implements SpiEbeanServer {
         }
 
         return new LimitOffsetPagingQuery<T>(this, spiQuery, pageSize);
+    }
+    
+    public <T> Buffer<T> findBuffer(Query<T> query, Transaction t) {
+        List<T> list = findList(query, t);
+        return JavaConversions.asBuffer(list);
     }
 
     @SuppressWarnings("unchecked")
