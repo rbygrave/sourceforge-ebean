@@ -93,6 +93,11 @@ public class BeanProperty implements ElPropertyValue {
     final boolean id;
 
     /**
+     * Flag to make this as a dummy property for unidirecitonal relationships.
+     */
+    final boolean unidirectionalShadow;
+    
+    /**
      * Flag to mark the property as embedded. This could be on
      * BeanPropertyAssocOne rather than here. Put it here for checking Id type
      * (embedded or not).
@@ -287,6 +292,7 @@ public class BeanProperty implements ElPropertyValue {
         } else {
             this.dynamicSubclassWithInheritance = false;
         }
+        this.unidirectionalShadow = deploy.isUndirectionalShadow();
         this.localEncrypted = deploy.isLocalEncrypted();
         this.dbEncrypted = deploy.isDbEncrypted();
         this.dbEncryptedType = deploy.getDbEncryptedType();
@@ -324,8 +330,10 @@ public class BeanProperty implements ElPropertyValue {
         this.writeMethod = deploy.getWriteMethod();
         this.getter = deploy.getGetter();
         if (descriptor != null && getter == null) {
-            String m = "Null Getter for: " + getFullBeanName();
-            throw new RuntimeException(m);
+            if (!unidirectionalShadow){
+                String m = "Null Getter for: " + getFullBeanName();
+                throw new RuntimeException(m);
+            }
         }
         this.setter = deploy.getSetter();
 
@@ -382,6 +390,7 @@ public class BeanProperty implements ElPropertyValue {
         this.sqlFormulaSelect = InternString.intern(override.getSqlFormulaSelect());
         this.formula = sqlFormulaSelect != null;
 
+        this.unidirectionalShadow = source.unidirectionalShadow;
         this.localEncrypted = source.isLocalEncrypted();
         this.isTransient = source.isTransient();
         this.secondaryTable = source.isSecondaryTable();

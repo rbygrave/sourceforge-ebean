@@ -773,6 +773,12 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         // create the 'shadow' unidirectional property
         // which is put on the target descriptor
         DeployBeanPropertyAssocOne<?> unidirectional = new DeployBeanPropertyAssocOne(targetDesc, owningType);
+        unidirectional.setUndirectionalShadow(true);
+        unidirectional.setNullable(false);
+        unidirectional.setDbRead(true);
+        unidirectional.setDbInsertable(true);
+        unidirectional.setDbUpdateable(false);
+        
         targetDesc.setUnidirectional(unidirectional);
 
         // specify table and table alias...

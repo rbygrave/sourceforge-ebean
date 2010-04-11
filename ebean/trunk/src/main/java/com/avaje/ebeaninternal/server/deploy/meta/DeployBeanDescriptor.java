@@ -70,6 +70,8 @@ public class DeployBeanDescriptor<T> {
 	}
 	private static final PropOrder PROP_ORDER = new PropOrder();
 
+    private static final String I_SCALAOBJECT = "scala.ScalaObject";
+
 	private static final Logger logger = Logger.getLogger(DeployBeanDescriptor.class.getName());
 	
 	private static final String META_BEAN_PREFIX = MetaAutoFetchStatistic.class.getName().substring(0,20);
@@ -195,6 +197,17 @@ public class DeployBeanDescriptor<T> {
 	public boolean isAbstract() {
 		
 		return Modifier.isAbstract(beanType.getModifiers());
+	}
+	
+	public boolean isScalaObject() {
+	    Class<?>[] interfaces = beanType.getInterfaces();
+	    for (int i = 0; i < interfaces.length; i++) {
+	        String iname = interfaces[i].getName();
+	        if (I_SCALAOBJECT.equals(iname)){
+	            return true;
+	        }
+        }
+	    return false;
 	}
 	
 	public Collection<RawSqlMeta> getRawSqlMeta() {
