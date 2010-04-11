@@ -124,6 +124,8 @@ import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager;
 import com.avaje.ebeaninternal.server.transaction.TransactionScopeManager;
+import com.avaje.ebeaninternal.util.ParamTypeHelper;
+import com.avaje.ebeaninternal.util.ParamTypeHelper.TypeInfo;
 
 /**
  * The default server side implementation of EbeanServer.
@@ -1778,6 +1780,25 @@ public final class DefaultServer implements SpiEbeanServer {
         }
     }
 
+    public boolean isSupportedType(java.lang.reflect.Type genericType) {
+    
+        TypeInfo typeInfo = ParamTypeHelper.getTypeInfo(genericType);
+        if (typeInfo == null){
+            return false;
+        }
+        return getBeanDescriptor(typeInfo.getBeanType()) != null;
+    }
+    
+    public Object getBeanId(Object bean) {
+        BeanDescriptor<?> desc = getBeanDescriptor(bean.getClass());
+        if (desc == null) {
+            String m = bean.getClass().getName() + " is NOT an Entity Bean registered with this server?";
+            throw new PersistenceException(m);
+        }
+
+        return desc.getId(bean);
+    }
+    
     /**
      * Return the BeanDescriptor for a given type of bean.
      */

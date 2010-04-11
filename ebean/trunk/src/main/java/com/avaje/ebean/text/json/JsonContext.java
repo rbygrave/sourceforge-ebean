@@ -21,6 +21,7 @@ package com.avaje.ebean.text.json;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -71,6 +72,16 @@ public interface JsonContext {
     public <T> List<T> toList(Class<T> rootType, Reader json, JsonReadOptions options);
 
     /**
+     * Use the genericType to determine if this should be converted into a List or bean.
+     */
+    public Object toObject(Type genericType, Reader json, JsonReadOptions options);
+
+    /**
+     * Use the genericType to determine if this should be converted into a List or bean.
+     */
+    public Object toObject(Type genericType, String json, JsonReadOptions options);
+
+    /**
      * Write the bean or collection in JSON format to the writer with default
      * options.
      * 
@@ -99,6 +110,11 @@ public interface JsonContext {
     public void toJsonWriter(Object o, Writer writer, boolean pretty, JsonWriteOptions options);
 
     /**
+     * With additional JSONP callback function.
+     */
+    public void toJsonWriter(Object o, Writer writer, boolean pretty, JsonWriteOptions options, String callback);
+
+    /**
      * Convert a bean or collection to json string using default options. 
      */
     public String toJsonString(Object o);
@@ -113,5 +129,15 @@ public interface JsonContext {
      */
     public String toJsonString(Object o, boolean pretty, JsonWriteOptions options);
 
+    /**
+     * Convert a bean or collection to json string using a JSONP callback.
+     */
+    public String toJsonString(Object o, boolean pretty, JsonWriteOptions options, String callback);
+
+    /**
+     * Return true if the type is known as an Entity or Xml type
+     * or a List Set or Map of known bean types.
+     */
+    public boolean isSupportedType(Type genericType);
 
 }

@@ -86,11 +86,28 @@ import java.util.Set;
  */
 public class JsonWriteOptions {
 
+    protected String callback;
+    
     protected JsonValueAdapter valueAdapter;
 
     protected Map<String, JsonWriteBeanVisitor<?>> visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>();
 
     protected Map<String, Set<String>> includePropertiesMap = new HashMap<String, Set<String>>();
+
+    /**
+     * Return a JSONP callback function.
+     */
+    public String getCallback() {
+        return callback;
+    }
+
+    /**
+     * Set a JSONP callback function.
+     */
+    public JsonWriteOptions setCallback(String callback) {
+        this.callback = callback;
+        return this;
+    }
 
     /**
      * Return the JsonValueAdapter.

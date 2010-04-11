@@ -45,6 +45,8 @@ public class WriteJsonContext implements JsonWriter {
 
     private final Map<String, JsonWriteBeanVisitor<?>> visitorMap;
 
+    private final String callback;
+    
     private final PathStack pathStack;
     
     private WriteBeanState beanState;
@@ -53,9 +55,12 @@ public class WriteJsonContext implements JsonWriter {
     
     boolean assocOne;
 
-    public WriteJsonContext(WriteJsonBuffer buffer, boolean pretty, JsonValueAdapter dfltValueAdapter, JsonWriteOptions options){
+    public WriteJsonContext(WriteJsonBuffer buffer, boolean pretty, JsonValueAdapter dfltValueAdapter, 
+            JsonWriteOptions options, String requestCallback){
+        
         this.buffer = buffer;
         this.pretty = pretty;
+        this.callback = getCallback(requestCallback, options);
         if (options == null){            
             this.valueAdapter = dfltValueAdapter;
             this.visitorMap = null;
@@ -71,6 +76,16 @@ public class WriteJsonContext implements JsonWriter {
                 this.pathStack = null;
             }
         }
+        
+        if (callback != null){
+            buffer.append(requestCallback).append("(");
+        }
+    }
+    
+    public void end() {
+        if (callback != null){
+            buffer.append(")");
+        }        
     }
     
     private <MK,MV> Map<MK,MV> emptyToNull(Map<MK,MV> m){
@@ -79,6 +94,16 @@ public class WriteJsonContext implements JsonWriter {
         } else {
             return m;
         }
+    }
+    
+    private String getCallback(String requestCallback, JsonWriteOptions options) {
+        if (requestCallback != null){
+            return requestCallback;
+        }
+        if (options != null){
+            return options.getCallback();
+        }
+        return null;
     }
 
     private JsonValueAdapter getValueAdapter(JsonValueAdapter dfltValueAdapter, JsonValueAdapter valueAdapter) {
