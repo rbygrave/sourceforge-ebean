@@ -435,6 +435,9 @@ public final class DefaultPersister implements Persister {
         SpiTransaction t = (SpiTransaction)transaction;
         BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(beanType);
 
+        // convert to appropriate type if required
+        id = descriptor.convertId(id);
+        
         if (t.isPersistCascade()){
             // OneToOne exported side with delete cascade
             BeanPropertyAssocOne<?>[] expOnes = descriptor.propertiesOneExportedDelete();

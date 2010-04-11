@@ -137,6 +137,11 @@ public interface EbeanServer {
     public BeanState getBeanState(Object bean);
 
     /**
+     * Return the value of the Id property for a given bean.
+     */
+    public Object getBeanId(Object bean);
+
+    /**
      * Return a map of the differences between two objects of the same type.
      * <p>
      * When null is passed in for b, then the 'OldValues' of a is used for the

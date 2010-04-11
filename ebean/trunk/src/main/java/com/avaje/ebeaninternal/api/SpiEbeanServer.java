@@ -181,4 +181,10 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 */
 	public int getLazyLoadBatchSize();
 	
+    /**
+     * Return true if the type is known as an Entity or Xml type
+     * or a List Set or Map of known bean types.
+     */
+    public boolean isSupportedType(java.lang.reflect.Type genericType);
+
 }

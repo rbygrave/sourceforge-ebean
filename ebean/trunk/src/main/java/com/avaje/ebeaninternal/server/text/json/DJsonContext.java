@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.text.json;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,6 +34,9 @@ import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebean.text.json.JsonWriteOptions;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.util.ParamTypeHelper;
+import com.avaje.ebeaninternal.util.ParamTypeHelper.ManyType;
+import com.avaje.ebeaninternal.util.ParamTypeHelper.TypeInfo;
 
 /**
  * Default implementation of JsonContext.
@@ -53,6 +57,9 @@ public class DJsonContext implements JsonContext {
         this.dfltPretty = dfltPretty;
     }
 
+    public boolean isSupportedType(Type genericType) {
+        return server.isSupportedType(genericType);
+    }
 
     private ReadJsonSource createReader(Reader jsonReader) {
         return new ReadJsonSourceReader(jsonReader, 256, 512);
@@ -123,19 +130,57 @@ public class DJsonContext implements JsonContext {
     }
     
     
+    public Object toObject(Type genericType, String json, JsonReadOptions options) {
+        
+        TypeInfo info = ParamTypeHelper.getTypeInfo(genericType);
+        ManyType manyType = info.getManyType();
+        switch (manyType) {
+        case NONE:
+            return toBean(info.getBeanType(), json, options);            
+
+        case LIST:
+            return toList(info.getBeanType(), json, options);
+            
+        default:
+            String msg = "ManyType "+manyType+" not supported yet";
+            throw new TextException(msg);
+        }
+    }
     
+    public Object toObject(Type genericType, Reader json, JsonReadOptions options) {
+        
+        TypeInfo info = ParamTypeHelper.getTypeInfo(genericType);
+        ManyType manyType = info.getManyType();
+        switch (manyType) {
+        case NONE:
+            return toBean(info.getBeanType(), json, options);            
+
+        case LIST:
+            return toList(info.getBeanType(), json, options);
+            
+        default:
+            String msg = "ManyType "+manyType+" not supported yet";
+            throw new TextException(msg);
+        }
+    }
+
+
     public void toJsonWriter(Object o, Writer writer) {
-        toJsonWriter(o, writer, dfltPretty, null);
+        toJsonWriter(o, writer, dfltPretty, null, null);
     }
 
     public void toJsonWriter(Object o, Writer writer, boolean pretty) {
-        toJsonWriter(o, writer, pretty, null);
+        toJsonWriter(o, writer, pretty, null, null);
     }    
 
     public void toJsonWriter(Object o, Writer writer, boolean pretty, JsonWriteOptions options){
-        toJsonInternal(o, new WriteJsonBufferWriter(writer), pretty, options);
+        toJsonWriter(o, writer, pretty, null, null);
     }
     
+    public void toJsonWriter(Object o, Writer writer, boolean pretty, JsonWriteOptions options, String callback) {
+        toJsonInternal(o, new WriteJsonBufferWriter(writer), pretty, options, callback);
+    }
+
     public String toJsonString(Object o){
         return toJsonString(o, dfltPretty, null);
     }
@@ -143,34 +188,40 @@ public class DJsonContext implements JsonContext {
     public String toJsonString(Object o, boolean pretty){
         return toJsonString(o, pretty, null);
     }
-    
+
     public String toJsonString(Object o, boolean pretty, JsonWriteOptions options){
+        return toJsonString(o, pretty, options, null);
+    }
+    
+    public String toJsonString(Object o, boolean pretty, JsonWriteOptions options, String callback){
         WriteJsonBufferString b = new WriteJsonBufferString();
-        toJsonInternal(o, b, pretty, options);
+        toJsonInternal(o, b, pretty, options, callback);
         return b.getBufferOutput();
     }
 
-    private void toJsonInternal(Object o, WriteJsonBuffer buffer, boolean pretty, JsonWriteOptions options){
+    private void toJsonInternal(Object o, WriteJsonBuffer buffer, boolean pretty, JsonWriteOptions options, String requestCallback){
 
         if (o instanceof Collection<?>){
-            toJsonFromCollection((Collection<?>)o, buffer, pretty, options);
+            toJsonFromCollection((Collection<?>)o, buffer, pretty, options, requestCallback);
             
         } else {
             BeanDescriptor<?> d = getDecriptor(o.getClass());
-            WriteJsonContext ctx = new WriteJsonContext(buffer, pretty, dfltValueAdapter, options);
+            WriteJsonContext ctx = new WriteJsonContext(buffer, pretty, dfltValueAdapter, options, requestCallback);
             d.jsonWrite(ctx, o);
+            ctx.end();
         }
     }
    
 
-    private <T> String toJsonFromCollection(Collection<T> c, WriteJsonBuffer buffer, boolean pretty, JsonWriteOptions options){
+    private <T> String toJsonFromCollection(Collection<T> c, WriteJsonBuffer buffer, boolean pretty, 
+            JsonWriteOptions options, String requestCallback){
         
         Iterator<T> it = c.iterator();
         if (!it.hasNext()){
             return null;
         }
         
-        WriteJsonContext ctx = new WriteJsonContext(buffer, pretty, dfltValueAdapter, options);
+        WriteJsonContext ctx = new WriteJsonContext(buffer, pretty, dfltValueAdapter, options, requestCallback);
 
         Object o = it.next();
         BeanDescriptor<?> d = getDecriptor(o.getClass());
@@ -182,7 +233,8 @@ public class DJsonContext implements JsonContext {
             T t = it.next();        
             d.jsonWrite(ctx, t);
         }
-        ctx.appendArrayEnd();       
+        ctx.appendArrayEnd();
+        ctx.end();
         return ctx.getJson();
     }
     
