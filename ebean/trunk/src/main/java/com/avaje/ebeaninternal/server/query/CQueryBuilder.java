@@ -51,6 +51,8 @@ public class CQueryBuilder implements Constants {
 	
 	private final BackgroundExecutor backgroundExecutor;
 	
+	private final boolean postgresPlatform;
+	
 	/**
 	 * Create the SqlGenSelect.
 	 */
@@ -63,6 +65,7 @@ public class CQueryBuilder implements Constants {
 		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(dbPlatform, binder);
 
 		this.sqlLimiter = dbPlatform.getSqlLimiter();
+		this.postgresPlatform = dbPlatform.getName().toLowerCase().indexOf("postgres") > -1;
 	}
 
 	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
@@ -182,7 +185,10 @@ public class CQueryBuilder implements Constants {
 		SqlLimitResponse s = buildSql(sqlSelect, request, predicates, sqlTree);
 		String sql = s.getSql();
 		if (hasMany){
-			sql = "select count(*) from ( "+sql+")";			
+			sql = "select count(*) from ( "+sql+")";
+			if (postgresPlatform){
+			    sql += " as c";
+			}
 		}
 		
 		// cache the query plan
