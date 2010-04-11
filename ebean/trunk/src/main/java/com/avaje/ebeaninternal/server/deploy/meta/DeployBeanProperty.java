@@ -55,6 +55,7 @@ import com.avaje.ebeaninternal.server.type.ScalarTypeEnum;
 public class DeployBeanProperty {
 
     private static final int ID_ORDER = 1000000;
+    private static final int UNIDIRECTIONAL_ORDER = 100000;
     private static final int AUDITCOLUMN_ORDER = -1000000;
     private static final int VERSIONCOLUMN_ORDER = -1000000;
 
@@ -229,6 +230,8 @@ public class DeployBeanProperty {
 
     private final DeployBeanDescriptor<?> desc;
 
+    private boolean undirectionalShadow;
+    
     private int sortOrder;
 
     public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType, ScalarType<?> scalarType) {
@@ -245,6 +248,8 @@ public class DeployBeanProperty {
             return ID_ORDER;
         } else if (field.getAnnotation(EmbeddedId.class) != null) {
             return ID_ORDER;
+        } else if (undirectionalShadow){
+            return UNIDIRECTIONAL_ORDER;
         } else if (field.getAnnotation(CreatedTimestamp.class) != null) {
             return AUDITCOLUMN_ORDER;
         } else if (field.getAnnotation(UpdatedTimestamp.class) != null) {
@@ -307,6 +312,20 @@ public class DeployBeanProperty {
      */
     public void setSortOrder(int sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    /**
+     * Return true if this is a placeholder property for a unidirectional relationship.
+     */
+    public boolean isUndirectionalShadow() {
+        return undirectionalShadow;
+    }
+
+    /**
+     * Mark this property as a placeholder for a unidirectional relationship.
+     */
+    public void setUndirectionalShadow(boolean undirectionalShadow) {
+        this.undirectionalShadow = undirectionalShadow;
     }
 
     /**

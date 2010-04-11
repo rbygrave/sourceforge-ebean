@@ -1969,6 +1969,13 @@ public class BeanDescriptor<T> {
     }
 
     /**
+     * Return the non transient non id properties.
+     */
+    public BeanProperty[] propertiesNonTransient() {
+        return propertiesNonTransient;
+    }
+
+    /**
      * Return the transient properties.
      */
     public BeanProperty[] propertiesTransient() {

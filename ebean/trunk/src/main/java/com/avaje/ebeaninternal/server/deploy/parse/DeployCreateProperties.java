@@ -114,6 +114,8 @@ public class DeployCreateProperties {
      */
     private void createProperties(DeployBeanDescriptor<?> desc, Class<?> beanType, int level) {
 
+        boolean scalaObject = desc.isScalaObject();
+
         try {
         	Method[] declaredMethods = beanType.getDeclaredMethods();
         	Field[] fields = beanType.getDeclaredFields();
@@ -136,8 +138,8 @@ public class DeployCreateProperties {
                 	String fieldName = getFieldName(field, beanType);
                 	String initFieldName = initCap(fieldName);
 
-            		Method getter = findGetter(field, initFieldName, declaredMethods);
-            		Method setter = findSetter(field, initFieldName, declaredMethods);
+            		Method getter = findGetter(field, initFieldName, declaredMethods, scalaObject);
+            		Method setter = findSetter(field, initFieldName, declaredMethods, scalaObject);
             		
 	                DeployBeanProperty prop = createProp(level, desc, field, beanType, getter, setter);
 	                // set a order that gives priority to inherited properties
@@ -211,14 +213,17 @@ public class DeployCreateProperties {
     /**
      * Find a public non-static getter method that matches this field (according to bean-spec rules).
      */
-    private Method findGetter(Field field, String initFieldName, Method[] declaredMethods){
+    private Method findGetter(Field field, String initFieldName, Method[] declaredMethods, boolean scalaObject){
  
     	String methGetName = "get"+initFieldName;
     	String methIsName = "is"+initFieldName;
+    	String scalaGet = field.getName();
   
     	for (int i = 0; i < declaredMethods.length; i++) {
     		Method m = declaredMethods[i];
-			if (m.getName().equals(methGetName) || m.getName().equals(methIsName)){
+			if ((scalaObject && m.getName().equals(scalaGet)) 
+			        || m.getName().equals(methGetName) || m.getName().equals(methIsName)){
+			    
 				Class<?>[] params = m.getParameterTypes();
 				if (params.length == 0){
 					if (field.getType().equals(m.getReturnType())){
@@ -237,14 +242,17 @@ public class DeployCreateProperties {
     /**
      * Find a public non-static setter method that matches this field (according to bean-spec rules).
      */
-    private Method findSetter(Field field, String initFieldName, Method[] declaredMethods){
+    private Method findSetter(Field field, String initFieldName, Method[] declaredMethods, boolean scalaObject){
     	
     	String methSetName = "set"+initFieldName;
+    	String scalaSetName = field.getName()+"_$eq";
     	
     	for (int i = 0; i < declaredMethods.length; i++) {
     		Method m = declaredMethods[i];
     		
-			if (m.getName().equals(methSetName)){
+			if ((scalaObject && m.getName().equals(scalaSetName)) 
+			        || m.getName().equals(methSetName)){
+			    
 				Class<?>[] params = m.getParameterTypes();
 				if (params.length == 1 && field.getType().equals(params[0])){
 					if (void.class.equals(m.getReturnType())){

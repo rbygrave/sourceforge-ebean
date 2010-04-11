@@ -1,6 +1,5 @@
 package com.avaje.ebeaninternal.server.ddl;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -48,20 +47,31 @@ public class VisitorUtil {
 
 		if (visitor.visitBean(desc)) {
 
-			Iterator<BeanProperty> it = desc.propertiesAll();
-			while (it.hasNext()) {
-				BeanProperty p = it.next();
-	
-				if (!p.isTransient() && !p.isFormula() && !p.isSecondaryTable()){
-					PropertyVisitor pv = visitor.visitProperty(p);
-					if (pv != null){
-						visit(p, pv);
-					}
-				}
-			}
+		    BeanProperty[] propertiesId = desc.propertiesId();
+		    for (int i = 0; i < propertiesId.length; i++) {
+		        visit(visitor, propertiesId[i]);
+            }
+		    BeanPropertyAssocOne<?> unidirectional = desc.getUnidirectional();
+		    if (unidirectional != null){
+                visit(visitor, unidirectional);
+		    }
+		    BeanProperty[] propertiesNonTransient = desc.propertiesNonTransient();
+		    for (int i = 0; i < propertiesNonTransient.length; i++) {
+		        BeanProperty p = propertiesNonTransient[i];
+		        if (!p.isFormula() && !p.isSecondaryTable()){
+    		        visit(visitor, p);
+    		    }
+            }
 	
 			visitor.visitBeanEnd(desc);
 		}
+	}
+	
+	private static void visit(BeanVisitor visitor, BeanProperty p) {
+	    PropertyVisitor pv = visitor.visitProperty(p);
+        if (pv != null){
+            visit(p, pv);
+        }
 	}
 
 	/**

@@ -89,13 +89,6 @@ public abstract class DeployBeanPropertyAssoc<T> extends DeployBeanProperty {
 		return targetType;
 	}
 
-//	/**
-//	 * Set the class of the target.
-//	 */
-//	public void setTargetType(Class<?> targetType) {
-//		this.targetType = targetType;
-//	}
-
 	/**
 	 * Return if this association should use an Outer join.
 	 */
