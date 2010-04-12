@@ -78,7 +78,7 @@ public class DeployCreateProperties {
     	    tmpOptionClass = Class.forName("scala.Option");
         } catch (ClassNotFoundException e) {
             // scala not in the classpath...
-            logger.fine("No Scala Support with 'scala.Option' not found. ");
+            logger.fine("Scala type 'scala.Option' not found. Scala Support disabled.");
         }
 
         if (tmpOptionClass == null){
