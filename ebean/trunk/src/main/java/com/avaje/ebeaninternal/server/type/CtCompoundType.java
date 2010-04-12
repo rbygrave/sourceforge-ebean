@@ -131,7 +131,7 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
             return null;
         }
 
-        return cvoType.create(values);
+        return create(values);
     }
 
     public void loadIgnore(DataReader dataReader) {
@@ -238,7 +238,7 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
             return null;
         }
 
-        return cvoType.create(values);        
+        return create(values);        
     }
 
     

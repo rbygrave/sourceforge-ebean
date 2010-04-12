@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorMap;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -39,16 +40,21 @@ import com.avaje.ebeaninternal.server.type.ScalarType;
  */
 public class DeployBeanPropertyCompound extends DeployBeanProperty {
 
-    CtCompoundType<?> compoundType;
+    final CtCompoundType<?> compoundType;
+
+    final ScalarTypeConverter<?, ?> typeConverter;
 
 	DeployBeanEmbedded deployEmbedded;
-	
+		
 	/**
 	 * Create the property.
 	 */
-	public DeployBeanPropertyCompound(DeployBeanDescriptor<?> desc, Class<?> targetType, CtCompoundType<?> compoundType) {
-		super(desc, targetType, null);
+	public DeployBeanPropertyCompound(DeployBeanDescriptor<?> desc, Class<?> targetType, 
+	        CtCompoundType<?> compoundType, ScalarTypeConverter<?, ?> typeConverter) {
+	    
+		super(desc, targetType, null, null);
 		this.compoundType = compoundType;
+		this.typeConverter = typeConverter;
 	}
 
 	public BeanPropertyCompoundRoot getFlatProperties(BeanDescriptorMap owner, BeanDescriptor<?> descriptor) {
@@ -83,7 +89,7 @@ public class DeployBeanPropertyCompound extends DeployBeanProperty {
 	        String dbColumn = relativePropertyName.replace(".", "_");
 	        dbColumn = getDbColumn(relativePropertyName, dbColumn);
 	        
-	        DeployBeanProperty deploy = new DeployBeanProperty(null, scalarType.getType(), scalarType);
+	        DeployBeanProperty deploy = new DeployBeanProperty(null, scalarType.getType(), scalarType, null);
 	        deploy.setScalarType(scalarType);
 	        deploy.setDbColumn(dbColumn);
 	        deploy.setName(relativePropertyName);
@@ -91,7 +97,7 @@ public class DeployBeanPropertyCompound extends DeployBeanProperty {
 	        deploy.setDbUpdateable(true);
 	        deploy.setDbRead(true);
 	        
-	        BeanPropertyCompoundScalar bp = new BeanPropertyCompoundScalar(rootProperty, deploy, ctProp);
+	        BeanPropertyCompoundScalar bp = new BeanPropertyCompoundScalar(rootProperty, deploy, ctProp, typeConverter);
 	        beanPropertyList.add(bp);
 	        
 	        rootProperty.register(bp);
@@ -121,11 +127,12 @@ public class DeployBeanPropertyCompound extends DeployBeanProperty {
 		return deployEmbedded;
 	}
 
+    public ScalarTypeConverter<?, ?> getTypeConverter() {
+        return typeConverter;
+    }
+
     public CtCompoundType<?> getCompoundType() {
         return compoundType;
     }
 
-    public void setCompoundType(CtCompoundType<?> compoundType) {
-        this.compoundType = compoundType;
-    }
 }

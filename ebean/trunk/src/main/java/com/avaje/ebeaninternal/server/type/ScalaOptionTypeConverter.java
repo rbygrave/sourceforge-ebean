@@ -19,24 +19,42 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
-import java.sql.Timestamp;
+import scala.Option;
 
 import com.avaje.ebean.config.ScalarTypeConverter;
 
-public class LongToTimestampConverter implements ScalarTypeConverter<Long, Timestamp>{
+/**
+ * A type converter to support scala.Option.
+ * 
+ * @author rbygrave
+ *
+ * @param <S> the underlying type
+ */
+public class ScalaOptionTypeConverter<S> implements ScalarTypeConverter<scala.Option<S>, S>{
     
-    public Long getNullValue() {
-        return null;
+    @SuppressWarnings("unchecked")
+    public Option<S> getNullValue() {
+        return (scala.Option)scala.None$.MODULE$;
     }
 
-    public Timestamp unwrapValue(Long beanType) {
+    public S unwrapValue(Option<S> beanType) {
         
-        return new Timestamp(beanType.longValue());
+        if (beanType.isEmpty()){
+            return null;
+        } else {
+            return beanType.get();
+        }
     }
 
-    public Long wrapValue(Timestamp scalarType) {
-        
-        return scalarType.getTime();
+    @SuppressWarnings("unchecked")
+    public Option<S> wrapValue(S scalarType) {
+        if (scalarType == null){
+            return (scala.Option)scala.None$.MODULE$;
+        }
+        if (scalarType instanceof scala.Some){
+            return (Option<S>)scalarType;
+        }
+        return new scala.Some<S>(scalarType);
     }
 
     

@@ -59,6 +59,13 @@ package com.avaje.ebean.config;
 public interface ScalarTypeConverter<B, S> {
 
     /**
+     * Return the value to represent null.
+     * Typically this is actually null but for scala.Option and similar type converters
+     * this actually returns an instance representing "None".
+     */
+    public B getNullValue();
+    
+    /**
      * Convert the scalar type value into the value object.
      * <p>
      * This typically occurs when Ebean reads the value from a resultSet or

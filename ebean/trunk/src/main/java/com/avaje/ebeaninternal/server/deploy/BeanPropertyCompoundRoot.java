@@ -26,7 +26,6 @@ import java.util.List;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
-import com.avaje.ebeaninternal.server.reflect.BeanReflectGetter;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectSetter;
 import com.avaje.ebeaninternal.server.type.CtCompoundProperty;
 
@@ -42,16 +41,7 @@ import com.avaje.ebeaninternal.server.type.CtCompoundProperty;
  */
 public class BeanPropertyCompoundRoot {
 
-    private static Object[] NO_ARGS = new Object[0];
-
-    private final BeanReflectGetter getter;
-
     private final BeanReflectSetter setter;
-
-    /**
-     * The method used to read the property.
-     */
-    private final Method readMethod;
 
     /**
      * The method used to write the property.
@@ -59,6 +49,7 @@ public class BeanPropertyCompoundRoot {
     private final Method writeMethod;
 
     private final String name;
+    private final String fullBeanName;
 
     private final LinkedHashMap<String, BeanPropertyCompoundScalar> propMap;
 
@@ -67,10 +58,9 @@ public class BeanPropertyCompoundRoot {
     private List<CtCompoundProperty> nonScalarProperties;
 
     public BeanPropertyCompoundRoot(DeployBeanProperty deploy) {
+        this.fullBeanName = deploy.getFullBeanName();
         this.name = deploy.getName();
-        this.getter = deploy.getGetter();
         this.setter = deploy.getSetter();
-        this.readMethod = deploy.getReadMethod();
         this.writeMethod = deploy.getWriteMethod();
         this.propList = new ArrayList<BeanPropertyCompoundScalar>();
         this.propMap = new LinkedHashMap<String, BeanPropertyCompoundScalar>();
@@ -99,27 +89,10 @@ public class BeanPropertyCompoundRoot {
     }
 
     /**
-     * Return the value of the property method.
-     */
-    public Object getValue(Object bean) {
-        try {
-            if (bean instanceof EntityBean) {
-                return getter.get(bean);
-            } else {
-                return readMethod.invoke(bean, NO_ARGS);
-            }
-        } catch (Exception ex) {
-            String beanType = bean == null ? "null" : bean.getClass().getName();
-            String msg = "get " + name + " on type[" + beanType + "] threw error.";
-            throw new RuntimeException(msg, ex);
-        }
-    }
-
-    /**
      * Set the value of the property without interception or
      * PropertyChangeSupport.
      */
-    public void setValue(Object bean, Object value) {
+    public void setRootValue(Object bean, Object value) {
         try {
             if (bean instanceof EntityBean) {
                 setter.set(bean, value);
@@ -130,7 +103,7 @@ public class BeanPropertyCompoundRoot {
             }
         } catch (Exception ex) {
             String beanType = bean == null ? "null" : bean.getClass().getName();
-            String msg = "set " + name + " with arg[" + value + "] on type[" + beanType + "] threw error";
+            String msg = "set " + name + " with arg[" + value + "] on ["+fullBeanName+"] with type[" + beanType + "] threw error";
             throw new RuntimeException(msg, ex);
         }
     }
@@ -138,7 +111,7 @@ public class BeanPropertyCompoundRoot {
     /**
      * Set the value of the property.
      */
-    public void setValueIntercept(Object bean, Object value) {
+    public void setRootValueIntercept(Object bean, Object value) {
         try {
             if (bean instanceof EntityBean) {
                 setter.setIntercept(bean, value);
@@ -149,7 +122,7 @@ public class BeanPropertyCompoundRoot {
             }
         } catch (Exception ex) {
             String beanType = bean == null ? "null" : bean.getClass().getName();
-            String msg = "setIntercept " + name + " arg[" + value + "] type[" + beanType + "] threw error";
+            String msg = "setIntercept " + name + " arg[" + value + "] on ["+fullBeanName+"] with type[" + beanType + "] threw error";
             throw new RuntimeException(msg, ex);
         }
     }

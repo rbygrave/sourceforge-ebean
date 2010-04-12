@@ -35,6 +35,7 @@ import javax.persistence.Version;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.UpdatedTimestamp;
+import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
@@ -47,6 +48,7 @@ import com.avaje.ebeaninternal.server.reflect.BeanReflectGetter;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectSetter;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.server.type.ScalarTypeEnum;
+import com.avaje.ebeaninternal.server.type.ScalarTypeWrapper;
 
 /**
  * Description of a property of a bean. Includes its deployment information such
@@ -234,12 +236,23 @@ public class DeployBeanProperty {
     
     private int sortOrder;
 
-    public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType, ScalarType<?> scalarType) {
+    public DeployBeanProperty(DeployBeanDescriptor<?> desc, Class<?> propertyType, ScalarType<?> scalarType, ScalarTypeConverter<?, ?> typeConverter) {
         this.desc = desc;
         this.propertyType = propertyType;
-        this.scalarType = scalarType;
+        this.scalarType = wrapScalarType(propertyType, scalarType, typeConverter);
     }
 
+    /**
+     * Wrap the ScalarType using a ScalarTypeConverter.
+     */
+    @SuppressWarnings("unchecked")
+    private ScalarType<?> wrapScalarType(Class<?> propertyType, ScalarType<?> scalarType, ScalarTypeConverter<?, ?> typeConverter) {
+        if (typeConverter == null){
+            return scalarType;
+        }
+        return new ScalarTypeWrapper(propertyType, scalarType, typeConverter);
+    }
+    
     public int getSortOverride() {
         if (field == null) {
             return 0;
