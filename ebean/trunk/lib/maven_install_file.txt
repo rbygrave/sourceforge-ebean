@@ -1,1 +1,0 @@
-mvn install:install-file -Dfile=scala-library.jar -DgroupId=org.scala -DartifactId=library -Dversion=2.8 -Dpackaging=jar
