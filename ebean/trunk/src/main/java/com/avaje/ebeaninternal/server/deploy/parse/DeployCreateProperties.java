@@ -58,16 +58,38 @@ public class DeployCreateProperties {
 
 	private static final Logger logger = Logger.getLogger(DeployCreateProperties.class.getName());
 
+	private final Class<?> scalaOptionClass;
 	/**
 	 * Use to wrap and unwrap Scala Option.
 	 */
     @SuppressWarnings("unchecked")
-    private static final ScalaOptionTypeConverter SCALA_OPTION_TYPE_CONVERTER = new ScalaOptionTypeConverter();
+    private final ScalarTypeConverter scalaOptionTypeConverter;
+    
+    private final DetermineManyType determineManyType;
 
 	private final TypeManager typeManager;
 	
+    @SuppressWarnings("unchecked")
     public DeployCreateProperties(TypeManager typeManager) {
     	this.typeManager = typeManager;
+    	
+    	Class<?> tmpOptionClass = null;
+    	try {
+    	    tmpOptionClass = Class.forName("scala.Option");
+        } catch (ClassNotFoundException e) {
+            // scala not in the classpath...
+            logger.fine("No Scala Support with 'scala.Option' not found. ");
+        }
+
+        if (tmpOptionClass == null){
+            scalaOptionClass = null;
+            scalaOptionTypeConverter = null;
+        } else {
+            scalaOptionClass = tmpOptionClass;
+            scalaOptionTypeConverter = new ScalaOptionTypeConverter();
+        }
+        
+        this.determineManyType = new DetermineManyType(tmpOptionClass != null);
     }
     
     /**
@@ -293,13 +315,13 @@ public class DeployCreateProperties {
         Class<?> innerType = propertyType;
         ScalarTypeConverter<?, ?> typeConverter = null;
         
-        if (propertyType.equals(scala.Option.class)){
+        if (propertyType.equals(scalaOptionClass)){
             innerType = determineTargetType(field);
-            typeConverter = SCALA_OPTION_TYPE_CONVERTER;
+            typeConverter = scalaOptionTypeConverter;
         }
         
         // check for Collection type (list, set or map)
-        ManyType manyType = DetermineManyType.getManyType(propertyType);
+        ManyType manyType = determineManyType.getManyType(propertyType);
 
         if (manyType != null) {
             // List, Set or Map based object
