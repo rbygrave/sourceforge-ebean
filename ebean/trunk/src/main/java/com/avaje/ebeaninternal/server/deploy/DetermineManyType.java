@@ -13,15 +13,31 @@ import java.util.Set;
  */
 public class DetermineManyType {
 
-    private static final CollectionTypeConverter BUF_CONVERTER = new ScalaBufferConverter();
-    private static final CollectionTypeConverter SET_CONVERTER = new ScalaSetConverter();
-    private static final CollectionTypeConverter MAP_CONVERTER = new ScalaMapConverter();
+    private final boolean withScalaSupport;
+    private final ManyType scalaBufMany;
+    private final ManyType scalaSetMany;
+    private final ManyType scalaMapMany;
     
-    private static final ManyType SCALA_BUF_MANY = new ManyType(ManyType.Underlying.LIST, BUF_CONVERTER);
-    private static final ManyType SCALA_SET_MANY = new ManyType(ManyType.Underlying.SET, SET_CONVERTER);
-    private static final ManyType SCALA_MAP_MANY = new ManyType(ManyType.Underlying.MAP, MAP_CONVERTER);
+    public DetermineManyType(boolean withScalaSupport) {
+        this.withScalaSupport = withScalaSupport;
+        if (withScalaSupport){
+            
+            CollectionTypeConverter bufConverter = new ScalaBufferConverter();
+            CollectionTypeConverter setConverter = new ScalaSetConverter();
+            CollectionTypeConverter mapConverter = new ScalaMapConverter();
+            
+            this.scalaBufMany = new ManyType(ManyType.Underlying.LIST, bufConverter);
+            this.scalaSetMany = new ManyType(ManyType.Underlying.SET, setConverter);
+            this.scalaMapMany = new ManyType(ManyType.Underlying.MAP, mapConverter);
+            
+        } else {
+            this.scalaBufMany = null;
+            this.scalaSetMany = null;
+            this.scalaMapMany = null;
+        }
+    }
     
-	public static ManyType getManyType(Class<?> type) {
+	public ManyType getManyType(Class<?> type) {
         if (type.equals(List.class)){
         	return ManyType.JAVA_LIST;
         }
@@ -31,14 +47,17 @@ public class DetermineManyType {
         if (type.equals(Map.class)){
         	return ManyType.JAVA_MAP;
         }
-        if (type.equals(scala.collection.mutable.Buffer.class)){
-            return SCALA_BUF_MANY;
-        }
-        if (type.equals(scala.collection.mutable.Set.class)){
-            return SCALA_SET_MANY;
-        }
-        if (type.equals(scala.collection.mutable.Map.class)){
-            return SCALA_MAP_MANY;
+        if (withScalaSupport){
+            // only get in here when scala in classpath
+            if (type.equals(scala.collection.mutable.Buffer.class)){
+                return scalaBufMany;
+            }
+            if (type.equals(scala.collection.mutable.Set.class)){
+                return scalaSetMany;
+            }
+            if (type.equals(scala.collection.mutable.Map.class)){
+                return scalaMapMany;
+            }
         }
         return null;
     }
