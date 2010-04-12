@@ -554,7 +554,7 @@ public final class DefaultPersister implements Persister {
 	
 	private void removeAssocManyPrivateOwned(BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
 
-		Object details = prop.getValue(parentBean);
+		Object details = prop.getValueUnderlying(parentBean);
 
 		// check that the list is not null and if it is a BeanCollection
 		// check that is has been populated (don't trigger lazy loading)
@@ -582,7 +582,7 @@ public final class DefaultPersister implements Persister {
 	private void saveAssocManyDetails(boolean insertedParent, 
 			BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
 
-		Object details = prop.getValue(parentBean);
+		Object details = prop.getValueUnderlying(parentBean);
 
 		// check that the list is not null and if it is a BeanCollection
 		// check that is has been populated (don't trigger lazy loading)
@@ -704,7 +704,7 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void saveAssocManyIntersection(boolean insertedParent, BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
 
-		Object value = prop.getValue(parentBean);
+		Object value = prop.getValueUnderlying(parentBean);
 		if (value == null) {
 			return;
 		}
@@ -830,7 +830,7 @@ public final class DefaultPersister implements Persister {
 			    deleteAssocManyIntersection(parentBean, manys[i], t);
                 
 			} else {
-				Object details = manys[i].getValue(parentBean);
+				Object details = manys[i].getValueUnderlying(parentBean);
 				
 				if (ModifyListenMode.REMOVALS.equals(manys[i].getModifyListenMode())) {
 					// PrivateOwned ...

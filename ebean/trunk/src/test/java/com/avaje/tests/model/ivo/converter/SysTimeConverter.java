@@ -26,6 +26,11 @@ import com.avaje.tests.model.ivo.SysTime;
 
 public class SysTimeConverter implements ScalarTypeConverter<SysTime, Timestamp> {
 
+    
+    public SysTime getNullValue() {
+        return null;
+    }
+
     public Timestamp unwrapValue(SysTime beanType) {
         return new Timestamp(beanType.getMillis());
     }

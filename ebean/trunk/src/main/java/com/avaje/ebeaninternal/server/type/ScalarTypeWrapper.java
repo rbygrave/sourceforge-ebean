@@ -44,9 +44,12 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
     private final ScalarTypeConverter<B, S> converter;
     private final Class<B> wrapperType;
 
+    private final B nullValue;
+    
     public ScalarTypeWrapper(Class<B> wrapperType, ScalarType<S> scalarType, ScalarTypeConverter<B, S> converter) {
         this.scalarType = scalarType;
         this.converter = converter;
+        this.nullValue = converter.getNullValue();
         this.wrapperType = wrapperType;
     }
 
@@ -96,7 +99,7 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
     public B parse(String value) {
         S sv = scalarType.parse(value);
         if (sv == null) {
-            return null;
+            return nullValue;
         }
         return converter.wrapValue(sv);
     }
@@ -104,7 +107,7 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
     public B parseDateTime(long systemTimeMillis) {
         S sv = scalarType.parseDateTime(systemTimeMillis);
         if (sv == null) {
-            return null;
+            return nullValue;
         }
         return converter.wrapValue(sv);
     }
@@ -117,7 +120,7 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
 
         S sv = scalarType.read(dataReader);
         if (sv == null) {
-            return null;
+            return nullValue;
         }
         return converter.wrapValue(sv);
     }
@@ -125,7 +128,7 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
     @SuppressWarnings("unchecked")
     public B toBeanType(Object value) {
         if (value == null) {
-            return null;
+            return nullValue;
         }
         if (getType().isAssignableFrom(value.getClass())) {
             return (B) value;
@@ -142,7 +145,7 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
 
         Object sv = converter.unwrapValue((B) value);
         if (sv == null) {
-            return null;
+            return nullValue;
         }
         return scalarType.toJdbcType(sv);
     }

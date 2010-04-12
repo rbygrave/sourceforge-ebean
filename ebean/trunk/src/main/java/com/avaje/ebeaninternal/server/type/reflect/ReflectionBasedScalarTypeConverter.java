@@ -38,6 +38,10 @@ public class ReflectionBasedScalarTypeConverter implements ScalarTypeConverter {
         this.reader = reader;
     }
     
+    public Object getNullValue() {
+        return null;
+    }
+
     public Object unwrapValue(Object beanType) {
         if (beanType == null){
             return null;

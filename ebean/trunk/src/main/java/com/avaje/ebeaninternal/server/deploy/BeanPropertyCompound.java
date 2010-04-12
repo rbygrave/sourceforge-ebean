@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
@@ -44,12 +45,20 @@ public class BeanPropertyCompound extends BeanProperty {
 
     private final CtCompoundType<?> compoundType;
 
+    /**
+     * Type Converter for scala.Option and similar type wrapping.
+     */
+    @SuppressWarnings("unchecked")
+    private final ScalarTypeConverter typeConverter;
+    
     private final BeanProperty[] scalarProperties;
 
     private final LinkedHashMap<String, BeanProperty> propertyMap = new LinkedHashMap<String, BeanProperty>();
 
     private final LinkedHashMap<String, CtCompoundPropertyElAdapter> nonScalarMap = new LinkedHashMap<String, CtCompoundPropertyElAdapter>();
 
+    private final BeanPropertyCompoundRoot root;
+    
     /**
      * Create the property.
      */
@@ -58,8 +67,9 @@ public class BeanPropertyCompound extends BeanProperty {
         super(owner, descriptor, deploy);
 
         this.compoundType = deploy.getCompoundType();
-
-        BeanPropertyCompoundRoot root = deploy.getFlatProperties(owner, descriptor);
+        this.typeConverter = deploy.getTypeConverter();
+        
+        this.root = deploy.getFlatProperties(owner, descriptor);
 
         this.scalarProperties = root.getScalarProperties();
 
@@ -86,6 +96,39 @@ public class BeanPropertyCompound extends BeanProperty {
         }
     }
 
+    /**
+     * Get the underlying compound type.
+     */
+    @SuppressWarnings("unchecked")
+    public Object getValueUnderlying(Object bean) {
+
+        Object value =  getValue(bean);
+        if (typeConverter != null){
+            value = typeConverter.unwrapValue(value);
+        }
+        return value;
+    }
+    
+    @Override
+    public Object getValue(Object bean) {
+        return super.getValue(bean);
+    }
+
+    @Override
+    public Object getValueIntercept(Object bean) {
+        return super.getValueIntercept(bean);
+    }
+
+    @Override
+    public void setValue(Object bean, Object value) {
+        super.setValue(bean, value);
+    }
+
+    @Override
+    public void setValueIntercept(Object bean, Object value) {
+        super.setValueIntercept(bean, value);
+    }    
+    
     public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
 
         if (chain == null) {
@@ -138,10 +181,15 @@ public class BeanPropertyCompound extends BeanProperty {
      * Read the data from the resultSet effectively ignoring it and returning
      * null.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Object read(DbReadContext ctx) throws SQLException {
 
-        return compoundType.read(ctx.getDataReader());
+        Object v = compoundType.read(ctx.getDataReader());
+        if (typeConverter != null){
+            v = typeConverter.wrapValue(v);
+        }
+        return v;
     }
 
     @Override

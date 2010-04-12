@@ -203,7 +203,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	@Override
     public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
         
-	    Object sourceCollection = getValue(sourceBean);
+	    Object sourceCollection = getValueUnderlying(sourceBean);
 	    if (sourceCollection != null){
 	        Object copyCollection = help.copyCollection(sourceCollection, ctx, maxDepth, destBean);
 	        setValue(destBean, copyCollection);

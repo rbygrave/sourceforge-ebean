@@ -77,7 +77,6 @@ import com.avaje.ebeaninternal.server.type.ScalarTypeEncryptedWrapper;
 import com.avaje.ebeaninternal.server.type.ScalarTypeLdapBoolean;
 import com.avaje.ebeaninternal.server.type.ScalarTypeLdapDate;
 import com.avaje.ebeaninternal.server.type.ScalarTypeLdapTimestamp;
-import com.avaje.ebeaninternal.server.type.TypeManager;
 
 /**
  * Read the field level deployment annotations.
@@ -258,16 +257,12 @@ public class AnnotationFields extends AnnotationParser {
                 Map<String, String> propMap = StringHelper.delimitedToMap(propColumns, ",", "=");
 
                 p.getDeployEmbedded().putAll(propMap);
-                
-                TypeManager typeManager = info.getUtil().getTypeManager();
-                
-                CtCompoundType<?> compoundType = typeManager.getCompoundType(p.getPropertyType());
+                                
+                CtCompoundType<?> compoundType = p.getCompoundType();
                 if (compoundType == null){
                     throw new RuntimeException("No registered CtCompoundType for "+p.getPropertyType());
                 }
-                
-                p.setCompoundType(compoundType);
-                
+                                
             } else {
                 throw new RuntimeException("Can't use EmbeddedColumns on ScalarType "+prop.getFullBeanName());
             }

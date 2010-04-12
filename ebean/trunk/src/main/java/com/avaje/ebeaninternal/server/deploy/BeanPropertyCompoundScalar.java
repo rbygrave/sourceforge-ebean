@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
+import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebeaninternal.server.type.CtCompoundProperty;
 
@@ -34,15 +35,24 @@ public class BeanPropertyCompoundScalar extends BeanProperty {
     
     private final CtCompoundProperty ctProperty;
     
-    public BeanPropertyCompoundScalar(BeanPropertyCompoundRoot rootProperty, DeployBeanProperty scalarDeploy, CtCompoundProperty ctProperty) {
+    @SuppressWarnings("unchecked")
+    private final ScalarTypeConverter typeConverter;
+    
+    public BeanPropertyCompoundScalar(BeanPropertyCompoundRoot rootProperty, DeployBeanProperty scalarDeploy,
+            CtCompoundProperty ctProperty, ScalarTypeConverter<?, ?> typeConverter) {
         
         super(scalarDeploy);
         this.rootProperty = rootProperty;
         this.ctProperty = ctProperty;
+        this.typeConverter = typeConverter;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object getValue(Object valueObject) {
+        if (typeConverter != null){
+            valueObject = typeConverter.unwrapValue(valueObject);
+        }
         return ctProperty.getValue(valueObject);
     }
 
@@ -51,17 +61,21 @@ public class BeanPropertyCompoundScalar extends BeanProperty {
         setValueInCompound(bean, value, false);        
     }
     
+    @SuppressWarnings("unchecked")
     public void setValueInCompound(Object bean, Object value, boolean intercept) {
         
         Object compoundValue = ctProperty.setValue(bean, value);
         
         if (compoundValue != null){
+            if (typeConverter != null){
+                compoundValue = typeConverter.wrapValue(compoundValue);
+            }
             // we are at the top level and we have a compound value
             // that we can set using the root property
             if (intercept){
-                rootProperty.setValueIntercept(bean, compoundValue);
+                rootProperty.setRootValueIntercept(bean, compoundValue);
             } else {
-                rootProperty.setValue(bean, compoundValue);
+                rootProperty.setRootValue(bean, compoundValue);
             }
         }
     }
