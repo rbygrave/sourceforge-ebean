@@ -168,6 +168,11 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	
     public boolean isKnownImmutable(Class<?> cls) {
         
+        if (cls == null){
+            // superclass from an interface
+            return true;
+        }
+        
         if (cls.isPrimitive() || Object.class.equals(cls)) {
             return true;
         }

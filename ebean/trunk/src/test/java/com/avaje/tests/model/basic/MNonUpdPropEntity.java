@@ -2,6 +2,8 @@ package com.avaje.tests.model.basic;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -12,13 +14,13 @@ public class MNonUpdPropEntity {
     @Id
     Integer id;
     
+    @Enumerated(EnumType.STRING)
+    MNonEnum nonEnum;
+    
     @Column(updatable=false)
     String name;
     
     String note;
-    
-    //@Version
-    //Integer version;
 
     public Integer getId() {
         return id;
@@ -44,12 +46,12 @@ public class MNonUpdPropEntity {
         this.note = note;
     }
 
-//    public Integer getVersion() {
-//        return version;
-//    }
-//
-//    public void setVersion(Integer version) {
-//        this.version = version;
-//    }
+    public MNonEnum getNonEnum() {
+        return nonEnum;
+    }
+
+    public void setNonEnum(MNonEnum nonEnum) {
+        this.nonEnum = nonEnum;
+    }
     
 }
