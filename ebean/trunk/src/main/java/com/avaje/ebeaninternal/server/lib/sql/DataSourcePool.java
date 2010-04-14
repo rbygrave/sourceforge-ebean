@@ -346,13 +346,6 @@ public class DataSourcePool implements DataSource {
     }
 
     /**
-     * A temporary debug output.
-     */
-    public String dumpOrder() {
-        return queue.dumpOrder();
-    }
-
-    /**
      * Check the dataSource is up. Trim connections.
      */
     protected void checkDataSource() {
