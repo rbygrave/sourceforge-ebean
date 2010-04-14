@@ -99,7 +99,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	/**
 	 * Execute now for non-batch execution.
 	 */
-	public abstract int execute() throws SQLException;
+	public abstract void execute() throws SQLException;
 
 	/**
 	 * Add this for batch execution.

@@ -39,6 +39,8 @@ public class UpdateHandler extends DmlHandler {
 
 	private Set<String> updatedProperties;
 	
+	private boolean emptySetClause;
+	
 	public UpdateHandler(PersistRequestBean<?> persist, UpdateMeta meta) {
 		super(persist, meta.isEmptyStringAsNull());
 		this.meta = meta;
@@ -51,6 +53,11 @@ public class UpdateHandler extends DmlHandler {
 
 		SpiUpdatePlan updatePlan = meta.getUpdatePlan(persistRequest);
 
+		if (updatePlan.isEmptySetClause()) {
+		    emptySetClause = true;
+		    return;
+		} 
+		
 		updatedProperties = updatePlan.getProperties();
 
 		String sql  = updatePlan.getSql();
@@ -80,15 +87,24 @@ public class UpdateHandler extends DmlHandler {
 		logBinding();
 	}
 
-	/**
+	@Override
+    public void addBatch() throws SQLException {
+	    if (!emptySetClause){
+	        super.addBatch();
+	    }
+    }
+
+    /**
 	 * Execute the update in non-batch.
 	 */
-	public int execute() throws SQLException {
-		int rowCount = dataBind.executeUpdate();
-		persistRequest.checkRowCount(rowCount);
-		persistRequest.postExecute();
-		setAdditionalProperties();
-		return rowCount;
+    @Override	
+	public void execute() throws SQLException {
+	    if (!emptySetClause){	    
+    		int rowCount = dataBind.executeUpdate();
+    		persistRequest.checkRowCount(rowCount);
+    		persistRequest.postExecute();
+    		setAdditionalProperties();
+	    }
 	}
 
 	@Override

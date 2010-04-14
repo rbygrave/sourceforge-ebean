@@ -4,6 +4,9 @@ import java.util.Set;
 
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 
+/**
+ * Helper to support the generation of DML statements.
+ */
 public class GenerateDmlRequest {
 
     private static final String IS_NULL = " is null";
@@ -11,16 +14,19 @@ public class GenerateDmlRequest {
     private final boolean emptyStringAsNull;
 
     private final StringBuilder sb = new StringBuilder(100);
-    private final StringBuilder insertBindBuffer = new StringBuilder(100);
 
     private final Set<String> includeProps;
 
     private final Object oldValues;
 
+    private StringBuilder insertBindBuffer;
+
     private String prefix;
     private String prefix2;
 
     private int insertMode;
+    
+    private int bindColumnCount;
 
     /**
      * Create from a PersistRequestBean.
@@ -65,6 +71,9 @@ public class GenerateDmlRequest {
     }
 
     public void appendColumn(String column, String expr, String suffik) {
+        
+        ++bindColumnCount;
+        
         sb.append(prefix);
         sb.append(column);
         sb.append(expr);
@@ -83,6 +92,10 @@ public class GenerateDmlRequest {
         }
     }
 
+    public int getBindColumnCount() {
+        return bindColumnCount;
+    }
+    
     public String getInsertBindBuffer() {
         return insertBindBuffer.toString();
     }
@@ -102,6 +115,7 @@ public class GenerateDmlRequest {
     }
 
     public void setInsertSetMode() {
+        this.insertBindBuffer = new StringBuilder(100);
         this.insertMode = 1;
         this.prefix = "";
         this.prefix2 = ", ";
