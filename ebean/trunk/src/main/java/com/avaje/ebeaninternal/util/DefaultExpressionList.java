@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import scala.collection.mutable.Buffer;
-
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
@@ -142,10 +140,6 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
     public int findRowCount() {
         return query.findRowCount();
-    }
-
-    public Buffer<T> findBuffer() {
-        return query.findBuffer();
     }
 
     public List<T> findList() {
