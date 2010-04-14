@@ -7,8 +7,6 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import scala.collection.mutable.Buffer;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
@@ -835,10 +833,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// the copy rather than this query instance)
 		return server.findRowCount(this, null);
 	}
-
-    public Buffer<T> findBuffer() {
-        return server.findBuffer(this, null);
-    }
 
 	public List<T> findList() {
 		return server.findList(this, null);
