@@ -24,6 +24,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.type.DataBind;
 
 /**
@@ -79,4 +80,10 @@ public class DeleteHandler extends DmlHandler {
 		persistRequest.checkRowCount(rowCount);
 		persistRequest.postExecute();
 	}
+	
+    @Override
+    public boolean isIncluded(BeanProperty prop) {
+        
+        return prop.isDbUpdatable() && super.isIncluded(prop);
+    }
 }
