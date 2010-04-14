@@ -154,7 +154,7 @@ public class DeployUtil {
 
 		Class<?> enumType = prop.getPropertyType();
 		if (!enumType.isEnum()) {
-			throw new IllegalArgumentException("Not a Enum?");
+			throw new IllegalArgumentException("Class ["+enumType+"] is Not a Enum?");
 		}
 		ScalarType<?> scalarType = typeManager.getScalarType(enumType);
 		if (scalarType == null) {
