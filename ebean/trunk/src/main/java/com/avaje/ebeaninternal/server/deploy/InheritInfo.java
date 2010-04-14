@@ -107,6 +107,48 @@ public class InheritInfo {
 			child.visitChildren(visitor);
 		}
 	}
+
+    /**
+     * return true if anything in the inheritance hierarchy has a relationship
+     * with a save cascade on it.
+     */
+	public boolean isSaveRecurseSkippable() {
+	    return root.isNodeSaveRecurseSkippable();
+	}
+	
+	private boolean isNodeSaveRecurseSkippable() {
+	    if (!descriptor.isSaveRecurseSkippable()){
+	        return false;
+	    }
+        for (int i = 0; i < children.size(); i++) {
+            InheritInfo child = children.get(i);
+            if (!child.isNodeSaveRecurseSkippable()){
+                return false;
+            }
+        }
+        return true;
+	}
+	
+    /**
+     * return true if anything in the inheritance hierarchy has a relationship
+     * with a delete cascade on it.
+     */
+    public boolean isDeleteRecurseSkippable() {
+        return root.isNodeDeleteRecurseSkippable();
+    }
+
+    private boolean isNodeDeleteRecurseSkippable() {
+        if (!descriptor.isDeleteRecurseSkippable()) {
+            return false;
+        }
+        for (int i = 0; i < children.size(); i++) {
+            InheritInfo child = children.get(i);
+            if (!child.isNodeDeleteRecurseSkippable()) {
+                return false;
+            }
+        }
+        return true;
+    }
 	
 	/**
 	 * Set the descriptor for this node.

@@ -342,12 +342,12 @@ public class BeanDescriptor<T> {
     /**
      * Flag used to determine if saves can be skipped.
      */
-    private final boolean saveRecurseSkippable;
+    private boolean saveRecurseSkippable;
 
     /**
      * Flag used to determine if deletes can be skipped.
      */
-    private final boolean deleteRecurseSkippable;
+    private boolean deleteRecurseSkippable;
 
     /**
      * Make the TypeManager available for helping SqlSelect.
@@ -473,9 +473,14 @@ public class BeanDescriptor<T> {
         } else {
             this.propertySingleId = null;
         }
-        // there are no cascade save associated beans
+        
+        // Check if there are no cascade save associated beans ( subject to change in initialiseOther()).
+        // Note that if we are in an inheritance hierarchy then we also need to check every 
+        // BeanDescriptors in the InheritInfo as well. We do that later in initialiseOther().
+        
         saveRecurseSkippable = (0 == (propertiesOneExportedSave.length + propertiesOneImportedSave.length + propertiesManySave.length));
 
+        // Check if there are no cascade delete associated beans (also subject to change in initialiseOther()).
         deleteRecurseSkippable = (0 == (propertiesOneExportedDelete.length + propertiesOneImportedDelete.length + propertiesManyDelete.length));
 
         this.propertiesValidationLocal = listHelper.getPropertiesWithValidators(false);
@@ -655,6 +660,16 @@ public class BeanDescriptor<T> {
                 if (!prop.isId()) {
                     prop.initialise();
                 }
+            }
+        }
+        
+        if (inheritInfo != null){
+            // need to check every BeanDescriptor in the inheritance hierarchy
+            if (saveRecurseSkippable){
+                saveRecurseSkippable = inheritInfo.isSaveRecurseSkippable();
+            }
+            if (deleteRecurseSkippable){
+                deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
             }
         }
 
