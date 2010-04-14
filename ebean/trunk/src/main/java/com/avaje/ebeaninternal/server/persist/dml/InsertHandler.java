@@ -150,7 +150,7 @@ public class InsertHandler extends DmlHandler {
 	 * Execute the insert in a normal non batch fashion. Additionally using
 	 * getGeneratedKeys if required.
 	 */
-	public int execute() throws SQLException {
+	public void execute() throws SQLException {
 		int rc = dataBind.executeUpdate();
 		if (useGeneratedKeys) {
 			// get the auto-increment value back and set into the bean
@@ -164,7 +164,6 @@ public class InsertHandler extends DmlHandler {
 		persistRequest.checkRowCount(rc);
 		persistRequest.postExecute();
 		setAdditionalProperties();
-		return rc;
 	}
 	
 	/**

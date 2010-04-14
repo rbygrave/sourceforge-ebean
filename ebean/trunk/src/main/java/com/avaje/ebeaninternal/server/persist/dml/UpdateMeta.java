@@ -152,7 +152,12 @@ public final class UpdateMeta {
 			// due to is null in where clause we won't bother trying to 
 			// cache plans for ConcurrencyMode.ALL
 			String sql = genSql(mode, persistRequest, null);
-			return new UpdatePlan(null, mode, sql, set, updatedProps);
+			if (sql == null){
+			    // changed properties must have been updatable=false
+			    return UpdatePlan.EMPTY_SET_CLAUSE;
+			} else {
+			    return new UpdatePlan(null, mode, sql, set, updatedProps);
+			}
 		}
 		
 		// we can use a cached UpdatePlan for the changed properties
@@ -204,6 +209,13 @@ public final class UpdateMeta {
 		} else {
 			set.dmlAppend(request, true);
 		}
+		
+		if (request.getBindColumnCount() == 0){
+		    // update properties must have been updatable=false
+		    // with the result that nothing is in the set clause 
+		    return null;
+		}
+		
 		request.append(" where ");
 		
 		request.setWhereIdMode();

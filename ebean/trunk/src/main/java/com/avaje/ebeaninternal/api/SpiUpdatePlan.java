@@ -40,6 +40,15 @@ import com.avaje.ebeaninternal.server.persist.dmlbind.Bindable;
  */
 public interface SpiUpdatePlan {
 
+    /**
+     * Return true if the set clause has no columns.
+     * <p>
+     * Can occur when the only columns updated have a updatable=false in their
+     * deployment.
+     * </p>
+     */
+    public boolean isEmptySetClause();
+    
 	/**
 	 * Bind given the request and bean. The bean could be the oldValues bean
 	 * when binding a update or delete where clause with ALL concurrency mode.

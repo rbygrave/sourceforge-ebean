@@ -34,6 +34,13 @@ import com.avaje.ebeaninternal.server.persist.dmlbind.Bindable;
  */
 public class UpdatePlan implements SpiUpdatePlan {
 
+    /**
+     * Special plan used when there is nothing in the set clause and the update
+     * should in fact be skipped. Occurs when the updated properties have
+     * updatable=false in their deployment.
+     */
+    public static final UpdatePlan EMPTY_SET_CLAUSE = new UpdatePlan();
+    
 	private final Integer key;
 
 	private final ConcurrencyMode mode;
@@ -48,6 +55,8 @@ public class UpdatePlan implements SpiUpdatePlan {
 
 	private final long timeCreated;
 
+	private final boolean emptySetClause;
+	
 	private Long timeLastUsed;
 
 	/**
@@ -64,6 +73,7 @@ public class UpdatePlan implements SpiUpdatePlan {
 	public UpdatePlan(Integer key, ConcurrencyMode mode, String sql,
 			Bindable set, Set<String> properties) {
 
+	    this.emptySetClause = false;
 		this.key = key;
 		this.mode = mode;
 		this.sql = sql;
@@ -74,6 +84,25 @@ public class UpdatePlan implements SpiUpdatePlan {
 	}
 
 	/**
+	 * Special constructor for emptySetClause=true instance.
+	 */
+	private UpdatePlan(){
+	    this.emptySetClause = true;
+	    this.key = Integer.valueOf(0);
+	    this.mode = ConcurrencyMode.NONE;
+	    this.sql = null;
+	    this.set = null;
+	    this.properties = null;
+	    this.checkIncludes = false;
+	    this.timeCreated = 0;
+	}
+	
+	
+	public boolean isEmptySetClause() {
+        return emptySetClause;
+    }
+
+    /**
 	 * Run the prepared statement binding for the 'update set' properties.
 	 */
 	public void bindSet(DmlHandler bind, Object bean) throws SQLException {
