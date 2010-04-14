@@ -159,6 +159,11 @@ public class PooledConnection extends ConnectionDelegator
 	int maxStackTrace;
 	
 	/**
+	 * Slot position in the BusyConnectionBuffer.
+	 */
+	int slotId;
+	
+	/**
 	 * Construct the connection that can refer back to the pool it belongs to.
 	 * <p>
 	 * close() will return the connection back to the pool , while
@@ -178,6 +183,34 @@ public class PooledConnection extends ConnectionDelegator
 	}
 
 	/**
+	 * For testing the pool without real connections.
+	 */
+	protected PooledConnection(String name) {
+	    super(null);
+	    this.name = name;
+	    this.pool = null;
+	    this.connection = null;
+	    this.pstmtCache = null;
+	    this.maxStackTrace = 0;
+        this.creationTime = System.currentTimeMillis();
+        this.lastUseTime = creationTime;
+    }
+	
+	/**
+     * Return the slot position in the busy buffer.
+     */
+	public int getSlotId() {
+        return slotId;
+    }
+
+    /**
+     * Set the slot position in the busy buffer.
+     */
+    public void setSlotId(int slotId) {
+        this.slotId = slotId;
+    }
+
+    /**
 	 * Return the DataSourcePool that this connection belongs to.
 	 */
 	public DataSourcePool getDataSourcePool() {
@@ -237,7 +270,7 @@ public class PooledConnection extends ConnectionDelegator
 	 */
 	public void closeConnectionFully(boolean logErrors) {
 
-		pool.removeConnection(this);
+		//pool.removeConnection(this);
 
 		String msg = "Closing Connection[" + getName() + "]" + " psReuse[" + pstmtHitCounter
 				+ "] psCreate[" + pstmtMissCounter + "] psSize[" + pstmtCache.size() + "]";
