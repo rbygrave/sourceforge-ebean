@@ -110,15 +110,17 @@ public final class ImportedIdSimple implements ImportedId, Comparable<ImportedId
 
 	public void dmlWhere(GenerateDmlRequest request, Object bean){
 
-		Object value = null;
-		if (bean != null){
-			value = getIdValue(bean);
-		}
-		if (value == null){
-			request.appendColumnIsNull(localDbColumn);
-		} else {
-			request.appendColumn(localDbColumn);
-		}
+	    if (owner.isDbUpdatable()){
+    		Object value = null;
+    		if (bean != null){
+    			value = getIdValue(bean);
+    		}
+    		if (value == null){
+    			request.appendColumnIsNull(localDbColumn);
+    		} else {
+    			request.appendColumn(localDbColumn);
+    		}
+	    }
 	}
 
 	public boolean hasChanged(Object bean, Object oldValues) {
