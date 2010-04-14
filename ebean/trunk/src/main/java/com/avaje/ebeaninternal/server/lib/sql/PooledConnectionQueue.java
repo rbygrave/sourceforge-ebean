@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -254,21 +253,7 @@ public class PooledConnectionQueue {
             throw new SQLException(msg);
         }
     }
-    
-    
-    Vector<String> waitThreadOrder = new Vector<String>();
-    Vector<String> waitNotifyThreadOrder = new Vector<String>();
-    Vector<String> waitExtractThreadOrder = new Vector<String>();
-    
-    public String dumpOrder() {
-        String s = "WAIT: "+waitThreadOrder.toString();
-        s += "\n"+"DONE: "+waitNotifyThreadOrder.toString();
-        s += "\n"+"FINE: "+waitExtractThreadOrder.toString();
-        s += "\n";
-                
-        return s;
-    }
- 
+     
     /**
      * Register the PooledConnection with the busyList.
      */
@@ -345,16 +330,9 @@ public class PooledConnectionQueue {
             }
             
             try {
-                waitThreadOrder.add("W:"+Thread.currentThread());
                 nanos = notEmpty.awaitNanos(nanos);
-                waitNotifyThreadOrder.add("N:"+Thread.currentThread());
-                if (freeList.isEmpty()) {                        
-                    if (nanos > 0) {                           
-                        System.out.println("Waiting thread hit empty freeList nanos:"+nanos+" "+Thread.currentThread());
-                    }
-                } else {
+                if (!freeList.isEmpty()) {
                     // successfully waited 
-                    waitExtractThreadOrder.add("E:"+Thread.currentThread());
                     return extractFromFreeList();
                 }
             } catch (InterruptedException ie) {

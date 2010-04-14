@@ -40,14 +40,12 @@ public class TestDataSourceMax extends TestCase {
             Status status = pool.getStatus(false);
             System.out.println(status);
             
-            //int bc = pool.getBusyCount();
-            //int sz = pool.getSize();
-
-            //System.out.println("main thread checks sz:"+sz+" busy:"+bc);
-
-            String s = pool.dumpOrder();
+            // this dumpOrder was for 3 vectors used in PooledConnectionQueue
+            // that logged the order of wait, notify and obtain events
+            // I have remove that code.
             
-            System.err.println(s);
+//            String s = pool.dumpOrder();   
+//            System.err.println(s);
 
             
         } catch (Exception e) {
