@@ -128,6 +128,9 @@ public class AnnotationAssocOnes extends AnnotationParser {
         JoinColumn joinColumn = get(prop, JoinColumn.class);
         if (joinColumn != null) {
             prop.getTableJoin().addJoinColumn(false, joinColumn, beanTable);
+            if (!joinColumn.updatable()){
+                prop.setDbUpdateable(false);
+            }
         }
 
         JoinColumns joinColumns = get(prop, JoinColumns.class);
@@ -179,6 +182,8 @@ public class AnnotationAssocOnes extends AnnotationParser {
             throw new RuntimeException(msg);
         }
         beanProp.setBeanTable(assoc);
+        beanProp.setDbInsertable(true);
+        beanProp.setDbUpdateable(true);
         beanProp.setNullable(propAnn.optional());
         beanProp.setFetchType(propAnn.fetch());
     }
@@ -186,6 +191,8 @@ public class AnnotationAssocOnes extends AnnotationParser {
     private void readOneToOne(OneToOne propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
         prop.setOneToOne(true);
+        prop.setDbInsertable(true);
+        prop.setDbUpdateable(true);
         prop.setNullable(propAnn.optional());
         prop.setFetchType(propAnn.fetch());
         prop.setMappedBy(propAnn.mappedBy());
@@ -207,6 +214,8 @@ public class AnnotationAssocOnes extends AnnotationParser {
     private void readEmbedded(Embedded propAnn, DeployBeanPropertyAssocOne<?> prop) {
 
         prop.setEmbedded(true);
+        prop.setDbInsertable(true);
+        prop.setDbUpdateable(true);
 
         EmbeddedColumns columns = get(prop, EmbeddedColumns.class);
         if (columns != null) {
