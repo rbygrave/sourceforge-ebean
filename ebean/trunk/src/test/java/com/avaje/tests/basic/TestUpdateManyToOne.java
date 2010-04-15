@@ -31,7 +31,9 @@ public class TestUpdateManyToOne extends TestCase{
             }
         }
         order.setCustomer(changeCust);
+        Ebean.save(order);
         
+        order.setCustomer(customer);
         Ebean.save(order);
         
     }
