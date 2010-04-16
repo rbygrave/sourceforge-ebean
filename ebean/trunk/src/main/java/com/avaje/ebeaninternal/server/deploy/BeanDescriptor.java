@@ -2205,18 +2205,31 @@ public class BeanDescriptor<T> {
     private void jsonWriteProperties(WriteJsonContext ctx, Object bean) {
         
         boolean referenceBean = ctx.isReferenceBean();
+
+        JsonWriteBeanVisitor<T> beanVisitor = (JsonWriteBeanVisitor<T>)ctx.getBeanVisitor();
+        
+        Set<String> props = ctx.getIncludeProperties();
+        
+        boolean explicitAllProps;
+        if (props == null) {
+            explicitAllProps = false;
+        } else {
+            explicitAllProps = props.contains("*");
+            if (explicitAllProps || props.isEmpty()){
+                props = null;
+            }
+        }
         
         for (int i = 0; i < propertiesId.length; i++) {
             Object idValue = propertiesId[i].getValue(bean);
             if (idValue != null){
-                propertiesId[i].jsonWrite(ctx, bean);
+                if (props == null || props.contains(propertiesId[i].getName())){
+                    propertiesId[i].jsonWrite(ctx, bean);
+                }
             }
         }
-
-        JsonWriteBeanVisitor<T> beanVisitor = (JsonWriteBeanVisitor<T>)ctx.getBeanVisitor();
             
-        Set<String> props = ctx.getIncludeProperties();
-        if (props == null){
+        if (!explicitAllProps && props == null){
             props = ctx.getLoadedProps();
         }
         if (props != null){

@@ -168,13 +168,19 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 		}
 	}
 	
-    public void jsonWrite(WriteJsonContext ctx, String name, Object collection) {
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection, boolean explicitInclude) {
         
         Set<?> set;
         if (collection instanceof BeanCollection<?>){
             BeanSet<?> bc = (BeanSet<?>)collection;
             if (!bc.isPopulated()){
-                return;
+                if (explicitInclude){
+                    // invoke lazy loading as collection 
+                    // is explicitly included in the output
+                    bc.size();
+                } else {
+                    return;
+                }
             } 
             set = bc.getActualSet();
         } else {

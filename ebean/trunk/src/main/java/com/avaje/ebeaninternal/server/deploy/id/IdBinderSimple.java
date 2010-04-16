@@ -117,6 +117,7 @@ public final class IdBinderSimple implements IdBinder {
 	}
 
 	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
+	    value = convertSetId(value, null);
 		request.addBindValue(value);
 	}
 

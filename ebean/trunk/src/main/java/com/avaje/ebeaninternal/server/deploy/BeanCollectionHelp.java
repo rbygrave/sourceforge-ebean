@@ -73,6 +73,6 @@ public interface BeanCollectionHelp<T> {
 	/**
 	 * Write the collection out as json.
 	 */
-    public void jsonWrite(WriteJsonContext ctx, String name, Object collection);
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection, boolean explicitInclude);
 
 }

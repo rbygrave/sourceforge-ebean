@@ -118,7 +118,12 @@ public class OrmQueryProperties implements Serializable {
         parseProperties();
 
         if (!isAllProperties()) {
-            this.included = parseIncluded(trimmedProperties);
+            Set<String> parsed = parseIncluded(trimmedProperties);
+            if (parsed.contains("*")){
+                this.included = null;                
+            } else {
+                this.included = parsed;
+            }
         } else {
             this.included = null;
         }
