@@ -302,7 +302,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			if (!ctx.isVanillaMode()){
 			    // only create lazy loading collection proxies
 			    // when not in vanilla mode
-			    createListProxies(localDesc, ctx, localBean);
+                createListProxies(localDesc, ctx, localBean);
 			}
 			
 			localDesc.postLoad(localBean, includedProps);
@@ -369,9 +369,10 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 				// it is being loaded with real row data (result[1])
 			} else {
 				// create a proxy for the many (deferred fetching)
-				BeanCollection<?> ref = manys[i].createReference(localBean);
-				
-				ctx.register(manys[i].getName(), ref);
+				BeanCollection<?> ref = manys[i].createReferenceIfNull(localBean);
+				if (ref != null){
+				    ctx.register(manys[i].getName(), ref);
+				}
 			}
 		}
 	}

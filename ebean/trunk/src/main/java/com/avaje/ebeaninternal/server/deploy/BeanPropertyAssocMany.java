@@ -404,7 +404,17 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	public String getMapKey() {
 		return mapKey;
 	}
-		
+
+    public BeanCollection<?> createReferenceIfNull(Object parentBean) {
+
+        Object v = getValue(parentBean);
+        if (v != null){
+            return null;
+        } else {
+            return createReference(parentBean);
+        }
+    }
+    
 	public BeanCollection<?> createReference(Object parentBean) {
 
 		BeanCollection<?> ref = help.createReference(parentBean, name);
@@ -691,13 +701,16 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
         
-        if (ctx.includedProp(name)) {
-            Object value = getValueIntercept(bean);
-            if (value != null){
-                ctx.pushParentBeanMany(bean);
-                help.jsonWrite(ctx, name, value);
-                ctx.popParentBeanMany();
-            }
+        Boolean include = ctx.includeMany(name);
+        if (Boolean.FALSE.equals(include)){
+            return;
+        }
+        
+        Object value = getValueIntercept(bean);
+        if (value != null){
+            ctx.pushParentBeanMany(bean);
+            help.jsonWrite(ctx, name, value, include != null);
+            ctx.popParentBeanMany();
         }
     }
     

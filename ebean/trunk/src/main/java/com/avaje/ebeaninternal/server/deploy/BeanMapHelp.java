@@ -206,13 +206,19 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 		}
 	}
 
-    public void jsonWrite(WriteJsonContext ctx, String name, Object collection) {
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection, boolean explicitInclude) {
         
         Map<?,?> map;
         if (collection instanceof BeanCollection<?>){
             BeanMap<?,?> bc = (BeanMap<?,?>)collection;
             if (!bc.isPopulated()){
-                return;
+                if (explicitInclude){
+                    // invoke lazy loading as collection 
+                    // is explicitly included in the output
+                    bc.size();
+                } else {
+                    return;
+                }
             } 
             map = bc.getActualMap();
         } else {

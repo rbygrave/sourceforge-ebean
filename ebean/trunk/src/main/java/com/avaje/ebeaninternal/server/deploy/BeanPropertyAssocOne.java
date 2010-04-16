@@ -785,23 +785,21 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     @Override
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
         
-        if (ctx.includedProp(name)) {
-            Object value = getValueIntercept(bean);
-            if (value == null){
-                ctx.beginAssocOneIsNull(name);
+        Object value = getValueIntercept(bean);
+        if (value == null){
+            ctx.beginAssocOneIsNull(name);
+            
+        } else {
+            if (ctx.isParentBean(value)){
+                // bi-directional and already rendered parent
                 
             } else {
-                if (ctx.isParentBean(value)){
-                    // bi-directional and already rendered parent
-                    
-                } else {
-                    ctx.pushParentBean(bean);
-                    ctx.beginAssocOne(name);
-                    BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
-                    refDesc.jsonWrite(ctx, value);
-                    ctx.endAssocOne();
-                    ctx.popParentBean();
-                }
+                ctx.pushParentBean(bean);
+                ctx.beginAssocOne(name);
+                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(value.getClass());
+                refDesc.jsonWrite(ctx, value);
+                ctx.endAssocOne();
+                ctx.popParentBean();
             }
         }
     }

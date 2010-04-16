@@ -24,6 +24,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.text.PathProperties;
+
 /**
  * Provides options for customising the JSON write process.
  * <p>
@@ -92,8 +94,8 @@ public class JsonWriteOptions {
 
     protected Map<String, JsonWriteBeanVisitor<?>> visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>();
 
-    protected Map<String, Set<String>> includePropertiesMap = new HashMap<String, Set<String>>();
-
+    protected PathProperties pathProperties = new PathProperties();
+    
     /**
      * Return a JSONP callback function.
      */
@@ -146,7 +148,7 @@ public class JsonWriteOptions {
      *            The set of properties to output
      */
     public JsonWriteOptions setPathProperties(String path, Set<String> propertiesToInclude) {
-        includePropertiesMap.put(path, propertiesToInclude);
+        pathProperties.put(path, propertiesToInclude);
         return this;
     }
 
@@ -202,10 +204,17 @@ public class JsonWriteOptions {
     }
 
     /**
-     * Return the Map of properties to include by path.
-     */
-    public Map<String, Set<String>> getIncludePropertiesMap() {
-        return includePropertiesMap;
+     * Set the Map of properties to include by path.
+     */    
+    public void setPathProperties(PathProperties pathProperties) {
+        this.pathProperties = pathProperties;
+    }
+    
+    /**
+     * Return the properties to include by path.
+     */    
+    public PathProperties getPathProperties() {
+        return pathProperties;
     }
 
 }

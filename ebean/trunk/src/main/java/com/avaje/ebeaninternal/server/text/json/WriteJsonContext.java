@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebean.text.json.JsonWriteBeanVisitor;
 import com.avaje.ebean.text.json.JsonWriteOptions;
@@ -41,7 +42,7 @@ public class WriteJsonContext implements JsonWriter {
     
     private final ArrayStack<Object> parentBeans = new ArrayStack<Object>();
     
-    private final Map<String, Set<String>> includePropertiesMap;
+    private final PathProperties pathProperties;
 
     private final Map<String, JsonWriteBeanVisitor<?>> visitorMap;
 
@@ -60,21 +61,17 @@ public class WriteJsonContext implements JsonWriter {
         
         this.buffer = buffer;
         this.pretty = pretty;
+        this.pathStack = new PathStack();
         this.callback = getCallback(requestCallback, options);
         if (options == null){            
             this.valueAdapter = dfltValueAdapter;
             this.visitorMap = null;
-            this.includePropertiesMap = null;
-            this.pathStack = null;
+            this.pathProperties = null;
+
         } else {
             this.valueAdapter = getValueAdapter(dfltValueAdapter, options.getValueAdapter());
             this.visitorMap = emptyToNull(options.getVisitorMap());
-            this.includePropertiesMap = emptyToNull(options.getIncludePropertiesMap());
-            if (includePropertiesMap != null || visitorMap != null) {
-                this.pathStack = new PathStack();
-            } else {
-                this.pathStack = null;
-            }
+            this.pathProperties = emptyToNull(options.getPathProperties());
         }
         
         if (callback != null){
@@ -87,8 +84,16 @@ public class WriteJsonContext implements JsonWriter {
             buffer.append(")");
         }        
     }
-    
+  
     private <MK,MV> Map<MK,MV> emptyToNull(Map<MK,MV> m){
+        if ( m == null || m.isEmpty()) {
+            return null;
+        } else {
+            return m;
+        }
+    }
+    
+    private PathProperties emptyToNull(PathProperties m){
         if ( m == null || m.isEmpty()) {
             return null;
         } else {
@@ -115,9 +120,9 @@ public class WriteJsonContext implements JsonWriter {
      * the default will output the properties loaded for this bean.
      */
     public Set<String> getIncludeProperties() {
-        if (includePropertiesMap != null){
+        if (pathProperties != null){
             String path = pathStack.peekWithNull();
-            return includePropertiesMap.get(path);
+            return pathProperties.get(path);
         }
         return null;
     }
@@ -185,24 +190,30 @@ public class WriteJsonContext implements JsonWriter {
     }
     
     public void beginAssocOne(String key) {
-        if (pathStack != null){
-            pathStack.pushPathKey(key);
-        }
+        pathStack.pushPathKey(key);
+
         internalAppendKeyBegin(key);
         assocOne = true;
     }
     
     public void endAssocOne() {
-        if (pathStack != null){
-            pathStack.pop();
-        }
+        
+        pathStack.pop();
         assocOne = false;
     }
     
-    public void beginAssocMany(String key) {
-        if (pathStack != null){
-            pathStack.pushPathKey(key);
+    public Boolean includeMany(String key) {
+        if (pathProperties != null){
+            String fullPath = pathStack.peekFullPath(key);
+            return pathProperties.hasPath(fullPath);
         }
+        return null;
+    }
+    
+    public void beginAssocMany(String key) {
+        
+        pathStack.pushPathKey(key);
+        
         depthOffset--;
         internalAppendKeyBegin(key);
         depthOffset++;
@@ -210,9 +221,9 @@ public class WriteJsonContext implements JsonWriter {
     }
 
     public void endAssocMany(){
-        if (pathStack != null){
-            pathStack.pop();
-        }
+        
+        pathStack.pop();
+        
         if (pretty){
             depthOffset--;
             appendIndent();

@@ -164,13 +164,19 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
 		}
 	}
 	
-    public void jsonWrite(WriteJsonContext ctx, String name, Object collection) {
+    public void jsonWrite(WriteJsonContext ctx, String name, Object collection, boolean explicitInclude) {
         
         List<?> list;
         if (collection instanceof BeanCollection<?>){
             BeanList<?> beanList = (BeanList<?>)collection;
             if (!beanList.isPopulated()){
-                return;
+                if (explicitInclude){
+                    // invoke lazy loading as collection 
+                    // is explicitly included in the output
+                    beanList.size();
+                } else {
+                    return;
+                }
             } 
             list = beanList.getActualList();
         } else {

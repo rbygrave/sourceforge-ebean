@@ -37,6 +37,7 @@ public class TestTextJsonBeanReadVisitorWithCustomJson extends TestCase {
         
         JsonContext json = Ebean.createJsonContext();
         
+        
         JsonWriteOptions writeOptions = new JsonWriteOptions();
         writeOptions.setRootPathVisitor(new JsonWriteBeanVisitor<Customer>() {
 
@@ -79,7 +80,7 @@ public class TestTextJsonBeanReadVisitorWithCustomJson extends TestCase {
             String note = customer.getSmallnote();
             Assert.assertEquals("Set in Json Visitor", note);
         }
-        
+
     }
     
     private static class CVisitor implements JsonReadBeanVisitor<Customer> {
