@@ -234,10 +234,8 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * Register a custom ScalarType.
 	 */
 	public void add(ScalarType<?> scalarType) {
-		synchronized (typeMap) {
-			typeMap.put(scalarType.getType(), scalarType);
-			logAdd(scalarType);
-		}
+		typeMap.put(scalarType.getType(), scalarType);
+		logAdd(scalarType);
 	}
 
 	protected void logAdd(ScalarType<?> scalarType) {

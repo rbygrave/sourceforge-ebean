@@ -482,7 +482,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	
 	private static class CacheWarmer extends TimerTask {
 
-		private static final Logger logger = Logger.getLogger(CacheWarmer.class.getName());
+		private static final Logger log = Logger.getLogger(CacheWarmer.class.getName());
 		
 		private final long sleepMillis;
 		private final EbeanServer server;
@@ -497,7 +497,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 				Thread.sleep(sleepMillis);
 			} catch (InterruptedException e) {
 				String msg = "Error while sleeping prior to cache warming";
-				logger.log(Level.SEVERE, msg, e);
+				log.log(Level.SEVERE, msg, e);
 			}
 			server.runCacheWarming();
 		}

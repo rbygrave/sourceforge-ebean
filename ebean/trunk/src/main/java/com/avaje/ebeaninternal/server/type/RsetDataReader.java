@@ -55,10 +55,6 @@ public class RsetDataReader implements DataReader {
 
     public void close() throws SQLException {
         rset.close();
-//        if (rset != null) {
-//            rset.close();
-//            rset = null;
-//        }
     }
 
     public boolean next() throws SQLException {
@@ -92,12 +88,6 @@ public class RsetDataReader implements DataReader {
         return rset.getBinaryStream(++pos);
     }
 
-
-//    public Blob getBlob() throws SQLException {
-//        return rset.getBlob(++pos);
-//    }
-
-
     public Boolean getBoolean() throws SQLException {
         boolean v = rset.getBoolean(++pos);
         if (rset.wasNull()){
@@ -105,7 +95,6 @@ public class RsetDataReader implements DataReader {
         }
         return Boolean.valueOf(v);
     }
-
 
     public Byte getByte() throws SQLException {
         byte v = rset.getByte(++pos);
@@ -115,27 +104,13 @@ public class RsetDataReader implements DataReader {
         return Byte.valueOf(v);
     }
 
-
     public byte[] getBytes() throws SQLException {
         return rset.getBytes(++pos);
     }
 
-
-//    public Reader getCharacterStream() throws SQLException {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-
-
-//    public Clob getClob() throws SQLException {
-//        return rset.getClob(++pos);
-//    }
-
-
     public Date getDate() throws SQLException {
         return rset.getDate(++pos);
     }
-
 
     public Double getDouble() throws SQLException {
         double v = rset.getDouble(++pos);
@@ -145,7 +120,6 @@ public class RsetDataReader implements DataReader {
         return Double.valueOf(v);
     }
 
-
     public Float getFloat() throws SQLException {
         float v = rset.getFloat(++pos);
         if (rset.wasNull()){
@@ -154,14 +128,12 @@ public class RsetDataReader implements DataReader {
         return Float.valueOf(v);
     }
 
-
     public Integer getInt() throws SQLException {
         int v = rset.getInt(++pos);
         if (rset.wasNull()){
             return null;
         }
         return Integer.valueOf(v);
-
     }
 
 

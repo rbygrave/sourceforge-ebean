@@ -37,7 +37,7 @@ public class SimpleAesEncryptor implements Encryptor {
 
     private static final String AES_CIPHER = "AES/CBC/PKCS5Padding";
 
-    private final String padding = "asldkalsdkadsdfkjsldfjl";
+    private static final String padding = "asldkalsdkadsdfkjsldfjl";
 
     public SimpleAesEncryptor() {
     }

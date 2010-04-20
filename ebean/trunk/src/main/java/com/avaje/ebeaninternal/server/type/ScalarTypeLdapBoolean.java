@@ -33,8 +33,8 @@ import com.avaje.ebean.text.TextException;
  */
 public class ScalarTypeLdapBoolean extends ScalarTypeBase<Boolean> {
 
-    private final String trueValue = "TRUE";
-    private final String falseValue = "FALSE";
+    private static final String trueValue = "TRUE";
+    private static final String falseValue = "FALSE";
 
     public ScalarTypeLdapBoolean() {
         super(Boolean.class, false, Types.VARCHAR);

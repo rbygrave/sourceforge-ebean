@@ -155,19 +155,20 @@ public class MailMessage {
     }
 
     public String toString() {
-        String s = "Sender: " + senderAddress + "\tRecipient: " + recipientList + "\n";
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("Sender: " + senderAddress + "\tRecipient: " + recipientList + "\n");
         Iterator<String> hi = header.keySet().iterator();
         while (hi.hasNext()) {
             String key = hi.next();
             String hline = key + ": " + header.get(key) + "\n";
-            s += hline;
+            sb.append(hline);
         }
-        s += "\n";
+        sb.append("\n");
         Iterator<String> e = bodylines.iterator();
         while (e.hasNext()) {
-            s += e.next() + "\n";
+            sb.append(e.next()).append("\n");
         }
-        return s;
+        return sb.toString();
     }
 }
 

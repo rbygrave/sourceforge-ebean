@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.api;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -31,8 +32,10 @@ import com.avaje.ebeaninternal.server.query.SplitName;
  * Holds the joins needs to support the many where predicates.
  * These joins are independent of any 'fetch' joins on the many.
  */
-public class ManyWhereJoins {
+public class ManyWhereJoins implements Serializable {
 
+    private static final long serialVersionUID = -6490181101871795417L;
+    
     private final TreeSet<String> joins = new TreeSet<String>();
 
     /**

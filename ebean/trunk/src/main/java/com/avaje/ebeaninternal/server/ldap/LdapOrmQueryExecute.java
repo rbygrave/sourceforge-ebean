@@ -121,7 +121,7 @@ public class LdapOrmQueryExecute<T> {
             debugQuery += " filterExpr:"+filterExpr;
 
             NamingEnumeration<SearchResult> result;
-            if (filterValues == null && filterValues.length > 0) {
+            if (filterValues == null || filterValues.length == 0) {
                 result = dc.search(dn, filterExpr, sc);
             } else {
                 debugQuery += " filterValues:"+Arrays.toString(filterValues);

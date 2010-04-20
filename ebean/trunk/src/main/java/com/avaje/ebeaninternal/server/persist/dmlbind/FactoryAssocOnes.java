@@ -44,11 +44,10 @@ public class FactoryAssocOnes {
 			if (ones[i].isImportedPrimaryKey()){
 				// excluded as already part of the primary key
 				
-			//} else if (ones[i].isOneToOneExported()) {
-				// excluded as its the 'non-owning' side of OneToOne
-
 			} else {
 				switch (mode) {
+				case WHERE: 
+				    break;
 				case INSERT:
 					if (!ones[i].isInsertable()) {
 						continue;
@@ -60,8 +59,7 @@ public class FactoryAssocOnes {
 					}
 					break;
 				}
-				Bindable item = new BindableAssocOne(ones[i]);
-				list.add(item);
+				list.add(new BindableAssocOne(ones[i]));
 			}
 		}
 

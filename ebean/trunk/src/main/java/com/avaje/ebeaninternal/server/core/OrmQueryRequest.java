@@ -62,11 +62,11 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	private final BeanFinder<T> finder;
 	
 	private final LoadContext graphContext;
-	
+		
 	private final int parentState;
 
 	private PersistenceContext persistenceContext;
-
+	
 	private Integer cacheKey;
 
 	private int queryPlanHash;

@@ -281,12 +281,12 @@ public class AnnotationFields extends AnnotationParser {
 		if (!prop.isTransient()){
 		    
 		    EncryptDeploy encryptDeploy = util.getEncryptDeploy(info.getDescriptor().getBaseTableFull(), prop.getDbColumn());
-		    if (encryptDeploy == null || encryptDeploy.getMode().equals(Mode.ANNOTATION)){
+		    if (encryptDeploy == null || encryptDeploy.getMode().equals(Mode.MODE_ANNOTATION)){
 	            Encrypted encrypted = get(prop, Encrypted.class);
 	            if (encrypted != null) {    
 	                setEncryption(prop, encrypted.dbEncryption(), encrypted.dbLength());
 	            }		        
-		    } else if (Mode.ENCRYPT.equals(encryptDeploy.getMode())) {
+		    } else if (Mode.MODE_ENCRYPT.equals(encryptDeploy.getMode())) {
                 setEncryption(prop, encryptDeploy.isDbEncrypt(), encryptDeploy.getDbLength());
 		    }		        		    
 		}

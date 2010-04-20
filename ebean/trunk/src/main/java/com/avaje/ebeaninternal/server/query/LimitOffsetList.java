@@ -196,20 +196,20 @@ public class LimitOffsetList<T> implements List<T> {
 	
 	private class ListItr implements ListIterator<T> {
 
-		private LimitOffsetList<T> owner;
+		private LimitOffsetList<T> ownerList;
 		private int position;
 		
-		ListItr(LimitOffsetList<T> owner, int position) {
-			this.owner = owner;
+		ListItr(LimitOffsetList<T> ownerList, int position) {
+			this.ownerList = ownerList;
 			this.position = position;
 		}
 		
 		public void add(T o) {
-			owner.add(position++, o);
+		    ownerList.add(position++, o);
 		}
 
 		public boolean hasNext() {
-			return owner.hasNext(position);
+			return ownerList.hasNext(position);
 		}
 
 		public boolean hasPrevious() {
@@ -217,7 +217,7 @@ public class LimitOffsetList<T> implements List<T> {
 		}
 
 		public T next() {
-			return owner.get(position++);
+			return ownerList.get(position++);
 		}
 
 		public int nextIndex() {
