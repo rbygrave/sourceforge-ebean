@@ -67,8 +67,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
 	private PersistenceContext persistenceContext;
 
-	private boolean createdTransaction;
-
 	private Integer cacheKey;
 
 	private int queryPlanHash;
@@ -187,6 +185,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 * execute this query.
 	 * </p>
 	 */
+	@Override
 	public void initTransIfRequired() {
 		// first check if the query requires its own transaction
 		if (query.createOwnTransaction()){
