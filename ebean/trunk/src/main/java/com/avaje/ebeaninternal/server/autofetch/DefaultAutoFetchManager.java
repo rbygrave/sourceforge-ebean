@@ -18,6 +18,7 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.config.AutofetchConfig;
 import com.avaje.ebean.config.AutofetchMode;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -373,7 +374,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
         String beanType = queryPoint.getBeanType();
 
         try {
-            Class<?> beanClass = Class.forName(beanType);
+            Class<?> beanClass = ClassUtil.forName(beanType, this.getClass());
             BeanDescriptor<?> beanDescriptor = server.getBeanDescriptor(beanClass);
             if (beanDescriptor == null){
                 // previously was an entity but not longer

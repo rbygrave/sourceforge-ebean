@@ -21,6 +21,8 @@ package com.avaje.ebeaninternal.server.deploy.parse;
 
 import java.util.logging.Logger;
 
+import com.avaje.ebeaninternal.api.ClassUtil;
+
 /**
  * Used to detected if Scala support is required.
  * 
@@ -36,7 +38,7 @@ public class DetectScala {
     
     private static Class<?> initScalaOptionClass() {
         try {
-            return Class.forName("scala.Option");
+            return ClassUtil.forName("scala.Option");
         } catch (ClassNotFoundException e) {
             // scala not in the classpath...
             logger.fine("Scala type 'scala.Option' not found. Scala Support disabled.");

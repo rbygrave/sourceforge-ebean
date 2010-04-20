@@ -4,6 +4,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import com.avaje.ebeaninternal.api.ClassUtil;
+
 /**
  * Provides access to properties loaded from the ebean.properties file.
  */
@@ -81,8 +83,7 @@ public final class GlobalProperties {
 			// a Runnable that can be used to customise the initialisation
 			// of the GlobalProperties
 			try {
-				Class<?> cls = Class.forName(loaderCn);
-				Runnable r = (Runnable)cls.newInstance();
+			    Runnable r = (Runnable)ClassUtil.newInstance(loaderCn);
 				r.run();
 			} catch (Exception e){
 				String m = "Error creating or running properties loader "+loaderCn;

@@ -110,7 +110,7 @@ public class PathProperties {
             String path = entry.getKey();
             String props = entry.getValue().getPropertiesAsString();
             
-            if ("".equals(path)) {
+            if (path == null || path.length() == 0) {
                 query.select(props);
             } else {
                 query.fetch(path, props);

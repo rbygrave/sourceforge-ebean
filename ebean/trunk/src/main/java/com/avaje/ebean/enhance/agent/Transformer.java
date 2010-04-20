@@ -136,7 +136,7 @@ public class Transformer implements ClassFileTransformer {
 	private byte[] entityEnhancement(ClassLoader loader, byte[] classfileBuffer) {
 				
 		ClassReader cr = new ClassReader(classfileBuffer);
-		ClassWriter cw = new ClassWriter(CLASS_WRITER_COMPUTEFLAGS);
+		LoaderAwareClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader);
 		ClassAdpaterEntity ca = new ClassAdpaterEntity(cw, loader, enhanceContext);
 		try {
 			
@@ -174,7 +174,7 @@ public class Transformer implements ClassFileTransformer {
 	private byte[] transactionalEnhancement(ClassLoader loader, byte[] classfileBuffer) {
 		
 		ClassReader cr = new ClassReader(classfileBuffer);
-		ClassWriter cw = new ClassWriter(CLASS_WRITER_COMPUTEFLAGS);
+		ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader);
 		ClassAdapterTransactional ca = new ClassAdapterTransactional(cw, loader, enhanceContext);
 		
 		try {

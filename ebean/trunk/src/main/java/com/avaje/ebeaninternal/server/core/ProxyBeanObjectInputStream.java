@@ -26,6 +26,7 @@ import java.io.ObjectStreamClass;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.bean.SerializeControl;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.subclass.SubClassUtil;
@@ -82,7 +83,7 @@ public class ProxyBeanObjectInputStream extends ObjectInputStream {
 		String className = desc.getName();
 
 		String vanillaClassName = SubClassUtil.getSuperClassName(className);
-		Class<?> vanillaClass = Class.forName(vanillaClassName);
+		Class<?> vanillaClass = ClassUtil.forName(vanillaClassName, this.getClass());
 
 		BeanDescriptor<?> d = ebeanServer.getBeanDescriptor(vanillaClass);
 		if (d == null) {

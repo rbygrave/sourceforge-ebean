@@ -31,6 +31,7 @@ import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.config.ldap.LdapContextFactory;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManagerFactory;
@@ -42,7 +43,6 @@ import com.avaje.ebeaninternal.server.deploy.parse.DeployUtil;
 import com.avaje.ebeaninternal.server.expression.DefaultExpressionFactory;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.lib.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.lib.util.FactoryHelper;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.persist.DefaultPersister;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
@@ -170,7 +170,7 @@ public class InternalConfiguration {
 	    
         JsonValueAdapter va = new DefaultJsonValueAdapter();
 	    if (s != null){
-	        va = (JsonValueAdapter)FactoryHelper.create(s);
+	        va = (JsonValueAdapter)ClassUtil.newInstance(s, this.getClass());
 	    }
         return new DJsonContext(server, va, dfltPretty);
     }

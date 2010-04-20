@@ -19,16 +19,17 @@
  */
 package com.avaje.ebeaninternal.server.jdbc;
 
-import com.avaje.ebean.config.PstmtDelegate;
-import com.avaje.ebeaninternal.server.core.PstmtBatch;
-
-import javax.persistence.OptimisticLockException;
-import javax.persistence.PersistenceException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceException;
+
+import com.avaje.ebean.config.PstmtDelegate;
+import com.avaje.ebeaninternal.api.ClassUtil;
+import com.avaje.ebeaninternal.server.core.PstmtBatch;
 
 
 /**
@@ -62,7 +63,7 @@ public class OraclePstmtBatch implements PstmtBatch {
 		Method mSendBatch = null;
 
 		try {
-			Class<?> ops = Class.forName("oracle.jdbc.OraclePreparedStatement");
+			Class<?> ops = ClassUtil.forName("oracle.jdbc.OraclePreparedStatement");
 
 			mSetExecuteBatch = ops.getMethod("setExecuteBatch", new Class[] { int.class });
 			mSendBatch = ops.getMethod("sendBatch");

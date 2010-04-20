@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.common.BootupEbeanManager;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
 
@@ -150,8 +151,7 @@ public final class ShutdownManager {
 			String shutdownRunner = GlobalProperties.get("system.shutdown.runnable", null);
 			if (shutdownRunner != null) {
 				try {
-					Class<?> c = Class.forName(shutdownRunner);
-					Runnable r = (Runnable) c.newInstance();
+				    Runnable r = (Runnable)ClassUtil.newInstance(shutdownRunner);
 					r.run();
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, null, e);
