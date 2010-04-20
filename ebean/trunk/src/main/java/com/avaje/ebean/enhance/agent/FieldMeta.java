@@ -544,11 +544,17 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 			// id or OneToMany field etc 
 			mv.visitInsn(ICONST_0);			
 		}
+		
+        String preSetterMethod = "preSetter";
+        if (isMany()) {
+            preSetterMethod = "preSetterMany";
+        }
+		
 		mv.visitLdcInsn(fieldName);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitMethodInsn(INVOKEVIRTUAL, className, publicGetterName, getMethodDesc);
 		mv.visitVarInsn(iLoadOpcode, 1);	
-		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, "preSetter", "(ZLjava/lang/String;"+preSetterArgTypes+")Ljava/beans/PropertyChangeEvent;");
+		mv.visitMethodInsn(INVOKEVIRTUAL, C_INTERCEPT, preSetterMethod, "(ZLjava/lang/String;"+preSetterArgTypes+")Ljava/beans/PropertyChangeEvent;");
 		mv.visitVarInsn(ASTORE, 1+iPosition);
 		
 		Label l1 = new Label();
