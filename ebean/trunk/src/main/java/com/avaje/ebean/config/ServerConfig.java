@@ -28,10 +28,10 @@ import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.AdminLogging.LogFileSharing;
+import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.AdminLogging.LogLevelStmt;
 import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
-import com.avaje.ebean.AdminLogging.LogLevel;
-import com.avaje.ebean.AdminLogging.LogFileSharing;
 import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
@@ -40,6 +40,7 @@ import com.avaje.ebean.config.ldap.LdapContextFactory;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebeaninternal.api.ClassUtil;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -1388,7 +1389,7 @@ public class ServerConfig {
         }
 
         try {
-            Class<?> cls = Class.forName(classname);
+            Class<?> cls = ClassUtil.forName(classname, this.getClass());
             return (T) cls.newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1562,7 +1563,7 @@ public class ServerConfig {
             String cn = split[i].trim();
             if (cn.length() > 0 && !"class".equalsIgnoreCase(cn)) {
                 try {
-                    classes.add(Class.forName(cn));
+                    classes.add(ClassUtil.forName(cn, this.getClass()));
                 } catch (ClassNotFoundException e) {
                     String msg = "Error registering class [" + cn + "] from [" + classNames + "]";
                     throw new RuntimeException(msg, e);

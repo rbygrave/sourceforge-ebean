@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.lib.BackgroundRunnable;
 import com.avaje.ebeaninternal.server.lib.BackgroundThread;
 
@@ -107,8 +108,7 @@ public class DataSourceManager implements DataSourceNotify {
 			
 		} else {
 		    try {
-		        Class<?> claz = Class.forName(alertCN);
-		        return (DataSourceAlertListener)claz.newInstance();
+		        return (DataSourceAlertListener)ClassUtil.newInstance(alertCN, this.getClass());
 		        
 		    } catch (Exception ex){
 		    	throw new DataSourceException(ex);

@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
 
@@ -152,9 +153,7 @@ public class SocketListener implements Runnable {
             throw new IOException(msg);
         }
         try {
-            Class<?> hClass = Class.forName(handlerName);
-            ConnectionProcessor h = (ConnectionProcessor) hClass.newInstance();
-            return h;
+            return (ConnectionProcessor)ClassUtil.newInstance(handlerName, this.getClass());
 
         } catch (Exception e) {
         	logger.log(Level.SEVERE, null, e);
@@ -175,8 +174,7 @@ public class SocketListener implements Runnable {
 
     public void registerRequestHandler(String serviceKey, String requestHandlerClassName) {
         try {
-            Class<?> c = Class.forName(requestHandlerClassName);
-            ConnectionProcessor requestHandler = (ConnectionProcessor) c.newInstance();
+            ConnectionProcessor requestHandler = (ConnectionProcessor)ClassUtil.newInstance(requestHandlerClassName, this.getClass());
             registerRequestHandler(serviceKey, requestHandler);
         } catch (Exception e) {
             String msg = "Error creating RequestHandler [" + serviceKey + "]["

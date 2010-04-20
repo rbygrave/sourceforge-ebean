@@ -23,12 +23,13 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.enhance.agent.EnhanceConstants;
+import com.avaje.ebeaninternal.api.ClassUtil;
 
 /**
  * Creates and caches the dynamically generated subclasses.
@@ -38,6 +39,8 @@ import com.avaje.ebean.enhance.agent.EnhanceConstants;
  * </p>
  */
 public class SubClassManager implements EnhanceConstants {
+
+    private static final Logger logger = Logger.getLogger(SubClassManager.class.getName());
 
 	private final ConcurrentHashMap<String,Class<?>> clzMap;
 
@@ -56,6 +59,9 @@ public class SubClassManager implements EnhanceConstants {
 	@SuppressWarnings("unchecked")
 	public SubClassManager(ServerConfig serverConfig) {
 		
+	    String s = serverConfig.getProperty("subClassManager.preferContextClassloader", "true");
+	    final boolean preferContext = "true".equalsIgnoreCase(s);
+	    
 		this.serverName = serverConfig.getName();
 		this.logLevel =  serverConfig.getEnhanceLogLevel();
 		this.clzMap = new ConcurrentHashMap<String, Class<?>>();
@@ -64,7 +70,8 @@ public class SubClassManager implements EnhanceConstants {
 			subclassFactory = (SubClassFactory) AccessController
 					.doPrivileged(new PrivilegedExceptionAction() {
 						public Object run() {
-							ClassLoader cl = Ebean.class.getClassLoader();
+						    ClassLoader cl = ClassUtil.getClassLoader(this.getClass(), preferContext);
+							logger.info("SubClassFactory parent ClassLoader ["+cl.getClass().getName()+"]");
 							return new SubClassFactory(cl, logLevel);
 						}
 					});
@@ -88,7 +95,7 @@ public class SubClassManager implements EnhanceConstants {
 
 		synchronized (this) {
 			String superName = SubClassUtil.getSuperClassName(name);	
-			Class<?> clz = (Class<?>) clzMap.get(superName);
+			Class<?> clz = clzMap.get(superName);
 			if (clz == null) {
 				clz = createClass(superName);
 				clzMap.put(superName, clz);
@@ -101,7 +108,7 @@ public class SubClassManager implements EnhanceConstants {
 
 		try {
 
-			Class<?> superClass = Class.forName(name);
+		    Class<?> superClass = Class.forName(name, true, subclassFactory.getParent());
 
 			return subclassFactory.create(superClass, serverName);
 

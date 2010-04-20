@@ -31,6 +31,7 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.config.DataSourceConfig;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.lib.cron.CronManager;
 
 /**
@@ -218,8 +219,7 @@ public class DataSourcePool implements DataSource {
             return null;
         }
         try {
-            Class<?> cls = Class.forName(cn);
-            return (DataSourcePoolListener) cls.newInstance();
+            return (DataSourcePoolListener)ClassUtil.newInstance(cn, this.getClass());
         } catch (Exception e) {
             throw new DataSourceException(e);
         }
@@ -229,7 +229,7 @@ public class DataSourcePool implements DataSource {
 
         // Ensure database driver is loaded
         try {
-            Class.forName(this.databaseDriver);
+            ClassUtil.forName(this.databaseDriver, this.getClass());
         } catch (Throwable e) {
             throw new PersistenceException("Problem loading Database Driver [" + this.databaseDriver + "]: "
                     + e.getMessage(), e);

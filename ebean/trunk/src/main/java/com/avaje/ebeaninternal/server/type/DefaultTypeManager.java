@@ -55,6 +55,7 @@ import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.CompoundTypeProperty;
 import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.core.BootupClasses;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.type.reflect.CheckImmutable;
@@ -621,22 +622,17 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * register the Joda data types.
 	 */
 	protected void initialiseJodaTypes() {
-		try {
-			// detect if Joda classes are in the classpath
-			Class<?> jodaDateTime = Class.forName("org.joda.time.LocalDateTime");
-			if (jodaDateTime != null){
-				// Joda classes are in the classpath so register the types
-				String msg = "Registering Joda data types";
-				logger.log(Level.INFO, msg);
-				typeMap.put(LocalDateTime.class, new ScalarTypeJodaLocalDateTime());				
-				typeMap.put(LocalDate.class, new ScalarTypeJodaLocalDate());				
-				typeMap.put(LocalTime.class, new ScalarTypeJodaLocalTime());				
-				typeMap.put(DateTime.class, new ScalarTypeJodaDateTime());				
-				typeMap.put(DateMidnight.class, new ScalarTypeJodaDateMidnight());				
-			}
-		} catch (ClassNotFoundException e) {
-			String msg = "Joda not in classpath so not registering types";
-			logger.log(Level.FINE, msg);
+		
+		// detect if Joda classes are in the classpath
+		if (ClassUtil.isPresent("org.joda.time.LocalDateTime", this.getClass())){
+			// Joda classes are in the classpath so register the types
+			String msg = "Registering Joda data types";
+			logger.log(Level.INFO, msg);
+			typeMap.put(LocalDateTime.class, new ScalarTypeJodaLocalDateTime());				
+			typeMap.put(LocalDate.class, new ScalarTypeJodaLocalDate());				
+			typeMap.put(LocalTime.class, new ScalarTypeJodaLocalTime());				
+			typeMap.put(DateTime.class, new ScalarTypeJodaDateTime());				
+			typeMap.put(DateMidnight.class, new ScalarTypeJodaDateMidnight());				
 		}
 	}
 	

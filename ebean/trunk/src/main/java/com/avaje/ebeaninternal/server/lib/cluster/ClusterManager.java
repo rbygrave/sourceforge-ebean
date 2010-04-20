@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.net.ConnectionProcessor;
 import com.avaje.ebeaninternal.server.net.Endpoint;
@@ -70,8 +71,7 @@ public class ClusterManager {
             
             String broadcastCn = GlobalProperties.get("cluster.broadcast", null);
             if (broadcastCn != null){
-                Class<?> cls = Class.forName(broadcastCn);
-                broadcast = (Broadcast)cls.newInstance();
+                broadcast = (Broadcast)ClassUtil.newInstance(broadcastCn, this.getClass());
             } else {
                 broadcast = new SocketBroadcaster();
             }

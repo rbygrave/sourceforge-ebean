@@ -27,6 +27,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.common.BootupEbeanManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebeaninternal.api.ClassUtil;
 
 /**
  * Creates EbeanServer instances.
@@ -108,8 +109,7 @@ public class EbeanServerFactory {
 		}
 		try {
 			// use a client side implementation?
-			Class<?> cz = Class.forName(implClassName);
-			return (BootupEbeanManager) cz.newInstance();
+		    return (BootupEbeanManager)ClassUtil.newInstance(implClassName);
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}

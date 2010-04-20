@@ -28,6 +28,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 
 /**
  * Http implementation of NetClient.
@@ -66,8 +67,7 @@ public class HttpClient implements IoConnectionFactory {
         String hnv = GlobalProperties.get("avaje.httpclient.hostnameverifier", null);
         if (hnv != null){
             try {
-                Class<?> clz = Class.forName(hnv);
-                verifier = (HostnameVerifier)clz.newInstance();
+                verifier = (HostnameVerifier)ClassUtil.newInstance(hnv, this.getClass());
             } catch (Exception ex){
                 throw new RuntimeException(ex);
             }

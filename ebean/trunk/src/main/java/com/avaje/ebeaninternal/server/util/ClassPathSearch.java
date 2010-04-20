@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 
 /**
  * Can search the class path for classes using a ClassPathSearchMatcher. A
@@ -83,8 +84,7 @@ public class ClassPathSearch {
 			if (cn != null){
 				// use a user defined classPathReader
 				logger.info("Using ["+cn+"] to read the searchable class path");
-				Class<?> cls = Class.forName(cn);
-				classPathReader = (ClassPathReader)cls.newInstance();
+				classPathReader = (ClassPathReader)ClassUtil.newInstance(cn, this.getClass());
 			}
 			
 			classPaths = classPathReader.readPath(classLoader);

@@ -1248,6 +1248,18 @@ public class ClassWriter implements ClassVisitor {
         return result.intVal;
     }
 
+    protected Class<?> classForName(String name) throws ClassNotFoundException {
+        try {
+            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            if (contextClassLoader != null) {
+                return Class.forName(name, false, contextClassLoader);
+            }
+        } catch (Throwable e) {
+            // ignore
+        }
+        return Class.forName(name, false, getClass().getClassLoader());
+    }
+    
     /**
      * Returns the common super type of the two given types. The default
      * implementation of this method <i>loads<i> the two given classes and uses
@@ -1266,8 +1278,8 @@ public class ClassWriter implements ClassVisitor {
     {
         Class c, d;
         try {
-            c = Class.forName(type1.replace('/', '.'));
-            d = Class.forName(type2.replace('/', '.'));
+            c = classForName(type1.replace('/', '.'));
+            d = classForName(type2.replace('/', '.'));
         } catch (Exception e) {
             throw new RuntimeException(e.toString());
         }

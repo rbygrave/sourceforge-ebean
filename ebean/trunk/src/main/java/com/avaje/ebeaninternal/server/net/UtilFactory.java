@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.net;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.ClassUtil;
 
 /**
  * Creates various implementation objects for CommandProcessor.
@@ -41,10 +42,7 @@ public class UtilFactory {
             return null;
         }
         try {
-            Class<?> cls = Class.forName(cn);
-            Authenticate auth = (Authenticate)cls.newInstance();
-            
-            return auth;
+            return (Authenticate)ClassUtil.newInstance(cn, this.getClass());
             
         } catch (Exception ex){
             throw new PersistenceException(ex);
@@ -62,8 +60,7 @@ public class UtilFactory {
         }
         
         try {
-            Class<?> cls = Class.forName(cn);
-            return (CommandSecurity)cls.newInstance();            
+            return (CommandSecurity)ClassUtil.newInstance(cn, this.getClass());
             
         } catch (Exception ex){
             throw new PersistenceException(ex);
@@ -80,10 +77,7 @@ public class UtilFactory {
             return null;
         }
         try {
-            Class<?> cls = Class.forName(cn);
-            CommandContextManager cm = (CommandContextManager)cls.newInstance();
-            
-            return cm;
+            return (CommandContextManager)ClassUtil.newInstance(cn, this.getClass());
             
         } catch (Exception ex){
             throw new PersistenceException(ex);
