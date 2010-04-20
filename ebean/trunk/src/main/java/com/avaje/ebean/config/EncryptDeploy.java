@@ -35,22 +35,22 @@ public class EncryptDeploy {
     /**
      * Use to define that no encryption should be used. 
      */
-    public static final EncryptDeploy NO_ENCRYPT = new EncryptDeploy(Mode.NO_ENCRYPT, true, 0);
+    public static final EncryptDeploy NO_ENCRYPT = new EncryptDeploy(Mode.MODE_NO_ENCRYPT, true, 0);
     
     /**
      * Use to define that the Encrypt annotation should be used to control encryption.
      */
-    public static final EncryptDeploy ANNOTATION = new EncryptDeploy(Mode.ANNOTATION, true, 0);
+    public static final EncryptDeploy ANNOTATION = new EncryptDeploy(Mode.MODE_ANNOTATION, true, 0);
     
     /**
      * Use to define that Encryption should be used and String types should use DB encryption.
      */
-    public static final EncryptDeploy ENCRYPT_DB = new EncryptDeploy(Mode.ENCRYPT, true, 0);
+    public static final EncryptDeploy ENCRYPT_DB = new EncryptDeploy(Mode.MODE_ENCRYPT, true, 0);
     
     /**
      * Use to define that Java client Encryption should be used (rather than DB encryption).
      */
-    public static final EncryptDeploy ENCRYPT_CLIENT = new EncryptDeploy(Mode.ENCRYPT, false, 0);
+    public static final EncryptDeploy ENCRYPT_CLIENT = new EncryptDeploy(Mode.MODE_ENCRYPT, false, 0);
     
     /**
      * The Encryption mode.
@@ -60,18 +60,18 @@ public class EncryptDeploy {
          * Encrypt the property using DB encryption or Java client encryption depending on 
          * the type and dbEncryption flag.
          */
-        ENCRYPT,
+        MODE_ENCRYPT,
         
         /**
          * No encryption is used, even if there is an Encryption annotation on the property.
          */
-        NO_ENCRYPT,
+        MODE_NO_ENCRYPT,
         
         /**
          * Use encryption options defined by the Encryption annotation on the property.
          * If no annotation is on the property it is not encrypted.
          */
-        ANNOTATION
+        MODE_ANNOTATION
     }
 
     private final Mode mode;
