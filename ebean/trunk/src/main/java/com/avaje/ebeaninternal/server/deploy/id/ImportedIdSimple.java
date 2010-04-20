@@ -63,7 +63,13 @@ public final class ImportedIdSimple implements ImportedId, Comparable<ImportedId
         return importedIds;
     }
     
-	public int compareTo(ImportedIdSimple other) {	    	    
+	@Override
+    public boolean equals(Object obj) {
+        // remove FindBugs warning
+        return obj == this;
+    }
+
+    public int compareTo(ImportedIdSimple other) {	    	    
         return (position < other.position ? -1 : (position == other.position ? 0 : 1));
     }
 

@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
-import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
@@ -58,6 +57,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.IntersectionRow;
+import com.avaje.ebeaninternal.server.deploy.ManyType;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.ldap.DefaultLdapPersister;
 import com.avaje.ebeaninternal.server.ldap.LdapPersistBeanRequest;
@@ -601,7 +601,7 @@ public final class DefaultPersister implements Persister {
 			// if a map, then we get the key value and
 			// set it to the appropriate property on the
 			// detail bean before we save it
-			boolean isMap = Query.Type.MAP.equals(prop.getManyType());
+			boolean isMap = ManyType.JAVA_MAP.equals(prop.getManyType());
 			Object mapKeyValue = null;
 			boolean saveSkippable = prop.isSaveRecurseSkippable();
 			boolean skipSavingThisBean = false;

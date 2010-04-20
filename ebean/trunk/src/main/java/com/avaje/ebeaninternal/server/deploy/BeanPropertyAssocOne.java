@@ -120,14 +120,17 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                 importedId = createImportedId(this, targetDescriptor, tableJoin);
             } else {
                 exportedProperties = createExported();
-                String s = "delete from "+targetDescriptor.getBaseTable()+" where ";
+                StringBuilder sb = new StringBuilder(50);
+                sb.append("delete from ").append(targetDescriptor.getBaseTable());
+                sb.append(" where ");
                 for (int i = 0; i < exportedProperties.length; i++) {
                     if (i > 0){
-                        s += " and ";
+                        sb.append(" and ");
                     }
-                    s += exportedProperties[i].getForeignDbColumn()+" = ?";
+                    sb.append(exportedProperties[i].getForeignDbColumn());
+                    sb.append(" = ?");
                 }
-                deleteByParentIdSql = s;
+                deleteByParentIdSql = sb.toString();
             }
         }
     }
@@ -376,7 +379,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     /**
      * Find the matching foreignDbColumn for a given local property.
      */
-    private ExportedProperty findMatch(boolean embedded,BeanProperty prop) {
+    private ExportedProperty findMatch(boolean embeddedProp,BeanProperty prop) {
 
         String matchColumn = prop.getDbColumn();
 
@@ -388,7 +391,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
             if (matchColumn.equalsIgnoreCase(matchTo)) {
                 String foreignCol = columns[i].getForeignDbColumn();
-                return new ExportedProperty(embedded, foreignCol, prop);
+                return new ExportedProperty(embeddedProp, foreignCol, prop);
             }
         }
 

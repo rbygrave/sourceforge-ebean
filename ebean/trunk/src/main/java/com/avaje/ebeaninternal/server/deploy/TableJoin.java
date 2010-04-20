@@ -125,11 +125,12 @@ public final class TableJoin {
 
 		
     public String toString() {
-        String s =  type + " " + table + " ";
+        StringBuilder sb = new StringBuilder(30);
+        sb.append(type).append(" ").append(table).append(" ");
         for (int i = 0; i < columns.length; i++) {
-			s += columns[i]+" ";
+			sb.append(columns[i]).append(" ");
 		}
-        return s;
+        return sb.toString();
     }
 
     public void appendSelect(DbSqlContext ctx) {

@@ -43,15 +43,11 @@ import com.avaje.ebean.text.PathProperties;
  * </p>
  * 
  * <pre class="code">
- *  // find some customers ...
- *  
- * List&lt;Customer&gt; list = Ebean.find(Customer.class)
- *     .select(&quot;id, name, status, shippingAddress&quot;)
- *     .fetch(&quot;billingAddress&quot;,&quot;line1, city&quot;)
- *     .fetch(&quot;billingAddress.country&quot;, &quot;*&quot;)
- *     .fetch(&quot;contacts&quot;, &quot;firstName,email&quot;)
- *     .order().desc(&quot;id&quot;)
- *     .findList();
+ * // find some customers ...
+ * 
+ * List&lt;Customer&gt; list = Ebean.find(Customer.class).select(&quot;id, name, status, shippingAddress&quot;).fetch(&quot;billingAddress&quot;,
+ *         &quot;line1, city&quot;).fetch(&quot;billingAddress.country&quot;, &quot;*&quot;).fetch(&quot;contacts&quot;, &quot;firstName,email&quot;).order().desc(&quot;id&quot;)
+ *         .findList();
  * 
  * JsonContext json = Ebean.createJsonContext();
  * 
@@ -76,7 +72,7 @@ import com.avaje.ebean.text.PathProperties;
  * 
  * });
  * 
- *  // output as a JSON string with pretty formatting
+ * // output as a JSON string with pretty formatting
  * String s = json.toJsonString(list, true, writeOptions);
  * 
  * </pre>
@@ -89,13 +85,32 @@ import com.avaje.ebean.text.PathProperties;
 public class JsonWriteOptions {
 
     protected String callback;
-    
+
     protected JsonValueAdapter valueAdapter;
 
-    protected Map<String, JsonWriteBeanVisitor<?>> visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>();
+    protected Map<String, JsonWriteBeanVisitor<?>> visitorMap;
 
-    protected PathProperties pathProperties = new PathProperties();
-    
+    protected PathProperties pathProperties;
+
+    /**
+     * This creates and returns a copy of these options.
+     * <p>
+     * Note that it assumes that the JsonWriteBeanVisitor (if defined) are
+     * immutable and any JsonWriteBeanVisitor instances are shared between the
+     * original and the copy.
+     * </p>
+     */
+    public JsonWriteOptions copy() {
+        JsonWriteOptions copy = new JsonWriteOptions();
+        copy.callback = callback;
+        copy.valueAdapter = valueAdapter;
+        copy.pathProperties = pathProperties;
+        if (visitorMap != null) {
+            copy.visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>(visitorMap);
+        }
+        return copy;
+    }
+
     /**
      * Return a JSONP callback function.
      */
@@ -137,6 +152,9 @@ public class JsonWriteOptions {
      * Register a JsonWriteBeanVisitor for the given path.
      */
     public JsonWriteOptions setPathVisitor(String path, JsonWriteBeanVisitor<?> visitor) {
+        if (visitorMap == null) {
+            visitorMap = new HashMap<String, JsonWriteBeanVisitor<?>>();
+        }
         visitorMap.put(path, visitor);
         return this;
     }
@@ -148,6 +166,9 @@ public class JsonWriteOptions {
      *            The set of properties to output
      */
     public JsonWriteOptions setPathProperties(String path, Set<String> propertiesToInclude) {
+        if (pathProperties == null) {
+            pathProperties = new PathProperties();
+        }
         pathProperties.put(path, propertiesToInclude);
         return this;
     }
@@ -205,14 +226,14 @@ public class JsonWriteOptions {
 
     /**
      * Set the Map of properties to include by path.
-     */    
+     */
     public void setPathProperties(PathProperties pathProperties) {
         this.pathProperties = pathProperties;
     }
-    
+
     /**
      * Return the properties to include by path.
-     */    
+     */
     public PathProperties getPathProperties() {
         return pathProperties;
     }

@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,9 +37,11 @@ import java.util.List;
  * 
  * @author rbygrave
  */
-public final class OrderBy<T> {
+public final class OrderBy<T> implements Serializable {
 
-	private Query<T> query;
+    private static final long serialVersionUID = 9157089257745730539L;
+
+    private transient Query<T> query;
 
 	private List<Property> list;
 
@@ -199,9 +202,11 @@ public final class OrderBy<T> {
 	/**
 	 * A property and its ascending descending order.
 	 */
-	public static final class Property {
+	public static final class Property implements Serializable {
 
-		private String property;
+        private static final long serialVersionUID = 1546009780322478077L;
+
+        private String property;
 
 		private boolean ascending;
 

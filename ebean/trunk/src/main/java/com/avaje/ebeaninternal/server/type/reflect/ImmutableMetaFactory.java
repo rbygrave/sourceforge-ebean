@@ -212,8 +212,13 @@ public class ImmutableMetaFactory {
             this.constructor = constructor;
         }
         
-        public int compareTo(ScoreConstructor o) {
-            
+        @Override
+        public boolean equals(Object obj) {
+            // remove FindBugs warning
+            return obj == this;
+        }
+        
+        public int compareTo(ScoreConstructor o) {    
             return (score<o.score ? -1 : (score==o.score ? 0 : 1));
         }
         

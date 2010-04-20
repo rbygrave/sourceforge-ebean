@@ -203,11 +203,12 @@ public class InvalidValue implements Serializable {
 		}
 
 		// its a holder of a list of errors for a bean
-		String s = "\r\nCHILDREN[" + children.length + "]";// "bean "+beanType;
+		StringBuilder sb = new StringBuilder(50);
+		sb.append("\r\nCHILDREN[").append(children.length).append("]");
 		for (int i = 0; i < children.length; i++) {
-			s = s + children[i].toString() + ", ";
+			sb.append(children[i].toString()).append(", ");
 		}
-		return s;
+		return sb.toString();
 	}
 
 	/**

@@ -96,6 +96,7 @@ public class TestEncrypt extends TestCase {
                     .setParameter("d", "modde%")
                 .findList();
             
+            Assert.assertNotNull(list);
         }
     }
     

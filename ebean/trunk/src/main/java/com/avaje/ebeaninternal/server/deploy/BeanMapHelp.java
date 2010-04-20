@@ -14,7 +14,6 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.common.BeanMap;
-import com.avaje.ebean.common.BeanSet;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
@@ -66,7 +65,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 		if(mapKey == null){
 			mapKey = many.getMapKey();
 		}
-		BeanProperty beanProperty = targetDescriptor.getBeanProperty(mapKey);
+		BeanProperty beanProp = targetDescriptor.getBeanProperty(mapKey);
 		
 		if (bc instanceof BeanMap<?,?>){
     		BeanMap<Object, Object> bm = (BeanMap<Object, Object>)bc;
@@ -75,10 +74,10 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
     			actualMap = new LinkedHashMap<Object, Object>();
     			bm.setActualMap(actualMap);
     		}
-    		return new Adder(beanProperty, actualMap);
+    		return new Adder(beanProp, actualMap);
 		
 		} else if (bc instanceof Map<?,?>) {
-            return new Adder(beanProperty, (Map<Object, Object>)bc);		    
+            return new Adder(beanProp, (Map<Object, Object>)bc);		    
 		
 		} else {
             throw new RuntimeException("Unhandled type "+bc);
@@ -111,7 +110,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
         Map<Object,Object> m = ctx.isVanillaMode() ? new LinkedHashMap() : new BeanMap();
         
         Map<?,?> sourceMap = (Map<?,?>)source;
-        if (source instanceof BeanSet<?> == false){
+        if (source instanceof BeanMap<?,?> == false){
             for (Entry<?, ?> entry: sourceMap.entrySet()) {
                 m.put(entry.getKey(), entry.getValue());
             }

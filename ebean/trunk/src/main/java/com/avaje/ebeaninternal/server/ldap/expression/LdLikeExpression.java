@@ -27,11 +27,9 @@ class LdLikeExpression extends LdAbstractExpression {
         String escapedValue;
         if (value == null) {
             escapedValue = "*";
-        } else if (value instanceof String) {
-            escapedValue = LdEscape.forLike(((String) value));
         } else {
-            escapedValue = LdEscape.forLike((value.toString()));
-        }
+            escapedValue = LdEscape.forLike(value);
+        } 
 
         String parsed = request.parseDeploy(propertyName);
 
