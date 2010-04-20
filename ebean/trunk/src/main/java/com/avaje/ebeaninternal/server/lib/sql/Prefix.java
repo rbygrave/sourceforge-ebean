@@ -102,11 +102,13 @@ public class Prefix {
 		Random r = new Random();
 		if (msg.length() < len) {
 			int max = len - msg.length();
-			msg = msg + ":";
+			StringBuilder sb = new StringBuilder();
+			sb.append(msg).append(":");
 			for (int i = 1; i < max; i++) {
 				int bc = r.nextInt(122 - 48);
-				msg = msg + Character.toString((char) (bc + 48));
+				sb.append(Character.toString((char) (bc + 48)));
 			}
+			return sb.toString();
 		}
 		return msg;
 	}
