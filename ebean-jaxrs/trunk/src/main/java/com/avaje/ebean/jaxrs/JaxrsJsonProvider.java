@@ -47,110 +47,133 @@ import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonWriteOptions;
 
+/**
+ * A JAX-RS provider for JSON Marshalling and Unmarshalling.
+ * <p>
+ * This provider is aware of Ebean ORM issues such as partial objects etc and
+ * can handle the extra options for customising the JSON output via
+ * MarshalOptions, JsonWriteRequest and JsonWriteOptions.
+ * </p>
+ * 
+ * @author rbygrave
+ * 
+ */
 @Provider
-@Consumes({MediaType.APPLICATION_JSON, "text/json"})
-@Produces({MediaType.APPLICATION_JSON, "text/json"})
+@Consumes( { MediaType.APPLICATION_JSON, "text/json" })
+@Produces( { MediaType.APPLICATION_JSON, "text/json" })
 public class JaxrsJsonProvider implements MessageBodyWriter<Object>, MessageBodyReader<Object> {
 
     protected final JsonContext jsonContext;
-    
+
     protected final boolean defaultPretty;
-    
+
+    /**
+     * Construct with a specific JsonContext.
+     */
     public JaxrsJsonProvider(JsonContext jsonContext, boolean pretty) {
         this.jsonContext = jsonContext;
         this.defaultPretty = pretty;
     }
 
+    /**
+     * Construct using the default JsonContext.
+     */
     public JaxrsJsonProvider() {
         this.defaultPretty = GlobalProperties.getBoolean("ebean.json.pretty", true);
         this.jsonContext = Ebean.createJsonContext();
     }
-    
+
     public long getSize(Object o, Class<?> type, Type genericType, Annotation[] anns, MediaType mediaType) {
         return -1;
     }
 
+    /**
+     * Return true if this type can be processed by this provider. 
+     */
     protected boolean isReadWriteable(Class<?> type, Type genericType, MediaType mediaType) {
 
-        if (isJsonMediaType(mediaType)){
+        if (isJsonMediaType(mediaType)) {
 
-            if (type.equals(JsonWriteRequest.class)){
+            if (type.equals(JsonWriteRequest.class)) {
                 return true;
             }
 
-            if (type.equals(BeanList.class)){
+            if (type.equals(BeanList.class)) {
                 return true;
             }
-            
+
             return jsonContext.isSupportedType(genericType);
         }
         return false;
     }
-    
+
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] anns, MediaType mediaType) {
-        
+
         return isReadWriteable(type, genericType, mediaType);
     }
 
-    
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] anns, MediaType mediaType) {
 
         return isReadWriteable(type, genericType, mediaType);
     }
-    
+
     public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] anns, MediaType mediaType,
             MultivaluedMap<String, Object> valueMap, OutputStream os) throws IOException, WebApplicationException {
 
         Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        
+
         boolean pretty = defaultPretty;
         Object payload = o;
         String requestCallback = null;
         JsonWriteOptions options = null;
-        
-        if (o instanceof JsonWriteRequest){
+
+        if (o instanceof JsonWriteRequest) {
             // Using explicit JsonWriteRequest
-            JsonWriteRequest req = (JsonWriteRequest)o;
+            JsonWriteRequest req = (JsonWriteRequest) o;
             options = req.getOptions();
             payload = req.getObject();
             Boolean p = req.getPretty();
-            if (p != null){
+            if (p != null) {
                 pretty = p.booleanValue();
             }
         } else {
             // Check MarshalOptions ...
             options = MarshalOptions.removeJsonWriteOptions();
             PathProperties pathProperties = MarshalOptions.removePathProperties();
-            if (options == null){
-                if (pathProperties != null){
+            if (options == null) {
+                if (pathProperties != null) {
                     // only PathProperties have been set
                     options = new JsonWriteOptions();
                     options.setPathProperties(pathProperties);
                 }
             } else {
-                if (options.getPathProperties() == null && pathProperties != null){
+                if (options.getPathProperties() == null && pathProperties != null) {
                     // merge the PathProperties and JsonWriteOptions that were
                     // both set independently into MarshalOptions
-                    
+
                     // create a copy of the original JsonWriteOptions
                     options = options.copy();
-                    // merge in the PathProperties that were set via MarshalOptions
+                    // merge in the PathProperties that were set via
+                    // MarshalOptions
                     options.setPathProperties(pathProperties);
                 }
             }
         }
-        
+
         jsonContext.toJsonWriter(payload, writer, pretty, options, requestCallback);
         writer.flush();
     }
 
     public Object readFrom(Class<Object> type, Type genericType, Annotation[] anns, MediaType mediaType,
             MultivaluedMap<String, String> valueMap, InputStream is) throws IOException, WebApplicationException {
-        
+
         Reader reader = new BufferedReader(new InputStreamReader(is));
-        return jsonContext.toObject(genericType, reader, null);        
+        return jsonContext.toObject(genericType, reader, null);
     }
-    
+
+    /**
+     * Return true if this is a JSON media type.
+     */
     protected boolean isJsonMediaType(MediaType mediaType) {
 
         if (mediaType != null) {
@@ -160,5 +183,5 @@ public class JaxrsJsonProvider implements MessageBodyWriter<Object>, MessageBody
             return true;
         }
     }
-    
+
 }
