@@ -25,11 +25,16 @@ package com.avaje.ebean.text.json;
  * <p>
  * You can use this to add raw JSON content via {@link JsonWriter}.
  * </p>
+ * <p>
+ * You register a JsonWriteBeanVisitor with {@link JsonWriteOptions}.
+ * </p>
  * 
  * @author rbygrave
  * 
  * @param <T>
  *            the type of entity bean
+ *            
+ * @see JsonWriteOptions
  */
 public interface JsonWriteBeanVisitor<T> {
 
