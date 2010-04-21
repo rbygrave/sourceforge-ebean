@@ -35,16 +35,31 @@ public class LoaderAwareClassWriter extends ClassWriter {
     
     private final ClassLoader classLoader;
     
+    private final ClassWriterForName classWriterForName;
+    
     /**
      * Construct with flags and a ClassLoader to use for classForName().
      */
-    public LoaderAwareClassWriter(int flags, ClassLoader classLoader) {
+    public LoaderAwareClassWriter(int flags, ClassLoader classLoader, ClassWriterForName classWriterForName) {
         super(flags);
         this.classLoader = classLoader;
+        this.classWriterForName = classWriterForName;
     }
     
     @Override
     protected Class<?> classForName(String name) throws ClassNotFoundException {
+        
+        if (classWriterForName != null){
+            return classWriterForName.classForName(name, classLoader);
+        } else {
+            return localClassForName(name);
+        }
+    }
+    
+    /**
+     * Normal implementation to find the Class given it's name.
+     */
+    protected Class<?> localClassForName(String name) throws ClassNotFoundException {
         
         ClassNotFoundException notFound = null;
         try {

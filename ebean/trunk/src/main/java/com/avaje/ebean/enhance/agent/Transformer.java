@@ -13,225 +13,235 @@ import com.avaje.ebean.enhance.asm.ClassWriter;
 /**
  * A Class file Transformer that enhances entity beans.
  * <p>
- * This is used as both a javaagent or via an ANT task (or other off line approach). 
+ * This is used as both a javaagent or via an ANT task (or other off line
+ * approach).
  * </p>
  */
 public class Transformer implements ClassFileTransformer {
 
-	public static void premain(String agentArgs, Instrumentation inst) {
+    public static void premain(String agentArgs, Instrumentation inst) {
 
-		Transformer t = new Transformer("", agentArgs);
-		inst.addTransformer(t);
+        Transformer t = new Transformer("", agentArgs);
+        inst.addTransformer(t);
 
-		if (t.getLogLevel() > 0) {
-			System.out.println("premain loading Transformer args:" + agentArgs);
-		}
-	}
+        if (t.getLogLevel() > 0) {
+            System.out.println("premain loading Transformer args:" + agentArgs);
+        }
+    }
 
-	private static final int CLASS_WRITER_COMPUTEFLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
+    private static final int CLASS_WRITER_COMPUTEFLAGS = ClassWriter.COMPUTE_FRAMES + ClassWriter.COMPUTE_MAXS;
 
+    private final EnhanceContext enhanceContext;
 
-	private final EnhanceContext enhanceContext;
+    private boolean performDetect;
+    private boolean transformTransactional;
+    private boolean transformEntityBeans;
 
-	private boolean performDetect;
-	private boolean transformTransactional;
-	private boolean transformEntityBeans;
-	
-	public Transformer(String extraClassPath, String agentArgs) {
-		this(parseClassPaths(extraClassPath), agentArgs);
-	}
-	
-	public Transformer(URL[] extraClassPath, String agentArgs) {
-		this(new ClassPathClassBytesReader(extraClassPath), agentArgs);
-	}
+    private ClassWriterForName classWriterForName;
 
-	public Transformer(ClassBytesReader r, String agentArgs) {
-		this.enhanceContext = new EnhanceContext(r, false, agentArgs);
-		this.performDetect = enhanceContext.getPropertyBoolean("detect", true);
-		this.transformTransactional = enhanceContext.getPropertyBoolean("transactional", true);
-		this.transformEntityBeans = enhanceContext.getPropertyBoolean("entity", true);
-	}
+    public Transformer(String extraClassPath, String agentArgs) {
+        this(parseClassPaths(extraClassPath), agentArgs);
+    }
 
-	
-	/**
-	 * Change the logout to something other than system out.
-	 */
-	public void setLogout(PrintStream logout){
-		this.enhanceContext.setLogout(logout);
-	}
-	
-	public void log(int level, String msg){
-		enhanceContext.log(level, msg);
-	}
-	
-	public int getLogLevel() {
-		return enhanceContext.getLogLevel();
-	}
+    public Transformer(URL[] extraClassPath, String agentArgs) {
+        this(new ClassPathClassBytesReader(extraClassPath), agentArgs);
+    }
 
-	
-	public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-			ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public Transformer(ClassBytesReader r, String agentArgs) {
+        this.enhanceContext = new EnhanceContext(r, false, agentArgs);
+        this.performDetect = enhanceContext.getPropertyBoolean("detect", true);
+        this.transformTransactional = enhanceContext.getPropertyBoolean("transactional", true);
+        this.transformEntityBeans = enhanceContext.getPropertyBoolean("entity", true);
+    }
 
-		try {
+    /**
+     * Set a ClassWriterForName for custom handling of the Class.forName(...)
+     * used in LoaderAwareClassWriter.
+     * <p>
+     * Typically this is set by external frameworks like Play which
+     * programmatically invoke Ebean's enhancement.
+     * </p>
+     */
+    public void setClassWriterForName(ClassWriterForName classWriterForName) {
+        this.classWriterForName = classWriterForName;
+    }
 
-			// ignore JDK and JDBC classes etc  
-			if (enhanceContext.isIgnoreClass(className)) {
-				return null;
-			}
+    /**
+     * Change the logout to something other than system out.
+     */
+    public void setLogout(PrintStream logout) {
+        this.enhanceContext.setLogout(logout);
+    }
 
-			ClassAdapterDetectEnhancement detect = null;
-			
-			if (performDetect){
-				enhanceContext.log(5, "performing detection on "+className);
-				detect = detect(loader, classfileBuffer);
-			}
-			
-			if (detect == null){
-				// default only looks entity beans to enhance
-				enhanceContext.log(1, "no detection so enhancing entity "+className);
-				return entityEnhancement(loader, classfileBuffer);
-			} 
-			
-			if (transformEntityBeans && detect.isEntity()){
-				
-				if (detect.isEnhancedEntity()){
-					detect.log(1, "already enhanced entity");
-					
-				} else {
-					// 
-					detect.log(2, "performing entity transform");
-					return entityEnhancement(loader, classfileBuffer);
-				}
-			}
-			
-			if (transformTransactional && detect.isTransactional()){
-				
-				if (detect.isEnhancedTransactional()){
-					detect.log(1, "already enhanced transactional");
+    public void log(int level, String msg) {
+        enhanceContext.log(level, msg);
+    }
 
-				} else {
-					detect.log(2, "performing transactional transform");
-					return transactionalEnhancement(loader, classfileBuffer);
-				}
-			}
-				
-			return null;
+    public int getLogLevel() {
+        return enhanceContext.getLogLevel();
+    }
 
-		} catch (NoEnhancementRequiredException e){
-			// the class is an interface
-			log(8, "No Enhancement required "+e.getMessage());
-			return null;
-			
-		} catch (Exception e) {
-			// a safety net for unexpected errors
-			// in the transformation
-			enhanceContext.log(e);
-			return null;
-		}
-	}
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
-	/**
-	 * Perform entity bean enhancement.
-	 */
-	private byte[] entityEnhancement(ClassLoader loader, byte[] classfileBuffer) {
-				
-		ClassReader cr = new ClassReader(classfileBuffer);
-		LoaderAwareClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader);
-		ClassAdpaterEntity ca = new ClassAdpaterEntity(cw, loader, enhanceContext);
-		try {
-			
-			cr.accept(ca, 0);
-			
-			if (ca.isLog(1)) {
-				ca.logEnhanced();
-			}
-			
-			if (enhanceContext.isReadOnly()){
-				return null;
-				
-			} else {
-				return cw.toByteArray();
-			}
-			
-		} catch (AlreadyEnhancedException e) {
-			if (ca.isLog(1)) {
-				ca.log("already enhanced entity");
-			}
-			return null;
-			
-		} catch (NoEnhancementRequiredException e) {
-			if (ca.isLog(2)) {
-				ca.log("skipping... no enhancement required");
-			}
-			return null;
-		}
-	}
-	
-	
-	/**
-	 * Perform transactional enhancement.
-	 */
-	private byte[] transactionalEnhancement(ClassLoader loader, byte[] classfileBuffer) {
-		
-		ClassReader cr = new ClassReader(classfileBuffer);
-		ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader);
-		ClassAdapterTransactional ca = new ClassAdapterTransactional(cw, loader, enhanceContext);
-		
-		try {
-			
-			cr.accept(ca, 0);
-			
-			if (ca.isLog(1)) {
-				ca.log("enhanced");
-			}
-			
-			if (enhanceContext.isReadOnly()){
-				return null;
-				
-			} else {
-				return cw.toByteArray();
-			}
-			
-		} catch (AlreadyEnhancedException e) {
-			if (ca.isLog(1)) {
-				ca.log("already enhanced");
-			}
-			return null;
-			
-		} catch (NoEnhancementRequiredException e) {
-			if (ca.isLog(0)) {
-				ca.log("skipping... no enhancement required");
-			}
-			return null;
-		}
-	}
-	
-	/**
-	 * Helper method to split semi-colon separated class paths into a URL array.
-	 */
-	public static URL[] parseClassPaths(String extraClassPath){
+        try {
 
-	    if (extraClassPath == null){
-	        return new URL[0];
-	    }
-	    
-		String[] stringPaths = extraClassPath.split(";");
-		return UrlPathHelper.convertToUrl(stringPaths);
-	}
+            // ignore JDK and JDBC classes etc
+            if (enhanceContext.isIgnoreClass(className)) {
+                return null;
+            }
 
+            ClassAdapterDetectEnhancement detect = null;
 
-	/**
-	 * Read the bytes quickly trying to detect if it needs entity or
-	 * transactional enhancement.
-	 */
-	private ClassAdapterDetectEnhancement detect(ClassLoader classLoader, byte[] classfileBuffer) {
-				
-		ClassAdapterDetectEnhancement detect = new ClassAdapterDetectEnhancement(classLoader, enhanceContext);
-	
-		// skip what we can...
-		ClassReader cr = new ClassReader(classfileBuffer);
-		cr.accept(detect, ClassReader.SKIP_CODE+ClassReader.SKIP_DEBUG+ClassReader.SKIP_FRAMES);
-		
-		return detect;
-	}
+            if (performDetect) {
+                enhanceContext.log(5, "performing detection on " + className);
+                detect = detect(loader, classfileBuffer);
+            }
+
+            if (detect == null) {
+                // default only looks entity beans to enhance
+                enhanceContext.log(1, "no detection so enhancing entity " + className);
+                return entityEnhancement(loader, classfileBuffer);
+            }
+
+            if (transformEntityBeans && detect.isEntity()) {
+
+                if (detect.isEnhancedEntity()) {
+                    detect.log(1, "already enhanced entity");
+
+                } else {
+                    // 
+                    detect.log(2, "performing entity transform");
+                    return entityEnhancement(loader, classfileBuffer);
+                }
+            }
+
+            if (transformTransactional && detect.isTransactional()) {
+
+                if (detect.isEnhancedTransactional()) {
+                    detect.log(1, "already enhanced transactional");
+
+                } else {
+                    detect.log(2, "performing transactional transform");
+                    return transactionalEnhancement(loader, classfileBuffer);
+                }
+            }
+
+            return null;
+
+        } catch (NoEnhancementRequiredException e) {
+            // the class is an interface
+            log(8, "No Enhancement required " + e.getMessage());
+            return null;
+
+        } catch (Exception e) {
+            // a safety net for unexpected errors
+            // in the transformation
+            enhanceContext.log(e);
+            return null;
+        }
+    }
+
+    /**
+     * Perform entity bean enhancement.
+     */
+    private byte[] entityEnhancement(ClassLoader loader, byte[] classfileBuffer) {
+
+        ClassReader cr = new ClassReader(classfileBuffer);
+        LoaderAwareClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader, classWriterForName);
+        ClassAdpaterEntity ca = new ClassAdpaterEntity(cw, loader, enhanceContext);
+        try {
+
+            cr.accept(ca, 0);
+
+            if (ca.isLog(1)) {
+                ca.logEnhanced();
+            }
+
+            if (enhanceContext.isReadOnly()) {
+                return null;
+
+            } else {
+                return cw.toByteArray();
+            }
+
+        } catch (AlreadyEnhancedException e) {
+            if (ca.isLog(1)) {
+                ca.log("already enhanced entity");
+            }
+            return null;
+
+        } catch (NoEnhancementRequiredException e) {
+            if (ca.isLog(2)) {
+                ca.log("skipping... no enhancement required");
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Perform transactional enhancement.
+     */
+    private byte[] transactionalEnhancement(ClassLoader loader, byte[] classfileBuffer) {
+
+        ClassReader cr = new ClassReader(classfileBuffer);
+        ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader, classWriterForName);
+        ClassAdapterTransactional ca = new ClassAdapterTransactional(cw, loader, enhanceContext);
+
+        try {
+
+            cr.accept(ca, 0);
+
+            if (ca.isLog(1)) {
+                ca.log("enhanced");
+            }
+
+            if (enhanceContext.isReadOnly()) {
+                return null;
+
+            } else {
+                return cw.toByteArray();
+            }
+
+        } catch (AlreadyEnhancedException e) {
+            if (ca.isLog(1)) {
+                ca.log("already enhanced");
+            }
+            return null;
+
+        } catch (NoEnhancementRequiredException e) {
+            if (ca.isLog(0)) {
+                ca.log("skipping... no enhancement required");
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Helper method to split semi-colon separated class paths into a URL array.
+     */
+    public static URL[] parseClassPaths(String extraClassPath) {
+
+        if (extraClassPath == null) {
+            return new URL[0];
+        }
+
+        String[] stringPaths = extraClassPath.split(";");
+        return UrlPathHelper.convertToUrl(stringPaths);
+    }
+
+    /**
+     * Read the bytes quickly trying to detect if it needs entity or
+     * transactional enhancement.
+     */
+    private ClassAdapterDetectEnhancement detect(ClassLoader classLoader, byte[] classfileBuffer) {
+
+        ClassAdapterDetectEnhancement detect = new ClassAdapterDetectEnhancement(classLoader, enhanceContext);
+
+        // skip what we can...
+        ClassReader cr = new ClassReader(classfileBuffer);
+        cr.accept(detect, ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES);
+
+        return detect;
+    }
 }
