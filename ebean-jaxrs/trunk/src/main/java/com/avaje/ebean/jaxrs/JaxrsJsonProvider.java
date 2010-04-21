@@ -94,10 +94,6 @@ public class JaxrsJsonProvider implements MessageBodyWriter<Object>, MessageBody
 
         if (isJsonMediaType(mediaType)) {
 
-            if (type.equals(JsonWriteRequest.class)) {
-                return true;
-            }
-
             if (type.equals(BeanList.class)) {
                 return true;
             }
@@ -122,45 +118,30 @@ public class JaxrsJsonProvider implements MessageBodyWriter<Object>, MessageBody
 
         Writer writer = new BufferedWriter(new OutputStreamWriter(os));
 
-        boolean pretty = defaultPretty;
-        Object payload = o;
-        String requestCallback = null;
-        JsonWriteOptions options = null;
-
-        if (o instanceof JsonWriteRequest) {
-            // Using explicit JsonWriteRequest
-            JsonWriteRequest req = (JsonWriteRequest) o;
-            options = req.getOptions();
-            payload = req.getObject();
-            Boolean p = req.getPretty();
-            if (p != null) {
-                pretty = p.booleanValue();
+        // Check MarshalOptions ...
+        JsonWriteOptions options = MarshalOptions.removeJsonWriteOptions();
+        PathProperties pathProperties = MarshalOptions.removePathProperties();
+        
+        if (options == null) {
+            if (pathProperties != null) {
+                // only PathProperties have been set
+                options = new JsonWriteOptions();
+                options.setPathProperties(pathProperties);
             }
         } else {
-            // Check MarshalOptions ...
-            options = MarshalOptions.removeJsonWriteOptions();
-            PathProperties pathProperties = MarshalOptions.removePathProperties();
-            if (options == null) {
-                if (pathProperties != null) {
-                    // only PathProperties have been set
-                    options = new JsonWriteOptions();
-                    options.setPathProperties(pathProperties);
-                }
-            } else {
-                if (options.getPathProperties() == null && pathProperties != null) {
-                    // merge the PathProperties and JsonWriteOptions that were
-                    // both set independently into MarshalOptions
+            if (options.getPathProperties() == null && pathProperties != null) {
+                // merge the PathProperties and JsonWriteOptions that were
+                // both set independently into MarshalOptions
 
-                    // create a copy of the original JsonWriteOptions
-                    options = options.copy();
-                    // merge in the PathProperties that were set via
-                    // MarshalOptions
-                    options.setPathProperties(pathProperties);
-                }
+                // create a copy of the original JsonWriteOptions
+                options = options.copy();
+                // merge in the PathProperties that were set via
+                // MarshalOptions
+                options.setPathProperties(pathProperties);
             }
         }
 
-        jsonContext.toJsonWriter(payload, writer, pretty, options, requestCallback);
+        jsonContext.toJsonWriter(o, writer, defaultPretty, options, null);
         writer.flush();
     }
 
