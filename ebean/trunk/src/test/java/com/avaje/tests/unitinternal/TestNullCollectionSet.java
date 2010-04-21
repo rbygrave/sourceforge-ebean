@@ -6,22 +6,22 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.tests.model.basic.EVanillaCollection;
-import com.avaje.tests.model.basic.EVanillaCollectionDetail;
+import com.avaje.tests.model.basic.ENullCollection;
+import com.avaje.tests.model.basic.ENullCollectionDetail;
 
-public class TestVanillaCollectionSet extends TestCase {
+public class TestNullCollectionSet extends TestCase {
 
     public void test() {
         
-        EVanillaCollection c = new EVanillaCollection();
+        ENullCollection c = new ENullCollection();
         
         Ebean.save(c);
         
-        EVanillaCollection c2 = Ebean.find(EVanillaCollection.class, c.getId());
+        ENullCollection c2 = Ebean.find(ENullCollection.class, c.getId());
         
         assertNotNull(c2);
         
-        List<EVanillaCollectionDetail> details = c2.getDetails();
+        List<ENullCollectionDetail> details = c2.getDetails();
         assertNotNull(details);
         
         assertTrue("Is BeanCollection",details instanceof BeanCollection<?>);
