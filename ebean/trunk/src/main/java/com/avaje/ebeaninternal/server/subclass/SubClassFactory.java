@@ -114,7 +114,7 @@ public class SubClassFactory extends ClassLoader implements EnhanceConstants, Ge
     	InputStream is  = getResourceAsStream(resName);
         
         ClassReader cr = new ClassReader(is);
-        ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_FLAGS, getParent());
+        ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_FLAGS, getParent(), null);
 		
 		SubClassClassAdpater ca = new SubClassClassAdpater(subClassSuffix, cw, parentClassLoader, enhanceContext);
 		if (ca.isLog(1)) {
