@@ -665,16 +665,8 @@ public class BeanDescriptor<T> {
             }
         }
         
-        if (inheritInfo != null){
-            // need to check every BeanDescriptor in the inheritance hierarchy
-            if (saveRecurseSkippable){
-                saveRecurseSkippable = inheritInfo.isSaveRecurseSkippable();
-            }
-            if (deleteRecurseSkippable){
-                deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
-            }
-        }
-
+        //initInheritInfo();
+        
         if (unidirectional != null) {
             unidirectional.initialise();
         }
@@ -695,6 +687,19 @@ public class BeanDescriptor<T> {
                 namedUpdate.initialise(parser);
             }
         }
+    }
+    
+    public void initInheritInfo(){
+    	if (inheritInfo != null){
+            // need to check every BeanDescriptor in the inheritance hierarchy
+            if (saveRecurseSkippable){
+                saveRecurseSkippable = inheritInfo.isSaveRecurseSkippable();
+            }
+            if (deleteRecurseSkippable){
+                deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
+            }
+        }
+
     }
 
     protected boolean hasInheritance() {

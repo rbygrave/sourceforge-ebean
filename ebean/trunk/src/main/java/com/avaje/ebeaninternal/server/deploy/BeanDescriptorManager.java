@@ -349,6 +349,12 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         }
 
         // PASS 2:
+        // now initialise all the inherit info
+        for (BeanDescriptor<?> d : descMap.values()) {
+            d.initInheritInfo();
+        }
+        
+        // PASS 3:
         // now initialise all the associated properties
         for (BeanDescriptor<?> d : descMap.values()) {
             d.initialiseOther();
