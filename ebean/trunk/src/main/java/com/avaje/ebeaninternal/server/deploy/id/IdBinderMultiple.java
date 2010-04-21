@@ -141,10 +141,10 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 
-	public void addIdInValueSql(SpiExpressionRequest request) {
-		request.append(idInValueSql);
-	}
-
+    public String getIdInValueExpr() {
+        return idInValueSql;
+    }
+	   
 	public String getBindIdInSql(String baseTableAlias) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
@@ -152,8 +152,10 @@ public final class IdBinderMultiple implements IdBinder {
 			if (i > 0) {
 				sb.append(",");
 			}
-			sb.append(baseTableAlias);
-			sb.append(".");
+			if (baseTableAlias != null){
+    			sb.append(baseTableAlias);
+    			sb.append(".");
+			}
 			sb.append(props[i].getDbColumn());
 		}
 		sb.append(")");
@@ -272,11 +274,7 @@ public final class IdBinderMultiple implements IdBinder {
     		props[i].appendSelect(ctx);
 		}
 	}
-	
-    public String getAssocIdInValueExpr() {
-        return idInValueSql;
-    }
-        
+	        
     public String getAssocIdInExpr(String prefix) {
 
         StringBuilder sb = new StringBuilder();

@@ -133,7 +133,7 @@ public class SqlTreeBuilder {
 
         rootNode.appendSelect(ctx);
 
-        String selectSql = ctx.toString();
+        String selectSql = ctx.getContent();
 
         // trim off the first comma
         if (selectSql.length() >= SqlTreeNode.COMMA.length()) {
@@ -147,14 +147,14 @@ public class SqlTreeBuilder {
 
         rootNode.appendWhere(ctx);
 
-        return ctx.toString();
+        return ctx.getContent();
     }
 
     private String buildFromClause(SqlTreeNode rootNode) {
 
         rootNode.appendFrom(ctx, false);
 
-        return ctx.toString();
+        return ctx.getContent();
     }
 
     private void buildRoot(BeanDescriptor<?> desc, SqlTree sqlTree) {

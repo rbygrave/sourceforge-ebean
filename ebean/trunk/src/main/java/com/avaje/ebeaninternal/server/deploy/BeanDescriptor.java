@@ -361,6 +361,8 @@ public class BeanDescriptor<T> {
     private String idBinderIdSql;
 
     private String deleteByIdSql;
+    
+    private String deleteByIdInSql;
 
     private final String name;
 
@@ -678,10 +680,13 @@ public class BeanDescriptor<T> {
         }
 
         idBinder.initialise();
+        String idBinderInLHSSqlNoAlias = idBinder.getBindIdInSql(null);
+        String idEqualsSql = idBinder.getBindIdSql(null);
         idBinderInLHSSql = idBinder.getBindIdInSql(baseTableAlias);
         idBinderIdSql = idBinder.getBindIdSql(baseTableAlias);
 
-        deleteByIdSql = "delete from " + baseTable + " where " + idBinder.getBindIdSql(null);
+        deleteByIdSql = "delete from " + baseTable + " where " + idEqualsSql;
+        deleteByIdInSql = "delete from " + baseTable + " where (" + idBinderInLHSSqlNoAlias+") in ";
 
         if (!isEmbedded()) {
             // parse every named update up front into sql dml
@@ -748,12 +753,43 @@ public class BeanDescriptor<T> {
             throw new LdapPersistenceException(e);
         }
     }
+
+    public SqlUpdate deleteById(Object id, List<Object> idList) {
+        if (id != null){
+            return deleteById(id);
+        } else {
+            return deleteByIdList(idList);
+        }
+    }
+    
+    /**
+     * Return SQL that can be used to delete a list of Id's without any
+     * optimistic concurrency checking.
+     */
+    private SqlUpdate deleteByIdList(List<Object> idList) {
+
+        StringBuilder sb = new StringBuilder(deleteByIdInSql);
+        sb.append("(");
+        for (int i = 0; i < idList.size(); i++) {
+            if (i > 0){
+                sb.append(",");
+            }
+            sb.append(idBinder.getIdInValueExpr());
+        }
+        sb.append(")");
+        
+        DefaultSqlUpdate delete = new DefaultSqlUpdate(sb.toString());
+        for (int i = 0; i < idList.size(); i++) {
+            idBinder.bindId(delete, idList.get(i));
+        }
+        return delete;
+    }
     
     /**
      * Return SQL that can be used to delete by Id without any optimistic
      * concurrency checking.
      */
-    public SqlUpdate deleteById(Object id) {
+    private SqlUpdate deleteById(Object id) {
         
         DefaultSqlUpdate sqlDelete = new DefaultSqlUpdate(deleteByIdSql);
 
@@ -2042,7 +2078,7 @@ public class BeanDescriptor<T> {
      * Imported Assoc Ones with cascade delete true.
      */
     public BeanPropertyAssocOne<?>[] propertiesOneImportedDelete() {
-        return propertiesOneImportedSave;
+        return propertiesOneImportedDelete;
     }
 
     /**

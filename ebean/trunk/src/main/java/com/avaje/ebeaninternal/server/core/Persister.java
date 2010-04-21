@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
+import java.util.Collection;
 import java.util.Set;
 
 import com.avaje.ebean.CallableSql;
@@ -77,6 +78,11 @@ public interface Persister {
      * Delete the bean.
      */
     public void delete(Object entityBean, Transaction t);
+
+    /**
+     * Delete multiple beans given a collection of Id values.
+     */
+    public void deleteMany(Class<?> beanType, Collection<?> ids, Transaction transaction);
 
     /**
      * Execute the Update.

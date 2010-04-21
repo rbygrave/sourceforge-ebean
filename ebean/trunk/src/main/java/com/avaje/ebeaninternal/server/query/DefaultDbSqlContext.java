@@ -2,12 +2,12 @@ package com.avaje.ebeaninternal.server.query;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Stack;
 
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.DbSqlContext;
 import com.avaje.ebeaninternal.server.deploy.TableJoinColumn;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
+import com.avaje.ebeaninternal.server.util.ArrayStack;
 
 public class DefaultDbSqlContext implements DbSqlContext {
 
@@ -21,15 +21,15 @@ public class DefaultDbSqlContext implements DbSqlContext {
 
     private final String columnAliasPrefix;
 
-    private final Stack<String> tableAliasStack = new Stack<String>();
+    private final ArrayStack<String> tableAliasStack = new ArrayStack<String>();
 
-    private final Stack<String> joinStack = new Stack<String>();
+    private final ArrayStack<String> joinStack = new ArrayStack<String>();
 
     private final boolean useColumnAlias;
 
     private int columnIndex;
 
-    private StringBuilder sb = new StringBuilder();
+    private StringBuilder sb = new StringBuilder(140);
 
     /**
      * A Set used to make sure formula joins are only added once to a query.
@@ -134,12 +134,6 @@ public class DefaultDbSqlContext implements DbSqlContext {
         return currentPrefix == null ? propName : currentPrefix + "." + propName;
     }
 
-    public String getRelativeAlias(String propName) {
-
-        String pref = currentPrefix == null ? propName : currentPrefix + "." + propName;
-        return getTableAlias(pref);
-    }
-
     public String getTableAlias(String prefix) {
         return alias.getTableAlias(prefix);
     }
@@ -159,6 +153,7 @@ public class DefaultDbSqlContext implements DbSqlContext {
 
     public void popTableAlias() {
         tableAliasStack.pop();
+        currentPrefix = null;
     }
 
     public StringBuilder getBuffer() {
@@ -224,7 +219,7 @@ public class DefaultDbSqlContext implements DbSqlContext {
         
         if (column.indexOf("${}") > -1){
             // support DB functions such as lower() etc
-            // with the use of secondary columns etc
+            // with the use of secondary columns 
             String x = StringHelper.replaceString(column, "${}", tableAlias);
             sb.append(x);
         } else {
@@ -260,10 +255,15 @@ public class DefaultDbSqlContext implements DbSqlContext {
         return sb.length();
     }
 
-    public String toString() {
+    public String getContent() {
         String s = sb.toString();
         sb = new StringBuilder();
         return s;
     }
+
+    public String toString() {
+        return "DefaultDbSqlContext: "+sb.toString();
+    }
+    
 
 }

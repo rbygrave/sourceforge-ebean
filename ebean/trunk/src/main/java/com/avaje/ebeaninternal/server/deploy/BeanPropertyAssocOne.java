@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.deploy;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.PersistenceException;
 
@@ -68,6 +69,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     private ExportedProperty[] exportedProperties;
     
     private String deleteByParentIdSql;
+    private String deleteByParentIdInSql;
     
     /**
      * Create based on deploy information of an EmbeddedId.
@@ -120,21 +122,18 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                 importedId = createImportedId(this, targetDescriptor, tableJoin);
             } else {
                 exportedProperties = createExported();
-                StringBuilder sb = new StringBuilder(50);
-                sb.append("delete from ").append(targetDescriptor.getBaseTable());
-                sb.append(" where ");
-                for (int i = 0; i < exportedProperties.length; i++) {
-                    if (i > 0){
-                        sb.append(" and ");
-                    }
-                    sb.append(exportedProperties[i].getForeignDbColumn());
-                    sb.append(" = ?");
-                }
-                deleteByParentIdSql = sb.toString();
+                                
+                String delStmt = "delete from "+targetDescriptor.getBaseTable()+" where ";
+                
+                deleteByParentIdSql = delStmt + deriveWhereParentIdSql(false);
+                deleteByParentIdInSql = delStmt + deriveWhereParentIdSql(true);
+
             }
         }
     }
 
+
+    
     public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
         
         if (embedded){
@@ -158,9 +157,37 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         
         localHelp.copyProperty(sourceBean, destBean, ctx, maxDepth);
     }
+
+    public SqlUpdate deleteByParentId(Object parentId, List<Object> parentIdist) {
+        if (parentId != null){
+            return deleteByParentId(parentId);
+        } else {
+            return deleteByParentIdList(parentIdist);
+        }
+    }
     
+    private SqlUpdate deleteByParentIdList(List<Object> parentIdist) {
+
+        StringBuilder sb = new StringBuilder(100);
+        sb.append(deleteByParentIdInSql);
+        sb.append(" in (");
+        for (int i = 0; i < parentIdist.size(); i++) {
+            if (i > 0){
+                sb.append(",");                
+            }
+            sb.append(targetIdBinder.getIdInValueExpr());
+        }
+        sb.append(") ");
+
+        DefaultSqlUpdate delete = new DefaultSqlUpdate(sb.toString());
+        for (int i = 0; i < parentIdist.size(); i++) {            
+            targetIdBinder.bindId(delete, parentIdist.get(i));
+        }
+        
+        return delete;
+    }
     
-    public SqlUpdate deleteByParentId(Object parentId) {
+    private SqlUpdate deleteByParentId(Object parentId) {
         
         DefaultSqlUpdate delete = new DefaultSqlUpdate(deleteByParentIdSql);
         if (exportedProperties.length == 1){
@@ -289,13 +316,15 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     /**
      * Return the logical id value expression taking into account embedded id's.
      */
+    @Override
     public String getAssocIdInValueExpr(){
-        return targetDescriptor.getIdBinder().getAssocIdInValueExpr();        
+        return targetDescriptor.getIdBinder().getIdInValueExpr();        
     }
     
     /**
      * Return the logical id in expression taking into account embedded id's.
      */
+    @Override
     public String getAssocIdInExpr(String prefix){
         return targetDescriptor.getIdBinder().getAssocIdInExpr(prefix);
     }
@@ -342,6 +371,24 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return importedId;
     }
 
+    private String deriveWhereParentIdSql(boolean inClause) {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < exportedProperties.length; i++) {
+            String fkColumn = exportedProperties[i].getForeignDbColumn();
+            if (i > 0){
+                String s = inClause ? "," : " and ";
+                sb.append(s);
+            }
+            sb.append(fkColumn);
+            if (!inClause){
+                sb.append("=? ");
+            }
+        }
+        return sb.toString();
+    }
+    
     /**
      * Create the array of ExportedProperty used to build reference objects.
      */

@@ -671,6 +671,13 @@ public final class Ebean {
     public static int delete(Class<?> beanType, Object id) {
         return serverMgr.getPrimaryServer().delete(beanType, id);
     }
+    
+    /**
+     * Delete several beans given their type and id values.
+     */
+    public static void delete(Class<?> beanType, Collection<?> ids) {
+        serverMgr.getPrimaryServer().delete(beanType, ids);
+    }
 
     /**
      * Delete all the beans from an Iterator.

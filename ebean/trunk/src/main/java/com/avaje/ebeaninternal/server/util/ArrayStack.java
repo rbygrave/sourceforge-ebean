@@ -29,12 +29,20 @@ import java.util.EmptyStackException;
  */
 public class ArrayStack<E> {
 
-    private final ArrayList<E> list = new ArrayList<E>();
+    private final ArrayList<E> list;
+
+    /**
+     * Creates an empty Stack with an initial size.
+     */
+    public ArrayStack(int size) {
+        this.list = new ArrayList<E>(size);
+    }
 
     /**
      * Creates an empty Stack.
      */
     public ArrayStack() {
+        this.list = new ArrayList<E>();
     }
 
     /**
