@@ -22,37 +22,61 @@ package com.avaje.ebean.jaxrs;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonWriteOptions;
 
+/**
+ * Provides the ability to control the JSON output with explicit
+ * JsonWriteOptions and JsonContext.
+ * <p>
+ * You can return this from a resource method for more explicit control over how
+ * the object is rendered.
+ * </p>
+ * 
+ * @author rbygrave
+ * 
+ */
 public class JsonWriteRequest {
 
     final Object object;
-    
+
     final JsonWriteOptions options;
-    
+
     final JsonContext jsonContext;
-    
+
     final Boolean pretty;
-    
-    JsonWriteRequest(Object object, JsonWriteOptions options, Boolean pretty, JsonContext jsonContext) {
+
+    public JsonWriteRequest(Object object, JsonWriteOptions options, Boolean pretty, JsonContext jsonContext) {
         this.object = object;
         this.options = options;
         this.pretty = pretty;
         this.jsonContext = jsonContext;
     }
 
+    /**
+     * Return the bean or list of beans to render as JSON.
+     */
     public Object getObject() {
         return object;
     }
 
+    /**
+     * Return the JsonWriteOptions to use.
+     */
     public JsonWriteOptions getOptions() {
         return options;
     }
 
+    /**
+     * Return the JsonContext to use (otherwise use the default).
+     */
     public JsonContext getJsonContext() {
         return jsonContext;
     }
 
+    /**
+     * Return 
+     * @return
+     */
     public Boolean getPretty() {
         return pretty;
     }
-    
+
 }
