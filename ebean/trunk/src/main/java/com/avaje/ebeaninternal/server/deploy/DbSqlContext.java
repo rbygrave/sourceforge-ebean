@@ -81,6 +81,11 @@ public interface DbSqlContext {
     public int length();
 
     /**
+     * Return the current context of the sql context.
+     */
+    public String getContent();
+
+    /**
      * Return the current join node.
      */
     public String peekJoin();
@@ -107,7 +112,5 @@ public interface DbSqlContext {
     public String getTableAliasManyWhere(String prefix);
 
     public String getRelativePrefix(String propName);
-
-    public String getRelativeAlias(String propName);
 
 }

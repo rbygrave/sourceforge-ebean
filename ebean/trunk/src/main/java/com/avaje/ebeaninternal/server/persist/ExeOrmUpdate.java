@@ -134,11 +134,16 @@ public class ExeOrmUpdate {
         
     	ormUpdate.setGeneratedSql(sql);
     	
+    	boolean logSql = request.isLogSql();
+    	
     	PreparedStatement pstmt;
     	if (batchThisRequest){
-    		pstmt = pstmtFactory.getPstmt(t, sql, request);
+    		pstmt = pstmtFactory.getPstmt(t, logSql, sql, request);
     		
     	} else {
+    	    if (logSql){
+    	        t.log(sql);
+    	    }
     		pstmt = pstmtFactory.getPstmt(t, sql);
     	}
         

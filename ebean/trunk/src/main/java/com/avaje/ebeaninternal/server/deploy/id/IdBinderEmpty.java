@@ -66,11 +66,7 @@ public final class IdBinderEmpty implements IdBinder {
 	public String getAssocOneIdExpr(String prefix, String operator){
 		return null;
 	}
-	
-    public String getAssocIdInValueExpr() {
-        return null;
-    }
-        
+	        
     public String getAssocIdInExpr(String prefix) {
         return null;
     }
@@ -78,12 +74,13 @@ public final class IdBinderEmpty implements IdBinder {
 	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
 		
 	}
+	
+    public String getIdInValueExpr() {
+        return "";
+    }
 
-	public void addIdInValueSql(SpiExpressionRequest request) {
 	
-	}	
-	
-	public String getBindIdInSql(String baseTableAlias) {
+    public String getBindIdInSql(String baseTableAlias) {
 		return null;
 	}
 	

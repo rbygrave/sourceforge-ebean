@@ -106,11 +106,16 @@ public class ExeCallableSql {
     	// process named parameters if required
     	sql = BindParamsParser.parse(bindParams, sql);
         
+    	boolean logSql = request.isLogSql();
+    	
     	CallableStatement cstmt;
     	if (batchThisRequest){
-    		cstmt = pstmtFactory.getCstmt(t, sql, request);
+    		cstmt = pstmtFactory.getCstmt(t, logSql, sql, request);
     		
     	} else {
+    	    if (logSql){
+    	        t.log(sql);
+    	    }
     		cstmt = pstmtFactory.getCstmt(t, sql);
     	}
         

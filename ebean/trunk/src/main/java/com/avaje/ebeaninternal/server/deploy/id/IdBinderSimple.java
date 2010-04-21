@@ -22,8 +22,6 @@ public final class IdBinderSimple implements IdBinder {
 
 	private final BeanProperty idProperty;
 
-	private final String idInLHSSql;
-
 	private final String bindIdSql;
 	
 	private final BeanProperty[] properties;
@@ -40,7 +38,6 @@ public final class IdBinderSimple implements IdBinder {
 		this.properties = new BeanProperty[1];
 		properties[0] = idProperty;
 		bindIdSql = InternString.intern(idProperty.getDbColumn()+" = ? ");
-		idInLHSSql = idProperty.getDbColumn();
 	}
 	
 	public void initialise(){
@@ -89,7 +86,11 @@ public final class IdBinderSimple implements IdBinder {
 	}
 
 	public String getBindIdInSql(String baseTableAlias) {
-		return baseTableAlias+"."+idProperty.getDbColumn();
+	    if (baseTableAlias == null){
+            return idProperty.getDbColumn();
+	    } else {
+	        return baseTableAlias+"."+idProperty.getDbColumn();
+	    }
 	}
 
 	public String getBindIdSql(String baseTableAlias) {
@@ -107,16 +108,12 @@ public final class IdBinderSimple implements IdBinder {
 	public Object[] getBindValues(Object idValue){
 		return new Object[]{idValue};
 	}
-	
-	public void addIdInLHSSql(SpiExpressionRequest request) {
-		request.append(idInLHSSql);
-	}
 
-	public void addIdInValueSql(SpiExpressionRequest request) {
-		request.append("?");
-	}
+    public String getIdInValueExpr() {
+        return "?";
+    }
 
-	public void addIdInBindValue(SpiExpressionRequest request, Object value) {
+    public void addIdInBindValue(SpiExpressionRequest request, Object value) {
 	    value = convertSetId(value, null);
 		request.addBindValue(value);
 	}
@@ -163,10 +160,6 @@ public final class IdBinderSimple implements IdBinder {
 		sb.append(" ? ");
 		return sb.toString();		
 	}
-
-    public String getAssocIdInValueExpr() {
-        return "?";
-    }
     
     public String getAssocIdInExpr(String prefix) {
 

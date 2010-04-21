@@ -52,7 +52,7 @@ class IdInExpression implements SpiExpression {
 			if (i > 0){
 				request.append(",");				
 			}
-			idBinder.addIdInValueSql(request);
+			request.append(idBinder.getIdInValueExpr());
 		}
 		request.append(") ");
 	}

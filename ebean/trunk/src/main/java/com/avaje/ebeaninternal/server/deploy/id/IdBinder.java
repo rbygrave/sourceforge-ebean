@@ -85,11 +85,6 @@ public interface IdBinder {
 	 * </p>
 	 */
 	public String getAssocOneIdExpr(String prefix, String operator);
-	
-    /**
-     * Return the logical id value expression taking into account embedded id's.
-     */
-    public String getAssocIdInValueExpr();
         
     /**
      * Return the logical id in expression taking into account embedded id's.
@@ -112,14 +107,20 @@ public interface IdBinder {
 	 * Return the sql for binding the id using an IN clause.
 	 */
 	public String getBindIdInSql(String baseTableAlias);
-	
-	public void addIdInValueSql(SpiExpressionRequest request);
-	
+		
+	/**
+	 * Return the binding expression (like "?" or "(?,?)")for the Id.
+	 */
+    public String getIdInValueExpr();
+    
 	/**
 	 * Read the id value from the result set and set it to the bean also returning it.
 	 */
 	public Object readSet(DbReadContext ctx, Object bean) throws SQLException;
 
+	/**
+	 * Ignore the appropriate number of scalar properties for this id.
+	 */
 	public void loadIgnore(DbReadContext ctx);
 	
 	/**
@@ -127,6 +128,9 @@ public interface IdBinder {
 	 */
 	public Object read(DbReadContext ctx) throws SQLException;
 
+	/**
+	 * Append to the select clause.
+	 */
 	public void appendSelect(DbSqlContext ctx);
 	
 	/**

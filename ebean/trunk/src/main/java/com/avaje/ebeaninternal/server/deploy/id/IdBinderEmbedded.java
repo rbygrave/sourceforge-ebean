@@ -116,9 +116,9 @@ public final class IdBinderEmbedded implements IdBinder {
             request.addBindValue(props[i].getValue(value));
         }
     }
-
-    public void addIdInValueSql(SpiExpressionRequest request) {
-        request.append(idInValueSql);
+    
+    public String getIdInValueExpr() {
+        return idInValueSql;
     }
 
     public Object[] getIdValues(Object bean) {
@@ -196,10 +196,6 @@ public final class IdBinderEmbedded implements IdBinder {
         }
     }
         
-    public String getAssocIdInValueExpr() {
-        return idInValueSql;
-    }
-        
     public String getAssocIdInExpr(String prefix) {
 
         StringBuilder sb = new StringBuilder();
@@ -264,8 +260,10 @@ public final class IdBinderEmbedded implements IdBinder {
             if (i > 0) {
                 sb.append(",");
             }
-            sb.append(baseTableAlias);
-            sb.append(".");
+            if (baseTableAlias != null){
+                sb.append(baseTableAlias);
+                sb.append(".");
+            }
             sb.append(props[i].getDbColumn());
         }
         sb.append(")");

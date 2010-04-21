@@ -72,12 +72,15 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	
     private Set<String> additionalProps;
 
+    protected final boolean logSql;
+    
 	protected DmlHandler(PersistRequestBean<?> persistRequest, boolean emptyStringToNull) {
 		this.persistRequest = persistRequest;
 		this.emptyStringToNull = emptyStringToNull;
 		this.loadedProps = persistRequest.getLoadedProperties();
 		this.transaction = persistRequest.getTransaction();
 		this.logLevel = persistRequest.getLogLevel();
+        this.logSql = logLevel >= MAdminLogging.SQL && transaction.isLoggingOn();
 		if (logLevel >= MAdminLogging.BIND) {
 			this.loggingBind = true;
 			this.bindLog = new StringBuilder();
@@ -149,10 +152,8 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Log the sql to the transaction log.
 	 */
 	protected void logSql(String sql) {
-		if (logLevel >= MAdminLogging.SQL) {
-			if (transaction.isLoggingOn()) {
-				transaction.log(sql);
-			}
+		if (logSql) {
+			transaction.log(sql);
 		}
 	}
 	
@@ -329,7 +330,9 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 			return stmt;
 		}
 
-		t.log(sql);
+		if (logSql){
+		    t.log(sql);
+		}
 		
 		stmt = getPstmt(t, sql, genKeys);
 

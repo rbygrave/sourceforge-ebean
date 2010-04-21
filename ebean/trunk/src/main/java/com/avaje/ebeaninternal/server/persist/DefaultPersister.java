@@ -19,9 +19,11 @@
  */
 package com.avaje.ebeaninternal.server.persist;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -30,6 +32,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.CallableSql;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Update;
@@ -430,27 +433,93 @@ public final class DefaultPersister implements Persister {
 		}
 	}
 
+    private void deleteList(List<?> beanList, Transaction t) {
+        for (int i = 0; i < beanList.size(); i++) {
+            Object bean = beanList.get(i);
+            delete(bean, t);
+        }
+    }
+
+	/**
+	 * Delete by a List of Id's.
+	 */
+    public void deleteMany(Class<?> beanType, Collection<?> ids, Transaction transaction) {
+
+        if (ids == null || ids.size() == 0){
+            return;
+        }
+
+        BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(beanType);
+
+        ArrayList<Object> idList = new ArrayList<Object>(ids.size());
+        
+        Iterator<?> it = ids.iterator();
+        while (it.hasNext()) {
+            // convert to appropriate type if required
+            Object id = descriptor.convertId(it.next());
+            idList.add(id);
+        }
+        
+        delete(descriptor, null, idList, transaction);
+    }
+    
+    /**
+     * Delete by Id.
+     */
     public int delete(Class<?> beanType, Object id, Transaction transaction) {
 
-        SpiTransaction t = (SpiTransaction)transaction;
         BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(beanType);
 
         // convert to appropriate type if required
         id = descriptor.convertId(id);
+
+        return delete(descriptor, id, null, transaction);
+    }
+    
+    
+    /**
+     * Delete by Id or a List of Id's.
+     */
+    private int delete(BeanDescriptor<?> descriptor, Object id, List<Object> idList, Transaction transaction) {
+
+        SpiTransaction t = (SpiTransaction)transaction;
+
+        if (t.isPersistCascade()){
+            BeanPropertyAssocOne<?>[] propImportDelete = descriptor.propertiesOneImportedDelete();
+            if (propImportDelete.length > 0){
+                // We actually need to execute a query to get the foreign key values
+                // as they are required for the delete cascade. Query back just the 
+                // Id and the appropriate foreign key values
+                Query<?> q = deleteRequiresQuery(descriptor, propImportDelete);
+                if (idList != null){
+                    q.where().idIn(idList);
+                    t.log("-- Deleting list of "+descriptor.getName()+" requires fetch of foreign key values");
+                    List<?> beanList = server.findList(q, t);
+                    deleteList(beanList, t);
+                    return beanList.size();
+                    
+                } else {
+                    q.where().idEq(id);
+                    t.log("-- Delete of "+descriptor.getName()+" id:"+id+" requires fetch of foreign key values");
+                    Object bean = server.findUnique(q, t);
+                    delete(bean, t);
+                    return 1;
+                }
+            }
+        }
         
         if (t.isPersistCascade()){
             // OneToOne exported side with delete cascade
             BeanPropertyAssocOne<?>[] expOnes = descriptor.propertiesOneExportedDelete();
             for (int i = 0; i < expOnes.length; i++) {
-                SqlUpdate sqlDelete = expOnes[i].deleteByParentId(id);
+                SqlUpdate sqlDelete = expOnes[i].deleteByParentId(id, idList);
                 executeSqlUpdate(sqlDelete, t);
             }
             
             // OneToMany's with delete cascade
             BeanPropertyAssocMany<?>[] manys = descriptor.propertiesManyDelete();
             for (int i = 0; i < manys.length; i++) {
-     
-                SqlUpdate sqlDelete = manys[i].deleteByParentId(id);
+                SqlUpdate sqlDelete = manys[i].deleteByParentId(id, idList);
                 executeSqlUpdate(sqlDelete, t);
             }
         }
@@ -458,15 +527,31 @@ public final class DefaultPersister implements Persister {
         // ManyToMany's ... delete from intersection table
         BeanPropertyAssocMany<?>[] manys = descriptor.propertiesManyToMany();
         for (int i = 0; i < manys.length; i++) {
-            SqlUpdate sqlDelete = manys[i].deleteByParentId(id);
+            SqlUpdate sqlDelete = manys[i].deleteByParentId(id, idList);
             executeSqlUpdate(sqlDelete, t);
         }
         
-        // delete the bean 
-        SqlUpdate deleteById = descriptor.deleteById(id);
+        // delete the bean(s) 
+        SqlUpdate deleteById = descriptor.deleteById(id, idList);
         return executeSqlUpdate(deleteById, t);
     }
 
+    /**
+     * We need to create and execute a query to get the foreign key values as
+     * the delete cascades to them (foreign keys).
+     */
+    private Query<?> deleteRequiresQuery(BeanDescriptor<?> desc, BeanPropertyAssocOne<?>[] propImportDelete) {
+        
+        Query<?> q  = server.createQuery(desc.getBeanType());
+        StringBuilder sb = new StringBuilder(30);
+        for (int i = 0; i < propImportDelete.length; i++) {
+            sb.append(propImportDelete[i].getName()).append(",");
+        }
+        q.setAutofetch(false);
+        q.select(sb.toString());
+        return q;
+    }
+    
 	/**
 	 * Delete the bean.
 	 * <p>
@@ -475,18 +560,31 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void delete(PersistRequestBean<?> request) {
 
+	    DeleteUnloadedForeignKeys unloadedForeignKeys = null;
+	    
 		if (request.isPersistCascade()) {
 			// delete children first ... register the
 			// bean to handle bi-directional cascading
 			request.registerBean();
 			deleteAssocMany(request);
 			request.unregisterBean();
-		}
 
+			unloadedForeignKeys = getDeleteUnloadedForeignKeys(request);
+    		if (unloadedForeignKeys != null){
+    		    // there are foreign keys that we don't have on this partially
+    		    // populated bean so we actually need to query them (to cascade delete)
+    		    unloadedForeignKeys.queryForeignKeys(server, request);
+    		}
+    	}
+		
 		request.executeOrQueue();
 
 		if (request.isPersistCascade()) {
 			deleteAssocOne(request);
+			
+			if (unloadedForeignKeys != null){
+			    unloadedForeignKeys.deleteAssocOne(server, request);
+			}
 		}
 	}
 
@@ -926,13 +1024,35 @@ public final class DefaultPersister implements Persister {
 	    return (bean instanceof EntityBean) && ((EntityBean)bean)._ebean_getIntercept().isReference();
 	}
 
+	private DeleteUnloadedForeignKeys getDeleteUnloadedForeignKeys(PersistRequestBean<?> request) {
+	    
+	    BeanDescriptor<?> desc = request.getBeanDescriptor();
+
+	    DeleteUnloadedForeignKeys fkeys = null;
+        
+        BeanPropertyAssocOne<?>[] ones = desc.propertiesOneImportedDelete();
+        for (int i = 0; i < ones.length; i++) {
+            // check for partial object
+            if (!request.isLoadedProperty(ones[i])) { 
+                // we have cascade Delete on a partially populated bean and
+                // this property was not loaded (so we are going to have to fetch it)
+                if (fkeys == null){
+                    fkeys = new DeleteUnloadedForeignKeys();
+                }
+                fkeys.add(ones[i]);
+            }
+        }
+        
+        return fkeys;
+	}
+	
 	/**
 	 * Delete any associated one beans.
 	 */
 	private void deleteAssocOne(PersistRequestBean<?> request) {
 
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
-
+		
 		// imported assoc ones with cascade delete
 		BeanPropertyAssocOne<?>[] ones = desc.propertiesOneImportedDelete();
 		for (int i = 0; i < ones.length; i++) {

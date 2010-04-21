@@ -138,7 +138,7 @@ public class ResetBasicData {
 	public static Customer createCustAndOrder(String custName) {
 	    
 	    ResetBasicData me = new ResetBasicData();
-	    Customer cust1 = me.insertCustomer(custName);
+	    Customer cust1 = insertCustomer(custName);
 	    me.createOrder1(cust1);
 	    return cust1;
 	}
@@ -146,7 +146,7 @@ public class ResetBasicData {
     public static Order createOrderCustAndOrder(String custName) {
 
         ResetBasicData me = new ResetBasicData();
-        Customer cust1 = me.insertCustomer(custName);
+        Customer cust1 = insertCustomer(custName);
         Order o = me.createOrder1(cust1);
         return o;
     }
@@ -183,33 +183,43 @@ public class ResetBasicData {
 		Ebean.save(c);
 		return c;
 	}
-	
-	private Customer insertCustomer(String name) {
+
+    private static Customer insertCustomer(String name) {
+        Customer c = createCustomer(name, "1 Banana St", "P.O.Box 1234", 1);
+        Ebean.save(c);
+        return c;
+    }
+    
+	public static Customer createCustomer(String name, String shippingStreet, String billingStreet, int contactSuffix) {
 		
 		Customer c = new Customer();
 		c.setName(name);
 		c.setStatus(Customer.Status.NEW);
-		c.addContact(new Contact("Jim","Cricket"));
-		c.addContact(new Contact("Fred","Blue"));
-		c.addContact(new Contact("Bugs","Bunny"));
+		if (contactSuffix > 0){
+    		c.addContact(new Contact("Jim"+contactSuffix,"Cricket"));
+    		c.addContact(new Contact("Fred"+contactSuffix,"Blue"));
+    		c.addContact(new Contact("Bugs"+contactSuffix,"Bunny"));
+		}
 		
-		Address shippingAddr = new Address();
-		shippingAddr.setLine1("1 Banana St");
-		shippingAddr.setLine2("Sandringham");
-		shippingAddr.setCity("Auckland");
-		shippingAddr.setCountry(Ebean.getReference(Country.class, "NZ"));
+		if (shippingStreet != null){
+    		Address shippingAddr = new Address();
+    		shippingAddr.setLine1(shippingStreet);
+    		shippingAddr.setLine2("Sandringham");
+    		shippingAddr.setCity("Auckland");
+    		shippingAddr.setCountry(Ebean.getReference(Country.class, "NZ"));
+    		
+    		c.setShippingAddress(shippingAddr);
+		}
 		
-		c.setShippingAddress(shippingAddr);
-		
-		Address billingAddr = new Address();
-		billingAddr.setLine1("P.O.Box 1234");
-		billingAddr.setLine2("Sandringham");
-		billingAddr.setCity("Auckland");
-		billingAddr.setCountry(Ebean.getReference(Country.class, "NZ"));
-		
-		c.setBillingAddress(billingAddr);
-		
-		Ebean.save(c);
+		if (billingStreet != null){
+    		Address billingAddr = new Address();
+    		billingAddr.setLine1(billingStreet);
+    		billingAddr.setLine2("Sandringham");
+    		billingAddr.setCity("Auckland");
+    		billingAddr.setCountry(Ebean.getReference(Country.class, "NZ"));
+    		
+    		c.setBillingAddress(billingAddr);
+		}
 		
 		return c;
 	}

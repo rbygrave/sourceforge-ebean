@@ -740,6 +740,16 @@ public interface EbeanServer {
     public int delete(Class<?> beanType, Object id, Transaction t);
 
     /**
+     * Delete several beans given their type and id values.
+     */
+    public void delete(Class<?> beanType, Collection<?> ids);
+    
+    /**
+     * Delete several beans given their type and id values with an explicit transaction.
+     */
+    public void delete(Class<?> beanType, Collection<?> ids, Transaction t);
+        
+    /**
      * Execute a SQL Update Delete or Insert statement using the current
      * transaction. This returns the number of rows that where updated, deleted
      * or inserted.

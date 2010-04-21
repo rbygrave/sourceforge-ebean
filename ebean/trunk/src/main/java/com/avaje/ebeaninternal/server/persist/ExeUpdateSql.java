@@ -118,9 +118,11 @@ public class ExeUpdateSql {
     	// process named parameters if required
     	sql = BindParamsParser.parse(bindParams, sql);
         
+    	boolean logSql = request.isLogSql();
+    	
     	PreparedStatement pstmt;
     	if (batchThisRequest){
-    		pstmt = pstmtFactory.getPstmt(t, sql, request);
+    		pstmt = pstmtFactory.getPstmt(t, logSql, sql, request);
     		if (pstmtBatch != null){
     			// oracle specific JDBC setting batch size ahead of time
     			int batchSize = t.getBatchSize();
@@ -131,6 +133,9 @@ public class ExeUpdateSql {
     		}
     		
     	} else {
+    	    if (logSql){
+    	        t.log(sql);
+    	    }
     		pstmt = pstmtFactory.getPstmt(t, sql);
     	}
     	

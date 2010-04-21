@@ -62,7 +62,7 @@ public class PstmtFactory {
 	/**
 	 * Return a prepared statement taking into account batch requirements.
 	 */
-	public PreparedStatement getPstmt(SpiTransaction t, String sql, BatchPostExecute batchExe)
+	public PreparedStatement getPstmt(SpiTransaction t, boolean logSql, String sql, BatchPostExecute batchExe)
 			throws SQLException {
 
 		BatchedPstmtHolder batch = t.getBatchControl().getPstmtHolder();
@@ -72,6 +72,10 @@ public class PstmtFactory {
 			return stmt;
 		}
 
+		if (logSql){
+		    t.log(sql);
+		}
+		
 		Connection conn = t.getInternalConnection();
 		stmt = conn.prepareStatement(sql);
 
@@ -87,7 +91,7 @@ public class PstmtFactory {
 	/**
 	 * Return a callable statement taking into account batch requirements.
 	 */
-	public CallableStatement getCstmt(SpiTransaction t, String sql, BatchPostExecute batchExe)
+	public CallableStatement getCstmt(SpiTransaction t, boolean logSql, String sql, BatchPostExecute batchExe)
 			throws SQLException {
 
 		BatchedPstmtHolder batch = t.getBatchControl().getPstmtHolder();
@@ -95,6 +99,10 @@ public class PstmtFactory {
 
 		if (stmt != null) {
 			return stmt;
+		}
+		
+		if (logSql){
+		    t.log(sql);
 		}
 
 		Connection conn = t.getInternalConnection();

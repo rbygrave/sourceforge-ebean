@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.core;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiTransaction;
+import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.persist.BatchPostExecute;
 import com.avaje.ebeaninternal.server.persist.PersistExecute;
@@ -71,6 +72,10 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
     	return ebeanServer.getPstmtBatch();
     }
  
+    public boolean isLogSql() {
+        return logLevel >= MAdminLogging.SQL && transaction.isLoggingOn();
+    }
+    
 	/**
 	 * Execute the Callable statement.
 	 */

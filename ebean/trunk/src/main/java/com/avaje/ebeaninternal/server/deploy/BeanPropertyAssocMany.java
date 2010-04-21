@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.deploy;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.persistence.PersistenceException;
 
@@ -101,6 +102,8 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	ImportedId importedId;
 	
 	String deleteByParentIdSql;
+    String deleteByParentIdInSql;
+
 	
 	final CollectionTypeConverter typeConverter;
 	
@@ -147,13 +150,14 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 				embeddedExportedProperties = exportedProperties[0].isEmbedded();
 			}
 			
-			String whereParentId = deriveWhereParentIdSql();
+			String delStmt;
 			if (manyToMany){
-                deleteByParentIdSql = "delete from "+inverseJoin.getTable()+" where "+whereParentId;
-			    
+			    delStmt = "delete from "+inverseJoin.getTable()+" where ";
 			} else {
-			    deleteByParentIdSql = "delete from "+targetDescriptor.getBaseTable()+" where "+whereParentId;
+			    delStmt = "delete from "+targetDescriptor.getBaseTable()+" where ";
 			}
+			deleteByParentIdSql = delStmt + deriveWhereParentIdSql(false);
+			deleteByParentIdInSql = delStmt + deriveWhereParentIdSql(true);
 		}
 	}
     
@@ -209,12 +213,42 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	        setValue(destBean, copyCollection);
 	    }	    
     }
+	
+    public SqlUpdate deleteByParentId(Object parentId, List<Object> parentIdist) {
+        if (parentId != null){
+            return deleteByParentId(parentId);
+        } else {
+            return deleteByParentIdList(parentIdist);
+        }
+    }
 
-	public SqlUpdate deleteByParentId(Object parentId) {
+	private SqlUpdate deleteByParentId(Object parentId) {
 	    DefaultSqlUpdate sqlDelete = new DefaultSqlUpdate(deleteByParentIdSql);
 	    bindWhereParendId(sqlDelete, parentId);
 	    return sqlDelete;
 	}
+	
+	private SqlUpdate deleteByParentIdList(List<Object> parentIdist) {
+
+        StringBuilder sb = new StringBuilder(100);
+        sb.append(deleteByParentIdInSql);
+
+        sb.append(" in (");
+        for (int i = 0; i < parentIdist.size(); i++) {
+            if (i > 0){
+                sb.append(",");                
+            }
+            sb.append(targetIdBinder.getIdInValueExpr());
+        }
+        sb.append(") ");
+
+        DefaultSqlUpdate delete = new DefaultSqlUpdate(sb.toString());
+        for (int i = 0; i < parentIdist.size(); i++) {            
+            bindWhereParendId(delete, parentIdist.get(i));
+        }
+        
+        return delete;
+    }
 	
 	/**
 	 * Set the lazy load server to help create reference collections (that lazy
@@ -322,13 +356,15 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
     /**
      * Return the logical id value expression taking into account embedded id's.
      */
+    @Override
     public String getAssocIdInValueExpr(){
-        return targetDescriptor.getIdBinder().getAssocIdInValueExpr();        
+        return targetDescriptor.getIdBinder().getIdInValueExpr();        
     }
     
     /**
      * Return the logical id in expression taking into account embedded id's.
      */
+    @Override
     public String getAssocIdInExpr(String prefix){
         return targetDescriptor.getIdBinder().getAssocIdInExpr(prefix);
     }
@@ -435,29 +471,37 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 	
 	private void bindWhereParendId(DefaultSqlUpdate sqlUpd, Object parentId){
-
-        ExportedProperty[] expProps = getExported();
         
-        if (expProps.length == 1){
+        if (exportedProperties.length == 1){
             sqlUpd.addParameter(parentId);
             return;
         }
-        
-        targetDescriptor.getIdBinder().bindId(sqlUpd, parentId);
+        for (int i = 0; i < exportedProperties.length; i++) {
+            Object embVal = exportedProperties[i].getValue(parentId);
+            sqlUpd.addParameter(embVal);
+        }
 	}
 	
-    private String deriveWhereParentIdSql() {
+    private String deriveWhereParentIdSql(boolean inClause) {
         
-        ExportedProperty[] expProps = getExported();
-
         StringBuilder sb = new StringBuilder();
         
-        for (int i = 0; i < expProps.length; i++) {
-            String fkColumn = expProps[i].getForeignDbColumn();
+        if (inClause){
+            sb.append("(");
+        }
+        for (int i = 0; i < exportedProperties.length; i++) {
+            String fkColumn = exportedProperties[i].getForeignDbColumn();
             if (i > 0){
-                sb.append(" and ");
+                String s = inClause ? "," : " and ";
+                sb.append(s);
             }
-            sb.append(fkColumn).append("=? ");            
+            sb.append(fkColumn);
+            if (!inClause){
+                sb.append("=? ");
+            }
+        }
+        if (inClause){
+            sb.append(")");
         }
         return sb.toString();
     }
@@ -471,16 +515,15 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			query.setIncludeTableJoin(inverseJoin);
 		}
 
-		ExportedProperty[] expProps = getExported();
 		if (embeddedExportedProperties) {
 			// use the EmbeddedId object instead of the parentBean
 			BeanProperty[] uids = descriptor.propertiesId();
 			parentBean = uids[0].getValue(parentBean);
 		}
 
-		for (int i = 0; i < expProps.length; i++) {
-			Object val = expProps[i].getValue(parentBean);
-			String fkColumn = expProps[i].getForeignDbColumn();
+		for (int i = 0; i < exportedProperties.length; i++) {
+			Object val = exportedProperties[i].getValue(parentBean);
+			String fkColumn = exportedProperties[i].getForeignDbColumn();
 			if (!manyToMany){
 				fkColumn = targetDescriptor.getBaseTableAlias()+"."+fkColumn;
 			} else {
@@ -500,14 +543,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		if (fetchOrderBy != null){
 			query.order(fetchOrderBy);
 		}
-	}
-
-	private ExportedProperty[] getExported() {
-		if (exportedProperties == null) {
-			exportedProperties = createExported();
-			embeddedExportedProperties = exportedProperties[0].isEmbedded();
-		}
-		return exportedProperties;
 	}
 
 	/**
@@ -668,15 +703,13 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 */
 	private void buildExport(IntersectionRow row, Object parentBean) {
 
-		BeanProperty[] uids = descriptor.propertiesId();
-
-		ExportedProperty[] expProps = getExported();
 		if (embeddedExportedProperties) {
+	        BeanProperty[] uids = descriptor.propertiesId();
 			parentBean = uids[0].getValue(parentBean);
 		}
-		for (int i = 0; i < expProps.length; i++) {
-			Object val = expProps[i].getValue(parentBean);
-			String fkColumn = expProps[i].getForeignDbColumn();
+		for (int i = 0; i < exportedProperties.length; i++) {
+			Object val = exportedProperties[i].getValue(parentBean);
+			String fkColumn = exportedProperties[i].getForeignDbColumn();
 
 			row.put(fkColumn, val);
 		}

@@ -99,6 +99,11 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
      */
     protected Object idValue;
 
+    /**
+     * Hash value used to handle cascade delete both ways in a relationship.
+     */
+    protected Integer beanHash;
+
     protected final Set<String> changedProps;
 
     protected boolean notifyCache;
@@ -225,17 +230,20 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     public boolean isParent(Object o) {
         return o == parentBean;
     }
-
+    
     /**
      * The hash used to register the bean with the transaction.
      * <p>
      * Takes into account the class type and id value.
      * </p>
      */
-    private int getBeanHash(Object b) {
-        Object id = beanDescriptor.getId(b);
-        int hc = b.getClass().getName().hashCode();
-        return hc * 31 + id.hashCode();
+    private Integer getBeanHash() {
+        if (beanHash == null){
+            Object id = beanDescriptor.getId(bean);
+            int hc = bean.getClass().getName().hashCode();
+            beanHash = Integer.valueOf(hc * 31 + id.hashCode());
+        }
+        return beanHash;
     }
 
     /**
@@ -243,14 +251,14 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
      * both sides of a relationship.
      */
     public void registerBean() {
-        transaction.registerBean(getBeanHash(bean));
+        transaction.registerBean(getBeanHash());
     }
 
     /**
      * Unregister the bean from the transaction.
      */
     public void unregisterBean() {
-        transaction.unregisterBean(getBeanHash(bean));
+        transaction.unregisterBean(getBeanHash());
     }
 
     /**
@@ -260,7 +268,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         if (transaction == null) {
             return false;
         }
-        return transaction.isRegisteredBean(getBeanHash(bean));
+        return transaction.isRegisteredBean(getBeanHash());
     }
 
     /**
@@ -339,6 +347,13 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         return bean;
     }
 
+    /**
+     * Return the Id value for the bean.
+     */
+    public Object getBeanId() {
+        return beanDescriptor.getId(bean);
+    }
+    
     /**
      * Get the old values bean. This is used to perform optimistic concurrency
      * checking on updates and deletes.
