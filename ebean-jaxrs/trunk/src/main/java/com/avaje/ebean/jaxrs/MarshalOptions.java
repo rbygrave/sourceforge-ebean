@@ -24,6 +24,14 @@ import com.avaje.ebean.text.json.JsonWriteOptions;
 
 /**
  * Options for controlling the Marshaling of JSON and XML content.
+ * <p>
+ * This uses a ThreadLocal to pass the options from your resource code to the
+ * JSON or XML Marshalling provider.
+ * </p>
+ * <p>
+ * So your code in the JAX-RS resource sets the options to use and the provider
+ * removes them and then uses them to control the marshalling.
+ * </p>
  * 
  * @author rbygrave
  */
@@ -41,25 +49,48 @@ public final class MarshalOptions {
     private MarshalOptions() {
     }
 
+    /**
+     * Typically called by the provider to get the JsonWriteOptions to use (if any).
+     */
     public static JsonWriteOptions removeJsonWriteOptions() {
         return local.get().removeJsonWriteOptions();
     }
 
+    /**
+     * Set the JsonWriteOptions to use when rendering the object with the JSON provider.
+     */
     public static void setJsonWriteOptions(JsonWriteOptions writeOptions) {
         local.get().setJsonWriteOptions(writeOptions);
     }
-    
+
+    /**
+     * Typically called by the provider to get the PathProperties to use (if any).
+     */
     public static PathProperties removePathProperties() {
         return local.get().removePathProperties();
     }
 
+    /**
+     * Set the PathProperties to use when rendering the object.
+     * <p>
+     * If the PathProperties are set on a JsonWriteOptions then they will be
+     * used, otherwise these PathProperties are merged with any JsonWriteOptions that
+     * have been set.
+     * </p>
+     * <p>
+     * The reason for 'merging' PathProperties and JsonWriteOptions is that it is 
+     * expected that often a JsonWriteOptions will contain JsonWriteBeanVisitors and 
+     * PathProperties might come from the UriOptions for the specific request.
+     * </p>
+     */
     public static void setPathProperties(PathProperties pathProperties) {
         local.get().setPathProperties(pathProperties);
     }
-    
+
     private static class Holder {
-        
+
         private PathProperties pathProperties;
+        
         private JsonWriteOptions writeOptions;
 
         private void setPathProperties(PathProperties pathProperties) {
@@ -72,16 +103,15 @@ public final class MarshalOptions {
             return p;
         }
 
-
         private JsonWriteOptions removeJsonWriteOptions() {
             JsonWriteOptions o = writeOptions;
             writeOptions = null;
             return o;
         }
-        
+
         private void setJsonWriteOptions(JsonWriteOptions writeOptions) {
             this.writeOptions = writeOptions;
         }
-        
+
     }
 }
