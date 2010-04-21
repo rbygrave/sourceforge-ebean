@@ -37,6 +37,7 @@ import com.avaje.ebean.config.dbplatform.MySqlPlatform;
 import com.avaje.ebean.config.dbplatform.Oracle10Platform;
 import com.avaje.ebean.config.dbplatform.Oracle9Platform;
 import com.avaje.ebean.config.dbplatform.PostgresPlatform;
+import com.avaje.ebean.config.dbplatform.SQLitePlatform;
 
 /**
  * Create a DatabasePlatform from the configuration.
@@ -101,6 +102,9 @@ public class DatabasePlatformFactory {
 		if (dbName.equals("mysql")){
 			return new MySqlPlatform();
 		}
+        if (dbName.equals("sqlite")){
+            return new SQLitePlatform();
+        }
 		
 		throw new RuntimeException("database platform "+dbName+" is not known?");
 	}
@@ -166,6 +170,9 @@ public class DatabasePlatformFactory {
 		if (dbProductName.indexOf("postgres") > -1) {
 			return new PostgresPlatform();
 		}
+        if (dbProductName.indexOf("sqlite") > -1) {
+            return new SQLitePlatform();
+        }
 		// use the standard one
 		return new DatabasePlatform();
 	}
