@@ -444,7 +444,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
     public BeanCollection<?> createReferenceIfNull(Object parentBean) {
 
         Object v = getValue(parentBean);
-        if (v != null){
+        if (v instanceof BeanCollection<?>){
             return null;
         } else {
             return createReference(parentBean);
