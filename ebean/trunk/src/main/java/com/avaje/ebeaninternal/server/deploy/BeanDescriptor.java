@@ -664,9 +664,7 @@ public class BeanDescriptor<T> {
                 }
             }
         }
-        
-        //initInheritInfo();
-        
+                
         if (unidirectional != null) {
             unidirectional.initialise();
         }
@@ -699,7 +697,6 @@ public class BeanDescriptor<T> {
                 deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
             }
         }
-
     }
 
     protected boolean hasInheritance() {
