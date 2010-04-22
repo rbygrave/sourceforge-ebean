@@ -305,8 +305,7 @@ public final class IdBinderMultiple implements IdBinder {
 				sb.append(".");				
 			}
 			sb.append(props[i].getName());
-			sb.append(" ").append(operator);
-			sb.append(" ? ");
+			sb.append(operator);
 		}
 		return sb.toString();		
 	}
