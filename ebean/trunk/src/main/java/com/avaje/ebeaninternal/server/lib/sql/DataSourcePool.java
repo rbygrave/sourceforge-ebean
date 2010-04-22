@@ -352,7 +352,7 @@ public class DataSourcePool implements DataSource {
         Connection conn = null;
         try {
             // test to see if we can create a new connection...
-            conn = createUnpooledConnection();
+            conn = getConnection();
             testConnection(conn);
 
             notifyDataSourceIsUp();
@@ -366,7 +366,7 @@ public class DataSourcePool implements DataSource {
             notifyDataSourceIsDown(ex);
         } finally {
             try {
-                if (conn != null && !conn.isClosed()) {
+                if (conn != null) {
                     conn.close();
                 }
             } catch (SQLException ex) {
