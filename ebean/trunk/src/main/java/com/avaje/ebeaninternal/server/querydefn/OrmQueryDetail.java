@@ -290,15 +290,19 @@ public class OrmQueryDetail implements Serializable {
 			String fetchPath =  it.next();
 			ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(fetchPath);
 			if (elProp.containsManySince(manyFetchProperty)){
+			    
+			    // this is a join to a *ToMany
 				OrmQueryProperties chunk = joins.get(fetchPath);
 				if (chunk.isFetchJoin() 
 				        && !isLazyLoadManyRoot(lazyLoadManyPath, chunk)
 				        && !hasParentSecJoin(lazyLoadManyPath, chunk)) {
-				    
+				    // this is a 'fetch join' (included in main query)
 				    if (fetchJoinFirstMany){
+				        // letting the first one remain a 'fetch join'
 				        fetchJoinFirstMany = false;
 				        manyFetchProperty = fetchPath;
 				    } else {
+				        // convert this one over to a 'query join'
 				        manyChunks.add(chunk);
 				    }
 				}
@@ -306,7 +310,7 @@ public class OrmQueryDetail implements Serializable {
 		}
 
 		for (int i = 0; i < manyChunks.size(); i++) {
-		    // convert over to query joins
+		    // convert 'fetch joins' over to 'query joins'
 		    manyChunks.get(i).setQueryFetch(queryBatch, true);
         }
 	}
