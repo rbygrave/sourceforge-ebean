@@ -126,14 +126,8 @@ public class SqlBeanLoad {
 	
 	public void loadAssocMany(BeanPropertyAssocMany<?> prop) {
 		
-		if ((bean == null) 
-			|| (excludes != null && excludes.contains(prop.getName()))
-			|| (type != null && !prop.isAssignableFrom(type))){
-			
-			return;
-		}
-
-		// set a lazy loading proxy
-		prop.createReference(bean);	
+	    // do nothing, as a lazy loading BeanCollection 'reference'
+	    // is created and registered with the loading context
+	    // in SqlTreeNodeBean.createListProxies()	    
 	}
 }
