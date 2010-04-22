@@ -67,11 +67,6 @@ public class DataSourceManager implements DataSourceNotify {
      * The frequency to test db while it is down.
      */
     private final int dbDownFreqInSecs;
-        
-//    /** 
-//     * The default dataSource used (can be null). 
-//     */
-//    private final String defaultDataSource;
 
     /**
      * Set to true when shutting down.
@@ -87,9 +82,7 @@ public class DataSourceManager implements DataSourceNotify {
 		
 		// perform heart beat every 30 seconds by default
         this.dbUpFreqInSecs = GlobalProperties.getInt("datasource.heartbeatfreq",30);
-        this.dbDownFreqInSecs = GlobalProperties.getInt("datasource.deadbeatfreq",10);
-//        this.defaultDataSource = GlobalPropertyMap.get("datasource.default", null);
-        
+        this.dbDownFreqInSecs = GlobalProperties.getInt("datasource.deadbeatfreq",10);        
         this.dbChecker = new BackgroundRunnable(new Checker(), dbUpFreqInSecs);
         
 		try {
@@ -167,10 +160,10 @@ public class DataSourceManager implements DataSourceNotify {
 			
 			this.shuttingDown = true;
 			
-			Iterator<DataSourcePool> i = dsMap.values().iterator();
-			while (i.hasNext()) {
+			Iterator<DataSourcePool> it = dsMap.values().iterator();
+			while (it.hasNext()) {
 				try {					
-					DataSourcePool ds = (DataSourcePool)i.next();
+					DataSourcePool ds = it.next();
 					ds.shutdown();
 
 				} catch (DataSourceException e) {
@@ -204,11 +197,11 @@ public class DataSourceManager implements DataSourceNotify {
 	public DataSourcePool getDataSource(String name, DataSourceConfig dsConfig){
 		
 		if (name == null){
-			throw new RuntimeException("name not defined");
+			throw new IllegalArgumentException("name not defined");
 		}
 				
 	    synchronized(monitor){
-		    DataSourcePool pool = (DataSourcePool)dsMap.get(name);
+		    DataSourcePool pool = dsMap.get(name);
 		    if (pool == null){
 		    	if (dsConfig == null){
 					dsConfig = new DataSourceConfig();
@@ -220,36 +213,6 @@ public class DataSourceManager implements DataSourceNotify {
 		    return pool;
 		}
 	}
-//    /**
-//     * Get the dataSource using explicit ConfigProperties.
-//     */
-//    public DataSourcePool getDataSource(String name, ConfigProperties configProps){
-//        return get(name, configProps);
-//    }
-//    
-//	private DataSourcePool get(String name, ConfigProperties configProps){
-//	    if (name == null){
-//	        name = defaultDataSource;
-//	        if (defaultDataSource == null){
-//	            throw new DataSourceException("No default datasource [datasource.default] has been defined.");
-//	        }
-//	    }
-//	    
-//	    if (configProps == null){
-//	    	configProps = defaultConfig;
-//	    }
-//	    
-//	    synchronized(monitor){
-//		    DataSourcePool pool = (DataSourcePool)dsMap.get(name);
-//		    if (pool == null){
-//		        Map<String,String> systemProps = configProps.getMap();
-//                DataSourceParams params = new DataSourceParams(systemProps, "datasource", name);
-//		        pool = new DataSourcePool(this, params);
-//		        dsMap.put(name, pool); 
-//		    }
-//		    return pool;
-//		}
-//	}
 	
 	/**
 	 * Check that the database is up by performing a simple query. This should
@@ -261,7 +224,7 @@ public class DataSourceManager implements DataSourceNotify {
 			if (!isShuttingDown()) {
 				Iterator<DataSourcePool> it = dsMap.values().iterator();
 				while (it.hasNext()) {
-					DataSourcePool ds = (DataSourcePool) it.next();
+					DataSourcePool ds = it.next();
 					ds.checkDataSource();
 				}
 			}
