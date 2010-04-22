@@ -156,8 +156,7 @@ public final class IdBinderSimple implements IdBinder {
 			sb.append(".");				
 		}
 		sb.append(idProperty.getName());
-		sb.append(" ").append(operator);
-		sb.append(" ? ");
+    	sb.append(operator);
 		return sb.toString();		
 	}
     

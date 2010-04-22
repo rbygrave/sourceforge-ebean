@@ -214,7 +214,7 @@ public final class OrderBy<T> implements Serializable {
 			this.property = property;
 			this.ascending = ascending;
 		}
-
+        
 		protected int hash() {
 			int hc = property.hashCode();
 			hc = hc * 31 + (ascending? 0 : 1);
@@ -240,6 +240,13 @@ public final class OrderBy<T> implements Serializable {
 			this.ascending = !ascending;
 		}
 
+		/**
+		 * Trim off the pathPrefix.
+		 */
+		public void trim(String pathPrefix){
+		    property = property.substring(pathPrefix.length() + 1);
+		}
+		
 		/**
 		 * Return a copy of this property.
 		 */

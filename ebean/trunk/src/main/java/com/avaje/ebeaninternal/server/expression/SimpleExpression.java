@@ -10,35 +10,21 @@ class SimpleExpression extends AbstractExpression {
 	private static final long serialVersionUID = -382881395755603790L;
 
 	enum Op { 
-		EQ {
-			public String toString() {
-				return "=";
-			}
-		},
-		NOT_EQ {
-			public String toString() {
-				return "<>";
-			}
-		},
-		LT {
-			public String toString() {
-				return "<";
-			}
-		},
-		LT_EQ {
-			public String toString() {
-				return "<=";
-			}
-		},
-		GT {
-			public String toString() {
-				return ">";
-			}
-		},
-		GT_EQ {
-			public String toString() {
-				return ">=";
-			}
+		EQ(" = ? "),
+		NOT_EQ(" <> ? "),
+		LT(" < ? "),
+		LT_EQ(" <= ? "),
+		GT(" > ? "),
+		GT_EQ(" >= ? ");
+		
+		String exp;
+		
+		Op(String exp){
+		    this.exp = exp;
+		}
+		
+		public String bind() {
+		    return exp;
 		}
 	}
 		
@@ -87,16 +73,16 @@ class SimpleExpression extends AbstractExpression {
 		ElPropertyValue prop = getElProp(request);
 		if (prop != null){
 		    if (prop.isAssocId()){
-	            request.append(prop.getAssocOneIdExpr(propertyName,type.toString()));
+	            request.append(prop.getAssocOneIdExpr(propertyName,type.bind()));
 	            return;
 		    }
 		    if (prop.isDbEncrypted()){
 		        String dsql = prop.getBeanProperty().getDecryptSql();
-		        request.append(dsql).append(" ").append(type.toString()).append(" ? ");
+		        request.append(dsql).append(type.bind());
 		        return;
 		    }
 		}
-        request.append(propertyName).append(" ").append(type.toString()).append(" ? ");
+        request.append(propertyName).append(type.bind());
 	}
 	
 	

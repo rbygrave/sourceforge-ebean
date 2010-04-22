@@ -2,6 +2,7 @@ package com.avaje.ebeaninternal.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 
 /**
@@ -24,12 +25,15 @@ class NullExpression extends AbstractExpression {
 	
 	public void addSql(SpiExpressionRequest request) {
 		
-		request.append(propertyName).append(" ");
-		if (notNull){
-			request.append(" is not null ");
-		} else {
-			request.append(" is null ");			
-		}
+	    String nullExpr = notNull ? " is not null " : " is null ";
+	    
+	    ElPropertyValue prop = getElProp(request);
+        if (prop != null && prop.isAssocId()){
+            request.append(prop.getAssocOneIdExpr(propertyName, nullExpr));
+            return;
+        }
+	    
+		request.append(propertyName).append(nullExpr);
 	}
 	
 	/**

@@ -229,8 +229,7 @@ public final class IdBinderEmbedded implements IdBinder {
             sb.append(embIdProperty.getName());
             sb.append(".");            
             sb.append(props[i].getName());
-            sb.append(" ").append(operator);
-            sb.append(" ? ");
+            sb.append(operator);
         }
         return sb.toString();
     }

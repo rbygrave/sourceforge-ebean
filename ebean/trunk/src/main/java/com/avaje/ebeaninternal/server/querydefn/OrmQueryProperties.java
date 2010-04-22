@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebean.FetchConfig;
+import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
@@ -70,6 +72,13 @@ public class OrmQueryProperties implements Serializable {
     private List<OrmQueryProperties> secondaryChildren;
 
     /**
+     * OrderBy properties that where on the main query
+     * but moved here as they relate to this (query join).
+     */
+    @SuppressWarnings("unchecked")
+    private OrderBy orderBy;
+    
+    /**
      * A filter that can be applied to the fetch of this path in the object graph.
      */
     @SuppressWarnings("unchecked")
@@ -95,6 +104,17 @@ public class OrmQueryProperties implements Serializable {
         setProperties(properties);
     }
 
+    /**
+     * Move a OrderBy.Property from the main query to this query join.
+     */
+    @SuppressWarnings("unchecked")
+    public void addSecJoinOrderProperty(OrderBy.Property orderProp) {
+        if (orderBy == null){
+            orderBy = new OrderBy();
+        }
+        orderBy.add(orderProp);
+    }
+    
     /**
      * Set the Fetch configuration options for this path.
      */
@@ -184,6 +204,7 @@ public class OrmQueryProperties implements Serializable {
     /**
      * Define the select and joins for this query.
      */
+    @SuppressWarnings("unchecked")
     public void configureBeanQuery(SpiQuery<?> query) {
 
         if (trimmedProperties != null && trimmedProperties.length() > 0) {
@@ -203,11 +224,20 @@ public class OrmQueryProperties implements Serializable {
                 query.setFilterMany(path, p.getFilterMany());
             }
         }
+        
+        if (orderBy != null){
+            List<Property> orderByProps = orderBy.getProperties();
+            for (int i = 0; i < orderByProps.size(); i++) {
+                orderByProps.get(i).trim(path);
+            }
+            query.setOrder(orderBy);
+        }
     }
 
     /**
      * Define the select and joins for this query.
      */
+    @SuppressWarnings("unchecked")
     public void configureManyQuery(SpiQuery<?> query) {
 
         if (trimmedProperties != null && trimmedProperties.length() > 0) {
@@ -227,6 +257,10 @@ public class OrmQueryProperties implements Serializable {
                 query.join(path, p.getProperties());
                 query.setFilterMany(path, p.getFilterMany());
             }
+        }
+        
+        if (orderBy != null){
+            query.setOrder(orderBy);
         }
     }
 

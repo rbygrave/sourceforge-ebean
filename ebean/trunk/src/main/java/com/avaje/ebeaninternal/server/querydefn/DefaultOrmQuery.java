@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.querydefn;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
@@ -311,10 +313,33 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
     public ManyWhereJoins getManyWhereJoins() {
         return manyWhereJoins;
     }
-    
 
     public List<OrmQueryProperties> removeQueryJoins() {
-        return detail.removeSecondaryQueries();
+        List<OrmQueryProperties> queryJoins =  detail.removeSecondaryQueries();
+        if (queryJoins != null){
+            if (orderBy != null){
+                // remove any orderBy properties that relate to 
+                // paths of the secondary queries
+                for (int i = 0; i < queryJoins.size(); i++) {
+                    OrmQueryProperties joinPath = queryJoins.get(i);
+                    
+                    // loop through the orderBy properties and
+                    // move any ones related to the query join
+                    List<Property> properties = orderBy.getProperties();
+                    Iterator<Property> it = properties.iterator();
+                    while (it.hasNext()) {
+                        OrderBy.Property property = it.next();
+                        if (property.getProperty().startsWith(joinPath.getPath())){
+                            // remove this orderBy segment and 
+                            // add it to the secondary join
+                            it.remove();
+                            joinPath.addSecJoinOrderProperty(property);
+                        }
+                    }
+                }
+            }
+        }
+        return queryJoins;
     }
     
     public List<OrmQueryProperties> removeLazyJoins() {
