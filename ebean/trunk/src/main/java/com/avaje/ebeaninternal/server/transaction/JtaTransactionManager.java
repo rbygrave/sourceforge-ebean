@@ -26,8 +26,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
@@ -93,7 +98,8 @@ public class JtaTransactionManager implements ExternalTransactionManager {
             InitialContext ctx = new InitialContext();
             return (UserTransaction) ctx.lookup("java:comp/UserTransaction");
         } catch (NamingException e){
-            throw new PersistenceException(e);
+            // assuming CMT
+        	return new DummyUserTransaction();
         }
     }
     
@@ -159,6 +165,29 @@ public class JtaTransactionManager implements ExternalTransactionManager {
      */
     private JtaTxnListener createJtaTxnListener(SpiTransaction t) {
         return new JtaTxnListener(transactionManager, t);
+    }
+    
+    private static class DummyUserTransaction implements UserTransaction {
+
+        public void begin() throws NotSupportedException, SystemException {
+		}
+
+		public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
+				SecurityException, IllegalStateException, SystemException {
+		}
+
+		public int getStatus() throws SystemException {
+			return 0;
+		}
+
+		public void rollback() throws IllegalStateException, SecurityException, SystemException {
+		}
+
+		public void setRollbackOnly() throws IllegalStateException, SystemException {
+		}
+
+		public void setTransactionTimeout(int seconds) throws SystemException {
+		}
     }
 
     /**
