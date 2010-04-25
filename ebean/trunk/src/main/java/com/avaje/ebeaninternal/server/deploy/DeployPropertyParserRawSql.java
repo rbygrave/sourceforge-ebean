@@ -10,9 +10,9 @@ import java.util.Set;
  */
 public final class DeployPropertyParserRawSql extends DeployParser {
 
-    private final RawSqlSelect rawSqlSelect;
+    private final DRawSqlSelect rawSqlSelect;
 
-    public DeployPropertyParserRawSql(RawSqlSelect rawSqlSelect) {
+    public DeployPropertyParserRawSql(DRawSqlSelect rawSqlSelect) {
         this.rawSqlSelect = rawSqlSelect;
     }
 
@@ -30,7 +30,7 @@ public final class DeployPropertyParserRawSql extends DeployParser {
 
     @Override
     public String getDeployWord(String expression) {
-        RawSqlColumnInfo columnInfo = rawSqlSelect.getRawSqlColumnInfo(expression);
+        DRawSqlColumnInfo columnInfo = rawSqlSelect.getRawSqlColumnInfo(expression);
         if (columnInfo == null) {
             return null;
         } else {

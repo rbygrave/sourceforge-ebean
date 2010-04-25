@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.Query.Type;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
@@ -40,6 +41,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.InheritInfo;
+import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
@@ -52,6 +54,8 @@ public class SqlTreeBuilder {
     private static final Logger logger = Logger.getLogger(SqlTreeBuilder.class.getName());
 
     private final SpiQuery<?> query;
+
+    private final BeanDescriptor<?> desc;
 
     private final OrmQueryDetail queryDetail;
 
@@ -68,14 +72,36 @@ public class SqlTreeBuilder {
 
     private String manyPropertyName;
     
-    private final OrmQueryRequest<?> request;
-
     private final SqlTreeAlias alias;
 
     private final DefaultDbSqlContext ctx;
 
     private final HashSet<String> selectIncludes = new HashSet<String>();
 
+    private final ManyWhereJoins manyWhereJoins;
+
+    private final TableJoin includeJoin;
+
+    private final boolean rawSql;
+    
+    /**
+     * Construct for RawSql query.
+     */
+    public SqlTreeBuilder(OrmQueryRequest<?> request, CQueryPredicates predicates, OrmQueryDetail queryDetail) {
+
+        this.rawSql = true;
+        this.desc = request.getBeanDescriptor();
+        this.query = null;        
+        this.subQuery = false;        
+        this.queryDetail = queryDetail;        
+        this.predicates = predicates;
+        
+        this.includeJoin = null;
+        this.manyWhereJoins = null;
+        this.alias = null;//new SqlTreeAlias(request.getBeanDescriptor().getBaseTableAlias());
+        this.ctx = null;//new DefaultDbSqlContext(alias, tableAliasPlaceHolder, columnAliasPrefix, !subQuery);
+    }
+    
     /**
      * The predicates are used to determine if 'extra' joins are required to
      * support the where and/or order by clause. If so these extra joins are
@@ -84,15 +110,17 @@ public class SqlTreeBuilder {
     public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, OrmQueryRequest<?> request,
             CQueryPredicates predicates) {
 
-        this.request = request;
-        this.subQuery = request.isSubQuery();
+        this.rawSql = false;
+        this.desc = request.getBeanDescriptor();
         this.query = request.getQuery();
-
+        
+        this.subQuery = Type.SUBQUERY.equals(query.getType());        
+        this.includeJoin = query.getIncludeTableJoin();
+        this.manyWhereJoins = query.getManyWhereJoins();
         this.queryDetail = query.getDetail();
+        
         this.predicates = predicates;
-
         this.alias = new SqlTreeAlias(request.getBeanDescriptor().getBaseTableAlias());
-
         this.ctx = new DefaultDbSqlContext(alias, tableAliasPlaceHolder, columnAliasPrefix, !subQuery);
     }
 
@@ -101,7 +129,7 @@ public class SqlTreeBuilder {
      */
     public SqlTree build() {
 
-        BeanDescriptor<?> desc = request.getBeanDescriptor();
+        //BeanDescriptor<?> desc = request.getBeanDescriptor();
 
         SqlTree sqlTree = new SqlTree();
 
@@ -113,14 +141,15 @@ public class SqlTreeBuilder {
         // build the actual String
         SqlTreeNode rootNode = sqlTree.getRootNode();
 
-        sqlTree.setSelectSql(buildSelectClause(rootNode));
-        sqlTree.setFromSql(buildFromClause(rootNode));
-        sqlTree.setInheritanceWhereSql(buildWhereClause(rootNode));
-        
+        if (!rawSql){
+            sqlTree.setSelectSql(buildSelectClause(rootNode));
+            sqlTree.setFromSql(buildFromClause(rootNode));
+            sqlTree.setInheritanceWhereSql(buildWhereClause(rootNode));
+            sqlTree.setEncryptedProps(ctx.getEncryptedProps());
+        }        
         sqlTree.setIncludes(queryDetail.getIncludes());
         sqlTree.setSummary(summary.toString());
-        sqlTree.setEncryptedProps(ctx.getEncryptedProps());
-
+            
         if (manyPropertyName != null){
             ElPropertyValue manyPropEl = desc.getElGetValue(manyPropertyName);
             sqlTree.setManyProperty(manyProperty, manyPropertyName, manyPropEl);
@@ -131,6 +160,9 @@ public class SqlTreeBuilder {
 
     private String buildSelectClause(SqlTreeNode rootNode) {
 
+        if (rawSql){
+            return "Not Used";
+        }
         rootNode.appendSelect(ctx);
 
         String selectSql = ctx.getContent();
@@ -144,16 +176,20 @@ public class SqlTreeBuilder {
     }
 
     private String buildWhereClause(SqlTreeNode rootNode) {
-
+        
+        if (rawSql){
+            return "Not Used";
+        }
         rootNode.appendWhere(ctx);
-
         return ctx.getContent();
     }
 
     private String buildFromClause(SqlTreeNode rootNode) {
 
+        if (rawSql){
+            return "Not Used";
+        }
         rootNode.appendFrom(ctx, false);
-
         return ctx.getContent();
     }
 
@@ -162,14 +198,16 @@ public class SqlTreeBuilder {
         SqlTreeNode selectRoot = buildSelectChain(null, null, desc, null);
         sqlTree.setRootNode(selectRoot);
 
-        alias.addJoin(queryDetail.getIncludes());
-        alias.addJoin(predicates.getPredicateIncludes());
-        alias.addManyWhereJoins(query.getManyWhereJoins().getJoins());
-
-        // build set of table alias
-        alias.buildAlias();
-
-        predicates.parseTableAlias(alias);
+        if (!rawSql){
+            alias.addJoin(queryDetail.getIncludes());
+            alias.addJoin(predicates.getPredicateIncludes());
+            alias.addManyWhereJoins(manyWhereJoins.getJoins());
+    
+            // build set of table alias
+            alias.buildAlias();
+    
+            predicates.parseTableAlias(alias);
+        }
     }
 
     /**
@@ -199,7 +237,7 @@ public class SqlTreeBuilder {
             }
         }
 
-        if (prefix == null) {
+        if (prefix == null && !rawSql) {
             addManyWhereJoins(myJoinList);
         }
 
@@ -218,9 +256,7 @@ public class SqlTreeBuilder {
      */
     private void addManyWhereJoins(List<SqlTreeNode> myJoinList) {
 
-        BeanDescriptor<?> desc = request.getBeanDescriptor();
-
-        Set<String> includes = query.getManyWhereJoins().getJoins();
+        Set<String> includes = manyWhereJoins.getJoins();
         for (String joinProp : includes) {
            
             BeanPropertyAssoc<?> beanProperty = (BeanPropertyAssoc<?>) desc.getBeanPropertyFromPath(joinProp);
@@ -238,7 +274,7 @@ public class SqlTreeBuilder {
 
         if (prefix == null) {
             buildExtraJoins(desc, myList);
-            return new SqlTreeNodeRoot(desc, props, myList, !subQuery, query);
+            return new SqlTreeNodeRoot(desc, props, myList, !subQuery, includeJoin);
 
         } else if (prop instanceof BeanPropertyAssocMany<?>) {
             return new SqlTreeNodeManyRoot(prefix, (BeanPropertyAssocMany<?>) prop, props, myList);
@@ -254,6 +290,10 @@ public class SqlTreeBuilder {
      */
     private void buildExtraJoins(BeanDescriptor<?> desc, List<SqlTreeNode> myList) {
 
+        if (rawSql){
+            return;
+        }
+        
         Set<String> predicateIncludes = predicates.getPredicateIncludes();
 
         if (predicateIncludes == null) {
@@ -266,7 +306,6 @@ public class SqlTreeBuilder {
         // support the predicates or order by clauses.
 
         // remove ManyWhereJoins from the predicateIncludes
-        ManyWhereJoins manyWhereJoins = query.getManyWhereJoins();
         predicateIncludes.removeAll(manyWhereJoins.getJoins());
         
         // look for predicateIncludes that are not in selectIncludes and add

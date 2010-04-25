@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2009 Authors
  * 
  * This file is part of Ebean.
  * 
@@ -17,27 +17,23 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.annotation;
+package com.avaje.ebeaninternal.server.type;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.sql.ResultSet;
 
-/**
- * Specify explicit sql for multiple select statements. Need to use this if you
- * have more than one SqlSelect for a given bean.
- * <p>
- * FUTURE: Support explicit sql for SqlInsert, SqlUpdate and SqlDelete.
- * </p>
- */
-@Target( { ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Sql {
+public class RsetDataReaderIndexed extends RsetDataReader {
 
-	/**
-	 * The sql select statements.
-	 */
-	SqlSelect[] select() default { @SqlSelect };
+    private final int[] rsetIndexPositions;
+    
+    public RsetDataReaderIndexed(ResultSet rset, int[] rsetIndexPositions) {
+        super(rset);
+        this.rsetIndexPositions = rsetIndexPositions;
+    }
 
-};
+    @Override
+    protected int pos() {
+        int i = pos++;
+        return rsetIndexPositions[i];
+    }
+
+}

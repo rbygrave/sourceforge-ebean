@@ -8,7 +8,7 @@ import com.avaje.ebean.annotation.SqlSelect;
  * Created from SqlSelect annotation or xml deployment.
  * </p>
  */
-public class RawSqlMeta {
+public class DRawSqlMeta {
 
 	private String name;
 	private String tableAlias;
@@ -20,7 +20,7 @@ public class RawSqlMeta {
 	private String columnMapping;
 
 
-	public RawSqlMeta(SqlSelect sqlSelect) {
+	public DRawSqlMeta(SqlSelect sqlSelect) {
 		this.debug = sqlSelect.debug();
 		this.name = sqlSelect.name();
 		this.tableAlias = toNull(sqlSelect.tableAlias());
@@ -31,7 +31,7 @@ public class RawSqlMeta {
 		this.query = toNull(sqlSelect.query());
 	}
 
-	public RawSqlMeta(String name, String extend, String query, boolean debug,
+	public DRawSqlMeta(String name, String extend, String query, boolean debug,
 			String where, String having, String columnMapping) {
 
 		this.name = name;
@@ -107,7 +107,7 @@ public class RawSqlMeta {
 		this.columnMapping = columnMapping;
 	}
 
-	public void extend(RawSqlMeta parentQuery){
+	public void extend(DRawSqlMeta parentQuery){
 		extendQuery(parentQuery.getQuery());
 		extendColumnMapping(parentQuery.getColumnMapping());
 	}

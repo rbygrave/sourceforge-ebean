@@ -2,7 +2,6 @@ package com.avaje.ebeaninternal.server.query;
 
 import java.util.List;
 
-import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.deploy.DbSqlContext;
@@ -18,10 +17,9 @@ public final class SqlTreeNodeRoot extends SqlTreeNodeBean {
 	/**
 	 * Specify for SqlSelect to include an Id property or not.
 	 */
-	public SqlTreeNodeRoot(BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, SpiQuery<?> query){
-	//TableJoin includeJoin, boolean cascadeExistingBean) {
+	public SqlTreeNodeRoot(BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId, TableJoin includeJoin){
 		super(null, null, desc, props, myList, withId);
-		this.includeJoin = query.getIncludeTableJoin();
+		this.includeJoin = includeJoin;
 	}
 
 	public SqlTreeNodeRoot(BeanDescriptor<?> desc, SqlTreeProperties props, List<SqlTreeNode> myList, boolean withId) {

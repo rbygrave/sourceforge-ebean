@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -112,6 +113,8 @@ public interface IdBinder {
 	 * Return the binding expression (like "?" or "(?,?)")for the Id.
 	 */
     public String getIdInValueExpr();
+    
+    public void buildSelectExpressionChain(String prefix, List<String> selectChain);
     
 	/**
 	 * Read the id value from the result set and set it to the bean also returning it.

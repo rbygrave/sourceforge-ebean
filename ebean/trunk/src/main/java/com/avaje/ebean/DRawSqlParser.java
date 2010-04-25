@@ -1,15 +1,13 @@
-package com.avaje.ebeaninternal.server.deploy;
+package com.avaje.ebean;
 
-import java.util.List;
-
-import com.avaje.ebean.config.NamingConvention;
+import com.avaje.ebean.RawSql.Sql;
 import com.avaje.ebeaninternal.server.querydefn.SimpleTextParser;
 
 /**
  * Parses sql-select queries to try and determine the location where WHERE and HAVING
  * clauses can be added dynamically to the sql.
  */
-public class RawSqlSelectBuilder {
+class DRawSqlParser {
 
 	public static final String $_AND_HAVING = "${andHaving}";
 	
@@ -21,19 +19,9 @@ public class RawSqlSelectBuilder {
 
 	private static final String ORDER_BY = "order by";
 
-	private final BeanDescriptor<?> desc;
-
-	private final NamingConvention namingConvention;
-
-	private final RawSqlMeta meta;
-
-	private final boolean debug;
-
-	private String sql;
-
 	private final SimpleTextParser textParser;
 
-	private List<RawSqlColumnInfo> selectColumns;
+    private String sql;
 
 	private int placeHolderWhere;
 	private int placeHolderAndWhere;
@@ -52,69 +40,37 @@ public class RawSqlSelectBuilder {
 	private int whereExprPos = -1;
 	private boolean havingExprAnd;
 	private int havingExprPos = -1;
-
-	private String tableAlias;
 	
-	public RawSqlSelectBuilder(NamingConvention namingConvention, BeanDescriptor<?> desc, RawSqlMeta sqlSelectMeta) {
+	public static Sql parse(String sql){
+	    return new DRawSqlParser(sql).parse();
+	}
+	
+	private DRawSqlParser(String sql) {
 
-		this.namingConvention = namingConvention;
-		this.desc = desc;
-		this.tableAlias = sqlSelectMeta.getTableAlias();
-		this.meta = sqlSelectMeta;
-		this.debug = sqlSelectMeta.isDebug();
-		this.sql = sqlSelectMeta.getQuery().trim();
+		this.sql = sql;
 		this.hasPlaceHolders = findAndRemovePlaceHolders();
-		this.textParser = new SimpleTextParser(this.sql);
+		this.textParser = new SimpleTextParser(sql);
 	}
+		
+	private Sql parse() {
 
-	protected NamingConvention getNamingConvention() {
-		return namingConvention;
-	}
-
-	protected BeanDescriptor<?> getBeanDescriptor() {
-		return desc;
-	}
-	
-	protected boolean isDebug() {
-		return debug;
-	}
-
-	protected void debug(String msg) {
-		if (debug) {
-			System.out.println("debug> " + msg);
-		}
-	}
-	
-	public DeployNamedQuery parse() {
-
-		if (debug) {
-			debug("");
-			debug("Parsing sql-select in " + getErrName());
-		}
-
-		if (hasPlaceHolders()) {
-
-		} else {
+		if (!hasPlaceHolders()) {
 			// parse the sql for the keywords...
 			// select, from, where, having, group by, order by
 			parseSqlFindKeywords(true);
 		}
 
-		selectColumns = findSelectColumns(meta.getColumnMapping());
 		whereExprPos = findWhereExprPosition();
 		havingExprPos = findHavingExprPosition();
 
-		String preWhereExprSql = removeWhitespace(findPreWhereExprSql());
-		String preHavingExprSql = removeWhitespace(findPreHavingExprSql());
+        String preFrom = removeWhitespace(findPreFromSql());
+		String preWhere = removeWhitespace(findPreWhereSql());
+		String preHaving = removeWhitespace(findPreHavingSql());
+        String orderBySql = findOrderBySql();   
 
-		preWhereExprSql = trimSelectKeyword(preWhereExprSql);
+        preFrom = trimSelectKeyword(preFrom);		
 		
-		String orderBySql = findOrderBySql();	
-		
-		RawSqlSelect rawSqlSelect = new RawSqlSelect(desc, selectColumns, tableAlias, preWhereExprSql, 
-				whereExprAnd, preHavingExprSql, havingExprAnd, orderBySql, meta);
-		
-		return new DeployNamedQuery(rawSqlSelect);
+		return new Sql(sql.hashCode(), preFrom, preWhere, whereExprAnd, preHaving, havingExprAnd, orderBySql);
 	}
 
 	/**
@@ -162,6 +118,8 @@ public class RawSqlSelectBuilder {
 	 */
 	private String trimSelectKeyword(String preWhereExprSql) {
 
+	    preWhereExprSql = preWhereExprSql.trim();
+	    
 		if (preWhereExprSql.length() < 7){
 			throw new RuntimeException("Expecting at least 7 chars in ["+preWhereExprSql+"]");
 		}
@@ -182,7 +140,7 @@ public class RawSqlSelectBuilder {
 		return null;
 	}
 
-	private String findPreHavingExprSql() {
+	private String findPreHavingSql() {
 		if (havingExprPos > whereExprPos) {
 			// an order by clause follows...
 			return sql.substring(whereExprPos, havingExprPos - 1);
@@ -194,62 +152,29 @@ public class RawSqlSelectBuilder {
 		return null;
 	}
 
-	private String findPreWhereExprSql() {
+    private String findPreFromSql() {
+        return sql.substring(0, fromPos - 1);
+    }
+
+	private String findPreWhereSql() {
 		if (whereExprPos > -1) {
-			return sql.substring(0, whereExprPos - 1);
+			return sql.substring(fromPos, whereExprPos - 1);
 		} else {
-			return sql;
+            return sql.substring(fromPos);
 		}
-	}
-
-	protected String getErrName() {
-		return "entity[" + desc.getFullName() + "] query[" + meta.getName() + "]";
-	}
-
-	/**
-	 * Find the columns in the select clause including the table alias' and
-	 * column alias.
-	 */
-	private List<RawSqlColumnInfo> findSelectColumns(String selectClause) {
-
-		if (selectClause == null || selectClause.trim().length() == 0) {
-			if (hasPlaceHolders) {
-				if (debug) {
-					debug("... No explicit ColumnMapping, so parse the sql looking for SELECT and FROM keywords.");
-				}
-				parseSqlFindKeywords(false);
-			}
-			if (selectPos == -1 || fromPos == -1) {
-				String msg = "Error in [" + getErrName() + "] parsing sql looking ";
-				msg += "for SELECT and FROM keywords.";
-				msg += " select:" + selectPos + " from:" + fromPos;
-				msg += ".  You could use an explicit columnMapping to bypass this error.";
-				throw new RuntimeException(msg);
-			}
-			selectPos += "select".length();
-			selectClause = sql.substring(selectPos, fromPos);
-		}
-
-		selectClause = selectClause.trim();
-		if (debug) {
-			debug("ColumnMapping ... [" + selectClause + "]");
-		}
-
-		return new RawSqlSelectColumnsParser(this,selectClause).parse();
 	}
 
 	private void parseSqlFindKeywords(boolean allKeywords) {
 
-		debug("Parsing query looking for SELECT...");
 		selectPos = textParser.findWordLower("select");
 		if (selectPos == -1) {
-			String msg = "Error in "+getErrName()+" parsing sql, can not find SELECT keyword in:";
+			String msg = "Error parsing sql, can not find SELECT keyword in:";
 			throw new RuntimeException(msg + sql);
 		}
-		debug("Parsing query looking for FROM... SELECT found at " + selectPos);
+
 		fromPos = textParser.findWordLower("from");
 		if (fromPos == -1) {
-			String msg = "Error in "+getErrName()+" parsing sql, can not find FROM keyword in:";
+			String msg = "Error parsing sql, can not find FROM keyword in:";
 			throw new RuntimeException(msg + sql);
 		}
 
@@ -257,17 +182,13 @@ public class RawSqlSelectBuilder {
 			return;
 		}
 
-		debug("Parsing query looking for WHERE... FROM found at " + fromPos);
 		wherePos = textParser.findWordLower("where");
 		if (wherePos == -1) {
-			debug("Parsing query looking for GROUP... no WHERE found");
 			groupByPos = textParser.findWordLower("group", fromPos + 5);
 		} else {
-			debug("Parsing query looking for GROUP... WHERE found at " + wherePos);
 			groupByPos = textParser.findWordLower("group");
 		}
 		if (groupByPos > -1) {
-			debug("Parsing query looking for HAVING... GROUP found at " + groupByPos);
 			havingPos = textParser.findWordLower("having");
 		}
 
@@ -282,7 +203,6 @@ public class RawSqlSelectBuilder {
 			startOrderBy = fromPos;
 		}
 
-		debug("Parsing query looking for ORDER... starting at " + startOrderBy);
 		orderByPos = textParser.findWordLower("order", startOrderBy);
 	}
 

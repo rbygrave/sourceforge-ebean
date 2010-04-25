@@ -62,7 +62,6 @@ import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.DataReader;
-import com.avaje.ebeaninternal.server.type.RsetDataReader;
 
 /**
  * An object that represents a SqlSelect statement.
@@ -220,7 +219,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private final PersistenceContext persistenceContext;
 
-	private RsetDataReader dataReader;
+	private DataReader dataReader;
 
 	/**
 	 * The statement used to create the resultSet.
@@ -412,7 +411,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	
 			// executeQuery
 			ResultSet rset = pstmt.executeQuery();
-			dataReader = new RsetDataReader(rset);
+			dataReader = queryPlan.createDataReader(rset);
 			return true;
 		}
 	}

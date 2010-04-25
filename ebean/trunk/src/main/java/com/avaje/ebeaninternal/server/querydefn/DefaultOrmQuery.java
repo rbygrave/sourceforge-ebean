@@ -21,6 +21,7 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.RawSql;
 import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
@@ -37,8 +38,8 @@ import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.DRawSqlSelect;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
-import com.avaje.ebeaninternal.server.deploy.RawSqlSelect;
 import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
@@ -215,6 +216,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	private transient PersistenceContext persistenceContext;
 
     private ManyWhereJoins manyWhereJoins;
+    
+    private RawSql rawSql;
 	
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory, String query) {
 		this.beanType = beanType;
@@ -236,18 +239,22 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.beanType = beanType;
 		this.server = server;
 		this.expressionFactory = expressionFactory;
-		this.name = namedQuery.getName();
-		this.sqlSelect = namedQuery.isSqlSelect();
-		if (sqlSelect) {
-			this.detail = new OrmQueryDetail();
-			// potentially with where and having clause...
-			RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
-			additionalWhere = sqlSelect.getWhereClause();
-			additionalHaving = sqlSelect.getHavingClause();
-		} else {
-			// parse the entire query...
-			setQuery(namedQuery.getQuery());
-		}
+        this.detail = new OrmQueryDetail();
+        if (namedQuery == null){
+            this.name = "";
+        } else {
+    		this.name = namedQuery.getName();
+    		this.sqlSelect = namedQuery.isSqlSelect();
+    		if (sqlSelect) {
+    			// potentially with where and having clause...
+    			DRawSqlSelect sqlSelect = namedQuery.getSqlSelect();
+    			additionalWhere = sqlSelect.getWhereClause();
+    			additionalHaving = sqlSelect.getHavingClause();
+    		} else {
+    			// parse the entire query...
+    			setQuery(namedQuery.getQuery());
+    		}
+        }
 	}
 	
 	/**
@@ -271,7 +278,16 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return false;
 	}
 	
-	public void setLazyLoadProperty(String lazyLoadProperty) {
+	public RawSql getRawSql() {
+        return rawSql;
+    }
+
+    public DefaultOrmQuery<T> setRawSql(RawSql rawSql) {
+        this.rawSql = rawSql;
+        return this;
+    }
+
+    public void setLazyLoadProperty(String lazyLoadProperty) {
 		this.lazyLoadProperty = lazyLoadProperty;
 	}
 
@@ -586,16 +602,18 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		int hc = beanType.getName().hashCode();
 
         hc = hc * 31 + (type == null ? 0 : type.ordinal());
-		hc = hc * 31 + (autoFetchTuned ? 31 : 0);
+
+        hc = hc * 31 + (rawSql == null ? 0 : rawSql.queryHash());
+
+        hc = hc * 31 + (autoFetchTuned ? 31 : 0);
 		hc = hc * 31 + (distinct ? 31 : 0);
+        hc = hc * 31 + (query == null ? 0 : query.hashCode());
+        hc = hc * 31 + detail.queryPlanHash(request);
 
 		hc = hc * 31 + (firstRow == 0 ? 0 : firstRow);
 		hc = hc * 31 + (maxRows == 0 ? 0 : maxRows);
 		hc = hc * 31 + (orderBy == null ? 0 : orderBy.hash());
 		hc = hc * 31 + (rawWhereClause == null ? 0 : rawWhereClause.hashCode());
-
-		hc = hc * 31 + detail.queryPlanHash(request);
-		hc = hc * 31 + (query == null ? 0 : query.hashCode());
 
 		hc = hc * 31 + (additionalWhere == null ? 0 : additionalWhere.hashCode());
 		hc = hc * 31 + (additionalHaving == null ? 0 : additionalHaving.hashCode());

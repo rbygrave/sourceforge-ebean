@@ -244,7 +244,7 @@ public class CQueryPredicates {
 
     public void prepare(boolean buildSql) {
 
-        DeployParser deployParser = request.getBeanDescriptor().createDeployPropertyParser();
+        DeployParser deployParser = request.createDeployParser();//getBeanDescriptor().createDeployPropertyParser();
 
         prepare(buildSql, true, deployParser);
     }

@@ -2,6 +2,7 @@ package com.avaje.ebeaninternal.server.deploy.id;
 
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.InvalidNameException;
@@ -81,7 +82,12 @@ public final class IdBinderMultiple implements IdBinder {
         }
     }
     
-    
+    public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
+
+        for (int i = 0; i < props.length; i++) {            
+            props[i].buildSelectExpressionChain(prefix, selectChain);
+        }
+    }
 
 	public void createLdapNameByBean(LdapName name, Object bean) throws InvalidNameException {
 

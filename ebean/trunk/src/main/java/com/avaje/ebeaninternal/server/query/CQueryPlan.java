@@ -1,11 +1,15 @@
 package com.avaje.ebeaninternal.server.query;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.type.DataBind;
+import com.avaje.ebeaninternal.server.type.DataReader;
+import com.avaje.ebeaninternal.server.type.RsetDataReader;
 
 /**
  * Represents a query for a given SQL statement.
@@ -52,15 +56,15 @@ public class CQueryPlan {
 	/**
 	 * Create a query plan based on a OrmQueryRequest.
 	 */
-	public CQueryPlan(OrmQueryRequest<?> request, String sql, SqlTree sqlTree, 
-			boolean rawSql, boolean rowNumberIncluded, String logWhereSql) {
+	public CQueryPlan(OrmQueryRequest<?> request, SqlLimitResponse sqlRes, SqlTree sqlTree, 
+			boolean rawSql, String logWhereSql) {
 		
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
-		this.sql = sql;
+		this.sql = sqlRes.getSql();
 		this.sqlTree = sqlTree;
 		this.rawSql = rawSql;
-		this.rowNumberIncluded = rowNumberIncluded;
+		this.rowNumberIncluded = sqlRes.isIncludesRowNumberColumn();
 		this.logWhereSql = logWhereSql;
 		this.encryptedProps = sqlTree.getEncryptedProps();
 	}
@@ -80,6 +84,11 @@ public class CQueryPlan {
 		this.logWhereSql = logWhereSql;
 		this.encryptedProps = sqlTree.getEncryptedProps();
 	}
+
+    public DataReader createDataReader(ResultSet rset){
+        
+        return new RsetDataReader(rset);
+    }
 
 	public void bindEncryptedProperties(DataBind dataBind) throws SQLException {
 	    if (encryptedProps != null){

@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -13,6 +14,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.deploy.DbSqlContext;
+import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.type.DataBind;
 
 /**
@@ -76,6 +78,15 @@ public final class IdBinderEmbedded implements IdBinder {
 
     public String getIdProperty() {
         return embIdProperty.getName();
+    }
+    
+    public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
+        
+        prefix = SplitName.add(prefix, embIdProperty.getName());
+        
+        for (int i = 0; i < props.length; i++) {
+            props[i].buildSelectExpressionChain(prefix, selectChain);
+        }        
     }
 
     public BeanProperty findBeanProperty(String dbColumnName) {

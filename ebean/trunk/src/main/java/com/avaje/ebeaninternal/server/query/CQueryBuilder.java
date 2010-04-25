@@ -19,18 +19,30 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.RawSql;
+import com.avaje.ebean.RawSqlBuilder;
+import com.avaje.ebean.RawSql.ColumnMapping;
+import com.avaje.ebean.RawSql.ColumnMapping.Column;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
+import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.persist.Binder;
+import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
 
 /**
@@ -45,8 +57,9 @@ public class CQueryBuilder implements Constants {
 	
 	private final SqlLimiter sqlLimiter;
 	
-	private final RawSqlSelectClauseBuilder rawSqlBuilder;
-	
+	private final RawSqlSelectClauseBuilder sqlSelectBuilder;
+    private final CQueryBuilderRawSql rawSqlHandler;
+
 	private final Binder binder;
 	
 	private final BackgroundExecutor backgroundExecutor;
@@ -62,9 +75,11 @@ public class CQueryBuilder implements Constants {
 		this.binder = binder;
 		this.tableAliasPlaceHolder = GlobalProperties.get("ebean.tableAliasPlaceHolder","${ta}");
 		this.columnAliasPrefix = GlobalProperties.get("ebean.columnAliasPrefix", "c");
-		this.rawSqlBuilder = new RawSqlSelectClauseBuilder(dbPlatform, binder);
+		this.sqlSelectBuilder = new RawSqlSelectClauseBuilder(dbPlatform, binder);
 
 		this.sqlLimiter = dbPlatform.getSqlLimiter();
+		this.rawSqlHandler = new CQueryBuilderRawSql(sqlLimiter);
+		
 		this.postgresPlatform = dbPlatform.getName().toLowerCase().indexOf("postgres") > -1;
 	}
 
@@ -205,7 +220,7 @@ public class CQueryBuilder implements Constants {
 	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {
 
 		if (request.isSqlSelect()){
-			return rawSqlBuilder.build(request);
+			return sqlSelectBuilder.build(request);
 		}
 		
 		CQueryPredicates predicates = new CQueryPredicates(binder, request);
@@ -228,8 +243,16 @@ public class CQueryBuilder implements Constants {
 
 		// Build the tree structure that represents the query.
 		SqlTree sqlTree = createSqlTree(request, predicates);
-		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
-		queryPlan = new CQueryPlan(request, s.getSql(), sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
+		SqlLimitResponse res = buildSql(null, request, predicates, sqlTree);
+		
+		boolean rawSql = request.isRawSql();
+		if (rawSql){
+            queryPlan = new CQueryPlanRawSql(request, res, sqlTree, predicates.getLogWhereSql());
+
+		} else {
+	        queryPlan = new CQueryPlan(request, res, sqlTree, rawSql, predicates.getLogWhereSql());
+		}
+		
 		
 		// cache the query plan because we can reuse it and also 
 		// gather query performance statistics based on it.
@@ -252,13 +275,61 @@ public class CQueryBuilder implements Constants {
      */
     private SqlTree createSqlTree(OrmQueryRequest<?> request, CQueryPredicates predicates) {
 
+        if (request.isRawSql()){
+            BeanDescriptor<?> descriptor = request.getBeanDescriptor();
+            ColumnMapping columnMapping = request.getQuery().getRawSql().getColumnMapping();
+            
+            PathProperties pathProps = new PathProperties();
+            
+            // convert list of columns into (tree like) PathProperties
+            Iterator<Column> it = columnMapping.getColumns();
+            while (it.hasNext()) {
+                RawSql.ColumnMapping.Column column = it.next();
+                String propertyName = column.getPropertyName();
+                if (!RawSqlBuilder.IGNORE_COLUMN.equals(propertyName)){
+                    
+                    ElPropertyValue el = descriptor.getElGetValue(propertyName);
+                    if (el == null){
+                        String msg = "Property ["+propertyName+"] not found on "+descriptor.getFullName();
+                        throw new PersistenceException(msg);
+                    }
+                    if (el.getBeanProperty().isId()){
+                        // For @Id properties we chop off the last part of the path
+                        propertyName = SplitName.parent(propertyName);
+                    }
+                    if (propertyName != null){
+                        String[] pathProp = SplitName.split(propertyName);
+                        pathProps.addToPath(pathProp[0], pathProp[1]);
+                    }
+                }
+            }
+            
+            OrmQueryDetail detail = new OrmQueryDetail();
+            
+            // transfer PathProperties into OrmQueryDetail
+            Iterator<String> pathIt = pathProps.getPaths().iterator();
+            while (pathIt.hasNext()) {
+                String path = pathIt.next();
+                Set<String> props = pathProps.get(path);
+                detail.getChunk(path, true).setDefaultProperties(null, props);
+            }
+
+            // build SqlTree based on OrmQueryDetail of the RawSql
+            return new SqlTreeBuilder(request, predicates, detail).build();
+        }
+        
         return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, request, predicates).build();
     }
-
 		
 	private SqlLimitResponse buildSql(String selectClause, OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
 		SpiQuery<?> query = request.getQuery();
+		
+        RawSql rawSql = query.getRawSql();
+        if (rawSql != null) {
+            return rawSqlHandler.buildSql(request, predicates, rawSql.getSql());
+        }
+		
 		BeanPropertyAssocMany<?> manyProp = select.getManyProperty();
 
 		boolean useSqlLimiter = false;

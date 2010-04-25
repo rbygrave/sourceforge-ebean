@@ -20,15 +20,15 @@ import com.avaje.ebeaninternal.server.query.SqlTreeProperties;
 /**
  * Represents a SqlSelect raw sql query.
  */
-public class RawSqlSelect {
+public class DRawSqlSelect {
 
-	private static final Logger logger = Logger.getLogger(RawSqlSelect.class.getName());
+	private static final Logger logger = Logger.getLogger(DRawSqlSelect.class.getName());
 
 	private final BeanDescriptor<?> desc;
 	
-	private final RawSqlColumnInfo[] selectColumns;
+	private final DRawSqlColumnInfo[] selectColumns;
 
-	private final Map<String,RawSqlColumnInfo> columnMap;
+	private final Map<String,DRawSqlColumnInfo> columnMap;
 	
 	private final String preWhereExprSql;
 
@@ -56,13 +56,13 @@ public class RawSqlSelect {
 
 	private final String tableAlias;
 	
-	public RawSqlSelect(BeanDescriptor<?> desc, List<RawSqlColumnInfo> selectColumns,
+	public DRawSqlSelect(BeanDescriptor<?> desc, List<DRawSqlColumnInfo> selectColumns,
 			String tableAlias, String preWhereExprSql, boolean andWhereExpr, String preHavingExprSql,
-			boolean andHavingExpr, String orderBySql, RawSqlMeta meta) {
+			boolean andHavingExpr, String orderBySql, DRawSqlMeta meta) {
 
 		this.desc = desc;
 		this.tableAlias = tableAlias;
-		this.selectColumns = selectColumns.toArray(new RawSqlColumnInfo[selectColumns.size()]);
+		this.selectColumns = selectColumns.toArray(new DRawSqlColumnInfo[selectColumns.size()]);
 		this.preHavingExprSql = preHavingExprSql;
 		this.preWhereExprSql = preWhereExprSql;
 		this.andHavingExpr = andHavingExpr;
@@ -78,9 +78,9 @@ public class RawSqlSelect {
 		this.columnMap = createColumnMap(this.selectColumns);
 	}
 
-	private Map<String,RawSqlColumnInfo> createColumnMap(RawSqlColumnInfo[] selectColumns) {
+	private Map<String,DRawSqlColumnInfo> createColumnMap(DRawSqlColumnInfo[] selectColumns) {
 	    
-	    HashMap<String,RawSqlColumnInfo> m = new HashMap<String,RawSqlColumnInfo>();
+	    HashMap<String,DRawSqlColumnInfo> m = new HashMap<String,DRawSqlColumnInfo>();
 	    for (int i = 0; i < selectColumns.length; i++) {
             m.put(selectColumns[i].getPropertyName(), selectColumns[i]);
         }
@@ -105,7 +105,7 @@ public class RawSqlSelect {
 	/**
 	 * Return the RawSqlColumnInfo given it's logical property name.
 	 */
-	public RawSqlColumnInfo getRawSqlColumnInfo(String propertyName){
+	public DRawSqlColumnInfo getRawSqlColumnInfo(String propertyName){
 	    return columnMap.get(propertyName);
 	}
 	
@@ -131,7 +131,7 @@ public class RawSqlSelect {
 
 		for (int i = 0; i < selectColumns.length; i++) {
 
-			RawSqlColumnInfo columnInfo = selectColumns[i];
+			DRawSqlColumnInfo columnInfo = selectColumns[i];
 			String propName = columnInfo.getPropertyName();
 			BeanProperty beanProperty = desc.getBeanProperty(propName);
 			if (beanProperty != null) {

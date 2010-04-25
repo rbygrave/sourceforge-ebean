@@ -303,6 +303,8 @@ public class OrmQueryProperties implements Serializable {
         }
         if (properties != null) {
             s += "(" + properties + ") ";
+        } else if (included != null) {
+            s += "(" + included + ") ";            
         }
         return s;
     }
@@ -324,7 +326,11 @@ public class OrmQueryProperties implements Serializable {
     public int autofetchPlanHash() {
         
         int hc = (path != null ? path.hashCode() : 1);
-        hc = hc * 31 + (properties != null ? properties.hashCode() : 1);
+        if (properties != null){
+            hc = hc * 31 + properties.hashCode();
+        } else {
+            hc = hc * 31 + (included != null ? included.hashCode() : 1);
+        }
         
         return hc;
     }
@@ -336,7 +342,11 @@ public class OrmQueryProperties implements Serializable {
     public int queryPlanHash(BeanQueryRequest<?> request) {
         
         int hc = (path != null ? path.hashCode() : 1);
-        hc = hc * 31 + (properties != null ? properties.hashCode() : 1);
+        if (properties != null){
+            hc = hc * 31 + properties.hashCode();
+        } else {
+            hc = hc * 31 + (included != null ? included.hashCode() : 1);
+        }
         hc = hc * 31 + (filterMany != null ? filterMany.queryPlanHash(request) : 1);
         
         return hc;
@@ -358,7 +368,7 @@ public class OrmQueryProperties implements Serializable {
      * Return true if this has properties.
      */
     public boolean hasProperties() {
-        return properties != null;
+        return properties != null || included != null;
     }
 
     /**

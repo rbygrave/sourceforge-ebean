@@ -93,6 +93,10 @@ public class SqlTreeNodeManyWhereJoin implements SqlTreeNode {
         }
     }
 
+    public void buildSelectExpressionChain(List<String> selectChain) {
+        // nothing to add
+    }
+
     public void appendSelect(DbSqlContext ctx) {
         // nothing to do here
     }

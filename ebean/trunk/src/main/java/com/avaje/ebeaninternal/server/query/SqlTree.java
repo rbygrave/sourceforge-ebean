@@ -19,6 +19,8 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -66,6 +68,12 @@ public class SqlTree {
      * Create the SqlSelectClause.
      */
     public SqlTree() {
+    }
+    
+    public List<String> buildSelectExpressionChain() {
+        ArrayList<String> list = new ArrayList<String>();
+        rootNode.buildSelectExpressionChain(list);
+        return list;
     }
     
 	/**
