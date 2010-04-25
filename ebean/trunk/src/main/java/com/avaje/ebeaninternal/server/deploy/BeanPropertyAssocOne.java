@@ -38,6 +38,7 @@ import com.avaje.ebeaninternal.server.deploy.id.ImportedId;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
@@ -262,6 +263,21 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return embeddedProps;
     }
 
+    public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
+
+        prefix = SplitName.add(prefix, name);
+
+        if (!embedded){
+            targetIdBinder.buildSelectExpressionChain(prefix, selectChain);
+            
+        } else {
+            for (int i = 0; i < embeddedProps.length; i++) {
+                embeddedProps[i].buildSelectExpressionChain(prefix, selectChain);
+            }       
+        }
+    }
+
+    
     /**
      * Return true if this a OneToOne property. Otherwise assumed ManyToOne.
      */

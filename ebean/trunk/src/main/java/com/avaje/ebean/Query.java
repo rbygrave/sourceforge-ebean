@@ -346,6 +346,10 @@ public interface Query<T> extends Serializable {
 	 */
 	public Type getType();
 
+    public RawSql getRawSql();
+
+    public Query<T> setRawSql(RawSql rawSql);
+	
 	/**
 	 * Cancel the query execution if supported by the underlying database and
 	 * driver.

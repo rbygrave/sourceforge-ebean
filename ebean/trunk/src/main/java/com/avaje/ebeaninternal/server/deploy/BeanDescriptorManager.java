@@ -582,9 +582,13 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             DeployBeanDescriptor<?> deployDesc = info.getDescriptor();
             BeanDescriptor<?> desc = getBeanDescriptor(deployDesc.getBeanType());
 
-            for (RawSqlMeta rawSqlMeta : deployDesc.getRawSqlMeta()) {
-                DeployNamedQuery nq = new RawSqlSelectBuilder(namingConvention, desc, rawSqlMeta).parse();
-                desc.addNamedQuery(nq);
+            for (DRawSqlMeta rawSqlMeta : deployDesc.getRawSqlMeta()) {
+                if (rawSqlMeta.getQuery() == null) {
+                    
+                } else {
+                    DeployNamedQuery nq = new DRawSqlSelectBuilder(namingConvention, desc, rawSqlMeta).parse();
+                    desc.addNamedQuery(nq);
+                }
             }
         }
     }
@@ -1199,7 +1203,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         String having = findContent(sqlSelect, "having");
         String columnMapping = findContent(sqlSelect, "columnMapping");
 
-        RawSqlMeta m = new RawSqlMeta(name, extend, query, debug, where, having, columnMapping);
+        DRawSqlMeta m = new DRawSqlMeta(name, extend, query, debug, where, having, columnMapping);
 
         deployDesc.add(m);
 

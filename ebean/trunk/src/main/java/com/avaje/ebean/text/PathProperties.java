@@ -118,6 +118,15 @@ public class PathProperties {
         return props == null ? null : props.getProperties();
     }
 
+    public void addToPath(String path, String property) {
+        Props props = pathMap.get(path);
+        if (props == null){
+            props = new Props(this, null, path);
+            pathMap.put(path, props);
+        }
+        props.getProperties().add(property);
+    }
+
     /**
      * Set the properties for a given path.
      */

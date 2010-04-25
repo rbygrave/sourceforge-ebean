@@ -35,7 +35,15 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 		this.manyJoin = assocBeanProperty instanceof BeanPropertyAssocMany<?>;
 	}
 	
-	/**
+	
+	
+	public void buildSelectExpressionChain(List<String> selectChain) {
+	    // nothing to add
+	}
+
+
+
+    /**
 	 * Return true if the extra join is a many join.
 	 * <p>
 	 * This means we need to add distinct to the sql query.

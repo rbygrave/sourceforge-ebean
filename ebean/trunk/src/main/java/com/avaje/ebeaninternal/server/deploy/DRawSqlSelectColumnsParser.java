@@ -12,9 +12,9 @@ import com.avaje.ebean.config.NamingConvention;
 /**
  * Parses columnMapping (select clause) mapping columns to bean properties.
  */
-public final class RawSqlSelectColumnsParser {
+public final class DRawSqlSelectColumnsParser {
 
-	private static Logger logger = Logger.getLogger(RawSqlSelectColumnsParser.class.getName());
+	private static Logger logger = Logger.getLogger(DRawSqlSelectColumnsParser.class.getName());
 
 	/**
 	 * Description of how the match was made.
@@ -37,17 +37,17 @@ public final class RawSqlSelectColumnsParser {
 
 	private final String sqlSelect;
 
-	private final List<RawSqlColumnInfo> columns = new ArrayList<RawSqlColumnInfo>();
+	private final List<DRawSqlColumnInfo> columns = new ArrayList<DRawSqlColumnInfo>();
 
 	private final BeanDescriptor<?> desc;
 
 	private final NamingConvention namingConvention;
 
-	private final RawSqlSelectBuilder parent;
+	private final DRawSqlSelectBuilder parent;
 
 	private final boolean debug;
 
-	public RawSqlSelectColumnsParser(RawSqlSelectBuilder parent, String sqlSelect) {
+	public DRawSqlSelectColumnsParser(DRawSqlSelectBuilder parent, String sqlSelect) {
 		this.parent = parent;
 		this.debug = parent.isDebug();
 		this.namingConvention = parent.getNamingConvention();
@@ -56,7 +56,7 @@ public final class RawSqlSelectColumnsParser {
 		this.end = sqlSelect.length();
 	}
 
-	public List<RawSqlColumnInfo> parse() {
+	public List<DRawSqlColumnInfo> parse() {
 		while (pos <= end) {
 			nextColumnInfo();
 		}
@@ -131,7 +131,7 @@ public final class RawSqlSelectColumnsParser {
 				logger.fine(msg);
 			}
 
-			RawSqlColumnInfo info = new RawSqlColumnInfo(colName, colLabel, prop.getName(), prop.isScalar());
+			DRawSqlColumnInfo info = new DRawSqlColumnInfo(colName, colLabel, prop.getName(), prop.isScalar());
 			columns.add(info);
 			columnIndex++;
 

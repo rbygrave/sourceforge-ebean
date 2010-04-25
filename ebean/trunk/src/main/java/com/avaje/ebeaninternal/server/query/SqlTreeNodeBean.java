@@ -178,6 +178,21 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	protected void postLoad(DbReadContext cquery, Object loadedBean, Object id) {
 	}
 
+	public void buildSelectExpressionChain(List<String> selectChain){
+	       if (readId){
+	            idBinder.buildSelectExpressionChain(prefix, selectChain);
+	       }
+           for (int i = 0, x = properties.length; i < x; i++) {
+               properties[i].buildSelectExpressionChain(prefix, selectChain);
+           }
+           // recursively continue reading...
+           for (int i = 0; i < children.length; i++) {
+               // read each child... and let them set their
+               // values back to this localBean
+               children[i].buildSelectExpressionChain(selectChain);
+           }
+	}
+	
 	/**
 	 * read the properties from the resultSet.
 	 */

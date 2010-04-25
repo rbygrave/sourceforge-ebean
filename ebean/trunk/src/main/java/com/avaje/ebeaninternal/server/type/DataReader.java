@@ -25,6 +25,10 @@ import java.sql.SQLException;
 
 public interface DataReader {
 
+    public void close() throws SQLException;
+
+    public boolean next() throws SQLException;
+
     public void resetColumnPosition();
     
     public void incrementPos(int increment);

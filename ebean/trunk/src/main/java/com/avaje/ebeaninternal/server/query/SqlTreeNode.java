@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.query;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.deploy.DbSqlContext;
@@ -23,6 +24,8 @@ public interface SqlTreeNode {
 	public static final int SHARED = 1;
 	public static final int READONLY = 2;
 	
+    public void buildSelectExpressionChain(List<String> selectChain);
+
 	/**
 	 * Append the required column information to the SELECT part of the sql
 	 * statement.

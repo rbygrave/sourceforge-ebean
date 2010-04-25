@@ -50,7 +50,7 @@ import com.avaje.ebeaninternal.server.deploy.ChainedBeanQueryAdapter;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedUpdate;
 import com.avaje.ebeaninternal.server.deploy.InheritInfo;
-import com.avaje.ebeaninternal.server.deploy.RawSqlMeta;
+import com.avaje.ebeaninternal.server.deploy.DRawSqlMeta;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
 
@@ -92,7 +92,7 @@ public class DeployBeanDescriptor<T> {
 
 	private final Map<String, DeployNamedUpdate> namedUpdates = new LinkedHashMap<String, DeployNamedUpdate>();
 	
-	private final Map<String, RawSqlMeta> rawSqlMetas = new LinkedHashMap<String, RawSqlMeta>();
+	private final Map<String, DRawSqlMeta> rawSqlMetas = new LinkedHashMap<String, DRawSqlMeta>();
 	
 	private DeployBeanPropertyAssocOne<?> unidirectional;
 
@@ -210,7 +210,7 @@ public class DeployBeanDescriptor<T> {
 	    return false;
 	}
 	
-	public Collection<RawSqlMeta> getRawSqlMeta() {
+	public Collection<DRawSqlMeta> getRawSqlMeta() {
 		if (!processedRawSqlExtend){
 			rawSqlProcessExtend();
 			processedRawSqlExtend = true;
@@ -224,10 +224,10 @@ public class DeployBeanDescriptor<T> {
 	 */
 	private void rawSqlProcessExtend() {
 		
-		for (RawSqlMeta rawSqlMeta : rawSqlMetas.values()) {
+		for (DRawSqlMeta rawSqlMeta : rawSqlMetas.values()) {
 			String extend = rawSqlMeta.getExtend();
 			if (extend != null){
-				RawSqlMeta parentQuery = rawSqlMetas.get(extend);
+				DRawSqlMeta parentQuery = rawSqlMetas.get(extend);
 				if (parentQuery == null) {
 					throw new RuntimeException("parent query ["+extend+"] not found for sql-select "+rawSqlMeta.getName());
 				}
@@ -310,7 +310,7 @@ public class DeployBeanDescriptor<T> {
         return beanType.getName().startsWith(META_BEAN_PREFIX);
     }
 
-	public void add(RawSqlMeta rawSqlMeta) {
+	public void add(DRawSqlMeta rawSqlMeta) {
 		rawSqlMetas.put(rawSqlMeta.getName(), rawSqlMeta);
 		if ("default".equals(rawSqlMeta.getName())) {
 		    setEntityType(EntityType.SQL);

@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.RawSql;
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -42,6 +43,8 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.CopyContext;
+import com.avaje.ebeaninternal.server.deploy.DeployParser;
+import com.avaje.ebeaninternal.server.deploy.DeployPropertyParserMap;
 import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
@@ -64,6 +67,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	private final LoadContext graphContext;
 		
 	private final int parentState;
+	
+	private final RawSql rawSql;
 
 	private PersistenceContext persistenceContext;
 	
@@ -92,7 +97,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		super(server, t);
 		
 		this.beanDescriptor = desc;
-		
+		this.rawSql = query.getRawSql();
 		this.finder = beanDescriptor.getBeanFinder();
 		this.queryEngine = queryEngine;
 		this.query = query;
@@ -161,12 +166,24 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		this.queryPlanHash = query.queryPlanHash(this);
 	}
 	
+	public boolean isRawSql() {
+	    return rawSql != null;
+	}
+	
+	public DeployParser createDeployParser() {
+	    if (rawSql != null){
+	        return new DeployPropertyParserMap(rawSql.getColumnMapping().getMapping());
+	    } else {
+	        return beanDescriptor.createDeployPropertyParser();
+	    }
+	}
+	
 	/**
 	 * Return true if this is a query using generated sql. If false this query
 	 * will use raw sql (Entity bean based on raw sql select).
 	 */
 	public boolean isSqlSelect() {
-		return query.isSqlSelect();
+		return query.isSqlSelect() && query.getRawSql() == null;
 	}
 
 	/**
@@ -246,12 +263,12 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return query.getType() == Type.BEAN;
 	}
 
-	/**
-	 * Return true if this is a subquery (as part of InQueryExpression).
-	 */
-	public boolean isSubQuery() {
-		return Type.SUBQUERY.equals(query.getType());
-	}
+//	/**
+//	 * Return true if this is a subquery (as part of InQueryExpression).
+//	 */
+//	public boolean isSubQuery(Query<?> q) {
+//		return Type.SUBQUERY.equals(q.getType());
+//	}
 	
 	public boolean isVanillaMode() {
 	    return vanillaMode;

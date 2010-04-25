@@ -21,7 +21,7 @@ package com.avaje.ebeaninternal.server.deploy.parse;
 
 import com.avaje.ebean.annotation.Sql;
 import com.avaje.ebean.annotation.SqlSelect;
-import com.avaje.ebeaninternal.server.deploy.RawSqlMeta;
+import com.avaje.ebeaninternal.server.deploy.DRawSqlMeta;
 
 /**
  * Read the class level deployment annotations.
@@ -54,7 +54,7 @@ public class AnnotationSql extends AnnotationParser {
 
 	private void setSqlSelect(SqlSelect sqlSelect) {
 
-		RawSqlMeta rawSqlMeta = new RawSqlMeta(sqlSelect);
+		DRawSqlMeta rawSqlMeta = new DRawSqlMeta(sqlSelect);
 		descriptor.add(rawSqlMeta);
 	}
 }

@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -28,6 +29,9 @@ public final class IdBinderEmpty implements IdBinder {
 		
 	}
 		
+    public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
+    }
+    
 	public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {        
     }
 	

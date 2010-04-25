@@ -964,7 +964,7 @@ public final class DefaultServer implements SpiEbeanServer {
             }
             // use the "default" SqlSelect
             DeployNamedQuery defaultSqlSelect = desc.getNamedQuery("default");
-            return new DefaultOrmQuery<T>(beanType, this, expressionFactory, defaultSqlSelect);
+            return new DefaultOrmQuery<T>(beanType, this, expressionFactory, defaultSqlSelect);                
         
         case LDAP:
             return new DefaultLdapOrmQuery<T>(beanType, this, ldapExpressionFactory, query);

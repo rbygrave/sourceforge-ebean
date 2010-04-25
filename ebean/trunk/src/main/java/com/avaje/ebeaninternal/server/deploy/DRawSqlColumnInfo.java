@@ -3,7 +3,7 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
-public class RawSqlColumnInfo {
+public class DRawSqlColumnInfo {
 
 		final String name;
 
@@ -13,7 +13,7 @@ public class RawSqlColumnInfo {
 
 		final boolean scalarProperty;
 		
-		public RawSqlColumnInfo(String name, String label, String propertyName, boolean scalarProperty) {
+		public DRawSqlColumnInfo(String name, String label, String propertyName, boolean scalarProperty) {
 			this.name = name;
 			this.label = label;
 			this.propertyName = propertyName;

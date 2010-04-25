@@ -595,6 +595,14 @@ public class BeanProperty implements ElPropertyValue {
     public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
         sqlBeanLoad.load(this);
     }
+    
+    public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
+        if (prefix == null){
+            selectChain.add(name);
+        } else {
+            selectChain.add(prefix+"."+name);
+        }
+    }
 
     public Object read(DbReadContext ctx) throws SQLException {
         return scalarType.read(ctx.getDataReader());

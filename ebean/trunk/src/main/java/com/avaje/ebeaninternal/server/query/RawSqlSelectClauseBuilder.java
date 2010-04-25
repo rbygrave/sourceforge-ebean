@@ -32,7 +32,7 @@ import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
-import com.avaje.ebeaninternal.server.deploy.RawSqlSelect;
+import com.avaje.ebeaninternal.server.deploy.DRawSqlSelect;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
 
@@ -66,7 +66,7 @@ public class RawSqlSelectClauseBuilder {
         BeanDescriptor<T> desc = request.getBeanDescriptor();
 
         DeployNamedQuery namedQuery = desc.getNamedQuery(query.getName());
-        RawSqlSelect sqlSelect = namedQuery.getSqlSelect();
+        DRawSqlSelect sqlSelect = namedQuery.getSqlSelect();
 
         // create a parser for this specific SqlSelect... has to be really
         // as each SqlSelect could have different table alias etc

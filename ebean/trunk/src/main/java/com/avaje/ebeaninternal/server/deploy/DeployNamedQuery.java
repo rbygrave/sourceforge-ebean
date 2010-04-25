@@ -11,7 +11,7 @@ public class DeployNamedQuery {
 	
 	final QueryHint[] hints;
 	
-	final RawSqlSelect sqlSelect;
+	final DRawSqlSelect sqlSelect;
 	
 	public DeployNamedQuery(NamedQuery namedQuery) {
 		this.name = namedQuery.name();
@@ -27,7 +27,7 @@ public class DeployNamedQuery {
 		this.sqlSelect = null;
 	}
 	
-	public DeployNamedQuery(RawSqlSelect sqlSelect) {
+	public DeployNamedQuery(DRawSqlSelect sqlSelect) {
 		this.name = sqlSelect.getName();
 		this.query = null;
 		this.hints = null;
@@ -50,7 +50,7 @@ public class DeployNamedQuery {
 		return hints;
 	}
 	
-	public RawSqlSelect getSqlSelect() {
+	public DRawSqlSelect getSqlSelect() {
 		return sqlSelect;
 	}
 	
