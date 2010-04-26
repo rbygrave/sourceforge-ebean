@@ -163,10 +163,9 @@ public class ClassPathSearchFilter {
 		if (COM_AVAJE_EBEANINTERNAL_SERVER_BEAN.equals(packageName)) {
 			return true;
 		}
-		if (containedIn(includePackageSet, packageName)) {
-			return true;
+		if (includePackageSet != null && !includePackageSet.isEmpty()){
+	        return containedIn(includePackageSet, packageName);
 		}
-
 		if (containedIn(excludePackageSet, packageName)) {
 			return false;
 		}
