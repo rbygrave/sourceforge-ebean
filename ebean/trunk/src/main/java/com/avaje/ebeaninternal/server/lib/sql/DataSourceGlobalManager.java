@@ -26,7 +26,7 @@ import com.avaje.ebean.config.DataSourceConfig;
  */
 public final class DataSourceGlobalManager {
 
-	private static DataSourceManager manager = new DataSourceManager();
+	private static final DataSourceManager manager = new DataSourceManager();
 
 	private DataSourceGlobalManager() {
 	}
