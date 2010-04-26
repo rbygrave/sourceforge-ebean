@@ -19,71 +19,86 @@
  */
 package com.avaje.ebeaninternal.server.cluster.mcast;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.net.SocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
 
 public class McastListener implements Runnable {
 
     private static final Logger logger = Logger.getLogger(McastListener.class.getName());
 
-    public final int port;// = 7778;
-
-    public final String address;// = "235.1.1.1";
-
-    public final int bufferSize;// = 200;
-
+    private final McastClusterBroadcast owner;
+    
     private final MulticastSocket sock;
+
+    private final Thread listenerThread;
+
+    private final InetSocketAddress localSender;
+
+    private final String localSenderIp;
+
+    private final InetAddress group;
 
     private DatagramPacket pack;
 
     private byte[] receiveBuffer;
 
-    private final Thread listenerThread;
-    
-    volatile boolean doingShutdown;
+    private volatile boolean doingShutdown;
 
-    private final InetSocketAddress localSender;
-    private final String localSenderIp;
+    private final boolean debugIgnore;
     
-    private final InetAddress group;
-    
-    public McastListener(int port, String address, int bufferSize, int timeout, InetSocketAddress localSender) {
+    public McastListener(McastClusterBroadcast owner, int port, String address, 
+            int bufferSize, int timeout, InetSocketAddress localSender, 
+            boolean disableLoopback, int ttl, InetAddress mcastBindAddress) {
 
-        this.port = port;
-        this.address = address;
-        this.bufferSize = bufferSize;
+        this.debugIgnore = GlobalProperties.getBoolean("ebean.debug.mcast.ignore", false);
+
+        this.owner = owner;
         this.localSender = localSender;
         this.localSenderIp = localSender.getAddress().getHostAddress();
-        
+
         this.receiveBuffer = new byte[bufferSize];
-        this.listenerThread = new Thread(this, "ebean.cluster.McastListener");
+        this.listenerThread = new Thread(this, "EbeanClusterMcastListener");
+
+        String msg = "Cluster Multicast Listen on["+address+":"+port+"] disableLoopback["+disableLoopback+"]";
+        if (ttl >= 0){
+            msg +=" ttl["+ttl+"]";
+        }
+        if (mcastBindAddress != null){
+            msg += " mcastBindAddress["+mcastBindAddress+"]";
+        }
+        logger.info(msg);
 
         try {
             this.group = InetAddress.getByName(address);
             this.sock = new MulticastSocket(port);
             this.sock.setSoTimeout(timeout);
-            
-//            boolean localLoopbackDisabled = false;            
-//            sock.setLoopbackMode(localLoopbackDisabled);
-            
-            // multihomed?
-//            if (mcastBindAddress != null){
-//                sock.setInterface(mcastBindAddress);
-//            }            
-//            if ( 0 >= 0 ) {
-//                sock.setTimeToLive(20);
-//            }
 
+            if (disableLoopback){
+                sock.setLoopbackMode(disableLoopback);
+            }
             
+            if (mcastBindAddress != null) {
+                // bind to a specific interface
+                sock.setInterface(mcastBindAddress);
+            }
             
+            if (ttl >= 0) {
+                sock.setTimeToLive(ttl);
+            }
+
             pack = new DatagramPacket(receiveBuffer, receiveBuffer.length);
             sock.joinGroup(group);
+            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -99,65 +114,68 @@ public class McastListener implements Runnable {
      */
     public void shutdown() {
         doingShutdown = true;
-        System.out.println("-- shutdown");
         listenerThread.interrupt();
-        System.out.println("-- interrupted");
-        synchronized (listenerThread) {    
+        synchronized (listenerThread) {
             try {
-                System.out.println("-- leave");
                 sock.leaveGroup(group);
             } catch (IOException e) {
                 String msg = "Error leaving Multicast group";
                 logger.log(Level.INFO, msg, e);
             }
             try {
-                System.out.println("-- close");
                 sock.close();
-            } catch ( Exception e){
+            } catch (Exception e) {
                 String msg = "Error closing Multicast socket";
                 logger.log(Level.INFO, msg, e);
             }
-            System.out.println("-- done");
         }
     }
-        
+
     public void run() {
         while (!doingShutdown) {
             try {
                 synchronized (listenerThread) {
                     pack.setLength(receiveBuffer.length);
                     sock.receive(pack);
+
+                    InetSocketAddress senderAddr = (InetSocketAddress)pack.getSocketAddress();
                     
-                    //if (localSenderIp != null) {
-                        SocketAddress socketAddress = pack.getSocketAddress();
-                        if (socketAddress instanceof InetSocketAddress){
-                            InetSocketAddress inet = (InetSocketAddress)socketAddress;
-                            System.out.println("recieved 1... "+inet);
-                            String sa = inet.getAddress().getHostAddress();
-                            int ip = inet.getPort();
-                            System.out.println("recieved 2... "+ip+" "+sa);
-                            System.out.println("LOCAL "+localSender.getPort()+" "+localSenderIp);
-                            if (localSender.getPort() == ip && localSenderIp.equals(sa)) {
-                                System.out.println(" ----------------- SAME ADDRESS "+inet);
-                            }
-                        } else {
-                            System.out.println("Hum? "+socketAddress.getClass().getName());
+                    String sa = senderAddr.getAddress().getHostAddress();
+                    int ip = senderAddr.getPort();
+                    
+                    boolean sentByLocalSender = (localSender.getPort() == ip && localSenderIp.equals(sa));
+                    
+                    if (sentByLocalSender){
+                        if (debugIgnore || logger.isLoggable(Level.FINE)){
+                            logger.info("Ignoring message as sent by localSender: "+localSenderIp);
                         }
-                    //}
-                    
-                    InetAddress address2 = pack.getAddress();
-                    int port = pack.getPort();
-                    
-                    System.out.println("From "+port+" "+address2.getHostAddress());
-                    
-                    String msg = new String(receiveBuffer, 0, pack.getLength());
-                    System.out.println("Message received: " + msg);
+                    } else {
+    
+                        byte[] data = pack.getData();
+                        ByteArrayInputStream bi = new ByteArrayInputStream(data);
+                        ObjectInputStream ois = new ObjectInputStream(bi);
+                        Object o = ois.readObject();
+                        
+                        if (o instanceof ClusterMessage == false){
+                            String msg = "Error: Message object not a ClusterMessage? "+o.getClass().getName();
+                            logger.log(Level.SEVERE, msg);
+                            
+                        } else {
+                            
+                            ClusterMessage cm = (ClusterMessage)o;
+                            owner.handleMessage(cm);
+                        }
+                    }
                 }
+                
             } catch (java.net.SocketTimeoutException e) {
-                if (logger.isLoggable(Level.FINE)){
-                    logger.log(Level.FINE, "timeout",e);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "timeout", e);
                 }
             } catch (IOException e) {
+                logger.log(Level.INFO, "error ?", e);
+                
+            } catch (ClassNotFoundException e) {
                 logger.log(Level.INFO, "error ?", e);
             }
         }
