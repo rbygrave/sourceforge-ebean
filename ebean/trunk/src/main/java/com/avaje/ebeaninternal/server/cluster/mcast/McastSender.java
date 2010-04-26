@@ -24,83 +24,62 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.logging.Logger;
 
 public class McastSender {
 
-        private final int port;// = 7778;
+    private static final Logger logger = Logger.getLogger(McastSender.class.getName());
 
-        private final InetAddress inetAddress;
+    private final int port;
 
-        private final DatagramSocket sock;
-        
-        private final InetSocketAddress sendAddr;
-        
-        public McastSender(int port, String address, int sendPort, String sendAddress){
+    private final InetAddress inetAddress;
 
-            try {
-                this.port = port;
-                this.inetAddress = InetAddress.getByName( address );
-                
-                //InetAddress local = ;
-                
-                
-                InetAddress sendInetAddress = null;
-                if (sendAddress != null){
-                    sendInetAddress = InetAddress.getByName(sendAddress);
-                } else {
-                    sendInetAddress = InetAddress.getLocalHost();
-                }
-                
-                System.out.println("--------sendPort: "+sendPort+"  sendInetAddress: "+sendInetAddress);
-                
-                //this.sendAddr = new InetSocketAddress(local, sendPort);
-                if (sendPort > 0){
-                    this.sock = new DatagramSocket(sendPort,sendInetAddress);
-                } else {
-                    this.sock = new DatagramSocket(new InetSocketAddress(sendInetAddress, 0));
-                }
-                
-                int localPort = sock.getLocalPort();
-                System.out.println("Sender Bound to localPort:"+localPort+" "+sendInetAddress.getHostAddress());
-                
-                this.sendAddr = new InetSocketAddress(sendInetAddress, localPort);
-                
-            } catch( Exception e ) {
-                String msg = "McastSender port:"+port+" sendPort:"+sendPort+" "+address;
-                throw new RuntimeException(msg, e);
+    private final DatagramSocket sock;
+
+    private final InetSocketAddress sendAddr;
+
+    public McastSender(int port, String address, int sendPort, String sendAddress) {
+
+        try {
+            this.port = port;
+            this.inetAddress = InetAddress.getByName(address);
+
+            InetAddress sendInetAddress = null;
+            if (sendAddress != null) {
+                sendInetAddress = InetAddress.getByName(sendAddress);
+            } else {
+                sendInetAddress = InetAddress.getLocalHost();
             }
+
+            if (sendPort > 0) {
+                this.sock = new DatagramSocket(sendPort, sendInetAddress);
+            } else {
+                this.sock = new DatagramSocket(new InetSocketAddress(sendInetAddress, 0));
+            }
+
+            String msg = "Cluster Multicast Sender on["+sendInetAddress.getHostAddress()+":"+sock.getLocalPort()+"]";
+            logger.info(msg);
+
+            this.sendAddr = new InetSocketAddress(sendInetAddress, sock.getLocalPort());
+
+        } catch (Exception e) {
+            String msg = "McastSender port:" + port + " sendPort:" + sendPort + " " + address;
+            throw new RuntimeException(msg, e);
         }
-
-        public InetSocketAddress getAddress() {
-            return sendAddr;
-        }
-        
-        public void sendMessage(String msg) throws IOException {
-
-            byte[] buf = msg.getBytes();
-            
-            DatagramPacket pack = new DatagramPacket( buf, buf.length, inetAddress, port );
-            sock.send(pack);
-        }
-
-//        /**
-//         * Repeatedly sends simple IP Multicast messages to the specified port and
-//         * address.
-//         * 
-//         * @param args Arguments are ignored.
-//         */
-//        public static void main( String[] args ) {
-//
-//            IPMulticastSender sender = new IPMulticastSender();
-//
-//            while( true ) {
-//                sender.sendMessage();
-//                try {
-//                    Thread.sleep( SLEEP_MILLISECS );
-//                } catch( Exception e ) {
-//                    // do nothing
-//                }
-//            }
-//        }
-
     }
+
+    /**
+     * Return the send Address so that if we have loopback messages we can
+     * detect if they where sent by this local sender and hence should be
+     * ignored.
+     */
+    public InetSocketAddress getAddress() {
+        return sendAddr;
+    }
+
+    public void sendMessage(byte[] byteMsg) throws IOException {
+
+        DatagramPacket pack = new DatagramPacket(byteMsg, byteMsg.length, inetAddress, port);
+        sock.send(pack);
+    }
+}

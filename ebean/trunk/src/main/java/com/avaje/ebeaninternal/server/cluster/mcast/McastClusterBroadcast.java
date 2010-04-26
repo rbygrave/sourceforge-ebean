@@ -19,16 +19,21 @@
  */
 package com.avaje.ebeaninternal.server.cluster.mcast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.cluster.ClusterBroadcast;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
 
 public class McastClusterBroadcast implements ClusterBroadcast {
 
-    //private ClusterManager clusterManager;
+    private ClusterManager clusterManager;
     
     private final McastListener listener;
     
@@ -36,20 +41,55 @@ public class McastClusterBroadcast implements ClusterBroadcast {
     
     public McastClusterBroadcast() {
         
-        int port = GlobalProperties.getInt("ebean.cluster.mcast.port", 7768);
-        String addr = GlobalProperties.get("ebean.cluster.mcast.address", "235.1.1.1");
+        int port = GlobalProperties.getInt("ebean.cluster.mcast.listen.port", 0);
+        String addr = GlobalProperties.get("ebean.cluster.mcast.listen.address", null);
 
-        int sendPort = GlobalProperties.getInt("ebean.cluster.mcast.sendport", 9768);
-        String sendAddr = GlobalProperties.get("ebean.cluster.mcast.sendaddress", null);
+        int sendPort = GlobalProperties.getInt("ebean.cluster.mcast.send.port", 0);
+        String sendAddr = GlobalProperties.get("ebean.cluster.mcast.send.address", null);
 
-        sender = new McastSender(port, addr, sendPort, sendAddr);
-        listener = new McastListener(port, addr, 30000, 500, sender.getAddress());
+        boolean disableLoopback = GlobalProperties.getBoolean("ebean.cluster.mcast.listen.disableLoopback", true);
+        int ttl = GlobalProperties.getInt("ebean.cluster.mcast.listen.ttl", -1);
+        String mcastAddr = GlobalProperties.get("ebean.cluster.mcast.listen.mcastAddress", null);
+        
+        InetAddress mcastAddress = null;
+        if (mcastAddr != null){
+            try {
+                mcastAddress = InetAddress.getByName(mcastAddr);
+            } catch (UnknownHostException e) {
+                String msg = "Error getting Multicast InetAddress for " + mcastAddr;
+                throw new RuntimeException(msg, e);
+            }
+        }
+        
+        if (port == 0 || addr == null){
+            String msg = "One of these Multicast settings has not been set. "
+                + "ebean.cluster.mcast.listen.port = "+port
+                + ", ebean.cluster.mcast.listen.address="+addr;
+                //+ ", ebean.cluster.mcast.sendport="+sendPort
+                //+ ", ebean.cluster.mcast.sendaddress="+sendAddr;
+                
+            throw new IllegalArgumentException(msg);
+        }
+        
+        int bufferSize = 65500;
+        int timeout = 500;
+        
+        this.sender = new McastSender(port, addr, sendPort, sendAddr);
+        this.listener = new McastListener(this, port, addr, bufferSize, timeout, sender.getAddress(), disableLoopback, ttl, mcastAddress);
     }
     
     public void broadcast(ClusterMessage message) {
-        String s = message.toString();
+        
         try {
-            sender.sendMessage(s);
+            
+            ByteArrayOutputStream ba = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(ba);
+            
+            oos.writeObject(message);
+            byte[] byteArray = ba.toByteArray();
+            
+            sender.sendMessage(byteArray);
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,9 +100,18 @@ public class McastClusterBroadcast implements ClusterBroadcast {
     }
 
     public void startup(ClusterManager clusterManager) {
-        //this.clusterManager = clusterManager;
+        this.clusterManager = clusterManager;
         listener.startListening();
     }
 
+    protected void handleMessage(ClusterMessage h){
+        
+        SpiEbeanServer server = (SpiEbeanServer)clusterManager.getServer(h.getEbeanServer());
+        if (server != null){
+            server.remoteTransactionEvent(h.getTransEvent());
+        }
+
+    }
+    
     
 }
