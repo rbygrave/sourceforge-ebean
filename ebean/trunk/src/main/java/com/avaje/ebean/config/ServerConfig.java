@@ -270,6 +270,14 @@ public class ServerConfig {
     private boolean vanillaRefMode;
 
     /**
+     * Construct a Server Configuration for programmatically creating an
+     * EbeanServer.
+     */
+    public ServerConfig() {
+        
+    }
+    
+    /**
      * Return the name of the EbeanServer.
      */
     public String getName() {
