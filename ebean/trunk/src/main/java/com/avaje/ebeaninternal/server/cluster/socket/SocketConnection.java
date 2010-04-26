@@ -15,18 +15,19 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebeaninternal.server.net;
+package com.avaje.ebeaninternal.server.cluster.socket;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 /**
  * The client side of a TCP Sockect connection.
  */
-public class IoConnection {
+class SocketConnection {
 
     /**
      * The object underlying objectOutputStream. 
@@ -37,11 +38,6 @@ public class IoConnection {
      * The underlying ObjectInputStream.
      */
     ObjectInputStream ois;
-
-    /**
-     * The headers to send.
-     */
-    Headers headers;
     
     /**
      * The underlying inputStream.
@@ -52,13 +48,19 @@ public class IoConnection {
      * The underlying outputStream.
      */
     OutputStream os;
-	
+    
     /**
-     * Create for a given host and port.
+     * The underlying socket.
      */
-	public IoConnection(InputStream is, OutputStream os) {
-        this.is = is;
-        this.os = os;
+    Socket socket;
+   
+    /**
+     * Create for a given Socket.
+     */
+    public SocketConnection(Socket socket) throws IOException {
+        this.is = socket.getInputStream();
+        this.os = socket.getOutputStream();
+        this.socket = socket;
     }
     
     /**
@@ -66,6 +68,7 @@ public class IoConnection {
      */
     public void disconnect() throws IOException {
         os.flush();
+        socket.close();
     }
     
     /**
@@ -74,20 +77,6 @@ public class IoConnection {
     public void flush() throws IOException {
         os.flush();
     }
-    
-    /**
-     * Set the headers.
-     */
-    public void setHeaders(Headers headers) {
-        this.headers = headers;
-    }
-    /**
-     * Return the headers for this request.
-     */
-    public Headers getHeaders() {
-        return headers;
-    }
-
 
     /**
      * Read an object from the object input stream.

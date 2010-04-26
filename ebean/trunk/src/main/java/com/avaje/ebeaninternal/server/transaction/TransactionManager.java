@@ -21,7 +21,8 @@ package com.avaje.ebeaninternal.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,19 +30,18 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
-import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.AdminLogging.LogFileSharing;
+import com.avaje.ebean.AdminLogging.LogLevel;
+import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
-import com.avaje.ebeaninternal.net.Constants;
+import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
-import com.avaje.ebeaninternal.server.lib.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
 
@@ -52,7 +52,7 @@ import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
  * committed.
  * </p>
  */
-public class TransactionManager implements Constants {
+public class TransactionManager {
 
 	private static final Logger logger = Logger.getLogger(TransactionManager.class.getName());
 	
@@ -83,11 +83,6 @@ public class TransactionManager implements Constants {
 	 * The logger.
 	 */
 	private final TransactionLogManager transLogger;
-
-	/**
-	 * for synchronising.
-	 */
-	private final Object monitor = new Object();
 
 	/**
 	 * Prefix for transaction id's (logging).
@@ -128,8 +123,10 @@ public class TransactionManager implements Constants {
 	/**
 	 * Id's for transaction logging.
 	 */
-	private long transactionCounter = 1000;
-
+	private AtomicLong transactionCounter = new AtomicLong(1000);
+	
+	private boolean debugRemote;
+	
 	/**
 	 * Create the TransactionManager
 	 */
@@ -141,7 +138,7 @@ public class TransactionManager implements Constants {
 		this.serverName = config.getName();
 		
 		this.transLogger = new TransactionLogManager(config);
-		this.threadPool = ThreadPoolManager.getThreadPool("TransactionManager");
+		this.threadPool = ThreadPoolManager.getThreadPool("EbeanTransactionManager");
 		if (threadPool.getMinSize() == 0) {
 			threadPool.setMinSize(1);
 		}
@@ -160,6 +157,8 @@ public class TransactionManager implements Constants {
 			}
 			this.debugLevel = debug;	
 		}
+		
+		this.debugRemote = GlobalProperties.getBoolean("ebean.debug.remotetransaction", false);
 		
 		this.defaultBatchMode = config.isPersistBatching();
 		
@@ -265,8 +264,22 @@ public class TransactionManager implements Constants {
 	public DataSource getDataSource() {
 		return dataSource;
 	}
-	
+
 	/**
+	 * Return true for debugging remote(cluster) transaction events. 
+	 */
+	public boolean isDebugRemote() {
+        return debugRemote;
+    }
+
+    /**
+     * Set to true for debugging remote(cluster) transaction events. 
+     */
+    public void setDebugRemote(boolean debugRemote) {
+        this.debugRemote = debugRemote;
+    }
+
+    /**
 	 * Defines the type of behaviour to use when closing a transaction that was used to query data only.
 	 */
 	public OnQueryOnly getOnQueryOnly() {
@@ -323,11 +336,8 @@ public class TransactionManager implements Constants {
 	 */
 	public SpiTransaction createTransaction(boolean explicit, int isolationLevel) {
 		try {
-			long id;
-			synchronized (monitor) {
-				// Perhaps could use JDK5 atomic Integer instead
-				id = ++transactionCounter;
-			}
+			long id = transactionCounter.incrementAndGet();
+			
 			Connection c = dataSource.getConnection();
 
 			JdbcTransaction t = new JdbcTransaction(prefix + id, explicit, c, this);
@@ -359,12 +369,7 @@ public class TransactionManager implements Constants {
 	
 	public SpiTransaction createQueryTransaction() {
 		try {
-			long id;
-			// Perhaps could use JDK5 atomic Integer instead
-			// of this full synchronisation
-			synchronized (monitor) {
-				id = ++transactionCounter;
-			}
+			long id = transactionCounter.incrementAndGet();
 			Connection c = dataSource.getConnection();
 
 			JdbcTransaction t = new JdbcTransaction(prefix + id, false, c, this);
@@ -515,15 +520,21 @@ public class TransactionManager implements Constants {
 	 * Notify local BeanPersistListeners etc of events from another server in the cluster.
 	 */
 	public void remoteTransactionEvent(RemoteTransactionEvent remoteEvent) {
-
-		List<RemoteBeanPersist> list = remoteEvent.getBeanPersistList();
-		if (list != null){
-			for (int i = 0; i < list.size(); i++) {
-				remoteBeanPersist(list.get(i));
-			}
+	    
+	    if (debugRemote || logger.isLoggable(Level.FINE)){
+	        logger.info("Cluster Received: "+remoteEvent.toString());
+	    }
+	    
+	    Map<String, RemoteBeanPersist> beanMap = remoteEvent.getBeanMap();
+		if (beanMap != null){
+		    for (RemoteBeanPersist r : beanMap.values()) {
+		        remoteBeanPersist(r);
+            }
 		}
 		
 		processTableEvents(remoteEvent.getTableEvents());
+		
+		
 	}
 	
 	/**
@@ -537,7 +548,7 @@ public class TransactionManager implements Constants {
 			msg += "? Missing out remoteNotify of "+remoteBeanPersist;
 			logger.severe(msg);
 		} else {
-			remoteBeanPersist.notifyListener(desc);			
+			remoteBeanPersist.notifyCacheAndListener(desc);			
 		}
 	}
 

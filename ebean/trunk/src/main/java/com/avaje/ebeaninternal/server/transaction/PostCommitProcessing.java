@@ -20,15 +20,15 @@
 package com.avaje.ebeaninternal.server.transaction;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventBeans;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
-import com.avaje.ebeaninternal.net.Constants;
+import com.avaje.ebeaninternal.server.cluster.ClusterManager;
+import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
-import com.avaje.ebeaninternal.server.lib.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.net.CmdRemoteTransactionEvent;
-import com.avaje.ebeaninternal.server.net.Headers;
 
 /**
  * Performs post commit processing using a background thread.
@@ -36,19 +36,24 @@ import com.avaje.ebeaninternal.server.net.Headers;
  * This includes Cluster notification, and BeanPersistListeners.
  * </p>
  */
-public final class PostCommitProcessing implements Runnable, Constants {
-
+public final class PostCommitProcessing implements Runnable {
+    
+    private static final Logger logger = Logger.getLogger(PostCommitProcessing.class.getName());
+    
 	private final ClusterManager clusterManager;
 	
 	private final TransactionEvent event;
 
 	private final String serverName;
 	
+	private final TransactionManager manager;
+	
 	/**
 	 * Create for a TransactionManager and event.
 	 */
 	public PostCommitProcessing(ClusterManager clusterManager, TransactionManager manager, TransactionEvent event) {
 		this.clusterManager = clusterManager;
+		this.manager = manager;
 		this.serverName = manager.getServerName();
 		this.event = event;
 	}
@@ -60,44 +65,32 @@ public final class PostCommitProcessing implements Runnable, Constants {
 
 		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent();
 
-		// notify local BeanPersistListener's
 		TransactionEventBeans eventBeans = event.getEventBeans();
 		if (eventBeans != null){
 			ArrayList<PersistRequestBean<?>> requests = eventBeans.getRequests();
 			if (requests != null){
 				for (int i = 0; i < requests.size(); i++) {
-					RemoteBeanPersist remote  = requests.get(i).notifyLocalPersistListener();
-					if (remote != null){
-						// need to send this event across the cluster
-						remoteEvent.add(remote);
-					}
+			        // notify local BeanPersistListener's and at the 
+			        // request IUD type and id to the RemoteTransactionEvent
+					requests.get(i).notifyLocalPersistListener(remoteEvent);
 				}
 			}
 		}
+		
 		TransactionEventTable eventTables = event.getEventTables();
 		if (eventTables != null && !eventTables.isEmpty()){
 			remoteEvent.setTableEvents(event.getEventTables());
 		}
 
-		if (remoteEvent.hasEvents()) {
+		if (remoteEvent.hasEvents() && clusterManager.isClustering()) {
 			// send the interesting events to the cluster
-			sendEventToCluster(remoteEvent);
+            if (manager.isDebugRemote() || logger.isLoggable(Level.FINE)) {
+                logger.info("Cluster Send: " + remoteEvent.toString());
+            }
+
+            ClusterMessage m = ClusterMessage.transEvent(serverName, remoteEvent);
+            clusterManager.broadcast(m);
 		}
 	}
 	
-
-	/**
-	 * Broadcast TransactionEvent to the other servers in the cluster.
-	 */
-	private void sendEventToCluster(RemoteTransactionEvent e) {
-
-		if (clusterManager.isClusteringOn()) {
-			Headers h = new Headers();
-			h.setProcesorId(PROCESS_KEY);
-			h.set(SERVER_NAME_KEY, serverName);
-
-			CmdRemoteTransactionEvent cmd = new CmdRemoteTransactionEvent(e);
-			clusterManager.broadcast(h, cmd);
-		}
-	}
 }
