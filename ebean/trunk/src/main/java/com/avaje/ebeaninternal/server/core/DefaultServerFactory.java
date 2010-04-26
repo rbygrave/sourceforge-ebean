@@ -47,24 +47,20 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.net.Constants;
 import com.avaje.ebeaninternal.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebeaninternal.server.cache.DefaultServerCacheManager;
+import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.jdbc.OraclePstmtBatch;
 import com.avaje.ebeaninternal.server.jdbc.StandardPstmtDelegate;
 import com.avaje.ebeaninternal.server.lib.ShutdownManager;
-import com.avaje.ebeaninternal.server.lib.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourcePool;
 import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
-import com.avaje.ebeaninternal.server.net.ClusterCommandSecurity;
-import com.avaje.ebeaninternal.server.net.ClusterContextManager;
-import com.avaje.ebeaninternal.server.net.CommandProcessor;
 
 /**
  * Default Server side implementation of ServerFactory.
  */
-public class DefaultServerFactory implements BootupEbeanManager, Constants {
+public class DefaultServerFactory implements BootupEbeanManager {
 
 	private static final Logger logger = Logger.getLogger(DefaultServerFactory.class.getName());
 
@@ -78,7 +74,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	
 	public DefaultServerFactory() {
 
-		this.clusterManager = createClusterManager();
+		this.clusterManager = new ClusterManager();
 		this.jndiDataSourceFactory = new JndiDataSourceLookup();
 		
 	    List<String> packages = getSearchJarsPackages(GlobalProperties.get("ebean.search.packages", null));
@@ -141,86 +137,96 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 	 */
 	public SpiEbeanServer createServer(ServerConfig serverConfig) {
 
-		setNamingConvention(serverConfig);
-		
-		BootupClasses bootupClasses = getBootupClasses(serverConfig);
-
-		setDataSource(serverConfig);
-		// check the autoCommit and Transaction Isolation
-		boolean online = checkDataSource(serverConfig);
-		
-		// determine database platform (Oracle etc)
-		setDatabasePlatform(serverConfig);
-		if (serverConfig.getDbEncrypt() != null){
-		    // use a configured DbEncrypt rather than the platform default 
-		    serverConfig.getDatabasePlatform().setDbEncrypt(serverConfig.getDbEncrypt());
-		}
-		
-		DatabasePlatform dbPlatform = serverConfig.getDatabasePlatform();
-		
-		PstmtBatch pstmtBatch = null;
-		
-		if (dbPlatform.getName().startsWith("oracle")){
-			PstmtDelegate pstmtDelegate = serverConfig.getPstmtDelegate();
-			if (pstmtDelegate == null){
-				// try to provide the 
-				pstmtDelegate = getOraclePstmtDelegate(serverConfig.getDataSource());
-			}
-			if (pstmtDelegate != null){
-				// We can support JDBC batching with Oracle
-				// via OraclePreparedStatement  
-				pstmtBatch = new OraclePstmtBatch(pstmtDelegate);
-			} 
-			if (pstmtBatch == null){
-				// We can not support JDBC batching with Oracle
-				logger.warning("Can not support JDBC batching with Oracle without a PstmtDelegate");
-				serverConfig.setPersistBatching(false);
-			}
-		}
-		
-		// inform the NamingConvention of the associated DatabasePlaform 
-		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
-
-		ServerCacheManager cacheManager  = getCacheManager(serverConfig);
-
-		int uniqueServerId = serverId.incrementAndGet();
-		BackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
-			
-		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, bgExecutor, 
-			serverConfig, bootupClasses, pstmtBatch);
-		
-		DefaultServer server = new DefaultServer(c, cacheManager);
-		
-		cacheManager.init(server);
-		
-		MBeanServer mbeanServer;
-		ArrayList<?> list = MBeanServerFactory.findMBeanServer(null);
-		if (list.size() == 0){
-			// probably not running in a server
-			mbeanServer = MBeanServerFactory.createMBeanServer();
-		} else {
-			// use the first MBeanServer
-			mbeanServer = (MBeanServer)list.get(0);
-		}
-
-		server.registerMBeans(mbeanServer, uniqueServerId);
-		
-		// generate and run DDL if required
-		executeDDL(server, online);
-		
-		server.initialise();
-		
-		if (online){
-    		// warm the cache in 30 seconds 
-    		int delaySecs = GlobalProperties.getInt("ebean.cacheWarmingDelay", 30);
-    		long sleepMillis = 1000 * delaySecs;
+	    synchronized (this) {
+    		setNamingConvention(serverConfig);
+    		
+    		BootupClasses bootupClasses = getBootupClasses(serverConfig);
     
-    		if (sleepMillis > 0){
-    			Timer t = new Timer("EbeanCacheWarmer", true);
-    			t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
+    		setDataSource(serverConfig);
+    		// check the autoCommit and Transaction Isolation
+    		boolean online = checkDataSource(serverConfig);
+    		
+    		// determine database platform (Oracle etc)
+    		setDatabasePlatform(serverConfig);
+    		if (serverConfig.getDbEncrypt() != null){
+    		    // use a configured DbEncrypt rather than the platform default 
+    		    serverConfig.getDatabasePlatform().setDbEncrypt(serverConfig.getDbEncrypt());
     		}
-		}
-		return server;
+    		
+    		DatabasePlatform dbPlatform = serverConfig.getDatabasePlatform();
+    		
+    		PstmtBatch pstmtBatch = null;
+    		
+    		if (dbPlatform.getName().startsWith("oracle")){
+    			PstmtDelegate pstmtDelegate = serverConfig.getPstmtDelegate();
+    			if (pstmtDelegate == null){
+    				// try to provide the 
+    				pstmtDelegate = getOraclePstmtDelegate(serverConfig.getDataSource());
+    			}
+    			if (pstmtDelegate != null){
+    				// We can support JDBC batching with Oracle
+    				// via OraclePreparedStatement  
+    				pstmtBatch = new OraclePstmtBatch(pstmtDelegate);
+    			} 
+    			if (pstmtBatch == null){
+    				// We can not support JDBC batching with Oracle
+    				logger.warning("Can not support JDBC batching with Oracle without a PstmtDelegate");
+    				serverConfig.setPersistBatching(false);
+    			}
+    		}
+    		
+    		// inform the NamingConvention of the associated DatabasePlaform 
+    		serverConfig.getNamingConvention().setDatabasePlatform(serverConfig.getDatabasePlatform());
+    
+    		ServerCacheManager cacheManager  = getCacheManager(serverConfig);
+    
+    		int uniqueServerId = serverId.incrementAndGet();
+    		BackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
+    			
+    		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, bgExecutor, 
+    			serverConfig, bootupClasses, pstmtBatch);
+    		
+    		DefaultServer server = new DefaultServer(c, cacheManager);
+    		
+    		cacheManager.init(server);
+    		
+    		MBeanServer mbeanServer;
+    		ArrayList<?> list = MBeanServerFactory.findMBeanServer(null);
+    		if (list.size() == 0){
+    			// probably not running in a server
+    			mbeanServer = MBeanServerFactory.createMBeanServer();
+    		} else {
+    			// use the first MBeanServer
+    			mbeanServer = (MBeanServer)list.get(0);
+    		}
+    
+    		server.registerMBeans(mbeanServer, uniqueServerId);
+    		
+    		// generate and run DDL if required
+    		executeDDL(server, online);
+    		
+    		server.initialise();
+    		
+    		if (online){
+
+                if (clusterManager.isClustering()) {
+                    // register the server once it has been created
+                    clusterManager.registerServer(server);
+        		}
+    		    
+        		// warm the cache in 30 seconds 
+        		int delaySecs = GlobalProperties.getInt("ebean.cacheWarmingDelay", 30);
+        		long sleepMillis = 1000 * delaySecs;
+        
+        		if (sleepMillis > 0){
+        			Timer t = new Timer("EbeanCacheWarmer", true);
+        			t.schedule(new CacheWarmer(sleepMillis, server), sleepMillis);
+        		}
+        		
+        		
+    		}
+    		return server;
+	    }
 	}
 
 	private PstmtDelegate getOraclePstmtDelegate(DataSource ds) {
@@ -460,26 +466,7 @@ public class DefaultServerFactory implements BootupEbeanManager, Constants {
 		}
 	}
 	
-	/**
-	 * Register the cluster command processor with the ClusterManager.
-	 */
-	private ClusterManager createClusterManager() {
-
-		// register with the cluster manager
-		// TransactionEvent commands are sent around the cluster
-		ClusterContextManager cm = new ClusterContextManager();
-		ClusterCommandSecurity sec = new ClusterCommandSecurity();
-
-		CommandProcessor p = new CommandProcessor();
-		p.setUseSessionId(false);
-		p.setContextManager(cm);
-		p.setCommandSecurity(sec);
-
-		ClusterManager clusterManager = new ClusterManager();
-		clusterManager.register(PROCESS_KEY, p);
-		return clusterManager;
-	}
-	
+    
 	private static class CacheWarmer extends TimerTask {
 
 		private static final Logger log = Logger.getLogger(CacheWarmer.class.getName());

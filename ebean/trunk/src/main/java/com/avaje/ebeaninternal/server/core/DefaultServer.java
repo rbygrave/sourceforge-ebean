@@ -319,6 +319,10 @@ public final class DefaultServer implements SpiEbeanServer {
         if (encryptKeyManager != null){
             encryptKeyManager.initialise();
         }
+        List<BeanDescriptor<?>> list = beanDescriptorManager.getBeanDescriptorList();
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).cacheInitialise();
+        }
     }
     
     public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {

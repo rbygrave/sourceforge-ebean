@@ -20,10 +20,11 @@
 package com.avaje.ebeaninternal.server.transaction;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.avaje.ebeaninternal.api.TransactionEventTable;
+import com.avaje.ebeaninternal.server.core.PersistRequest;
 
 /**
  * Holds information for a transaction that is sent around the cluster.
@@ -36,7 +37,7 @@ public final class RemoteTransactionEvent implements Serializable {
 
 	private static final long serialVersionUID = 5790053761599631177L;
 
-	private ArrayList<RemoteBeanPersist> list;
+	private Map<String,RemoteBeanPersist> beanMap;
 
 	private TransactionEventTable tableEvents;
 
@@ -44,11 +45,22 @@ public final class RemoteTransactionEvent implements Serializable {
 
 	}
 
+	public String toString() {
+	    StringBuilder sb = new StringBuilder();
+	    if (beanMap != null){
+	        sb.append(beanMap.values());
+	    }
+	    if (tableEvents != null){
+            sb.append(tableEvents);
+        }
+	    return sb.toString();
+	}
+	
 	/**
 	 * Return true if this has some bean persist or table events.
 	 */
 	public boolean hasEvents() {
-		return (list != null && !list.isEmpty()) || tableEvents != null;
+		return (beanMap != null && !beanMap.isEmpty()) || tableEvents != null;
 	}
 
 	/**
@@ -68,17 +80,20 @@ public final class RemoteTransactionEvent implements Serializable {
 	/**
 	 * Add a Insert Update or Delete payload.
 	 */
-	public void add(RemoteBeanPersist payload) {
-		if (list == null){
-			list = new ArrayList<RemoteBeanPersist>();
+	public void add(String beanType, PersistRequest.Type type, Object id) {
+	    if (beanMap == null){
+	        beanMap = new LinkedHashMap<String, RemoteBeanPersist>();
+	    }
+	    RemoteBeanPersist r = beanMap.get(beanType);
+		if (r == null){
+			r = new RemoteBeanPersist(beanType);
+			beanMap.put(beanType, r);
 		}
-		list.add(payload);
+		r.addId(type, (Serializable)id);
 	}
 
-	/**
-	 * Return the list of RemoteListenerPayload.
-	 */
-	public List<RemoteBeanPersist> getBeanPersistList() {
-		return list;
-	}
+    public Map<String, RemoteBeanPersist> getBeanMap() {
+        return beanMap;
+    }
+	
 }

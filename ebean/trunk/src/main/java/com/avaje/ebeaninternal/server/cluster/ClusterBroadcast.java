@@ -15,37 +15,27 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebeaninternal.server.net;
+package com.avaje.ebeaninternal.server.cluster;
 
-import java.io.IOException;
-import java.net.Socket;
 
 /**
- * The client side of a TCP Sockect connection.
+ * Sends messages to the cluster members.
  */
-public class SocketConnection extends IoConnection {
+public interface ClusterBroadcast {
 
     /**
-     * The underlying socket.
+     * Called to start any underlying listeners etc.
      */
-    Socket socket;
-   
+    public void startup(ClusterManager clusterManager);
+
     /**
-     * Create for a given Socket.
+     * Shutdown any listeners etc.
      */
-    public SocketConnection(Socket socket) throws IOException {
-        super(socket.getInputStream(), socket.getOutputStream());
-        this.socket = socket;
-    }
+    public void shutdown();
     
     /**
-     * Disconnect from the server. 
+     * Send a message to all the members of the cluster.
      */
-    public void disconnect() throws IOException {
-        os.flush();
-        socket.close();
-    }
-
-
+    public void broadcast(ClusterMessage message);
 
 }

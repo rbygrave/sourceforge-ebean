@@ -685,6 +685,7 @@ public class BeanDescriptor<T> {
                 namedUpdate.initialise(parser);
             }
         }
+        
     }
     
     public void initInheritInfo(){
@@ -697,6 +698,16 @@ public class BeanDescriptor<T> {
                 deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
             }
         }
+    }
+    
+    /**
+     * Initialise the cache once the server has started.
+     */
+    public void cacheInitialise() {
+        
+        if (referenceOptions != null && referenceOptions.isUseCache()) {
+            beanCache = cacheManager.getBeanCache(beanType);
+        }        
     }
 
     protected boolean hasInheritance() {
@@ -869,6 +880,7 @@ public class BeanDescriptor<T> {
         return owner.getEncryptKey(tableName, columnName);
     }
 
+    
     /**
      * Execute the warming cache query (if defined) and load the cache.
      */
@@ -1015,7 +1027,7 @@ public class BeanDescriptor<T> {
         Object id = getId(bean);
         return (T) beanCache.put(id, bean);
     }
-
+    
     /**
      * Return a bean from the bean cache.
      */

@@ -19,7 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -42,7 +41,7 @@ import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.persist.PersistExecute;
 import com.avaje.ebeaninternal.server.persist.dml.GenerateDmlRequest;
-import com.avaje.ebeaninternal.server.transaction.RemoteBeanPersist;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
  * PersistRequest for insert update or delete of a bean.
@@ -198,15 +197,15 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         }
     }
 
-    public RemoteBeanPersist notifyLocalPersistListener() {
-        if (isLocalNotifyPersistListener()) {
-            return createRemoteBeanPersist();
-        } else {
-            return null;
-        }
+    public void notifyLocalPersistListener(RemoteTransactionEvent remoteEvent) {
+        
+        localNotifyPersistListener();
+        
+        remoteEvent.add(beanDescriptor.getFullName(), type, idValue);
     }
+    
 
-    private boolean isLocalNotifyPersistListener() {
+    private boolean localNotifyPersistListener() {
         if (beanPersistListener == null) {
             return false;
 
@@ -618,8 +617,4 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         return changedProps.contains(prop.getName());
     }
 
-    private RemoteBeanPersist createRemoteBeanPersist() {
-
-        return new RemoteBeanPersist(beanDescriptor.getFullName(), type, (Serializable) idValue);
-    }
 }

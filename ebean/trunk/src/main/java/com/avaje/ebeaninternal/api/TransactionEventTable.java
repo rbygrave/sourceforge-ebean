@@ -11,6 +11,10 @@ public final class TransactionEventTable implements Serializable {
 	
 	private final Map<String, TableIUD> map = new HashMap<String, TableIUD>();
 	
+    public String toString() {
+        return "TransactionEventTable " + map.values();
+    }
+
 	public void add(TransactionEventTable table){
 		
 		for (TableIUD iud : table.values()) {
@@ -55,6 +59,10 @@ public final class TransactionEventTable implements Serializable {
 			this.insert = insert;
 			this.update = update;
 			this.delete = delete;
+		}
+		
+		public String toString() {
+		    return "TableIUD "+table+" i:"+insert+" u:"+update+" d:"+delete;
 		}
 		
 		private void add(TableIUD other) {
