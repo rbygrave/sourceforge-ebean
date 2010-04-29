@@ -21,7 +21,7 @@ package com.avaje.ebeaninternal.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +40,6 @@ import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
@@ -516,6 +515,34 @@ public class TransactionManager {
 		localCommitBackgroundProcess(event);
 	}
 	
+	
+    /**
+     * Notify local BeanPersistListeners etc of events from another server in the cluster.
+     */
+	public void remoteTransactionEvent(RemoteTransactionEventReceived remoteEvent) {
+        
+        if (debugRemote || logger.isLoggable(Level.FINE)){
+            logger.info("Cluster Received: "+remoteEvent.toString());
+        }
+        
+        List<TableIUD> tableIUDList = remoteEvent.getTableIUDList();
+        if (tableIUDList != null){
+            for (int i = 0; i < tableIUDList.size(); i++) {
+                TableIUD tableIUD = tableIUDList.get(i);
+                beanDescriptorManager.cacheNotify(tableIUD);
+            }
+        }
+        
+        List<RemoteBeanPersist> beanPersistList = remoteEvent.getBeanPersistList();
+        if (beanPersistList != null){
+            for (int i = 0; i < beanPersistList.size(); i++) {
+                RemoteBeanPersist beanPersist = beanPersistList.get(i);
+                beanPersist.notifyCacheAndListener();
+            }
+        }
+        
+    }
+	
 	/**
 	 * Notify local BeanPersistListeners etc of events from another server in the cluster.
 	 */
@@ -525,32 +552,30 @@ public class TransactionManager {
 	        logger.info("Cluster Received: "+remoteEvent.toString());
 	    }
 	    
-	    Map<String, RemoteBeanPersist> beanMap = remoteEvent.getBeanMap();
-		if (beanMap != null){
-		    for (RemoteBeanPersist r : beanMap.values()) {
-		        remoteBeanPersist(r);
-            }
-		}
-		
-		processTableEvents(remoteEvent.getTableEvents());
-		
-		
+//	    Map<String, RemoteBeanPersist> beanMap = remoteEvent.getBeanMap();
+//		if (beanMap != null){
+//		    for (RemoteBeanPersist r : beanMap.values()) {
+//		        remoteBeanPersist(r);
+//            }
+//		}
+//		
+//		processTableEvents(remoteEvent.getTableEvents());
 	}
 	
-	/**
-	 * Send a remote bean persist event to the local bean persist listeners.
-	 */
-	private void remoteBeanPersist(RemoteBeanPersist remoteBeanPersist) {
-
-		BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptor(remoteBeanPersist.getBeanType());
-		if (desc == null){
-			String msg = "Could not find BeanDescriptor for "+remoteBeanPersist.getBeanType();
-			msg += "? Missing out remoteNotify of "+remoteBeanPersist;
-			logger.severe(msg);
-		} else {
-			remoteBeanPersist.notifyCacheAndListener(desc);			
-		}
-	}
+//	/**
+//	 * Send a remote bean persist event to the local bean persist listeners.
+//	 */
+//	private void remoteBeanPersist(RemoteBeanPersist remoteBeanPersist) {
+//
+//		BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptorById(remoteBeanPersist.getDescriptorId());
+//		if (desc == null){
+//			String msg = "Could not find BeanDescriptor for "+remoteBeanPersist.getDescriptorId();
+//			msg += "? Missing out remoteNotify of "+remoteBeanPersist;
+//			logger.severe(msg);
+//		} else {
+//			remoteBeanPersist.notifyCacheAndListener(desc);			
+//		}
+//	}
 
 	
 	/**

@@ -140,6 +140,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     private final Map<Class<?>, BeanTable> beanTableMap = new HashMap<Class<?>, BeanTable>();
 
     private final Map<String, BeanDescriptor<?>> descMap = new HashMap<String, BeanDescriptor<?>>();
+    private final Map<String, BeanDescriptor<?>> idDescMap = new HashMap<String, BeanDescriptor<?>>();
 
     private final Map<String, BeanManager<?>> beanManagerMap = new HashMap<String, BeanManager<?>>();
 
@@ -199,6 +200,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         this.transientProperties = new TransientProperties();
     }
 
+    public BeanDescriptor<?> getBeanDescriptorById(String descriptorId) {
+        return idDescMap.get(descriptorId);
+    }
+    
     @SuppressWarnings("unchecked")
     public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType) {
 
@@ -254,6 +259,11 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             Collections.sort(list, beanDescComparator);
             immutableDescriptorList = Collections.unmodifiableList(list);
 
+            // put into map using the "desriptorId" (alternative to class name)
+            for (BeanDescriptor<?> d : list) {
+                idDescMap.put(d.getDescriptorId(), d);
+            }
+            
             initialiseAll();
             readForeignKeys();
 
@@ -468,7 +478,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             }
         }
     }
-
+        
     private <T> BeanDescriptor<T> createEmbedded(Class<T> beanClass) {
 
         DeployBeanInfo<T> info = createDeployBeanInfo(beanClass);

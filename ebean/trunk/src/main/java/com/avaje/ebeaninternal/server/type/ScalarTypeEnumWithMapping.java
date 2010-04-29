@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -180,4 +183,13 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
         return EscapeJson.escapeQuote(format(value));
     }
 
+    public Object readData(DataInput dataInput) throws IOException {
+        String s = dataInput.readUTF();
+        return parse(s);
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        String s = format(v);
+        dataOutput.writeUTF(s);
+    }
 }

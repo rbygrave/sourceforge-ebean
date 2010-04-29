@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
@@ -140,6 +143,17 @@ public class ScalarTypeLdapDate<T> implements ScalarType<T> {
     public T jsonFromString(String value, JsonValueAdapter ctx) {
         return baseType.jsonFromString(value, ctx);
     }
+
+    public Object readData(DataInput dataInput) throws IOException {
+        String s = dataInput.readUTF();
+        return parse(s);
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        String s = format(v);
+        dataOutput.writeUTF(s);
+    }
+    
     
     
 }

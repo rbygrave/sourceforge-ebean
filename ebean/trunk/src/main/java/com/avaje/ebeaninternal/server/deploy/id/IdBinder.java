@@ -1,5 +1,8 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -23,6 +26,10 @@ public interface IdBinder {
 	 */
 	public void initialise();
 	
+    public void writeData(DataOutput dataOutput, Object idValue) throws IOException;
+
+    public Object readData(DataInput dataInput) throws IOException;
+
 	/**
      * Adds RDN's to the LdapName using the id value.
      */

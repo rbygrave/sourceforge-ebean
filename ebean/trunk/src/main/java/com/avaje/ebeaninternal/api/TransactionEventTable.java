@@ -1,9 +1,15 @@
 package com.avaje.ebeaninternal.api;
 
+import java.io.DataInput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.avaje.ebeaninternal.server.cluster.BinaryMessage;
+import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
 
 public final class TransactionEventTable implements Serializable {
 
@@ -15,6 +21,20 @@ public final class TransactionEventTable implements Serializable {
         return "TransactionEventTable " + map.values();
     }
 
+    public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
+
+        for (TableIUD tableIud : map.values()) {
+            tableIud.writeBinaryMessage(msgList);
+        }
+    }
+    
+    public void readBinaryMessage(DataInput dataInput) throws IOException {
+        
+        TableIUD tableIud = TableIUD.readBinaryMessage(dataInput);
+        map.put(tableIud.getTable(), tableIud);
+    }
+
+    
 	public void add(TransactionEventTable table){
 		
 		for (TableIUD iud : table.values()) {
@@ -60,6 +80,36 @@ public final class TransactionEventTable implements Serializable {
 			this.update = update;
 			this.delete = delete;
 		}
+				
+	    public static TableIUD readBinaryMessage(DataInput dataInput) throws IOException {
+	        
+	        String table = dataInput.readUTF();
+	        boolean insert = dataInput.readBoolean();
+	        boolean update = dataInput.readBoolean();
+	        boolean delete = dataInput.readBoolean();
+	        
+	        return new TableIUD(table, insert, update, delete);
+	    }
+	    
+	    public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
+	        
+	        BinaryMessage msg = new BinaryMessage(table.length()+10);
+	        DataOutputStream os = msg.getOs();
+	        os.writeInt(BinaryMessage.TYPE_TABLEIUD);
+            os.writeUTF(table);
+            os.writeBoolean(insert);
+            os.writeBoolean(update);
+            os.writeBoolean(delete);
+	        
+            msgList.add(msg);
+	    }
+	    
+//	    public void write(DataOutput dataOutput) throws IOException {
+//	        dataOutput.writeUTF(table);
+//	        dataOutput.writeBoolean(insert);
+//            dataOutput.writeBoolean(update);
+//            dataOutput.writeBoolean(delete);
+//	    }
 		
 		public String toString() {
 		    return "TableIUD "+table+" i:"+insert+" u:"+update+" d:"+delete;

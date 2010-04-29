@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import com.avaje.ebean.config.ScalarTypeConverter;
@@ -55,6 +58,18 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
 
     public String toString() {
         return "ScalarTypeWrapper " + wrapperType + " to " + scalarType.getType();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Object readData(DataInput dataInput) throws IOException {
+        Object v = scalarType.readData(dataInput);
+        return converter.wrapValue((S)v);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        S sv = converter.unwrapValue((B)v);
+        scalarType.writeData(dataOutput, sv);
     }
 
     public void bind(DataBind b, B value) throws SQLException {

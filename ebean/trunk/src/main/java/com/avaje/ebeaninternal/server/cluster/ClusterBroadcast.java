@@ -17,6 +17,8 @@
  */
 package com.avaje.ebeaninternal.server.cluster;
 
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
+
 
 /**
  * Sends messages to the cluster members.
@@ -36,6 +38,6 @@ public interface ClusterBroadcast {
     /**
      * Send a message to all the members of the cluster.
      */
-    public void broadcast(ClusterMessage message);
+    public void broadcast(RemoteTransactionEvent remoteTransEvent);
 
 }

@@ -1,5 +1,8 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -132,8 +135,15 @@ public final class IdBinderSimple implements IdBinder {
 		idProperty.bind(dataBind, value);
 	}
 	
+	public void writeData(DataOutput os, Object value) throws IOException {
+	    idProperty.writeData(os, value);
+    }
 	
-	public void loadIgnore(DbReadContext ctx) {
+    public Object readData(DataInput is) throws IOException {
+        return idProperty.readData(is);
+    }
+
+    public void loadIgnore(DbReadContext ctx) {
         idProperty.loadIgnore(ctx);
     }
 

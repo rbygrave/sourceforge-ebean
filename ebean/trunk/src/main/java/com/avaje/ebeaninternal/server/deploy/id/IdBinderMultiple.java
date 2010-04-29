@@ -1,5 +1,8 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -197,6 +200,37 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 	
+    public Object readData(DataInput dataInput) throws IOException {
+        
+        LinkedHashMap<String,Object> map = new LinkedHashMap<String, Object>();
+        
+        boolean notNull = true;
+
+        for (int i = 0; i < props.length; i++) {
+            Object value = props[i].readData(dataInput);
+            map.put(props[i].getName(), value);
+            if (value == null) {
+                notNull = false;
+            }
+        }
+
+        if (notNull) {
+            return map;
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void writeData(DataOutput dataOutput, Object idValue) throws IOException {
+        
+        Map<String,Object> map = (Map<String,Object>)idValue;
+        for (int i = 0; i < props.length; i++) {
+            Object embFieldValue = map.get(props[i].getName());
+            //Object embFieldValue = props[i].getValue(idValue);
+            props[i].writeData(dataOutput, embFieldValue);
+        }
+    }
 	
 	public void loadIgnore(DbReadContext ctx) {
         for (int i = 0; i < props.length; i++) {

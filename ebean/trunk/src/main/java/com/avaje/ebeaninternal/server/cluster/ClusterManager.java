@@ -26,6 +26,7 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.cluster.mcast.McastClusterBroadcast;
 import com.avaje.ebeaninternal.server.cluster.socket.SocketClusterBroadcast;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
  * Manages the cluster service.
@@ -70,10 +71,9 @@ public class ClusterManager {
                     this.broadcast = new SocketClusterBroadcast();
                     
                 } else {
+                    logger.info("Clustering using ["+clusterType+"]");
                     this.broadcast = (ClusterBroadcast)ClassUtil.newInstance(clusterType);
                 }
-                
-                logger.info("Clustering on using ["+broadcast.getClass().getName()+"]");
                 
             } catch (Exception e){
                 String msg = "Error initialising ClusterManager type ["+clusterType+"]";
@@ -85,14 +85,18 @@ public class ClusterManager {
     }
     
     public void registerServer(EbeanServer server){
-        if (!started){
-            startup();
+        synchronized (serverMap) {
+            if (!started){
+                startup();
+            }
+            serverMap.put(server.getName(), server);
         }
-        serverMap.put(server.getName(), server);
     }
     
     public EbeanServer getServer(String name){
-        return serverMap.get(name);
+        synchronized (serverMap) {
+            return serverMap.get(name);
+        }
     }
 
     private void startup() {
@@ -112,9 +116,9 @@ public class ClusterManager {
     /**
      * Send the message headers and payload to every server in the cluster.
      */
-    public void broadcast(ClusterMessage headers){
+    public void broadcast(RemoteTransactionEvent remoteTransEvent){
         if (broadcast != null){
-            broadcast.broadcast(headers);
+            broadcast.broadcast(remoteTransEvent);
         }
     }
     

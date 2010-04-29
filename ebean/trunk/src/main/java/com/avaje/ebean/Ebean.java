@@ -212,7 +212,7 @@ public final class Ebean {
         }
 
         private EbeanServer get(String name) {
-            if (name == null) {
+            if (name == null || name.length() == 0) {
                 return primaryServer;
             }
             // non-synchronized read

@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
@@ -112,5 +115,19 @@ public class ScalarTypeBytesEncrypted implements ScalarType<byte[]> {
     public byte[] jsonFromString(String value, JsonValueAdapter ctx) {
         return baseType.jsonFromString(value, ctx);
     }
+
+    public Object readData(DataInput dataInput) throws IOException {
+        int len = dataInput.readInt();
+        byte[] value = new byte[len];
+        dataInput.readFully(value);
+        return value;
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        byte[] value = (byte[])v;
+        dataOutput.writeInt(value.length);
+        dataOutput.write(value);
+    }
+    
     
 }
