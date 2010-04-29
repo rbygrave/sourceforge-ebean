@@ -37,8 +37,6 @@ public class Transformer implements ClassFileTransformer {
     private boolean transformTransactional;
     private boolean transformEntityBeans;
 
-    private ClassWriterForName classWriterForName;
-
     public Transformer(String extraClassPath, String agentArgs) {
         this(parseClassPaths(extraClassPath), agentArgs);
     }
@@ -55,15 +53,13 @@ public class Transformer implements ClassFileTransformer {
     }
 
     /**
-     * Set a ClassWriterForName for custom handling of the Class.forName(...)
-     * used in LoaderAwareClassWriter.
+     * Override when you need transformation to occur with knowledge of other classes.
      * <p>
-     * Typically this is set by external frameworks like Play which
-     * programmatically invoke Ebean's enhancement.
+     * Note: Added to support Play framework.
      * </p>
      */
-    public void setClassWriterForName(ClassWriterForName classWriterForName) {
-        this.classWriterForName = classWriterForName;
+    protected ClassWriter createClassWriter() {
+        return new ClassWriter(CLASS_WRITER_COMPUTEFLAGS);
     }
 
     /**
@@ -141,14 +137,14 @@ public class Transformer implements ClassFileTransformer {
             return null;
         }
     }
-
+    
     /**
      * Perform entity bean enhancement.
      */
     private byte[] entityEnhancement(ClassLoader loader, byte[] classfileBuffer) {
 
         ClassReader cr = new ClassReader(classfileBuffer);
-        LoaderAwareClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader, classWriterForName);
+        ClassWriter cw = createClassWriter();
         ClassAdpaterEntity ca = new ClassAdpaterEntity(cw, loader, enhanceContext);
         try {
 
@@ -185,7 +181,7 @@ public class Transformer implements ClassFileTransformer {
     private byte[] transactionalEnhancement(ClassLoader loader, byte[] classfileBuffer) {
 
         ClassReader cr = new ClassReader(classfileBuffer);
-        ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_COMPUTEFLAGS, loader, classWriterForName);
+        ClassWriter cw = createClassWriter();
         ClassAdapterTransactional ca = new ClassAdapterTransactional(cw, loader, enhanceContext);
 
         try {

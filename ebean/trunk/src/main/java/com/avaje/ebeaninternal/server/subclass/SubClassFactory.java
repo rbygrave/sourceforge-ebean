@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import com.avaje.ebean.enhance.agent.ClassPathClassBytesReader;
 import com.avaje.ebean.enhance.agent.EnhanceConstants;
 import com.avaje.ebean.enhance.agent.EnhanceContext;
-import com.avaje.ebean.enhance.agent.LoaderAwareClassWriter;
 import com.avaje.ebean.enhance.asm.ClassReader;
 import com.avaje.ebean.enhance.asm.ClassWriter;
 
@@ -114,7 +113,7 @@ public class SubClassFactory extends ClassLoader implements EnhanceConstants, Ge
     	InputStream is  = getResourceAsStream(resName);
         
         ClassReader cr = new ClassReader(is);
-        ClassWriter cw = new LoaderAwareClassWriter(CLASS_WRITER_FLAGS, getParent(), null);
+        ClassWriter cw = new ClassWriter(CLASS_WRITER_FLAGS);
 		
 		SubClassClassAdpater ca = new SubClassClassAdpater(subClassSuffix, cw, parentClassLoader, enhanceContext);
 		if (ca.isLog(1)) {
