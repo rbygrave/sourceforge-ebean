@@ -1,5 +1,8 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -162,6 +165,33 @@ public final class IdBinderEmbedded implements IdBinder {
         for (int i = 0; i < props.length; i++) {
             Object embFieldValue = props[i].getValue(value);
             props[i].bind(dataBind, embFieldValue);
+        }
+    }
+    
+    public Object readData(DataInput dataInput) throws IOException {
+        
+        Object embId = idDesc.createVanillaBean();
+        boolean notNull = true;
+
+        for (int i = 0; i < props.length; i++) {
+            Object value = props[i].readData(dataInput);
+            props[i].setValue(embId, value);
+            if (value == null) {
+                notNull = false;
+            }
+        }
+
+        if (notNull) {
+            return embId;
+        } else {
+            return null;
+        }
+    }
+
+    public void writeData(DataOutput dataOutput, Object idValue) throws IOException {
+        for (int i = 0; i < props.length; i++) {
+            Object embFieldValue = props[i].getValue(idValue);
+            props[i].writeData(dataOutput, embFieldValue);
         }
     }
 

@@ -27,7 +27,6 @@ import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventBeans;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 
 /**
@@ -63,7 +62,7 @@ public final class PostCommitProcessing implements Runnable {
 	 */
 	public void run() {
 
-		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent();
+		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
 
 		TransactionEventBeans eventBeans = event.getEventBeans();
 		if (eventBeans != null){
@@ -88,8 +87,7 @@ public final class PostCommitProcessing implements Runnable {
                 logger.info("Cluster Send: " + remoteEvent.toString());
             }
 
-            ClusterMessage m = ClusterMessage.transEvent(serverName, remoteEvent);
-            clusterManager.broadcast(m);
+            clusterManager.broadcast(remoteEvent);
 		}
 	}
 	

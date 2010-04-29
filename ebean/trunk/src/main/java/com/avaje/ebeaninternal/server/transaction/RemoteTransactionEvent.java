@@ -19,12 +19,15 @@
  */
 package com.avaje.ebeaninternal.server.transaction;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.avaje.ebeaninternal.api.TransactionEventTable;
+import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
 import com.avaje.ebeaninternal.server.core.PersistRequest;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 
 /**
  * Holds information for a transaction that is sent around the cluster.
@@ -37,14 +40,27 @@ public final class RemoteTransactionEvent implements Serializable {
 
 	private static final long serialVersionUID = 5790053761599631177L;
 
+	private final String serverName;
+	
 	private Map<String,RemoteBeanPersist> beanMap;
 
 	private TransactionEventTable tableEvents;
 
-	public RemoteTransactionEvent() {
-
+	public RemoteTransactionEvent(String serverName) {
+	    this.serverName = serverName;
 	}
 
+    public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
+        if (tableEvents != null){
+            tableEvents.writeBinaryMessage(msgList);
+        }
+        if (beanMap != null){
+            for (RemoteBeanPersist beanPersist : beanMap.values()) {
+                beanPersist.writeBinaryMessage(msgList);
+            }
+        }
+    }
+	
 	public String toString() {
 	    StringBuilder sb = new StringBuilder();
 	    if (beanMap != null){
@@ -56,7 +72,15 @@ public final class RemoteTransactionEvent implements Serializable {
 	    return sb.toString();
 	}
 	
+	
 	/**
+	 * Return the EbeanServer name.
+	 */
+	public String getServerName() {
+        return serverName;
+    }
+
+    /**
 	 * Return true if this has some bean persist or table events.
 	 */
 	public boolean hasEvents() {
@@ -76,17 +100,18 @@ public final class RemoteTransactionEvent implements Serializable {
 	public TransactionEventTable getTableEvents() {
 		return tableEvents;
 	}
-
+       
 	/**
 	 * Add a Insert Update or Delete payload.
 	 */
-	public void add(String beanType, PersistRequest.Type type, Object id) {
+	public void add(BeanDescriptor<?> desc, PersistRequest.Type type, Object id) {
 	    if (beanMap == null){
 	        beanMap = new LinkedHashMap<String, RemoteBeanPersist>();
 	    }
+	    String beanType = desc.getFullName();
 	    RemoteBeanPersist r = beanMap.get(beanType);
 		if (r == null){
-			r = new RemoteBeanPersist(beanType);
+			r = new RemoteBeanPersist(desc);
 			beanMap.put(beanType, r);
 		}
 		r.addId(type, (Serializable)id);

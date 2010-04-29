@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -638,6 +641,14 @@ public class BeanProperty implements ElPropertyValue {
     @SuppressWarnings("unchecked")
     public void bind(DataBind b, Object value) throws SQLException {
         scalarType.bind(b, value);
+    }
+    
+    public void writeData(DataOutput dataOutput, Object value) throws IOException {
+        scalarType.writeData(dataOutput, value);
+    }
+
+    public Object readData(DataInput dataInput) throws IOException {
+        return scalarType.readData(dataInput);
     }
 
     Validator[] getValidators() {

@@ -29,8 +29,8 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.cluster.ClusterBroadcast;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
  * Broadcast messages across the cluster using sockets. 
@@ -95,7 +95,7 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
      */
     private void register() {
 
-        ClusterMessage h = ClusterMessage.register(local.getHostPort(), true);
+        SocketClusterMessage h = SocketClusterMessage.register(local.getHostPort(), true);
         
         for (int i = 0; i < members.length; i++) {
             boolean online = members[i].register(h);
@@ -116,7 +116,7 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
         }
     }
 
-    private void send(SocketClient client, ClusterMessage msg) {
+    private void send(SocketClient client, SocketClusterMessage msg) {
 
         try {                    
             client.send(msg);
@@ -142,19 +142,25 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
     /**
      * Send the payload to all the members of the cluster.
      */
-    public void broadcast(ClusterMessage msg) {
+    public void broadcast(RemoteTransactionEvent remoteTransEvent) {
     	
+        SocketClusterMessage msg = SocketClusterMessage.transEvent(remoteTransEvent);
+        broadcast(msg);
+    }
+
+    protected void broadcast(SocketClusterMessage msg) {
+        
         for (int i = 0; i < members.length; i++) {
             send(members[i], msg);
         }
     }
-
+    
     /**
      * Deregister from the cluster.
      */
     private void deregister() {
         
-        ClusterMessage h = ClusterMessage.register(local.getHostPort(), false);
+        SocketClusterMessage h = SocketClusterMessage.register(local.getHostPort(), false);
         broadcast(h);
         
         for (int i = 0; i < members.length; i++) {
@@ -167,7 +173,7 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
      */
     protected boolean process(SocketConnection request) throws IOException, ClassNotFoundException {
 
-        ClusterMessage h = (ClusterMessage)request.readObject();
+        SocketClusterMessage h = (SocketClusterMessage)request.readObject();
         
         System.out.println("Received msg: "+h);
         
@@ -175,8 +181,9 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
             setMemberOnline(h.getRegisterHost(), h.isRegister());
         
         } else {
+            RemoteTransactionEvent transEvent = h.getTransEvent();
             // process the transaction event
-            SpiEbeanServer server = (SpiEbeanServer)clusterManager.getServer(h.getEbeanServer());
+            SpiEbeanServer server = (SpiEbeanServer)clusterManager.getServer(transEvent.getServerName());
             if (server != null){
                 server.remoteTransactionEvent(h.getTransEvent());
             }

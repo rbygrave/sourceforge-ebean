@@ -20,8 +20,9 @@
 package com.avaje.ebeaninternal.server.cluster.mcast;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -30,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
+import com.avaje.ebeaninternal.api.SpiEbeanServer;
 
 public class McastListener implements Runnable {
 
@@ -38,38 +39,37 @@ public class McastListener implements Runnable {
 
     private final McastClusterBroadcast owner;
     
+    private final McastPacketControl packetControl;
+    
     private final MulticastSocket sock;
 
     private final Thread listenerThread;
 
-    private final InetSocketAddress localSender;
-
-    private final String localSenderIp;
+    private final String localSenderHostPort;
 
     private final InetAddress group;
+
+    private final boolean debugIgnore;
 
     private DatagramPacket pack;
 
     private byte[] receiveBuffer;
 
     private volatile boolean doingShutdown;
-
-    private final boolean debugIgnore;
     
-    public McastListener(McastClusterBroadcast owner, int port, String address, 
-            int bufferSize, int timeout, InetSocketAddress localSender, 
+    public McastListener(McastClusterBroadcast owner, McastPacketControl packetControl, int port, String address, 
+            int bufferSize, int timeout, String localSenderHostPort, 
             boolean disableLoopback, int ttl, InetAddress mcastBindAddress) {
 
         this.debugIgnore = GlobalProperties.getBoolean("ebean.debug.mcast.ignore", false);
 
         this.owner = owner;
-        this.localSender = localSender;
-        this.localSenderIp = localSender.getAddress().getHostAddress();
-
+        this.packetControl = packetControl;
+        this.localSenderHostPort = localSenderHostPort;
         this.receiveBuffer = new byte[bufferSize];
         this.listenerThread = new Thread(this, "EbeanClusterMcastListener");
 
-        String msg = "Cluster Multicast Listen on["+address+":"+port+"] disableLoopback["+disableLoopback+"]";
+        String msg = "Cluster Multicast Listening address["+address+"] port["+port+"] disableLoopback["+disableLoopback+"]";
         if (ttl >= 0){
             msg +=" ttl["+ttl+"]";
         }
@@ -95,7 +95,7 @@ public class McastListener implements Runnable {
             if (ttl >= 0) {
                 sock.setTimeToLive(ttl);
             }
-
+            sock.setReuseAddress(true);
             pack = new DatagramPacket(receiveBuffer, receiveBuffer.length);
             sock.joinGroup(group);
             
@@ -107,6 +107,8 @@ public class McastListener implements Runnable {
     public void startListening() {
         this.listenerThread.setDaemon(true);
         this.listenerThread.start();
+        
+        logger.info("Cluster Multicast Listener up and joined Group");
     }
 
     /**
@@ -130,55 +132,95 @@ public class McastListener implements Runnable {
             }
         }
     }
-
+    
     public void run() {
         while (!doingShutdown) {
             try {
                 synchronized (listenerThread) {
+                    
                     pack.setLength(receiveBuffer.length);
                     sock.receive(pack);
 
                     InetSocketAddress senderAddr = (InetSocketAddress)pack.getSocketAddress();
+
+                    String senderHostPort = senderAddr.getAddress().getHostAddress()+":"+senderAddr.getPort();                    
                     
-                    String sa = senderAddr.getAddress().getHostAddress();
-                    int ip = senderAddr.getPort();
-                    
-                    boolean sentByLocalSender = (localSender.getPort() == ip && localSenderIp.equals(sa));
-                    
-                    if (sentByLocalSender){
+                    if (senderHostPort.equals(localSenderHostPort)){
                         if (debugIgnore || logger.isLoggable(Level.FINE)){
-                            logger.info("Ignoring message as sent by localSender: "+localSenderIp);
+                            logger.info("Ignoring message as sent by localSender: "+localSenderHostPort);
                         }
                     } else {
-    
+                                                   
                         byte[] data = pack.getData();
                         ByteArrayInputStream bi = new ByteArrayInputStream(data);
-                        ObjectInputStream ois = new ObjectInputStream(bi);
-                        Object o = ois.readObject();
+                        DataInputStream dataInput = new DataInputStream(bi);
                         
-                        if (o instanceof ClusterMessage == false){
-                            String msg = "Error: Message object not a ClusterMessage? "+o.getClass().getName();
-                            logger.log(Level.SEVERE, msg);
-                            
+                        Packet header = Packet.readHeader(dataInput);
+                        
+                        long packetId = header.getPacketId();
+                        boolean ackMsg = packetId == 0;
+                        
+                        boolean processThisPacket = ackMsg || packetControl.isProcessPacket(senderHostPort, header.getPacketId());
+                        
+                        if (!processThisPacket){
+                            if (debugIgnore || logger.isLoggable(Level.FINE)){
+                                logger.info("Already processed packet: "+header.getPacketId());
+                            }
                         } else {
-                            
-                            ClusterMessage cm = (ClusterMessage)o;
-                            owner.handleMessage(cm);
+                            if (logger.isLoggable(Level.FINER)){
+                                logger.info("Incoming packet:"+header.getPacketId()+" type:"+header.getPacketType());
+                            }
+                                
+                            processPacket(senderHostPort, header, dataInput);                            
                         }
                     }
                 }
                 
             } catch (java.net.SocketTimeoutException e) {
+                
+                packetControl.onListenerTimeout();
+                
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, "timeout", e);
                 }
             } catch (IOException e) {
-                logger.log(Level.INFO, "error ?", e);
-                
-            } catch (ClassNotFoundException e) {
-                logger.log(Level.INFO, "error ?", e);
-            }
+                logger.log(Level.INFO, "error ?", e);  
+            } 
         }
     }
+
+    protected void processPacket(String senderHostPort, Packet header, DataInput dataInput) {
+        try {
+            switch (header.getPacketType()) {
+            case Packet.TYPE_MESSAGES:
+                packetControl.processMessagesPacket(senderHostPort, header, dataInput);
+                break;
+                
+            case Packet.TYPE_TRANSEVENT:
+                processTransEventPacket(header, dataInput);
+                break;
+                
+            default:
+                String msg = "Unknown Packet type:" + header.getPacketType();
+                logger.log(Level.SEVERE, msg);
+                break;
+            }
+        } catch (IOException e) {
+            // need to ask to get this packet resent...
+            String msg = "Error reading Packet " + header.getPacketId() + " type:" + header.getPacketType();
+            logger.log(Level.SEVERE, msg, e);
+        }
+    }
+    
+    private void processTransEventPacket(Packet header, DataInput dataInput) throws IOException {
+
+        SpiEbeanServer server = owner.getEbeanServer(header.getServerName());
+
+        PacketTransactionEvent tranEventPacket = PacketTransactionEvent.forRead(header, server);
+        tranEventPacket.read(dataInput);
+
+        server.remoteTransactionEvent(tranEventPacket.getEvent());
+    }
+
 
 }

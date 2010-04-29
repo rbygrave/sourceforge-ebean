@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
@@ -35,6 +38,14 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
         this.wrapped = wrapped;
         this.byteArrayType = byteArrayType;
         this.dataEncryptSupport = dataEncryptSupport;
+    }
+
+    public Object readData(DataInput dataInput) throws IOException {
+        return wrapped.readData(dataInput);
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        wrapped.writeData(dataOutput, v);
     }
 
     public T read(DataReader dataReader) throws SQLException {

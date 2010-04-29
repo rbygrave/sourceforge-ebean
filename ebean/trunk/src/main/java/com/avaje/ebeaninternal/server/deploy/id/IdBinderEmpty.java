@@ -1,5 +1,8 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -121,4 +124,13 @@ public final class IdBinderEmpty implements IdBinder {
 	public Object convertSetId(Object idValue, Object bean){
 		return idValue;
 	}
+	
+    public Object readData(DataInput dataOutput) throws IOException {
+        return null;
+    }
+    
+    public void writeData(DataOutput dataOutput, Object idValue) throws IOException {
+        
+    }	
+	
 }

@@ -38,6 +38,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.query.CQuery;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEventReceived;
 
 /**
  * Service Provider extension to EbeanServer.
@@ -96,6 +97,8 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 */
 	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> type);
 
+    public BeanDescriptor<?> getBeanDescriptorById(String descriptorId);
+
 	/**
 	 * Process committed changes from another framework.
 	 * <p>
@@ -136,7 +139,10 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 * BeanListeners of remote inserts updates and deletes.
 	 */
 	public void remoteTransactionEvent(RemoteTransactionEvent event);
+	
+    public void remoteTransactionEvent(RemoteTransactionEventReceived event);
 
+	
 	/**
 	 * Create a query request object.
 	 */

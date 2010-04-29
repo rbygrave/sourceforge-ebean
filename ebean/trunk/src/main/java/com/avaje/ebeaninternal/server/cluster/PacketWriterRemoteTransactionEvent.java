@@ -1,0 +1,49 @@
+/**
+ * Copyright (C) 2009 Authors
+ * 
+ * This file is part of Ebean.
+ * 
+ * Ebean is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *  
+ * Ebean is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Ebean; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
+package com.avaje.ebeaninternal.server.cluster;
+
+import java.io.IOException;
+import java.util.List;
+
+import com.avaje.ebeaninternal.server.cluster.mcast.Packet;
+import com.avaje.ebeaninternal.server.cluster.mcast.PacketTransactionEvent;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
+
+public abstract class PacketWriterRemoteTransactionEvent extends PacketWriter {
+
+    
+    public abstract long nextPacketId();
+    
+    @Override
+    protected Packet createPacket(long packetId, long timestamp, String serverName) throws IOException {
+        return PacketTransactionEvent.forWrite(packetId, timestamp, serverName);
+    }
+
+    public List<Packet> write(RemoteTransactionEvent transEvent) throws IOException {
+
+        BinaryMessageList messageList = new BinaryMessageList();
+
+        // split into reasonably small independent messages
+        transEvent.writeBinaryMessage(messageList);
+
+        return write(true, messageList, transEvent.getServerName());
+    }
+
+}

@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -48,6 +51,14 @@ public class ScalarTypeInteger extends ScalarTypeBase<Integer> {
 		return dataReader.getInt();
 	}
 
+    public Object readData(DataInput dataInput) throws IOException {
+        return Integer.valueOf(dataInput.readInt());
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        dataOutput.writeInt((Integer) v);
+    }
+	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toInteger(value);
 	}

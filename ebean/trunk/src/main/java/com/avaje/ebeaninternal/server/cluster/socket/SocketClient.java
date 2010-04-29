@@ -25,7 +25,6 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebeaninternal.server.cluster.ClusterMessage;
 
 /**
  * The client side of the socket clustering.
@@ -105,7 +104,7 @@ class SocketClient {
         this.os = socket.getOutputStream();
     }
 
-    public boolean register(ClusterMessage registerMsg) {
+    public boolean register(SocketClusterMessage registerMsg) {
         
         try {
             setOnline();
@@ -117,7 +116,7 @@ class SocketClient {
         }
     }
     
-    public boolean send(ClusterMessage msg) throws IOException {
+    public boolean send(SocketClusterMessage msg) throws IOException {
 
         if (online){
             writeObject(msg);

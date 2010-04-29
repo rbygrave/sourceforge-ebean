@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import com.avaje.ebean.text.StringFormatter;
@@ -190,5 +193,9 @@ public interface ScalarType<T> extends StringParser, StringFormatter, ScalarData
 	public String jsonToString(T value, JsonValueAdapter ctx);
 
     public T jsonFromString(String value, JsonValueAdapter ctx);
+
+    public Object readData(DataInput dataInput) throws IOException;
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException;
 
 }

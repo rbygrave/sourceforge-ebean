@@ -387,6 +387,8 @@ public class BeanDescriptor<T> {
 
     private ServerCache queryCache;
     
+    private final String descriptorId;
+    
     /**
      * Construct the BeanDescriptor.
      */
@@ -399,6 +401,8 @@ public class BeanDescriptor<T> {
         this.name = InternString.intern(deploy.getName());
         this.baseTableAlias = InternString.intern(name.substring(0, 1).toLowerCase());
         this.fullName = InternString.intern(deploy.getFullName());
+        this.descriptorId = String.valueOf(fullName.hashCode());
+        
         this.typeManager = typeManager;
         this.beanType = deploy.getBeanType();
         this.factoryType = deploy.getFactoryType();
@@ -1501,6 +1505,14 @@ public class BeanDescriptor<T> {
      */
     public boolean isUseIdGenerator() {
         return idGenerator != null;
+    }
+
+    /**
+     * Return the alternate "Id" that identifies this BeanDescriptor.
+     * This is an alternative to using the bean class name.
+     */
+    public String getDescriptorId() {
+        return descriptorId;
     }
 
     /**

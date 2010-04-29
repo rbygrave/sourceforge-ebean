@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -41,6 +44,14 @@ public class ScalarTypeLong extends ScalarTypeBase<Long> {
 		}
 	}
 
+    public Object readData(DataInput dataInput) throws IOException {
+        return Long.valueOf(dataInput.readLong());
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        dataOutput.writeLong((Long) v);
+    }
+    
 	public Long read(DataReader dataReader) throws SQLException {
 		
 		return dataReader.getLong();

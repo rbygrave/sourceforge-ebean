@@ -24,6 +24,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class McastSender {
@@ -38,6 +40,9 @@ public class McastSender {
 
     private final InetSocketAddress sendAddr;
 
+    private final String senderHostPort;
+
+    
     public McastSender(int port, String address, int sendPort, String sendAddress) {
 
         try {
@@ -62,6 +67,9 @@ public class McastSender {
 
             this.sendAddr = new InetSocketAddress(sendInetAddress, sock.getLocalPort());
 
+            this.senderHostPort = sendInetAddress.getHostAddress()+":"+sock.getLocalPort();
+
+            
         } catch (Exception e) {
             String msg = "McastSender port:" + port + " sendPort:" + sendPort + " " + address;
             throw new RuntimeException(msg, e);
@@ -77,9 +85,27 @@ public class McastSender {
         return sendAddr;
     }
 
-    public void sendMessage(byte[] byteMsg) throws IOException {
+    public String getSenderHostPort() {
+        return senderHostPort;
+    }
 
-        DatagramPacket pack = new DatagramPacket(byteMsg, byteMsg.length, inetAddress, port);
+    public void sendPacket(Packet packet) throws IOException {
+
+        byte[] pktBytes = packet.getBytes();
+
+        if (logger.isLoggable(Level.FINE)){
+            logger.fine("OUTGOING packet: " + packet.getPacketId() + " size:" + pktBytes.length);
+        }
+
+        DatagramPacket pack = new DatagramPacket(pktBytes, pktBytes.length, inetAddress, port);
         sock.send(pack);
     }
+    
+    public void sendPackets(List<Packet> packets) throws IOException {
+
+        for (int i = 0; i < packets.size(); i++) {
+            sendPacket(packets.get(i));
+        }
+    }
+    
 }

@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -142,4 +145,13 @@ public class ScalarTypeLdapTimestamp<T> implements ScalarType<T> {
         return baseType.jsonFromString(value, ctx);
     }
     
+    public Object readData(DataInput dataInput) throws IOException {
+        String s = dataInput.readUTF();
+        return parse(s);
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        String s = format(v);
+        dataOutput.writeUTF(s);
+    }
 }

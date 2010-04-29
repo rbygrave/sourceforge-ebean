@@ -201,7 +201,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         
         localNotifyPersistListener();
         
-        remoteEvent.add(beanDescriptor.getFullName(), type, idValue);
+        remoteEvent.add(beanDescriptor, type, idValue);
     }
     
 

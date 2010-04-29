@@ -15,7 +15,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-package com.avaje.ebeaninternal.server.cluster;
+package com.avaje.ebeaninternal.server.cluster.socket;
 
 import java.io.Serializable;
 
@@ -24,38 +24,34 @@ import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 /**
  * The messages broadcast around the cluster.
  */
-public class ClusterMessage implements Serializable {
+public class SocketClusterMessage implements Serializable {
 
     private static final long serialVersionUID = 2993350408394934473L;
     
     private final String registerHost;
 
-    private final String ebeanServer;
-
     private final boolean register;
     
     private final RemoteTransactionEvent transEvent;
     
-    public static ClusterMessage register(String registerHost, boolean register){
-        return new ClusterMessage(registerHost, register);
+    public static SocketClusterMessage register(String registerHost, boolean register){
+        return new SocketClusterMessage(registerHost, register);
     }
 
-    public static ClusterMessage transEvent(String ebeanServer, RemoteTransactionEvent transEvent){
-        return new ClusterMessage(ebeanServer, transEvent);
+    public static SocketClusterMessage transEvent(RemoteTransactionEvent transEvent){
+        return new SocketClusterMessage(transEvent);
     }
     
     /**
      * Used to construct a Child AttributeMap.
      */
-    private ClusterMessage(String registerHost, boolean register) {
+    private SocketClusterMessage(String registerHost, boolean register) {
         this.registerHost = registerHost;
         this.register = register;
-        this.ebeanServer = null;
         this.transEvent = null;
     }
     
-    private ClusterMessage(String ebeanServer, RemoteTransactionEvent transEvent) {
-        this.ebeanServer = ebeanServer;
+    private SocketClusterMessage(RemoteTransactionEvent transEvent) {
         this.transEvent = transEvent;
         this.registerHost = null;
         this.register = false;
@@ -70,7 +66,6 @@ public class ClusterMessage implements Serializable {
             sb.append(registerHost);
         } else {
             sb.append("transEvent ");
-            sb.append(ebeanServer).append(" ");
             sb.append(transEvent);
         }
         return sb.toString();
@@ -82,10 +77,6 @@ public class ClusterMessage implements Serializable {
 
     public String getRegisterHost() {
         return registerHost;
-    }
-
-    public String getEbeanServer() {
-        return ebeanServer;
     }
 
     public boolean isRegister() {
