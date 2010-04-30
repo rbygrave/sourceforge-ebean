@@ -19,7 +19,7 @@ package com.avaje.ebeaninternal.server.cluster.socket;
 
 import java.io.Serializable;
 
-import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
+import com.avaje.ebeaninternal.server.cluster.DataHolder;
 
 /**
  * The messages broadcast around the cluster.
@@ -32,13 +32,13 @@ public class SocketClusterMessage implements Serializable {
 
     private final boolean register;
     
-    private final RemoteTransactionEvent transEvent;
+    private final DataHolder dataHolder;
     
     public static SocketClusterMessage register(String registerHost, boolean register){
         return new SocketClusterMessage(registerHost, register);
     }
 
-    public static SocketClusterMessage transEvent(RemoteTransactionEvent transEvent){
+    public static SocketClusterMessage transEvent(DataHolder transEvent){
         return new SocketClusterMessage(transEvent);
     }
     
@@ -48,11 +48,11 @@ public class SocketClusterMessage implements Serializable {
     private SocketClusterMessage(String registerHost, boolean register) {
         this.registerHost = registerHost;
         this.register = register;
-        this.transEvent = null;
+        this.dataHolder = null;
     }
     
-    private SocketClusterMessage(RemoteTransactionEvent transEvent) {
-        this.transEvent = transEvent;
+    private SocketClusterMessage(DataHolder dataHolder) {
+        this.dataHolder = dataHolder;
         this.registerHost = null;
         this.register = false;
     }
@@ -66,7 +66,6 @@ public class SocketClusterMessage implements Serializable {
             sb.append(registerHost);
         } else {
             sb.append("transEvent ");
-            sb.append(transEvent);
         }
         return sb.toString();
     }
@@ -83,8 +82,8 @@ public class SocketClusterMessage implements Serializable {
         return register;
     }
 
-    public RemoteTransactionEvent getTransEvent() {
-        return transEvent;
+    public DataHolder getDataHolder() {
+        return dataHolder;
     }
    
 }

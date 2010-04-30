@@ -66,6 +66,32 @@ class SocketClient {
             disconnect();
         }
     }
+
+    
+    /**
+     * Set whether the client is thought to be online.
+     */
+    private void setOnline() throws IOException {
+        connect();
+        this.online = true;
+    }
+      
+    public void reconnect() throws IOException {
+        disconnect();
+        connect();
+    }
+    
+    private void connect() throws IOException {
+        if (socket != null){
+            throw new IllegalStateException("Already got a socket connection?");
+        }
+        Socket s = new Socket();
+        s.setKeepAlive(true);
+        s.connect(address);
+        
+        this.socket = s;
+        this.os = socket.getOutputStream();
+    }
     
     public void disconnect() {
         this.online = false;
@@ -84,26 +110,6 @@ class SocketClient {
         }
     }
     
-    /**
-     * Set whether the client is thought to be online.
-     */
-    private void setOnline() throws IOException {
-        connect();
-        this.online = true;
-    }
-      
-    private void connect() throws IOException {
-        if (socket != null){
-            throw new IllegalStateException("Already got a socket connection?");
-        }
-        Socket s = new Socket();
-        s.setKeepAlive(true);
-        s.connect(address);
-        
-        this.socket = s;
-        this.os = socket.getOutputStream();
-    }
-
     public boolean register(SocketClusterMessage registerMsg) {
         
         try {

@@ -41,7 +41,7 @@ import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.persist.PersistExecute;
 import com.avaje.ebeaninternal.server.persist.dml.GenerateDmlRequest;
-import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
+import com.avaje.ebeaninternal.server.transaction.RemoteBeanPersistMap;
 
 /**
  * PersistRequest for insert update or delete of a bean.
@@ -197,11 +197,11 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         }
     }
 
-    public void notifyLocalPersistListener(RemoteTransactionEvent remoteEvent) {
+    public void notifyLocalPersistListener(RemoteBeanPersistMap beanPersistMap) {
         
         localNotifyPersistListener();
         
-        remoteEvent.add(beanDescriptor, type, idValue);
+        beanPersistMap.add(beanDescriptor, type, idValue);
     }
     
 

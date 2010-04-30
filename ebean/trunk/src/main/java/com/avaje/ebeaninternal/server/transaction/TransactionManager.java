@@ -22,7 +22,6 @@ package com.avaje.ebeaninternal.server.transaction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +40,6 @@ import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
@@ -126,7 +124,7 @@ public class TransactionManager {
 	 */
 	private AtomicLong transactionCounter = new AtomicLong(1000);
 	
-	private boolean debugRemote;
+	private int clusterDebugLevel;
 	
 	/**
 	 * Create the TransactionManager
@@ -159,7 +157,7 @@ public class TransactionManager {
 			this.debugLevel = debug;	
 		}
 		
-		this.debugRemote = GlobalProperties.getBoolean("ebean.debug.remotetransaction", false);
+		this.clusterDebugLevel = GlobalProperties.getInt("ebean.cluster.debuglevel", 0);
 		
 		this.defaultBatchMode = config.isPersistBatching();
 		
@@ -267,17 +265,17 @@ public class TransactionManager {
 	}
 
 	/**
-	 * Return true for debugging remote(cluster) transaction events. 
+	 * Return the cluster debug level.
 	 */
-	public boolean isDebugRemote() {
-        return debugRemote;
+	public int getClusterDebugLevel() {
+        return clusterDebugLevel;
     }
 
     /**
-     * Set to true for debugging remote(cluster) transaction events. 
+     * Set the cluster debug level. 
      */
-    public void setDebugRemote(boolean debugRemote) {
-        this.debugRemote = debugRemote;
+    public void setClusterDebugLevel(int clusterDebugLevel) {
+        this.clusterDebugLevel = clusterDebugLevel;
     }
 
     /**
@@ -521,9 +519,9 @@ public class TransactionManager {
     /**
      * Notify local BeanPersistListeners etc of events from another server in the cluster.
      */
-	public void remoteTransactionEvent(RemoteTransactionEventReceived remoteEvent) {
+	public void remoteTransactionEvent(RemoteTransactionEvent remoteEvent) {
         
-        if (debugRemote || logger.isLoggable(Level.FINE)){
+        if (clusterDebugLevel > 0 || logger.isLoggable(Level.FINE)){
             logger.info("Cluster Received: "+remoteEvent.toString());
         }
         
@@ -544,42 +542,6 @@ public class TransactionManager {
         }
         
     }
-	
-	/**
-	 * Notify local BeanPersistListeners etc of events from another server in the cluster.
-	 */
-	public void remoteTransactionEvent(RemoteTransactionEvent remoteEvent) {
-	    
-	    if (debugRemote || logger.isLoggable(Level.FINE)){
-	        logger.info("Cluster Received: "+remoteEvent.toString());
-	    }
-	    
-	    Map<String, RemoteBeanPersist> beanMap = remoteEvent.getBeanMap();
-		if (beanMap != null){
-		    for (RemoteBeanPersist r : beanMap.values()) {
-		        remoteBeanPersist(r);
-            }
-		}
-		
-		processTableEvents(remoteEvent.getTableEvents());
-	}
-	
-	/**
-	 * Send a remote bean persist event to the local bean persist listeners.
-	 */
-	private void remoteBeanPersist(RemoteBeanPersist remoteBeanPersist) {
-
-		BeanDescriptor<?> desc = beanDescriptorManager.getBeanDescriptorById(remoteBeanPersist.getDescriptorId());
-		if (desc == null){
-			String msg = "Could not find BeanDescriptor for "+remoteBeanPersist.getDescriptorId();
-			msg += "? Missing out remoteNotify of "+remoteBeanPersist;
-			logger.severe(msg);
-		} else {
-		    remoteBeanPersist.setBeanDescriptor(desc);
-			remoteBeanPersist.notifyCacheAndListener();			
-		}
-	}
-
 	
 	/**
 	 * Run some of the post commit processing in a background thread. This can

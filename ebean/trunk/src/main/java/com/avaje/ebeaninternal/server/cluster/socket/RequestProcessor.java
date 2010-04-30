@@ -59,7 +59,7 @@ class RequestProcessor implements Runnable {
 			
 			while(true){
 			    if (owner.process(sc)) {
-			        // got the offline message
+			        // got the offline message or timeout
 			        break;
 			    }
 			}

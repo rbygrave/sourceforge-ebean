@@ -103,13 +103,6 @@ public final class TransactionEventTable implements Serializable {
 	        
             msgList.add(msg);
 	    }
-	    
-//	    public void write(DataOutput dataOutput) throws IOException {
-//	        dataOutput.writeUTF(table);
-//	        dataOutput.writeBoolean(insert);
-//            dataOutput.writeBoolean(update);
-//            dataOutput.writeBoolean(delete);
-//	    }
 		
 		public String toString() {
 		    return "TableIUD "+table+" i:"+insert+" u:"+update+" d:"+delete;

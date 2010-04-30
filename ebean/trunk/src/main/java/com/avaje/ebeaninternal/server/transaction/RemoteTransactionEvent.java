@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2009 Authors
  * 
  * This file is part of Ebean.
  * 
@@ -21,104 +21,85 @@ package com.avaje.ebeaninternal.server.transaction;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.avaje.ebeaninternal.api.TransactionEventTable;
+import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
-import com.avaje.ebeaninternal.server.core.PersistRequest;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 
-/**
- * Holds information for a transaction that is sent around the cluster.
- * <p>
- * Holds a collection of RemoteBeanPersist objects used to notify
- * BeanPersistListeners and potentially a TransactionEventTable.
- * </p>
- */
-public final class RemoteTransactionEvent implements Serializable {
+public class RemoteTransactionEvent implements Serializable, Runnable {
 
-	private static final long serialVersionUID = 5790053761599631177L;
+    private static final long serialVersionUID = 757920022500956949L;
 
-	private final String serverName;
-	
-	private Map<String,RemoteBeanPersist> beanMap;
+    private ArrayList<RemoteBeanPersist> beanPersistList = new ArrayList<RemoteBeanPersist>();
+    
+    private ArrayList<TableIUD> tableList = new ArrayList<TableIUD>(4);
 
-	private TransactionEventTable tableEvents;
+    private String serverName;
 
-	public RemoteTransactionEvent(String serverName) {
-	    this.serverName = serverName;
-	}
-
+    private transient SpiEbeanServer server;
+    
+    public RemoteTransactionEvent(String serverName) {
+        this.serverName = serverName;
+    }
+    
+    public RemoteTransactionEvent(SpiEbeanServer server) {
+        this.server = server;
+    }
+    
+    public void run() {
+        server.remoteTransactionEvent(this);
+    }
+    
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(beanPersistList);
+        sb.append(tableList);
+        return sb.toString();
+    }
+    
     public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
-        if (tableEvents != null){
-            tableEvents.writeBinaryMessage(msgList);
+        
+        for (int i = 0; i < tableList.size(); i++) {
+            tableList.get(i).writeBinaryMessage(msgList);
         }
-        if (beanMap != null){
-            for (RemoteBeanPersist beanPersist : beanMap.values()) {
-                beanPersist.writeBinaryMessage(msgList);
-            }
+        
+        for (int i = 0; i < beanPersistList.size(); i++) {
+            beanPersistList.get(i).writeBinaryMessage(msgList);
         }
     }
-	
-	public String toString() {
-	    StringBuilder sb = new StringBuilder();
-	    if (beanMap != null){
-	        sb.append(beanMap.values());
-	    }
-	    if (tableEvents != null){
-            sb.append(tableEvents);
-        }
-	    return sb.toString();
-	}
-	
-	
-	/**
-	 * Return the EbeanServer name.
-	 */
-	public String getServerName() {
+    
+    public boolean isEmpty() {
+        return beanPersistList.isEmpty() && tableList.isEmpty();
+    }
+    
+    public void add(RemoteBeanPersist beanPersist){
+        beanPersistList.add(beanPersist);
+    }
+    
+    public void add(TableIUD tableIud){
+        tableList.add(tableIud);
+    }
+
+    public String getServerName() {
         return serverName;
     }
-
-    /**
-	 * Return true if this has some bean persist or table events.
-	 */
-	public boolean hasEvents() {
-		return (beanMap != null && !beanMap.isEmpty()) || tableEvents != null;
-	}
-
-	/**
-	 * Set the table events.
-	 */
-	public void setTableEvents(TransactionEventTable tableEvents) {
-		this.tableEvents = tableEvents;
-	}
-
-	/**
-	 * Return the table events if there where any.
-	 */
-	public TransactionEventTable getTableEvents() {
-		return tableEvents;
-	}
-       
-	/**
-	 * Add a Insert Update or Delete payload.
-	 */
-	public void add(BeanDescriptor<?> desc, PersistRequest.Type type, Object id) {
-	    if (beanMap == null){
-	        beanMap = new LinkedHashMap<String, RemoteBeanPersist>();
-	    }
-	    String beanType = desc.getFullName();
-	    RemoteBeanPersist r = beanMap.get(beanType);
-		if (r == null){
-			r = new RemoteBeanPersist(desc);
-			beanMap.put(beanType, r);
-		}
-		r.addId(type, (Serializable)id);
-	}
-
-    public Map<String, RemoteBeanPersist> getBeanMap() {
-        return beanMap;
+    
+    public SpiEbeanServer getServer() {
+        return server;
     }
-	
+
+    public void setServer(SpiEbeanServer server) {
+        this.server = server;
+    }
+    
+    public List<TableIUD> getTableIUDList() {
+        return tableList;
+    }
+
+    public List<RemoteBeanPersist> getBeanPersistList() {
+        return beanPersistList;
+    }
+    
 }

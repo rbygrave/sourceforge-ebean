@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventBeans;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
+import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 
@@ -62,8 +63,8 @@ public final class PostCommitProcessing implements Runnable {
 	 */
 	public void run() {
 
-		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
-
+	    RemoteBeanPersistMap beanPersistMap = new RemoteBeanPersistMap();
+	    
 		TransactionEventBeans eventBeans = event.getEventBeans();
 		if (eventBeans != null){
 			ArrayList<PersistRequestBean<?>> requests = eventBeans.getRequests();
@@ -71,19 +72,26 @@ public final class PostCommitProcessing implements Runnable {
 				for (int i = 0; i < requests.size(); i++) {
 			        // notify local BeanPersistListener's and at the 
 			        // request IUD type and id to the RemoteTransactionEvent
-					requests.get(i).notifyLocalPersistListener(remoteEvent);
+					requests.get(i).notifyLocalPersistListener(beanPersistMap);
 				}
 			}
 		}
 		
+		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
+		for (RemoteBeanPersist beanPersist : beanPersistMap.values()) {
+            remoteEvent.add(beanPersist);
+        }
+		
 		TransactionEventTable eventTables = event.getEventTables();
 		if (eventTables != null && !eventTables.isEmpty()){
-			remoteEvent.setTableEvents(event.getEventTables());
+		    for (TableIUD tableIUD : eventTables.values()) {
+		        remoteEvent.add(tableIUD);
+            }		    
 		}
 
-		if (remoteEvent.hasEvents() && clusterManager.isClustering()) {
+		if (!remoteEvent.isEmpty() && clusterManager.isClustering()) {
 			// send the interesting events to the cluster
-            if (manager.isDebugRemote() || logger.isLoggable(Level.FINE)) {
+            if (manager.getClusterDebugLevel() > 0 || logger.isLoggable(Level.FINE)) {
                 logger.info("Cluster Send: " + remoteEvent.toString());
             }
 
