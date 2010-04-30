@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.ClassUtil;
-import com.avaje.ebeaninternal.server.cluster.mcast.McastClusterBroadcast;
+import com.avaje.ebeaninternal.server.cluster.mcast.McastClusterManager;
 import com.avaje.ebeaninternal.server.cluster.socket.SocketClusterBroadcast;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
@@ -65,7 +65,7 @@ public class ClusterManager {
         } else {
             try {
                 if ("mcast".equalsIgnoreCase(clusterType)) {
-                    this.broadcast = new McastClusterBroadcast();
+                    this.broadcast = new McastClusterManager();
                     
                 } else if ("socket".equalsIgnoreCase(clusterType)) {
                     this.broadcast = new SocketClusterBroadcast();

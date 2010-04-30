@@ -31,7 +31,8 @@ public class MessageControl implements Message {
     public static final short TYPE_JOIN = 1;
     public static final short TYPE_LEAVE = 2;
     public static final short TYPE_PING = 3;
-    public static final short TYPE_PINGRESPONSE = 4;
+    public static final short TYPE_JOINRESPONSE = 7;
+    public static final short TYPE_PINGRESPONSE = 8;
     
     private final short controlType;
     private final String fromHostPort;
