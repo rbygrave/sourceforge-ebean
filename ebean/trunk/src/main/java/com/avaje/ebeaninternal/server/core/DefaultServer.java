@@ -122,7 +122,6 @@ import com.avaje.ebeaninternal.server.querydefn.DefaultRelationalQuery;
 import com.avaje.ebeaninternal.server.text.csv.TCsvReader;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
-import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEventReceived;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager;
 import com.avaje.ebeaninternal.server.transaction.TransactionScopeManager;
 import com.avaje.ebeaninternal.util.ParamTypeHelper;
@@ -1841,10 +1840,6 @@ public final class DefaultServer implements SpiEbeanServer {
      * another server in the cluster).
      */
     public void remoteTransactionEvent(RemoteTransactionEvent event) {
-        transactionManager.remoteTransactionEvent(event);
-    }
-    
-    public void remoteTransactionEvent(RemoteTransactionEventReceived event) {
         transactionManager.remoteTransactionEvent(event);
     }
     

@@ -18,6 +18,7 @@
 package com.avaje.ebeaninternal.server.cluster.socket;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -29,6 +30,8 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.cluster.ClusterBroadcast;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
+import com.avaje.ebeaninternal.server.cluster.DataHolder;
+import com.avaje.ebeaninternal.server.cluster.SerialiseTransactionHelper;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
@@ -49,6 +52,8 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
 
     private ClusterManager clusterManager;
 
+    private final TxnSerialiseHelper txnSerialiseHelper = new TxnSerialiseHelper();    
+    
 	public SocketClusterBroadcast( ){
 	    
         String localHostPort = GlobalProperties.get("ebean.cluster.local", null);
@@ -105,8 +110,6 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
         }
     }
 
-
-
     protected void setMemberOnline(String fullName, boolean online) throws IOException {
         synchronized (clientMap) {
             String msg = "Cluster Member ["+fullName+"] online["+online+"]";
@@ -118,24 +121,18 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
 
     private void send(SocketClient client, SocketClusterMessage msg) {
 
-        try {                    
+        try {
+            // alternative would be to connect/disconnect here
+            // but prefer to use keepalive 
             client.send(msg);
-            
-//            //client.connect();
-//            client.writeObject(msg);
-//            //Object res = client.readObject();
-//            //System.out.println(" -- got response "+res);
-//            
-//            //client.disconnect();
-//            
-//            //SocketConnection sc = client.createConnection();
-//            //sc.writeObject(headers);
-//            //sc.getObjectOutputStream().flush();
-//            //sc.disconnect();
-            
             
         } catch (Exception ex){
             logger.log(Level.SEVERE, "Error sending message", ex);
+            try {
+                client.reconnect();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Error trying to reconnect", ex);
+            }
         }
     }
     
@@ -143,9 +140,14 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
      * Send the payload to all the members of the cluster.
      */
     public void broadcast(RemoteTransactionEvent remoteTransEvent) {
-    	
-        SocketClusterMessage msg = SocketClusterMessage.transEvent(remoteTransEvent);
-        broadcast(msg);
+    	try {
+            DataHolder dataHolder = txnSerialiseHelper.createDataHolder(remoteTransEvent);
+            SocketClusterMessage msg = SocketClusterMessage.transEvent(dataHolder);
+            broadcast(msg);
+    	} catch (Exception e){
+    	    String msg = "Error sending RemoteTransactionEvent "+remoteTransEvent+" to cluster members.";
+    	    logger.log(Level.SEVERE, msg, e);
+    	}
     }
 
     protected void broadcast(SocketClusterMessage msg) {
@@ -156,7 +158,7 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
     }
     
     /**
-     * Deregister from the cluster.
+     * Leave the cluster.
      */
     private void deregister() {
         
@@ -173,31 +175,39 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
      */
     protected boolean process(SocketConnection request) throws IOException, ClassNotFoundException {
 
-        SocketClusterMessage h = (SocketClusterMessage)request.readObject();
-        
-        System.out.println("Received msg: "+h);
-        
-        if (h.isRegisterEvent()){
-            setMemberOnline(h.getRegisterHost(), h.isRegister());
-        
-        } else {
-            RemoteTransactionEvent transEvent = h.getTransEvent();
-            // process the transaction event
-            SpiEbeanServer server = (SpiEbeanServer)clusterManager.getServer(transEvent.getServerName());
-            if (server != null){
-                server.remoteTransactionEvent(h.getTransEvent());
+        try {
+            SocketClusterMessage h = (SocketClusterMessage)request.readObject();
+            
+            System.out.println("Received msg: "+h);
+            
+            if (h.isRegisterEvent()){
+                setMemberOnline(h.getRegisterHost(), h.isRegister());
+            
+            } else {
+                DataHolder dataHolder = h.getDataHolder();
+                RemoteTransactionEvent transEvent = txnSerialiseHelper.read(dataHolder);
+                transEvent.run();
             }
-        }
-        
-        if (h.isRegisterEvent() && !h.isRegister()){
-            // instance shutting down  
+            
+            if (h.isRegisterEvent() && !h.isRegister()){
+                // instance shutting down  
+                return true;
+            } else {
+                return false;
+            }
+        } catch (InterruptedIOException e) {
+            String msg = "Timeout waiting for message";
+            logger.log(Level.INFO, msg, e);
+            try {
+                request.disconnect();
+            } catch (IOException ex){
+                logger.log(Level.INFO, "Error disconnecting after timeout", ex);    
+            }
             return true;
-        } else {
-            return false;
         }
     }
     
-    
+
     /**
      * Parse a host:port into a InetSocketAddress.
      */
@@ -218,6 +228,14 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
             
         } catch (Exception ex){
             throw new RuntimeException("Error parsing ["+hostAndPort+"] for the form [host:port]", ex);
+        }
+    }
+    
+    class TxnSerialiseHelper extends SerialiseTransactionHelper {
+
+        @Override
+        public SpiEbeanServer getEbeanServer(String serverName) {
+            return (SpiEbeanServer)clusterManager.getServer(serverName);
         }
     }
 }

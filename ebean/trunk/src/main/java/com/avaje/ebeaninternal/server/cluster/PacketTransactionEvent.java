@@ -25,7 +25,7 @@ import java.io.IOException;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.transaction.RemoteBeanPersist;
-import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEventReceived;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
  * A Packet holding TransactionEvent data.
@@ -39,7 +39,7 @@ public class PacketTransactionEvent extends Packet {
 
     private final SpiEbeanServer server;
     
-    private final RemoteTransactionEventReceived event;
+    private final RemoteTransactionEvent event;
 
     public static PacketTransactionEvent forWrite(long packetId, long timestamp, String serverName) throws IOException {
         return new PacketTransactionEvent(true, packetId, timestamp, serverName);
@@ -54,14 +54,14 @@ public class PacketTransactionEvent extends Packet {
     private PacketTransactionEvent(Packet header, SpiEbeanServer server) throws IOException {
         super(false, TYPE_TRANSEVENT, header.packetId, header.timestamp, header.serverName);
         this.server = server;
-        this.event = new RemoteTransactionEventReceived(server);
+        this.event = new RemoteTransactionEvent(server);
     }
 
     public static PacketTransactionEvent forRead(Packet header, SpiEbeanServer server) throws IOException {
         return new PacketTransactionEvent(header, server);
     }
  
-    public RemoteTransactionEventReceived getEvent() {
+    public RemoteTransactionEvent getEvent() {
         return event;
     }
 
