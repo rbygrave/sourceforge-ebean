@@ -17,17 +17,24 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.cluster.mcast;
+package com.avaje.ebeaninternal.server.cluster;
 
 import java.io.DataInput;
 import java.io.IOException;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
-import com.avaje.ebeaninternal.server.cluster.BinaryMessage;
 import com.avaje.ebeaninternal.server.transaction.RemoteBeanPersist;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEventReceived;
 
+/**
+ * A Packet holding TransactionEvent data.
+ * <p>
+ * Due to the hard limit for UDP packet sizes a RemoteTransactionEvent
+ * is actually broken up into smaller messages.
+ * </p>
+ * @author rbygrave
+ */
 public class PacketTransactionEvent extends Packet {
 
     private final SpiEbeanServer server;

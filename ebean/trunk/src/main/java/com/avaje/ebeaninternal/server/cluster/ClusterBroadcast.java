@@ -26,17 +26,19 @@ import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 public interface ClusterBroadcast {
 
     /**
-     * Called to start any underlying listeners etc.
+     * Inform the other cluster members that this instance has come online and
+     * start any listeners etc.
      */
     public void startup(ClusterManager clusterManager);
 
     /**
-     * Shutdown any listeners etc.
+     * Inform the other cluster members that this instance is leaving and
+     * shutdown any listeners.
      */
     public void shutdown();
     
     /**
-     * Send a message to all the members of the cluster.
+     * Send a transaction event to all the members of the cluster.
      */
     public void broadcast(RemoteTransactionEvent remoteTransEvent);
 

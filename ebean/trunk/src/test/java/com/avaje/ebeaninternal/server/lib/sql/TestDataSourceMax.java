@@ -31,12 +31,12 @@ public class TestDataSourceMax extends TestCase {
         try {
             for (int i = 0; i < 12; i++) {
                 //Thread.sleep(10*i);
-                bg.execute(new ConnRunner(pool, 1000));
+                bg.execute(new ConnRunner(pool, 100));
             }    
         
-            System.out.println("main thread sleep ... 8 secs "+pool.getStatus(false));
+            System.out.println("main thread sleep ... "+pool.getStatus(false));
             
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             Status status = pool.getStatus(false);
             System.out.println(status);
             

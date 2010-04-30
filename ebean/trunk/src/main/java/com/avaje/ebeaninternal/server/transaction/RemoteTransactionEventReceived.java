@@ -37,6 +37,17 @@ public class RemoteTransactionEventReceived {
         this.server = server;
     }
     
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (beanPersistList != null){
+            sb.append(beanPersistList);
+        }
+        if (tableList != null){
+            sb.append(tableList);
+        }
+        return sb.toString();
+    }
+    
     public void add(RemoteBeanPersist beanPersist){
         if (beanPersistList == null){
             beanPersistList = new ArrayList<RemoteBeanPersist>();

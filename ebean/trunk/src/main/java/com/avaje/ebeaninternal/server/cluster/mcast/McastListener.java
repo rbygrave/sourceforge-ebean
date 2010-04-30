@@ -32,12 +32,19 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.server.cluster.Packet;
+import com.avaje.ebeaninternal.server.cluster.PacketTransactionEvent;
 
+/**
+ * Listens for Incoming packets.
+ * 
+ * @author rbygrave
+ */
 public class McastListener implements Runnable {
 
     private static final Logger logger = Logger.getLogger(McastListener.class.getName());
 
-    private final McastClusterBroadcast owner;
+    private final McastClusterManager owner;
     
     private final McastPacketControl packetControl;
     
@@ -57,7 +64,11 @@ public class McastListener implements Runnable {
 
     private volatile boolean doingShutdown;
     
-    public McastListener(McastClusterBroadcast owner, McastPacketControl packetControl, int port, String address, 
+    private long totalPacketsReceived;
+    private long totalBytesReceived;
+    private long totalTxnEventsReceived;
+    
+    public McastListener(McastClusterManager owner, McastPacketControl packetControl, int port, String address, 
             int bufferSize, int timeout, String localSenderHostPort, 
             boolean disableLoopback, int ttl, InetAddress mcastBindAddress) {
 
@@ -152,8 +163,13 @@ public class McastListener implements Runnable {
                     } else {
                                                    
                         byte[] data = pack.getData();
+                        
+                        
                         ByteArrayInputStream bi = new ByteArrayInputStream(data);
                         DataInputStream dataInput = new DataInputStream(bi);
+                        
+                        ++totalPacketsReceived;
+                        totalBytesReceived += pack.getLength();
                         
                         Packet header = Packet.readHeader(dataInput);
                         
@@ -164,13 +180,12 @@ public class McastListener implements Runnable {
                         
                         if (!processThisPacket){
                             if (debugIgnore || logger.isLoggable(Level.FINE)){
-                                logger.info("Already processed packet: "+header.getPacketId());
+                                logger.info("Already processed packet: "+header.getPacketId()+" type:"+header.getPacketType()+" len:"+data.length);
                             }
                         } else {
                             if (logger.isLoggable(Level.FINER)){
-                                logger.info("Incoming packet:"+header.getPacketId()+" type:"+header.getPacketType());
-                            }
-                                
+                                logger.info("Incoming packet:"+header.getPacketId()+" type:"+header.getPacketType()+" len:"+data.length);
+                            }    
                             processPacket(senderHostPort, header, dataInput);                            
                         }
                     }
@@ -193,11 +208,13 @@ public class McastListener implements Runnable {
         try {
             switch (header.getPacketType()) {
             case Packet.TYPE_MESSAGES:
-                packetControl.processMessagesPacket(senderHostPort, header, dataInput);
+                packetControl.processMessagesPacket(senderHostPort, header, dataInput, 
+                        totalPacketsReceived, totalBytesReceived, totalTxnEventsReceived);
                 break;
                 
             case Packet.TYPE_TRANSEVENT:
-                processTransEventPacket(header, dataInput);
+                ++totalTxnEventsReceived;
+                processTransactionEventPacket(header, dataInput);
                 break;
                 
             default:
@@ -212,7 +229,7 @@ public class McastListener implements Runnable {
         }
     }
     
-    private void processTransEventPacket(Packet header, DataInput dataInput) throws IOException {
+    private void processTransactionEventPacket(Packet header, DataInput dataInput) throws IOException {
 
         SpiEbeanServer server = owner.getEbeanServer(header.getServerName());
 

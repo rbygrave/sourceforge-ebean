@@ -50,7 +50,7 @@ public class RemoteBeanPersist implements Serializable {
 
     private static final long serialVersionUID = 8389469180931531409L;
 
-    private final transient BeanDescriptor<?> beanDescriptor;
+    private transient BeanDescriptor<?> beanDescriptor;
 
     private final String descriptorId;
 
@@ -98,6 +98,15 @@ public class RemoteBeanPersist implements Serializable {
         }
     }
 
+    /**
+     * Write the contents into a BinaryMessage form.
+     * <p>
+     * For a RemoteBeanPersist with a large number of id's note that this is
+     * broken up into many BinaryMessages each with a maximum of 100 ids. This
+     * enables the contents of a large RemoteTransactionEvent to be split up
+     * across multiple Packets.
+     * </p>
+     */
     public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
 
         writeIdList(beanDescriptor, 0, insertIds, msgList);
@@ -105,17 +114,6 @@ public class RemoteBeanPersist implements Serializable {
         writeIdList(beanDescriptor, 2, deleteIds, msgList);
         
     }
-
-//    public void write(DataOutput dataOutput) throws IOException {
-//
-//        IdBinder idBinder = beanDescriptor.getIdBinder();
-//
-//        dataOutput.writeUTF(descriptorId);
-//
-//        writeIdList(dataOutput, idBinder, insertIds);
-//        writeIdList(dataOutput, idBinder, updateIds);
-//        writeIdList(dataOutput, idBinder, deleteIds);
-//    }
 
     private ArrayList<Serializable> readIdList(DataInput dataInput, IdBinder idBinder) throws IOException {
 
@@ -131,6 +129,16 @@ public class RemoteBeanPersist implements Serializable {
         return idList;
     }
 
+    /**
+     * Write a BinaryMessage containing the descriptorId, iudType and list of Id
+     * values.
+     * <p>
+     * Note that a given BinaryMessage has a maximum of 100 Ids. This is due to
+     * the limit of UDP packet sizes. We break up the RemoteBeanPersist into
+     * potentially many smaller BinaryMessages which may be put into multiple
+     * Packets.
+     * </p>
+     */
     private void writeIdList(BeanDescriptor<?> desc, int iudType, ArrayList<Serializable> idList,
             BinaryMessageList msgList) throws IOException {
 
@@ -169,8 +177,9 @@ public class RemoteBeanPersist implements Serializable {
         StringBuilder sb = new StringBuilder();
         if (beanDescriptor != null) {
             sb.append(beanDescriptor.getFullName());
+        } else {
+            sb.append("descId:").append(descriptorId);
         }
-        sb.append("descriptorId").append(descriptorId);
         if (insertIds != null) {
             sb.append(" insertIds:").append(insertIds);
         }
@@ -239,6 +248,10 @@ public class RemoteBeanPersist implements Serializable {
 
     protected ArrayList<Serializable> getDeleteIds() {
         return deleteIds;
+    }
+
+    public void setBeanDescriptor(BeanDescriptor<?> beanDescriptor) {
+        this.beanDescriptor = beanDescriptor;
     }
 
     /**
