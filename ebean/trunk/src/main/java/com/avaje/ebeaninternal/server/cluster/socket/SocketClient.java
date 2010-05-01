@@ -58,6 +58,10 @@ class SocketClient {
     public int getPort() {
         return address.getPort();
     }
+    
+    public boolean isOnline() {
+        return online;
+    }
 
     public void setOnline(boolean online) throws IOException {
         if (online){
