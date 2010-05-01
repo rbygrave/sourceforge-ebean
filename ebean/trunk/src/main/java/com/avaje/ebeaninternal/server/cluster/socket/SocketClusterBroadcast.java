@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +55,10 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
 
     private final TxnSerialiseHelper txnSerialiseHelper = new TxnSerialiseHelper();    
     
+    private final AtomicInteger txnOutgoing = new AtomicInteger();
+    private final AtomicInteger txnIncoming = new AtomicInteger();
+    
+    
 	public SocketClusterBroadcast( ){
 	    
         String localHostPort = GlobalProperties.get("ebean.cluster.local", null);
@@ -76,6 +81,24 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
         
         this.members = clientMap.values().toArray(new SocketClient[clientMap.size()]);
         this.listener = new SocketClusterListener(this, local.getPort());
+	}
+	
+	/**
+	 * Return the current status of this instance.
+	 */
+	public SocketClusterStatus getStatus() {
+	    
+	    // count of online members
+	    int currentGroupSize = 0;
+        for (int i = 0; i < members.length; i++) {
+            if (members[i].isOnline()) {
+                ++currentGroupSize;
+            }            
+        }
+	    int txnIn = txnIncoming.get();
+	    int txnOut = txnOutgoing.get();
+	    
+	    return new SocketClusterStatus(currentGroupSize, txnIn, txnOut);
 	}
 		
 	public void startup(ClusterManager clusterManager) {
@@ -141,6 +164,8 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
      */
     public void broadcast(RemoteTransactionEvent remoteTransEvent) {
     	try {
+    	    
+    	    txnOutgoing.incrementAndGet();
             DataHolder dataHolder = txnSerialiseHelper.createDataHolder(remoteTransEvent);
             SocketClusterMessage msg = SocketClusterMessage.transEvent(dataHolder);
             broadcast(msg);
@@ -178,12 +203,11 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
         try {
             SocketClusterMessage h = (SocketClusterMessage)request.readObject();
             
-            System.out.println("Received msg: "+h);
-            
             if (h.isRegisterEvent()){
                 setMemberOnline(h.getRegisterHost(), h.isRegister());
             
             } else {
+                txnIncoming.incrementAndGet();
                 DataHolder dataHolder = h.getDataHolder();
                 RemoteTransactionEvent transEvent = txnSerialiseHelper.read(dataHolder);
                 transEvent.run();
