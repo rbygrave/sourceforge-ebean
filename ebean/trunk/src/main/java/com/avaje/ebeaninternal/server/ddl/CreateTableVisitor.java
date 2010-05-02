@@ -30,9 +30,9 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	final int columnNameWidth;
 
 	// avoid writing columns twice, e.g. when used in associations with insertable=false and updateable=false
-	final Set<String> wroteColumns = new HashSet<String>();
+	private final Set<String> wroteColumns = new HashSet<String>();
 
-	ArrayList<String> checkConstraints = new ArrayList<String>();
+	private ArrayList<String> checkConstraints = new ArrayList<String>();
 	
 
 	public CreateTableVisitor(DdlGenContext ctx) {
@@ -40,6 +40,14 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 		this.ddl = ctx.getDdlSyntax();
 		this.columnNameWidth = ddl.getColumnNameWidth();
 		this.pv = new CreateTableColumnVisitor(this, ctx);
+	}
+	
+	public boolean isDbColumnWritten(String dbColumn) {
+	    return wroteColumns.contains(dbColumn);
+	}
+	
+	public void addDbColumnWritten(String dbColumn){
+	    wroteColumns.add(dbColumn);
 	}
 
 	/**
@@ -62,6 +70,8 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	 */
 	protected void writeColumnName(String columnName, BeanProperty p) {
 		
+        addDbColumnWritten(columnName);
+
 		if (SqlReservedWords.isKeyword(columnName)) {
 			String propName = p == null ? "(Unknown)" : p.getFullBeanName();
 			logger.warning("Column name ["+columnName+"] is a suspected SQL reserved word for property "+propName);

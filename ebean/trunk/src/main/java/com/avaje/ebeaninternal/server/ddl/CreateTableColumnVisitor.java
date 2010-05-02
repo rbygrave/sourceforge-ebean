@@ -105,7 +105,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 			}
 			constraintExpr.append(dbCol);
 			
-			if (parent.wroteColumns.contains(dbCol)) {
+			if (parent.isDbColumnWritten(dbCol)) {
 				continue;
 			}
 			
@@ -125,7 +125,6 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 				ctx.write(" not null");
 			}
 			ctx.write(",").writeNewLine();
-			parent.wroteColumns.add(p.getDbColumn());
 		}
 		constraintExpr.append(")");
 		
@@ -140,11 +139,12 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 	@Override
 	public void visitScalar(BeanProperty p) {
 
-		if (parent.wroteColumns.contains(p.getDbColumn())) {
+        if (p.isSecondaryTable()) {
+            return;
+        }
+
+		if (parent.isDbColumnWritten(p.getDbColumn())) {
 			return;
-		}
-		if (p.isSecondaryTable()) {
-		    return;
 		}
 		
 		parent.writeColumnName(p.getDbColumn(), p);
@@ -164,7 +164,6 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 
 		ctx.write(",").writeNewLine();
 		
-		parent.wroteColumns.add(p.getDbColumn());
 	}
 
 	protected void writeIdentity() {
