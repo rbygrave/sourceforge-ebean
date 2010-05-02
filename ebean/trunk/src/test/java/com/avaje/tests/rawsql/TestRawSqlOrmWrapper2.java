@@ -20,7 +20,7 @@ public class TestRawSqlOrmWrapper2 extends TestCase {
         ResetBasicData.reset();
                 
         String sql 
-            = " select order_id, 'ignoreMe', sum(d.order_qty*d.unit_price) "
+            = " select order_id, 'ignoreMe', sum(d.order_qty*d.unit_price) as totalAmount "
             + " from o_order_detail d" 
             + " group by order_id ";
         
@@ -29,7 +29,8 @@ public class TestRawSqlOrmWrapper2 extends TestCase {
                 .parse(sql)
                 .columnMapping("order_id",  "order.id")
                 .columnMappingIgnore("'ignoreMe'")
-                .columnMapping("sum(d.order_qty*d.unit_price)", "totalAmount")
+                // don't need this when using column alias
+                //.columnMapping("sum(d.order_qty*d.unit_price)", "totalAmount")
                 .create();
 
         
