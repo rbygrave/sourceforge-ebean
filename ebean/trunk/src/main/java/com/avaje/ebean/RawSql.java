@@ -320,7 +320,11 @@ public final class RawSql {
                 this.indexPos = indexPos;
                 this.dbColumn = dbColumn;
                 this.dbAlias = dbAlias;
-                this.propertyName = propertyName;
+                if (propertyName == null && dbAlias != null){
+                    this.propertyName = dbAlias;                    
+                } else {
+                    this.propertyName = propertyName;
+                }
             }
 
             private void checkMapping() {
