@@ -117,8 +117,19 @@ public final class IdBinderSimple implements IdBinder {
 		return new Object[]{idValue};
 	}
 
-    public String getIdInValueExpr() {
-        return "?";
+    public String getIdInValueExprDelete(int size) {
+        return getIdInValueExpr(size);
+    }
+
+    public String getIdInValueExpr(int size) {
+        StringBuilder sb = new StringBuilder(2*size+10);
+        sb.append(" in");
+        sb.append(" (?");
+        for (int i = 1; i < size; i++) {            
+            sb.append(",?");
+        }
+        sb.append(") ");
+        return sb.toString();        
     }
 
     public void addIdInBindValue(SpiExpressionRequest request, Object value) {

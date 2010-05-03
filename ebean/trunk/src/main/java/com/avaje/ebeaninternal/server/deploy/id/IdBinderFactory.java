@@ -29,10 +29,16 @@ public class IdBinderFactory {
 
 	private static final IdBinderEmpty EMPTY = new IdBinderEmpty();
 	
+	private final boolean idInExpandedForm;
+	
+	public IdBinderFactory(boolean idInExpandedForm) {
+	    this.idInExpandedForm = idInExpandedForm;
+	}
+	
 	/**
 	 * Create the IdConvertSet for the given type of Id properties.
 	 */
-	public static IdBinder createIdBinder(BeanProperty[] uids) {
+	public IdBinder createIdBinder(BeanProperty[] uids) {
 		
 		if (uids.length == 0){
 			// for report type beans that don't need an id
@@ -40,7 +46,7 @@ public class IdBinderFactory {
 			
 		} else if (uids.length == 1){
 			if (uids[0].isEmbedded()){
-				return new IdBinderEmbedded((BeanPropertyAssocOne<?>)uids[0]);
+				return new IdBinderEmbedded(idInExpandedForm, (BeanPropertyAssocOne<?>)uids[0]);
 			} else {
 				return new IdBinderSimple(uids[0]);
 			}

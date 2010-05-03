@@ -171,14 +171,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
         StringBuilder sb = new StringBuilder(100);
         sb.append(deleteByParentIdInSql);
-        sb.append(" in (");
-        for (int i = 0; i < parentIdist.size(); i++) {
-            if (i > 0){
-                sb.append(",");                
-            }
-            sb.append(targetIdBinder.getIdInValueExpr());
-        }
-        sb.append(") ");
+        
+        String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
+        sb.append(inClause);
 
         DefaultSqlUpdate delete = new DefaultSqlUpdate(sb.toString());
         for (int i = 0; i < parentIdist.size(); i++) {            
@@ -333,8 +328,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      * Return the logical id value expression taking into account embedded id's.
      */
     @Override
-    public String getAssocIdInValueExpr(){
-        return targetDescriptor.getIdBinder().getIdInValueExpr();        
+    public String getAssocIdInValueExpr(int size){
+        return targetDescriptor.getIdBinder().getIdInValueExpr(size);        
     }
     
     /**

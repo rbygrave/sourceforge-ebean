@@ -21,7 +21,7 @@ class IdInExpression implements SpiExpression {
 	private final List<?> idList;
 	
 	IdInExpression(List<?> idList) {
-		this.idList = idList;
+	    this.idList = idList;
 	}
 
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
@@ -47,14 +47,8 @@ class IdInExpression implements SpiExpression {
 		IdBinder idBinder = descriptor.getIdBinder();
 		
 		request.append(descriptor.getIdBinderInLHSSql());
-		request.append(" in (");
-		for (int i = 0; i < idList.size(); i++) {
-			if (i > 0){
-				request.append(",");				
-			}
-			request.append(idBinder.getIdInValueExpr());
-		}
-		request.append(") ");
+		String inClause = idBinder.getIdInValueExpr(idList.size());
+		request.append(inClause);
 	}
 
 	/**

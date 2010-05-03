@@ -64,28 +64,28 @@ public class TestRawSqlColumnParsing extends TestCase {
         
         assertEquals("a",c.getDbColumn());
         assertEquals(0, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("a0",c.getPropertyName());
 
         c = mapping.get("b");
         assertEquals("b",c.getDbColumn());
         assertEquals(1, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("b1",c.getPropertyName());
 
         c = mapping.get("c");
         assertEquals("c",c.getDbColumn());
         assertEquals(2, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("c2",c.getPropertyName());
 
         c = mapping.get("d");
         assertEquals("d",c.getDbColumn());
         assertEquals(3, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("d3",c.getPropertyName());
 
         
         c = mapping.get("e");
         assertEquals("e",c.getDbColumn());
         assertEquals(4, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("e4",c.getPropertyName());
 
     }
 
@@ -101,28 +101,28 @@ public class TestRawSqlColumnParsing extends TestCase {
         
         assertEquals("a",c.getDbColumn());
         assertEquals(0, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("a0",c.getPropertyName());
 
         c = mapping.get("'b'");
         assertEquals("'b'",c.getDbColumn());
         assertEquals(1, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("b1",c.getPropertyName());
 
         c = mapping.get("\"c(blah)\"");
         assertEquals("\"c(blah)\"",c.getDbColumn());
         assertEquals(2, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("c2",c.getPropertyName());
 
         c = mapping.get("d");
         assertEquals("d",c.getDbColumn());
         assertEquals(3, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("d3",c.getPropertyName());
 
         
         c = mapping.get("e");
         assertEquals("e",c.getDbColumn());
         assertEquals(4, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("e4",c.getPropertyName());
 
     }
 

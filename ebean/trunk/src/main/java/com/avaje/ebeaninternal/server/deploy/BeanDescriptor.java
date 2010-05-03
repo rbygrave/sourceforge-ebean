@@ -67,7 +67,6 @@ import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
-import com.avaje.ebeaninternal.server.deploy.id.IdBinderFactory;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyLists;
 import com.avaje.ebeaninternal.server.el.ElComparator;
@@ -496,7 +495,7 @@ public class BeanDescriptor<T> {
         this.hasCascadeValidation = (propertiesValidationCascade.length > 0 || beanValidators.length > 0);
 
         // object used to handle Id values
-        this.idBinder = IdBinderFactory.createIdBinder(propertiesId);
+        this.idBinder = owner.createIdBinder(propertiesId);
     }
 
     private LinkedHashMap<String, BeanProperty> getReverseMap(LinkedHashMap<String, BeanProperty> propMap) {
@@ -674,13 +673,13 @@ public class BeanDescriptor<T> {
         }
 
         idBinder.initialise();
-        String idBinderInLHSSqlNoAlias = idBinder.getBindIdInSql(null);
-        String idEqualsSql = idBinder.getBindIdSql(null);
         idBinderInLHSSql = idBinder.getBindIdInSql(baseTableAlias);
         idBinderIdSql = idBinder.getBindIdSql(baseTableAlias);
+        String idBinderInLHSSqlNoAlias = idBinder.getBindIdInSql(null);
+        String idEqualsSql = idBinder.getBindIdSql(null);
 
         deleteByIdSql = "delete from " + baseTable + " where " + idEqualsSql;
-        deleteByIdInSql = "delete from " + baseTable + " where (" + idBinderInLHSSqlNoAlias+") in ";
+        deleteByIdInSql = "delete from " + baseTable + " where " + idBinderInLHSSqlNoAlias+" ";
 
         if (!isEmbedded()) {
             // parse every named update up front into sql dml
@@ -786,14 +785,8 @@ public class BeanDescriptor<T> {
     private SqlUpdate deleteByIdList(List<Object> idList) {
 
         StringBuilder sb = new StringBuilder(deleteByIdInSql);
-        sb.append("(");
-        for (int i = 0; i < idList.size(); i++) {
-            if (i > 0){
-                sb.append(",");
-            }
-            sb.append(idBinder.getIdInValueExpr());
-        }
-        sb.append(")");
+        String inClause = idBinder.getIdInValueExprDelete(idList.size());
+        sb.append(inClause);
         
         DefaultSqlUpdate delete = new DefaultSqlUpdate(sb.toString());
         for (int i = 0; i < idList.size(); i++) {

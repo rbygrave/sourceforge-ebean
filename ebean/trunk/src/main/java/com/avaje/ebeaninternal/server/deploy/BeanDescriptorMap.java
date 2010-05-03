@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.deploy;
 
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.EncryptKey;
+import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 
 /**
  * Provides a method to find a BeanDescriptor.
@@ -45,14 +46,11 @@ public interface BeanDescriptorMap {
      */
     public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> entityType);
 
-//    /**
-//     * Return the DB decrypt SQL for a given column with its table alias.
-//     */
-//    public String getDecryptSql(String columnWithTableAlias);
-
     /**
      * Return the Encrypt key given the table and column name.
      */
     public EncryptKey getEncryptKey(String tableName, String columnName);
+    
+    public IdBinder createIdBinder(BeanProperty[] uids);
 
 }

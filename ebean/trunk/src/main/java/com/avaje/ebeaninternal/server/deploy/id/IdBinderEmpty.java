@@ -82,7 +82,11 @@ public final class IdBinderEmpty implements IdBinder {
 		
 	}
 	
-    public String getIdInValueExpr() {
+    public String getIdInValueExprDelete(int size) {
+        return getIdInValueExpr(size);
+    }
+    
+    public String getIdInValueExpr(int size) {
         return "";
     }
 

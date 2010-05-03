@@ -40,6 +40,10 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return "ldap";
     }
 
+    public ExpressionFactory createExpressionFactory(String path) {
+        return new LdapExpressionFactory();
+    }
+
     public Expression allEq(Map<String, Object> propertyMap) {
         
         Junction conjunction = conjunction();

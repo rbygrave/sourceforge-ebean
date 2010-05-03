@@ -179,8 +179,8 @@ public class ElPropertyChain implements ElPropertyValue {
         return lastElPropertyValue.getAssocIdInExpr(prefix);
     }
 
-    public String getAssocIdInValueExpr() {
-        return lastElPropertyValue.getAssocIdInValueExpr();
+    public String getAssocIdInValueExpr(int size) {
+        return lastElPropertyValue.getAssocIdInValueExpr(size);
     }
 
     public boolean isAssocId() {

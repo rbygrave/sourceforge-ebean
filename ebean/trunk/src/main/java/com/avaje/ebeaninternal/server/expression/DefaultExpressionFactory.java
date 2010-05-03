@@ -44,6 +44,10 @@ public class DefaultExpressionFactory implements ExpressionFactory {
         this.propertyNamePrefix = propertyNamePrefix;
     }
 
+    public ExpressionFactory createExpressionFactory(String path){
+        return new DefaultExpressionFactory(path);
+    }
+    
 	public String getLang() {
         return "sql";
     }

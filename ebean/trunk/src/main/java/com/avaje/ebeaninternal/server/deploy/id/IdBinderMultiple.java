@@ -150,8 +150,20 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 
-    public String getIdInValueExpr() {
-        return idInValueSql;
+    public String getIdInValueExprDelete(int size) {
+        return getIdInValueExpr(size);
+    }
+
+    public String getIdInValueExpr(int size) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" in");
+        sb.append(" (");
+        sb.append(idInValueSql);
+        for (int i = 1; i < size; i++) {            
+            sb.append(",").append(idInValueSql);
+        }
+        sb.append(") ");
+        return sb.toString();        
     }
 	   
 	public String getBindIdInSql(String baseTableAlias) {

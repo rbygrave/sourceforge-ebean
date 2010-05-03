@@ -189,8 +189,8 @@ public final class Ebean {
                 // look to see if there is a default server defined
                 String primaryName = getPrimaryServerName();
                 logger.fine("primaryName:" + primaryName);
-                if (primaryName != null) {
-                    primaryServer = getWithCreate(primaryName);
+                if (primaryName != null && primaryName.trim().length() > 0) {
+                    primaryServer = getWithCreate(primaryName.trim());
                 }
             }
         }
