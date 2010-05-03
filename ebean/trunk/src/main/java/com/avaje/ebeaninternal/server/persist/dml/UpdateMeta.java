@@ -161,8 +161,8 @@ public final class UpdateMeta {
 		}
 		
 		// we can use a cached UpdatePlan for the changed properties
-				
-		int hash =  31 * mode.hashCode() + 31 * updatedProps.hashCode();
+		int hash =  mode.hashCode();
+		hash = hash * 31 + (updatedProps == null ? 0 : updatedProps.hashCode());
 		Integer key = Integer.valueOf(hash);
 		
 		BeanDescriptor<?> beanDescriptor = persistRequest.getBeanDescriptor();
