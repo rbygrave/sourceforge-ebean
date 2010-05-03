@@ -27,21 +27,45 @@ public final class IdBinderEmbedded implements IdBinder {
 
     private final BeanPropertyAssocOne<?> embIdProperty;
 
+    private final boolean idInExpandedForm;
+    
     private BeanProperty[] props;
 
     private BeanDescriptor<?> idDesc;
 
     private String idInValueSql;
     
-    public IdBinderEmbedded(BeanPropertyAssocOne<?> embIdProperty) {
-
+    
+    public IdBinderEmbedded(boolean idInExpandedForm, BeanPropertyAssocOne<?> embIdProperty) {
+        this.idInExpandedForm = idInExpandedForm;
         this.embIdProperty = embIdProperty;
     }
 
     public void initialise() {
         this.idDesc = embIdProperty.getTargetDescriptor();
         this.props = embIdProperty.getProperties();
+        this.idInValueSql = idInExpandedForm ? idInExpanded() : idInCompressed();
+    }
 
+    private String idInExpanded() {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for (int i = 0; i < props.length; i++) {
+            if (i > 0) {
+                sb.append(" and ");
+            }
+            sb.append(embIdProperty.getName());
+            sb.append(".");
+            sb.append(props[i].getName());
+            sb.append("=?");
+        }
+        sb.append(")");
+
+        return sb.toString();        
+    }
+    
+    private String idInCompressed() {
         StringBuilder sb = new StringBuilder();
         sb.append("(");
         for (int i = 0; i < props.length; i++) {
@@ -52,8 +76,10 @@ public final class IdBinderEmbedded implements IdBinder {
         }
         sb.append(")");
 
-        this.idInValueSql = sb.toString();
+        return sb.toString();        
     }
+    
+    
     
     public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {
 
@@ -129,6 +155,54 @@ public final class IdBinderEmbedded implements IdBinder {
         for (int i = 0; i < props.length; i++) {
             request.addBindValue(props[i].getValue(value));
         }
+    }
+    
+    public String getIdInValueExprDelete(int size) {
+        if (!idInExpandedForm){
+            return getIdInValueExpr(size);
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        
+        for (int j = 0; j < size; j++) {
+            if (j > 0){
+                sb.append(" or ");
+            }
+            sb.append("(");
+            for (int i = 0; i < props.length; i++) {
+                if (i > 0) {
+                    sb.append(" and ");
+                }
+                sb.append(props[i].getDbColumn());
+                sb.append("=?");
+            }
+            sb.append(")");
+        }
+        sb.append(") ");
+        return sb.toString();
+    }
+
+    public String getIdInValueExpr(int size) {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        if (!idInExpandedForm){
+            sb.append(" in");
+        }
+        sb.append(" (");
+        for (int i = 0; i < size; i++) {
+            if (i > 0){
+                if (idInExpandedForm) {
+                    sb.append(" or ");
+                } else {
+                    sb.append(",");                    
+                }
+            }
+            sb.append(idInValueSql);
+        }
+        sb.append(") ");
+        return sb.toString();
     }
     
     public String getIdInValueExpr() {
@@ -294,6 +368,10 @@ public final class IdBinderEmbedded implements IdBinder {
 
     public String getBindIdInSql(String baseTableAlias) {
 
+        if (idInExpandedForm){
+            return "";
+        }
+        
         StringBuilder sb = new StringBuilder();
         sb.append("(");
         for (int i = 0; i < props.length; i++) {

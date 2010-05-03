@@ -21,7 +21,7 @@ public class ROrder {
     @EmbeddedId
     protected ROrderPK orderPK;
 
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne(cascade=CascadeType.PERSIST)
     @JoinColumns({
         @JoinColumn(name="company", referencedColumnName="company", insertable=false, updatable=false),
         @JoinColumn(name="customerName", referencedColumnName="name", insertable=false, updatable=false)

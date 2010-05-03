@@ -59,6 +59,11 @@ public interface ExpressionFactory {
      */
     public String getLang();
     
+    /**
+     * Create another expression factory with a given sub path.
+     */
+    public ExpressionFactory createExpressionFactory(String path);
+
 	/**
 	 * Equal To - property equal to the given value.
 	 */

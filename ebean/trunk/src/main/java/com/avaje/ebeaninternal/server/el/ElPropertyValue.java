@@ -46,7 +46,7 @@ public interface ElPropertyValue extends ElPropertyDeploy {
     /**
      * Return the logical id value expression taking into account embedded id's.
      */
-    public String getAssocIdInValueExpr();
+    public String getAssocIdInValueExpr(int size);
         
     /**
      * Return the logical id in expression taking into account embedded id's.

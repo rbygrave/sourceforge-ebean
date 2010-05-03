@@ -59,6 +59,7 @@ import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinderEmbedded;
+import com.avaje.ebeaninternal.server.deploy.id.IdBinderFactory;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssoc;
@@ -164,6 +165,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
     private final EncryptKeyManager encryptKeyManager;
 
+    private final IdBinderFactory idBinderFactory; 
     /**
      * Create for a given database dbConfig.
      */
@@ -176,6 +178,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         this.dataSource = config.getServerConfig().getDataSource();
         this.encryptKeyManager = config.getServerConfig().getEncryptKeyManager();
         this.databasePlatform = config.getServerConfig().getDatabasePlatform();
+        this.idBinderFactory = new IdBinderFactory(databasePlatform.isIdInExpandedForm());
+        
         this.bootupClasses = config.getBootupClasses();
         this.createProperties = config.getDeployCreateProperties();
         this.subClassManager = config.getSubClassManager();
@@ -239,6 +243,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         for (BeanDescriptor<?> desc : immutableDescriptorList) {
             desc.setEbeanServer(internalEbean);
         }
+    }
+
+    public IdBinder createIdBinder(BeanProperty[] uids) {
+        return idBinderFactory.createIdBinder(uids);
     }
 
     public void deploy() {

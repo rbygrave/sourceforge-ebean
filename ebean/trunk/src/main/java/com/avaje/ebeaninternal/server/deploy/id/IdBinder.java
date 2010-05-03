@@ -119,7 +119,12 @@ public interface IdBinder {
 	/**
 	 * Return the binding expression (like "?" or "(?,?)")for the Id.
 	 */
-    public String getIdInValueExpr();
+    public String getIdInValueExpr(int size);
+    
+    /**
+     * Same as getIdInValueExpr but for delete by id.
+     */
+    public String getIdInValueExprDelete(int size);
     
     public void buildSelectExpressionChain(String prefix, List<String> selectChain);
     

@@ -70,6 +70,8 @@ public class DatabasePlatform {
 	
 	protected DbEncrypt dbEncrypt;
 	
+	protected boolean idInExpandedForm;
+	
 	/**
 	 * Instantiates a new database platform.
 	 */
@@ -186,8 +188,17 @@ public class DatabasePlatform {
 	public boolean isTreatEmptyStringsAsNull() {
 		return treatEmptyStringsAsNull;
 	}
+	
+    /**
+     * Return true if a compound ID in (...) type expression needs to be in
+     * expanded form of (a=? and b=?) or (a=? and b=?) or ... rather than (a,b)
+     * in ((?,?),(?,?),...);
+     */
+	public boolean isIdInExpandedForm() {
+        return idInExpandedForm;
+    }
 
-	/**
+    /**
 	 * Return the DB identity/sequence features for this platform.
 	 *
 	 * @return the db identity

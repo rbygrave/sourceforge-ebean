@@ -58,22 +58,20 @@ class InExpression extends AbstractExpression {
             prop = null;
         } 
         
-        if (prop == null){
-            request.append(propertyName);  
-        } else {
+        if (prop != null){
             request.append(prop.getAssocIdInExpr(propertyName));
+            String inClause = prop.getAssocIdInValueExpr(values.length);
+            request.append(inClause);
+            
+        } else {
+            request.append(propertyName);  
+            request.append(" in (?");
+            for (int i = 1; i < values.length; i++) {
+                request.append(", ").append("?");
+            } 
+            
+            request.append(" ) ");
         }
-	    
-		request.append(" in ( ");
-		
-		String inVal = prop == null ? "?" : prop.getAssocIdInValueExpr();
-		
-	    request.append(inVal);
-		for (int i = 1; i < values.length; i++) {
-			request.append(", ").append(inVal);
-		} 
-		
-		request.append(" ) ");
 	}
 
 	/**

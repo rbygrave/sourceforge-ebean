@@ -502,8 +502,12 @@ public final class DefaultPersister implements Persister {
                     q.where().idEq(id);
                     t.log("-- Delete of "+descriptor.getName()+" id:"+id+" requires fetch of foreign key values");
                     Object bean = server.findUnique(q, t);
-                    delete(bean, t);
-                    return 1;
+                    if (bean == null){
+                        return 0;
+                    } else {
+                        delete(bean, t);
+                        return 1;
+                    }
                 }
             }
         }

@@ -73,7 +73,7 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         throw new RuntimeException("Not Supported or Expected");
     }
 
-    public String getAssocIdInValueExpr() {
+    public String getAssocIdInValueExpr(int size) {
         throw new RuntimeException("Not Supported or Expected");
     }
 

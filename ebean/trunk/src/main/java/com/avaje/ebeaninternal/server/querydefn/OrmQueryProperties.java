@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
@@ -17,7 +18,6 @@ import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
-import com.avaje.ebeaninternal.server.expression.DefaultExpressionFactory;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.util.FilterExpressionList;
@@ -160,8 +160,9 @@ public class OrmQueryProperties implements Serializable {
     @SuppressWarnings("unchecked")
     public <T> SpiExpressionList<T> filterMany(Query<T> rootQuery) {
         if (filterMany == null){
-            DefaultExpressionFactory expr = new DefaultExpressionFactory(path);
-            filterMany = new FilterExpressionList(expr, rootQuery);
+            ExpressionFactory queryEf = rootQuery.getExpressionFactory();
+            ExpressionFactory filterEf = queryEf.createExpressionFactory(path);
+            filterMany = new FilterExpressionList(filterEf, rootQuery);
             // by default we need to make this a 'query join' now
             queryFetchBatch = 100;
             lazyFetchBatch = 100;
