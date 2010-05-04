@@ -44,7 +44,7 @@ public class Dnode {
 
 	ArrayList<Dnode> children;
 
-	LinkedHashMap<String, Object> attrList = new LinkedHashMap<String, Object>();
+	LinkedHashMap<String, String> attrList = new LinkedHashMap<String, String>();
 
 	/**
 	 * Create a node.
@@ -56,7 +56,7 @@ public class Dnode {
 	 * Return the node as XML.
 	 */
 	public String toXml() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		generate(sb);
 		return sb.toString();
 	}
@@ -64,39 +64,39 @@ public class Dnode {
 	/**
 	 * Generate this node as xml to the buffer.
 	 */
-	public StringBuffer generate(StringBuffer buffer) {
-		if (buffer == null) {
-			buffer = new StringBuffer();
+	public StringBuilder generate(StringBuilder sb) {
+		if (sb == null) {
+			sb = new StringBuilder();
 		}
-		buffer.append("<").append(nodeName);
+		sb.append("<").append(nodeName);
 		Iterator<String> it = attributeNames();
 		while (it.hasNext()) {
-			String attr = (String) it.next();
+			String attr = it.next();
 			Object attrValue = getAttribute(attr);
-			buffer.append(" ").append(attr).append("=\"");
+			sb.append(" ").append(attr).append("=\"");
 			if (attrValue != null) {
-				buffer.append(attrValue);
+				sb.append(attrValue);
 			}
-			buffer.append("\"");
+			sb.append("\"");
 		}
 
 		if (nodeContent == null && !hasChildren()) {
-			buffer.append(" />");
+			sb.append(" />");
 
 		} else {
-			buffer.append(">");
+			sb.append(">");
 			if (children != null && children.size() > 0) {
 				for (int i = 0; i < children.size(); i++) {
-					Dnode child = (Dnode) children.get(i);
-					child.generate(buffer);
+					Dnode child = children.get(i);
+					child.generate(sb);
 				}
 			}
 			if (nodeContent != null) {
-				buffer.append(nodeContent);
+				sb.append(nodeContent);
 			}
-			buffer.append("</").append(nodeName).append(">");
+			sb.append("</").append(nodeName).append(">");
 		}
-		return buffer;
+		return sb;
 	}
 
 	/**
@@ -199,7 +199,7 @@ public class Dnode {
 		this.level = level;
 		if (children != null) {
 			for (int i = 0; i < children.size(); i++) {
-				Dnode child = (Dnode) children.get(i);
+				Dnode child = children.get(i);
 				child.setLevel(level + 1);
 			}
 		}
@@ -229,13 +229,12 @@ public class Dnode {
 	 * then this will just search using the nodeName. This is a depth first tree
 	 * search. Once a matching node is found the search will stop.
 	 */
-	public Dnode find(String nodeName, String attrName, Object value,
-			int maxLevel) {
+	public Dnode find(String nodeName, String attrName, Object value, int maxLevel) {
 
 		ArrayList<Dnode> list = new ArrayList<Dnode>();
 		findByNode(list, nodeName, true, attrName, value, maxLevel);
 		if (list.size() >= 1) {
-			return (Dnode) list.get(0);
+			return list.get(0);
 		}
 		return null;
 	}
@@ -255,11 +254,10 @@ public class Dnode {
 	/**
 	 * Find all the nodes that match the nodeName and attribute value.
 	 */
-	public List<Dnode> findAll(String nodeName, String attrName, Object value,
-			int maxLevel) {
+	public List<Dnode> findAll(String nodeName, String attrName, Object value, int maxLevel) {
+	    
 		if (nodeName == null && attrName == null) {
-			throw new RuntimeException(
-					"You can not have both nodeName and attrName null");
+			throw new RuntimeException("You can not have both nodeName and attrName null");
 		}
 		ArrayList<Dnode> list = new ArrayList<Dnode>();
 		findByNode(list, nodeName, false, attrName, value, maxLevel);
@@ -269,9 +267,9 @@ public class Dnode {
 	/**
 	 * Used for recursive calling.
 	 */
-	private void findByNode(List<Dnode> list, String node, boolean findOne,
-			String attrName, Object value, int maxLevel) {
-		if (findOne && list.size() == 1) {
+	private void findByNode(List<Dnode> list, String node, boolean findOne,String attrName, Object value, int maxLevel) {
+		
+	    if (findOne && list.size() == 1) {
 			return;
 		}
 		if (node == null || node.equals(nodeName)) {
@@ -288,10 +286,8 @@ public class Dnode {
 		} else if (children != null) {
 			// recursively search the children
 			for (int i = 0; i < children.size(); i++) {
-				Dnode child = (Dnode) children.get(i);
-				child
-						.findByNode(list, node, findOne, attrName, value,
-								maxLevel);
+				Dnode child = children.get(i);
+				child.findByNode(list, node, findOne, attrName, value,maxLevel);
 			}
 		}
 	}
@@ -306,8 +302,7 @@ public class Dnode {
 	/**
 	 * Return the attribute for a given name.
 	 */
-	public Object getAttribute(String name) {
-		// name = name.toLowerCase();
+	public String getAttribute(String name) {
 		return attrList.get(name);
 	}
 
@@ -329,15 +324,13 @@ public class Dnode {
 	/**
 	 * Set an attribute.
 	 */
-	public void setAttribute(String name, Object value) {
-		// name = name.toLowerCase();
+	public void setAttribute(String name, String value) {
 		attrList.put(name, value);
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("[").append(getNodeName()).append(" ").append(attrList)
-				.append("]");
+		StringBuilder sb = new StringBuilder();
+		sb.append("[").append(getNodeName()).append(" ").append(attrList).append("]");
 		return sb.toString();
 	}
 

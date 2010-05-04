@@ -4,11 +4,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.avaje.ebean.annotation.SqlSelect;
-
 @Entity
 @Table(name="No_Id_Entity_Rob")
-@SqlSelect(name="noid", query="select value from No_Id_Entity_Rob")
 public class NoIdEntity {
 
 	 @Id

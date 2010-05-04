@@ -21,7 +21,7 @@ public class TestRawSqlOrmWrapper extends TestCase {
         ResetBasicData.reset();
                 
         String sql 
-            = " select order_id, o.status, c.id, c.name, sum(d.order_qty*d.unit_price) "
+            = " select order_id, o.status, c.id, c.name, sum(d.order_qty*d.unit_price) as totalAmount"
             + " from o_order o" 
             + " join o_customer c on c.id = o.kcustomer_id "
             + " join o_order_detail d on d.order_id = o.id "
@@ -34,7 +34,7 @@ public class TestRawSqlOrmWrapper extends TestCase {
                 .columnMapping("o.status",  "order.status")
                 .columnMapping("c.id",      "order.customer.id")
                 .columnMapping("c.name",    "order.customer.name")
-                .columnMapping("sum(d.order_qty*d.unit_price)", "totalAmount")
+                //.columnMapping("sum(d.order_qty*d.unit_price)", "totalAmount")
                 .create();
 
         

@@ -56,6 +56,7 @@ import com.avaje.ebeaninternal.server.lib.ShutdownManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourcePool;
 import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
+import com.avaje.ebeaninternal.server.util.XmlConfigLoader;
 
 /**
  * Default Server side implementation of ServerFactory.
@@ -72,6 +73,10 @@ public class DefaultServerFactory implements BootupEbeanManager {
 
 	private final AtomicInteger serverId = new AtomicInteger(1);
 	
+	private final XmlConfigLoader xmlConfigLoader;
+	
+	private final XmlConfig xmlConfig;
+	
 	public DefaultServerFactory() {
 
 		this.clusterManager = new ClusterManager();
@@ -81,6 +86,9 @@ public class DefaultServerFactory implements BootupEbeanManager {
 	    List<String> jars = getSearchJarsPackages(GlobalProperties.get("ebean.search.jars", null));
         
 		this.bootupClassSearch = new BootupClassPathSearch(null, packages, jars);
+		this.xmlConfigLoader = new XmlConfigLoader(null);
+		
+        this.xmlConfig = xmlConfigLoader.load();
 		
 		// register so that we can shutdown any Ebean wide
 		// resources such as clustering
@@ -183,8 +191,8 @@ public class DefaultServerFactory implements BootupEbeanManager {
     		int uniqueServerId = serverId.incrementAndGet();
     		BackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
     			
-    		InternalConfiguration c = new InternalConfiguration(clusterManager, cacheManager, bgExecutor, 
-    			serverConfig, bootupClasses, pstmtBatch);
+    		InternalConfiguration c = new InternalConfiguration(xmlConfig, clusterManager, cacheManager, 
+    		        bgExecutor, serverConfig, bootupClasses, pstmtBatch);
     		
     		DefaultServer server = new DefaultServer(c, cacheManager);
     		

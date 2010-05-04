@@ -5,22 +5,6 @@
 
 <package>com.avaje.tests.model.basic</package>
 
-<entity class="com.avaje.tests.model.basic.OrderReport">
-	<sql-select name="total.qty">
-		<query>
-		select order_id, count(*) as total_items, sum(order_qty*unit_price) as total_amount 
-		from o_order_detail 
-		group by order_id
-		</query>
-	</sql-select>
-	<sql-select name="total">
-		<query>
-		select order_id, sum(order_qty*unit_price) as total_amount 
-		from o_order_detail 
-		group by order_id
-		</query>
-	</sql-select>
-</entity>
 <entity class="com.avaje.tests.model.basic.Order">	
 	<named-query name="top.open">
 		<query>

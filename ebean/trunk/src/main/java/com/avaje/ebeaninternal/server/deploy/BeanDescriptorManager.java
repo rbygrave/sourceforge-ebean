@@ -36,6 +36,8 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.RawSql;
+import com.avaje.ebean.RawSqlBuilder;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.EncryptKey;
@@ -56,6 +58,7 @@ import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
 import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.core.InternalConfiguration;
 import com.avaje.ebeaninternal.server.core.Message;
+import com.avaje.ebeaninternal.server.core.XmlConfig;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinderEmbedded;
@@ -166,6 +169,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     private final EncryptKeyManager encryptKeyManager;
 
     private final IdBinderFactory idBinderFactory; 
+    
+    private final XmlConfig xmlConfig;
+    
     /**
      * Create for a given database dbConfig.
      */
@@ -173,6 +179,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         this.serverName = InternString.intern(config.getServerConfig().getName());
         this.cacheManager = config.getCacheManager();
+        this.xmlConfig = config.getXmlConfig();
         this.dbSequenceBatchSize = config.getServerConfig().getDatabaseSequenceBatchSize();
         this.backgroundExecutor = config.getBackgroundExecutor();
         this.dataSource = config.getServerConfig().getDataSource();
@@ -1178,6 +1185,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
     private void readXml(DeployBeanDescriptor<?> deployDesc) {
 
+        List<Dnode> eXml = xmlConfig.findEntityXml(deployDesc.getFullName());
+        readXmlRawSql(deployDesc, eXml);
+
+        
         Dnode entityXml = deployOrmXml.findEntityDeploymentXml(deployDesc.getFullName());
 
         if (entityXml != null) {
@@ -1227,6 +1238,44 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
     }
 
+    private void readXmlRawSql(DeployBeanDescriptor<?> deployDesc, List<Dnode> entityXml) {
+
+        List<Dnode> rawSqlQueries = xmlConfig.find(entityXml, "raw-sql");
+        for (int i = 0; i < rawSqlQueries.size(); i++) {
+            Dnode rawSqlDnode = rawSqlQueries.get(i);
+            String name = rawSqlDnode.getAttribute("name");
+            if (isEmpty(name)){
+                throw new IllegalStateException("raw-sql for "+deployDesc.getFullName()+" missing name attribute");
+            }
+            Dnode queryNode = rawSqlDnode.find("query");
+            if (queryNode == null){
+                throw new IllegalStateException("raw-sql for "+deployDesc.getFullName()+" missing query element");
+            }
+            String sql = queryNode.getNodeContent();
+            if (isEmpty(sql)){
+                throw new IllegalStateException("raw-sql for "+deployDesc.getFullName()+" has empty sql in the query element?");
+            }
+            
+            List<Dnode> columnMappings = rawSqlDnode.findAll("columnMapping", 1);
+
+            RawSqlBuilder rawSqlBuilder = RawSqlBuilder.parse(sql);
+            for (int j = 0; j < columnMappings.size(); j++) {
+                Dnode cm = columnMappings.get(j);
+                String column = cm.getAttribute("column");
+                String property = cm.getAttribute("property");
+                rawSqlBuilder.columnMapping(column, property);
+            }
+            RawSql rawSql = rawSqlBuilder.create();
+            
+            DeployNamedQuery namedQuery = new DeployNamedQuery(name, rawSql);
+            deployDesc.add(namedQuery);
+        }
+    }
+    
+    private boolean isEmpty(String s){
+        return s == null || s.trim().length() == 0;
+    }
+    
     /**
      * Read named queries for this bean type.
      */
