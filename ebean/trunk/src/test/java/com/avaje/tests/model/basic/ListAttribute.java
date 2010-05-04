@@ -1,6 +1,5 @@
 package com.avaje.tests.model.basic;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -15,8 +14,11 @@ public class ListAttribute extends Attribute {
 	private static final long serialVersionUID = 1L;
 	
 	@ManyToMany(mappedBy="listAttributes", cascade={CascadeType.PERSIST})
-	private Set<ListAttributeValue> values = new HashSet<ListAttributeValue>();
-
+	private Set<ListAttributeValue> values;// = new HashSet<ListAttributeValue>();
+	// Do not define this as a HashSet so that it is left up to Ebean
+	// to define it as a BeanSet ... and hence aware of M2M modify changes
+	// Put this back to HashSet and Duplicate Key Exception will return
+	
 	public Set<ListAttributeValue> getValues() {
 		return values;
 	}
