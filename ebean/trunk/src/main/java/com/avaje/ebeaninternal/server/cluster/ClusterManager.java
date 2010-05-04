@@ -30,19 +30,6 @@ import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
  * Manages the cluster service.
- * <p>
- * ebean.properties:<br>
- * <pre class="code">
- * ## the local member host:port
- * cluster.local=121.1.1.10:9001
- * 
- * ## all the members of the cluster
- * cluster.members=121.1.1.10:9001,121.1.1.10:9002,121.1.1.11:9001
- * 
- * ## specify the broadcast implementation, defaults to SocketBroadcast 
- * #cluster.broadcast=com.avaje.lib.cluster.SocketBroadcast
- * </pre>
- * </p>
  */
 public class ClusterManager {
 
@@ -55,12 +42,11 @@ public class ClusterManager {
     private boolean started;
         
     public ClusterManager() {
-        String local = GlobalProperties.get("ebean.cluster.local", null);
-        String clusterType = GlobalProperties.get("ebean.cluster.type", "socket");
         
-        if ("socket".equalsIgnoreCase(clusterType) && local == null){
-            this.broadcast = null;            
-            logger.info("Clustering not on");
+        String clusterType = GlobalProperties.get("ebean.cluster.type", null);
+        if (clusterType == null || clusterType.trim().length() == 0){
+            // not clustering this instance
+            this.broadcast = null;
             
         } else {
             try {
@@ -78,7 +64,6 @@ public class ClusterManager {
             } catch (Exception e){
                 String msg = "Error initialising ClusterManager type ["+clusterType+"]";
                 logger.log(Level.SEVERE, msg, e);
-                
                 throw new RuntimeException(e);
             }
         }
