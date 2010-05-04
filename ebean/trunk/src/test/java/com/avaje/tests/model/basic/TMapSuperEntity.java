@@ -4,18 +4,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.avaje.ebean.annotation.Sql;
-import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.annotation.UpdateMode;
 
 @Entity
 @Table(name="t_mapsuper1")
-@Sql(select={
-	@SqlSelect(
-		name="testTransient",
-		query="select id, name, 12 as myint from t_mapsuper1"
-	)}
-)
 @UpdateMode(updateChangesOnly=true)
 public class TMapSuperEntity extends TMappedSuper2 {
 

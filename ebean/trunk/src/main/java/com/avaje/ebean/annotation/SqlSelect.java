@@ -139,6 +139,7 @@ import com.avaje.ebean.Query;
  */
 @Target( { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
+@Deprecated
 public @interface SqlSelect {
 
 	/**

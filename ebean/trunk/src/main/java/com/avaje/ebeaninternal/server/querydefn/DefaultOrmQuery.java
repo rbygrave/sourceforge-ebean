@@ -250,6 +250,9 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
     			DRawSqlSelect sqlSelect = namedQuery.getSqlSelect();
     			additionalWhere = sqlSelect.getWhereClause();
     			additionalHaving = sqlSelect.getHavingClause();
+    		} else if (namedQuery.isRawSql()){
+    		    rawSql = namedQuery.getRawSql();
+    		    
     		} else {
     			// parse the entire query...
     			setQuery(namedQuery.getQuery());

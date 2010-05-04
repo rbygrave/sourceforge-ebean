@@ -16,6 +16,10 @@ public class OrderAggregate {
 	
 	Double totalItems;
     
+	public String toString() {
+	    return order.getId()+" totalAmount:"+totalAmount+" totalItems:"+totalItems;
+	}
+	
 	public Order getOrder() {
         return order;
     }

@@ -113,10 +113,13 @@ public class InternalConfiguration {
 
 	private final PstmtBatch pstmtBatch;
 	
-	public InternalConfiguration(ClusterManager clusterManager, ServerCacheManager cacheManager, 
+	private final XmlConfig xmlConfig;
+	
+	public InternalConfiguration(XmlConfig xmlConfig, ClusterManager clusterManager, ServerCacheManager cacheManager, 
 			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, 
 			BootupClasses bootupClasses, PstmtBatch pstmtBatch) {
 		
+	    this.xmlConfig = xmlConfig;
 		this.pstmtBatch = pstmtBatch;
 		this.clusterManager = clusterManager;
 		this.backgroundExecutor = backgroundExecutor;
@@ -175,7 +178,11 @@ public class InternalConfiguration {
         return new DJsonContext(server, va, dfltPretty);
     }
 
-	public AutoFetchManager createAutoFetchManager(SpiEbeanServer server){
+	public XmlConfig getXmlConfig() {
+        return xmlConfig;
+    }
+
+    public AutoFetchManager createAutoFetchManager(SpiEbeanServer server){
 		return AutoFetchManagerFactory.create(server, serverConfig, resourceManager);
 	}
 
