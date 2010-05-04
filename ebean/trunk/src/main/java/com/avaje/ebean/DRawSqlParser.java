@@ -270,6 +270,7 @@ class DRawSqlParser {
 			}
 		}
 
-		return sb.toString();
+		String s = sb.toString();
+		return s.trim();
 	}
 }
