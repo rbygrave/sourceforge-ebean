@@ -811,11 +811,14 @@ public final class DefaultPersister implements Persister {
 			return;
 		}
 		
+		
 		Collection<?> additions = null;
 		Collection<?> deletions = null;
 		
 		boolean vanillaCollection = (value instanceof BeanCollection<?> == false);
-		
+
+	    t.log("-- saving M2M int for "+prop.getName()+" vanilla:"+vanillaCollection+" insertedParent:"+insertedParent);
+
 		if (vanillaCollection || insertedParent){
 			// treat everything in the list/set/map as an intersection addition  
 			if (value instanceof Map<?,?>){
@@ -826,12 +829,17 @@ public final class DefaultPersister implements Persister {
 				String msg = "Unhandled ManyToMany type "+value.getClass().getName()+" for "+prop.getFullBeanName();
 				throw new PersistenceException(msg);
 			}
+			if (!vanillaCollection){
+		        t.log("-- saving M2M modifyReset()");
+			    ((BeanCollection<?>) value).modifyReset();
+			}
 		} else {
 			// BeanCollection so get the additions/deletions
 			BeanCollection<?> manyValue = (BeanCollection<?>) value;
 			additions = manyValue.getModifyAdditions();
 			deletions = manyValue.getModifyRemovals();
 			// reset so the changes are only processed once
+            t.log("-- saving M2M modifyReset()");
 			manyValue.modifyReset();
 		}
 

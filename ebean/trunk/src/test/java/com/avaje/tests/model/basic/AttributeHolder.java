@@ -1,6 +1,5 @@
 package com.avaje.tests.model.basic;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -13,7 +12,7 @@ public class AttributeHolder extends BasicDomain{
 	private static final long serialVersionUID = 1L;
 
 	@OneToMany(mappedBy="attributeHolder", cascade={CascadeType.PERSIST})
-	private Set<Attribute> attributes = new HashSet<Attribute>();
+	private Set<Attribute> attributes;// = new HashSet<Attribute>();
 
 	public Set<Attribute> getAttributes() {
 		return attributes;
