@@ -39,6 +39,7 @@ public class TestDuplcateKeyException extends TestCase {
 			Ebean.execute(new TxRunnable() {
 				public void run() {
 				    Ebean.currentTransaction().log("-- saving holder first time");
+				    // Alternatively turn off cascade Persist for this transaction
 				    //Ebean.currentTransaction().setPersistCascade(false);
 					Ebean.save(holder);
                     Ebean.currentTransaction().log("-- saving holder second time");
