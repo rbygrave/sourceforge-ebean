@@ -148,11 +148,6 @@ public class FilterExpressionList<T> extends DefaultExpressionList<T> {
         return rootQuery.setMaxRows(maxRows);
     }
 
-    @SuppressWarnings("deprecation")
-    public Query<T> setOrderBy(String orderBy) {
-        return rootQuery.setOrderBy(orderBy);
-    }
-
     public Query<T> setUseCache(boolean useCache) {
         return rootQuery.setUseCache(useCache);
     }

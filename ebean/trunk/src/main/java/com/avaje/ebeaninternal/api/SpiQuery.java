@@ -464,11 +464,6 @@ public interface SpiQuery<T> extends Query<T> {
     public String getMapKey();
 
     /**
-     * Return the initial capacity for List Set or Maps.
-     */
-    public int getInitialCapacity();
-
-    /**
      * Return the number of rows after which fetching should occur in a
      * background thread.
      */
