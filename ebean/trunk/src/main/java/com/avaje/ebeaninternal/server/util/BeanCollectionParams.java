@@ -26,8 +26,6 @@ import com.avaje.ebean.Query;
  */
 public class BeanCollectionParams {
 
-	private Boolean ordered;
-
 	private final Query.Type manyType;
 
 	/**
@@ -35,23 +33,6 @@ public class BeanCollectionParams {
 	 */
 	public BeanCollectionParams(Query.Type manyType) {
 		this.manyType = manyType;
-	}
-
-	/**
-	 * HashSet and HashMap do not provide obvious iteration order. Use this flag
-	 * to indicate that you want HashSet over LinkedHashSet or HashMap over
-	 * LinkedHashMap.
-	 */
-	public Boolean getOrdered() {
-		return ordered;
-	}
-
-	/**
-	 * Use this flag to indicate that you want HashSet over LinkedHashSet or
-	 * HashMap over LinkedHashMap.
-	 */
-	public void setOrdered(Boolean ordered) {
-		this.ordered = ordered;
 	}
 
 	/**
