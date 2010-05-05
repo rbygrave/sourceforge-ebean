@@ -168,7 +168,7 @@ public class XmlConfigLoader {
     private void checkJar(String searchFor, ArrayList<Dnode> xmlList, File classPath) throws IOException {
         
         String fileName = classPath.getName();
-        if (fileName.startsWith("surefire")){
+        if (fileName.toLowerCase().startsWith("surefire")){
             return;
         }
         JarFile module = null;
