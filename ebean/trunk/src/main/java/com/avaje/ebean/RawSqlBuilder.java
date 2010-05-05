@@ -22,6 +22,17 @@ package com.avaje.ebean;
 import com.avaje.ebean.RawSql.ColumnMapping;
 import com.avaje.ebean.RawSql.Sql;
 
+/**
+ * Builds RawSql instances from a SQL string and column mappings.
+ * <p>
+ * Note that RawSql can also be defined in ebean-orm.xml files and
+ * be used as a named query.
+ * </p>
+ * 
+ * @author rbygrave
+ * 
+ * @see RawSql
+ */
 public class RawSqlBuilder {
 
     /**
@@ -89,6 +100,9 @@ public class RawSqlBuilder {
         return this;
     }
 
+    /**
+     * Ignore this DB column. It is not mapped to any bean property.
+     */
     public RawSqlBuilder columnMappingIgnore(String dbColumn) {
         return columnMapping(dbColumn, IGNORE_COLUMN);
     }

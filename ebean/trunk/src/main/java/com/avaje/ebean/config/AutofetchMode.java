@@ -4,9 +4,9 @@ import com.avaje.ebean.Query;
 
 /**
  * The mode for determining if Autofetch will be used for a given query when
- * {@link Query#setAutoFetch(boolean)} has not been explicitly set on a query.
+ * {@link Query#setAutofetch(boolean)} has not been explicitly set on a query.
  * <p>
- * The explicit control of {@link Query#setAutoFetch(boolean)} will always take
+ * The explicit control of {@link Query#setAutofetch(boolean)} will always take
  * precedence. This mode is used when this has not been explicitly set on a
  * query.
  * </p>
