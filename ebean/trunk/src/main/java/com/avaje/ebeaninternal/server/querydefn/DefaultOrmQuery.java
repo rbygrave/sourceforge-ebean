@@ -150,13 +150,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private int backgroundFetchAfter;
 
-	/**
-	 * Used to increase the initial capacity of the list set or map being
-	 * fetched. Useful if fetching a large amount of data into a Map or Set to
-	 * reduce rehashing.
-	 */
-	private int initialCapacity;
-
 	private int timeout = -1;
 	
 	/**
@@ -402,7 +395,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.additionalHaving = additionalHaving;
 		copy.distinct = distinct;
 		copy.backgroundFetchAfter = backgroundFetchAfter;
-		copy.initialCapacity = initialCapacity;
 		copy.timeout = timeout;
 		copy.mapKey = mapKey;
 		copy.id = id;
@@ -912,28 +904,12 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return server.findPagingList(this, null, pageSize);
 	}
 
-	public DefaultOrmQuery<T> setParameter(int position, Object value) {
-		return set(position, value);
-	}
-
-	public DefaultOrmQuery<T> setParameter(String paramName, Object value) {
-		return set(paramName, value);
-	}
-
-	public DefaultOrmQuery<T> bind(int position, Object value) {
-		return set(position, value);
-	}
-
-	public DefaultOrmQuery<T> bind(String name, Object value) {
-		return set(name, value);
-	}
-
 	/**
 	 * Set an ordered bind parameter according to its position. Note that the
 	 * position starts at 1 to be consistent with JDBC PreparedStatement. You
 	 * need to set a parameter value for each ? you have in the query.
 	 */
-	public DefaultOrmQuery<T> set(int position, Object value) {
+	public DefaultOrmQuery<T> setParameter(int position, Object value) {
 		if (bindParams == null) {
 			bindParams = new BindParams();
 		}
@@ -945,7 +921,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 * Set a named bind parameter. Named parameters have a colon to prefix the
 	 * name.
 	 */
-	public DefaultOrmQuery<T> set(String name, Object value) {
+	public DefaultOrmQuery<T> setParameter(String name, Object value) {
 		if (bindParams == null) {
 			bindParams = new BindParams();
 		}
@@ -1130,15 +1106,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> setBackgroundFetchAfter(int backgroundFetchAfter) {
 		this.backgroundFetchAfter = backgroundFetchAfter;
-		return this;
-	}
-
-	public int getInitialCapacity() {
-		return initialCapacity;
-	}
-
-	public DefaultOrmQuery<T> setInitialCapacity(int initialCapacity) {
-		this.initialCapacity = initialCapacity;
 		return this;
 	}
 

@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.avaje.ebean.annotation.Formula;
-import com.avaje.ebean.annotation.SqlSelect;
 import com.avaje.ebean.config.ServerConfig;
 
 /**
@@ -244,7 +242,7 @@ import com.avaje.ebean.config.ServerConfig;
  * <h3>Early parsing of the Query</h3>
  * <p>
  * When you get a Query object from a named query, the query statement has
- * already been parsed. You can then add to that query (add joins, add to the
+ * already been parsed. You can then add to that query (add fetch paths, add to the
  * where clause) or override some of its settings (override the order by clause,
  * first rows, max rows).
  * </p>
@@ -284,16 +282,8 @@ import com.avaje.ebean.config.ServerConfig;
  * Once you hit the limits of this language such as wanting aggregate functions
  * (sum, average, min etc) or recursive queries etc you use SQL. Ebean's goal is
  * to make it as easy as possible to use your own SQL to populate entity beans.
- * Refer to the {@link SqlSelect} annotation.
- * </p>
- * <p>
- * Ebean supports a reasonable approach to deriving some aggregate data via the
- * {@link Formula} annotation. Please have a look at the documentation for that
- * and note there is some ongoing work in this area.
- * </p>
- * 
- * @see SqlSelect
- * @see Formula
+ * Refer to {@link RawSql} .
+ * </p> 
  * 
  * @param <T>
  *            the type of Entity bean this query will fetch.
@@ -346,8 +336,14 @@ public interface Query<T> extends Serializable {
 	 */
 	public Type getType();
 
+	/**
+	 * Return the RawSql that was set to use for this query.
+	 */
     public RawSql getRawSql();
 
+    /**
+     * Set RawSql to use for this query.
+     */
     public Query<T> setRawSql(RawSql rawSql);
 	
 	/**
@@ -369,28 +365,19 @@ public interface Query<T> extends Serializable {
 	 */
 	public boolean isAutofetchTuned();
 	
-	/**
-	 * Explicitly specify whether to use Autofetch for this query.
-	 * <p>
-	 * If you do not call this method on a query the "Implicit Autofetch mode"
-	 * is used to determine if Autofetch should be used for a given query.
-	 * </p>
-	 * <p>
-	 * When using Autofetch the select() and join() information is controlled by
-	 * autoFetch. Profiling is used to determine the joins and properties that
-	 * are used and this information is then used to build a "optimal query
-	 * plan". Before the query is executed it is modified by applying this
-	 * "optimal query plan" which sets the select() and join() information.
-	 * </p>
-	 */
+    /**
+     * Explicitly specify whether to use Autofetch for this query.
+     * <p>
+     * If you do not call this method on a query the "Implicit Autofetch mode"
+     * is used to determine if Autofetch should be used for a given query.
+     * </p>
+     * <p>
+     * Autofetch can add additional fetch paths to the query and specify which
+     * properties are included for each path. If you have explicitly defined
+     * some fetch paths Autofetch will not remove.
+     * </p>
+     */
 	public Query<T> setAutofetch(boolean autofetch);
-
-	/**
-	 * Please use {@link #setAutofetch(boolean)}.
-	 * 
-	 * @deprecated
-	 */
-	public Query<T> setAutoFetch(boolean autoFetch);
 
 	/**
 	 * Deprecated in favour of {@link EbeanServer#createQuery(Class, String)}.
@@ -682,28 +669,6 @@ public interface Query<T> extends Serializable {
 	public PagingList<T> findPagingList(int pageSize);
 
 	/**
-	 * Deprecated: Please use {@link #setParameter(int, Object)} for positioned
-	 * parameters.
-	 * <p>
-	 * set() is just an alias for setParameter().
-	 * </p>
-	 * 
-	 * @deprecated
-	 */
-	public Query<T> set(int position, Object value);
-
-	/**
-	 * Deprecated: Please use {@link #setParameter(String, Object)} for named
-	 * parameters.
-	 * <p>
-	 * set() is just an alias for setParameter().
-	 * </p>
-	 * 
-	 * @deprecated
-	 */
-	public Query<T> set(String name, Object value);
-
-	/**
 	 * Set a named bind parameter. Named parameters have a colon to prefix the
 	 * name.
 	 * 
@@ -951,16 +916,6 @@ public interface Query<T> extends Serializable {
 	 */
 	public Query<T> having(Expression addExpressionToHaving);
 
-
-	/**
-	 * Set the order by clause.
-	 * <p>
-	 * Deprecated in favour of {@link #order(String)}
-	 * </p>
-	 * @deprecated
-	 */
-	public Query<T> setOrderBy(String orderByClause);
-
 	/**
 	 * Set the order by clause replacing the existing
 	 * order by clause if there is one. 
@@ -1088,17 +1043,6 @@ public interface Query<T> extends Serializable {
 	 * @param backgroundFetchAfter
 	 */
 	public Query<T> setBackgroundFetchAfter(int backgroundFetchAfter);
-
-	/**
-	 * Deprecated: Will look to remove this in future.
-	 * <p>
-	 * Set the initial capacity that should be allocated for a collection type
-	 * (List, Set or Map).
-	 * </p>
-	 * 
-	 * @deprecated
-	 */
-	public Query<T> setInitialCapacity(int initialCapacity);
 
 	/**
 	 * Set the property to use as keys for a map.
