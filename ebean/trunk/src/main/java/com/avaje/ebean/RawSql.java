@@ -35,7 +35,16 @@ import java.util.Map;
  * which returns {@link SqlRow} objects rather than entity beans.
  * </p>
  * <p>
- * <b>Parsed RawSql: </b> When RawSql is created via RawSqlBuilder.parse(sql) then 
+ * <b>Unparsed RawSql:</b> 
+ * </p>
+ * <p>
+ * When RawSql is created via RawSqlBuilder.unparsed(sql) then Ebean can not
+ * modify the SQL at all. It can't add any extra expressions into the SQL.
+ * </p>
+ * <p>
+ * <b>Parsed RawSql:</b>
+ * </p>
+ * <p>When RawSql is created via RawSqlBuilder.parse(sql) then 
  * Ebean will parse the SQL and find places in the SQL where it can add extra where
  * expressions, add extra having expressions or replace the order by clause. If you
  * want to explicitly tell Ebean where these insertion points are you can place
@@ -44,20 +53,16 @@ import java.util.Map;
  * <p>
  * If the SQL already includes a WHERE clause put in ${andWhere} in the location you want
  * Ebean to add any extra where expressions. If the SQL doesn't have a WHERE clause put ${where}
- * in instead.
+ * in instead. Similarly you can put in ${having} or ${andHaving} where you want Ebean 
+ * put add extra having expressions.
  * </p>
  * <p>
- * Similarly put in ${having} or ${andHaving} where you want Ebean put add extra having expressions.
+ * <b>Aggregates:</b>
  * </p>
  * <p>
- * <b>Unparsed RawSql</b>: When RawSql is created via RawSqlBuilder.unparsed(sql) then Ebean can not
- * modify the SQL at all. It can't add any extra expressions into the SQL.
- * </p>
- * <p>
- * <b>Aggregates:</b> Often RawSql will be used with Aggregate functions (sum, avg, max etc).
+ * Often RawSql will be used with Aggregate functions (sum, avg, max etc).
  * The follow example shows an example based on Total Order Amount - sum(d.order_qty*d.unit_price).
  * </p>
- * 
  * <p>
  * We can use a OrderAggregate bean that has a &#064;Sql to indicate it is based on RawSql and not
  * based on a real DB Table or DB View. It has some properties to hold the values for the aggregate
