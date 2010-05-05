@@ -87,7 +87,7 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
     /**
      * The delimiter to use.
      */
-    private final String deliminator;
+    private final String deliminator = ", ";
 
     /**
      * The prefix of the log file name.
@@ -124,12 +124,12 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
 	 * Roughly the max bytes written to a file before we switch.
 	 * Switch Daily and on hitting max bytes.
 	 */
-	private int maxBytesPerFile;
+	private long maxBytesPerFile;
     
 	/**
 	 * Roughly the bytes written to a file.
 	 */
-    private int bytesWritten;
+    private long bytesWritten;
 
     public FileTransactionLogger(String threadName, String dir, String logFileName, int maxBytesPerFile) {
         this(threadName, dir, logFileName, "log", maxBytesPerFile);
@@ -139,7 +139,6 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
 		this.threadName = threadName;
 	    this.logFileName = logFileName;
 		this.logFileSuffix = "."+suffix;
-		this.deliminator = ", ";
 		this.maxBytesPerFile = maxBytesPerFile;
 		
 		try {
@@ -257,11 +256,13 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
 	        return;
 	    }
 	    
-	    // overhead per line roughly 27
-        bytesWritten += 27;
+	    // add overhead + content
+        bytesWritten += 16;
 	    bytesWritten += len;
         
 		if (txnId != null){
+            bytesWritten += 7;
+	        bytesWritten += txnId.length();
 		    out.append("txn[");
 		    out.append(txnId);
 		    out.append("]");
@@ -329,14 +330,31 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
 	protected void switchFile(LogTime logTime) {
 
 	    try {
-    		String newFilePath = newFileName(logTime);
-    
+	        long currentFileLength = 0;
+	        String newFilePath = null;	  
+	        
+	        // skip a file if it already has max bytes 
+	        do {
+        		newFilePath = newFileName(logTime);
+        		File f = new File(newFilePath);
+        		if (!f.exists()){
+        		    currentFileLength = 0;
+        		} else {
+        		    if (f.length() < maxBytesPerFile*0.8){
+        		        currentFileLength = f.length();
+        		    } else {
+                        ++fileCounter;
+                        newFilePath = null;
+        		    }
+        		}
+	        } while(newFilePath == null);
+    		
     		if (!newFilePath.equals(currentPath)) {
     			PrintStream newOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(newFilePath, true)));
     			
     			close();
     			
-    			bytesWritten = 0;
+                bytesWritten = currentFileLength;
                 currentPath = newFilePath;
     			out = newOut;
     		}	
