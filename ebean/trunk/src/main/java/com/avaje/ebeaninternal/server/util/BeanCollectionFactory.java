@@ -20,13 +20,8 @@
 package com.avaje.ebeaninternal.server.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
@@ -82,38 +77,18 @@ public class BeanCollectionFactory {
     @SuppressWarnings("unchecked")
 	private BeanMap createMap(BeanCollectionParams params) {
         
-        Boolean ordered = params.getOrdered();
-
-        Map m = null;
-        if (ordered == null || ordered) {
-            m = new LinkedHashMap(defaultMapInitialCapacity);
-        } else {
-            m = new HashMap(defaultMapInitialCapacity);
-        }
-
-        return new BeanMap(m);       
+        return new BeanMap(new LinkedHashMap(defaultMapInitialCapacity));       
     }
 
     @SuppressWarnings("unchecked")
 	private BeanSet createSet(BeanCollectionParams params) {
-        Boolean ordered = params.getOrdered();
-      
-        Set s = null;
-        if (ordered == null || ordered) {
-            s = new LinkedHashSet(defaultSetInitialCapacity);
 
-        } else {
-            s = new HashSet(defaultSetInitialCapacity);
-        }
-
-        return new BeanSet(s);
+        return new BeanSet(new LinkedHashSet(defaultSetInitialCapacity));
     }
 
     @SuppressWarnings("unchecked")
 	private BeanList createList(BeanCollectionParams params) {
         
-        List l = new ArrayList(defaultListInitialCapacity);
-
-        return new BeanList(l);
+        return new BeanList(new ArrayList(defaultListInitialCapacity));
     }
 }
