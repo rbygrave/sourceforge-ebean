@@ -70,7 +70,6 @@ public class LogTime {
 	private LogTime() {
 
 		GregorianCalendar now = new GregorianCalendar();
-		// dstOffset = cal.get(Calendar.DST_OFFSET);
 
 		now.set(Calendar.HOUR_OF_DAY, 0);
 		now.set(Calendar.MINUTE, 0);
@@ -82,7 +81,6 @@ public class LogTime {
 		
 		now.add(Calendar.DATE, 1);
 		this.startTomorrow = now.getTime().getTime();
-//		this.startTomorrow = startMidnight + ONE_DAY;
 	}
 
 	/**
@@ -112,10 +110,23 @@ public class LogTime {
 	 */
 	public String getNow(String[] separators) {
 
-		StringBuilder sb = new StringBuilder();
-		getTime(sb, System.currentTimeMillis(), startMidnight, separators);
-		return sb.toString();
+	    return getTimestamp(System.currentTimeMillis(), separators);
+
 	}
+	
+    public String getTimestamp(long systime) {
+
+        StringBuilder sb = new StringBuilder();
+        getTime(sb, systime, startMidnight, sep);
+        return sb.toString();
+    }
+    
+    public String getTimestamp(long systime, String[] separators) {
+
+        StringBuilder sb = new StringBuilder();
+        getTime(sb, systime, startMidnight, separators);
+        return sb.toString();
+    }
 
 	/**
 	 * Returns the current time.

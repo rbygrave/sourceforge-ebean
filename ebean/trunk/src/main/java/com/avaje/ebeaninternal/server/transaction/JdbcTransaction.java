@@ -128,6 +128,8 @@ public class JdbcTransaction implements SpiTransaction {
 
 	HashSet<Integer> persistingBeans;
 	
+	TransactionLogBuffer logBuffer;
+	
 	/**
 	 * Create a new JdbcTransaction.
 	 */
@@ -141,6 +143,8 @@ public class JdbcTransaction implements SpiTransaction {
 			this.onQueryOnly = manager == null ? OnQueryOnly.ROLLBACK : manager.getOnQueryOnly();
 			this.persistenceContext = new DefaultPersistenceContext();
 
+			this.logBuffer = new TransactionLogBuffer(50, id);
+			
 		} catch (Exception e) {
 			throw new PersistenceException(e);
 		}
@@ -392,7 +396,11 @@ public class JdbcTransaction implements SpiTransaction {
 	 */
 	public void log(String msg) {
 		if (loggingOn && manager != null) {
-			manager.log(this, msg);
+		    if (logBuffer.add(msg)) {
+		        // buffer full so flush it
+	            manager.log(logBuffer);
+	            logBuffer = logBuffer.newBuffer();
+		    }
 		}
 	}
 
@@ -439,8 +447,12 @@ public class JdbcTransaction implements SpiTransaction {
 		connection = null;
 		active = false;
 	}
+	
+	public TransactionLogBuffer getLogBuffer() {
+        return logBuffer;
+    }
 
-	/**
+    /**
 	 * Notify the transaction manager.
 	 */
 	protected void notifyCommit() {

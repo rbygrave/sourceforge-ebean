@@ -24,6 +24,11 @@ import java.util.List;
 
 import com.avaje.ebeaninternal.server.lib.util.Dnode;
 
+/**
+ * Holds the orm.xml and ebean-orm.xml deployment information.
+ * 
+ * @author rbygrave
+ */
 public class XmlConfig {
 
     private final List<Dnode> ebeanOrmXml;
@@ -33,11 +38,9 @@ public class XmlConfig {
     public XmlConfig(List<Dnode> ormXml, List<Dnode> ebeanOrmXml){
         this.ormXml = ormXml;
         this.ebeanOrmXml = ebeanOrmXml;
-        
         this.allXml = new ArrayList<Dnode>(ormXml.size() + ebeanOrmXml.size());
         allXml.addAll(ormXml);
         allXml.addAll(ebeanOrmXml);
-        
     }
     
     public List<Dnode> getEbeanOrmXml() {
@@ -57,10 +60,9 @@ public class XmlConfig {
     }
     
     /**
-     * Find the deployment xml for a given entity. This will return null if no
-     * matching deployment xml is found for this entity.
+     * Find the deployment xml for a given entity.
      * <p>
-     * This searches all the ormXml files and returns the first match.
+     * This searches all the orm.xml and ebean-orm.xml files.
      * </p>
      */
     public List<Dnode> findEntityXml(String className) {

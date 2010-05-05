@@ -17,21 +17,14 @@
  */
 package com.avaje.ebeaninternal.server.lib.thread;
 
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.server.lib.BackgroundThread;
 
 /**
  * Singleton that manages a list of named ThreadPools.
- * <pre><code>
- * &#47;&#47; Create or get the runnable
- * Runnable runnable = ...;
- * 
- * &#47;&#47; Run the runnable in the background
- * ThreadPoolManager.assign("mypool",runnable,true);
- * </code></pre>
  */
 public class ThreadPoolManager implements Runnable {
 
@@ -49,12 +42,7 @@ public class ThreadPoolManager implements Runnable {
     /** 
      * Holds all the thread pools. 
      */
-    private Hashtable<String,ThreadPool> threadPoolCache = new Hashtable<String, ThreadPool>();
-
-    /**
-     * Monitor used for threadPoolCache.
-     */
-    private Object cacheMonitor = new Object();
+    private ConcurrentHashMap<String,ThreadPool> threadPoolCache = new ConcurrentHashMap<String, ThreadPool>();
 
     /**
      * The default time threads are idle before they are stopped and removed.
@@ -92,13 +80,6 @@ public class ThreadPoolManager implements Runnable {
         return debugLevel;
     }
 
-//    /**
-//     * Return the singleton instance.
-//     */
-//    private static ThreadPoolManager getInstance() {
-//        return ThreadPoolManagerHolder.me;
-//    }
-
     /**
      * Periodically maintains the pool size.  Stops threads that have
      * been idle for too long and ensures the minimum number of threads.
@@ -116,22 +97,6 @@ public class ThreadPoolManager implements Runnable {
     }
 
     /**
-     * Assign a Runnable to a named ThreadPool. Returns true if the work is
-     * going to be run immediately.
-     * <p>
-     * If the pool has reached its maxium size and...<br>
-     * addToQueueIfFull == true -&gt; queue the work and return false<br>
-     * addToQueueIfFull == false -&gt; don't queue the work and return false<br>
-     * </p>
-     * @param poolName the name of the thread pool to perform the work
-     * @param work the work to be run
-     * @param addToQueueIfFull if pool is full indicates to queue or reject the work
-     */
-    public static boolean assign(String poolName, Runnable work, boolean addToQueueIfFull) {
-        return getThreadPool(poolName).assign(work, addToQueueIfFull);
-    }
-
-    /**
      * Return the named thread pool.
      */
     public static ThreadPool getThreadPool(String poolName) {
@@ -143,17 +108,14 @@ public class ThreadPoolManager implements Runnable {
      * created.
      */
     private ThreadPool getPool(String poolName) {
-        ThreadPool threadPool = (ThreadPool) threadPoolCache.get(poolName);
-        if (threadPool == null) {
-            synchronized (cacheMonitor) {
-                threadPool = (ThreadPool) threadPoolCache.get(poolName);
-                if (threadPool == null) {
-                    threadPool = createThreadPool(poolName);
-                    threadPoolCache.put(poolName, threadPool);
-                }
+        synchronized (this) {
+            ThreadPool threadPool = (ThreadPool) threadPoolCache.get(poolName);
+            if (threadPool == null) {
+                threadPool = createThreadPool(poolName);
+                threadPoolCache.put(poolName, threadPool);
             }
+            return threadPool;
         }
-        return threadPool;
     }
 
     /**
@@ -175,7 +137,7 @@ public class ThreadPoolManager implements Runnable {
         if (isShuttingDown){
             return;
         }
-        synchronized (cacheMonitor) {
+        synchronized (this) {
    
             Iterator<ThreadPool> e = pools();
             while (e.hasNext()) {
@@ -194,7 +156,7 @@ public class ThreadPoolManager implements Runnable {
     }
 
     private void shutdownPools() {
-        synchronized (cacheMonitor) {
+        synchronized (this) {
             isShuttingDown = true;
             Iterator<ThreadPool> i = pools();
             while (i.hasNext()) {

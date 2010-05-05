@@ -39,6 +39,8 @@ public final class DaemonThreadPool extends ThreadPoolExecutor {
 
     private final Monitor monitor = new Monitor();
     
+    private final String namePrefix;
+    
     private int shutdownWaitSeconds;
     
 	/**
@@ -55,6 +57,7 @@ public final class DaemonThreadPool extends ThreadPoolExecutor {
     public DaemonThreadPool(int coreSize, long keepAliveSecs, int shutdownWaitSeconds, String namePrefix) {
         super(coreSize, coreSize, keepAliveSecs, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory(namePrefix));
         this.shutdownWaitSeconds = shutdownWaitSeconds;
+        this.namePrefix = namePrefix;
         // we want to shutdown nicely when either the web application stops.
         // Adding the JVM shutdown hook as a safety (and when not run in tomcat)
         Runtime.getRuntime().addShutdownHook(new ShutdownHook());
@@ -70,19 +73,19 @@ public final class DaemonThreadPool extends ThreadPoolExecutor {
     public void shutdown() {
         synchronized (monitor) {
             if (super.isShutdown()) {
-                logger.fine("... DaemonThreadPool already shut down");
+                logger.fine("... DaemonThreadPool["+namePrefix+"] already shut down");
                 return;
             }
             try {
-                logger.fine("DaemonThreadPool shutting down...");
+                logger.fine("DaemonThreadPool["+namePrefix+"] shutting down...");
                 super.shutdown();
                 if (!super.awaitTermination(shutdownWaitSeconds, TimeUnit.SECONDS)) {
-                    logger.info("ScheduleService shut down timeout exceeded. Terminating running threads.");
+                    logger.info("DaemonThreadPool["+namePrefix+"] shut down timeout exceeded. Terminating running threads.");
                     super.shutdownNow();
                 }
 
             } catch (Exception e) {
-                String msg = "Error during shutdown";
+                String msg = "Error during shutdown of DaemonThreadPool["+namePrefix+"]";
                 logger.log(Level.SEVERE, msg, e);
                 e.printStackTrace();
             }

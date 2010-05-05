@@ -30,7 +30,6 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.AdminLogging.LogFileSharing;
 import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
 import com.avaje.ebean.config.GlobalProperties;
@@ -94,8 +93,6 @@ public class TransactionManager {
 	 * The dataSource of connections.
 	 */
 	private final DataSource dataSource;
-
-	private final boolean logAllCommits;
 
 	/**
 	 * Flag to indicate the default Isolation is READ COMMITTED. This enables us
@@ -163,11 +160,13 @@ public class TransactionManager {
 		
 		this.prefix = GlobalProperties.get("transaction.prefix", "");
 		this.externalTransPrefix = GlobalProperties.get("transaction.prefix", "e");
-		this.logAllCommits = GlobalProperties.getBoolean("transaction.logallcommits", false);
 		
 		String value = GlobalProperties.get("transaction.onqueryonly", "ROLLBACK").toUpperCase().trim();
-
 		this.onQueryOnly = getOnQueryOnly(value, dataSource);
+	}
+	
+	public void shutdown() {
+	    transLogger.shutdown();
 	}
 	
 	/**
@@ -183,21 +182,6 @@ public class TransactionManager {
 	public void setTransactionLogLevel(LogLevel txLogLevel){
 		transLogger.setLogLevel(txLogLevel);
 	}
-
-	/**
-	 * Return the log sharing mode.
-	 */
-	public LogFileSharing getTransactionLogSharing(){
-		return transLogger.getLogSharing();
-	}
-	
-	/**
-	 * Set the log sharing mode.
-	 */
-	public void setTransactionLogSharing(LogFileSharing txLogSharing){
-		transLogger.setLogSharing(txLogSharing);
-	}
-	
 	
 	/**
 	 * Return the behaviour to use when a query only transaction is committed.
@@ -292,18 +276,8 @@ public class TransactionManager {
 		return transLogger;
 	}
 
-	/**
-	 * Log a message to the Transaction log.
-	 */
-	public void log(SpiTransaction t, String msg) {
-		transLogger.log(t, msg, null);
-	}
-
-	/**
-	 * Log an error to the transaction log.
-	 */
-	public void log(SpiTransaction t, String msg, Throwable error) {
-		transLogger.log(t, msg, error);
+	public void log(TransactionLogBuffer logBuffer){
+	    transLogger.log(logBuffer);
 	}
 
 	/**
@@ -350,7 +324,7 @@ public class TransactionManager {
 				c.setTransactionIsolation(isolationLevel);
 			}
 
-			if (debugLevel >= 2){
+			if (debugLevel >= 3){
 				String msg = "Transaction ["+t.getId()+"] begin";
 				if (isolationLevel > -1){
 					TxIsolation txi = TxIsolation.fromLevel(isolationLevel);
@@ -379,7 +353,7 @@ public class TransactionManager {
 				t.setBatchMode(true);
 			}
 
-			if (debugLevel >= 2){
+			if (debugLevel >= 3){
 				logger.info("Transaction ["+t.getId()+"] begin - queryOnly");
 			}
 			
@@ -400,8 +374,8 @@ public class TransactionManager {
 			if (cause != null){
 				msg += " error: "+formatThrowable(cause);
 			}
+			transaction.log(msg);
 			
-			transLogger.transactionEnded(transaction, msg);
 			if (debugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] "+msg);
 			}
@@ -417,22 +391,23 @@ public class TransactionManager {
 	public void notifyOfQueryOnly(boolean onCommit, SpiTransaction transaction, Throwable cause) {
 		
 		try {
-			// close the logger if one was created for this transaction
-			String msg;
-			if (onCommit){
-				msg = "Commit queryOnly";
+            if (debugLevel >= 2){
+    			String msg;
+    			if (onCommit){
+    				msg = "Commit queryOnly";
+    			
+    			} else {
+    				msg = "Rollback queryOnly";
+    				if (cause != null){
+    					msg += " error: "+formatThrowable(cause);
+    				}		
+    			}
+    			transaction.log(msg);
+                logger.info("Transaction ["+transaction.getId()+"] "+msg);
+            }
+            
+			log(transaction.getLogBuffer());
 			
-			} else {
-				msg = "Rollback queryOnly";
-				if (cause != null){
-					msg += " error: "+formatThrowable(cause);
-				}		
-			}
-			transLogger.transactionEnded(transaction, msg);	
-			
-			if (debugLevel >= 2){
-				logger.info("Transaction ["+transaction.getId()+"] "+msg);
-			}
 		} catch (Exception ex) {
 			String m = "Potentially Transaction Log incomplete due to error:";
 			logger.log(Level.SEVERE, m, ex);
@@ -469,13 +444,8 @@ public class TransactionManager {
 	public void notifyOfCommit(SpiTransaction transaction) {
 
 		try {
-			// close the logger if required
-			if (logAllCommits || transaction.isExplicit()) {
-				transLogger.transactionEnded(transaction, "Commit");
-	
-			} else {
-				transLogger.transactionEnded(transaction, null);
-			}
+		    
+		    log(transaction.getLogBuffer());
 	
 			TransactionEvent event = transaction.getEvent();
 			
@@ -483,7 +453,6 @@ public class TransactionManager {
 			TransactionEventTable tableEvents = event.notifyCache();
 			processTableEvents(tableEvents);
 			
-	
 			// cluster and text indexing
 			localCommitBackgroundProcess(event);
 			

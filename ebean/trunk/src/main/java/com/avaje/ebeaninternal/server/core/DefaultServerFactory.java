@@ -56,7 +56,6 @@ import com.avaje.ebeaninternal.server.lib.ShutdownManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourcePool;
 import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
-import com.avaje.ebeaninternal.server.util.XmlConfigLoader;
 
 /**
  * Default Server side implementation of ServerFactory.

@@ -24,6 +24,7 @@ import java.sql.Connection;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
+import com.avaje.ebeaninternal.server.transaction.TransactionLogBuffer;
 
 /**
  * Extends Transaction with additional API required on server.
@@ -33,6 +34,11 @@ import com.avaje.ebeaninternal.server.persist.BatchControl;
  */
 public interface SpiTransaction extends Transaction {
 
+    /**
+     * Return the buffer containing transaction log messages.
+     */
+    public TransactionLogBuffer getLogBuffer();
+    
 	/**
 	 * Add a bean to the registed list.
 	 * <p>

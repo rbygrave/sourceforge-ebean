@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.server.autofetch;
 
 import java.util.logging.Level;
+
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.AutofetchConfig;
@@ -8,7 +9,7 @@ import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.server.lib.BackgroundThread;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
-import com.avaje.ebeaninternal.server.transaction.log.DefaultTransactionLogger;
+import com.avaje.ebeaninternal.server.transaction.log.SimpleLogger;
 
 /**
  * Handles the logging aspects for the DefaultAutoFetchListener.
@@ -21,7 +22,7 @@ public class DefaultAutoFetchManagerLogging {
 
 	private static final Logger logger = Logger.getLogger(DefaultAutoFetchManagerLogging.class.getName());
 
-	private final DefaultTransactionLogger fileLogger;
+	private final SimpleLogger fileLogger;
 
 	private final DefaultAutoFetchManager manager;
 
@@ -46,7 +47,7 @@ public class DefaultAutoFetchManagerLogging {
 			// for putting the profiling log messages. The benefit is that
 			// this doesn't pollute the main log with heaps of messages.
 			String baseDir = serverConfig.getLoggingDirectoryWithEval();
-			fileLogger = new DefaultTransactionLogger(baseDir, "autofetch", true, "csv");
+			fileLogger = new SimpleLogger(baseDir, "autofetch", true, "csv");
 		}
 
 		int updateFreqInSecs = autofetchConfig.getProfileUpdateFrequency();

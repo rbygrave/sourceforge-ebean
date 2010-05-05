@@ -62,7 +62,8 @@ public class McastListener implements Runnable {
 
     private byte[] receiveBuffer;
 
-    private volatile boolean doingShutdown;
+    private volatile boolean shutdown;
+    private volatile boolean shutdownComplete;
     
     private long totalPacketsReceived;
     private long totalBytesReceived;
@@ -126,81 +127,100 @@ public class McastListener implements Runnable {
      * Shutdown this listener.
      */
     public void shutdown() {
-        doingShutdown = true;
-        listenerThread.interrupt();
+        
+        shutdown = true;
         synchronized (listenerThread) {
             try {
-                sock.leaveGroup(group);
-            } catch (IOException e) {
-                String msg = "Error leaving Multicast group";
-                logger.log(Level.INFO, msg, e);
+                // wait max 20 seconds 
+                listenerThread.wait(20000);                
+            } catch (InterruptedException e) {
+                logger.info("InterruptedException:"+e);
             }
-            try {
-                sock.close();
-            } catch (Exception e) {
-                String msg = "Error closing Multicast socket";
-                logger.log(Level.INFO, msg, e);
-            }
+        }
+        
+        if (!shutdownComplete){
+            String msg = "WARNING: Shutdown of McastListener did not complete?";
+            System.err.println(msg);
+            logger.warning(msg);
+        }
+        
+        try {
+            sock.leaveGroup(group);
+        } catch (IOException e) {
+            // send to syserr in case logging already shutdown 
+            e.printStackTrace();
+            String msg = "Error leaving Multicast group";
+            logger.log(Level.INFO, msg, e);
+        }
+        try {
+            sock.close();
+        } catch (Exception e) {
+            // send to syserr in case logging already shutdown 
+            e.printStackTrace();
+            String msg = "Error closing Multicast socket";
+            logger.log(Level.INFO, msg, e);
         }
     }
     
     public void run() {
-        while (!doingShutdown) {
+        while (!shutdown) {
             try {
-                synchronized (listenerThread) {
-                    
-                    pack.setLength(receiveBuffer.length);
-                    sock.receive(pack);
+                pack.setLength(receiveBuffer.length);
+                sock.receive(pack);
 
-                    InetSocketAddress senderAddr = (InetSocketAddress)pack.getSocketAddress();
+                InetSocketAddress senderAddr = (InetSocketAddress)pack.getSocketAddress();
 
-                    String senderHostPort = senderAddr.getAddress().getHostAddress()+":"+senderAddr.getPort();                    
+                String senderHostPort = senderAddr.getAddress().getHostAddress()+":"+senderAddr.getPort();                    
+                
+                if (senderHostPort.equals(localSenderHostPort)){
+                    if (debugIgnore || logger.isLoggable(Level.FINE)){
+                        logger.info("Ignoring message as sent by localSender: "+localSenderHostPort);
+                    }
+                } else {
+                                               
+                    byte[] data = pack.getData();
                     
-                    if (senderHostPort.equals(localSenderHostPort)){
+                    
+                    ByteArrayInputStream bi = new ByteArrayInputStream(data);
+                    DataInputStream dataInput = new DataInputStream(bi);
+                    
+                    ++totalPacketsReceived;
+                    totalBytesReceived += pack.getLength();
+                    
+                    Packet header = Packet.readHeader(dataInput);
+                    
+                    long packetId = header.getPacketId();
+                    boolean ackMsg = packetId == 0;
+                    
+                    boolean processThisPacket = ackMsg || packetControl.isProcessPacket(senderHostPort, header.getPacketId());
+                    
+                    if (!processThisPacket){
                         if (debugIgnore || logger.isLoggable(Level.FINE)){
-                            logger.info("Ignoring message as sent by localSender: "+localSenderHostPort);
+                            logger.info("Already processed packet: "+header.getPacketId()+" type:"+header.getPacketType()+" len:"+data.length);
                         }
                     } else {
-                                                   
-                        byte[] data = pack.getData();
-                        
-                        
-                        ByteArrayInputStream bi = new ByteArrayInputStream(data);
-                        DataInputStream dataInput = new DataInputStream(bi);
-                        
-                        ++totalPacketsReceived;
-                        totalBytesReceived += pack.getLength();
-                        
-                        Packet header = Packet.readHeader(dataInput);
-                        
-                        long packetId = header.getPacketId();
-                        boolean ackMsg = packetId == 0;
-                        
-                        boolean processThisPacket = ackMsg || packetControl.isProcessPacket(senderHostPort, header.getPacketId());
-                        
-                        if (!processThisPacket){
-                            if (debugIgnore || logger.isLoggable(Level.FINE)){
-                                logger.info("Already processed packet: "+header.getPacketId()+" type:"+header.getPacketType()+" len:"+data.length);
-                            }
-                        } else {
-                            if (logger.isLoggable(Level.FINER)){
-                                logger.info("Incoming packet:"+header.getPacketId()+" type:"+header.getPacketType()+" len:"+data.length);
-                            }    
-                            processPacket(senderHostPort, header, dataInput);                            
-                        }
+                        if (logger.isLoggable(Level.FINER)){
+                            logger.info("Incoming packet:"+header.getPacketId()+" type:"+header.getPacketType()+" len:"+data.length);
+                        }    
+                        processPacket(senderHostPort, header, dataInput);                            
                     }
                 }
                 
             } catch (java.net.SocketTimeoutException e) {
-                
-                packetControl.onListenerTimeout();
-                
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, "timeout", e);
                 }
+                packetControl.onListenerTimeout();
+                
             } catch (IOException e) {
                 logger.log(Level.INFO, "error ?", e);  
             } 
+        }
+        
+        shutdownComplete = true;
+        
+        synchronized (listenerThread) {
+            listenerThread.notifyAll();
         }
     }
 

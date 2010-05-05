@@ -80,14 +80,6 @@ public class MAdminLogging implements MAdminLoggingMBean, AdminLogging {
 	public LogLevel getLoggingLevel() {
 		return transactionManager.getTransactionLogLevel();
 	}
-	
-	public void setLogFileSharing(LogFileSharing txLogSharing){
-		transactionManager.setTransactionLogSharing(txLogSharing);
-	}
-	
-	public LogFileSharing getLogFileSharing() {
-		return transactionManager.getTransactionLogSharing();
-	}
 
 	public boolean isLogQuery(int level){
 		return ordinalQuery >= level;
