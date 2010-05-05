@@ -32,8 +32,8 @@ EXAMPLE 2: Fetch an Object with associations
 <pre class="code">
 // fetch Customer 7 including their billing and shipping addresses
 Customer customer = Ebean.find(Customer.class)
-    .join("billingAddress");
-    .join("shippingAddress");
+    .fetch("billingAddress");
+    .fetch("shippingAddress");
     .setId(7)
     .findUnique();
 	
@@ -53,10 +53,10 @@ EXAMPLE 3: Fetch a list of Objects with associations
 		
 // fetch orders for customer.id = 2
 List&lt;Order&gt; orderList = Ebean.find(Order.class);
-    .join("customer")
-    .join("customer.shippingAddress")
-    .join("details")
-    .join("details.product","name")
+    .fetch("customer")
+    .fetch("customer.shippingAddress")
+    .fetch("details")
+    .fetch("details.product","name")
     .where().eq("customer.id",2)
     .findList();
 

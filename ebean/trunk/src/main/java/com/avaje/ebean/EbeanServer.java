@@ -224,7 +224,7 @@ public interface EbeanServer {
      * Create a query using the query language.
      * <p>
      * Note that you are allowed to add additional clauses using where() as well
-     * as use join() and setOrderBy() after the query has been created.
+     * as use fetch() and setOrderBy() after the query has been created.
      * </p>
      * <p>
      * Note that this method signature used to map to named queries and that has
@@ -233,7 +233,7 @@ public interface EbeanServer {
      * 
      * <pre class="code">
      *  EbeanServer ebeanServer = ... ;
-     *  String q = "find order join details where status = :st";
+     *  String q = "find order fetch details where status = :st";
      *  
      *  List&lt;Order&gt; newOrders 
      *        = ebeanServer.createQuery(Order.class, q)

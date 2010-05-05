@@ -85,7 +85,7 @@ import com.avaje.ebean.text.json.JsonContext;
  * <pre class="code">
  * // fetch shipped orders (and also their customer)
  * List&lt;Order&gt; list = Ebean.find(Order.class)
- * 	.join(&quot;customer&quot;)
+ * 	.fetch(&quot;customer&quot;)
  * 	.where() 
  * 	.eq(&quot;status.code&quot;, Order.Status.SHIPPED) 
  * 	.findList();
@@ -770,7 +770,10 @@ public final class Ebean {
      * <pre class="code">
      * 
      * // find orders and their customers 
-     * List&lt;Order&gt; list = Ebean.find(Order.class).join(&quot;customer&quot;).orderBy(&quot;id&quot;).findList();
+     * List&lt;Order&gt; list = Ebean.find(Order.class)
+     *  .fetch(&quot;customer&quot;)
+     *  .orderBy(&quot;id&quot;)
+     *  .findList();
      * 
      * // sort by customer name ascending, then by order shipDate 
      * // ... then by the order status descending 
@@ -812,12 +815,12 @@ public final class Ebean {
      * 
      * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
      * query.setId(1);
-     * query.join(&quot;customer&quot;);
-     * query.join(&quot;customer.shippingAddress&quot;);
-     * query.join(&quot;details&quot;);
+     * query.fetch(&quot;customer&quot;);
+     * query.fetch(&quot;customer.shippingAddress&quot;);
+     * query.fetch(&quot;details&quot;);
      * 
      * // fetch associated products but only fetch their product id and name
-     * query.join(&quot;details.product&quot;, &quot;name&quot;);
+     * query.fetch(&quot;details.product&quot;, &quot;name&quot;);
      * 
      * // traverse the object graph...
      * 
@@ -915,11 +918,11 @@ public final class Ebean {
     }
 
     /**
-     * Return a named Query that will have defined joins, predicates etc.
+     * Return a named Query that will have defined fetch paths, predicates etc.
      * <p>
      * The query is created from a statement that will be defined in a
      * deployment orm xml file or NamedQuery annotations. The query will
-     * typically already define joins, predicates, order by clauses etc so often
+     * typically already define fetch paths, predicates, order by clauses etc so often
      * you will just need to bind required parameters and then execute the
      * query.
      * </p>
@@ -945,7 +948,7 @@ public final class Ebean {
      * Create a query using the query language.
      * <p>
      * Note that you are allowed to add additional clauses using where() as well
-     * as use join() and setOrderBy() after the query has been created.
+     * as use fetch() and setOrderBy() after the query has been created.
      * </p>
      * <p>
      * Note that this method signature used to map to named queries and that has
@@ -954,7 +957,7 @@ public final class Ebean {
      * 
      * <pre class="code">
      * 
-     *  String q = "find order join details where status = :st";
+     *  String q = "find order fetch details where status = :st";
      *  
      *  List&lt;Order&gt; newOrders 
      *        = Ebean.createQuery(Order.class, q)
@@ -1069,7 +1072,7 @@ public final class Ebean {
     /**
      * Create a query for a type of entity bean.
      * <p>
-     * You can use the methods on the Query object to specify joins, predicates,
+     * You can use the methods on the Query object to specify fetch paths, predicates,
      * order by, limits etc.
      * </p>
      * <p>
@@ -1086,9 +1089,9 @@ public final class Ebean {
      * // Find order 2 additionally fetching the customer, details and details.product name.
      * 
      * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
-     * query.join(&quot;customer&quot;);
-     * query.join(&quot;details&quot;);
-     * query.join(&quot;detail.product&quot;, &quot;name&quot;);
+     * query.fetch(&quot;customer&quot;);
+     * query.fetch(&quot;details&quot;);
+     * query.fetch(&quot;detail.product&quot;, &quot;name&quot;);
      * query.setId(2);
      * 
      * Order order = query.findUnique();
@@ -1097,7 +1100,7 @@ public final class Ebean {
      * // Note: same query as above but using the query language 
      * // Note: using a named query would be preferred practice
      * 
-     * String oql = &quot;find order join customer join details join details.product (name) where id = :orderId &quot;;
+     * String oql = &quot;find order fetch customer fetch details fetch details.product (name) where id = :orderId &quot;;
      * 
      * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
      * query.setQuery(oql);
