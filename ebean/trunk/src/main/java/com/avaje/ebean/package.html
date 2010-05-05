@@ -26,8 +26,8 @@ Provides the main API for fetching and persisting beans with eBean.
 	Customer customer = 
 		Ebean.find(Customer.class)
 			.setId(7)
-			.join("billingAddress")
-			.join("shippingAddress")
+			.fetch("billingAddress")
+			.fetch("shippingAddress")
 			.findUnique();	
 	
 	Address billAddr = customer.getBillingAddress();
