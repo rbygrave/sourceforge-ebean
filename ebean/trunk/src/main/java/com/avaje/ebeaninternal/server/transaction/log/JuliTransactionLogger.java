@@ -19,10 +19,14 @@
  */
 package com.avaje.ebeaninternal.server.transaction.log;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebeaninternal.server.transaction.TransactionLogBuffer;
+import com.avaje.ebeaninternal.server.transaction.TransactionLogWriter;
+import com.avaje.ebeaninternal.server.transaction.TransactionLogBuffer.LogEntry;
 
 /**
  * A transactionLogger that uses a java.util.logging.Logger.
@@ -31,21 +35,37 @@ import com.avaje.ebean.config.ServerConfig;
  * </p>
  * @author rbygrave
  */
-public class JuliTransactionLogger implements TransactionLogger {
+public class JuliTransactionLogger implements TransactionLogWriter {
 
 	private static Logger logger = Logger.getLogger(JuliTransactionLogger.class.getName());
 	
-	public void close() {
-		// do nothing
-	}
+	public void log(TransactionLogBuffer logBuffer) {
+     
+	    String txnId = logBuffer.getTransactionId();
+	    
+	    List<LogEntry> messages = logBuffer.messages();
+	    for (int i = 0; i < messages.size(); i++) {
+	        LogEntry logEntry = messages.get(i);
+	        log(txnId, logEntry);
+        }
+    }
 
-	public void log(String transId, String message, Throwable ex) {
+	public void start() {
+    }
+
+    public void shutdown() {
+    }
+
+
+
+    private void log(String txnId, LogEntry entry) {
 		
-		if (transId != null && message != null && !message.startsWith("Trans[")){
-			message = "Trans["+transId+"] "+message;
+        String message = entry.getMsg();
+		if (txnId != null && message != null && !message.startsWith("Trans[")){
+			message = "Trans["+txnId+"] "+message;
 		}
 		
-		logger.log(Level.INFO, message, ex);
+		logger.log(Level.INFO, message);
 	}
 
 	

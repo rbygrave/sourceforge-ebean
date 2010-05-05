@@ -17,7 +17,7 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.util;
+package com.avaje.ebeaninternal.server.core;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -37,10 +37,16 @@ import java.util.zip.ZipEntry;
 
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.ClassUtil;
-import com.avaje.ebeaninternal.server.core.XmlConfig;
 import com.avaje.ebeaninternal.server.lib.util.Dnode;
 import com.avaje.ebeaninternal.server.lib.util.DnodeReader;
+import com.avaje.ebeaninternal.server.util.ClassPathReader;
+import com.avaje.ebeaninternal.server.util.DefaultClassPathReader;
 
+/**
+ * Used to read the orm.xml and ebean-orm.xml configuration files.
+ * 
+ * @author rbygrave
+ */
 public class XmlConfigLoader {
 
     private static final Logger logger = Logger.getLogger(XmlConfigLoader.class.getName());
@@ -129,7 +135,7 @@ public class XmlConfigLoader {
         xmlList.add(xmlDoc);
     }
     
-    private void checkDir(String searchFor, ArrayList<Dnode> xmlList, File dir) throws IOException {
+    private void checkFile(String searchFor, ArrayList<Dnode> xmlList, File dir) throws IOException {
 
         File f = new File(dir, searchFor);
         if (f.exists()){
@@ -137,18 +143,22 @@ public class XmlConfigLoader {
             BufferedInputStream is = new BufferedInputStream(fis);
             processInputStream(xmlList, is);
         }
+    }
+    
+    private void checkDir(String searchFor, ArrayList<Dnode> xmlList, File dir) throws IOException {
+
+        checkFile(searchFor, xmlList, dir);
         
         if (dir.getPath().endsWith("classes")) {
+            // see if this is part of webapp and look for META-INF/searchFor
+            // relative to the WEB-INF/classes directory
             File parent = dir.getParentFile();
             if (parent != null && parent.getPath().endsWith("WEB-INF")){
                 parent = parent.getParentFile();
                 if (parent != null){
                     File metaInf = new File(parent, "META-INF");
                     if (metaInf.exists()){
-                        
-                        FileInputStream fis = new FileInputStream(f);
-                        BufferedInputStream is = new BufferedInputStream(fis);
-                        processInputStream(xmlList, is);                        
+                        checkFile(searchFor, xmlList, metaInf);
                     }
                 }
             }
@@ -156,14 +166,21 @@ public class XmlConfigLoader {
     }
     
     private void checkJar(String searchFor, ArrayList<Dnode> xmlList, File classPath) throws IOException {
-        JarFile module = new JarFile(classPath);
+        
+        String fileName = classPath.getName();
+        if (fileName.startsWith("surefire")){
+            return;
+        }
+        JarFile module = null;
         try {
+            module = new JarFile(classPath);
             ZipEntry entry = module.getEntry(searchFor);
             if (entry != null){
                 InputStream is = module.getInputStream(entry); 
                 processInputStream(xmlList, is);
             }
-        
+        } catch (java.util.zip.ZipException e) {
+            logger.info("Error checking jar file "+fileName);
         } finally {
             if (module != null){
                 module.close();

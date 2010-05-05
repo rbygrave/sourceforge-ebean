@@ -118,16 +118,6 @@ public interface AdminLogging {
 	 * Return the overall transaction logging level.
 	 */
 	public LogLevel getLoggingLevel();
-	
-	/**
-	 * Set whether transactions share log files.
-	 */
-	public void setLogFileSharing(LogFileSharing txLogSharing);
-	
-	/**
-	 * Return the log sharing mode for transactions.
-	 */
-	public LogFileSharing getLogFileSharing();
 		
 	/**
 	 * Return the current log level for queries.

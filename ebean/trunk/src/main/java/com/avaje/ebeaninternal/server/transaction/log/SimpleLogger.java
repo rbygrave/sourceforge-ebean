@@ -28,21 +28,19 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
+
 /**
- * Default transaction logger implementation.
- * <p>
  * File based logger that can switch daily. It will include the date in the
  * files name.
- * </p>
  * <p>
  * Administration Note: If log file switching fails it will send the error to
  * standard out and standard err print streams. This is assumed to be rather
  * unlikely but possible.
  * </p>
  */
-public class DefaultTransactionLogger implements TransactionLogger {
+public class SimpleLogger {
 
-	static final Logger logger = Logger.getLogger(DefaultTransactionLogger.class.getName());
+	private static final Logger logger = Logger.getLogger(SimpleLogger.class.getName());
 	
 	/**
 	 * Used to print stack trace.
@@ -122,7 +120,7 @@ public class DefaultTransactionLogger implements TransactionLogger {
 	 * @param useFileSwitching
 	 *            if true then use daily file switching.
 	 */
-	public DefaultTransactionLogger(String dir, String logFileName, boolean useFileSwitching, String suffix) {
+	public SimpleLogger(String dir, String logFileName, boolean useFileSwitching, String suffix) {
 		this.logFileName = logFileName;
 		this.useFileSwitching = useFileSwitching;
 		this.logFileSuffix = "."+suffix;
@@ -144,7 +142,7 @@ public class DefaultTransactionLogger implements TransactionLogger {
 		}
 	}
 
-	public DefaultTransactionLogger(String dir, String logFileName, boolean useFileSwitching) {
+	public SimpleLogger(String dir, String logFileName, boolean useFileSwitching) {
 		this(dir, logFileName, useFileSwitching, "log");
 	}
 

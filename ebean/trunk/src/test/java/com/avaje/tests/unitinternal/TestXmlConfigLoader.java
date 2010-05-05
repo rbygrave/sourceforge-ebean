@@ -4,8 +4,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import com.avaje.ebeaninternal.server.core.XmlConfigLoader;
 import com.avaje.ebeaninternal.server.lib.util.Dnode;
-import com.avaje.ebeaninternal.server.util.XmlConfigLoader;
 
 public class TestXmlConfigLoader extends TestCase {
 

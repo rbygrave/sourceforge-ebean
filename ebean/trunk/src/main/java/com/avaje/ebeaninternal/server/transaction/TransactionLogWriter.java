@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2009 Authors
  * 
  * This file is part of Ebean.
  * 
@@ -17,20 +17,26 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.transaction.log;
+package com.avaje.ebeaninternal.server.transaction;
 
 /**
- * Interface for writing messages to transaction logs.
+ * Write transaction log events to a file or other destination.
  */
-public interface TransactionLogger {
-        
-    /**
-     * Log a message to the transaction log.
-     */
-    public void log(String transId, String message, Throwable ex);
+public interface TransactionLogWriter {
 
     /**
-     * Close any resources the transaction logger has open.
+     * Start the writer.
      */
-    public void close();
+    public void start();
+
+    /**
+     * Log all the messages in the buffer.
+     */
+    public void log(TransactionLogBuffer logBuffer);
+
+    /**
+     * Shutdown the writer.
+     */
+    public void shutdown();
+
 }

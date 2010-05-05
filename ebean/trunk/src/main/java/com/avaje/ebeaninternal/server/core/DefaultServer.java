@@ -358,7 +358,8 @@ public final class DefaultServer implements SpiEbeanServer {
                 logger.log(Level.SEVERE, msg, e);
             }
             
-            // collect usage statistics
+            // shutdown services
+            transactionManager.shutdown();
             autoFetchManager.shutdown();
         }
     }
