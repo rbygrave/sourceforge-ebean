@@ -33,7 +33,7 @@ import com.avaje.ebeaninternal.server.query.SplitName;
  */
 public class OrmQueryDetail implements Serializable {
 
-	private static final long serialVersionUID = -2510486880141461806L;
+	private static final long serialVersionUID = -2510486880141461807L;
 
 	/**
 	 * Root level properties.
