@@ -129,6 +129,11 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 
 	public void loadBean(EntityBeanIntercept ebi) {
 		
+	    if (desc.lazyLoadMany(ebi)){
+	        // lazy load property was a Many
+	        return;
+	    }
+	    
 		int position = ebi.getBeanLoaderIndex();
 		
 		// determine the set of beans to lazy load
