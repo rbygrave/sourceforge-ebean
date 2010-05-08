@@ -404,7 +404,10 @@ public class DeployCreateProperties {
 			Type[] typeArgs = ptype.getActualTypeArguments();
 			if (typeArgs.length == 1) {
 				// probably a Set or List
-				return (Class<?>) typeArgs[0];
+			    if (typeArgs[0] instanceof Class<?>){
+			        return (Class<?>) typeArgs[0];
+			    }
+			    throw new RuntimeException("Unexpected Parameterised Type? "+typeArgs[0]);
 			}
 			if (typeArgs.length == 2) {
 				// this is probably a Map
