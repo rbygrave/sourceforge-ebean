@@ -10,10 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
+import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.SplitName;
 
 /**
@@ -39,7 +43,7 @@ public class OrmQueryDetail implements Serializable {
 	/**
 	 * Contains the fetch/lazy/query joins and their properties.
 	 */
-	private LinkedHashMap<String, OrmQueryProperties> joins = new LinkedHashMap<String, OrmQueryProperties>(8);
+	private LinkedHashMap<String, OrmQueryProperties> fetchPaths = new LinkedHashMap<String, OrmQueryProperties>(8);
 
 	private HashSet<String> includes = new HashSet<String>(8);
 
@@ -49,10 +53,10 @@ public class OrmQueryDetail implements Serializable {
 	public OrmQueryDetail copy() {
 		OrmQueryDetail copy = new OrmQueryDetail();
 		copy.baseProps = baseProps.copy();
-		Iterator<Entry<String, OrmQueryProperties>> it = joins.entrySet().iterator();
+		Iterator<Entry<String, OrmQueryProperties>> it = fetchPaths.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, OrmQueryProperties> entry = it.next();
-			copy.joins.put(entry.getKey(), entry.getValue().copy());
+			copy.fetchPaths.put(entry.getKey(), entry.getValue().copy());
 		}
 		copy.includes = new HashSet<String>(includes);
 		return copy;
@@ -65,8 +69,8 @@ public class OrmQueryDetail implements Serializable {
 
 		int hc = (baseProps == null ? 1 : baseProps.queryPlanHash(request));
 
-		if (joins != null) {
-			Iterator<OrmQueryProperties> it = joins.values().iterator();
+		if (fetchPaths != null) {
+			Iterator<OrmQueryProperties> it = fetchPaths.values().iterator();
 			while (it.hasNext()) {
 				OrmQueryProperties p = it.next();
 				hc = hc * 31 + p.queryPlanHash(request);
@@ -90,8 +94,8 @@ public class OrmQueryDetail implements Serializable {
 
         int hc = (baseProps == null ? 1 : baseProps.autofetchPlanHash());
 
-        if (joins != null) {
-            Iterator<OrmQueryProperties> it = joins.values().iterator();
+        if (fetchPaths != null) {
+            Iterator<OrmQueryProperties> it = fetchPaths.values().iterator();
             while (it.hasNext()) {
                 OrmQueryProperties p = it.next();
                 hc = hc * 31 + p.autofetchPlanHash();
@@ -106,9 +110,9 @@ public class OrmQueryDetail implements Serializable {
 		if (baseProps != null) {
             sb.append("select ").append(baseProps);
 		} 
-		if (joins != null){
-    		for (OrmQueryProperties join : joins.values()) {
-    			sb.append(" join ").append(join);
+		if (fetchPaths != null){
+    		for (OrmQueryProperties join : fetchPaths.values()) {
+    			sb.append(" fetch ").append(join);
     		}
 		}
 		return sb.toString();
@@ -152,7 +156,7 @@ public class OrmQueryDetail implements Serializable {
 		
 		ArrayList<String> matchingPaths = new ArrayList<String>(2);
 		
-		Iterator<OrmQueryProperties> it = joins.values().iterator();
+		Iterator<OrmQueryProperties> it = fetchPaths.values().iterator();
 		while (it.hasNext()) {
 			OrmQueryProperties chunk = it.next();
 			boolean match = lazyQuery ? chunk.isLazyFetch() : chunk.isQueryFetch();
@@ -175,7 +179,7 @@ public class OrmQueryDetail implements Serializable {
 		for (int i = 0; i < matchingPaths.size(); i++) {
 			String path = matchingPaths.get(i);
 			includes.remove(path);
-			OrmQueryProperties secQuery = joins.remove(path);
+			OrmQueryProperties secQuery = fetchPaths.remove(path);
 			if (secQuery == null){
 				// the path has already been removed by another
 				// secondary query
@@ -184,7 +188,7 @@ public class OrmQueryDetail implements Serializable {
 				props.add(secQuery);
 				
 				// remove any child properties for this path
-				Iterator<OrmQueryProperties> pass2It = joins.values().iterator();
+				Iterator<OrmQueryProperties> pass2It = fetchPaths.values().iterator();
 				while (pass2It.hasNext()) {
 					OrmQueryProperties pass2Prop = pass2It.next();
 					if (secQuery.isChild(pass2Prop)){
@@ -222,7 +226,7 @@ public class OrmQueryDetail implements Serializable {
 	        tuned = true;
 	        baseProps.setTunedProperties(tunedRoot);
 	    
-    	    Iterator<OrmQueryProperties> it = tunedDetail.joins.values().iterator();    	    
+    	    Iterator<OrmQueryProperties> it = tunedDetail.fetchPaths.values().iterator();    	    
     	    while (it.hasNext()) {
                 OrmQueryProperties tunedChunk = it.next();
                 OrmQueryProperties chunk = getChunk(tunedChunk.getPath(), false);
@@ -243,7 +247,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	public void putFetchPath(OrmQueryProperties chunk) {
 		String path = chunk.getPath();
-		joins.put(path, chunk);
+		fetchPaths.put(path, chunk);
 		includes.add(path);
 	}
 	
@@ -255,7 +259,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	public void clear() {
 		includes.clear();
-		joins.clear();		
+		fetchPaths.clear();		
 	}
 
 	/**
@@ -269,6 +273,47 @@ public class OrmQueryDetail implements Serializable {
 	    chunk.setProperties(partialProps);
 	    chunk.setFetchConfig(fetchConfig);
 		return chunk;
+	}
+	
+	public void sortFetchPaths(BeanDescriptor<?> d) {
+
+	    LinkedHashMap<String, OrmQueryProperties> sorted = new LinkedHashMap<String, OrmQueryProperties>(fetchPaths.size());
+	    
+        Iterator<OrmQueryProperties> it = fetchPaths.values().iterator();
+        while (it.hasNext()) {
+            OrmQueryProperties p = it.next();
+            sortFetchPaths(d, p, sorted);
+        }
+        
+        fetchPaths = sorted;
+	}
+	
+	private void sortFetchPaths(BeanDescriptor<?> d, OrmQueryProperties p, LinkedHashMap<String, OrmQueryProperties> sorted) {
+	    
+	    String path = p.getPath();
+        if (!sorted.containsKey(path)){
+            String parentPath = p.getParentPath();
+            if (parentPath == null || sorted.containsKey(parentPath)){
+                // off root path or parent already ahead in fetch order
+                sorted.put(path, p);
+            } else {
+                OrmQueryProperties parentProp = fetchPaths.get(parentPath);
+                if (parentProp == null){
+                    ElPropertyValue el  = d.getElGetValue(parentPath);
+                    if (el == null){
+                        String msg = "Path ["+parentPath+"] not valid from "+d.getFullName();
+                        throw new PersistenceException(msg);
+                    } 
+                    // add a missing parent path just fetching the Id property
+                    BeanPropertyAssoc<?> assocOne = (BeanPropertyAssoc<?>)el.getBeanProperty();
+                    parentProp = new OrmQueryProperties(parentPath, assocOne.getTargetIdProperty());                   
+                }
+                if (parentProp != null){
+                    sortFetchPaths(d, parentProp, sorted);
+                }
+                sorted.put(path, p);
+            }
+        }
 	}
 	
 	/**
@@ -285,14 +330,16 @@ public class OrmQueryDetail implements Serializable {
 	    // flag that is set once the many fetch property is chosen
 	    boolean fetchJoinFirstMany = allowOne;
 	    
-		Iterator<String> it = joins.keySet().iterator();
+	    sortFetchPaths(beanDescriptor);
+	    
+		Iterator<String> it = fetchPaths.keySet().iterator();
 		while (it.hasNext()) {
 			String fetchPath =  it.next();
 			ElPropertyDeploy elProp = beanDescriptor.getElPropertyDeploy(fetchPath);
 			if (elProp.containsManySince(manyFetchProperty)){
 			    
 			    // this is a join to a *ToMany
-				OrmQueryProperties chunk = joins.get(fetchPath);
+				OrmQueryProperties chunk = fetchPaths.get(fetchPath);
 				if (chunk.isFetchJoin() 
 				        && !isLazyLoadManyRoot(lazyLoadManyPath, chunk)
 				        && !hasParentSecJoin(lazyLoadManyPath, chunk)) {
@@ -308,7 +355,7 @@ public class OrmQueryDetail implements Serializable {
 				}
 			}
 		}
-
+		
 		for (int i = 0; i < manyChunks.size(); i++) {
 		    // convert 'fetch joins' over to 'query joins'
 		    manyChunks.get(i).setQueryFetch(queryBatch, true);
@@ -348,7 +395,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	private OrmQueryProperties getParent(OrmQueryProperties chunk) {
 	    String parentPath = chunk.getParentPath();
-        return parentPath == null ? null : joins.get(parentPath);
+        return parentPath == null ? null : fetchPaths.get(parentPath);
 	}
 	
 	/**
@@ -367,7 +414,7 @@ public class OrmQueryDetail implements Serializable {
 			baseProps.setDefaultProperties(desc.getDefaultSelectClause(), desc.getDefaultSelectClauseSet());
 		}
 		
-		Iterator<OrmQueryProperties> it = joins.values().iterator();
+		Iterator<OrmQueryProperties> it = fetchPaths.values().iterator();
 		while (it.hasNext()) {
 			OrmQueryProperties joinProps = it.next();
 			if (!joinProps.hasSelectClause()){
@@ -389,14 +436,14 @@ public class OrmQueryDetail implements Serializable {
 	 * or any joins defined.
 	 */
 	public boolean isEmpty() {
-		return joins.isEmpty() && (baseProps == null || !baseProps.hasProperties());
+		return fetchPaths.isEmpty() && (baseProps == null || !baseProps.hasProperties());
 	}
 
 	/**
 	 * Return true if there are no joins.
 	 */
 	public boolean isJoinsEmpty() {
-		return joins.isEmpty();
+		return fetchPaths.isEmpty();
 	}
 
 	/**
@@ -416,7 +463,7 @@ public class OrmQueryDetail implements Serializable {
 		if (path == null) {
 			return baseProps;
 		}
-		OrmQueryProperties props = joins.get(path);
+		OrmQueryProperties props = fetchPaths.get(path);
 		if (create && props == null) {
 		    props = new OrmQueryProperties(path);
 			putFetchPath(props);
@@ -432,7 +479,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	public boolean includes(String path) {
 		
-		OrmQueryProperties chunk = joins.get(path);
+		OrmQueryProperties chunk = fetchPaths.get(path);
 		
 		// may not have fetch properties if just +cache etc
 		return chunk != null && !chunk.isCache();

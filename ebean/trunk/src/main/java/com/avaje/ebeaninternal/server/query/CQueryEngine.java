@@ -311,6 +311,7 @@ public class CQueryEngine {
         SpiQuery<?> query = q.getQueryRequest().getQuery();
         String loadMode = query.getLoadMode();
         String loadDesc = query.getLoadDescription();
+        String lazyLoadProp = query.getLazyLoadProperty();
         ObjectGraphNode node = query.getParentNode();
         String originKey = node == null ? null : node.getOriginQueryPoint().getKey();
         
@@ -325,6 +326,9 @@ public class CQueryEngine {
         }
         if (originKey != null) {
             msg.append("origin[").append(originKey).append("] ");
+        }
+        if (lazyLoadProp != null) {
+            msg.append("lazyLoadProp[").append(lazyLoadProp).append("] ");
         }
         if (loadDesc != null) {
             msg.append("load[").append(loadDesc).append("] ");
@@ -344,6 +348,7 @@ public class CQueryEngine {
         SpiQuery<?> query = q.getQueryRequest().getQuery();
         String loadMode = query.getLoadMode();
         String loadDesc = query.getLoadDescription();
+        String lazyLoadProp = query.getLazyLoadProperty();
         ObjectGraphNode node = query.getParentNode();
         String originKey = node == null ? null : node.getOriginQueryPoint().getKey();
         
@@ -359,6 +364,9 @@ public class CQueryEngine {
         if (originKey != null) {
             msg.append("origin[").append(originKey).append("] ");
         }
+        if (lazyLoadProp != null){
+            msg.append("lazyLoadProp[").append(lazyLoadProp).append("] ");
+        }
         if (loadDesc != null) {
             msg.append("load[").append(loadDesc).append("] ");
         }
@@ -367,7 +375,8 @@ public class CQueryEngine {
 		msg.append("] name[").append(q.getName());
 		msg.append("] predicates[").append(q.getLogWhereSql());
 		msg.append("] bind[").append(q.getBindLog()).append("]");
-
+		
+		
 		q.getTransaction().log(msg.toString());
 	}
 }

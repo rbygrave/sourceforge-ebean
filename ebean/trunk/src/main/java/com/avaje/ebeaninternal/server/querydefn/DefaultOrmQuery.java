@@ -283,6 +283,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
         return this;
     }
 
+    public String getLazyLoadProperty() {
+        return lazyLoadProperty;
+    }
+
     public void setLazyLoadProperty(String lazyLoadProperty) {
 		this.lazyLoadProperty = lazyLoadProperty;
 	}

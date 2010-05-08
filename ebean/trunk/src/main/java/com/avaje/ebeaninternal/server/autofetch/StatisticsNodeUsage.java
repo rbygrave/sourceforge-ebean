@@ -8,11 +8,12 @@ import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
+import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssoc;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
-import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
+import com.avaje.ebeaninternal.server.query.SplitName;
 
 /**
  * Collects usages statistics for a given node in the object graph.
@@ -49,8 +50,7 @@ public class StatisticsNodeUsage implements Serializable {
 		}
 	}
 	
-	
-	public void buildTunedFetch(OrmQueryDetail detail, BeanDescriptor<?> rootDesc) {
+	public void buildTunedFetch(PathProperties pathProps, BeanDescriptor<?> rootDesc) {
 		
 		synchronized(monitor){
 							
@@ -59,7 +59,7 @@ public class StatisticsNodeUsage implements Serializable {
 				ElPropertyValue elGetValue = rootDesc.getElGetValue(path);
 				if (elGetValue == null){
 					desc = null;
-					logger.warning("Can't find join for path["+path+"] for "+rootDesc.getName());
+					logger.warning("Autofetch: Can't find join for path["+path+"] for "+rootDesc.getName());
 					
 				} else {
 					BeanProperty beanProperty = elGetValue.getBeanProperty();
@@ -68,22 +68,30 @@ public class StatisticsNodeUsage implements Serializable {
 					}
 				}
 			}
-			if ((modified || queryTuningAddVersion) && desc != null){
-				BeanProperty[] versionProps = desc.propertiesVersion();
-				if (versionProps.length > 0){
-					aggregateUsed.add(versionProps[0].getName());
-				}
-			}
-			
-			String propList = aggregateUsed.toString();
-			// chop of leading "[" and trailing "]" characters
-			propList = propList.substring(1, propList.length()-1);
-							
-			if (path == null){
-				detail.select(propList);
-			} else {
-				detail.addFetch(path, propList, null);
-			}
+
+			for (String propName : aggregateUsed) {
+                BeanProperty beanProp = desc.getBeanPropertyFromPath(propName);
+                if (beanProp == null){
+                    logger.warning("Autofetch: Can't find property["+propName+"] for "+desc.getName());
+                    
+                } else {
+                    if (beanProp instanceof BeanPropertyAssoc<?>){
+                        BeanPropertyAssoc<?> assocProp = (BeanPropertyAssoc<?>)beanProp;
+                        String targetIdProp = assocProp.getTargetIdProperty();
+                        String manyPath = SplitName.add(path, assocProp.getName());
+                        pathProps.addToPath(manyPath, targetIdProp);
+                    } else {
+                        pathProps.addToPath(path, beanProp.getName());
+                    }
+                }
+            }
+
+            if ((modified || queryTuningAddVersion) && desc != null) {
+                BeanProperty[] versionProps = desc.propertiesVersion();
+                if (versionProps.length > 0) {
+                    pathProps.addToPath(path, versionProps[0].getName());
+                }
+            }
 		}
 	}
 	
