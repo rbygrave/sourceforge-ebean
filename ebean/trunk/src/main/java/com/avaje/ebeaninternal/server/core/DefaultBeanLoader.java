@@ -397,14 +397,11 @@ public class DefaultBeanLoader {
 
         SpiQuery<?> query = (SpiQuery<?>) server.createQuery(desc.getBeanType());
         
-        // don't collect autoFetch usage profiling information
-        // as we just copy the data out of these fetched beans
-        // and put the data into the original bean
-        query.setUsageProfiling(false);
-        query.setPersistenceContext(pc);
-        
         if (ebi != null) {
             if (desc.refreshFromCache(ebi, id)) {
+                return;
+            }
+            if (desc.lazyLoadMany(ebi)){
                 return;
             }
 
@@ -415,9 +412,15 @@ public class DefaultBeanLoader {
                 Object parentId = parentDesc.getId(parentBean);
                 pc.putIfAbsent(parentId, parentBean);
             }
-    
+            
             query.setLazyLoadProperty(ebi.getLazyLoadProperty());
         }
+                
+        // don't collect autoFetch usage profiling information
+        // as we just copy the data out of these fetched beans
+        // and put the data into the original bean
+        query.setUsageProfiling(false);
+        query.setPersistenceContext(pc);
 
 
 		// make sure the query doesn't use the cache and

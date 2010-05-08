@@ -1625,6 +1625,32 @@ public class BeanDescriptor<T> {
         }
         return c;
     }
+    
+    /**
+     * Return true if the lazy loading property is a Many in which case just
+     * define a Reference for the collection and not invoke a query.
+     */
+    public boolean lazyLoadMany(EntityBeanIntercept ebi) {
+        
+        String lazyLoadProperty = ebi.getLazyLoadProperty();
+        BeanProperty lazyLoadBeanProp = getBeanProperty(lazyLoadProperty);
+        
+        if (lazyLoadBeanProp instanceof BeanPropertyAssocMany<?>){
+            BeanPropertyAssocMany<?> manyProp = (BeanPropertyAssocMany<?>)lazyLoadBeanProp;
+            manyProp.createReference(ebi.getOwner());
+            Set<String> loadedProps = ebi.getLoadedProps();
+            HashSet<String> newLoadedProps = new HashSet<String>();
+            if (loadedProps != null){
+                newLoadedProps.addAll(loadedProps);
+            }
+            newLoadedProps.add(lazyLoadProperty);
+            ebi.setLoadedProps(newLoadedProps);
+            ebi.setLoadedLazy();
+            return true;
+        }
+        
+        return false;
+    }
 
     /**
      * Return a Comparator for local sorting of lists.
