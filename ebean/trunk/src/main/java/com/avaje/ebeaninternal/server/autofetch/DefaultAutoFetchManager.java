@@ -472,7 +472,7 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 			// This is a +lazy/+query query with profiling on.
 			// We continue to collect the profiling information.
 			query.setAutoFetchManager(this);
-			return false;
+			return true;
 		}
 
 		// create a query point to identify the query

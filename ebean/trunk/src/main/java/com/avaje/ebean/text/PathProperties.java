@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.text;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -148,6 +149,10 @@ public class PathProperties {
     public Set<String> getPaths() {
         return new LinkedHashSet<String>(pathMap.keySet());
     }
+    
+    public Collection<Props> getPathProps() {
+        return pathMap.values();
+    }
 
     /**
      * Apply these path properties as fetch paths to the query.
@@ -170,7 +175,7 @@ public class PathProperties {
         return rootProps;
     }
 
-    protected static class Props {
+    public static class Props {
 
         private final PathProperties owner;
 
@@ -197,25 +202,29 @@ public class PathProperties {
             return new Props(newOwner, parentPath, path, new LinkedHashSet<String>(propSet));
         }
 
+        public String getPath() {
+            return path;
+        }
+        
         public String toString() {
             return propSet.toString();
         }
 
-        protected boolean isEmpty() {
+        public boolean isEmpty() {
             return propSet.isEmpty();
         }
 
         /**
          * Return the properties for this property set.
          */
-        protected Set<String> getProperties() {
+        public Set<String> getProperties() {
             return propSet;
         }
 
         /**
          * Return the properties as a comma delimited string.
          */
-        protected String getPropertiesAsString() {
+        public String getPropertiesAsString() {
 
             StringBuilder sb = new StringBuilder();
 

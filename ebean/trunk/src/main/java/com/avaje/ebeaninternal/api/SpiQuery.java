@@ -267,6 +267,11 @@ public interface SpiQuery<T> extends Query<T> {
     public void setLazyLoadProperty(String lazyLoadProperty);
 
     /**
+     * Return the property that invoked lazy load.
+     */
+    public String getLazyLoadProperty();
+
+    /**
      * Return the lazy load path.
      */
     public String getLazyLoadManyPath();

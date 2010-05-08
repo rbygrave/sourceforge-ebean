@@ -2,6 +2,7 @@ package com.avaje.ebeaninternal.server.autofetch;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,6 +14,8 @@ import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.NodeUsageStats;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic.QueryStats;
+import com.avaje.ebean.text.PathProperties;
+import com.avaje.ebean.text.PathProperties.Props;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 
@@ -101,15 +104,25 @@ public class Statistics implements Serializable {
 			    return null;
 			}
 		    
-			OrmQueryDetail detail = new OrmQueryDetail();
+			PathProperties pathProps = new PathProperties();
 			
 			Iterator<StatisticsNodeUsage> it = nodeUsageMap.values().iterator();
 			while (it.hasNext()) {
 				StatisticsNodeUsage statsNode = it.next();
-				statsNode.buildTunedFetch(detail, rootDesc);
+				statsNode.buildTunedFetch(pathProps, rootDesc);
 			}
+
+	        OrmQueryDetail detail = new OrmQueryDetail();
+
+			Collection<Props> pathProperties = pathProps.getPathProps();
+			for (Props props : pathProperties) {
+			    if (!props.isEmpty()){
+			        detail.addFetch(props.getPath(), props.getPropertiesAsString(), null);
+			    }
+            }
 			
-			return detail;
+			detail.sortFetchPaths(rootDesc);
+            return detail;
 		}
 	}
 
