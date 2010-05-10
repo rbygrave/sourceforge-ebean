@@ -230,7 +230,9 @@ public class DefaultBeanLoader {
             pc = new DefaultPersistenceContext();    
             pc.put(parentId, parentBean);
         }
-		
+
+        SpiQuery<?> query = (SpiQuery<?>) server.createQuery(parentDesc.getBeanType());
+
 		if (refresh){
 		    // populate a new collection
 			Object emptyCollection = many.createEmpty(vanilla);
@@ -238,9 +240,10 @@ public class DefaultBeanLoader {
 			if (!vanilla && ebi != null && ebi.isSharedInstance()){
 				((BeanCollection<?>)emptyCollection).setSharedInstance();
 			}
+            query.setLoadDescription("+refresh", null);
+		} else {
+		    query.setLoadDescription("+lazy", null);
 		}
-
-		SpiQuery<?> query = (SpiQuery<?>)server.createQuery(parentDesc.getBeanType());
 		
 		if (node != null) {
 			// so we can hook back to the root query
@@ -251,9 +254,9 @@ public class DefaultBeanLoader {
 		query.select(idProperty);
 
 		if (onlyIds){
-			query.join(many.getName(), many.getTargetIdProperty());
+			query.fetch(many.getName(), many.getTargetIdProperty());
 		} else {
-			query.join(many.getName());
+			query.fetch(many.getName());
 		}
 		if (filterMany != null){
             query.setFilterMany(many.getName(), filterMany);
