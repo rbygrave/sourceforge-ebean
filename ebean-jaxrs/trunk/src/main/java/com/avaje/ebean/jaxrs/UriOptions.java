@@ -28,8 +28,45 @@ import com.avaje.ebean.text.PathProperties;
 /**
  * Used to parse a String (typically from part of a URL) into PathProperties,
  * List of Id's and sort clause which can then be applied to the JSON/XML
- * marshaling and ORM query to optimise the building and rendering of part of
- * an object graph.
+ * marshaling and ORM query to optimise the building and rendering of part of an
+ * object graph.
+ * <p>
+ * The general purpose of UriOptions is to allow the caller to optimise the
+ * content they want (the properties to fetch and render) rather than have the
+ * server side develop lots of variations with associated extra server side
+ * development, API and documentation.
+ * </p>
+ * <p>
+ * UriOptions is broken into segments based on the prefix. Each segment is optional.
+ * </p>
+ * <p>
+ * <div style="width: 70px; display: inline-block;"><b>&quot;::&quot;</b></div>
+ * - a list of Id values<br/>
+ * <div style="width: 70px; display: inline-block;"><b>&quot;:&quot;</b></div> -
+ * nested properties to fetch and render<br/>
+ * <div
+ * style="width: 70px; display: inline-block;"><b>&quot;:sort&quot;</b></div> -
+ * an order by clause to order the results<br/>
+ * </p>
+ * 
+ * <pre class="code">
+ * 
+ * Example URL:
+ * .../v1/customer::(34,35):(name,id,contacts(firstName,lastName)):sort(id desc)
+ * 
+ * The 3 segments above are broken into:
+ * 
+ * 
+ * ::(34,35) 
+ * // fetch customer 34 and 35
+ * 
+ * :(name,id,contacts(firstName,lastName))
+ * // fetch customer name, id the customer contacts firstName and lastName
+ *    
+ * :sort(id desc)
+ * // sort the customers by descending order of their Id values
+ * 
+ * </pre>
  * 
  * @author rbygrave
  * 
