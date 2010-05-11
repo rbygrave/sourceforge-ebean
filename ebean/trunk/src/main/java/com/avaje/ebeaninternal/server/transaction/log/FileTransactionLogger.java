@@ -154,7 +154,7 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
 		}
 		
 		logWriterThread = new Thread(this, threadName);
-		logWriterThread.setDaemon(false);
+		logWriterThread.setDaemon(true);
 	}
 	
 	protected void finalize() throws Throwable {
