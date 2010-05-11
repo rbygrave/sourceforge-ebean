@@ -19,46 +19,34 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
-import java.sql.SQLException;
-import java.sql.Types;
 import java.util.UUID;
 
-import com.avaje.ebean.text.TextException;
-import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 
 /**
  * ScalarType for java.util.UUID which converts to and from a VARCHAR database column.
  */
-public class ScalarTypeUUID extends ScalarTypeBase<UUID> {
+public class ScalarTypeUUID extends ScalarTypeBaseVarchar<UUID> {
 
 	public ScalarTypeUUID() {
-		super(UUID.class, false, Types.VARCHAR);
+		super(UUID.class);
 	}
-	
 		
 	@Override
 	public int getLength() {
 		return 40;
 	}
 
-	public void bind(DataBind b, UUID value) throws SQLException {
-		if (value == null){
-			b.setNull(Types.VARCHAR);
-		} else {
-			b.setString(value.toString());
-		}
-	}
+	@Override
+    public UUID convertFromDbString(String dbValue) {
+	    return UUID.fromString(dbValue);
+    }
 
-	public UUID read(DataReader dataReader) throws SQLException {
-		String str = dataReader.getString();
-		if (str == null){
-			return null;
-		} else {
-			return UUID.fromString(str);
-		}
-	}
-	
+    @Override
+    public String convertToDbString(UUID beanValue) {
+        return formatValue(beanValue);
+    }
+
 	public UUID toBeanType(Object value) {
 		return BasicTypeConverter.toUUID(value);
 	}
@@ -74,22 +62,5 @@ public class ScalarTypeUUID extends ScalarTypeBase<UUID> {
     public UUID parse(String value) {
 		return UUID.fromString(value);
 	}
-	
-	public UUID parseDateTime(long systemTimeMillis) {
-		throw new TextException("Not Supported");
-	}
-	
-	public boolean isDateTimeCapable() {
-		return false;
-	}
-	
-    public UUID jsonFromString(String value, JsonValueAdapter ctx) {
-        return parse(value);
-    }
-
-    public String jsonToString(UUID value, JsonValueAdapter ctx) {
-        String s = format(value);
-        return EscapeJson.escapeQuote(s);
-    }
 
 }

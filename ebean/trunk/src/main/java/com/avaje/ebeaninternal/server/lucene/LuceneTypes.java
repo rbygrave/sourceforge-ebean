@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Robin Bygrave
+ * Copyright (C) 2009 Authors
  * 
  * This file is part of Ebean.
  * 
@@ -17,36 +17,21 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.type;
+package com.avaje.ebeaninternal.server.lucene;
 
-import java.sql.SQLException;
-import java.sql.Types;
+public class LuceneTypes {
 
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+    public static final int STRING = 0;
+    
+    public static final int INT = 1;
+    public static final int LONG = 2;
+    public static final int DOUBLE = 3;
+    public static final int FLOAT = 4;
+    
+    public static final int DATE = 5;
+    public static final int TIMESTAMP = 6;
 
-/**
- * ScalarType for Types.BINARY to byte[].
- */
-public class ScalarTypeBytesBinary extends ScalarTypeBytesBase {
+    public static final int BINARY = 7;
 
-	public ScalarTypeBytesBinary() {
-		super(true, Types.BINARY);
-	}
-	
-	public byte[] read(DataReader dataReader) throws SQLException {
-		return dataReader.getBytes();
-	}
-
-    public int getLuceneType() {
-        return LuceneTypes.BINARY;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return value;
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return value;
-    }
-	
+    
 }

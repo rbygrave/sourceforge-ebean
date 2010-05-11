@@ -198,4 +198,10 @@ public interface ScalarType<T> extends StringParser, StringFormatter, ScalarData
 
     public void writeData(DataOutput dataOutput, Object v) throws IOException;
 
+    public Object luceneToIndexValue(Object value);
+    
+    public Object luceneFromIndexValue(Object value);
+    
+    public int getLuceneType();
+    
 }

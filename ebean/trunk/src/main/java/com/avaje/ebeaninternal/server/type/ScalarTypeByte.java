@@ -24,6 +24,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for Byte.
@@ -70,4 +71,20 @@ public class ScalarTypeByte extends ScalarTypeBase<Byte> {
 	public boolean isDateTimeCapable() {
 		return false;
 	}
+
+    public int getLuceneType() {
+        return LuceneTypes.BINARY;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        byte[] ba = new byte[1];
+        ba[0] = (Byte)value;
+        return ba;
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return ((byte[])value)[0];
+    }
+	
+	
 }

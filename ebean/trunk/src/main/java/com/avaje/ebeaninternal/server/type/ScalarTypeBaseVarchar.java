@@ -24,6 +24,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * Base ScalarType for types which converts to and from a VARCHAR database column.
@@ -34,6 +35,8 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
 		super(type, false, Types.VARCHAR);
 	}
 
+	public abstract String formatValue(T v);
+	
     public abstract T parse(String value);
     
     public abstract T convertFromDbString(String dbValue);
@@ -86,6 +89,11 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
 		return false;
 	}
 	
+    @SuppressWarnings("unchecked")
+    public String format(Object v) {
+        return formatValue((T) v);
+    }
+	   
     public T jsonFromString(String value, JsonValueAdapter ctx) {
         return parse(value);
     }
@@ -93,5 +101,19 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
     public String toJsonString(Object value, JsonValueAdapter ctx) {
         String s = format(value);
         return EscapeJson.escapeQuote(s);
+    }
+    
+    public Object luceneFromIndexValue(Object value) {
+        String v = (String)value;
+        return convertFromDbString(v);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Object luceneToIndexValue(Object value) {
+        return convertToDbString((T)value);
+    }   
+    
+    public int getLuceneType() {
+        return LuceneTypes.STRING;
     }
 }

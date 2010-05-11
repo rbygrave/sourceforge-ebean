@@ -25,6 +25,7 @@ import java.sql.Types;
 import java.util.Date;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for java.util.Date.
@@ -82,6 +83,19 @@ public class ScalarTypeUtilDate {
 		public boolean isDateTimeCapable() {
 			return true;
 		}
+
+        public int getLuceneType() {
+            return LuceneTypes.TIMESTAMP;
+        }
+
+        public Object luceneFromIndexValue(Object value) {
+            Long l = (Long)value;
+            return new java.util.Date(l);
+        }
+
+        public Object luceneToIndexValue(Object value) {
+            return ((java.util.Date)value).getTime();
+        }		
 	}
 
 	public static class DateType extends ScalarTypeBase<java.util.Date> {
@@ -136,5 +150,17 @@ public class ScalarTypeUtilDate {
 			return true;
 		}
 
+        public int getLuceneType() {
+            return LuceneTypes.DATE;
+        }
+
+        public Object luceneFromIndexValue(Object value) {
+            Long l = (Long)value;
+            return new java.util.Date(l);
+        }
+
+        public Object luceneToIndexValue(Object value) {
+            return ((java.util.Date)value).getTime();
+        }   
 	}
 }

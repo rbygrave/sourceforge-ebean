@@ -27,6 +27,7 @@ import org.joda.time.LocalDateTime;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for Joda LocalDateTime. This maps to a JDBC Timestamp.
@@ -93,4 +94,18 @@ public class ScalarTypeJodaLocalDateTime extends ScalarTypeBase<LocalDateTime> {
         Timestamp d = (Timestamp)toJdbcType(value);
         return ctx.jsonFromTimestamp(d);
     }
+    
+    public int getLuceneType() {
+        return LuceneTypes.TIMESTAMP;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        Long l = (Long)value;
+        return toBeanType(new Timestamp(l));
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        Timestamp v = (Timestamp)toJdbcType(value);
+        return v.getTime();
+    }   
 }

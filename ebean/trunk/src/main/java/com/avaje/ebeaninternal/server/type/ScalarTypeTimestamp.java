@@ -25,6 +25,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for java.sql.Timestamp.
@@ -86,5 +87,18 @@ public class ScalarTypeTimestamp extends ScalarTypeBase<Timestamp> {
     public Timestamp jsonFromString(String value, JsonValueAdapter ctx) {
         return ctx.jsonToTimestamp(value);
     }
+    
+    public int getLuceneType() {
+        return LuceneTypes.TIMESTAMP;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        Long l = (Long)value;
+        return new Timestamp(l);
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return ((Timestamp)value).getTime();
+    }   
 	
 }

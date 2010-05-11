@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for Float and float.
@@ -76,5 +77,17 @@ public class ScalarTypeFloat extends ScalarTypeBase<Float> {
         } else {
             return value.toString();
         }
+    }
+    
+    public int getLuceneType() {
+        return LuceneTypes.FLOAT;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        return value;
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return value;
     }
 }

@@ -27,6 +27,7 @@ import java.util.Iterator;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 
 
@@ -191,5 +192,17 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
     public void writeData(DataOutput dataOutput, Object v) throws IOException {
         String s = format(v);
         dataOutput.writeUTF(s);
+    }
+    
+    public int getLuceneType() {
+        return LuceneTypes.STRING;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        return parse((String)value);
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return format(value);
     }
 }
