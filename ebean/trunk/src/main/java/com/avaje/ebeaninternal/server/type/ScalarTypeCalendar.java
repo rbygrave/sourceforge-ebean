@@ -26,6 +26,7 @@ import java.sql.Types;
 import java.util.Calendar;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for java.util.Calendar.
@@ -92,5 +93,21 @@ public class ScalarTypeCalendar extends ScalarTypeBase<Calendar> {
 		return true;
 	}
 
+    public int getLuceneType() {
+        return LuceneTypes.TIMESTAMP;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        Long l = (Long)value;
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(l);
+        return c;
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        Calendar c = (Calendar)value;
+        return c.getTime().getTime();
+    }
+    
 	
 }

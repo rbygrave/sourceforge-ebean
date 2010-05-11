@@ -25,6 +25,7 @@ import java.sql.Types;
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for char.
@@ -86,5 +87,17 @@ public class ScalarTypeChar extends ScalarTypeBase<Character> {
     @Override
     public String jsonToString(Character value, JsonValueAdapter ctx) {
         return EscapeJson.escapeQuote(value.toString());
+    }
+    
+    public int getLuceneType() {
+        return LuceneTypes.STRING;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        return parse((String)value);
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return format(value);
     }
 }

@@ -21,56 +21,32 @@ package com.avaje.ebeaninternal.server.type;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
-import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
-import com.avaje.ebean.text.json.JsonValueAdapter;
 
 /**
  * ScalarType for java.net.URL which converts to and from a VARCHAR database column.
  */
-public class ScalarTypeURL extends ScalarTypeBase<URL> {
+public class ScalarTypeURL extends ScalarTypeBaseVarchar<URL> {
 
 	public ScalarTypeURL() {
-		super(URL.class, false, Types.VARCHAR);
+		super(URL.class);
 	}
 	
-	public void bind(DataBind b, URL value) throws SQLException {
-		if (value == null){
-			b.setNull(Types.VARCHAR);
-		} else {
-			b.setString(value.toString());
-		}
-	}
+	
+	@Override
+    public URL convertFromDbString(String dbValue) {
+	    try {
+            return new URL(dbValue);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Error with URL ["+dbValue+"] "+e);
+        }
+    }
 
-	public URL read(DataReader dataReader) throws SQLException {
-		String str = dataReader.getString();
-		if (str == null){
-			return null;
-		} else {
-			try {
-				return new URL(str);
-			} catch (MalformedURLException e) {
-				throw new SQLException("Error with URL ["+str+"] "+e);
-			}
-		}
-	}
-	
-	public URL toBeanType(Object value) {
-		if (value instanceof String){
-			try {
-				return new URL((String)value);
-			} catch (MalformedURLException e) {
-				throw new RuntimeException("Error with URL ["+value+"] "+e);
-			}
-		}
-		return (URL)value;
-	}
-	
-	public Object toJdbcType(Object value) {
-		return value.toString();
-	}
+    @Override
+    public String convertToDbString(URL beanValue) {
+        return formatValue(beanValue);
+    }
 
 	public String formatValue(URL v) {
         return v.toString();
@@ -83,21 +59,4 @@ public class ScalarTypeURL extends ScalarTypeBase<URL> {
 			throw new TextException(e);
 		}
 	}
-	
-	public URL parseDateTime(long systemTimeMillis) {
-		throw new TextException("Not Supported");
-	}
-	
-	public boolean isDateTimeCapable() {
-		return false;
-	}
-	
-    public URL jsonFromString(String value, JsonValueAdapter ctx) {
-        return parse(value);
-    }
-
-    public String jsonToString(URL value, JsonValueAdapter ctx) {
-        String s = format(value);
-        return EscapeJson.escapeQuote(s);
-    }
 }

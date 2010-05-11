@@ -24,6 +24,7 @@ import java.sql.Time;
 import java.sql.Types;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for java.sql.Time.
@@ -72,4 +73,16 @@ public class ScalarTypeTime extends ScalarTypeBase<Time> {
 		return true;
 	}
 
+    public int getLuceneType() {
+        return LuceneTypes.STRING;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        return parse((String)value);
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return format(value);
+    }
+	
 }

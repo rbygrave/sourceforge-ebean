@@ -25,6 +25,7 @@ import java.util.EnumSet;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 
 /**
@@ -162,6 +163,18 @@ public class ScalarTypeEnumStandard {
 	    public String jsonToString(Object value, JsonValueAdapter ctx) {
 	        return EscapeJson.escapeQuote(value.toString());
 	    }
+	    
+	    public int getLuceneType() {
+	        return LuceneTypes.STRING;
+	    }
+
+	    public Object luceneFromIndexValue(Object value) {
+	        return parse((String)value);
+	    }
+
+	    public Object luceneToIndexValue(Object value) {
+	        return format(value);
+	    }
 
 	}
 	
@@ -272,5 +285,17 @@ public class ScalarTypeEnumStandard {
 		public boolean isDateTimeCapable() {
 			return false;
 		}
+		
+	    public int getLuceneType() {
+	        return LuceneTypes.STRING;
+	    }
+
+	    public Object luceneFromIndexValue(Object value) {
+	        return parse((String)value);
+	    }
+
+	    public Object luceneToIndexValue(Object value) {
+	        return format(value);
+	    }
 	}
 }

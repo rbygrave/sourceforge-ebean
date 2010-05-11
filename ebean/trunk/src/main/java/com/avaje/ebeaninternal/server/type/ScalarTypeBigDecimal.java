@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for BigDecimal.
@@ -69,6 +70,20 @@ public class ScalarTypeBigDecimal extends ScalarTypeBase<BigDecimal> {
 
 	public boolean isDateTimeCapable() {
 		return true;
-	}	
+	}
+
+    public Object luceneFromIndexValue(Object value) {
+        Double v = (Double)value;
+        return new BigDecimal(v);
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        BigDecimal v = (BigDecimal)value;
+        return v.doubleValue();
+    }	
+	
+    public int getLuceneType() {
+        return LuceneTypes.DOUBLE;
+    }
 	
 }

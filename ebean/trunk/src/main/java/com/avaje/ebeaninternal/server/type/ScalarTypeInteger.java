@@ -28,6 +28,7 @@ import java.sql.Types;
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
+import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
 
 /**
  * ScalarType for Integer and int.
@@ -89,5 +90,17 @@ public class ScalarTypeInteger extends ScalarTypeBase<Integer> {
     
     public Integer jsonFromString(String value, JsonValueAdapter ctx) {
         return Integer.valueOf(value);
+    }
+    
+    public int getLuceneType() {
+        return LuceneTypes.INT;
+    }
+
+    public Object luceneFromIndexValue(Object value) {
+        return value;
+    }
+
+    public Object luceneToIndexValue(Object value) {
+        return value;
     }
 }
