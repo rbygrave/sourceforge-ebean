@@ -88,8 +88,10 @@ public class ImportedIdMultiple implements ImportedId {
 	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 		
 		for (int i = 0; i < imported.length; i++) {
-			Object scalarValue = imported[i].foreignProperty.getValue(bean);
-			request.bind(scalarValue, imported[i].foreignProperty, imported[i].localDbColumn, true);
+		    if (imported[i].owner.isUpdateable()) {
+    			Object scalarValue = imported[i].foreignProperty.getValue(bean);
+    			request.bind(scalarValue, imported[i].foreignProperty, imported[i].localDbColumn, true);
+		    }
 		}
 	}
 	

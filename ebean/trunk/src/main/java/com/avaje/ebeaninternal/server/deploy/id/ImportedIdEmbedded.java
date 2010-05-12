@@ -113,14 +113,17 @@ public class ImportedIdEmbedded implements ImportedId {
 		
 		if (embeddedId == null){
 			for (int i = 0; i < imported.length; i++) {
-				request.bind(null, imported[i].foreignProperty, imported[i].localDbColumn, true);
+			    if (imported[i].owner.isUpdateable()) {
+			        request.bind(null, imported[i].foreignProperty, imported[i].localDbColumn, true);
+			    }
 			}
 			
 		} else {
-		
 			for (int i = 0; i < imported.length; i++) {
-				Object scalarValue = imported[i].foreignProperty.getValue(embeddedId);
-				request.bind(scalarValue, imported[i].foreignProperty, imported[i].localDbColumn, true);
+			    if (imported[i].owner.isUpdateable()) {
+    				Object scalarValue = imported[i].foreignProperty.getValue(embeddedId);
+    				request.bind(scalarValue, imported[i].foreignProperty, imported[i].localDbColumn, true);
+			    }
 			}
 		}
 	}
