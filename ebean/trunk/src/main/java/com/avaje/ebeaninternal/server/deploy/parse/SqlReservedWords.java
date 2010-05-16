@@ -36,7 +36,7 @@ public class SqlReservedWords {
 		+",OR,ORDER,OUTER"
 		+",REAL,REF,REFERENCES"
 		+",RETURN,RETURNS"
-		+",SELECT"
+		+",SELECT,SSL"
 		+",SMALLINT,"
 		+",SYSTEM,SYSTEM_USER,TABLE"
 		+",TO"
