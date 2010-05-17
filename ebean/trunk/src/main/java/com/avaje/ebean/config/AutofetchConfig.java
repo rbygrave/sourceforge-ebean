@@ -232,6 +232,7 @@ public class AutofetchConfig {
 	 */
 	public void loadSettings(ConfigPropertyMap p){
 		
+	    logDirectory = p.get("autofetch.logDirectory", null);
 		queryTuning = p.getBoolean("autofetch.querytuning", true);
 		queryTuningAddVersion = p.getBoolean("autofetch.queryTuningAddVersion", false);
 		
