@@ -1,11 +1,17 @@
 package com.avaje.ebeaninternal.server.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.BooleanClause.Occur;
+
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
 final class NotExpression implements SpiExpression {
@@ -20,7 +26,19 @@ final class NotExpression implements SpiExpression {
 		this.exp = (SpiExpression)exp;
 	}
 	
-	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+	public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return exp.isLuceneResolvable(req);
+    }
+	
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+
+        Query innerQuery = exp.addLuceneQuery(request);
+        BooleanQuery q = new BooleanQuery();
+        q.add(innerQuery, Occur.MUST_NOT);
+        return q;
+    }
+
+    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 		exp.containsMany(desc, manyWhereJoin);
 	}
 

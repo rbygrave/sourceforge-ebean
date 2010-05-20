@@ -2,10 +2,13 @@ package com.avaje.ebeaninternal.util;
 
 import java.util.ArrayList;
 
+import org.apache.lucene.queryParser.QueryParser;
+
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
+import com.avaje.ebeaninternal.server.lucene.LIndex;
 
 public class DefaultExpressionRequest implements SpiExpressionRequest {
 
@@ -19,12 +22,24 @@ public class DefaultExpressionRequest implements SpiExpressionRequest {
 	
 	private int paramIndex;
 	
+	private LIndex luceneIndex;
+	    
 	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, DeployParser deployParser) {
 		this.queryRequest = queryRequest;
 		this.deployParser = deployParser;
 	}
+
+	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, LIndex index) {
+	    this.queryRequest = queryRequest;
+	    this.deployParser = null;
+	    this.luceneIndex = index;
+	}
 	
-	public String parseDeploy(String logicalProp) {
+	public QueryParser createQueryParser(String propertyName) {
+	    return luceneIndex.createQueryParser(propertyName);
+	}
+	
+    public String parseDeploy(String logicalProp) {
         
         String s = deployParser.getDeployWord(logicalProp);
         return s == null ? logicalProp : s;

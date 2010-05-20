@@ -25,6 +25,7 @@ import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Base class for simple expressions.
@@ -35,14 +36,35 @@ public abstract class AbstractExpression implements SpiExpression {
 
 	private static final long serialVersionUID = 4072786211853856174L;
 	
-	protected final String propertyName;
+	protected final String propName;
 	
-	protected AbstractExpression(String propertyName) {
-		this.propertyName = propertyName;
+	protected final FilterExprPath pathPrefix;
+	
+	protected AbstractExpression(FilterExprPath pathPrefix, String propName) {
+		this.pathPrefix = pathPrefix;
+	    this.propName = propName;
 	}
+
+	protected String getPropertyName() {
+	    if (pathPrefix == null){
+	        return propName;
+	    } else {
+	        String path = pathPrefix.getPath();
+	        if (path == null || path.length() == 0){
+	            return propName;
+	        } else {
+	            return path+"."+propName;
+	        }
+	    }
+	}
+	
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;//req.indexContains(propertyName);
+    }
 
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 
+	    String propertyName = getPropertyName();
 		if (propertyName != null){
 			ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
 			if (elProp != null && elProp.containsMany()){
@@ -53,6 +75,7 @@ public abstract class AbstractExpression implements SpiExpression {
 	
 	protected ElPropertyValue getElProp(SpiExpressionRequest request) {
 
+	    String propertyName = getPropertyName();
         return request.getBeanDescriptor().getElGetValue(propertyName);
     }
 }

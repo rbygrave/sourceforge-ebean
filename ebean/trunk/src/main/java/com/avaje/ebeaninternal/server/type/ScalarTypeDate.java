@@ -25,7 +25,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for java.sql.Date.
@@ -85,7 +85,7 @@ public class ScalarTypeDate extends ScalarTypeBase<java.sql.Date> {
     }
 	
     public int getLuceneType() {
-        return LuceneTypes.DATE;
+        return LLuceneTypes.DATE;
     }
 
     public Object luceneFromIndexValue(Object value) {

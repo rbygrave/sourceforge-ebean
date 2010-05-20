@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Double and double.
@@ -81,7 +81,7 @@ public class ScalarTypeDouble extends ScalarTypeBase<Double> {
     }
     
     public int getLuceneType() {
-        return LuceneTypes.DOUBLE;
+        return LLuceneTypes.DOUBLE;
     }
 
     public Object luceneFromIndexValue(Object value) {

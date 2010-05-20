@@ -154,6 +154,14 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public boolean isPopulated() {
 		return list != null;
 	}
+	
+	/**
+     * Return true if this is a reference (lazy loading) bean collection.
+     * This is the same as !isPopulated();
+     */
+    public boolean isReference() {
+        return list == null;
+    }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

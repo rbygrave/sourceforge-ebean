@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Boolean and boolean.
@@ -120,7 +120,7 @@ public class ScalarTypeLdapBoolean extends ScalarTypeBase<Boolean> {
     }
 
     public int getLuceneType() {
-        return LuceneTypes.STRING;
+        return LLuceneTypes.STRING;
     }
 
     public Object luceneFromIndexValue(Object value) {

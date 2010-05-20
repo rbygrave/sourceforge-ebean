@@ -59,11 +59,6 @@ public interface ExpressionFactory {
      */
     public String getLang();
     
-    /**
-     * Create another expression factory with a given sub path.
-     */
-    public ExpressionFactory createExpressionFactory(String path);
-
 	/**
 	 * Equal To - property equal to the given value.
 	 */
@@ -177,6 +172,16 @@ public interface ExpressionFactory {
 	public Expression contains(String propertyName, String value);
 
 	/**
+	 * Add a Lucene query expression using the default field for this index.
+	 */
+    public Expression lucene(String value);
+
+    /**
+     * Add a Lucene query expression with the propertyName as the default field.
+     */
+    public Expression lucene(String propertyName, String value);
+
+	/**
 	 * Case insensitive Contains - property like %value%. Typically uses a
 	 * lower() function to make the expression case insensitive.
 	 */
@@ -260,10 +265,20 @@ public interface ExpressionFactory {
 	/**
 	 * Return a list of expressions that will be joined by AND's.
 	 */
-	public Junction conjunction();
+	public <T> Junction<T> conjunction(Query<T> query);
 
 	/**
 	 * Return a list of expressions that will be joined by OR's.
 	 */
-	public Junction disjunction();
+	public <T> Junction<T> disjunction(Query<T> query);
+	
+	   /**
+     * Return a list of expressions that will be joined by AND's.
+     */
+    public <T> Junction<T> conjunction(Query<T> query, ExpressionList<T> parent);
+
+    /**
+     * Return a list of expressions that will be joined by OR's.
+     */
+    public <T> Junction<T> disjunction(Query<T> query, ExpressionList<T> parent);
 }

@@ -290,6 +290,17 @@ import com.avaje.ebean.config.ServerConfig;
  */
 public interface Query<T> extends Serializable {
 
+    /**
+     * How this query should use (or not) the Lucene Index if one is defined for
+     * the bean type.
+     */
+    public enum UseIndex {
+        NO,
+        DEFAULT,
+        YES_IDS,
+        YES_OBJECTS
+    }
+    
 	/**
 	 * The type of query result.
 	 */
@@ -330,6 +341,18 @@ public interface Query<T> extends Serializable {
          */
         SUBQUERY
 	}
+
+    /**
+     * Explicitly specify how this query should use a Lucene Index if one is
+     * defined for this bean type.
+     */
+    public Query<T> setUseIndex(UseIndex useIndex);
+
+    /**
+     * Return the setting for how this query should use a Lucene Index if one is
+     * defined for this bean type.
+     */
+    public UseIndex getUseIndex();
 
 	/**
 	 * Return the type of query (List, Set, Map, Bean, rowCount etc).

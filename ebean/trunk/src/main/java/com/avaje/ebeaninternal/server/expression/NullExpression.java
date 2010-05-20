@@ -1,8 +1,13 @@
 package com.avaje.ebeaninternal.server.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
 /**
@@ -14,17 +19,32 @@ class NullExpression extends AbstractExpression {
 	
 	private final boolean notNull;
 	
-	NullExpression(String propertyName, boolean notNull) {
-		super(propertyName);
+	NullExpression(FilterExprPath pathPrefix, String propertyName, boolean notNull) {
+		super(pathPrefix, propertyName);
 		this.notNull = notNull;
 	}
 	
+    @Override
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;
+    }
+
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+
+        String propertyName = getPropertyName();
+        QueryParser queryParser = request.createQueryParser(propertyName);
+        Query q = queryParser.parse("-[* TO *]");
+        return q;
+    }
+    
 	public void addBindValues(SpiExpressionRequest request) {
 		
 	}
 	
 	public void addSql(SpiExpressionRequest request) {
 		
+        String propertyName = getPropertyName();
+
 	    String nullExpr = notNull ? " is not null " : " is null ";
 	    
 	    ElPropertyValue prop = getElProp(request);
@@ -42,7 +62,7 @@ class NullExpression extends AbstractExpression {
 	public int queryAutoFetchHash() {
 		int hc = NullExpression.class.getName().hashCode();
 		hc = hc * 31 + (notNull ? 1 : 0);
-		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + propName.hashCode();
 		return hc;
 	}
 

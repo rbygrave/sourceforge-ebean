@@ -2,16 +2,30 @@ package com.avaje.ebeaninternal.api;
 
 import java.util.ArrayList;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.BooleanClause.Occur;
+
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Internal extension of ExpressionList.
  */
 public interface SpiExpressionList<T> extends ExpressionList<T> {
 
+    public boolean isLuceneResolvable(LuceneResolvableRequest req);
+    
+    public Query createLuceneQuery(SpiExpressionRequest request, Occur occur) throws ParseException;
+
+    /**
+     * Trim the path for filterMany() expressions.
+     */
+    public void trimPath(int prefixTrim);
+    
 	/**
 	 * Restore the ExpressionFactory after deserialisation.
 	 */

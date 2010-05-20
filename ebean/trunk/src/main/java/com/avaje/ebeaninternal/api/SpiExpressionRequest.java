@@ -2,6 +2,8 @@ package com.avaje.ebeaninternal.api;
 
 import java.util.ArrayList;
 
+import org.apache.lucene.queryParser.QueryParser;
+
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 
@@ -9,6 +11,14 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
  * Request object used for gathering expression sql and bind values.
  */
 public interface SpiExpressionRequest {
+
+    /**
+     * Return a new QueryParser with the default field name.
+     * <p>
+     * If propertyName is null then the default field is used.
+     * </p>
+     */
+    public QueryParser createQueryParser(String propertyName);
 
     /**
      * Parse the logical property name to the deployment name.

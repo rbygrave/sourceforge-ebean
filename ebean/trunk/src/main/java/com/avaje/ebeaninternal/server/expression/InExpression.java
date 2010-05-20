@@ -2,9 +2,13 @@ package com.avaje.ebeaninternal.server.expression;
 
 import java.util.Collection;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 class InExpression extends AbstractExpression {
 
@@ -12,15 +16,24 @@ class InExpression extends AbstractExpression {
 	
 	private final Object[] values;
 	
-	InExpression(String propertyName, Collection<?> coll){
-		super(propertyName);
+	InExpression(FilterExprPath pathPrefix, String propertyName, Collection<?> coll){
+		super(pathPrefix, propertyName);
 		values = coll.toArray(new Object[coll.size()]);
 	}
 	
-	InExpression(String propertyName, Object[] array){
-		super(propertyName);
+	InExpression(FilterExprPath pathPrefix, String propertyName, Object[] array){
+		super(pathPrefix, propertyName);
 		this.values = array;
 	}
+
+    @Override
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;
+    }
+
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
 
 	public void addBindValues(SpiExpressionRequest request) {
 	    
@@ -52,7 +65,9 @@ class InExpression extends AbstractExpression {
             request.append("1=0");
             return;
 	    }
-	    
+
+        String propertyName = getPropertyName();
+
         ElPropertyValue prop = getElProp(request);
         if (prop != null && !prop.isAssocId()) {
             prop = null;
@@ -79,7 +94,7 @@ class InExpression extends AbstractExpression {
 	 */
 	public int queryAutoFetchHash() {
 		int hc = InExpression.class.getName().hashCode() + 31 * values.length;
-	    hc = hc * 31 + propertyName.hashCode();
+	    hc = hc * 31 + propName.hashCode();
 	    return hc;
 	}
 

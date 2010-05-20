@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlType;
 import com.avaje.ebean.annotation.LdapDomain;
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.ScalarTypeConverter;
+import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
@@ -70,9 +71,12 @@ public class BootupClasses implements ClassPathSearchMatcher {
 
     private ArrayList<Class<?>> beanQueryAdapterList = new ArrayList<Class<?>>();
 
+    private ArrayList<Class<?>> luceneIndexList = new ArrayList<Class<?>>();
+
     private List<BeanPersistController> persistControllerInstances = new ArrayList<BeanPersistController>();
     private List<BeanPersistListener<?>> persistListenerInstances = new ArrayList<BeanPersistListener<?>>();
     private List<BeanQueryAdapter> queryAdapterInstances = new ArrayList<BeanQueryAdapter>();
+    private List<IndexDefn<?>> luceneIndexInstances = new ArrayList<IndexDefn<?>>();
 
     public BootupClasses() {
     }
@@ -94,6 +98,7 @@ public class BootupClasses implements ClassPathSearchMatcher {
         this.beanFinderList.addAll(parent.beanFinderList);
         this.beanListenerList.addAll(parent.beanListenerList);
         this.beanQueryAdapterList.addAll(parent.beanQueryAdapterList);
+        this.luceneIndexList.addAll(parent.luceneIndexList);
     }
 
     private void process(Iterator<Class<?>> it) {
@@ -110,6 +115,12 @@ public class BootupClasses implements ClassPathSearchMatcher {
         return new BootupClasses(this);
     }
 
+    public void addIndexDefns(List<IndexDefn<?>> indexInstances) {
+        if (indexInstances != null) {
+            this.luceneIndexInstances.addAll(indexInstances);
+        }
+    }
+    
     public void addQueryAdapters(List<BeanQueryAdapter> queryAdapterInstances) {
         if (queryAdapterInstances != null) {
             this.queryAdapterInstances.addAll(queryAdapterInstances);
@@ -179,6 +190,24 @@ public class BootupClasses implements ClassPathSearchMatcher {
         return persistControllerInstances;
     }
 
+    /**
+     * Return already constructed Lucene Index definitions.
+     */
+    public List<IndexDefn<?>> getLuceneIndexInstances() {
+        
+        for (Class<?> cls: luceneIndexList) {
+            try {
+                IndexDefn<?> indexDefn = (IndexDefn<?>)cls.newInstance();
+                luceneIndexInstances.add(indexDefn);
+            } catch (Exception e) {
+                String msg = "Error creating BeanPersistController " + cls;
+                logger.log(Level.SEVERE, msg, e);
+            }
+        }
+        
+        return luceneIndexInstances;
+    }
+    
     /**
      * Return the list of Embeddable classes.
      */
@@ -315,7 +344,12 @@ public class BootupClasses implements ClassPathSearchMatcher {
             beanQueryAdapterList.add(cls);
             interesting = true;
         }
-
+        
+        if (IndexDefn.class.isAssignableFrom(cls)) {
+            luceneIndexList.add(cls);
+            interesting = true;
+        }
+        
         return interesting;
     }
 

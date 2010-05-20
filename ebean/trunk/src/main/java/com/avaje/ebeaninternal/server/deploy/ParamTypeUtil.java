@@ -47,7 +47,8 @@ public class ParamTypeUtil {
 		if (type instanceof ParameterizedType){
 			ParameterizedType pt = (ParameterizedType)type;
 			Type rawType = pt.getRawType();
-			if (rawType.equals(matchType)){
+			boolean isAssignable = matchType.isAssignableFrom((Class<?>) rawType);
+			if (isAssignable) {
 				// assume there is only one parameter type
 				Type[] typeArguments = pt.getActualTypeArguments();
 				if (typeArguments.length != 1){

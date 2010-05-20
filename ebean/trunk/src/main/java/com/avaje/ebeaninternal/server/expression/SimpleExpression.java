@@ -1,8 +1,16 @@
 package com.avaje.ebeaninternal.server.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
+import com.avaje.ebeaninternal.server.type.ScalarType;
 
 
 class SimpleExpression extends AbstractExpression {
@@ -32,15 +40,81 @@ class SimpleExpression extends AbstractExpression {
 	
 	private final Object value;
 	
-	public SimpleExpression(String propertyName, Op type, Object value) {
-		super(propertyName);
+	public SimpleExpression(FilterExprPath pathPrefix, String propertyName, Op type, Object value) {
+		super(pathPrefix, propertyName);
 		this.type = type;
 		this.value = value;
 	}
 	
-	public String getPropertyName() {
-		return propertyName;
-	}
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        
+        String propertyName = getPropertyName();
+        
+        if (!req.indexContains(propertyName)) {
+            return false;
+        }
+        
+        ElPropertyValue prop = req.getBeanDescriptor().getElGetValue(propertyName);
+        if (prop == null){
+            return false;
+        } 
+        BeanProperty beanProperty = prop.getBeanProperty();
+        ScalarType<?> scalarType = beanProperty.getScalarType();
+        if (scalarType == null){
+            // some complex Associated One type
+            return false;
+        }
+        int luceneType = scalarType.getLuceneType();
+        if (LLuceneTypes.BINARY == luceneType){
+            return false;
+        }
+        if (LLuceneTypes.STRING == luceneType){
+            if (Op.EQ.equals(type) || Op.NOT_EQ.equals(type)){
+                return true;
+            }
+            return false;
+        }
+        if (Op.NOT_EQ.equals(type)) {
+            return false;    
+        }
+        return true;
+    }
+    
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+
+        String propertyName = getPropertyName();
+        
+        ElPropertyValue prop = getElProp(request);
+        if (prop == null){
+            throw new RuntimeException("Property not found? "+propertyName);
+        } 
+        BeanProperty beanProperty = prop.getBeanProperty();
+        ScalarType<?> scalarType = beanProperty.getScalarType();
+        
+        int luceneType = scalarType.getLuceneType();
+        if (LLuceneTypes.STRING == luceneType){
+            
+            Object lucVal = (String)scalarType.luceneToIndexValue(value);
+
+            if (Op.EQ.equals(type)){
+                QueryParser queryParser = request.createQueryParser(propertyName);
+                return queryParser.parse(lucVal.toString());
+            }
+            if (Op.NOT_EQ.equals(type)){
+                QueryParser queryParser = request.createQueryParser(propertyName);
+                return queryParser.parse("-"+propertyName+"("+lucVal.toString()+")");
+            } 
+            throw new RuntimeException("String type only supports EQ and NOT_EQ - "+type);
+        }
+        
+        // Must be a number range expression
+        LLuceneRangeExpression exp = new LLuceneRangeExpression(type, value, propertyName, luceneType);
+        return exp.buildQuery();
+    }
+
+//	public String getPropertyName() {
+//		return propertyName;
+//	}
 	
 	public void addBindValues(SpiExpressionRequest request) {
 		
@@ -70,6 +144,9 @@ class SimpleExpression extends AbstractExpression {
 	}
 	
 	public void addSql(SpiExpressionRequest request) {
+	    
+	    String propertyName = getPropertyName();
+	    
 		ElPropertyValue prop = getElProp(request);
 		if (prop != null){
 		    if (prop.isAssocId()){
@@ -91,7 +168,7 @@ class SimpleExpression extends AbstractExpression {
 	 */
 	public int queryAutoFetchHash() {
 		int hc = SimpleExpression.class.getName().hashCode();
-		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + propName.hashCode();
 		hc = hc * 31 + type.name().hashCode();
 		return hc;
 	}

@@ -40,7 +40,9 @@ import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
@@ -151,16 +153,26 @@ public class CQueryBuilder implements Constants {
 		    
 		}
 		
-		predicates.prepare(true);
-
-		SqlTree sqlTree = createSqlTree(request, predicates);
-		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
-		String sql = s.getSql();
+		String sql;
+		if (predicates.isLuceneResolvable()){
+		    //FIXME: CQueryFetchIds via Lucene
+		    SqlTree sqlTree = createLuceneSqlTree(request, predicates);
+	        queryPlan = new CQueryPlanLucene(request, sqlTree);
+	        sql = "Lucene Index";
 		
-	    // cache the query plan
-        queryPlan = new CQueryPlan(sql, sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
+		} else {
+		    // use RawSql or generated Sql
+    		predicates.prepare(true);
+    
+    		SqlTree sqlTree = createSqlTree(request, predicates);
+    		SqlLimitResponse s = buildSql(null, request, predicates, sqlTree);
+    		sql = s.getSql();
+    		
+    	    // cache the query plan
+            queryPlan = new CQueryPlan(sql, sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
+		}
+		
         request.putQueryPlan(queryPlan);
-
 		return new CQueryFetchIds(request, predicates, sql, backgroundExecutor);
 	}
 	
@@ -233,26 +245,34 @@ public class CQueryBuilder implements Constants {
 			return new CQuery<T>(request, predicates, queryPlan);
 		}
 
-		// Prepare the where, having and order by clauses. 
-		// This also parses them from logical property names to
-		// database columns and determines 'includes'. 
-		
-		// We need to check these 'includes' for extra joins 
-		// that are not included via select
-		predicates.prepare(true);
-
-		// Build the tree structure that represents the query.
-		SqlTree sqlTree = createSqlTree(request, predicates);
-		SqlLimitResponse res = buildSql(null, request, predicates, sqlTree);
-		
-		boolean rawSql = request.isRawSql();
-		if (rawSql){
-            queryPlan = new CQueryPlanRawSql(request, res, sqlTree, predicates.getLogWhereSql());
-
+		if (predicates.isLuceneResolvable()){
+		    // Use Lucene Index to resolve query
+	        SqlTree sqlTree = createLuceneSqlTree(request, predicates);
+            queryPlan = new CQueryPlanLucene(request, sqlTree);
+		                
 		} else {
-	        queryPlan = new CQueryPlan(request, res, sqlTree, rawSql, predicates.getLogWhereSql());
-		}
-		
+		    // RawSql or Generated Sql query
+		    
+    		// Prepare the where, having and order by clauses. 
+    		// This also parses them from logical property names to
+    		// database columns and determines 'includes'. 
+    		
+    		// We need to check these 'includes' for extra joins 
+    		// that are not included via select
+    		predicates.prepare(true);
+    
+    		// Build the tree structure that represents the query.
+    		SqlTree sqlTree = createSqlTree(request, predicates);
+    		SqlLimitResponse res = buildSql(null, request, predicates, sqlTree);
+    		
+    		boolean rawSql = request.isRawSql();
+    		if (rawSql){
+                queryPlan = new CQueryPlanRawSql(request, res, sqlTree, predicates.getLogWhereSql());
+    
+    		} else {
+    	        queryPlan = new CQueryPlan(request, res, sqlTree, rawSql, predicates.getLogWhereSql());
+    		}
+		}		
 		
 		// cache the query plan because we can reuse it and also 
 		// gather query performance statistics based on it.
@@ -276,51 +296,71 @@ public class CQueryBuilder implements Constants {
     private SqlTree createSqlTree(OrmQueryRequest<?> request, CQueryPredicates predicates) {
 
         if (request.isRawSql()){
-            BeanDescriptor<?> descriptor = request.getBeanDescriptor();
-            ColumnMapping columnMapping = request.getQuery().getRawSql().getColumnMapping();
-            
-            PathProperties pathProps = new PathProperties();
-            
-            // convert list of columns into (tree like) PathProperties
-            Iterator<Column> it = columnMapping.getColumns();
-            while (it.hasNext()) {
-                RawSql.ColumnMapping.Column column = it.next();
-                String propertyName = column.getPropertyName();
-                if (!RawSqlBuilder.IGNORE_COLUMN.equals(propertyName)){
-                    
-                    ElPropertyValue el = descriptor.getElGetValue(propertyName);
-                    if (el == null){
-                        String msg = "Property ["+propertyName+"] not found on "+descriptor.getFullName();
-                        throw new PersistenceException(msg);
-                    }
-                    if (el.getBeanProperty().isId()){
-                        // For @Id properties we chop off the last part of the path
-                        propertyName = SplitName.parent(propertyName);
-                    }
-                    if (propertyName != null){
-                        String[] pathProp = SplitName.split(propertyName);
-                        pathProps.addToPath(pathProp[0], pathProp[1]);
-                    }
-                }
-            }
-            
-            OrmQueryDetail detail = new OrmQueryDetail();
-            
-            // transfer PathProperties into OrmQueryDetail
-            Iterator<String> pathIt = pathProps.getPaths().iterator();
-            while (pathIt.hasNext()) {
-                String path = pathIt.next();
-                Set<String> props = pathProps.get(path);
-                detail.getChunk(path, true).setDefaultProperties(null, props);
-            }
-
-            // build SqlTree based on OrmQueryDetail of the RawSql
-            return new SqlTreeBuilder(request, predicates, detail).build();
+            return createRawSqlSqlTree(request, predicates);
         }
         
         return new SqlTreeBuilder(tableAliasPlaceHolder, columnAliasPrefix, request, predicates).build();
     }
-		
+
+    private SqlTree createLuceneSqlTree(OrmQueryRequest<?> request, CQueryPredicates predicates) {
+
+        LIndex luceneIndex = request.getLuceneIndex();
+        OrmQueryDetail ormQueryDetail = luceneIndex.getOrmQueryDetail();
+        
+        
+        // build SqlTree based on OrmQueryDetail of the LuceneIndex
+        return new SqlTreeBuilder(request, predicates, ormQueryDetail).build();
+    }
+    
+    private SqlTree createRawSqlSqlTree(OrmQueryRequest<?> request, CQueryPredicates predicates) {
+        
+        BeanDescriptor<?> descriptor = request.getBeanDescriptor();
+        ColumnMapping columnMapping = request.getQuery().getRawSql().getColumnMapping();
+        
+        PathProperties pathProps = new PathProperties();
+        
+        // convert list of columns into (tree like) PathProperties
+        Iterator<Column> it = columnMapping.getColumns();
+        while (it.hasNext()) {
+            RawSql.ColumnMapping.Column column = it.next();
+            String propertyName = column.getPropertyName();
+            if (!RawSqlBuilder.IGNORE_COLUMN.equals(propertyName)){
+                
+                ElPropertyValue el = descriptor.getElGetValue(propertyName);
+                if (el == null){
+                    String msg = "Property ["+propertyName+"] not found on "+descriptor.getFullName();
+                    throw new PersistenceException(msg);
+                }
+                BeanProperty beanProperty = el.getBeanProperty();
+                if (beanProperty.isId()){
+                    // For @Id properties we chop off the last part of the path
+                    propertyName = SplitName.parent(propertyName);
+                } else if (beanProperty instanceof BeanPropertyAssocOne<?>) {
+                    String msg = "Column ["+column.getDbColumn()+"] mapped to complex Property["+propertyName+"]";
+                    msg += ". It should be mapped to a simple property (proably the Id property). ";
+                    throw new PersistenceException(msg);                    
+                }
+                if (propertyName != null){
+                    String[] pathProp = SplitName.split(propertyName);
+                    pathProps.addToPath(pathProp[0], pathProp[1]);
+                }
+            }
+        }
+        
+        OrmQueryDetail detail = new OrmQueryDetail();
+        
+        // transfer PathProperties into OrmQueryDetail
+        Iterator<String> pathIt = pathProps.getPaths().iterator();
+        while (pathIt.hasNext()) {
+            String path = pathIt.next();
+            Set<String> props = pathProps.get(path);
+            detail.getChunk(path, true).setDefaultProperties(null, props);
+        }
+
+        // build SqlTree based on OrmQueryDetail of the RawSql
+        return new SqlTreeBuilder(request, predicates, detail).build();
+    }
+    
 	private SqlLimitResponse buildSql(String selectClause, OrmQueryRequest<?> request, CQueryPredicates predicates, SqlTree select) {
 				
 		SpiQuery<?> query = request.getQuery();

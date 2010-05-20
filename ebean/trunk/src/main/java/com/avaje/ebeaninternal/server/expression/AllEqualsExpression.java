@@ -1,10 +1,12 @@
 package com.avaje.ebeaninternal.server.expression;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
@@ -12,6 +14,7 @@ import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 class AllEqualsExpression implements SpiExpression {
 
@@ -19,33 +22,45 @@ class AllEqualsExpression implements SpiExpression {
 	
 	private final Map<String, Object> propMap;
 
-	AllEqualsExpression(Map<String, Object> map, String propertyNamePrefix) {
-	    if (propertyNamePrefix == null){
-	        this.propMap = map;
-	    } else {
-	        this.propMap = new LinkedHashMap<String,Object>();
-	        for (Entry<String,Object> entry : map.entrySet()) {
-                String pn = propertyNamePrefix+"."+entry.getKey();
-                propMap.put(pn, entry.getValue());
-            }
-	    }
+	private final FilterExprPath pathPrefix;
+	
+	AllEqualsExpression(FilterExprPath pathPrefix, Map<String, Object> propMap) {
+	    this.pathPrefix = pathPrefix;
+	    this.propMap = propMap;
 	}
 	
-	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+	public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+	    return false;
+    }
+
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
+
+    protected String name(String propName) {
+        if (pathPrefix == null){
+            return propName;
+        } else {
+            String path = pathPrefix.getPath();
+            if (path == null || path.length() == 0){
+                return propName;
+            } else {
+                return path+"."+propName;
+            }
+        }
+    }
+    
+    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 		if (propMap != null){
 			Iterator<String> it = propMap.keySet().iterator();
 			while (it.hasNext()) {
 				String propertyName = it.next();
-				ElPropertyDeploy elProp = desc.getElPropertyDeploy(propertyName);
+				ElPropertyDeploy elProp = desc.getElPropertyDeploy(name(propertyName));
 				if (elProp != null && elProp.containsMany()){
 				    manyWhereJoin.add(elProp);
 				}
 			}
 		}
-	}
-
-	public String getPropertyName() {
-		return null;
 	}
 
 	public void addBindValues(SpiExpressionRequest request) {
@@ -85,7 +100,7 @@ class AllEqualsExpression implements SpiExpression {
 				request.append("and ");
 			}
 
-			request.append(propName);
+			request.append(name(propName));
 			if (value == null) {
 				request.append(" is null ");
 			} else {

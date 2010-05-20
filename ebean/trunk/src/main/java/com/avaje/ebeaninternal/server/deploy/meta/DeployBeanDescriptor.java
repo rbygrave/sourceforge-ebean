@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
+import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
@@ -170,6 +171,8 @@ public class DeployBeanDescriptor<T> {
 	 */
 	private BeanFinder<T> beanFinder;
 
+	private IndexDefn<?> indexDefn;
+	
 	/**
 	 * The table joins for this bean. Server side only.
 	 */
@@ -195,11 +198,18 @@ public class DeployBeanDescriptor<T> {
 	 * Return true if this beanType is an abstract class.
 	 */
 	public boolean isAbstract() {
-		
 		return Modifier.isAbstract(beanType.getModifiers());
 	}
 	
-	public boolean isScalaObject() {
+	public IndexDefn<?> getIndexDefn() {
+        return indexDefn;
+    }
+
+    public void setIndexDefn(IndexDefn<?> indexDefn) {
+        this.indexDefn = indexDefn;
+    }
+
+    public boolean isScalaObject() {
 	    Class<?>[] interfaces = beanType.getInterfaces();
 	    for (int i = 0; i < interfaces.length; i++) {
 	        String iname = interfaces[i].getName();

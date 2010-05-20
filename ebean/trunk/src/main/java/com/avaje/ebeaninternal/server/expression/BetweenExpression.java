@@ -1,5 +1,10 @@
 package com.avaje.ebeaninternal.server.expression;
 
+import java.util.Set;
+
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 
@@ -14,12 +19,20 @@ class BetweenExpression extends AbstractExpression {
 	
 	private final Object valueLow;
 	
-	BetweenExpression(String propertyName, Object valLo, Object valHigh) {
-		super(propertyName);
+	BetweenExpression(FilterExprPath pathPrefix, String propertyName, Object valLo, Object valHigh) {
+		super(pathPrefix, propertyName);
 		this.valueLow = valLo;
 		this.valueHigh = valHigh;
 	}
 	
+    public boolean isLuceneResolvable(Set<String> indexedProperties) {
+        return indexedProperties.contains(getPropertyName());
+    }
+	   
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
+
 	public void addBindValues(SpiExpressionRequest request) {
 		request.addBindValue(valueLow);
 		request.addBindValue(valueHigh);
@@ -27,12 +40,12 @@ class BetweenExpression extends AbstractExpression {
 
 	public void addSql(SpiExpressionRequest request) {
 		
-		request.append(propertyName).append(BETWEEN).append(" ? and ? ");
+		request.append(getPropertyName()).append(BETWEEN).append(" ? and ? ");
 	}
 
 	public int queryAutoFetchHash() {
 		int hc = BetweenExpression.class.getName().hashCode();
-		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + propName.hashCode();
 		return hc;
 	}
 	

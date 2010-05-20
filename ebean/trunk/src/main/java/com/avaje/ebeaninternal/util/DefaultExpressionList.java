@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
+
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
@@ -23,6 +27,7 @@ import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Default implementation of ExpressionList.
@@ -35,21 +40,24 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
     private final Query<T> query;
 
-    private transient ExpressionFactory expr;
+    private final ExpressionList<T> parentExprList;
 
+    private transient ExpressionFactory expr;
+    
     private final String exprLang;
     private final String listAndStart;
     private final String listAndEnd;
     private final String listAndJoin;
 
-    public DefaultExpressionList(Query<T> query) {
-        this(query, query.getExpressionFactory());
+    public DefaultExpressionList(Query<T> query, ExpressionList<T> parentExprList) {
+        this(query, query.getExpressionFactory(), parentExprList);
     }
     
-    public DefaultExpressionList(Query<T> query, ExpressionFactory expr) {
+    public DefaultExpressionList(Query<T> query, ExpressionFactory expr, ExpressionList<T> parentExprList) {
         this.query = query;
         this.expr = expr;
         this.exprLang = expr.getLang();
+        this.parentExprList = parentExprList;
         
         if ("ldap".equals(exprLang)){
             // Language is LDAP
@@ -63,6 +71,33 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
             listAndJoin = " and ";
         }
     }
+    
+    public void trimPath(int prefixTrim) {
+        throw new RuntimeException("Only allowed on FilterExpressionList");
+    }
+    
+    public List<SpiExpression> internalList() {
+        return list;
+    }
+    
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        for (int i = 0; i < list.size(); i++) {
+            if (!list.get(i).isLuceneResolvable(req)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public org.apache.lucene.search.Query createLuceneQuery(SpiExpressionRequest request, Occur occur) throws ParseException{
+        BooleanQuery bq = new BooleanQuery();
+        for (int i = 0; i < list.size(); i++) {
+            org.apache.lucene.search.Query query = list.get(i).addLuceneQuery(request);
+            bq.add(query, occur);
+        }
+        return bq;
+    }
+
     
     /**
      * Set the ExpressionFactory.
@@ -82,7 +117,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
      * </p>
      */
     public DefaultExpressionList<T> copy(Query<T> query) {
-        DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query, expr);
+        DefaultExpressionList<T> copy = new DefaultExpressionList<T>(query, expr, null);
         copy.list.addAll(list);
         return copy;
     }
@@ -97,6 +132,10 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         }
     }
 
+    public ExpressionList<T> endJunction() {
+        return parentExprList == null ? this : parentExprList;
+    }
+    
     public Query<T> query() {
         return query;
     }
@@ -106,6 +145,10 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     }
 
     public OrderBy<T> order() {
+        return query.order();
+    }
+
+    public OrderBy<T> orderBy() {
         return query.order();
     }
 
@@ -307,8 +350,8 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         return this;
     }
 
-    public Junction conjunction() {
-        Junction conjunction = expr.conjunction();
+    public Junction<T> conjunction() {
+        Junction<T> conjunction = expr.conjunction(query, this);
         add(conjunction);
         return conjunction;
     }
@@ -317,9 +360,14 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         add(expr.contains(propertyName, value));
         return this;
     }
+    
+    public ExpressionList<T> lucene(String propertyName, String value) {
+        add(expr.lucene(propertyName, value));
+        return this;
+    }
 
-    public Junction disjunction() {
-        Junction disjunction = expr.disjunction();
+    public Junction<T> disjunction() {
+        Junction<T> disjunction = expr.disjunction(query, this);
         add(disjunction);
         return disjunction;
     }

@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbIdentity;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
+import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.validation.factory.LengthValidatorFactory;
 import com.avaje.ebean.validation.factory.NotNullValidatorFactory;
@@ -78,6 +80,9 @@ import com.avaje.ebeaninternal.server.deploy.parse.ReadAnnotations;
 import com.avaje.ebeaninternal.server.deploy.parse.TransientProperties;
 import com.avaje.ebeaninternal.server.idgen.UuidIdGenerator;
 import com.avaje.ebeaninternal.server.lib.util.Dnode;
+import com.avaje.ebeaninternal.server.lucene.LIndex;
+import com.avaje.ebeaninternal.server.lucene.LIndexFactory;
+import com.avaje.ebeaninternal.server.lucene.DefaultLuceneIndexManager;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectFactory;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectGetter;
@@ -172,11 +177,15 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     
     private final XmlConfig xmlConfig;
     
+    private final LIndexFactory luceneIndexFactory;
+    
     /**
      * Create for a given database dbConfig.
      */
-    public BeanDescriptorManager(InternalConfiguration config) {
+    public BeanDescriptorManager(InternalConfiguration config, DefaultLuceneIndexManager luceneManager) {
 
+        this.luceneIndexFactory = new LIndexFactory(luceneManager);
+        
         this.serverName = InternString.intern(config.getServerConfig().getName());
         this.cacheManager = config.getCacheManager();
         this.xmlConfig = config.getXmlConfig();
@@ -262,6 +271,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             createListeners();
             readEmbeddedDeployment();
             readEntityDeploymentInitial();
+            assignLuceneIndexDefns();
             readEntityBeanTable();
             readEntityDeploymentAssociations();
             readInheritedIdGenerators();
@@ -384,6 +394,19 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         for (BeanDescriptor<?> d : descMap.values()) {
             d.initialiseOther();
         }
+        
+        for (BeanDescriptor<?> d : descMap.values()) {
+            IndexDefn<?> luceneIndexDefn = d.getLuceneIndexDefn();
+            if (luceneIndexDefn != null){
+                try {
+                    LIndex luceneIndex = luceneIndexFactory.create(luceneIndexDefn, d);
+                    d.setLuceneIndex(luceneIndex);
+                } catch (IOException e) {
+                    String msg = "Error creating Lucene Index "+luceneIndexDefn.getClass().getName();
+                    logger.log(Level.SEVERE, msg, e);
+                }
+            }
+        }
 
         // create BeanManager for each non-embedded entity bean
         for (BeanDescriptor<?> d : descMap.values()) {
@@ -458,6 +481,33 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         return deployOrmXml.getNativeQuery(name);
     }
 
+    private void assignLuceneIndexDefns() {
+        
+        List<IndexDefn<?>> list = bootupClasses.getLuceneIndexInstances();
+        for (int i = 0; i < list.size(); i++) {
+            IndexDefn<?> indexDefn = list.get(i);
+            Class<?> entityClass = getIndexDefnEntityClass(indexDefn.getClass());
+            
+            DeployBeanInfo<?> deployBeanInfo = deplyInfoMap.get(entityClass);
+            if (deployBeanInfo == null){
+                String msg = "Could not find entity deployment for "+entityClass;
+                throw new PersistenceException(msg);                
+            }
+            deployBeanInfo.getDescriptor().setIndexDefn(indexDefn);
+        }
+    }
+    
+    private Class<?> getIndexDefnEntityClass(Class<?> controller){
+        
+        Class<?> cls = ParamTypeUtil.findParamType(controller, IndexDefn.class);
+        
+        if (cls == null){
+            String msg = "Could not determine the entity class (generics parameter type) from "+controller+" using reflection.";
+            throw new PersistenceException(msg);
+        }
+        return cls;
+    }
+    
     /**
      * Create the BeanControllers, BeanFinders and BeanListeners.
      */

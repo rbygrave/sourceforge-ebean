@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import com.avaje.ebean.ExampleExpression;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.Query;
@@ -44,9 +45,10 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return new LdapExpressionFactory();
     }
 
+    @SuppressWarnings("unchecked")
     public Expression allEq(Map<String, Object> propertyMap) {
         
-        Junction conjunction = conjunction();
+        Junction conjunction = new LdJunctionExpression.Conjunction(this);
         
         Iterator<Entry<String, Object>> it = propertyMap.entrySet().iterator();
         while (it.hasNext()) {
@@ -70,19 +72,28 @@ public class LdapExpressionFactory implements ExpressionFactory {
         throw new RuntimeException("Not Implemented");
     }
 
-    public Junction conjunction() {
-        return new LdJunctionExpression.Conjunction();
-    }
-
     public Expression contains(String propertyName, String value) {
         if (!value.endsWith("*")){
             value = "*"+value+"*";
         }
         return new LdSimpleExpression(propertyName, Op.EQ, value);
     }
+    
+    public <T> Junction<T> conjunction(Query<T> query) {
+        return new LdJunctionExpression.Conjunction<T>(query, query.where());
+    }
 
-    public Junction disjunction() {
-        return new LdJunctionExpression.Conjunction();
+
+    public <T> Junction<T> disjunction(Query<T> query) {
+        return new LdJunctionExpression.Disjunction<T>(query, query.where());
+    }
+    
+    public <T> Junction<T> conjunction(Query<T> query, ExpressionList<T> parent) {
+        return new LdJunctionExpression.Conjunction<T>(query, parent);
+    }
+
+    public <T> Junction<T> disjunction(Query<T> query, ExpressionList<T> parent) {
+        return new LdJunctionExpression.Disjunction<T>(query, parent);
     }
 
     public Expression endsWith(String propertyName, String value) {
@@ -95,7 +106,15 @@ public class LdapExpressionFactory implements ExpressionFactory {
     public Expression eq(String propertyName, Object value) {
         return new LdSimpleExpression(propertyName, Op.EQ, value);
     }
+    
+    public Expression lucene(String propertyName, String value) {
+        throw new RuntimeException("Not Implemented");
+    }
 
+    public Expression lucene(String value) {
+        throw new RuntimeException("Not Implemented");
+    }
+    
     public ExampleExpression exampleLike(Object example, boolean caseInsensitive, LikeType likeType) {
         throw new RuntimeException("Not Implemented");
     }
@@ -147,13 +166,14 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return new LdLikeExpression(propertyName, value);
     }
 
+    @SuppressWarnings("unchecked")
     public Expression in(String propertyName, Collection<?> values) {
 
         if (values == null || values.isEmpty()){
             throw new LdapPersistenceException("collection can't be empty for Ldap");
         }
         
-        Junction disjunction = disjunction();
+        Junction disjunction = new LdJunctionExpression.Disjunction(this);
         for (Object v : values) {
             disjunction.add(eq(propertyName, v));
         }
@@ -161,13 +181,14 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return disjunction;
     }
 
+    @SuppressWarnings("unchecked")
     public Expression in(String propertyName, Object[] values) {
 
         if (values == null || values.length == 0){
             throw new LdapPersistenceException("values can't be empty for Ldap");
         }
         
-        Junction disjunction = disjunction();
+        Junction disjunction = new LdJunctionExpression.Disjunction(this);
         for (Object v : values) {
             disjunction.add(eq(propertyName, v));
         }

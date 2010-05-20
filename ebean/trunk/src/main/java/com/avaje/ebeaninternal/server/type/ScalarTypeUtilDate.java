@@ -25,7 +25,7 @@ import java.sql.Types;
 import java.util.Date;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for java.util.Date.
@@ -85,7 +85,7 @@ public class ScalarTypeUtilDate {
 		}
 
         public int getLuceneType() {
-            return LuceneTypes.TIMESTAMP;
+            return LLuceneTypes.TIMESTAMP;
         }
 
         public Object luceneFromIndexValue(Object value) {
@@ -151,7 +151,7 @@ public class ScalarTypeUtilDate {
 		}
 
         public int getLuceneType() {
-            return LuceneTypes.DATE;
+            return LLuceneTypes.DATE;
         }
 
         public Object luceneFromIndexValue(Object value) {

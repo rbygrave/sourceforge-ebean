@@ -15,9 +15,11 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.event.BeanQueryRequest;
+import com.avaje.ebeaninternal.api.SpiExpressionFactory;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
+import com.avaje.ebeaninternal.server.expression.FilterExprPath;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.util.FilterExpressionList;
@@ -47,6 +49,8 @@ public class OrmQueryProperties implements Serializable {
      */
     private int lazyFetchBatch = -1;
 
+    private FetchConfig fetchConfig;
+    
     private boolean cache;
 
     private boolean readOnly;
@@ -120,10 +124,15 @@ public class OrmQueryProperties implements Serializable {
      */
     public void setFetchConfig(FetchConfig fetchConfig) {
         if (fetchConfig != null) {
+            this.fetchConfig = fetchConfig;
             lazyFetchBatch = fetchConfig.getLazyBatchSize();
             queryFetchBatch = fetchConfig.getQueryBatchSize();
             queryFetchAll = fetchConfig.isQueryAll();
         }
+    }
+    
+    public FetchConfig getFetchConfig() {
+        return fetchConfig;
     }
     
     /**
@@ -160,13 +169,26 @@ public class OrmQueryProperties implements Serializable {
     @SuppressWarnings("unchecked")
     public <T> SpiExpressionList<T> filterMany(Query<T> rootQuery) {
         if (filterMany == null){
-            ExpressionFactory queryEf = rootQuery.getExpressionFactory();
-            ExpressionFactory filterEf = queryEf.createExpressionFactory(path);
-            filterMany = new FilterExpressionList(filterEf, rootQuery);
+            FilterExprPath exprPath = new FilterExprPath(path);
+            SpiExpressionFactory queryEf = (SpiExpressionFactory)rootQuery.getExpressionFactory();
+            ExpressionFactory filterEf = queryEf.createExpressionFactory(exprPath);
+            filterMany = new FilterExpressionList(exprPath, filterEf, rootQuery);
             // by default we need to make this a 'query join' now
+            queryFetchAll = true;
             queryFetchBatch = 100;
             lazyFetchBatch = 100;
         }
+        return filterMany;
+    }
+    
+    /**
+     * Return the filterMany expression list (can be null).
+     */
+    public SpiExpressionList<?> getFilterManyTrimPath(int trimPath) {
+        if (filterMany == null){
+            return null;
+        }
+        filterMany.trimPath(trimPath);
         return filterMany;
     }
     
@@ -221,8 +243,8 @@ public class OrmQueryProperties implements Serializable {
                 OrmQueryProperties p = secondaryChildren.get(i);
                 String path = p.getPath();
                 path = path.substring(trimPath);
-                query.join(path, p.getProperties());
-                query.setFilterMany(path, p.getFilterMany());
+                query.fetch(path, p.getProperties(), p.getFetchConfig());
+                query.setFilterMany(path, p.getFilterManyTrimPath(trimPath));
             }
         }
         
@@ -255,8 +277,8 @@ public class OrmQueryProperties implements Serializable {
                 OrmQueryProperties p = secondaryChildren.get(i);
                 String path = p.getPath();
                 path = path.substring(trimlen);
-                query.join(path, p.getProperties());
-                query.setFilterMany(path, p.getFilterMany());
+                query.fetch(path, p.getProperties(), p.getFetchConfig());
+                query.setFilterMany(path, p.getFilterManyTrimPath(trimlen));
             }
         }
         

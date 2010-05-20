@@ -2,12 +2,16 @@ package com.avaje.ebeaninternal.server.expression;
 
 import java.util.List;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.util.DefaultExpressionRequest;
 
 
@@ -23,6 +27,13 @@ class IdInExpression implements SpiExpression {
 	IdInExpression(List<?> idList) {
 	    this.idList = idList;
 	}
+
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;
+    }
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
 
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 	}

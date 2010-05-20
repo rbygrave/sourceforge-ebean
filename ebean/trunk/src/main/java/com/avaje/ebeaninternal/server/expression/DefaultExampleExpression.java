@@ -3,6 +3,9 @@ package com.avaje.ebeaninternal.server.expression;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.ExampleExpression;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.event.BeanQueryRequest;
@@ -12,6 +15,7 @@ import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * A "Query By Example" type of expression.
@@ -67,6 +71,8 @@ public class DefaultExampleExpression implements SpiExpression, ExampleExpressio
 	 */
 	private ArrayList<SpiExpression> list;
 
+	private final FilterExprPath pathPrefix;
+	
 	/**
 	 * Construct the query by example expression.
 	 * 
@@ -77,13 +83,22 @@ public class DefaultExampleExpression implements SpiExpression, ExampleExpressio
 	 * @param likeType
 	 *            the type of Like wild card used
 	 */
-	public DefaultExampleExpression(Object entity, boolean caseInsensitive, LikeType likeType) {
-		this.entity = entity;
+	public DefaultExampleExpression(FilterExprPath pathPrefix, Object entity, boolean caseInsensitive, LikeType likeType) {
+		this.pathPrefix = pathPrefix;
+	    this.entity = entity;
 		this.caseInsensitive = caseInsensitive;
 		this.likeType = likeType;
 	}
 	
-	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins whereManyJoins) {
+	public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;
+    }
+
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
+
+    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins whereManyJoins) {
 		if (list != null){
 			for (int i = 0; i < list.size(); i++) {
 				list.get(i).containsMany(desc, whereManyJoins);
@@ -217,13 +232,13 @@ public class DefaultExampleExpression implements SpiExpression, ExampleExpressio
 
 			if (beanProperty.isScalar() && value != null) {
 				if (value instanceof String) {
-					list.add(new LikeExpression(propName, (String) value, caseInsensitive, likeType));
+					list.add(new LikeExpression(pathPrefix, propName, (String) value, caseInsensitive, likeType));
 				} else {
 					if (!includeZeros && isZero(value)) {
 						// exclude the zero values typically to weed out
 						// primitive int and long that initialise to 0
 					} else {
-						list.add(new SimpleExpression(propName, SimpleExpression.Op.EQ, value));
+						list.add(new SimpleExpression(pathPrefix, propName, SimpleExpression.Op.EQ, value));
 					}
 				}
 			}

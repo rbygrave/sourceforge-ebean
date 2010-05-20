@@ -7,9 +7,11 @@ import java.util.Map;
 import com.avaje.ebean.ExampleExpression;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.Query;
+import com.avaje.ebeaninternal.api.SpiExpressionFactory;
 import com.avaje.ebeaninternal.api.SpiQuery;
 
 /**
@@ -30,44 +32,44 @@ import com.avaje.ebeaninternal.api.SpiQuery;
  * </pre>
  * @see Query#where()
  */
-public class DefaultExpressionFactory implements ExpressionFactory {
+public class DefaultExpressionFactory implements SpiExpressionFactory {
 
 	private static final Object[] EMPTY_ARRAY = new Object[]{};
 
-    private final String propertyNamePrefix;
+    private final FilterExprPath prefix;
 
     public DefaultExpressionFactory() {
         this(null);
     }
 
-    public DefaultExpressionFactory(String propertyNamePrefix) {
-        this.propertyNamePrefix = propertyNamePrefix;
+    public DefaultExpressionFactory(FilterExprPath prefix) {
+        this.prefix = prefix;
     }
 
-    public ExpressionFactory createExpressionFactory(String path){
-        return new DefaultExpressionFactory(path);
+    public ExpressionFactory createExpressionFactory(FilterExprPath prefix){
+        return new DefaultExpressionFactory(prefix);
     }
     
 	public String getLang() {
         return "sql";
     }
 
-    protected String name(String propName){
-        if (propertyNamePrefix == null){
-            return propName;
-        } else {
-            return propertyNamePrefix+"."+propName;
-        }
-    }
+//    protected String name(String propName){
+//        if (propertyNamePrefix == null){
+//            return propName;
+//        } else {
+//            return propertyNamePrefix+"."+propName;
+//        }
+//    }
     
     /**
 	 * Equal To - property equal to the given value.
 	 */
 	public Expression eq(String propertyName, Object value) {
 		if (value == null) {
-			return isNull(name(propertyName));
+			return isNull(propertyName);
 		}
-		return new SimpleExpression(name(propertyName), SimpleExpression.Op.EQ, value);
+		return new SimpleExpression(prefix,propertyName, SimpleExpression.Op.EQ, value);
 	}
 
 	/**
@@ -75,9 +77,9 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression ne(String propertyName, Object value) {
 		if (value == null) {
-			return isNotNull(name(propertyName));
+			return isNotNull(propertyName);
 		}
-		return new SimpleExpression(name(propertyName), SimpleExpression.Op.NOT_EQ, value);
+		return new SimpleExpression(prefix,propertyName, SimpleExpression.Op.NOT_EQ, value);
 	}
 
 	/**
@@ -86,9 +88,9 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression ieq(String propertyName, String value) {
 		if (value == null) {
-			return isNull(name(propertyName));
+			return isNull(propertyName);
 		}
-		return new CaseInsensitiveEqualExpression(name(propertyName), value);
+		return new CaseInsensitiveEqualExpression(prefix,propertyName, value);
 	}
 
 	/**
@@ -96,7 +98,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression between(String propertyName, Object value1, Object value2) {
 		
-		return new BetweenExpression(name(propertyName), value1, value2);
+		return new BetweenExpression(prefix,propertyName, value1, value2);
 	}
 	
     /**
@@ -104,7 +106,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
      */
     public Expression betweenProperties(String lowProperty, String highProperty, Object value) {
 
-        return new BetweenPropertyExpression(name(lowProperty), name(highProperty), value);
+        return new BetweenPropertyExpression(prefix,lowProperty,highProperty, value);
     }
 	
 	/**
@@ -112,7 +114,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression gt(String propertyName, Object value) {
 
-		return new SimpleExpression(name(propertyName), SimpleExpression.Op.GT, value);
+		return new SimpleExpression(prefix,propertyName, SimpleExpression.Op.GT, value);
 	}
 
 	/**
@@ -121,7 +123,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression ge(String propertyName, Object value) {
 
-		return new SimpleExpression(name(propertyName), SimpleExpression.Op.GT_EQ, value);
+		return new SimpleExpression(prefix,propertyName, SimpleExpression.Op.GT_EQ, value);
 	}
 
 	/**
@@ -129,7 +131,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression lt(String propertyName, Object value) {
 
-		return new SimpleExpression(name(propertyName), SimpleExpression.Op.LT, value);
+		return new SimpleExpression(prefix,propertyName, SimpleExpression.Op.LT, value);
 	}
 
 	/**
@@ -137,7 +139,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression le(String propertyName, Object value) {
 
-		return new SimpleExpression(name(propertyName), SimpleExpression.Op.LT_EQ, value);
+		return new SimpleExpression(prefix,propertyName, SimpleExpression.Op.LT_EQ, value);
 	}
 
 	/**
@@ -145,7 +147,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression isNull(String propertyName) {
 
-		return new NullExpression(name(propertyName), false);
+		return new NullExpression(prefix,propertyName, false);
 	}
 
 	/**
@@ -153,28 +155,28 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 */
 	public Expression isNotNull(String propertyName) {
 
-		return new NullExpression(name(propertyName), true);
+		return new NullExpression(prefix,propertyName, true);
 	}
 
 	/**
 	 * Case insensitive {@link #exampleLike(Object)}
 	 */
 	public ExampleExpression iexampleLike(Object example) {
-		return new DefaultExampleExpression(example, true, LikeType.RAW);
+		return new DefaultExampleExpression(prefix,example, true, LikeType.RAW);
 	}
 	
 	/**
 	 * Create the query by Example expression which is case sensitive and using LikeType.RAW (you need to add you own wildcards % and _).
 	 */
 	public ExampleExpression exampleLike(Object example) {
-		return new DefaultExampleExpression(example, false, LikeType.RAW);
+		return new DefaultExampleExpression(prefix,example, false, LikeType.RAW);
 	}
 
 	/**
 	 * Create the query by Example expression specifying more options.
 	 */
 	public ExampleExpression exampleLike(Object example, boolean caseInsensitive, LikeType likeType) {
-		return new DefaultExampleExpression(example, caseInsensitive, likeType);
+		return new DefaultExampleExpression(prefix,example, caseInsensitive, likeType);
 	}
 	
 	/**
@@ -182,7 +184,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * characters % (percentage) and _ (underscore).
 	 */
 	public Expression like(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, false, LikeType.RAW);
+		return new LikeExpression(prefix,propertyName, value, false, LikeType.RAW);
 	}
 
 	/**
@@ -191,14 +193,14 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * uses a lower() function to make the expression case insensitive.
 	 */
 	public Expression ilike(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, true, LikeType.RAW);
+		return new LikeExpression(prefix,propertyName, value, true, LikeType.RAW);
 	}
 
 	/**
 	 * Starts With - property like value%.
 	 */
 	public Expression startsWith(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, false, LikeType.STARTS_WITH);
+		return new LikeExpression(prefix,propertyName, value, false, LikeType.STARTS_WITH);
 	}
 
 	/**
@@ -206,14 +208,14 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public Expression istartsWith(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, true, LikeType.STARTS_WITH);
+		return new LikeExpression(prefix,propertyName, value, true, LikeType.STARTS_WITH);
 	}
 
 	/**
 	 * Ends With - property like %value.
 	 */
 	public Expression endsWith(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, false, LikeType.ENDS_WITH);
+		return new LikeExpression(prefix,propertyName, value, false, LikeType.ENDS_WITH);
 	}
 
 	/**
@@ -221,43 +223,51 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 * lower() function to make the expression case insensitive.
 	 */
 	public Expression iendsWith(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, true, LikeType.ENDS_WITH);
+		return new LikeExpression(prefix,propertyName, value, true, LikeType.ENDS_WITH);
 	}
 
 	/**
 	 * Contains - property like %value%.
 	 */
 	public Expression contains(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, false, LikeType.CONTAINS);
+		return new LikeExpression(prefix,propertyName, value, false, LikeType.CONTAINS);
 	}
+	
+	public Expression lucene(String propertyName, String value) {
+        return new LuceneExpression(prefix,propertyName, value, true);
+    }
 
-	/**
+	public Expression lucene(String value) {
+        return new LuceneExpression(prefix, null, value, true);
+    }
+	
+    /**
 	 * Case insensitive Contains - property like %value%. Typically uses a
 	 * lower() function to make the expression case insensitive.
 	 */
 	public Expression icontains(String propertyName, String value) {
-		return new LikeExpression(name(propertyName), value, true, LikeType.CONTAINS);
+		return new LikeExpression(prefix,propertyName, value, true, LikeType.CONTAINS);
 	}
 
 	/**
 	 * In - property has a value in the array of values.
 	 */
 	public Expression in(String propertyName, Object[] values) {
-		return new InExpression(name(propertyName), values);
+		return new InExpression(prefix,propertyName, values);
 	}
 
 	/**
 	 * In - using a subQuery.
 	 */
 	public Expression in(String propertyName, Query<?> subQuery){
-		return new InQueryExpression(name(propertyName), (SpiQuery<?>)subQuery);
+		return new InQueryExpression(prefix,propertyName, (SpiQuery<?>)subQuery);
 	}
 	
 	/**
 	 * In - property has a value in the collection of values.
 	 */
 	public Expression in(String propertyName, Collection<?> values) {
-		return new InExpression(name(propertyName), values);
+		return new InExpression(prefix,propertyName, values);
 	}
 
 	/**
@@ -285,7 +295,7 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	 *            a map keyed by property names.
 	 */
 	public Expression allEq(Map<String, Object> propertyMap) {
-		return new AllEqualsExpression(propertyMap, propertyNamePrefix);
+		return new AllEqualsExpression(prefix, propertyMap);
 	}
 
 	/**
@@ -344,16 +354,33 @@ public class DefaultExpressionFactory implements ExpressionFactory {
 	/**
 	 * Return a list of expressions that will be joined by AND's.
 	 */
-	public Junction conjunction() {
+	public <T> Junction<T> conjunction(Query<T> query) {
 
-		return new JunctionExpression.Conjunction();
+		return new JunctionExpression.Conjunction<T>(query, query.where());
 	}
 
 	/**
 	 * Return a list of expressions that will be joined by OR's.
 	 */
-	public Junction disjunction() {
+	public <T> Junction<T> disjunction(Query<T> query) {
 
-		return new JunctionExpression.Disjunction();
+		return new JunctionExpression.Disjunction<T>(query, query.where());
 	}
+
+    /**
+     * Return a list of expressions that will be joined by AND's.
+     */
+    public <T> Junction<T> conjunction(Query<T> query, ExpressionList<T> parent) {
+
+        return new JunctionExpression.Conjunction<T>(query, parent);
+    }
+
+    /**
+     * Return a list of expressions that will be joined by OR's.
+     */
+    public <T> Junction<T> disjunction(Query<T> query, ExpressionList<T> parent) {
+
+        return new JunctionExpression.Disjunction<T>(query, parent);
+    }
+
 }

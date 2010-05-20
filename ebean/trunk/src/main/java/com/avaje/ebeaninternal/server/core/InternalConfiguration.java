@@ -21,6 +21,10 @@ package com.avaje.ebeaninternal.server.core;
 
 import java.util.logging.Logger;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.util.Version;
+
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.cache.ServerCacheManager;
@@ -29,6 +33,7 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.config.ldap.LdapContextFactory;
+import com.avaje.ebean.config.lucene.LuceneConfig;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.api.ClassUtil;
@@ -43,6 +48,7 @@ import com.avaje.ebeaninternal.server.deploy.parse.DeployInherit;
 import com.avaje.ebeaninternal.server.deploy.parse.DeployUtil;
 import com.avaje.ebeaninternal.server.expression.DefaultExpressionFactory;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
+import com.avaje.ebeaninternal.server.lucene.DefaultLuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.persist.DefaultPersister;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
@@ -115,6 +121,8 @@ public class InternalConfiguration {
 	
 	private final XmlConfig xmlConfig;
 	
+	private final DefaultLuceneIndexManager luceneIndexManager;
+	
 	public InternalConfiguration(XmlConfig xmlConfig, ClusterManager clusterManager, ServerCacheManager cacheManager, 
 			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, 
 			BootupClasses bootupClasses, PstmtBatch pstmtBatch) {
@@ -139,7 +147,10 @@ public class InternalConfiguration {
 		
 		this.deployCreateProperties = new DeployCreateProperties(typeManager);
 		this.deployUtil = new DeployUtil(typeManager, serverConfig);
-		this.beanDescriptorManager = new BeanDescriptorManager(this);
+		
+		this.luceneIndexManager = createLuceneManager(serverConfig);
+		
+		this.beanDescriptorManager = new BeanDescriptorManager(this, luceneIndexManager);
 		beanDescriptorManager.deploy();
 		
 		this.debugLazyLoad = new DebugLazyLoad(serverConfig.isDebugLazyLoad());
@@ -164,6 +175,26 @@ public class InternalConfiguration {
 		
 	}
 
+	private DefaultLuceneIndexManager createLuceneManager(ServerConfig serverConfig) {
+
+	    Analyzer defaultAnalyzer = null;
+	    String baseDir = null;
+	    
+	    LuceneConfig luceneConfig = serverConfig.getLuceneConfig();
+	    if (luceneConfig != null){
+	        defaultAnalyzer = luceneConfig.getDefaultAnalyzer();
+	        baseDir = luceneConfig.getBaseDirectory();
+	    }
+	    if (defaultAnalyzer == null){
+	        defaultAnalyzer = new StandardAnalyzer(Version.LUCENE_30);
+	    }
+	    if (baseDir == null){
+	        baseDir = "lucene";
+	    }
+	    
+	    return new DefaultLuceneIndexManager(defaultAnalyzer, baseDir, serverConfig.getName());
+    }
+	 
 	public JsonContext createJsonContext(SpiEbeanServer server) {
 	    
 	    String s = serverConfig.getProperty("json.pretty", "false");
@@ -178,7 +209,11 @@ public class InternalConfiguration {
         return new DJsonContext(server, va, dfltPretty);
     }
 
-	public XmlConfig getXmlConfig() {
+	public DefaultLuceneIndexManager getLuceneIndexManager() {
+        return luceneIndexManager;
+    }
+
+    public XmlConfig getXmlConfig() {
         return xmlConfig;
     }
 

@@ -2,11 +2,15 @@ package com.avaje.ebeaninternal.server.expression;
 
 import java.util.List;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.query.CQuery;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * In expression using a sub query.
@@ -21,14 +25,23 @@ class InQueryExpression extends AbstractExpression {
 
 	private transient CQuery<?> compiledSubQuery;
 
-	public InQueryExpression(String propertyName, SpiQuery<?> subQuery) {
-		super(propertyName);
+	public InQueryExpression(FilterExprPath pathPrefix, String propertyName, SpiQuery<?> subQuery) {
+		super(pathPrefix, propertyName);
 		this.subQuery = subQuery;
 	}
 
+    @Override
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;
+    }
+
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
+
 	public int queryAutoFetchHash() {
 		int hc = InQueryExpression.class.getName().hashCode();
-		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + propName.hashCode();
 		hc = hc * 31 + subQuery.queryAutofetchHash();
 		return hc;
 	}
@@ -40,7 +53,7 @@ class InQueryExpression extends AbstractExpression {
 		compiledSubQuery = compileSubQuery(request);
 
 		int hc = InQueryExpression.class.getName().hashCode();
-		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + propName.hashCode();
 		hc = hc * 31 + subQuery.queryPlanHash(request);
 		return hc;
 	}
@@ -63,6 +76,7 @@ class InQueryExpression extends AbstractExpression {
 		String subSelect = compiledSubQuery.getGeneratedSql();
 		subSelect = subSelect.replace('\n', ' ');
 		
+		String propertyName = getPropertyName();
 		request.append(" (");
 		request.append(propertyName);
 		request.append(") in (");

@@ -32,6 +32,7 @@ import javax.persistence.OptimisticLockException;
 import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebean.text.csv.CsvReader;
 import com.avaje.ebean.text.json.JsonContext;
 
@@ -115,6 +116,8 @@ public interface EbeanServer {
      * Autofetch service at runtime.
      */
     public AdminAutofetch getAdminAutofetch();
+
+    public LuceneIndex getLuceneIndex(Class<?> beanType);
 
     /**
      * Return the name. This is used with {@link Ebean#getServer(String)} to get
