@@ -133,4 +133,8 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         return prop.getPropertyName();
     }
 
+    public String getElName() {
+        return prop.getPropertyName();
+    }
+
 }

@@ -32,6 +32,10 @@ public final class IdBinderEmpty implements IdBinder {
 		
 	}
 		
+    public String getOrderBy(String pathPrefix, boolean ascending){
+        return pathPrefix;
+    }
+    
     public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
     }
     

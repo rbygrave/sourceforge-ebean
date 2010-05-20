@@ -48,6 +48,19 @@ public final class IdBinderSimple implements IdBinder {
 		// do nothing
 	}
 	
+    public String getOrderBy(String pathPrefix, boolean ascending){
+        
+        StringBuilder sb = new StringBuilder();
+        if (pathPrefix != null){
+            sb.append(pathPrefix).append(".");
+        }
+        sb.append(idProperty.getName());
+        if (!ascending){
+            sb.append(" desc");
+        }
+        return sb.toString();
+    }
+    
     public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
 
         idProperty.buildSelectExpressionChain(prefix, selectChain);            

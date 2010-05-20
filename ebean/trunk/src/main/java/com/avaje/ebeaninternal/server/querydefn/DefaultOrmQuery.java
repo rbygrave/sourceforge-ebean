@@ -948,18 +948,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return this;
 	}
 	
-	/**
-	 * Return the order by clause in a string format.
-	 * This will return null if no order by has been specified.
-	 */
-	public String getOrderByStringFormat() {
-		if (orderBy == null){
-			return null;
-		} else {
-			return orderBy.toStringFormat();
-		}
-	}
-	
 	public OrderBy<T> getOrderBy() {
 	    return orderBy;
 	}
