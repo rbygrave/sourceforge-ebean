@@ -21,7 +21,7 @@ public class TestLimitQuery extends TestCase {
 		query.setFirstRow(0);
 		query.setMaxRows(10);
 
-		Junction junc = Expr.disjunction();
+		Junction<Customer> junc = Expr.disjunction(query);
 		junc.add(Expr.like("name", "%A%"));
 		query.where(junc);
 

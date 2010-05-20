@@ -80,7 +80,7 @@ public class TestQueryLanguage extends TestCase {
         Assert.assertTrue(chunk.isCache());
         Assert.assertTrue(chunk.isReadOnly());
         
-        String orderBy = q.getOrderByStringFormat();
+        String orderBy = q.getOrderBy().toStringFormat();
         Assert.assertEquals("status", orderBy);
     }
     

@@ -28,6 +28,18 @@ public class TestEnumValueAnnotation extends TestCase {
        
         Assert.assertEquals("N", strStatus);
         
+        EBasic b2 = new EBasic();
+        b2.setName("Apple");
+        b2.setStatus(Status.NEW);
+        
+        
+        Ebean.save(b2);
+        
+        EBasic b3 = Ebean.find(EBasic.class, b2.getId());
+        b3.setName("Orange");
+        
+        Ebean.save(b3);
+        
     }
     
 }

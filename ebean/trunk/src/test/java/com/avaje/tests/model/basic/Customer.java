@@ -69,7 +69,7 @@ public class Customer extends BasicDomain {
     List<Contact> contacts;
 
 	public String toString() {
-		return id+" "+status+" "+name+" "+anniversary;
+        return id+" "+status+" "+name;
 	}
 
     /**

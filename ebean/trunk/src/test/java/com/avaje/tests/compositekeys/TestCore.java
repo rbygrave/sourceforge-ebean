@@ -1,5 +1,7 @@
 package com.avaje.tests.compositekeys;
 
+import java.util.List;
+
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
@@ -12,8 +14,6 @@ import com.avaje.tests.compositekeys.db.SubTypeKey;
 import com.avaje.tests.compositekeys.db.Type;
 import com.avaje.tests.compositekeys.db.TypeKey;
 import com.avaje.tests.lib.EbeanTestCase;
-
-import java.util.List;
 
 /**
  * Test some of the Avaje core functionality in conjunction with composite keys like
@@ -151,4 +151,12 @@ public class TestCore extends EbeanTestCase
 		assertEquals(2, items.size());
 	}
 	
+	
+    public void testFindAndOrderByEType() {
+        
+        List<Item> items = getServer().find(Item.class).order("eType").findList();
+
+        assertNotNull(items);
+        assertEquals(2, items.size());
+    }
 }

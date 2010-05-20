@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,8 +154,8 @@ public class ResetBasicData {
 
 	private Customer insertCustomerFiona() {
 		
-		Customer c = new Customer();
-		c.setName("Fiona");
+		Customer c = createCustomer("Fiona", "12 Apple St", "West Coast Rd", 1, "2009-08-31");
+
 		c.setStatus(Customer.Status.ACTIVE);
 		c.addContact(new Contact("Fiona","Black"));
 		c.addContact(new Contact("Tracy","Red"));
@@ -165,7 +166,7 @@ public class ResetBasicData {
 	
 	   private Customer insertCustomerNoContacts(String name) {
 	        
-	        Customer c = new Customer();
+	        Customer c = createCustomer("Roger", "15 Kumera Way", "Bos town", 1, "2010-04-10");
 	        c.setName(name);
 	        c.setStatus(Customer.Status.ACTIVE);
 
@@ -185,16 +186,24 @@ public class ResetBasicData {
 	}
 
     private static Customer insertCustomer(String name) {
-        Customer c = createCustomer(name, "1 Banana St", "P.O.Box 1234", 1);
+        Customer c = createCustomer(name, "1 Banana St", "P.O.Box 1234", 1, null);
         Ebean.save(c);
         return c;
     }
+
+    public static Customer createCustomer(String name, String shippingStreet, String billingStreet, int contactSuffix) {
+        return createCustomer(name, shippingStreet, billingStreet, contactSuffix, null);
+    }
     
-	public static Customer createCustomer(String name, String shippingStreet, String billingStreet, int contactSuffix) {
+	public static Customer createCustomer(String name, String shippingStreet, String billingStreet, int contactSuffix, String annDate) {
 		
 		Customer c = new Customer();
 		c.setName(name);
 		c.setStatus(Customer.Status.NEW);
+		if (annDate == null){
+		    annDate = "2010-04-14";
+		}
+		c.setAnniversary(Date.valueOf(annDate));
 		if (contactSuffix > 0){
     		c.addContact(new Contact("Jim"+contactSuffix,"Cricket"));
     		c.addContact(new Contact("Fred"+contactSuffix,"Blue"));
@@ -214,7 +223,7 @@ public class ResetBasicData {
 		if (billingStreet != null){
     		Address billingAddr = new Address();
     		billingAddr.setLine1(billingStreet);
-    		billingAddr.setLine2("Sandringham");
+    		billingAddr.setLine2("St Lukes");
     		billingAddr.setCity("Auckland");
     		billingAddr.setCountry(Ebean.getReference(Country.class, "NZ"));
     		
