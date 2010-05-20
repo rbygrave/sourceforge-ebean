@@ -357,11 +357,6 @@ public interface SpiQuery<T> extends Query<T> {
     /**
      * Return the Order By clause or null if there is none defined.
      */
-    public String getOrderByStringFormat();
-
-    /**
-     * Return the Order By clause or null if there is none defined.
-     */
     public OrderBy<T> getOrderBy();
 
     /**

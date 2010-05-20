@@ -452,6 +452,11 @@ public class CQueryPredicates {
 	    return parse(havingRawSql, havingExprSql, deployParser);
 	}
 
+	private String parseOrderBy() {
+	    
+	    return CQueryOrderBy.parse(request.getBeanDescriptor(), query);
+	}
+	
 	/**
 	 * There is a many property so we need to make sure the ordering is
 	 * appropriate.
@@ -459,10 +464,10 @@ public class CQueryPredicates {
 	private String deriveOrderByWithMany(BeanPropertyAssocMany<?> manyProp) {
 
 		if (manyProp == null) {
-			return query.getOrderByStringFormat();
+			return parseOrderBy();
 		}
 
-		String orderBy = query.getOrderByStringFormat();
+		String orderBy = parseOrderBy();
 
 		BeanDescriptor<?> desc = request.getBeanDescriptor();
 		String orderById = desc.getDefaultOrderBy();

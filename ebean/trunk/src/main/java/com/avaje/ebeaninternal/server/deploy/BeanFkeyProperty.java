@@ -81,6 +81,10 @@ public final class BeanFkeyProperty implements ElPropertyValue {
         return name;
     }
 
+    public String getElName() {
+        return name;
+    }
+
     /**
      * Returns null as not an AssocOne.
      */

@@ -153,7 +153,11 @@ public class ElPropertyChain implements ElPropertyValue {
 		return name;
 	}
 	
-	public String getElPlaceholder(boolean encrypted) {
+	public String getElName() {
+        return expression;
+    }
+
+    public String getElPlaceholder(boolean encrypted) {
 	    return encrypted ? placeHolderEncrypted : placeHolder;
 	}
 	

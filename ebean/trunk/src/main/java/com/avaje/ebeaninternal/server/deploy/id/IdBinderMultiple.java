@@ -66,6 +66,23 @@ public final class IdBinderMultiple implements IdBinder {
 		// do nothing
 	}
 	
+    public String getOrderBy(String pathPrefix, boolean ascending){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < props.length; i++) {
+            if (i > 0) {
+                sb.append(" ");
+            }
+            if (pathPrefix != null){
+                sb.append(pathPrefix).append(".");
+            }
+            sb.append(props[i].getName());
+            if (!ascending){
+                sb.append(" desc");
+            }
+        }
+        return sb.toString();
+    }
+    
     public void createLdapNameById(LdapName name, Object id) throws InvalidNameException {
         
         if (id instanceof Map<?,?> == false){

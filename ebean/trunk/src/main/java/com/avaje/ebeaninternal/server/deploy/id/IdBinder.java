@@ -69,6 +69,8 @@ public interface IdBinder {
 	 */
 	public String getDefaultOrderBy();
 	
+	public String getOrderBy(String pathPrefix, boolean ascending);
+	
 	/**
 	 * Return the values as an array of scalar bindable values.
 	 * <p>

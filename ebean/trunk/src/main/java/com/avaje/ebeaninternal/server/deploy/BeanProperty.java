@@ -902,6 +902,10 @@ public class BeanProperty implements ElPropertyValue {
         return name;
     }
 
+    public String getElName() {
+        return name;
+    }
+    
     /**
      * This is a full ElGetValue.
      */
