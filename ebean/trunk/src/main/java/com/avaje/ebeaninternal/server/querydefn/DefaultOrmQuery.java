@@ -85,6 +85,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private String name;
 	
+	private UseIndex useIndex;
+	
 	private Type type;
 	
 	private Mode mode = Mode.NORMAL;
@@ -445,7 +447,16 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.type = type;
 	}
 
-	public String getLoadDescription() {
+	public UseIndex getUseIndex() {
+        return useIndex;
+    }
+
+    public DefaultOrmQuery<T> setUseIndex(UseIndex useIndex) {
+        this.useIndex = useIndex;
+        return this;
+    }
+
+    public String getLoadDescription() {
 		return loadDescription;
 	}
 
@@ -704,6 +715,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return sqlSelect;
 	}
 
+    public boolean isRawSql() {
+        return rawSql != null;
+    }
+    
 	/**
 	 * Return any additional where clauses.
 	 */
@@ -944,6 +959,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 			return orderBy.toStringFormat();
 		}
 	}
+	
+	public OrderBy<T> getOrderBy() {
+	    return orderBy;
+	}
 
 	/**
 	 * Return the order by clause.
@@ -1153,7 +1172,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> where(Expression expression) {
 		if (whereExpressions == null) {
-			whereExpressions = new DefaultExpressionList<T>(this);
+			whereExpressions = new DefaultExpressionList<T>(this, null);
 		}
 		whereExpressions.add(expression);
 		return this;
@@ -1161,7 +1180,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public ExpressionList<T> where() {
 		if (whereExpressions == null) {
-			whereExpressions = new DefaultExpressionList<T>(this);
+			whereExpressions = new DefaultExpressionList<T>(this, null);
 		}
 		return whereExpressions;
 	}
@@ -1203,7 +1222,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> having(Expression expression) {
 		if (havingExpressions == null) {
-			havingExpressions = new DefaultExpressionList<T>(this);
+			havingExpressions = new DefaultExpressionList<T>(this, null);
 		}
 		havingExpressions.add(expression);
 		return this;
@@ -1211,7 +1230,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public ExpressionList<T> having() {
 		if (havingExpressions == null) {
-			havingExpressions = new DefaultExpressionList<T>(this);
+			havingExpressions = new DefaultExpressionList<T>(this, null);
 		}
 		return havingExpressions;
 	}

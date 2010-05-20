@@ -27,7 +27,7 @@ import org.joda.time.LocalDate;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda LocalDate. This maps to a JDBC Date.
@@ -96,7 +96,7 @@ public class ScalarTypeJodaLocalDate extends ScalarTypeBase<LocalDate> {
     }
 
     public int getLuceneType() {
-        return LuceneTypes.DATE;
+        return LLuceneTypes.DATE;
     }
 
     public Object luceneFromIndexValue(Object value) {

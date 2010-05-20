@@ -81,7 +81,17 @@ public interface ExpressionList<T> extends Serializable {
      * </p>
      */
     public OrderBy<T> order();
-
+    
+    /**
+     * Return the OrderBy so that you can append an ascending or descending
+     * property to the order by clause.
+     * <p>
+     * This will never return a null. If no order by clause exists then an
+     * 'empty' OrderBy object is returned.
+     * </p>
+     */
+    public OrderBy<T> orderBy();
+    
     /**
      * Add an orderBy clause to the query.
      * 
@@ -270,6 +280,8 @@ public interface ExpressionList<T> extends Serializable {
      */
     public ExpressionList<T> where();
 
+
+
     /**
      * Add an Expression to the list.
      * <p>
@@ -434,6 +446,8 @@ public interface ExpressionList<T> extends Serializable {
      */
     public ExpressionList<T> contains(String propertyName, String value);
 
+    public ExpressionList<T> lucene(String propertyName, String value);
+
     /**
      * Case insensitive Contains - property like %value%. Typically uses a
      * lower() function to make the expression case insensitive.
@@ -533,10 +547,19 @@ public interface ExpressionList<T> extends Serializable {
     /**
      * Return a list of expressions that will be joined by AND's.
      */
-    public Junction conjunction();
+    public Junction<T> conjunction();
 
     /**
      * Return a list of expressions that will be joined by OR's.
      */
-    public Junction disjunction();
+    public Junction<T> disjunction();
+
+    /**
+     * End a Conjunction or Disjunction returning the parent expression list.
+     * <p>
+     * Alternatively you can always use where() to return the top level expression list.
+     * </p>
+     */
+    public ExpressionList<T> endJunction();
+
 }

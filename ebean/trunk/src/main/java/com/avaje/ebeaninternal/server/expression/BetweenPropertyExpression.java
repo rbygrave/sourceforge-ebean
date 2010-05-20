@@ -19,12 +19,16 @@
  */
 package com.avaje.ebeaninternal.server.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Between expression where a value is between two properties.
@@ -37,24 +41,48 @@ class BetweenPropertyExpression implements SpiExpression {
 
     private static final String BETWEEN = " between ";
 
+    private final FilterExprPath pathPrefix;
     private final String lowProperty;
     private final String highProperty;
     private final Object value;
 
-    BetweenPropertyExpression(String lowProperty, String highProperty, Object value) {
+    BetweenPropertyExpression(FilterExprPath pathPrefix, String lowProperty, String highProperty, Object value) {
+        this.pathPrefix = pathPrefix;
         this.lowProperty = lowProperty;
         this.highProperty = highProperty;
         this.value = value;
     }
 
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return false;
+    }
+    
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
+
+    protected String name(String propName) {
+        if (pathPrefix == null){
+            return propName;
+        } else {
+            String path = pathPrefix.getPath();
+            if (path == null || path.length() == 0){
+                return propName;
+            } else {
+                return path+"."+propName;
+            }
+        }
+    }
+
     public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 
-        ElPropertyDeploy elProp = desc.getElPropertyDeploy(lowProperty);
+        
+        ElPropertyDeploy elProp = desc.getElPropertyDeploy(name(lowProperty));
         if (elProp != null && elProp.containsMany()) {
             manyWhereJoin.add(elProp);
         }
 
-        elProp = desc.getElPropertyDeploy(highProperty);
+        elProp = desc.getElPropertyDeploy(name(highProperty));
         if (elProp != null && elProp.containsMany()) {
             manyWhereJoin.add(elProp);
         }
@@ -66,7 +94,9 @@ class BetweenPropertyExpression implements SpiExpression {
 
     public void addSql(SpiExpressionRequest request) {
 
-        request.append(" ? ").append(BETWEEN).append(lowProperty).append(" and ").append(highProperty);
+        request.append(" ? ").append(BETWEEN)
+            .append(name(lowProperty))
+            .append(" and ").append(name(highProperty));
     }
 
     public int queryAutoFetchHash() {

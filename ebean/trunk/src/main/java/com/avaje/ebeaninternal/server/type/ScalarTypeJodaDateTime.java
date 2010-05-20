@@ -27,7 +27,7 @@ import org.joda.time.DateTime;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda DateTime. This maps to a JDBC Timestamp.
@@ -96,7 +96,7 @@ public class ScalarTypeJodaDateTime extends ScalarTypeBase<DateTime> {
     }
     
     public int getLuceneType() {
-        return LuceneTypes.TIMESTAMP;
+        return LLuceneTypes.TIMESTAMP;
     }
 
     public Object luceneFromIndexValue(Object value) {

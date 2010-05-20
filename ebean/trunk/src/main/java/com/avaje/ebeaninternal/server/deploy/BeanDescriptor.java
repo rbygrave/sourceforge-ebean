@@ -51,6 +51,7 @@ import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
+import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
@@ -76,6 +77,7 @@ import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.ldap.LdapPersistenceException;
+import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.persist.DmlUtil;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.SplitName;
@@ -216,6 +218,8 @@ public class BeanDescriptor<T> {
      */
     private final BeanFinder<T> beanFinder;
 
+    private final IndexDefn<?> luceneIndexDefn;
+    
     /**
      * The table joins for this bean.
      */
@@ -229,7 +233,7 @@ public class BeanDescriptor<T> {
     /**
      * Derived list of properties that make up the unique id.
      */
-    final BeanProperty[] propertiesId;
+    private final BeanProperty[] propertiesId;
 
     /**
      * Derived list of properties that are used for version concurrency
@@ -388,6 +392,8 @@ public class BeanDescriptor<T> {
     
     private final String descriptorId;
     
+    private LIndex luceneIndex;
+    
     /**
      * Construct the BeanDescriptor.
      */
@@ -396,6 +402,7 @@ public class BeanDescriptor<T> {
         this.owner = owner;
         this.cacheManager = owner.getCacheManager();
         this.serverName = owner.getServerName();
+        this.luceneIndexDefn = deploy.getIndexDefn();
         this.entityType = deploy.getEntityType();
         this.name = InternString.intern(deploy.getName());
         this.baseTableAlias = InternString.intern(name.substring(0, 1).toLowerCase());
@@ -617,6 +624,27 @@ public class BeanDescriptor<T> {
      */
     public EntityType getEntityType() {
         return entityType;
+    }
+
+    /**
+     * Return the Lucene Index Definition.
+     */
+    public IndexDefn<?> getLuceneIndexDefn() {
+        return luceneIndexDefn;
+    }
+
+    /**
+     * Return the Lucene Index for this bean type (can be null).
+     */
+    public LIndex getLuceneIndex() {
+        return luceneIndex;
+    }
+    
+    /**
+     * Sets the Lucene Index once it has been created.
+     */
+    public void setLuceneIndex(LIndex luceneIndex) {
+        this.luceneIndex = luceneIndex;
     }
 
     /**

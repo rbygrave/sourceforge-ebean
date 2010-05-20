@@ -65,37 +65,8 @@ public interface DataReader {
 
     public java.sql.Timestamp getTimestamp() throws SQLException;
 
-//    public java.io.InputStream getAsciiStream() throws SQLException;
-//
-//    public java.io.InputStream getBinaryStream() throws SQLException;
-
-    // Object getObject(int columnIndex) throws SQLException;
-
-    // --------------------------JDBC 2.0-----------------------------------
-
-    // ---------------------------------------------------------------------
-    // Getters and Setters
-    // ---------------------------------------------------------------------
-
-//    java.io.Reader getCharacterStream() throws SQLException;
-
     public BigDecimal getBigDecimal() throws SQLException;
 
-    // Object getObject(int i, java.util.Map<String,Class<?>> map)
-    // throws SQLException;
-
-//  Blob getBlob() throws SQLException;
-    //
-//        Clob getClob() throws SQLException;
-
-//    Ref getRef() throws SQLException;
-
-
     Array getArray() throws SQLException;
-
-    // -------------------------- JDBC 3.0
-    // ----------------------------------------
-    //
-    // java.net.URL getURL(int columnIndex) throws SQLException;
 
 }

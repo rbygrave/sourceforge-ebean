@@ -25,7 +25,8 @@ import java.util.EnumSet;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
+import com.avaje.ebeaninternal.server.query.LuceneIndexDataReader;
 
 
 /**
@@ -165,7 +166,7 @@ public class ScalarTypeEnumStandard {
 	    }
 	    
 	    public int getLuceneType() {
-	        return LuceneTypes.STRING;
+	        return LLuceneTypes.STRING;
 	    }
 
 	    public Object luceneFromIndexValue(Object value) {
@@ -225,8 +226,16 @@ public class ScalarTypeEnumStandard {
 			}
 		}
 	
+
+	      
 		public Object read(DataReader dataReader) throws SQLException {
 			
+	        if (dataReader instanceof LuceneIndexDataReader){
+                // special case here where Text value always
+                // stored in Lucene Index
+                String s = dataReader.getString();
+                return s == null ? null : parse(s);
+            } 
 			Integer ordinal = dataReader.getInt();
 			if (ordinal == null){
 				return null;
@@ -287,7 +296,7 @@ public class ScalarTypeEnumStandard {
 		}
 		
 	    public int getLuceneType() {
-	        return LuceneTypes.STRING;
+	        return LLuceneTypes.STRING;
 	    }
 
 	    public Object luceneFromIndexValue(Object value) {

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollectionTouched;
@@ -349,9 +350,19 @@ public interface SpiQuery<T> extends Query<T> {
     public boolean isSqlSelect();
 
     /**
+     * Return true if this is a RawSql query.
+     */
+    public boolean isRawSql();
+
+    /**
      * Return the Order By clause or null if there is none defined.
      */
     public String getOrderByStringFormat();
+
+    /**
+     * Return the Order By clause or null if there is none defined.
+     */
+    public OrderBy<T> getOrderBy();
 
     /**
      * Return additional where clause. This should be added to any where clause

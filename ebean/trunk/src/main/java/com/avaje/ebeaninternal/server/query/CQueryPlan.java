@@ -61,10 +61,15 @@ public class CQueryPlan {
 		
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
-		this.sql = sqlRes.getSql();
+		if (sqlRes != null){
+	        this.sql = sqlRes.getSql();
+	        this.rowNumberIncluded = sqlRes.isIncludesRowNumberColumn();		    
+		} else {
+		    this.sql = "fetch using lucene index";
+		    this.rowNumberIncluded = false;
+		}
 		this.sqlTree = sqlTree;
 		this.rawSql = rawSql;
-		this.rowNumberIncluded = sqlRes.isIncludesRowNumberColumn();
 		this.logWhereSql = logWhereSql;
 		this.encryptedProps = sqlTree.getEncryptedProps();
 	}

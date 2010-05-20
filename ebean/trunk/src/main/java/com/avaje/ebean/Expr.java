@@ -316,16 +316,16 @@ public class Expr {
 	/**
 	 * Return a list of expressions that will be joined by AND's.
 	 */
-	public static Junction conjunction() {
+	public static <T> Junction<T> conjunction(Query<T> query) {
 
-		return Ebean.getExpressionFactory().conjunction();
+		return Ebean.getExpressionFactory().conjunction(query);
 	}
 
 	/**
 	 * Return a list of expressions that will be joined by OR's.
 	 */
-	public static Junction disjunction() {
-
-		return Ebean.getExpressionFactory().disjunction();
+	public static <T> Junction<T> disjunction(Query<T> query) {
+	    
+		return Ebean.getExpressionFactory().disjunction(query);
 	}
 }

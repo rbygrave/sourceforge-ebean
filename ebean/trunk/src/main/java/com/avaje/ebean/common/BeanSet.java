@@ -89,6 +89,14 @@ public final class BeanSet<E> extends AbstractBeanCollection<E> implements Set<E
     public boolean isPopulated() {
         return set != null;
     }
+    
+    /**
+     * Return true if this is a reference (lazy loading) bean collection.
+     * This is the same as !isPopulated();
+     */
+    public boolean isReference() {
+        return set == null;
+    }
 	
     public boolean checkEmptyLazyLoad() {
         if (set == null){

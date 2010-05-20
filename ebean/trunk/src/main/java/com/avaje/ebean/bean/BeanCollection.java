@@ -244,6 +244,12 @@ public interface BeanCollection<E> extends Serializable {
 	public boolean isPopulated();
 
 	/**
+	 * Return true if this is a reference (lazy loading) bean collection.
+	 * This is the same as !isPopulated();
+	 */
+	public boolean isReference();
+
+	/**
 	 * Set modify listening on or off. This is used to keep track of objects
 	 * that have been added to or removed from the list set or map.
 	 * <p>

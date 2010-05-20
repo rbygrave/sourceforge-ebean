@@ -17,21 +17,26 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.lucene;
+package com.avaje.ebeaninternal.server.query;
 
-public class LuceneTypes {
+import java.sql.ResultSet;
 
-    public static final int STRING = 0;
+import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
+import com.avaje.ebeaninternal.server.type.DataReader;
+
+public class CQueryPlanLucene extends CQueryPlan {
+
+    private final OrmQueryRequest<?> request;
     
-    public static final int INT = 1;
-    public static final int LONG = 2;
-    public static final int DOUBLE = 3;
-    public static final int FLOAT = 4;
+    public CQueryPlanLucene(OrmQueryRequest<?> request, SqlTree sqlTree) {
+        super(request, null, sqlTree, false, ""); 
+        this.request = request;
+    }
+
+    @Override
+    public DataReader createDataReader(ResultSet rset) {
+        return new LuceneIndexDataReader(request);
+    }
     
-    public static final int DATE = 5;
-    public static final int TIMESTAMP = 6;
-
-    public static final int BINARY = 7;
-
     
 }

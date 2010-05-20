@@ -1,11 +1,17 @@
 package com.avaje.ebeaninternal.server.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.BooleanClause.Occur;
+
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
 /**
@@ -48,7 +54,22 @@ abstract class LogicExpression implements SpiExpression {
 		this.expTwo = (SpiExpression)expTwo;
 	}
 
-	
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return expOne.isLuceneResolvable(req) && expTwo.isLuceneResolvable(req);
+    }
+    
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException {
+        Query q1 = expOne.addLuceneQuery(request);
+        Query q2 = expTwo.addLuceneQuery(request);
+        
+        BooleanQuery q = new BooleanQuery();
+        Occur occur = OR.equals(joinType) ? Occur.SHOULD : Occur.MUST;
+        
+        q.add(q1, occur);
+        q.add(q2, occur);
+        return q;
+    }
+    
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 		expOne.containsMany(desc, manyWhereJoin);
 		expTwo.containsMany(desc, manyWhereJoin);

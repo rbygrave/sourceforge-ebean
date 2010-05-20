@@ -1,11 +1,15 @@
 package com.avaje.ebeaninternal.server.ldap.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
 /**
@@ -48,8 +52,15 @@ abstract class LdLogicExpression implements SpiExpression {
 		this.expTwo = (SpiExpression)expTwo;
 	}
 
+	public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return expOne.isLuceneResolvable(req) && expTwo.isLuceneResolvable(req);
+    }
 	
-	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        return null;
+    }
+
+    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 		expOne.containsMany(desc, manyWhereJoin);
 		expTwo.containsMany(desc, manyWhereJoin);
 	}

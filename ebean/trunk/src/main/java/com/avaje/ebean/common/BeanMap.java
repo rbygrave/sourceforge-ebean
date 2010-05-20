@@ -83,7 +83,15 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	public boolean isPopulated() {
 		return map != null;
 	}
-
+	
+    /**
+     * Return true if this is a reference (lazy loading) bean collection.
+     * This is the same as !isPopulated();
+     */	
+    public boolean isReference() {
+        return map == null;
+    }
+	
     public boolean checkEmptyLazyLoad() {
         if (map == null) {
             map = new LinkedHashMap<K,E>();

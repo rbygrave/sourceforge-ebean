@@ -37,6 +37,7 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.config.ldap.LdapContextFactory;
+import com.avaje.ebean.config.lucene.LuceneConfig;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
@@ -256,6 +257,8 @@ public class ServerConfig {
 
     private LdapConfig ldapConfig;
 
+    private LuceneConfig luceneConfig;
+    
     /**
      * Set this to true when by default vanilla objects should be returned from
      * queries rather than dynamic subclasses etc. Only relevant when not using
@@ -1122,6 +1125,20 @@ public class ServerConfig {
      */
     public void setLdapConfig(LdapConfig ldapConfig) {
         this.ldapConfig = ldapConfig;
+    }
+
+    /**
+     * Return the Lucene Configuration.
+     */
+    public LuceneConfig getLuceneConfig() {
+        return luceneConfig;
+    }
+
+    /**
+     * Set the Lucene Configuration.
+     */
+    public void setLuceneConfig(LuceneConfig luceneConfig) {
+        this.luceneConfig = luceneConfig;
     }
 
     /**

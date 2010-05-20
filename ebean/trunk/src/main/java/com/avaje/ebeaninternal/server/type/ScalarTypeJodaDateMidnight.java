@@ -27,7 +27,7 @@ import org.joda.time.DateMidnight;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda DateMidnight. This maps to a JDBC Date.
@@ -98,7 +98,7 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
     }
     
     public int getLuceneType() {
-        return LuceneTypes.DATE;
+        return LLuceneTypes.DATE;
     }
 
     public Object luceneFromIndexValue(Object value) {

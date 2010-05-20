@@ -24,7 +24,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * Base ScalarType for types which converts to and from a VARCHAR database column.
@@ -114,6 +114,6 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
     }   
     
     public int getLuceneType() {
-        return LuceneTypes.STRING;
+        return LLuceneTypes.STRING;
     }
 }

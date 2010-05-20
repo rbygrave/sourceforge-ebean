@@ -24,7 +24,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LuceneTypes;
+import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Short and short.
@@ -73,7 +73,7 @@ public class ScalarTypeShort extends ScalarTypeBase<Short> {
 	}
 
     public int getLuceneType() {
-        return LuceneTypes.INT;
+        return LLuceneTypes.INT;
     }
 
     public Object luceneFromIndexValue(Object value) {

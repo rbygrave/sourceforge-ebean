@@ -34,6 +34,7 @@ import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebeaninternal.server.expression.FilterExprPath;
 
 public class FilterExpressionList<T> extends DefaultExpressionList<T> {
 
@@ -41,11 +42,22 @@ public class FilterExpressionList<T> extends DefaultExpressionList<T> {
 
     private final Query<T> rootQuery;
     
-    public FilterExpressionList(ExpressionFactory expr, Query<T> rootQuery) {
-        super(null, expr);
+    private final FilterExprPath pathPrefix;
+    
+    public FilterExpressionList(FilterExprPath pathPrefix, ExpressionFactory expr, Query<T> rootQuery) {
+        super(null, expr, null);
+        this.pathPrefix = pathPrefix;
         this.rootQuery = rootQuery;
     }
     
+    public void trimPath(int prefixTrim) {
+        pathPrefix.trimPath(prefixTrim);
+    }
+    
+    public FilterExprPath getPathPrefix() {
+        return pathPrefix;
+    }
+
     private String notAllowedMessage = "This method is not allowed on a filter";
         
     public ExpressionList<T> filterMany(String prop) {

@@ -46,6 +46,7 @@ import com.avaje.ebeaninternal.server.deploy.CopyContext;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
 import com.avaje.ebeaninternal.server.deploy.DeployPropertyParserMap;
 import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
+import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 
@@ -87,7 +88,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	
 	private boolean useBeanCacheReadOnly;
 	
-	
+	private LuceneOrmQueryRequest luceneQueryRequest;
+		
 	/**
 	 * Create the InternalQueryRequest.
 	 */
@@ -150,6 +152,13 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	 */
 	public BeanDescriptor<T> getBeanDescriptor() {
 		return beanDescriptor;
+	}
+	
+	/**
+	 * Return the Lucene index for this bean type if there is one.
+	 */
+	public LIndex getLuceneIndex() {
+	    return beanDescriptor.getLuceneIndex();
 	}
 	
 	/**
@@ -262,19 +271,24 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	public boolean isFindById() {
 		return query.getType() == Type.BEAN;
 	}
-
-//	/**
-//	 * Return true if this is a subquery (as part of InQueryExpression).
-//	 */
-//	public boolean isSubQuery(Query<?> q) {
-//		return Type.SUBQUERY.equals(q.getType());
-//	}
 	
 	public boolean isVanillaMode() {
 	    return vanillaMode;
 	}
 	
-	/**
+	public LuceneOrmQueryRequest getLuceneOrmQueryRequest() {
+        return luceneQueryRequest;
+    }
+
+    public void setLuceneOrmQueryRequest(LuceneOrmQueryRequest luceneQueryRequest) {
+        this.luceneQueryRequest = luceneQueryRequest;
+    }
+    
+    public boolean isLuceneQuery() {
+        return luceneQueryRequest != null;
+    }
+
+    /**
 	 * Execute the query as findById.
 	 */
 	public Object findId() {

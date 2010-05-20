@@ -1,5 +1,9 @@
 package com.avaje.ebeaninternal.server.expression;
 
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.Query;
+
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
@@ -11,11 +15,18 @@ class CaseInsensitiveEqualExpression extends AbstractExpression {
 	
 	private final String value;
 	
-	CaseInsensitiveEqualExpression(String propertyName, String value) {
-		super(propertyName);
+	CaseInsensitiveEqualExpression(FilterExprPath pathPrefix, String propertyName, String value) {
+		super(pathPrefix, propertyName);
 		this.value = value.toLowerCase();
 	}
-	
+	    
+    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+        
+        String propertyName = getPropertyName();
+        QueryParser queryParser = request.createQueryParser(propertyName);
+        return queryParser.parse(value);    
+    }
+
 	public void addBindValues(SpiExpressionRequest request) {
         
 	    ElPropertyValue prop = getElProp(request);
@@ -29,7 +40,8 @@ class CaseInsensitiveEqualExpression extends AbstractExpression {
 	}
 
 	public void addSql(SpiExpressionRequest request) {
-		
+	    
+        String propertyName = getPropertyName();
 	    String pname = propertyName;
         
         ElPropertyValue prop = getElProp(request);
@@ -42,7 +54,7 @@ class CaseInsensitiveEqualExpression extends AbstractExpression {
 
 	public int queryAutoFetchHash() {
 		int hc = CaseInsensitiveEqualExpression.class.getName().hashCode();
-		hc = hc * 31 + propertyName.hashCode();
+		hc = hc * 31 + propName.hashCode();
 		return hc;
 	}
 

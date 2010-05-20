@@ -6,24 +6,44 @@ package com.avaje.ebean;
  * Basically with a Conjunction you join together many expressions with AND, and
  * with a Disjunction you join together many expressions with OR.
  * </p>
+ * <p>
+ * Note: where() always takes you to the top level WHERE expression list.
+ * </p>
  * <pre class="code">
- *  Query q = Ebean.createQuery(Person.class);
- *  q.where().disjunction()
- *  	.add(Expr.like(&quot;name&quot;,&quot;Rob%&quot;))
- *  	.add(Expr.eq(&quot;status&quot;,Status.NEW))
+ *  Query q = 
+ *    Ebean.find(Person.class)
+ *      .where().disjunction()
+ *  	  .like(&quot;name&quot;,&quot;Rob%&quot;)
+ *  	  .eq(&quot;status&quot;,Status.NEW)
+ *  
+ *      // where() returns us to the top level expression list
+ *     .where().gt(&quot;id&quot;, 10);
+ *   
+ *     // read as... 
+ *     // where ( ((name like Rob%) or (status = NEW)) AND (id > 10) )
  * </pre>
- * @see Query#where()
- * @see ExpressionList#conjunction()
- * @see ExpressionList#disjunction()
+ * 
+ * <p>
+ * Note: endJunction() takes you to the parent expression list
+ * </p>
+ * 
+ * <pre class="code">
+ *  Query q = 
+ *    Ebean.find(Person.class)
+ *      .where().disjunction()
+ *        .like(&quot;name&quot;,&quot;Rob%&quot;)
+ *        .eq(&quot;status&quot;,Status.NEW)
+ *        .endJunction()
+ *         
+ *       // endJunction().. takes us to the 'parent' expression list
+ *       // which in this case is the top level (same as where())
+ *       
+ *      .gt(&quot;id&quot;, 10);
+ *      
+ *     // read as... 
+ *     // where ( ((name like Rob%) or (status = NEW)) AND (id > 10) )
+ * </pre>
  */
-public interface Junction extends Expression {
-
-	/**
-	 * Add an expression to the Conjunction/Disjunction.
-	 * 
-	 * @see ExpressionList#conjunction()
-	 * @see ExpressionList#disjunction()
-	 */
-	public Junction add(Expression expression);
-
+public interface Junction<T> extends Expression, ExpressionList<T> {
+	
 }
