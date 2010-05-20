@@ -112,7 +112,7 @@ public interface NamingConvention {
      * 
      * @return the sequence name
      */
-    public String getSequenceName(String tableName);
+    public String getSequenceName(String tableName, String pkColumn);
 
     /**
      * Return true if a prefix should be used building a foreign key name.

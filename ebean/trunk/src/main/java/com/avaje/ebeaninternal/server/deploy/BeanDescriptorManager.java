@@ -1155,8 +1155,9 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         if (seqName != null) {
             logger.fine("explicit sequence " + seqName + " on " + desc.getFullName());
         } else {
+            String primaryKeyColumn = desc.getSinglePrimaryKeyColumn();
             // use namingConvention to define sequence name
-            seqName = namingConvention.getSequenceName(desc.getBaseTable());
+            seqName = namingConvention.getSequenceName(desc.getBaseTable(), primaryKeyColumn);
         }
 
         // create the sequence based IdGenerator

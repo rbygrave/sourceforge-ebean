@@ -846,6 +846,24 @@ public class DeployBeanDescriptor<T> {
         return Collections.unmodifiableSet(set);
     }
 	
+    /**
+     * Return the Primary Key column assuming it is a single column (not
+     * compound). This is for the purpose of defining a sequence name.
+     */
+    public String getSinglePrimaryKeyColumn() {
+        List<DeployBeanProperty> ids = propertiesId();
+        if (ids.size() == 1){
+            DeployBeanProperty p = ids.get(0);
+            if (p instanceof DeployBeanPropertyAssoc<?>){
+                // its a compound primary key
+                return null;
+            } else {
+                return p.getDbColumn();
+            }
+        }
+        return null;
+    }
+    
 	/**
 	 * Return the BeanProperty that make up the unique id.
 	 * <p>
@@ -855,7 +873,7 @@ public class DeployBeanDescriptor<T> {
 	 */
 	public List<DeployBeanProperty> propertiesId() {
 
-		ArrayList<DeployBeanProperty> list = new ArrayList<DeployBeanProperty>();
+		ArrayList<DeployBeanProperty> list = new ArrayList<DeployBeanProperty>(2);
 
 		Iterator<DeployBeanProperty> it = propMap.values().iterator();
 		while (it.hasNext()) {
