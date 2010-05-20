@@ -338,6 +338,11 @@ public class DefaultServerFactory implements BootupEbeanManager {
 			    boolean useForeignKeyPrefix = Boolean.valueOf(v);
 			    nc.setUseForeignKeyPrefix(useForeignKeyPrefix);
 			}
+
+	        String sequenceFormat = config.getProperty("namingConvention.sequenceFormat");
+            if (sequenceFormat != null){
+                nc.setSequenceFormat(sequenceFormat);
+            }
 		}
 	}
 	

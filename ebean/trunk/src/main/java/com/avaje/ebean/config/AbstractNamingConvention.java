@@ -40,6 +40,9 @@ public abstract class AbstractNamingConvention implements NamingConvention {
     /** The Constant DEFAULT_SEQ_FORMAT. */
     public static final String DEFAULT_SEQ_FORMAT = "{table}_seq";
 
+    /** Sequence Format that includes the Primary Key column */
+    public static final String TABLE_PKCOLUMN_SEQ_FORMAT = "{table}_{column}_seq";
+
     /** The catalog. */
     private String catalog;
 
@@ -93,8 +96,12 @@ public abstract class AbstractNamingConvention implements NamingConvention {
         logger.finer("Using maxConstraintNameLength of " + maxConstraintNameLength);
     }
 
-    public String getSequenceName(String tableName) {
-        return sequenceFormat.replace("{table}", tableName);
+    public String getSequenceName(String tableName, String pkColumn) {
+        String s = sequenceFormat.replace("{table}", tableName);
+        if (pkColumn == null){
+            pkColumn = "";
+        }
+        return s.replace("{column}", pkColumn);
     }
 
     /**
