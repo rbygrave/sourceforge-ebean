@@ -1446,7 +1446,7 @@ public class ServerConfig {
         
         useJtaTransactionManager = p.getBoolean("useJtaTransactionManager", false);
         
-        namingConvention = createInstance(p, NamingConvention.class, "namingconvention");
+        namingConvention = createNamingConvention(p);
         databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
         encryptDeployManager = createInstance(p, EncryptDeployManager.class, "encryptDeployManager");
@@ -1506,6 +1506,28 @@ public class ServerConfig {
         classes = getClasses(p);
     }
 
+    private NamingConvention createNamingConvention(ConfigPropertyMap p) {
+        
+        NamingConvention nc = createInstance(p, NamingConvention.class, "namingconvention");
+        if (nc == null){
+            return null;
+        }
+        if (nc instanceof AbstractNamingConvention){
+            AbstractNamingConvention anc = (AbstractNamingConvention)nc;
+            String v = p.get("namingConvention.useForeignKeyPrefix", null);
+            if (v != null){
+                boolean useForeignKeyPrefix = Boolean.valueOf(v);
+                anc.setUseForeignKeyPrefix(useForeignKeyPrefix);
+            }
+    
+            String sequenceFormat = p.get("namingConvention.sequenceFormat", null);
+            if (sequenceFormat != null){
+                anc.setSequenceFormat(sequenceFormat);
+            }
+        }
+        return nc;
+    }
+    
     /**
      * Return the LogFileSharing (with support for the previous "logsharing"
      * property name.
