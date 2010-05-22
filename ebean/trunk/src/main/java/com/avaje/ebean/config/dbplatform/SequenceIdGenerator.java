@@ -79,7 +79,7 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 	 * </p>
 	 */
 	public void preAllocateIds(int allocateSize) {
-		if (allocateSize > batchSize){
+		if (batchSize > 1 && allocateSize > batchSize){
 			// only bother if allocateSize is bigger than
 			// the normal loading batchSize 
 			if (allocateSize > 100){
@@ -115,8 +115,10 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 			}
 			Integer nextId = idList.remove(0);
 		
-			if (idList.size() <= batchSize/2){
-				loadBatchInBackground();
+			if (batchSize > 1) {
+    			if (idList.size() <= batchSize/2){
+    				loadBatchInBackground();
+    			}
 			}
 			
 			return nextId;
