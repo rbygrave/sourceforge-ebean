@@ -1,15 +1,11 @@
 package com.avaje.ebeaninternal.server.expression;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.util.DefaultExpressionRequest;
 
@@ -31,16 +27,17 @@ class IdExpression implements SpiExpression {
         return false;
     }
 
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
-        BeanProperty[] properties = request.getBeanDescriptor().getIdBinder().getProperties();
-        if (properties.length != 1){
-            throw new RuntimeException("Only support single Ids for now");
-        }
-        String idAsString = properties[0].getScalarType().format(value);
-        String idProperty = properties[0].getName();
-        
-        QueryParser queryParser = request.createQueryParser(idProperty);
-        return queryParser.parse(idAsString);    
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
+        return null;
+//        BeanProperty[] properties = request.getBeanDescriptor().getIdBinder().getProperties();
+//        if (properties.length != 1){
+//            throw new RuntimeException("Only support single Ids for now");
+//        }
+//        String idAsString = properties[0].getScalarType().format(value);
+//        String idProperty = properties[0].getName();
+//        
+//        QueryParser queryParser = request.createQueryParser(idProperty);
+//        return queryParser.parse(idAsString);    
     }
 
 	/**

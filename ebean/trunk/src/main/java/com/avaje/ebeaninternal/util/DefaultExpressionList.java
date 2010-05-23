@@ -6,10 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
-
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
@@ -26,6 +22,7 @@ import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
@@ -89,13 +86,14 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         return true;
     }
 
-    public org.apache.lucene.search.Query createLuceneQuery(SpiExpressionRequest request, Occur occur) throws ParseException{
-        BooleanQuery bq = new BooleanQuery();
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request, SpiLuceneExpr.ExprOccur occur) {
+        
+        LuceneQueryList queryList = new LuceneQueryList(occur);
         for (int i = 0; i < list.size(); i++) {
-            org.apache.lucene.search.Query query = list.get(i).addLuceneQuery(request);
-            bq.add(query, occur);
+            SpiLuceneExpr query = list.get(i).createLuceneExpr(request);
+            queryList.add(query);
         }
-        return bq;
+        return queryList;       
     }
 
     

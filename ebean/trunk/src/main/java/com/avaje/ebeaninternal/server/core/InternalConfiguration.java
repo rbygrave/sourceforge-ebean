@@ -21,10 +21,6 @@ package com.avaje.ebeaninternal.server.core;
 
 import java.util.logging.Logger;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.util.Version;
-
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.cache.ServerCacheManager;
@@ -33,7 +29,6 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.config.ldap.LdapContextFactory;
-import com.avaje.ebean.config.lucene.LuceneConfig;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.api.ClassUtil;
@@ -48,7 +43,8 @@ import com.avaje.ebeaninternal.server.deploy.parse.DeployInherit;
 import com.avaje.ebeaninternal.server.deploy.parse.DeployUtil;
 import com.avaje.ebeaninternal.server.expression.DefaultExpressionFactory;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
-import com.avaje.ebeaninternal.server.lucene.DefaultLuceneIndexManager;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
+import com.avaje.ebeaninternal.server.lucene.NoLuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.persist.DefaultPersister;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
@@ -121,7 +117,7 @@ public class InternalConfiguration {
 	
 	private final XmlConfig xmlConfig;
 	
-	private final DefaultLuceneIndexManager luceneIndexManager;
+	private final LuceneIndexManager luceneIndexManager;
 	
 	public InternalConfiguration(XmlConfig xmlConfig, ClusterManager clusterManager, ServerCacheManager cacheManager, 
 			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, 
@@ -158,8 +154,9 @@ public class InternalConfiguration {
 		this.transactionManager = new TransactionManager(clusterManager, serverConfig, beanDescriptorManager);
 
 		this.logControl = new MAdminLogging(serverConfig, transactionManager);
-		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), logControl, binder, backgroundExecutor);
-
+		
+		this.cQueryEngine = new CQueryEngine(serverConfig.getDatabasePlatform(), 
+		        logControl, binder, backgroundExecutor, luceneIndexManager);
 		
 		ExternalTransactionManager externalTransactionManager = serverConfig.getExternalTransactionManager();
 		if (externalTransactionManager == null && serverConfig.isUseJtaTransactionManager()){
@@ -175,24 +172,15 @@ public class InternalConfiguration {
 		
 	}
 
-	private DefaultLuceneIndexManager createLuceneManager(ServerConfig serverConfig) {
-
-	    Analyzer defaultAnalyzer = null;
-	    String baseDir = null;
+	private LuceneIndexManager createLuceneManager(ServerConfig serverConfig) {
 	    
-	    LuceneConfig luceneConfig = serverConfig.getLuceneConfig();
-	    if (luceneConfig != null){
-	        defaultAnalyzer = luceneConfig.getDefaultAnalyzer();
-	        baseDir = luceneConfig.getBaseDirectory();
-	    }
-	    if (defaultAnalyzer == null){
-	        defaultAnalyzer = new StandardAnalyzer(Version.LUCENE_30);
-	    }
-	    if (baseDir == null){
-	        baseDir = "lucene";
+	    if (!ClassUtil.isPresent("org.apache.lucene.analysis.Analyzer", this.getClass())) {
+	        // construct an empty index manager as Lucene is not in the class path and
+	        // we are not expecting any indexes
+	        return new NoLuceneIndexManager();
 	    }
 	    
-	    return new DefaultLuceneIndexManager(defaultAnalyzer, baseDir, serverConfig.getName());
+	    return LuceneManagerFactory.createLuceneManager(serverConfig);
     }
 	 
 	public JsonContext createJsonContext(SpiEbeanServer server) {
@@ -209,7 +197,7 @@ public class InternalConfiguration {
         return new DJsonContext(server, va, dfltPretty);
     }
 
-	public DefaultLuceneIndexManager getLuceneIndexManager() {
+	public LuceneIndexManager getLuceneIndexManager() {
         return luceneIndexManager;
     }
 

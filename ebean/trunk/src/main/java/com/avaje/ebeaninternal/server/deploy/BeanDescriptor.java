@@ -43,6 +43,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -394,6 +395,8 @@ public class BeanDescriptor<T> {
     
     private LIndex luceneIndex;
     
+    private final UseIndex useIndex;
+    
     /**
      * Construct the BeanDescriptor.
      */
@@ -409,6 +412,7 @@ public class BeanDescriptor<T> {
         this.fullName = InternString.intern(deploy.getFullName());
         this.descriptorId = String.valueOf(fullName.hashCode());
         
+        this.useIndex = deploy.getUseIndex();
         this.typeManager = typeManager;
         this.beanType = deploy.getBeanType();
         this.factoryType = deploy.getFactoryType();
@@ -631,6 +635,14 @@ public class BeanDescriptor<T> {
      */
     public IndexDefn<?> getLuceneIndexDefn() {
         return luceneIndexDefn;
+    }
+
+    /**
+     * Return the default strategy for using a lucene index (if an index is
+     * defined on this bean type).
+     */
+    public UseIndex getUseIndex() {
+        return useIndex;
     }
 
     /**

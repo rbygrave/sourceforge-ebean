@@ -107,7 +107,7 @@ import com.avaje.ebeaninternal.server.ldap.LdapOrmQueryEngine;
 import com.avaje.ebeaninternal.server.ldap.LdapOrmQueryRequest;
 import com.avaje.ebeaninternal.server.ldap.expression.LdapExpressionFactory;
 import com.avaje.ebeaninternal.server.lib.ShutdownManager;
-import com.avaje.ebeaninternal.server.lucene.DefaultLuceneIndexManager;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.query.CQuery;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
 import com.avaje.ebeaninternal.server.query.CallableQueryIds;
@@ -204,7 +204,7 @@ public final class DefaultServer implements SpiEbeanServer {
     
     private final JsonContext jsonContext;
 
-    private final DefaultLuceneIndexManager luceneIndexManager;
+    private final LuceneIndexManager luceneIndexManager;
     
     /**
      * The MBean name used to register Ebean.

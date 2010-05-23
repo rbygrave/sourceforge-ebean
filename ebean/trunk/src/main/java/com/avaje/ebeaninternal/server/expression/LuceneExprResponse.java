@@ -17,42 +17,33 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebean.config.lucene;
+package com.avaje.ebeaninternal.server.expression;
 
-import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.search.Query;
 
-import com.avaje.ebean.Query.UseIndex;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 
-public class LuceneConfig {
-
-    protected String baseDirectory;
+public class LuceneExprResponse implements SpiLuceneExpr {
     
-    protected Analyzer defaultAnalyzer;
-
-    protected UseIndex defaultUseIndex;
+    private final Query query;
     
-    public Analyzer getDefaultAnalyzer() {
-        return defaultAnalyzer;
+    private final String description;
+    
+    public LuceneExprResponse(Query query, String description){
+        this.query = query;
+        this.description = description;
     }
 
-    public void setDefaultAnalyzer(Analyzer defaultAnalyzer) {
-        this.defaultAnalyzer = defaultAnalyzer;
+    public Query getQuery() {
+        return query;
     }
 
-    public String getBaseDirectory() {
-        return baseDirectory;
+    public Object mergeLuceneQuery() {
+        return query;
     }
 
-    public void setBaseDirectory(String baseDirectory) {
-        this.baseDirectory = baseDirectory;
-    }
-
-    public UseIndex getDefaultUseIndex() {
-        return defaultUseIndex;
-    }
-
-    public void setDefaultUseIndex(UseIndex defaultUseIndex) {
-        this.defaultUseIndex = defaultUseIndex;
-    }
+    public String getDescription() {
+        return description;
+    }   
     
 }

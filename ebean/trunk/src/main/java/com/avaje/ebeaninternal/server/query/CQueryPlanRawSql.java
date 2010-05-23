@@ -34,7 +34,7 @@ public class CQueryPlanRawSql extends CQueryPlan {
     
     public CQueryPlanRawSql(OrmQueryRequest<?> request, SqlLimitResponse sqlRes, SqlTree sqlTree, String logWhereSql) {
         
-        super(request, sqlRes, sqlTree, true, logWhereSql);
+        super(request, sqlRes, sqlTree, true, logWhereSql, null);
         
         this.rsetIndexPositions = createIndexPositions(request, sqlTree);
     }

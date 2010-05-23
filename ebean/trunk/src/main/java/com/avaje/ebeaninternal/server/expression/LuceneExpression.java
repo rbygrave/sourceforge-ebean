@@ -22,13 +22,13 @@ package com.avaje.ebeaninternal.server.expression;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.queryParser.QueryParser.Operator;
-import org.apache.lucene.search.Query;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
-class LuceneExpression extends AbstractExpression {
+class LuceneExpression extends AbstractExpression implements LuceneAwareExpression {
 
     private static final long serialVersionUID = 8959252357123977939L;
 
@@ -45,14 +45,20 @@ class LuceneExpression extends AbstractExpression {
     public boolean isLuceneResolvable(LuceneResolvableRequest req) {
         return true;
     }
-    
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
 
-        String propertyName = getPropertyName();
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
 
-        QueryParser p = request.createQueryParser(propertyName);
-        p.setDefaultOperator(Operator.OR);
-        return p.parse(val);    
+        try {
+            String propertyName = getPropertyName();
+
+            String desc = propertyName+" "+val;
+            
+            QueryParser p = request.getLuceneIndex().createQueryParser(propertyName);
+            p.setDefaultOperator(Operator.OR);
+            return new LuceneExprResponse(p.parse(val), desc);
+        } catch (ParseException e) {
+            throw new PersistenceLuceneParseException(e);
+        }
     }
     
     public void addBindValues(SpiExpressionRequest request) {

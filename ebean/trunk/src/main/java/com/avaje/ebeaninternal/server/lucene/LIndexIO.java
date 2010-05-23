@@ -42,7 +42,7 @@ import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 
 public class LIndexIO {
 
-    private final DefaultLuceneIndexManager manager;
+    private final LuceneIndexManager manager;
     
     private final String indexDir;
     
@@ -58,7 +58,7 @@ public class LIndexIO {
     
     private final Directory directory;
     
-    public LIndexIO(DefaultLuceneIndexManager manager, String indexDir, LIndex index) throws IOException {
+    public LIndexIO(LuceneIndexManager manager, String indexDir, LIndex index) throws IOException {
         this.manager = manager;
         this.indexDir = indexDir;
         this.index = index;

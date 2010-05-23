@@ -6,26 +6,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.PersistenceException;
-
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.BooleanClause.Occur;
-
-import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebeaninternal.api.BindParams;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.BindParams.OrderedList;
-import com.avaje.ebeaninternal.server.core.LuceneOrmQueryRequest;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
-import com.avaje.ebeaninternal.server.lucene.LIndex;
-import com.avaje.ebeaninternal.server.lucene.LLuceneSortResolve;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import com.avaje.ebeaninternal.server.type.DataBind;
@@ -46,7 +34,7 @@ import com.avaje.ebeaninternal.util.DefaultExpressionRequest;
 public class CQueryPredicates {
 
 	private static final Logger logger = Logger.getLogger(CQueryPredicates.class.getName());
-
+	
 	private final Binder binder;
 
 	private final OrmQueryRequest<?> request;
@@ -147,66 +135,9 @@ public class CQueryPredicates {
      * index.
      */
     public boolean isLuceneResolvable() {
-
-        UseIndex useIndex = request.getQuery().getUseIndex();
-        if (UseIndex.NO.equals(useIndex)){
-            return false;
-        }
-        if (!UseIndex.YES_OBJECTS.equals(useIndex)){
-           return false;
-        }
         
-        LIndex luceneIndex = request.getLuceneIndex();
-        if (luceneIndex == null){
-            // We don't have a Lucene Index on this bean type
-            return false;
-        }
-        if (bindParams != null || havingNamedParams != null){
-            // no support for named or positioned parameters
-            return false;
-        }
-        if (query.getHavingExpressions() != null){
-            // no support for having expressions
-            return false;
-        }
-        
-        LuceneResolvableRequest req = new LuceneResolvableRequest(request.getBeanDescriptor(), luceneIndex);
-        
-        LLuceneSortResolve lucenSortResolve = new LLuceneSortResolve(req, query.getOrderBy());
-        
-        if (!lucenSortResolve.isResolved()){
-            logger.info("Lucene Index can't support sort/orderBy of ["+lucenSortResolve.getUnsortableField()+"]");
-            return false;
-        }
-        
-        Sort luceneSort = lucenSortResolve.getSort();
-        
-        SpiExpressionList<?> whereExp = query.getWhereExpressions();
-        if (whereExp == null) {
-            // fetch all using index?
-            MatchAllDocsQuery q = new MatchAllDocsQuery();
-            request.setLuceneOrmQueryRequest(new LuceneOrmQueryRequest(q,luceneSort));
-            return true;
-            
-        } 
-        if (!whereExp.isLuceneResolvable(req)) {
-            // at least one expression was not resolvable via the lucene index
-            return false;
-        }
-        
-        try {            
-            // build the Lucene Query 
-            DefaultExpressionRequest whereReq = new DefaultExpressionRequest(request, luceneIndex);
-            Query luceneQuery = whereExp.createLuceneQuery(whereReq, Occur.MUST);
-            
-            request.setLuceneOrmQueryRequest(new LuceneOrmQueryRequest(luceneQuery,luceneSort));
-            return true;
-            
-        } catch (ParseException e) {
-            // do we want to automatically fall back to SQL?
-            String msg = "Failed to parse the Query using Lucene";
-            throw new PersistenceException(msg, e);
-        }
+        CQueryPredicatesLuceneResolve luceneResolve = new CQueryPredicatesLuceneResolve(request);
+        return luceneResolve.isLuceneResolvable();
     }
     
 	public String bind(DataBind dataBind) throws SQLException {

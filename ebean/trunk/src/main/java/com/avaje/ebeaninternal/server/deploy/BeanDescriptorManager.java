@@ -81,8 +81,7 @@ import com.avaje.ebeaninternal.server.deploy.parse.TransientProperties;
 import com.avaje.ebeaninternal.server.idgen.UuidIdGenerator;
 import com.avaje.ebeaninternal.server.lib.util.Dnode;
 import com.avaje.ebeaninternal.server.lucene.LIndex;
-import com.avaje.ebeaninternal.server.lucene.LIndexFactory;
-import com.avaje.ebeaninternal.server.lucene.DefaultLuceneIndexManager;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectFactory;
 import com.avaje.ebeaninternal.server.reflect.BeanReflectGetter;
@@ -177,14 +176,14 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     
     private final XmlConfig xmlConfig;
     
-    private final LIndexFactory luceneIndexFactory;
+    private final LuceneIndexManager luceneManager;
     
     /**
      * Create for a given database dbConfig.
      */
-    public BeanDescriptorManager(InternalConfiguration config, DefaultLuceneIndexManager luceneManager) {
+    public BeanDescriptorManager(InternalConfiguration config, LuceneIndexManager luceneManager) {
 
-        this.luceneIndexFactory = new LIndexFactory(luceneManager);
+        this.luceneManager = luceneManager;
         
         this.serverName = InternString.intern(config.getServerConfig().getName());
         this.cacheManager = config.getCacheManager();
@@ -399,7 +398,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             IndexDefn<?> luceneIndexDefn = d.getLuceneIndexDefn();
             if (luceneIndexDefn != null){
                 try {
-                    LIndex luceneIndex = luceneIndexFactory.create(luceneIndexDefn, d);
+                    LIndex luceneIndex = luceneManager.create(luceneIndexDefn, d);
                     d.setLuceneIndex(luceneIndex);
                 } catch (IOException e) {
                     String msg = "Error creating Lucene Index "+luceneIndexDefn.getClass().getName();

@@ -36,6 +36,8 @@ public class LLuceneRangeExpression {
 
     private final int luceneType;    
     
+    String description;
+    
     boolean minInclusive;
     boolean maxInclusive;
     
@@ -47,8 +49,14 @@ public class LLuceneRangeExpression {
         
         this.minInclusive = Op.EQ.equals(op) || Op.GT_EQ.equals(op);
         this.maxInclusive = Op.EQ.equals(op) || Op.LT_EQ.equals(op);
+        
+        description = propertyName+op.shortDesc()+value;
     }
     
+    public String getDescription() {
+        return description;
+    }
+
     public Query buildQuery() {
                 
         switch (luceneType) {

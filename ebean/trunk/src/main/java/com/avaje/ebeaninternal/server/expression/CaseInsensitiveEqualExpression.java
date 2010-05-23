@@ -1,15 +1,13 @@
 package com.avaje.ebeaninternal.server.expression;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
-class CaseInsensitiveEqualExpression extends AbstractExpression {
+class CaseInsensitiveEqualExpression extends AbstractExpression implements LuceneAwareExpression {
 
 	private static final long serialVersionUID = -6406036750998971064L;
 	
@@ -20,11 +18,15 @@ class CaseInsensitiveEqualExpression extends AbstractExpression {
 		this.value = value.toLowerCase();
 	}
 	    
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    @Override
+    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
+        return true;
+    }
+
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
         
         String propertyName = getPropertyName();
-        QueryParser queryParser = request.createQueryParser(propertyName);
-        return queryParser.parse(value);    
+        return new CaseInsensitiveEqualExpressionLucene().createLuceneExpr(request, propertyName, value);
     }
 
 	public void addBindValues(SpiExpressionRequest request) {

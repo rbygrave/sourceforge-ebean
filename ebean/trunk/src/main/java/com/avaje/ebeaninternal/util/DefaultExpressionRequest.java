@@ -2,8 +2,6 @@ package com.avaje.ebeaninternal.util;
 
 import java.util.ArrayList;
 
-import org.apache.lucene.queryParser.QueryParser;
-
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -35,9 +33,9 @@ public class DefaultExpressionRequest implements SpiExpressionRequest {
 	    this.luceneIndex = index;
 	}
 	
-	public QueryParser createQueryParser(String propertyName) {
-	    return luceneIndex.createQueryParser(propertyName);
-	}
+	public LIndex getLuceneIndex() {
+        return luceneIndex;
+    }
 	
     public String parseDeploy(String logicalProp) {
         

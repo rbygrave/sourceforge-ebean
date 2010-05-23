@@ -37,27 +37,26 @@ import com.avaje.ebeaninternal.server.type.ScalarType;
 
 public class LIndexFactory {
 
-    private final Analyzer defaultAnalyzer;
-    
     private final DefaultLuceneIndexManager manager;
 
     public LIndexFactory(DefaultLuceneIndexManager manager) {
         this.manager = manager;
-        this.defaultAnalyzer = manager.getDefaultAnalyzer();
     }
 
     public LIndex create(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor) throws IOException {
+        
+        Analyzer defaultAnalyzer = manager.getDefaultAnalyzer();
         return new Factory(indexDefn, descriptor, manager, defaultAnalyzer).create();
     }
 
     static class Factory {
 
         private final Analyzer defaultAnalyzer;
-        private final DefaultLuceneIndexManager manager;
+        private final LuceneIndexManager manager;
         private final IndexDefn<?> indexDefn;
         private final BeanDescriptor<?> descriptor;
 
-        private Factory(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor, DefaultLuceneIndexManager manager,
+        private Factory(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor, LuceneIndexManager manager,
                 Analyzer defaultAnalyzer) {
             
             this.indexDefn = indexDefn;

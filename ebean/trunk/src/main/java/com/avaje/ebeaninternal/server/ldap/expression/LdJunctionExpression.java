@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
@@ -22,6 +19,7 @@ import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
@@ -76,16 +74,10 @@ abstract class LdJunctionExpression<T> implements Junction<T>, SpiExpression {
 	
     public boolean isLuceneResolvable(LuceneResolvableRequest req) {
         
-        List<SpiExpression> list = exprList.internalList();
-        for (int i = 0; i < list.size(); i++) {
-            if (!list.get(i).isLuceneResolvable(req)) {
-                return false;
-            }
-        }
-        return true;
+        return false;
     }
     
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
         return null;
     }
 	   

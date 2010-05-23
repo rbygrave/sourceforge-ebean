@@ -1,16 +1,13 @@
 package com.avaje.ebeaninternal.server.expression;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.LikeType;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
-class LikeExpression extends AbstractExpression {
+class LikeExpression extends AbstractExpression implements LuceneAwareExpression {
 
     private static final long serialVersionUID = -5398151809111172380L;
 
@@ -39,13 +36,11 @@ class LikeExpression extends AbstractExpression {
         return false;
     }
     
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
 
         String propertyName = getPropertyName();
-        String exprValue = getLuceneValue(val, caseInsensitive, type);
         
-        QueryParser queryParser = request.createQueryParser(propertyName);
-        return queryParser.parse(exprValue);    
+        return new LikeExpressionLucene().createLuceneExpr(request, propertyName, type, caseInsensitive, val);
     }
     
     public void addBindValues(SpiExpressionRequest request) {
@@ -98,29 +93,6 @@ class LikeExpression extends AbstractExpression {
 
     public int queryBindHash() {
         return val.hashCode();
-    }
-
-    private static String getLuceneValue(String value, boolean caseInsensitive, LikeType type) {
-        if (caseInsensitive) {
-            value = value.toLowerCase();
-        }
-        value = value.replace('%', '*');
-        
-        switch (type) {
-        case RAW:
-            return value;
-        case STARTS_WITH:
-            return value + "*";
-        case CONTAINS:
-            return value;
-        case EQUAL_TO:
-            return value;
-        case ENDS_WITH:
-            throw new RuntimeException("Not Supported - Never get here");
-
-        default:
-            throw new RuntimeException("LikeType " + type + " missed?");
-        }
     }
     
     private static String getValue(String value, boolean caseInsensitive, LikeType type) {

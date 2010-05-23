@@ -57,7 +57,7 @@ public class CQueryPlan {
 	 * Create a query plan based on a OrmQueryRequest.
 	 */
 	public CQueryPlan(OrmQueryRequest<?> request, SqlLimitResponse sqlRes, SqlTree sqlTree, 
-			boolean rawSql, String logWhereSql) {
+			boolean rawSql, String logWhereSql, String luceneQueryDescription) {
 		
 		this.hash = request.getQueryPlanHash();
 		this.autofetchTuned = request.getQuery().isAutofetchTuned();
@@ -65,7 +65,7 @@ public class CQueryPlan {
 	        this.sql = sqlRes.getSql();
 	        this.rowNumberIncluded = sqlRes.isIncludesRowNumberColumn();		    
 		} else {
-		    this.sql = "fetch using lucene index";
+		    this.sql = luceneQueryDescription;
 		    this.rowNumberIncluded = false;
 		}
 		this.sqlTree = sqlTree;

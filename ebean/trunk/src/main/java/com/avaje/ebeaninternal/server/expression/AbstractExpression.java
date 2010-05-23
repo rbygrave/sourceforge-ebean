@@ -59,7 +59,7 @@ public abstract class AbstractExpression implements SpiExpression {
 	}
 	
     public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-        return false;//req.indexContains(propertyName);
+        return false;
     }
 
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
