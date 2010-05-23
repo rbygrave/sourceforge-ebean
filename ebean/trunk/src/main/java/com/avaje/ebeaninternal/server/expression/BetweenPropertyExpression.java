@@ -19,13 +19,11 @@
  */
 package com.avaje.ebeaninternal.server.expression;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
@@ -57,7 +55,7 @@ class BetweenPropertyExpression implements SpiExpression {
         return false;
     }
     
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
         return null;
     }
 

@@ -5,11 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
-
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureIds;
@@ -23,6 +18,7 @@ import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
@@ -34,21 +30,25 @@ abstract class JunctionExpression<T> implements Junction<T>, SpiExpression, Expr
 
 	private static final long serialVersionUID = -7422204102750462676L;
 
+    private static final String OR = " or ";
+
+    private static final String AND = " and ";
+
 	static class Conjunction<T> extends JunctionExpression<T> {
 
 		private static final long serialVersionUID = -645619859900030678L;
 
 		Conjunction(com.avaje.ebean.Query<T> query, ExpressionList<T> parent){
-			super(" and ", query, parent);
+			super(AND, query, parent);
 		}
 	}
 	
 	static class Disjunction<T> extends JunctionExpression<T> {
 		
-		private static final long serialVersionUID = -8464470066692221413L;
+        private static final long serialVersionUID = -8464470066692221413L;
 
 		Disjunction(com.avaje.ebean.Query<T> query, ExpressionList<T> parent){
-			super(" or ", query, parent);
+			super(OR, query, parent);
 		}
 	}
 	
@@ -75,16 +75,10 @@ abstract class JunctionExpression<T> implements Junction<T>, SpiExpression, Expr
         return true;
     }
 
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
 
-        List<SpiExpression> list = exprList.internalList();
-        
-        BooleanQuery bq = new BooleanQuery();
-        for (int i = 0; i < list.size(); i++) {
-            org.apache.lucene.search.Query query = list.get(i).addLuceneQuery(request);
-            bq.add(query, Occur.SHOULD);
-        }
-        return bq;
+        boolean disjunction = OR.equals(joinType);
+        return new JunctionExpressionLucene().createLuceneExpr(request,  exprList.internalList(), disjunction);
     }
     
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {

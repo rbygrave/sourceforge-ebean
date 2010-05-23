@@ -1,8 +1,5 @@
 package com.avaje.ebeaninternal.api;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -16,7 +13,7 @@ public interface SpiExpression extends Expression {
 
     public boolean isLuceneResolvable(LuceneResolvableRequest req);
 
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException;
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request);
 
 	/**
 	 * Process "Many" properties populating ManyWhereJoins.

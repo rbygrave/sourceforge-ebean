@@ -1,11 +1,8 @@
 package com.avaje.ebeaninternal.server.expression;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
@@ -13,27 +10,32 @@ import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 
 
-class SimpleExpression extends AbstractExpression {
+class SimpleExpression extends AbstractExpression implements LuceneAwareExpression {
 
 	private static final long serialVersionUID = -382881395755603790L;
 
 	enum Op { 
-		EQ(" = ? "),
-		NOT_EQ(" <> ? "),
-		LT(" < ? "),
-		LT_EQ(" <= ? "),
-		GT(" > ? "),
-		GT_EQ(" >= ? ");
+		EQ(" = ? "," = "),
+		NOT_EQ(" <> ? "," <> "),
+		LT(" < ? ", " < "),
+		LT_EQ(" <= ? ", " <= "),
+		GT(" > ? ", " > "),
+		GT_EQ(" >= ? ", " >= ");
 		
 		String exp;
-		
-		Op(String exp){
+		String shortDesc;
+		Op(String exp, String shortDesc){
 		    this.exp = exp;
+		    this.shortDesc = shortDesc;
 		}
 		
 		public String bind() {
 		    return exp;
 		}
+
+        public String shortDesc() {
+            return shortDesc;
+        }
 	}
 		
 	private final Op type;
@@ -80,41 +82,15 @@ class SimpleExpression extends AbstractExpression {
         return true;
     }
     
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
 
         String propertyName = getPropertyName();
         
         ElPropertyValue prop = getElProp(request);
-        if (prop == null){
-            throw new RuntimeException("Property not found? "+propertyName);
-        } 
-        BeanProperty beanProperty = prop.getBeanProperty();
-        ScalarType<?> scalarType = beanProperty.getScalarType();
         
-        int luceneType = scalarType.getLuceneType();
-        if (LLuceneTypes.STRING == luceneType){
-            
-            Object lucVal = (String)scalarType.luceneToIndexValue(value);
-
-            if (Op.EQ.equals(type)){
-                QueryParser queryParser = request.createQueryParser(propertyName);
-                return queryParser.parse(lucVal.toString());
-            }
-            if (Op.NOT_EQ.equals(type)){
-                QueryParser queryParser = request.createQueryParser(propertyName);
-                return queryParser.parse("-"+propertyName+"("+lucVal.toString()+")");
-            } 
-            throw new RuntimeException("String type only supports EQ and NOT_EQ - "+type);
-        }
-        
-        // Must be a number range expression
-        LLuceneRangeExpression exp = new LLuceneRangeExpression(type, value, propertyName, luceneType);
-        return exp.buildQuery();
+        return new SimpleExpressionLucene().addLuceneQuery(request, type, propertyName, value, prop);        
     }
 
-//	public String getPropertyName() {
-//		return propertyName;
-//	}
 	
 	public void addBindValues(SpiExpressionRequest request) {
 		

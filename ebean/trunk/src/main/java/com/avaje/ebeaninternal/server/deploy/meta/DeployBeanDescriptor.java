@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.TableName;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
@@ -171,6 +172,8 @@ public class DeployBeanDescriptor<T> {
 	 */
 	private BeanFinder<T> beanFinder;
 
+	private UseIndex useIndex;
+	
 	private IndexDefn<?> indexDefn;
 	
 	/**
@@ -200,8 +203,22 @@ public class DeployBeanDescriptor<T> {
 	public boolean isAbstract() {
 		return Modifier.isAbstract(beanType.getModifiers());
 	}
-	
-	public IndexDefn<?> getIndexDefn() {
+
+	/**
+	 * Return the default UseIndex strategy.
+	 */
+	public UseIndex getUseIndex() {
+        return useIndex;
+    }
+
+    /**
+     * Set the default UseIndex strategy.
+     */
+    public void setUseIndex(UseIndex useIndex) {
+        this.useIndex = useIndex;
+    }
+
+    public IndexDefn<?> getIndexDefn() {
         return indexDefn;
     }
 

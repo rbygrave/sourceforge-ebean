@@ -20,14 +20,18 @@
 package com.avaje.ebeaninternal.server.lucene;
 
 import java.io.File;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
 
+import com.avaje.ebean.Query.UseIndex;
+import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 
-public class DefaultLuceneIndexManager {
+public class DefaultLuceneIndexManager implements LuceneIndexManager {
 
     private final ConcurrentHashMap<String, LIndex> indexMap;
     private final ConcurrentHashMap<String, LIndex> indexByTypeAndName;
@@ -36,13 +40,37 @@ public class DefaultLuceneIndexManager {
     
     private final String baseDir;
     
+    private final LIndexFactory indexFactory;
+
+    private final boolean luceneAvailable;
+    
+    private final UseIndex defaultUseIndex;
+    
     private SpiEbeanServer server;
     
-    public DefaultLuceneIndexManager(Analyzer defaultAnalyzer, String baseDir, String serverName) {
+    /**
+     * Construct when Lucene is available.
+     */
+    public DefaultLuceneIndexManager(Analyzer defaultAnalyzer, String baseDir, String serverName, UseIndex defaultUseIndex) {
+        this.luceneAvailable = true;
+        this.defaultUseIndex = defaultUseIndex;
         this.defaultAnalyzer = defaultAnalyzer;
         this.baseDir = baseDir + File.separator + serverName + File.separator;
         this.indexByTypeAndName = new ConcurrentHashMap<String, LIndex>();
         this.indexMap = new ConcurrentHashMap<String, LIndex>();
+        this.indexFactory = new LIndexFactory(this);
+    }
+    
+    public boolean isLuceneAvailable() {
+        return luceneAvailable;
+    }
+    
+    public UseIndex getDefaultUseIndex() {
+        return defaultUseIndex;
+    }
+
+    public LIndex create(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor) throws IOException {
+        return indexFactory.create(indexDefn, descriptor);
     }
     
     public SpiEbeanServer getServer() {

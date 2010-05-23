@@ -36,6 +36,7 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 
 /**
@@ -53,12 +54,12 @@ public class CQueryEngine {
 
 	private final int defaultSecondaryQueryBatchSize = 100;
 
-	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, 
-			Binder binder, BackgroundExecutor backgroundExecutor) {
+	public CQueryEngine(DatabasePlatform dbPlatform, MAdminLogging logControl, Binder binder, 
+	        BackgroundExecutor backgroundExecutor, LuceneIndexManager luceneIndexManager) {
 
 		this.logControl = logControl;
 		this.backgroundExecutor = backgroundExecutor;
-		this.queryBuilder = new CQueryBuilder(backgroundExecutor, dbPlatform, binder);
+		this.queryBuilder = new CQueryBuilder(backgroundExecutor, dbPlatform, binder, luceneIndexManager);
 	}
 
 	public <T> CQuery<T> buildQuery(OrmQueryRequest<T> request) {

@@ -26,6 +26,7 @@ import javax.persistence.NamedQuery;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.annotation.LdapDomain;
 import com.avaje.ebean.annotation.NamedUpdate;
@@ -154,7 +155,13 @@ public class AnnotationClass extends AnnotationParser {
 		boolean readOnly = cacheStrategy.readOnly();
 		String warmingQuery = cacheStrategy.warmingQuery();
 		ReferenceOptions opt = new ReferenceOptions(useCache, readOnly, warmingQuery);
+		// default bean cache options
 		descriptor.setReferenceOptions(opt);
+		
+		if (!UseIndex.DEFAULT.equals(cacheStrategy.useIndex())){
+		    // a specific Lucene index strategy has been defined
+	        descriptor.setUseIndex(cacheStrategy.useIndex());
+		}
 	}
 	
 	private void readNamedQueries(NamedQueries namedQueries) {

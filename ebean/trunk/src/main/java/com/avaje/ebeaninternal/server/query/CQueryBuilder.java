@@ -27,6 +27,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSqlBuilder;
+import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.RawSql.ColumnMapping;
 import com.avaje.ebean.RawSql.ColumnMapping.Column;
 import com.avaje.ebean.config.GlobalProperties;
@@ -43,6 +44,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.lucene.LIndex;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
@@ -68,11 +70,18 @@ public class CQueryBuilder implements Constants {
 	
 	private final boolean postgresPlatform;
 	
+	private final boolean luceneAvailable;
+	
+	private final UseIndex defaultUseIndex;
+	
 	/**
 	 * Create the SqlGenSelect.
 	 */
-	public CQueryBuilder(BackgroundExecutor backgroundExecutor, DatabasePlatform dbPlatform, Binder binder) {
-		
+	public CQueryBuilder(BackgroundExecutor backgroundExecutor, DatabasePlatform dbPlatform, Binder binder, 
+	        LuceneIndexManager luceneIndexManager) {
+	
+	    this.luceneAvailable = luceneIndexManager.isLuceneAvailable();
+	    this.defaultUseIndex = luceneIndexManager.getDefaultUseIndex();
 		this.backgroundExecutor = backgroundExecutor;
 		this.binder = binder;
 		this.tableAliasPlaceHolder = GlobalProperties.get("ebean.tableAliasPlaceHolder","${ta}");
@@ -154,7 +163,7 @@ public class CQueryBuilder implements Constants {
 		}
 		
 		String sql;
-		if (predicates.isLuceneResolvable()){
+		if (isLuceneSupported(request) && predicates.isLuceneResolvable()){
 		    //FIXME: CQueryFetchIds via Lucene
 		    SqlTree sqlTree = createLuceneSqlTree(request, predicates);
 	        queryPlan = new CQueryPlanLucene(request, sqlTree);
@@ -225,6 +234,28 @@ public class CQueryBuilder implements Constants {
 		return new CQueryRowCount(request, predicates, sql);
 	}
 	
+	private boolean isLuceneSupported(OrmQueryRequest<?> request) {
+        if (!luceneAvailable){
+            return false;
+        }
+        
+        UseIndex useIndex = request.getQuery().getUseIndex();
+        if (useIndex == null){
+            // get the default strategy for this bean type
+            useIndex = request.getBeanDescriptor().getUseIndex();
+            if (useIndex == null){
+                // get the default global strategy 
+                useIndex = defaultUseIndex;                
+            }
+        }
+
+        if (UseIndex.NO.equals(useIndex)){
+            return false;
+        }
+        
+        return true;
+	}
+	
 	/**
 	 * Return the SQL Select statement as a String. Converts logical property
 	 * names to physical deployment column names.
@@ -245,7 +276,7 @@ public class CQueryBuilder implements Constants {
 			return new CQuery<T>(request, predicates, queryPlan);
 		}
 
-		if (predicates.isLuceneResolvable()){
+		if (isLuceneSupported(request) && predicates.isLuceneResolvable()){
 		    // Use Lucene Index to resolve query
 	        SqlTree sqlTree = createLuceneSqlTree(request, predicates);
             queryPlan = new CQueryPlanLucene(request, sqlTree);
@@ -270,7 +301,7 @@ public class CQueryBuilder implements Constants {
                 queryPlan = new CQueryPlanRawSql(request, res, sqlTree, predicates.getLogWhereSql());
     
     		} else {
-    	        queryPlan = new CQueryPlan(request, res, sqlTree, rawSql, predicates.getLogWhereSql());
+    	        queryPlan = new CQueryPlan(request, res, sqlTree, rawSql, predicates.getLogWhereSql(), null);
     		}
 		}		
 		

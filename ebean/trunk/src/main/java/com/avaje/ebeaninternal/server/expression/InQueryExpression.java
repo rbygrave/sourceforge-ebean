@@ -2,12 +2,10 @@ package com.avaje.ebeaninternal.server.expression;
 
 import java.util.List;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.Query;
-
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
+import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.query.CQuery;
 import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
@@ -35,7 +33,7 @@ class InQueryExpression extends AbstractExpression {
         return false;
     }
 
-    public Query addLuceneQuery(SpiExpressionRequest request) throws ParseException{
+    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
         return null;
     }
 

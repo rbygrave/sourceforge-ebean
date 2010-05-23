@@ -51,7 +51,7 @@ public class LIndex implements LuceneIndex {
     
     private final LIndexIO indexIo;
     
-    public LIndex(DefaultLuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, MaxFieldLength maxFieldLength,
+    public LIndex(LuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, MaxFieldLength maxFieldLength,
             BeanDescriptor<?> desc, LIndexFields fieldDefn) throws IOException {
         
         this.indexName = indexName;
