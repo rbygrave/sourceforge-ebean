@@ -16,7 +16,8 @@ public class GenerateDmlRequest {
     private final StringBuilder sb = new StringBuilder(100);
 
     private final Set<String> includeProps;
-
+    private final Set<String> includeWhereProps;
+    
     private final Object oldValues;
 
     private StringBuilder insertBindBuffer;
@@ -29,11 +30,19 @@ public class GenerateDmlRequest {
     private int bindColumnCount;
 
     /**
-     * Create from a PersistRequestBean.
+     * Create with includeWhereProps same as includeProps.
      */
     public GenerateDmlRequest(boolean emptyStringAsNull, Set<String> includeProps, Object oldValues) {
+        this(emptyStringAsNull, includeProps, includeProps, oldValues);
+    }
+    
+    /**
+     * Create from a PersistRequestBean.
+     */
+    public GenerateDmlRequest(boolean emptyStringAsNull, Set<String> includeProps, Set<String> includeWhereProps, Object oldValues) {
         this.emptyStringAsNull = emptyStringAsNull;
         this.includeProps = includeProps;
+        this.includeWhereProps = includeWhereProps;
         this.oldValues = oldValues;
     }
 
@@ -41,7 +50,7 @@ public class GenerateDmlRequest {
      * Create for generating standard all properties DML/SQL.
      */
     public GenerateDmlRequest(boolean emptyStringAsNull) {
-        this(emptyStringAsNull, null, null);
+        this(emptyStringAsNull, null, null, null);
     }
 
     public GenerateDmlRequest append(String s) {
@@ -53,8 +62,18 @@ public class GenerateDmlRequest {
         return v == null || (emptyStringAsNull && (v instanceof String) && ((String) v).length() == 0);
     }
 
+    /**
+     * Return true if this property should be included in the set clause.
+     */
     public boolean isIncluded(BeanProperty prop) {
         return (includeProps == null || includeProps.contains(prop.getName()));
+    }
+    
+    /**
+     * Return true if this property should be included in the where clause.
+     */
+    public boolean isIncludedWhere(BeanProperty prop) {
+        return (includeWhereProps == null || includeWhereProps.contains(prop.getName()));
     }
 
     public void appendColumnIsNull(String column) {

@@ -51,18 +51,21 @@ public class BindablePropertyUpdateGenerated extends BindableProperty {
 	}
 
     public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
-        dmlBind(request, checkIncludes, bean, true);
+        if (checkIncludes && !request.isIncluded(prop)){
+            return;
+        }
+        dmlBind(request, bean, true);
     }
     
     public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
-        dmlBind(request, checkIncludes, bean, false);
+        if (checkIncludes && !request.isIncludedWhere(prop)){
+            return;
+        }
+        dmlBind(request, bean, false);
     }
     
-	private void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull) throws SQLException {
-		
-		if (checkIncludes && !request.isIncluded(prop)){
-			return;
-		}
+	private void dmlBind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
+
 		Object value = gen.getUpdateValue(prop, bean);
         
 		// generated value should be the correct type

@@ -70,7 +70,13 @@ public interface BindableRequest {
 	 * Return true if the property is included in this request.
 	 */
 	public boolean isIncluded(BeanProperty prop);
-	
+
+    /**
+     * Return true if the property is included in the WHERE clause for this
+     * request.
+     */
+    public boolean isIncludedWhere(BeanProperty prop);
+
 	/**
 	 * Register the value from a update GeneratedValue. This can only be set to
 	 * the bean property after the where clause has bean built.

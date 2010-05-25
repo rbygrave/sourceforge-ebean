@@ -64,7 +64,7 @@ public class BindableEmbedded implements Bindable {
      * Used for dynamic where clause generation.
      */
     public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object origBean) {
-        if (checkIncludes && !request.isIncluded(embProp)) {
+        if (checkIncludes && !request.isIncludedWhere(embProp)) {
             return;
         }
         Object embBean = embProp.getValue(origBean);
@@ -99,7 +99,7 @@ public class BindableEmbedded implements Bindable {
     public void dmlBindWhere(BindableRequest bindRequest, boolean checkIncludes, Object bean)
             throws SQLException {
         
-        if (checkIncludes && !bindRequest.isIncluded(embProp)) {
+        if (checkIncludes && !bindRequest.isIncludedWhere(embProp)) {
             return;
         }
 

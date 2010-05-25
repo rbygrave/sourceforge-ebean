@@ -161,8 +161,18 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	public boolean isIncluded(BeanProperty prop) {
 		return (loadedProps == null || loadedProps.contains(prop.getName()));
 	}
-
-	/**
+	
+    public boolean isIncludedWhere(BeanProperty prop) {
+        if (prop.isDbEncrypted()){
+            // update without a version property ...
+            // for encrypted properties only include if it was 
+            // also an updated/modified property
+            return isIncluded(prop);
+        }
+        return prop.isDbUpdatable() && (loadedProps == null || loadedProps.contains(prop.getName()));    
+    }
+    
+    /**
 	 * Bind a raw value. Used to bind the discriminator column.
 	 */
 	public Object bind(String propName, Object value, int sqlType) throws SQLException {

@@ -63,12 +63,11 @@ public class BindableCompound implements Bindable {
      * Used for dynamic where clause generation.
      */
     public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object origBean) {
-        if (checkIncludes && !request.isIncluded(compound)) {
+        if (checkIncludes && !request.isIncludedWhere(compound)) {
             return;
         }
 
         Object valueObject = compound.getValue(origBean);
-        // Object oldValueObject = getOldValue(origBean);
 
         for (int i = 0; i < items.length; i++) {
             items[i].dmlWhere(request, false, valueObject);
@@ -94,7 +93,7 @@ public class BindableCompound implements Bindable {
     }
 
     public void dmlBindWhere(BindableRequest bindRequest, boolean checkIncludes, Object bean) throws SQLException {
-        if (checkIncludes && !bindRequest.isIncluded(compound)) {
+        if (checkIncludes && !bindRequest.isIncludedWhere(compound)) {
             return;
         }
 
