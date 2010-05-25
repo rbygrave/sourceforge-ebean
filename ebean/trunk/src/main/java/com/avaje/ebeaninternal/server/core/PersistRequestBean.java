@@ -591,9 +591,9 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
      */
     public GenerateDmlRequest createGenerateDmlRequest(boolean emptyStringAsNull) {
         if (beanDescriptor.isUpdateChangesOnly()) {
-            return new GenerateDmlRequest(emptyStringAsNull, changedProps, oldValues);
+            return new GenerateDmlRequest(emptyStringAsNull, changedProps, loadedProps, oldValues);
         } else {
-            return new GenerateDmlRequest(emptyStringAsNull, loadedProps, oldValues);
+            return new GenerateDmlRequest(emptyStringAsNull, loadedProps, loadedProps, oldValues);
         }
     }
 

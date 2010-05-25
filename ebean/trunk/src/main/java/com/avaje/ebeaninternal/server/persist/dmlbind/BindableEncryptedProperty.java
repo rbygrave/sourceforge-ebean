@@ -74,6 +74,8 @@ public class BindableEncryptedProperty implements Bindable {
      * Used for dynamic where clause generation.
      */
     public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
+        // only include encrypted property in where when it is included
+        // in the update as well (so not using isIncludedWhere)
         if (checkIncludes && !request.isIncluded(prop)) {
             return;
         }

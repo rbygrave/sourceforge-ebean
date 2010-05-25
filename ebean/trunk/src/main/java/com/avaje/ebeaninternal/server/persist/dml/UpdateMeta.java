@@ -136,7 +136,7 @@ public final class UpdateMeta {
 			if (oldValues == null) {
 				throw new PersistenceException("OldValues are null?");
 			}
-			String sql = genDynamicWhere(request.getLoadedProperties(), oldValues);
+			String sql = genDynamicWhere(request.getUpdatedProperties(), request.getLoadedProperties(), oldValues);
 			return new UpdatePlan(ConcurrencyMode.ALL, sql, set);
 
 		default:
@@ -225,12 +225,10 @@ public final class UpdateMeta {
 			if (version == null){
 				return null;
 			}
-			//request.setWhereMode();
 			version.dmlAppend(request, false);
 			
 		} else if (ConcurrencyMode.ALL.equals(conMode)) {
 			
-			//request.setWhereMode();
 			all.dmlWhere(request, true, request.getOldValues());
 		}
 		
@@ -241,12 +239,12 @@ public final class UpdateMeta {
 	/**
 	 * Generate the sql dynamically for where using IS NULL for binding null values.
 	 */
-	private String genDynamicWhere(Set<String> loadedProps, Object oldBean) {
+	private String genDynamicWhere(Set<String> loadedProps, Set<String> whereProps, Object oldBean) {
 
 		// always has a preceding id property(s) so the first
 		// option is always ' and ' and not blank.
 		
-		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull, loadedProps, oldBean);
+		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull, loadedProps, whereProps, oldBean);
 		
 		request.append(sqlNone);
 		

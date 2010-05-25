@@ -62,7 +62,7 @@ public class BindableProperty implements Bindable {
      * Used for dynamic where clause generation.
      */
     public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
-        if (checkIncludes && !request.isIncluded(prop)) {
+        if (checkIncludes && !request.isIncludedWhere(prop)) {
             return;
         }
 
@@ -75,19 +75,23 @@ public class BindableProperty implements Bindable {
     }
 
     public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
-        dmlBind(request, checkIncludes, bean, true);
-    }
-    
-    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
-        dmlBind(request, checkIncludes, bean, false);
-    }
-    
-    private void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
-            throws SQLException {
-        
+
         if (checkIncludes && !request.isIncluded(prop)) {
             return;
         }
+        dmlBind(request, bean, true);
+    }
+    
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        if (checkIncludes && !request.isIncludedWhere(prop)) {
+            return;
+        }
+        dmlBind(request, bean, false);
+    }
+    
+    private void dmlBind(BindableRequest request, Object bean, boolean bindNull)
+            throws SQLException {
+        
         Object value = null;
         if (bean != null) {
             value = prop.getValue(bean);

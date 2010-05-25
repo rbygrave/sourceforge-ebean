@@ -82,8 +82,13 @@ public class DeleteHandler extends DmlHandler {
 	}
 	
     @Override
-    public boolean isIncluded(BeanProperty prop) {
-        
+    public boolean isIncluded(BeanProperty prop) {        
         return prop.isDbUpdatable() && super.isIncluded(prop);
     }
+    
+    @Override
+    public boolean isIncludedWhere(BeanProperty prop) {
+        return prop.isDbUpdatable() && (loadedProps == null || loadedProps.contains(prop.getName()));    
+    }
+
 }

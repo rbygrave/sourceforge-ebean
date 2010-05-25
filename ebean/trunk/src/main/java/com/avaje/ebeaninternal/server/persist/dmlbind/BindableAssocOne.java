@@ -66,7 +66,7 @@ public class BindableAssocOne implements Bindable {
      * Used for dynamic where clause generation.
      */
     public void dmlWhere(GenerateDmlRequest request, boolean checkIncludes, Object bean) {
-        if (checkIncludes && !request.isIncluded(assocOne)) {
+        if (checkIncludes && !request.isIncludedWhere(assocOne)) {
             return;
         }
         Object assocBean = assocOne.getValue(bean);
@@ -74,19 +74,22 @@ public class BindableAssocOne implements Bindable {
     }
 
     public void dmlBind(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
-        dmlBind(request, checkIncludes, bean, true);
-    }
-
-    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
-        dmlBind(request, checkIncludes, bean, false);
-    }
-
-    private void dmlBind(BindableRequest request, boolean checkIncludes, Object bean, boolean bindNull)
-            throws SQLException {
-        
         if (checkIncludes && !request.isIncluded(assocOne)) {
             return;
         }
+        dmlBind(request, bean, true);
+    }
+
+    public void dmlBindWhere(BindableRequest request, boolean checkIncludes, Object bean) throws SQLException {
+        if (checkIncludes && !request.isIncludedWhere(assocOne)) {
+            return;
+        }
+        dmlBind(request, bean, false);
+    }
+
+    private void dmlBind(BindableRequest request, Object bean, boolean bindNull)
+            throws SQLException {
+
         Object assocBean = assocOne.getValue(bean);
         importedId.bind(request, assocBean, bindNull);
     }
