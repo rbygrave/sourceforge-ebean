@@ -88,6 +88,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 
 	protected ModifyHolder<E> modifyHolder;
 
+	protected ModifyListenMode modifyListenMode;
 	protected boolean modifyAddListening;
 	protected boolean modifyRemoveListening;
 	protected boolean modifyListening;
@@ -279,6 +280,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 	 */
 	public void setModifyListening(ModifyListenMode mode) {
 		
+	    this.modifyListenMode = mode;
 		this.modifyAddListening = ModifyListenMode.ALL.equals(mode);
 		this.modifyRemoveListening = modifyAddListening || ModifyListenMode.REMOVALS.equals(mode);
 		this.modifyListening = modifyRemoveListening || modifyAddListening;
@@ -287,8 +289,15 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 			modifyHolder = null;
 		}
 	}
+	
+	/**
+	 * Return the modify listening mode this collection is using.
+	 */
+	public ModifyListenMode getModifyListenMode() {
+        return modifyListenMode;
+    }
 
-	protected ModifyHolder<E> getModifyHolder() {
+    protected ModifyHolder<E> getModifyHolder() {
 		if (modifyHolder == null){
 			modifyHolder = new ModifyHolder<E>();
 		}
