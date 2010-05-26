@@ -95,10 +95,7 @@ public class BeanCascadeInfo {
         }
         if (save || delete){
         	validate = true;
-        }
-//        CascadeType.REFRESH;
-//        CascadeType.MERGE;
-        
+        }        
     }
     
     /**
