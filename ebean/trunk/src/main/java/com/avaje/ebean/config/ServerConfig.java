@@ -1445,7 +1445,6 @@ public class ServerConfig {
         }
         
         useJtaTransactionManager = p.getBoolean("useJtaTransactionManager", false);
-        
         namingConvention = createNamingConvention(p);
         databasePlatform = createInstance(p, DatabasePlatform.class, "databasePlatform");
         encryptKeyManager = createInstance(p, EncryptKeyManager.class, "encryptKeyManager");
@@ -1477,6 +1476,7 @@ public class ServerConfig {
         databaseSequenceBatchSize = p.getInt("databaseSequenceBatchSize", 20);
         databaseBooleanTrue = p.get("databaseBooleanTrue", null);
         databaseBooleanFalse = p.get("databaseBooleanFalse", null);
+        databasePlatformName = p.get("databasePlatformName", null);
 
         lazyLoadBatchSize = p.getInt("lazyLoadBatchSize", 1);
 
