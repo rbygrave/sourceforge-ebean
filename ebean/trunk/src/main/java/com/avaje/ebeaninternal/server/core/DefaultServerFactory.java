@@ -414,13 +414,15 @@ public class DefaultServerFactory implements BootupEbeanManager {
 	 * Return a heartbeatSql depending on the jdbc driver name.
 	 */
 	private String getHeartbeatSql(String driver) {
-		String d = driver.toLowerCase();
-		if (d.contains("oracle")){
-			return "select 'x' from dual";
-		}
-		if (d.contains(".h2.") || d.contains(".mysql.")){
-			return "select 1";
-		}
+	    if (driver != null){
+    		String d = driver.toLowerCase();
+    		if (d.contains("oracle")){
+    			return "select 'x' from dual";
+    		}
+    		if (d.contains(".h2.") || d.contains(".mysql.") || d.contains("postgre")){
+    			return "select 1";
+    		}
+	    }
 		return null;
 	}
 
