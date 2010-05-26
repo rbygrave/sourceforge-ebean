@@ -22,10 +22,12 @@ package com.avaje.ebeaninternal.server.query;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
+import com.avaje.ebeaninternal.api.BindParams;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
+import com.avaje.ebeaninternal.server.util.BindParamsParser;
 
 public class CQueryBuilderRawSql implements Constants {
 
@@ -39,9 +41,16 @@ public class CQueryBuilderRawSql implements Constants {
      * Build the full SQL Select statement for the request.
      */
     public SqlLimitResponse buildSql(OrmQueryRequest<?> request, CQueryPredicates predicates, RawSql.Sql rsql) {
-
+        
         if (!rsql.isParsed()){
-            return new SqlLimitResponse(rsql.getUnparsedSql(), false);
+            String sql = rsql.getUnparsedSql();
+            BindParams bindParams = request.getQuery().getBindParams();
+            if (bindParams != null && bindParams.requiresNamedParamsPrepare()){
+                // convert named parameters into positioned parameters
+                sql = BindParamsParser.parse(bindParams, sql);
+            }
+            
+            return new SqlLimitResponse(sql, false);
         }
 
         String orderBy = getOrderBy(predicates, rsql);
@@ -67,7 +76,16 @@ public class CQueryBuilderRawSql implements Constants {
         sb.append(sql.getPreFrom());
         sb.append(" ");
         sb.append(NEW_LINE);
-        sb.append(sql.getPreWhere());
+        
+        String s = sql.getPreWhere();
+        BindParams bindParams = request.getQuery().getBindParams();
+        if (bindParams != null && bindParams.requiresNamedParamsPrepare()){
+            // convert named parameters into positioned parameters
+            // Named Parameters only allowed prior to dynamic where
+            // clause (so not allowed in having etc - use unparsed)
+            s = BindParamsParser.parse(bindParams, s);
+        }
+        sb.append(s);
         sb.append(" ");
 
         String dynamicWhere = null;
@@ -129,7 +147,7 @@ public class CQueryBuilderRawSql implements Constants {
             sb.append(" order by ").append(orderBy);
         }
 
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private String getOrderBy(CQueryPredicates predicates, RawSql.Sql sql) {
