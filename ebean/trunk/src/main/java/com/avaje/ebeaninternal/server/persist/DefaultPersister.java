@@ -961,30 +961,30 @@ public final class DefaultPersister implements Persister {
 					}
 				}
 				
-				
-				// cascade delete the beans in the collection
-				Collection<?> collection = getDetailsIterator(details);
-				 
-				if (collection == null) {
-	                IntersectionRow intRow = manys[i].buildManyDeleteChildren(parentBean);
-	                SqlUpdate sqlDelete = intRow.createDelete(server);
-	                executeSqlUpdate(sqlDelete, t);
-				    
-				} else {
-					// decrease depth for batched processing
-					// lowest depth executes first
-					t.depth(-1);
-
-					Iterator<?> it = collection.iterator();
-					while (it.hasNext()) {
-						Object detailBean = it.next();
-						if (manys[i].hasId(detailBean)) {
-							deleteRecurse(detailBean, t);
-						} else {
-							// bean that had not been inserted
-						}
-					}
-					t.depth(+1);
+				if (manys[i].getCascadeInfo().isDelete()) {
+    				// cascade delete the beans in the collection
+    				Collection<?> collection = getDetailsIterator(details);
+    				if (collection == null) {
+    	                IntersectionRow intRow = manys[i].buildManyDeleteChildren(parentBean);
+    	                SqlUpdate sqlDelete = intRow.createDelete(server);
+    	                executeSqlUpdate(sqlDelete, t);
+    				    
+    				} else {
+    					// decrease depth for batched processing
+    					// lowest depth executes first
+    					t.depth(-1);
+    
+    					Iterator<?> it = collection.iterator();
+    					while (it.hasNext()) {
+    						Object detailBean = it.next();
+    						if (manys[i].hasId(detailBean)) {
+    							deleteRecurse(detailBean, t);
+    						} else {
+    							// bean that had not been inserted
+    						}
+    					}
+    					t.depth(+1);
+    				}
 				}
 			}
 		}
