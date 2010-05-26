@@ -270,6 +270,23 @@ public final class DefaultPersister implements Persister {
 		saveRecurse(bean, t, null);
 	}
 
+	/**
+	 * Explicitly specify to insert this bean.
+	 */
+	public void forceInsert(Object bean, Transaction t) {
+	    
+        PersistRequestBean<?> req = createRequest(bean, t, null);
+        try {
+            req.initTransIfRequired();
+            insert(req);
+            req.commitTransIfRequired();
+
+        } catch (RuntimeException ex) {
+            req.rollbackTransIfRequired();
+            throw ex;
+        }
+	}
+	
 	private void saveRecurse(Object bean, Transaction t, Object parentBean) {
 		if (bean == null) {
 			throw new NullPointerException(Message.msg("bean.isnull"));

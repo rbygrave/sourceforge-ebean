@@ -39,6 +39,11 @@ public interface Persister {
     public void forceUpdate(Object entityBean, Set<String> updateProps, Transaction t);
 
     /**
+     * Force an Insert using the given bean.
+     */
+    public void forceInsert(Object entityBean, Transaction t);
+
+    /**
      * Insert or update the bean depending on its state.
      */
     public void save(Object entityBean, Transaction t);
