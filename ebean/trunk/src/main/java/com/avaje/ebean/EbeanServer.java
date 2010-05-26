@@ -897,6 +897,28 @@ public interface EbeanServer {
     public void update(Object bean, Transaction t);
 
     /**
+     * Force the bean to be saved with an explicit insert.
+     * <p>
+     * Typically you would use save() and let Ebean determine if the bean should
+     * be inserted or updated. This can be useful when you are transferring data
+     * between databases and want to explicitly insert a bean into a different
+     * database that it came from.
+     * </p>
+     */
+    public void insert(Object bean);
+
+    /**
+     * Force the bean to be saved with an explicit insert.
+     * <p>
+     * Typically you would use save() and let Ebean determine if the bean should
+     * be inserted or updated. This can be useful when you are transferring data
+     * between databases and want to explicitly insert a bean into a different
+     * database that it came from.
+     * </p>
+     */
+    public void insert(Object bean, Transaction t);
+    
+    /**
      * Delete the associations (from the intersection table) of a ManyToMany
      * given the owner bean and the propertyName of the ManyToMany collection.
      * <p>
