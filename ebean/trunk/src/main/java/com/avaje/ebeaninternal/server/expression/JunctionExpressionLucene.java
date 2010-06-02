@@ -46,7 +46,7 @@ public class JunctionExpressionLucene {
         BooleanQuery bq = new BooleanQuery();
         for (int i = 0; i < list.size(); i++) {
             SpiLuceneExpr luceneExpr = list.get(i).createLuceneExpr(request);
-            Query query = (Query)luceneExpr.mergeLuceneQuery();
+            Query query = luceneExpr.mergeLuceneQuery();
             bq.add(query, occur);
             
             if (i > 0){

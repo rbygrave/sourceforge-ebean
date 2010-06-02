@@ -20,20 +20,23 @@
 package com.avaje.ebeaninternal.server.lucene;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.queryParser.QueryParser.Operator;
-import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.IndexSearcher;
 
 import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
+import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 
 public class LIndex implements LuceneIndex {
 
@@ -49,7 +52,9 @@ public class LIndex implements LuceneIndex {
 
     private final OrmQueryDetail ormQueryDetail;
     
-    private final LIndexIO indexIo;
+    private final LIndexIo indexIo;
+
+    private final LIndexFieldId idField;
     
     public LIndex(LuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, MaxFieldLength maxFieldLength,
             BeanDescriptor<?> desc, LIndexFields fieldDefn) throws IOException {
@@ -59,12 +64,25 @@ public class LIndex implements LuceneIndex {
         this.maxFieldLength = maxFieldLength;
         this.desc = desc;
         this.fieldDefn = fieldDefn;
+        this.idField = fieldDefn.getIdField();
         this.ormQueryDetail = fieldDefn.getOrmQueryDetail();
         
-        this.indexIo = new LIndexIO(manager, indexDir, this); 
+        this.indexIo = new LIndexIo(manager, indexDir, this); 
         manager.addIndex(this);
+        fieldDefn.registerIndexWithProperties(this);
     }
     
+    public void manage(LuceneIndexManager indexManager) {
+        indexIo.manage(indexManager);
+    }
+    
+    public Term createIdTerm(Object id) {
+        return idField.createTerm(id);
+    }
+    
+    public void shutdown() {
+        indexIo.shutdown();
+    }
     
     public int rebuild() {
         try {
@@ -90,9 +108,12 @@ public class LIndex implements LuceneIndex {
         return desc.getBeanType();
     }
 
-    
-    public Searcher getSearcher() {
-        return indexIo.getSearcher();
+    public BeanDescriptor<?> getBeanDescriptor() {
+        return desc;
+    }
+
+    public IndexSearcher getIndexSearcher() {
+        return indexIo.getIndexSearcher();
     }
     
     public Analyzer getAnalyzer() {
@@ -112,10 +133,6 @@ public class LIndex implements LuceneIndex {
     public LIndexFields getIndexFieldDefn() {
         return fieldDefn;
     }
-
-//    public boolean isUsedProperty(String propertyName) {
-//        return fieldDefn.isUsedProperty(propertyName);
-//    }
     
     public Set<String> getResolvePropertyNames() {
         return fieldDefn.getResolvePropertyNames();
@@ -135,4 +152,11 @@ public class LIndex implements LuceneIndex {
     public DocFieldWriter createDocFieldWriter() {
         return fieldDefn.createDocFieldWriter();
     }
+
+    public void process(List<BeanDelta> deltaBeans) {
+        LIndexDeltaHandler h = indexIo.createDeltaHandler(deltaBeans);
+        h.process();
+        indexIo.queueCommit();
+    }
+
 }

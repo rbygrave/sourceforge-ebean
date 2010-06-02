@@ -156,6 +156,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
     private List<BeanDescriptor<?>> immutableDescriptorList;
 
+    private final Set<Integer> descriptorUniqueIds = new HashSet<Integer>(); 
+
     private final DbIdentity dbIdentity;
 
     private final DataSource dataSource;
@@ -547,7 +549,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         DeployBeanInfo<T> info = createDeployBeanInfo(beanClass);
         readDeployAssociations(info);
-        return new BeanDescriptor<T>(this, typeManager, info.getDescriptor());
+        
+        Integer key = getUniqueHash(info.getDescriptor());
+
+        return new BeanDescriptor<T>(this, typeManager, info.getDescriptor(), key.toString());
     }
 
     private void registerBeanDescriptor(BeanDescriptor<?> desc) {
@@ -682,10 +687,25 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         }
         
         for (DeployBeanInfo<?> info : deplyInfoMap.values()) {
-            registerBeanDescriptor(new BeanDescriptor(this, typeManager, info.getDescriptor()));
+            DeployBeanDescriptor<?> deployBeanDescriptor = info.getDescriptor();
+            Integer key = getUniqueHash(deployBeanDescriptor);
+            registerBeanDescriptor(new BeanDescriptor(this, typeManager, info.getDescriptor(), key.toString()));
         }
     }
-
+    
+    private Integer getUniqueHash(DeployBeanDescriptor<?> deployBeanDescriptor) {
+        
+        int hashCode = deployBeanDescriptor.getFullName().hashCode();
+        
+        for (int i = 0; i < 100000; i++) {
+            Integer key = Integer.valueOf(hashCode+i);
+            if (!descriptorUniqueIds.contains(key)){
+                return key;
+            }    
+        }
+        throw new RuntimeException("Failed to generate a unique hash for "+deployBeanDescriptor.getFullName());
+    }
+    
     private void secondaryPropsJoins(DeployBeanInfo<?> info) {
 
         DeployBeanDescriptor<?> descriptor = info.getDescriptor();

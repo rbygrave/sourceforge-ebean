@@ -32,6 +32,7 @@ import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.config.lucene.IndexFieldDefn;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 
@@ -138,6 +139,12 @@ public class LIndexFactory {
             BeanProperty beanProperty = prop.getBeanProperty();
             ScalarType<?> scalarType = beanProperty.getScalarType();
             luceneType = scalarType.getLuceneType();
+            
+            if (beanProperty.isId()){
+                IdBinder idBinder = beanProperty.getBeanDescriptor().getIdBinder();
+                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, boost);
+                return new LIndexFieldId(queryAnalyzer, fieldName, fieldFactory, prop, idBinder);
+            }
 
             if (luceneType == LLuceneTypes.BINARY) {
                 FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, boost);

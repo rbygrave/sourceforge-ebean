@@ -130,7 +130,7 @@ public class LIndexFieldsBuilder implements SpiIndexDefnHelper {
             store = isLob(scalarType) ? Store.NO : Store.YES;
         }
 
-        boolean luceneStringType = isLuceneString(scalarType.getLuceneType());
+        boolean luceneStringType = beanProperty.isId() || isLuceneString(scalarType.getLuceneType());
         if (index == null) {            
             if (beanProperty.isId() || !luceneStringType) {
                 index = Index.NOT_ANALYZED;

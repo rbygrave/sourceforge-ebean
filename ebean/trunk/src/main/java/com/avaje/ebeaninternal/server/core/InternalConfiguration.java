@@ -174,9 +174,9 @@ public class InternalConfiguration {
 
 	private LuceneIndexManager createLuceneManager(ServerConfig serverConfig) {
 	    
-	    if (!ClassUtil.isPresent("org.apache.lucene.analysis.Analyzer", this.getClass())) {
-	        // construct an empty index manager as Lucene is not in the class path and
-	        // we are not expecting any indexes
+	    if (!DetectLucene.isPresent()){
+	        // construct an empty index manager as Lucene is not in the 
+	        // class path and we are not expecting any indexes
 	        return new NoLuceneIndexManager();
 	    }
 	    

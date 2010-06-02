@@ -32,7 +32,7 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
 
     private static final long serialVersionUID = 757920022500956949L;
 
-    private ArrayList<RemoteBeanPersist> beanPersistList = new ArrayList<RemoteBeanPersist>();
+    private ArrayList<BeanPersistIds> beanPersistList = new ArrayList<BeanPersistIds>();
     
     private ArrayList<TableIUD> tableList = new ArrayList<TableIUD>(4);
 
@@ -74,7 +74,7 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
         return beanPersistList.isEmpty() && tableList.isEmpty();
     }
     
-    public void add(RemoteBeanPersist beanPersist){
+    public void add(BeanPersistIds beanPersist){
         beanPersistList.add(beanPersist);
     }
     
@@ -98,7 +98,7 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
         return tableList;
     }
 
-    public List<RemoteBeanPersist> getBeanPersistList() {
+    public List<BeanPersistIds> getBeanPersistList() {
         return beanPersistList;
     }
     

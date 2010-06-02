@@ -22,8 +22,6 @@ package com.avaje.ebeaninternal.server.type;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
-
 /**
  * ScalarType for Types.BINARY to byte[].
  */
@@ -33,20 +31,8 @@ public class ScalarTypeBytesBinary extends ScalarTypeBytesBase {
 		super(true, Types.BINARY);
 	}
 	
-	public byte[] read(DataReader dataReader) throws SQLException {
+    public byte[] read(DataReader dataReader) throws SQLException {
 		return dataReader.getBytes();
 	}
-
-    public int getLuceneType() {
-        return LLuceneTypes.BINARY;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return value;
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return value;
-    }
 	
 }

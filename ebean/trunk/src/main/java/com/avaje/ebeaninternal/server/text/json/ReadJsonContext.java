@@ -303,7 +303,7 @@ public class ReadJsonContext {
         }
     }
     
-    public void popBean() {
+    public ReadBeanState popBeanState() {
         if (pathStack != null){
             String path = pathStack.peekWithNull();
             JsonReadBeanVisitor<?> beanVisitor = visitorMap.get(path);
@@ -312,10 +312,15 @@ public class ReadJsonContext {
             }
             pathStack.pop();
         }
-        currentState.setLoadedState();
+        
+        // return the current ReadBeanState as we can't call setLoadedState()
+        // yet. We might bind master/detail beans together via mappedBy property
+        // so wait until after that before calling ReadBeanStatesetLoadedState();
+        ReadBeanState s = currentState;
+        
         beanState.pop();
         currentState = beanState.peekWithNull();
-
+        return s;
     }
     
     public void setProperty(String propertyName){
@@ -344,7 +349,7 @@ public class ReadJsonContext {
         return tokenStart;
     }
 
-    private static class ReadBeanState implements PropertyChangeListener {
+    public static class ReadBeanState implements PropertyChangeListener {
         
         private final Object bean;
         private final BeanDescriptor<?> beanDescriptor;
@@ -370,7 +375,7 @@ public class ReadJsonContext {
         /**
          * Add a loaded/set property to the set of loadedProps.
          */
-        private void setLoaded(String propertyName){
+        public void setLoaded(String propertyName){
             if (ebi != null){
                 loadedProps.add(propertyName);
             }
@@ -396,7 +401,7 @@ public class ReadJsonContext {
             }
         }
         
-        private void setLoadedState(){
+        public void setLoadedState(){
             if (ebi != null){
                 // takes into account reference beans
                 beanDescriptor.setLoadedProps(ebi, loadedProps);
@@ -408,6 +413,9 @@ public class ReadJsonContext {
             loadedProps.add(propName);
         }
         
+        public Object getBean() {
+            return bean;
+        }
         
     }
 

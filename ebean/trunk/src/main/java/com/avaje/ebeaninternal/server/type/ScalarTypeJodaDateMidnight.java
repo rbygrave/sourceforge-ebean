@@ -20,19 +20,16 @@
 package com.avaje.ebeaninternal.server.type;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.Types;
 
 import org.joda.time.DateMidnight;
 
-import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda DateMidnight. This maps to a JDBC Date.
  */
-public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
+public class ScalarTypeJodaDateMidnight extends ScalarTypeBaseDate<DateMidnight> {
 
 	/**
 	 * Instantiates a new scalar type joda date midnight.
@@ -40,24 +37,16 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
 	public ScalarTypeJodaDateMidnight() {
 		super(DateMidnight.class, false, Types.DATE);
 	}
-	
-	public void bind(DataBind b, DateMidnight value) throws SQLException {
-		if (value == null){
-			b.setNull(Types.DATE);
-		} else {
-		    b.setDate(new Date(value.getMillis()));
-		}
-	}
 
-	public DateMidnight read(DataReader dataReader) throws SQLException {
-		
-		final Date date = dataReader.getDate();
-		if (date == null){
-			return null;
-		} else {
-			return new DateMidnight(date.getTime());
-		}
-	}
+    @Override
+    public DateMidnight convertFromDate(Date ts) {
+        return new DateMidnight(ts.getTime());
+    }
+
+    @Override
+    public Date convertToDate(DateMidnight t) {
+        return new Date(t.getMillis());
+    }
 	
 	public Object toJdbcType(Object value) {
 		if (value instanceof DateMidnight){
@@ -72,42 +61,4 @@ public class ScalarTypeJodaDateMidnight extends ScalarTypeBase<DateMidnight> {
 		}
 		return (DateMidnight)value;
 	}
-	
-    public String formatValue(DateMidnight v) {
-        Date sqlDate = new Date(v.getMillis());
-        return sqlDate.toString();
-    }
-
-	public DateMidnight parse(String value) {
-		Date sqlDate = Date.valueOf(value);
-		return new DateMidnight(sqlDate.getTime());
-	}
-
-	public DateMidnight parseDateTime(long systemTimeMillis) {
-		return new DateMidnight(systemTimeMillis);
-	}
-
-	public boolean isDateTimeCapable() {
-		return true;
-	}
-
-    @Override
-    public String jsonToString(DateMidnight value, JsonValueAdapter ctx) {
-        java.sql.Date d = (java.sql.Date)toJdbcType(value);
-        return ctx.jsonFromDate(d);
-    }
-    
-    public int getLuceneType() {
-        return LLuceneTypes.DATE;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        Long l = (Long)value;
-        return toBeanType(new Date(l));
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        Date v = (Date)toJdbcType(value);
-        return v.getTime();
-    }  
 }

@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -35,6 +38,26 @@ public class ScalarTypeBigDecimal extends ScalarTypeBase<BigDecimal> {
 		super(BigDecimal.class, true, Types.DECIMAL);
 	}
 	
+    public Object readData(DataInput dataInput) throws IOException {
+        if (!dataInput.readBoolean()) {
+            return null;
+        } else {
+            double val = dataInput.readDouble();
+            return new BigDecimal(val);
+        }
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        
+        BigDecimal b = (BigDecimal)v;
+        if (b == null){
+            dataOutput.writeBoolean(false);
+        } else {
+            dataOutput.writeBoolean(true);
+            dataOutput.writeDouble(b.doubleValue());            
+        }
+    }
+    
 	public void bind(DataBind b, BigDecimal value) throws SQLException {
 		if (value == null){
 			b.setNull(Types.DECIMAL);

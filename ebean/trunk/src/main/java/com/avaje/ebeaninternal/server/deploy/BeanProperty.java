@@ -41,6 +41,7 @@ import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
+import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.validation.factory.Validator;
@@ -1095,6 +1096,19 @@ public class BeanProperty implements ElPropertyValue {
         return value;
     }
 
+    private ArrayList<LuceneIndex> luceneIndexes;
+    
+    public void registerLuceneIndex(LuceneIndex luceneIndex){
+        if (luceneIndexes == null){
+            luceneIndexes = new ArrayList<LuceneIndex>();
+        }
+        luceneIndexes.add(luceneIndex);
+    }
+    
+    public boolean isDeltaRequired() {
+        return luceneIndexes != null;
+    }
+    
     /**
      * Return true if this is mapped to a Clob Blob LongVarchar or
      * LongVarbinary.

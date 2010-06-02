@@ -229,6 +229,40 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 	
+    
+    public Object readTerm(String idTermValue) {
+        
+        String[] split = idTermValue.split("|");
+        if (split.length != props.length){
+            String msg = "Failed to split ["+idTermValue+"] using | for id.";
+            throw new PersistenceException(msg);
+        }
+        Map<String, Object> uidMap = new LinkedHashMap<String, Object>();
+        for (int i = 0; i < props.length; i++) {
+            Object v = props[i].getScalarType().parse(split[i]);
+            uidMap.put(props[i].getName(), v);
+        }
+        return uidMap;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String writeTerm(Object idValue) {
+
+        Map<String, ?> uidMap = (Map<String, ?>) idValue;
+        
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < props.length; i++) {
+            Object v = uidMap.get(props[i].getName());
+            String formatValue = props[i].getScalarType().format(v);
+            if (i > 0){
+                sb.append("|");
+            }
+            sb.append(formatValue);
+        }    
+        return sb.toString();
+    }
+	
     public Object readData(DataInput dataInput) throws IOException {
         
         LinkedHashMap<String,Object> map = new LinkedHashMap<String, Object>();

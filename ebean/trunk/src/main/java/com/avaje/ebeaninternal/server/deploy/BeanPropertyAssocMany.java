@@ -45,6 +45,7 @@ import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext.ReadBeanState;
 
 /**
  * Property mapped to a List Set or Map.
@@ -752,12 +753,22 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
         Object collection = help.createEmpty(false);
         BeanCollectionAdd add = getBeanCollectionAdd(collection, null);
         do {
-            Object detailBean = targetDescriptor.jsonRead(ctx, name);
-            if (detailBean == null){
+            ReadBeanState detailBeanState = targetDescriptor.jsonRead(ctx, name);
+            if (detailBeanState == null){
                 // probably empty array
                 break;
             } 
+            Object detailBean = detailBeanState.getBean();
             add.addBean(detailBean);
+            
+            if (bean != null && childMasterProperty != null){
+                // bind detail bean back to master via mappedBy property
+                childMasterProperty.setValue(detailBean, bean);
+                detailBeanState.setLoaded(childMasterProperty.getName());
+            }
+            
+            detailBeanState.setLoadedState();
+            
             if (!ctx.readArrayNext()){
                 break;
             }

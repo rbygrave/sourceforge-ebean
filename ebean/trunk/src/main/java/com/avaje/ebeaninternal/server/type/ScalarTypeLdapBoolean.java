@@ -19,116 +19,14 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
-import java.sql.SQLException;
-import java.sql.Types;
-
-import com.avaje.ebean.text.TextException;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
- * ScalarType for Boolean and boolean.
- * <p>
- * This may or may not be a native jdbc type depending on the database and jdbc
- * driver.
- * </p>
+ * ScalarType for LDAP Boolean.
  */
-public class ScalarTypeLdapBoolean extends ScalarTypeBase<Boolean> {
-
-    private static final String trueValue = "TRUE";
-    private static final String falseValue = "FALSE";
+public class ScalarTypeLdapBoolean extends ScalarTypeBoolean.StringBoolean {
 
     public ScalarTypeLdapBoolean() {
-        super(Boolean.class, false, Types.VARCHAR);
+        super("TRUE", "FALSE");
     }
 
-    @Override
-    public int getLength() {
-        return 5;
-    }
-
-    public void bind(DataBind b, Boolean value) throws SQLException {
-        if (value == null) {
-            b.setNull(Types.VARCHAR);
-        } else {
-            b.setString(toString(value));
-        }
-    }
-
-    public Boolean read(DataReader dataReader) throws SQLException {
-        String string = dataReader.getString();
-        if (string == null) {
-            return null;
-        }
-
-        if (string.equals(trueValue)) {
-            return Boolean.TRUE;
-        } else {
-            return Boolean.FALSE;
-        }
-    }
-
-    public Object toJdbcType(Object value) {
-        return toString(value);
-    }
-
-    /**
-     * Convert the Boolean value to the db value.
-     */
-    public String toString(Object value) {
-        if (value == null) {
-            return null;
-        }
-        Boolean b = (Boolean) value;
-        if (b.booleanValue()) {
-            return trueValue;
-        } else {
-            return falseValue;
-        }
-    }
-
-    /**
-     * Convert the db value to the Boolean value.
-     */
-    public Boolean toBeanType(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Boolean) {
-            return (Boolean) value;
-        }
-        if (trueValue.equals(value)) {
-            return Boolean.TRUE;
-        } else {
-            return Boolean.FALSE;
-        }
-    }
-    
-    public String formatValue(Boolean t) {
-        return t.toString();
-    }
-
-    public Boolean parse(String value) {
-        return Boolean.valueOf(value);
-    }
-
-    public Boolean parseDateTime(long systemTimeMillis) {
-        throw new TextException("Not Supported");
-    }
-
-    public boolean isDateTimeCapable() {
-        return false;
-    }
-
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return parse((String)value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return format(value);
-    }
-    
 }

@@ -22,21 +22,29 @@ package com.avaje.ebeaninternal.server.type;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for char.
  */
-public class ScalarTypeChar extends ScalarTypeBase<Character> {
+public class ScalarTypeChar extends ScalarTypeBaseVarchar<Character> {
 	
 	public ScalarTypeChar() {
 		super(char.class, false, Types.VARCHAR);
 	}
 	
-	public void bind(DataBind b, Character value) throws SQLException {
+	@Override
+    public Character convertFromDbString(String dbValue) {
+        return dbValue.charAt(0);
+    }
+
+    @Override
+    public String convertToDbString(Character beanValue) {
+        return beanValue.toString();
+    }
+
+    public void bind(DataBind b, Character value) throws SQLException {
 		if (value == null){
 			b.setNull(Types.VARCHAR);
 		} else {
@@ -70,14 +78,6 @@ public class ScalarTypeChar extends ScalarTypeBase<Character> {
     public Character parse(String value) {
 		return value.charAt(0);
 	}
-
-	public Character parseDateTime(long systemTimeMillis) {
-		throw new TextException("Not Supported");
-	}
-
-	public boolean isDateTimeCapable() {
-		return false;
-	}
 	
     @Override
     public Character jsonFromString(String value, JsonValueAdapter ctx) {
@@ -89,15 +89,4 @@ public class ScalarTypeChar extends ScalarTypeBase<Character> {
         return EscapeJson.escapeQuote(value.toString());
     }
     
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return parse((String)value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return format(value);
-    }
 }

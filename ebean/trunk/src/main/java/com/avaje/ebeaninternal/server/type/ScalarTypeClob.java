@@ -29,7 +29,7 @@ import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 /**
  * ScalarType for String.
  */
-public class ScalarTypeClob extends ScalarTypeBase<String> {
+public class ScalarTypeClob extends ScalarTypeBaseVarchar<String> {
 
 	static final int clobBufferSize = 512;
 	
@@ -42,8 +42,18 @@ public class ScalarTypeClob extends ScalarTypeBase<String> {
 	public ScalarTypeClob() {
 		super(String.class, true, Types.CLOB);
 	}
+	
+	@Override
+    public String convertFromDbString(String dbValue) {
+        return dbValue;
+    }
 
-	public void bind(DataBind b, String value) throws SQLException {
+    @Override
+    public String convertToDbString(String beanValue) {
+        return beanValue;
+    }
+
+    public void bind(DataBind b, String value) throws SQLException {
 		if (value == null) {
 			b.setNull(Types.VARCHAR);
 		} else {
@@ -71,14 +81,6 @@ public class ScalarTypeClob extends ScalarTypeBase<String> {
 
     public String parse(String value) {
 		return value;
-	}
-
-	public String parseDateTime(long systemTimeMillis) {
-		return String.valueOf(systemTimeMillis);
-	}
-
-	public boolean isDateTimeCapable() {
-		return true;
 	}
 	
     @Override

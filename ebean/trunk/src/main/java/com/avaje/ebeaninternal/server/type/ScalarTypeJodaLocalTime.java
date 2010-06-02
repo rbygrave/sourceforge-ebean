@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Types;
@@ -97,5 +100,25 @@ public class ScalarTypeJodaLocalTime extends ScalarTypeBase<LocalTime> {
 
     public Object luceneToIndexValue(Object value) {
         return format(value);
+    }
+    
+    public Object readData(DataInput dataInput) throws IOException {
+        if (!dataInput.readBoolean()) {
+            return null;
+        } else {
+            String val = dataInput.readUTF();
+            return parse(val);
+        }
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        
+        Time value = (Time)v;
+        if (value == null){
+            dataOutput.writeBoolean(false);
+        } else {
+            dataOutput.writeBoolean(true);
+            dataOutput.writeUTF(format(value));            
+        }
     }
 }

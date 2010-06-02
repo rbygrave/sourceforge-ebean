@@ -21,14 +21,17 @@ package com.avaje.ebeaninternal.server.lucene;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.QueryParser;
 
+import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
@@ -37,7 +40,11 @@ import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 
 public class LIndexFields {
 
+    private static final Logger logger = Logger.getLogger(LIndexFields.class.getName());
+    
     private final String defaultFieldName;
+    
+    private final BeanDescriptor<?> descriptor;
     
     private final LIndexField[] fields;
     
@@ -54,13 +61,24 @@ public class LIndexFields {
     private final LinkedHashSet<String> requiredPropertyNames = new LinkedHashSet<String>();
     private final LinkedHashSet<String> resolvePropertyNames = new LinkedHashSet<String>();
     private final LinkedHashSet<String> restorePropertyNames = new LinkedHashSet<String>();
+    private final Set<String> nonRestorablePropertyNames;
 
+    private final LIndexFieldId idField;
+    
     public LIndexFields(List<LIndexField> definedFields, BeanDescriptor<?> descriptor, String defaultFieldName) {
         
+        this.descriptor = descriptor;
         this.defaultFieldName = defaultFieldName;
         this.fields = definedFields.toArray(new LIndexField[definedFields.size()]);
+        
+        LIndexFieldId tempIdField = null;
         for (LIndexField field : fields) {
-            fieldMap.put(field.getName(), field);
+            String fieldName = field.getName();
+            if (field instanceof LIndexFieldId && fieldName.indexOf('.') == -1) {
+                tempIdField = (LIndexFieldId)field;
+            }
+            
+            fieldMap.put(fieldName, field);
             field.addIndexRequiredPropertyNames(requiredPropertyNames);
             field.addIndexResolvePropertyNames(resolvePropertyNames);
             field.addIndexRestorePropertyNames(restorePropertyNames);
@@ -71,9 +89,40 @@ public class LIndexFields {
             }
         }
         
+        this.idField = tempIdField;
+        this.nonRestorablePropertyNames = getNonRestorableProperties();
+        if (!this.nonRestorablePropertyNames.isEmpty()){
+            logger.info("Index has properties ["+nonRestorablePropertyNames+"] that are not stored");
+        }
+        
         this.readFields = createReadFields();
         this.pathProperties = createPathProperties();
         this.ormQueryDetail = createOrmQueryDetail();
+    }
+    
+    public LIndexFieldId getIdField() {
+        return idField;
+    }
+    
+    public void registerIndexWithProperties(LuceneIndex luceneIndex) {
+        for (String prop : restorePropertyNames) {
+            ElPropertyValue elProp  = descriptor.getElGetValue(prop);
+            elProp.getBeanProperty().registerLuceneIndex(luceneIndex);
+        }
+    }
+    
+    /**
+     * Return properties that are required but not stored in the index.
+     */
+    private Set<String> getNonRestorableProperties() {
+        
+        HashSet<String> nonRestoreable = new HashSet<String>();
+        for (String reqrProp : requiredPropertyNames) {
+            if (!restorePropertyNames.contains(reqrProp)){
+                nonRestoreable.add(reqrProp);
+            }
+        }
+        return nonRestoreable;
     }
     
     public LIndexField getSortableField(String propertyName) {
@@ -113,7 +162,7 @@ public class LIndexFields {
     }
     
     public void readDocument(Document doc, Object bean){
-        for (LIndexField indexField : fields) {
+        for (LIndexField indexField : readFields) {
             indexField.readValue(doc, bean);
         }
     }

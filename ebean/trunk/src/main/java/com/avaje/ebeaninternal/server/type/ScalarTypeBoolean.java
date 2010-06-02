@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -35,37 +38,21 @@ import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
  */
 public class ScalarTypeBoolean {
 
-	public static class Native extends ScalarTypeBase<Boolean> {
+	public static class Native extends BooleanBase {
 
 		/**
 		 * Native Boolean database type.
 		 */
 		public Native() {
-			super(Boolean.class, true, Types.BOOLEAN);
+			super(true, Types.BOOLEAN);
 		}
-
+        
 		public Boolean toBeanType(Object value) {
 			return BasicTypeConverter.toBoolean(value);
 		}
 		
 		public Object toJdbcType(Object value) {
 			return BasicTypeConverter.convert(value, jdbcType);
-		}
-		
-        public String formatValue(Boolean t) {
-            return t.toString();
-        }
-
-		public Boolean parse(String value) {
-			return Boolean.valueOf(value);
-		}
-		
-		public Boolean parseDateTime(long systemTimeMillis) {
-			throw new TextException("Not Supported");
-		}
-		
-		public boolean isDateTimeCapable() {
-			return false;
 		}
 
 		public void bind(DataBind b, Boolean value) throws SQLException {
@@ -80,18 +67,6 @@ public class ScalarTypeBoolean {
 		public Boolean read(DataReader dataReader) throws SQLException {
 		    return dataReader.getBoolean();
 		}
-		
-	    public int getLuceneType() {
-	        return LLuceneTypes.STRING;
-	    }
-
-	    public Object luceneFromIndexValue(Object value) {
-	        return parse((String)value);
-	    }
-
-	    public Object luceneToIndexValue(Object value) {
-	        return format(value);
-	    }
 	}
 	
 	/**
@@ -102,13 +77,13 @@ public class ScalarTypeBoolean {
 	 * the BitBoolean specify type.boolean.dbtype="bit" in the ebean configuration  
 	 * </p>
 	 */
-	public static class BitBoolean extends ScalarTypeBase<Boolean> {
+	public static class BitBoolean extends BooleanBase {
 
 		/**
 		 * Native Boolean database type.
 		 */
 		public BitBoolean() {
-			super(Boolean.class, true, Types.BIT);
+			super(true, Types.BIT);
 		}
 
 		public Boolean toBeanType(Object value) {
@@ -118,22 +93,6 @@ public class ScalarTypeBoolean {
 		public Object toJdbcType(Object value) {
 			// use JDBC driver to convert boolean to bit
 			return BasicTypeConverter.toBoolean(value);
-		}
-		
-		public String formatValue(Boolean t) {
-            return t.toString();
-        }
-
-        public Boolean parse(String value) {
-			return Boolean.valueOf(value);
-		}
-		
-		public Boolean parseDateTime(long systemTimeMillis) {
-			throw new TextException("Not Supported");
-		}
-
-		public boolean isDateTimeCapable() {
-			return false;
 		}
 		
 		public void bind(DataBind b, Boolean value) throws SQLException {
@@ -148,30 +107,19 @@ public class ScalarTypeBoolean {
 		public Boolean read(DataReader dataReader) throws SQLException {
 		    return dataReader.getBoolean();
 		}
-		
-	    public int getLuceneType() {
-	        return LLuceneTypes.STRING;
-	    }
 
-	    public Object luceneFromIndexValue(Object value) {
-	        return parse((String)value);
-	    }
-
-	    public Object luceneToIndexValue(Object value) {
-	        return format(value);
-	    }
 	}
 
 	/**
 	 * Converted to/from an Integer in the Database.
 	 */
-	public static class IntBoolean extends ScalarTypeBase<Boolean> {
+	public static class IntBoolean extends BooleanBase {
 		
 		private final Integer trueValue;
 		private final Integer falseValue;
 
 		public IntBoolean(Integer trueValue, Integer falseValue) {
-			super(Boolean.class, false, Types.INTEGER);
+			super(false, Types.INTEGER);
 			this.trueValue = trueValue;
 			this.falseValue = falseValue;
 		}
@@ -237,48 +185,21 @@ public class ScalarTypeBoolean {
 			}
 		}
 		
-        public String formatValue(Boolean t) {
-            return t.toString();
-        }
-
-		public Boolean parse(String value) {
-			return Boolean.valueOf(value);
-		}
-		public Boolean parseDateTime(long systemTimeMillis) {
-			throw new TextException("Not Supported");
-		}
-
-		public boolean isDateTimeCapable() {
-			return false;
-		}
-	    public int getLuceneType() {
-	        return LLuceneTypes.STRING;
-	    }
-
-	    public Object luceneFromIndexValue(Object value) {
-	        return parse((String)value);
-	    }
-
-	    public Object luceneToIndexValue(Object value) {
-	        return format(value);
-	    }
 	}
 	
 	/**
 	 * Converted to/from an Integer in the Database.
 	 */
-	public static class StringBoolean extends ScalarTypeBase<Boolean> {
+	public static class StringBoolean extends BooleanBase {
 		
 		private final String trueValue;
 		private final String falseValue;
 
 		public StringBoolean(String trueValue, String falseValue) {
-			super(Boolean.class, false, Types.VARCHAR);
+			super(false, Types.VARCHAR);
 			this.trueValue = trueValue;
 			this.falseValue = falseValue;
 		}
-
-		
 		
 		@Override
 		public int getLength() {
@@ -342,32 +263,61 @@ public class ScalarTypeBoolean {
 				return Boolean.FALSE;
 			}
 		}
-		
+	}
+	
+    public static abstract class BooleanBase extends ScalarTypeBase<Boolean> {
+
+        public BooleanBase(boolean jdbcNative, int jdbcType) {
+            super(Boolean.class, jdbcNative, jdbcType);
+        }
+        
         public String formatValue(Boolean t) {
             return t.toString();
         }
 
-		public Boolean parse(String value) {
-			return Boolean.valueOf(value);
-		}
-		
-		public Boolean parseDateTime(long systemTimeMillis) {
-			throw new TextException("Not Supported");
-		}
-		
-		public boolean isDateTimeCapable() {
-			return false;
-		}
-	    public int getLuceneType() {
-	        return LLuceneTypes.STRING;
-	    }
+        public Boolean parse(String value) {
+            return Boolean.valueOf(value);
+        }
+        
+        public Boolean parseDateTime(long systemTimeMillis) {
+            throw new TextException("Not Supported");
+        }
+        
+        public boolean isDateTimeCapable() {
+            return false;
+        }
+        
+        public int getLuceneType() {
+            return LLuceneTypes.STRING;
+        }
 
-	    public Object luceneFromIndexValue(Object value) {
-	        return parse((String)value);
-	    }
+        public Object luceneFromIndexValue(Object value) {
+            return parse((String)value);
+        }
 
-	    public Object luceneToIndexValue(Object value) {
-	        return format(value);
-	    }
-	}
+        public Object luceneToIndexValue(Object value) {
+            return format(value);
+        }
+
+        public Object readData(DataInput dataInput) throws IOException {
+            if (!dataInput.readBoolean()) {
+                return null;
+            } else {
+                boolean val = dataInput.readBoolean();
+                return Boolean.valueOf(val);
+            }
+        }
+
+        public void writeData(DataOutput dataOutput, Object v) throws IOException {
+
+            Boolean val = (Boolean) v;
+            if (val == null) {
+                dataOutput.writeBoolean(false);
+            } else {
+                dataOutput.writeBoolean(true);
+                dataOutput.writeBoolean(val.booleanValue());
+            }
+        }
+    }
+    
 }

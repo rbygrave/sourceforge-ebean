@@ -19,10 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import com.avaje.ebean.text.json.JsonValueAdapter;
 
 
@@ -41,16 +37,6 @@ public abstract class ScalarTypeBase<T> implements ScalarType<T> {
 		this.jdbcNative = jdbcNative;
 		this.jdbcType = jdbcType;
 	}
-
-    public Object readData(DataInput dataInput) throws IOException {
-        String s = dataInput.readUTF();
-        return parse(s);
-    }
-
-    public void writeData(DataOutput dataOutput, Object v) throws IOException {
-        String s = format(v);
-        dataOutput.writeUTF(s);
-    }
 	
 	/**
 	 * Just return 0.
@@ -90,8 +76,7 @@ public abstract class ScalarTypeBase<T> implements ScalarType<T> {
 		return value;
 	}
 
-    public void loadIgnore(DataReader dataReader) {
-        
+    public void loadIgnore(DataReader dataReader) {  
         dataReader.incrementPos(1);
     }
 	
@@ -106,6 +91,5 @@ public abstract class ScalarTypeBase<T> implements ScalarType<T> {
     public T jsonFromString(String value, JsonValueAdapter ctx) {
         return parse(value);
     }
-
     
 }

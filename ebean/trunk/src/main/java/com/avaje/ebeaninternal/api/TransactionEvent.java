@@ -20,8 +20,11 @@
 package com.avaje.ebeaninternal.api;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
+import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 
 /**
  * Holds information for a transaction. There is one TransactionEvent instance
@@ -47,11 +50,11 @@ public class TransactionEvent implements Serializable {
 	 */
 	private transient TransactionEventBeans eventBeans;
 
+    private transient List<BeanDelta> beanDeltas;
 
 	private TransactionEventTable eventTables;
 	
 	private boolean invalidateAll;
-	
 	
 	/**
 	 * Create the TransactionEvent, one per Transaction.
@@ -75,6 +78,17 @@ public class TransactionEvent implements Serializable {
 		return invalidateAll;
 	}
 
+    public void addBeanDelta(BeanDelta delta) {
+        if (beanDeltas == null) {
+            beanDeltas = new ArrayList<BeanDelta>();
+        }
+        beanDeltas.add(delta);
+    }
+
+    public List<BeanDelta> getBeanDeltas() {
+        return beanDeltas;
+    }
+	
 	/**
 	 * Return true if this was a local transaction. Returns false if this
 	 * transaction originated on another server in the cluster.
@@ -130,11 +144,10 @@ public class TransactionEvent implements Serializable {
 	 * parts of the cache.
 	 * </p>
 	 */
-	public TransactionEventTable notifyCache(){
+	public void notifyCache(){
 		if (eventBeans != null){
 			eventBeans.notifyCache();
 		}
-		return eventTables;
 	}
 
 }

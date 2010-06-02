@@ -146,13 +146,11 @@ public class ScalarTypeLdapTimestamp<T> implements ScalarType<T> {
     }
     
     public Object readData(DataInput dataInput) throws IOException {
-        String s = dataInput.readUTF();
-        return parse(s);
+        return baseType.readData(dataInput);
     }
 
     public void writeData(DataOutput dataOutput, Object v) throws IOException {
-        String s = format(v);
-        dataOutput.writeUTF(s);
+        baseType.writeData(dataOutput, v);
     }
     
     public int getLuceneType() {

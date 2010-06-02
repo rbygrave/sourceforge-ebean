@@ -22,21 +22,29 @@ package com.avaje.ebeaninternal.server.type;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for char[].
  */
-public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
+public class ScalarTypeCharArray extends ScalarTypeBaseVarchar<char[]>{
 
 	public ScalarTypeCharArray() {
 		super(char[].class, false, Types.VARCHAR);
 	}
-		
-	public void bind(DataBind b, char[] value) throws SQLException {
+	
+	@Override
+    public char[] convertFromDbString(String dbValue) {
+        return dbValue.toCharArray();
+    }
+
+    @Override
+    public String convertToDbString(char[] beanValue) {
+        return new String(beanValue);
+    }
+
+    public void bind(DataBind b, char[] value) throws SQLException {
 		if (value == null){
 			b.setNull(Types.VARCHAR);
 		} else {
@@ -54,7 +62,6 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
 		}
 	}
 	
-	
 	public Object toJdbcType(Object value) {
 		return BasicTypeConverter.toString(value);
 	}
@@ -63,7 +70,6 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
 		String s = BasicTypeConverter.toString(value);
 		return s.toCharArray();
 	}
-
 	
 	public String formatValue(char[] t) {
         return String.valueOf(t);
@@ -71,14 +77,6 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
 
     public char[] parse(String value) {
 		return value.toCharArray();
-	}
-
-	public char[] parseDateTime(long systemTimeMillis) {
-		throw new TextException("Not Supported");
-	}
-
-	public boolean isDateTimeCapable() {
-		return false;
 	}
 	
     @Override
@@ -91,15 +89,4 @@ public class ScalarTypeCharArray extends ScalarTypeBase<char[]>{
         return EscapeJson.escapeQuote(String.valueOf(value));
     }
     
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return parse((String)value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return format(value);
-    }
 }

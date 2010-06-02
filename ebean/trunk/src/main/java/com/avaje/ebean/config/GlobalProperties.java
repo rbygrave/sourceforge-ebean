@@ -138,4 +138,29 @@ public final class GlobalProperties {
 	public static synchronized void putAll(Map<String,String> keyValueMap) {
 		getPropertyMap().putAll(keyValueMap);
 	}
+	
+	public static PropertySource getPropertySource(String name) {
+	    return new ConfigPropertyMap(name);
+	}
+	
+	public static interface PropertySource {
+
+	    /**
+	     * Return the name of the server. This is also the dataSource name.
+	     */
+	    public String getServerName();
+
+	    /**
+	     * Get a property. This will prepend "ebean" and the server name to lookup
+	     * the value.
+	     */
+	    public String get(String key, String defaultValue);
+
+	    public int getInt(String key, int defaultValue);
+
+	    public boolean getBoolean(String key, boolean defaultValue);
+
+	    public <T extends Enum<T>> T getEnum(Class<T> enumType, String key, T defaultValue);
+
+	}
 }

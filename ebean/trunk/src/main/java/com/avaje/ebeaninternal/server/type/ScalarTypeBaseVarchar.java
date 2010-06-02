@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -34,6 +37,10 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
 	public ScalarTypeBaseVarchar(Class<T> type) {
 		super(type, false, Types.VARCHAR);
 	}
+	
+    public ScalarTypeBaseVarchar(Class<T> type, boolean jdbcNative, int jdbcType) {
+        super(type, jdbcNative, jdbcType);
+    }
 
 	public abstract String formatValue(T v);
 	
@@ -115,5 +122,27 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
     
     public int getLuceneType() {
         return LLuceneTypes.STRING;
+    }
+    
+    public Object readData(DataInput dataInput) throws IOException {
+        if (!dataInput.readBoolean()) {
+            return null;
+        } else {
+            String val = dataInput.readUTF();
+            return convertFromDbString(val);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        
+        T value = (T)v;
+        if (value == null){
+            dataOutput.writeBoolean(false);
+        } else {
+            dataOutput.writeBoolean(true);
+            String s = convertToDbString(value);
+            dataOutput.writeUTF(s);            
+        }
     }
 }

@@ -19,7 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.transaction;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +29,7 @@ import com.avaje.ebeaninternal.api.TransactionEventTable;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
 
 /**
  * Performs post commit processing using a background thread.
@@ -48,6 +49,12 @@ public final class PostCommitProcessing implements Runnable {
 	
 	private final TransactionManager manager;
 	
+	private final List<PersistRequestBean<?>> persistBeanRequests;
+	
+	private final BeanPersistIdMap beanPersistIdMap;
+	
+	private final BeanDeltaMap beanDeltaMap;
+	
 	/**
 	 * Create for a TransactionManager and event.
 	 */
@@ -56,47 +63,103 @@ public final class PostCommitProcessing implements Runnable {
 		this.manager = manager;
 		this.serverName = manager.getServerName();
 		this.event = event;
+		this.persistBeanRequests = getPersistBeanRequests();
+		this.beanPersistIdMap = createBeanPersistIdMap();
+		this.beanDeltaMap = new BeanDeltaMap(event.getBeanDeltas());
 	}
 
+	private List<PersistRequestBean<?>> getPersistBeanRequests() {
+	    TransactionEventBeans eventBeans = event.getEventBeans();
+        if (eventBeans != null){
+            return eventBeans.getRequests();
+        }
+        return null;
+	}
+	
+	private BeanPersistIdMap createBeanPersistIdMap() {
+	    BeanPersistIdMap m = new BeanPersistIdMap();
+        if (persistBeanRequests != null){
+            for (int i = 0; i < persistBeanRequests.size(); i++) {
+                // notify local BeanPersistListener's and at the 
+                // request IUD type and id to the RemoteTransactionEvent
+                persistBeanRequests.get(i).addToPersistMap(m);
+            }
+        }
+        return m;
+	}
+	
 	/**
+	 * Return a the Id's of the beans persisted organised by their type.
+	 */
+	public BeanPersistIdMap getBeanPersistIdMap() {
+        return beanPersistIdMap;
+    }
+	
+	public void localBeanDeltaNotify() {
+	    beanDeltaMap.process();
+	}
+
+	public void localCacheNotify() {
+        // notify cache with bean changes
+        event.notifyCache();
+        TransactionEventTable tableEvents = event.getEventTables();
+        processTableEvents(tableEvents);
+    }
+	
+	   /**
+     * Table events are where SQL or external tools are used. In this case
+     * the cache is notified based on the table name (rather than bean type).
+     */
+    private void processTableEvents(TransactionEventTable tableEvents) {
+        
+        if (tableEvents != null && !tableEvents.isEmpty()){
+            // notify cache with table based changes
+            BeanDescriptorManager dm = manager.getBeanDescriptorManager();
+            for (TableIUD tableIUD : tableEvents.values()) {
+                dm.cacheNotify(tableIUD);
+            }
+        }
+    }
+
+    /**
 	 * Run the processing.
 	 */
 	public void run() {
 
-	    RemoteBeanPersistMap beanPersistMap = new RemoteBeanPersistMap();
-	    
-		TransactionEventBeans eventBeans = event.getEventBeans();
-		if (eventBeans != null){
-			ArrayList<PersistRequestBean<?>> requests = eventBeans.getRequests();
-			if (requests != null){
-				for (int i = 0; i < requests.size(); i++) {
-			        // notify local BeanPersistListener's and at the 
-			        // request IUD type and id to the RemoteTransactionEvent
-					requests.get(i).notifyLocalPersistListener(beanPersistMap);
-				}
-			}
-		}
+	    localPersistListenersNotify();
 		
-		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
-		for (RemoteBeanPersist beanPersist : beanPersistMap.values()) {
-            remoteEvent.add(beanPersist);
-        }
-		
-		TransactionEventTable eventTables = event.getEventTables();
-		if (eventTables != null && !eventTables.isEmpty()){
-		    for (TableIUD tableIUD : eventTables.values()) {
-		        remoteEvent.add(tableIUD);
-            }		    
-		}
-
-		if (!remoteEvent.isEmpty() && clusterManager.isClustering()) {
-			// send the interesting events to the cluster
-            if (manager.getClusterDebugLevel() > 0 || logger.isLoggable(Level.FINE)) {
-                logger.info("Cluster Send: " + remoteEvent.toString());
+	    if (clusterManager.isClustering()){
+	        
+    		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
+    		for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
+                remoteEvent.add(beanPersist);
             }
-
-            clusterManager.broadcast(remoteEvent);
-		}
+    		
+    		TransactionEventTable eventTables = event.getEventTables();
+    		if (eventTables != null && !eventTables.isEmpty()){
+    		    for (TableIUD tableIUD : eventTables.values()) {
+    		        remoteEvent.add(tableIUD);
+                }		    
+    		}
+    
+    		if (!remoteEvent.isEmpty()) {
+    			// send the interesting events to the cluster
+                if (manager.getClusterDebugLevel() > 0 || logger.isLoggable(Level.FINE)) {
+                    logger.info("Cluster Send: " + remoteEvent.toString());
+                }
+    
+                clusterManager.broadcast(remoteEvent);
+    		}
+	    }
 	}
 	
+    private void localPersistListenersNotify() {
+        if (persistBeanRequests != null) {
+            for (int i = 0; i < persistBeanRequests.size(); i++) {
+                persistBeanRequests.get(i).notifyLocalPersistListener();
+            }
+        }
+    }
+
+
 }

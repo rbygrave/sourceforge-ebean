@@ -30,9 +30,9 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 /**
  * Organises the individual bean persist requests by type.
  */
-public final class RemoteBeanPersistMap {
+public final class BeanPersistIdMap {
 
-	private final Map<String,RemoteBeanPersist> beanMap = new LinkedHashMap<String, RemoteBeanPersist>();
+	private final Map<String,BeanPersistIds> beanMap = new LinkedHashMap<String, BeanPersistIds>();
 	
 	public String toString() {
 	   return beanMap.toString();
@@ -42,7 +42,7 @@ public final class RemoteBeanPersistMap {
 		return beanMap.isEmpty();
 	}
 
-    public Collection<RemoteBeanPersist> values() {
+    public Collection<BeanPersistIds> values() {
         return beanMap.values();
     }
     
@@ -52,9 +52,9 @@ public final class RemoteBeanPersistMap {
 	public void add(BeanDescriptor<?> desc, PersistRequest.Type type, Object id) {
 	    
 	    String beanType = desc.getFullName();
-	    RemoteBeanPersist r = beanMap.get(beanType);
+	    BeanPersistIds r = beanMap.get(beanType);
 		if (r == null){
-			r = new RemoteBeanPersist(desc);
+			r = new BeanPersistIds(desc);
 			beanMap.put(beanType, r);
 		}
 		r.addId(type, (Serializable)id);

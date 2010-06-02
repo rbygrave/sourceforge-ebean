@@ -31,7 +31,15 @@ public final class IdBinderEmpty implements IdBinder {
 	public void initialise(){
 		
 	}
-		
+	
+    public Object readTerm(String idTermValue) {
+        return null;
+    }
+    
+    public String writeTerm(Object idValue) {
+        return null;
+    }
+    
     public String getOrderBy(String pathPrefix, boolean ascending){
         return pathPrefix;
     }
