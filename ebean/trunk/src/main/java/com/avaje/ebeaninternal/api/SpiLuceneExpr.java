@@ -19,6 +19,8 @@
  */
 package com.avaje.ebeaninternal.api;
 
+import org.apache.lucene.search.Query;
+
 public interface SpiLuceneExpr {
 
     /**
@@ -46,7 +48,7 @@ public interface SpiLuceneExpr {
      * Returns a Lucene Query for this expression. This is not strongly typed so
      * that Lucene is an optional dependency.
      */
-    public Object mergeLuceneQuery();
+    public Query mergeLuceneQuery();
     
     /**
      * Return a description of this expression.

@@ -34,16 +34,14 @@ public class LuceneExprResponse implements SpiLuceneExpr {
         this.description = description;
     }
 
-    public Query getQuery() {
-        return query;
-    }
-
-    public Object mergeLuceneQuery() {
+    public Query mergeLuceneQuery() {
         return query;
     }
 
     public String getDescription() {
         return description;
-    }   
+    }
+
+    
     
 }

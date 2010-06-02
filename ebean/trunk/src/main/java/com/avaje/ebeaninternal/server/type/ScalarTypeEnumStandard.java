@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.EnumSet;
@@ -43,9 +46,7 @@ import com.avaje.ebeaninternal.server.query.LuceneIndexDataReader;
 public class ScalarTypeEnumStandard {
 	
 	@SuppressWarnings("unchecked")
-    public static class StringEnum extends ScalarTypeBase implements ScalarTypeEnum {
-
-		private final Class enumType;
+    public static class StringEnum extends EnumBase implements ScalarTypeEnum {
 		
 		private final int length;
 		
@@ -54,7 +55,6 @@ public class ScalarTypeEnumStandard {
 		 */
 		public StringEnum(Class enumType) {
 			super(enumType, false, Types.VARCHAR);
-			this.enumType = enumType;
 			this.length = maxValueLength(enumType);
 		}
 
@@ -91,8 +91,6 @@ public class ScalarTypeEnumStandard {
 			
 			return maxLen;
 		}
-		
-		
 		
 		public int getLength() {
 			return length;
@@ -135,64 +133,18 @@ public class ScalarTypeEnumStandard {
 			return Enum.valueOf(enumType, (String)dbValue);
 		}
 
-		public String format(Object t) {
-            return t.toString();
-        }
-		
-		public String formatValue(Object t) {
-            return t.toString();
-        }
-
-        public Object parse(String value) {	
-			return Enum.valueOf(enumType, value);
-		}
-		
-		public Object parseDateTime(long systemTimeMillis) {
-			throw new TextException("Not Supported");
-		}
-
-		public boolean isDateTimeCapable() {
-			return false;
-		}
-		
-	    @Override
-	    public String jsonFromString(String value, JsonValueAdapter ctx) {
-	        return value;
-	    }
-
-	    @Override
-	    public String jsonToString(Object value, JsonValueAdapter ctx) {
-	        return EscapeJson.escapeQuote(value.toString());
-	    }
-	    
-	    public int getLuceneType() {
-	        return LLuceneTypes.STRING;
-	    }
-
-	    public Object luceneFromIndexValue(Object value) {
-	        return parse((String)value);
-	    }
-
-	    public Object luceneToIndexValue(Object value) {
-	        return format(value);
-	    }
-
 	}
 	
 	@SuppressWarnings("unchecked")
-    public static class OrdinalEnum extends ScalarTypeBase implements ScalarTypeEnum {
-
+    public static class OrdinalEnum extends EnumBase implements ScalarTypeEnum {
 
 		private final Object[] enumArray;
-		
-		private Class enumType;
-		
+				
 		/**
 		 * Create a ScalarTypeEnum.
 		 */
 		public OrdinalEnum(Class enumType) {
 			super(enumType, false, Types.INTEGER);
-			this.enumType = enumType;
 			this.enumArray = EnumSet.allOf(enumType).toArray();
 		}
 
@@ -225,8 +177,6 @@ public class ScalarTypeEnumStandard {
 				b.setInt(e.ordinal());
 			}
 		}
-	
-
 	      
 		public Object read(DataReader dataReader) throws SQLException {
 			
@@ -275,6 +225,18 @@ public class ScalarTypeEnumStandard {
 			return enumArray[ordinal];
 		}
 
+	}
+	
+    @SuppressWarnings("unchecked")
+    public abstract static class EnumBase extends ScalarTypeBase {
+
+        protected final Class enumType;
+        
+        public EnumBase(Class<?> type, boolean jdbcNative, int jdbcType) {
+            super(type, jdbcNative, jdbcType);
+            this.enumType = type;
+        }
+        
         public String format(Object t) {
             return t.toString();
         }
@@ -283,28 +245,57 @@ public class ScalarTypeEnumStandard {
             return t.toString();
         }
         
-		public Object parse(String value) {	
-			return Enum.valueOf(enumType, value);
-		}
-		
-		public Object parseDateTime(long systemTimeMillis) {
-			throw new TextException("Not Supported");
-		}
+        public Object parse(String value) { 
+            return Enum.valueOf(enumType, value);
+        }
 
-		public boolean isDateTimeCapable() {
-			return false;
-		}
-		
-	    public int getLuceneType() {
-	        return LLuceneTypes.STRING;
-	    }
+        public Object parseDateTime(long systemTimeMillis) {
+            throw new TextException("Not Supported");
+        }
 
-	    public Object luceneFromIndexValue(Object value) {
-	        return parse((String)value);
-	    }
+        public boolean isDateTimeCapable() {
+            return false;
+        }
+                
+        @Override
+        public Object jsonFromString(String value, JsonValueAdapter ctx) {
+            return parse(value);
+        }
 
-	    public Object luceneToIndexValue(Object value) {
-	        return format(value);
-	    }
-	}
+        @Override
+        public String jsonToString(Object value, JsonValueAdapter ctx) {
+            return EscapeJson.escapeQuote(value.toString());
+        }
+        
+        public int getLuceneType() {
+            return LLuceneTypes.STRING;
+        }
+
+        public Object luceneFromIndexValue(Object value) {
+            return parse((String)value);
+        }
+
+        public Object luceneToIndexValue(Object value) {
+            return format(value);
+        }
+
+        public Object readData(DataInput dataInput) throws IOException {
+            if (!dataInput.readBoolean()) {
+                return null;
+            } else {
+                String s = dataInput.readUTF();
+                return parse(s);
+            }
+        }
+
+        public void writeData(DataOutput dataOutput, Object v) throws IOException {
+            if (v == null){
+                dataOutput.writeBoolean(false);
+            } else {
+                dataOutput.writeBoolean(true);
+                dataOutput.writeUTF(format(v));
+            }
+        }
+        
+    }
 }

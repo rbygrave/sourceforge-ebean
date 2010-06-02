@@ -19,43 +19,31 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.joda.time.DateTime;
 
-import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda DateTime. This maps to a JDBC Timestamp.
  */
-public class ScalarTypeJodaDateTime extends ScalarTypeBase<DateTime> {
+public class ScalarTypeJodaDateTime extends ScalarTypeBaseDateTime<DateTime> {
 
 	public ScalarTypeJodaDateTime() {
 		super(DateTime.class, false, Types.TIMESTAMP);
 	}
 	
-	public void bind(DataBind b, DateTime value) throws SQLException {
-		if (value == null){
-			b.setNull(Types.TIMESTAMP);
-		} else {
-			Timestamp ts = new Timestamp(value.getMillis());
-			b.setTimestamp(ts);
-		}
-	}
+	@Override
+    public DateTime convertFromTimestamp(Timestamp ts) {
+        return new DateTime(ts.getTime());
+    }
 
-	public DateTime read(DataReader dataReader) throws SQLException {
-		
-		Timestamp ts = dataReader.getTimestamp();
-		if (ts == null){
-			return null;
-		} else {
-			return new DateTime(ts.getTime());
-		}
-	}
+    @Override
+    public Timestamp convertToTimestamp(DateTime t) {
+        return new Timestamp(t.getMillis());
+    }
 	
 	public Object toJdbcType(Object value) {
 		if (value instanceof DateTime){
@@ -70,42 +58,5 @@ public class ScalarTypeJodaDateTime extends ScalarTypeBase<DateTime> {
 		}
 		return (DateTime)value;
 	}
-
-    public String formatValue(DateTime t) {
-        Timestamp ts = new Timestamp(t.getMillis());
-        return ts.toString();
-    }
-
-	public DateTime parse(String value) {
-		Timestamp ts = Timestamp.valueOf(value);
-		return new DateTime(ts.getTime());
-	}
-
-	public DateTime parseDateTime(long systemTimeMillis) {
-		return new DateTime(systemTimeMillis);
-	}
-
-	public boolean isDateTimeCapable() {
-		return true;
-	}
-
-    @Override
-    public String jsonToString(DateTime value, JsonValueAdapter ctx) {
-        Timestamp d = (Timestamp)toJdbcType(value);
-        return ctx.jsonFromTimestamp(d);
-    }
-    
-    public int getLuceneType() {
-        return LLuceneTypes.TIMESTAMP;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        Long l = (Long)value;
-        return toBeanType(new Timestamp(l));
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        Timestamp v = (Timestamp)toJdbcType(value);
-        return v.getTime();
-    }  
+ 
 }

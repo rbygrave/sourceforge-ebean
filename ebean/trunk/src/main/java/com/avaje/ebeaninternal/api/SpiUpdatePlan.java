@@ -53,43 +53,42 @@ public interface SpiUpdatePlan {
 	 * Bind given the request and bean. The bean could be the oldValues bean
 	 * when binding a update or delete where clause with ALL concurrency mode.
 	 */
-	public abstract void bindSet(DmlHandler bind, Object bean)
-			throws SQLException;
+	public void bindSet(DmlHandler bind, Object bean) throws SQLException;
 
 	/**
 	 * Return the time this plan was created.
 	 */
-	public abstract long getTimeCreated();
+	public long getTimeCreated();
 
 	/**
 	 * Return the time this plan was last used.
 	 */
-	public abstract Long getTimeLastUsed();
+	public Long getTimeLastUsed();
 
 	/**
 	 * Return the hash key for this plan.
 	 */
-	public abstract Integer getKey();
+	public Integer getKey();
 
 	/**
 	 * Return the concurrency mode for this plan.
 	 */
-	public abstract ConcurrencyMode getMode();
+	public ConcurrencyMode getMode();
 
 	/**
 	 * Return the update SQL statement.
 	 */
-	public abstract String getSql();
+	public String getSql();
 
 	/**
 	 * Return the set of bindable update properties.
 	 */
-	public abstract Bindable getSet();
+	public Bindable getSet();
 
 	/**
 	 * Return the properties that where changed and should be included in the
 	 * update statement.
 	 */
-	public abstract Set<String> getProperties();
+	public Set<String> getProperties();
 
 }

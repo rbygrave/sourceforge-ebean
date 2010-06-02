@@ -34,8 +34,8 @@ public class LogicExpressionLucene {
         SpiLuceneExpr e1 = expOne.createLuceneExpr(request);
         SpiLuceneExpr e2 = expTwo.createLuceneExpr(request);
         
-        Query q1 = (Query)e1.mergeLuceneQuery();
-        Query q2 = (Query)e2.mergeLuceneQuery();
+        Query q1 = e1.mergeLuceneQuery();
+        Query q2 = e2.mergeLuceneQuery();
         
         BooleanQuery q = new BooleanQuery();
         Occur occur = LogicExpression.OR.equals(joinType) ? Occur.SHOULD : Occur.MUST;

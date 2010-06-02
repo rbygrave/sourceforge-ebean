@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.api;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 
@@ -37,7 +38,7 @@ public class TransactionEventBeans {
 	/**
 	 * Return the list of PersistRequests that BeanListeners are interested in.
 	 */
-	public ArrayList<PersistRequestBean<?>> getRequests() {
+	public List<PersistRequestBean<?>> getRequests() {
 		return requests;
 	}
 

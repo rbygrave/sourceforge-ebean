@@ -41,7 +41,8 @@ import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.persist.PersistExecute;
 import com.avaje.ebeaninternal.server.persist.dml.GenerateDmlRequest;
-import com.avaje.ebeaninternal.server.transaction.RemoteBeanPersistMap;
+import com.avaje.ebeaninternal.server.transaction.BeanPersistIdMap;
+import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 
 /**
  * PersistRequest for insert update or delete of a bean.
@@ -197,15 +198,13 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         }
     }
 
-    public void notifyLocalPersistListener(RemoteBeanPersistMap beanPersistMap) {
-        
-        localNotifyPersistListener();
-        
+    public void addToPersistMap(BeanPersistIdMap beanPersistMap) {
+                
         beanPersistMap.add(beanDescriptor, type, idValue);
     }
-    
 
-    private boolean localNotifyPersistListener() {
+
+    public boolean notifyLocalPersistListener() {
         if (beanPersistListener == null) {
             return false;
 
@@ -351,6 +350,10 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
      */
     public Object getBeanId() {
         return beanDescriptor.getId(bean);
+    }
+    
+    public BeanDelta createDeltaBean() {
+        return new BeanDelta(beanDescriptor, getBeanId());
     }
     
     /**

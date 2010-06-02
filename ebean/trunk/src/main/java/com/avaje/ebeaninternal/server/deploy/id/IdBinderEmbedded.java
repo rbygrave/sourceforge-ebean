@@ -9,6 +9,7 @@ import java.util.List;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import javax.persistence.PersistenceException;
 
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
@@ -225,6 +226,42 @@ public final class IdBinderEmbedded implements IdBinder {
     
     public String getIdInValueExpr() {
         return idInValueSql;
+    }
+
+    /**
+     * Convert the lucene string term value into embedded id.
+     */
+    public Object readTerm(String idTermValue) {
+        
+        String[] split = idTermValue.split("|");
+        if (split.length != props.length){
+            String msg = "Failed to split ["+idTermValue+"] using | for id.";
+            throw new PersistenceException(msg);
+        }
+        Object embId = idDesc.createVanillaBean();
+        for (int i = 0; i < props.length; i++) {
+            Object v = props[i].getScalarType().parse(split[i]);
+            props[i].setValue(embId, v);
+        }
+        return embId;
+    }
+
+    /**
+     * Write the embedded id as a Lucene string term value.
+     */
+    public String writeTerm(Object idValue) {
+
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < props.length; i++) {
+            Object v = props[i].getValue(idValue);
+            String formatValue = props[i].getScalarType().format(v);
+            if (i > 0){
+                sb.append("|");
+            }
+            sb.append(formatValue);
+        }    
+        return sb.toString();
     }
 
     public Object[] getIdValues(Object bean) {

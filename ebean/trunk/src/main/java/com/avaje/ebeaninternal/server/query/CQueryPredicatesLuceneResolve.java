@@ -113,7 +113,7 @@ public class CQueryPredicatesLuceneResolve {
             DefaultExpressionRequest whereReq = new DefaultExpressionRequest(request, luceneIndex);
             SpiLuceneExpr luceneExpr = whereExp.createLuceneExpr(whereReq, SpiLuceneExpr.ExprOccur.MUST);
 
-            Query luceneQuery = (Query)luceneExpr.mergeLuceneQuery();
+            Query luceneQuery = luceneExpr.mergeLuceneQuery();
             String luceneDesc = luceneExpr.getDescription();
             request.setLuceneOrmQueryRequest(new LuceneOrmQueryRequest(luceneQuery, luceneSort, luceneDesc, sortDesc));
             return true;

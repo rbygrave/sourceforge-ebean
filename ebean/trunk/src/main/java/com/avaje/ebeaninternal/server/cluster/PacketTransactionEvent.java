@@ -24,7 +24,7 @@ import java.io.IOException;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
-import com.avaje.ebeaninternal.server.transaction.RemoteBeanPersist;
+import com.avaje.ebeaninternal.server.transaction.BeanPersistIds;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
@@ -69,7 +69,7 @@ public class PacketTransactionEvent extends Packet {
         
         switch (msgType) {
         case BinaryMessage.TYPE_BEANIUD:
-            event.add(RemoteBeanPersist.readBinaryMessage(server, dataInput));
+            event.add(BeanPersistIds.readBinaryMessage(server, dataInput));
             break;
             
         case BinaryMessage.TYPE_TABLEIUD:

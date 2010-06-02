@@ -19,31 +19,16 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import com.avaje.ebean.text.TextException;
-import com.avaje.ebean.text.json.JsonValueAdapter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 import com.avaje.ebeaninternal.server.query.LuceneIndexDataReader;
-
-
 
 /**
  * Additional control over mapping to DB values.
  */
 @SuppressWarnings("unchecked")
-public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
-
-	/**
-	 * Data type of the database columns converted to.
-	 */
-	private final int dbType;
-
-	private final Class enumType;
+public class ScalarTypeEnumWithMapping extends ScalarTypeEnumStandard.EnumBase implements ScalarType, ScalarTypeEnum {
 	
 	private final EnumToDbValueMap beanDbMap;
 	
@@ -53,9 +38,8 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 	 * Create with an explicit mapping of bean to database values.
 	 */
 	public ScalarTypeEnumWithMapping(EnumToDbValueMap<?> beanDbMap, Class<?> enumType, int length) {
-		this.beanDbMap = beanDbMap;
-		this.enumType = enumType;
-		this.dbType = beanDbMap.getDbType();
+	    super(enumType, false, beanDbMap.getDbType());
+	    this.beanDbMap = beanDbMap;
 		this.length = length;
 	}
 	
@@ -101,25 +85,9 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 		return length;
 	}
 
-	public int getJdbcType() {
-		return dbType;
-	}
-	
-	public boolean isJdbcNative() {
-		return false;
-	}
-	
-	public Class<?> getType() {
-		return enumType;
-	}
-
 	public void bind(DataBind b, Object value) throws SQLException {
 		beanDbMap.bind(b, value);		
 	}
-
-	public void loadIgnore(DataReader dataReader) {
-        dataReader.incrementPos(1);
-    }
 
     public Object read(DataReader dataReader) throws SQLException {
 		if (dataReader instanceof LuceneIndexDataReader){
@@ -135,82 +103,9 @@ public class ScalarTypeEnumWithMapping implements ScalarType, ScalarTypeEnum {
 	public Object toBeanType(Object dbValue) {
 		return beanDbMap.getBeanValue(dbValue);
 	}
-
-    public String format(Object t) {
-        return t.toString();
-    }
-
-    public String formatValue(Object t) {
-        return t.toString();
-    }
-    
-	public Object parse(String value) {
-		return Enum.valueOf(enumType, value);
-	}
 	
-	public Object parseDateTime(long systemTimeMillis) {
-		throw new TextException("Not Supported");
-	}
-
-	public boolean isDateTimeCapable() {
-		return false;
-	}
-	
-	public Object toJdbcType(Object beanValue) {
-		
+	public Object toJdbcType(Object beanValue) {		
 		return beanDbMap.getDbValue(beanValue);
 	}
 
-	/**
-	 * Return true if the value is null.
-	 */
-	public boolean isDbNull(Object value) {
-		return value == null;
-	}
-	
-	/**
-	 * Returns the value that was passed in.
-	 */
-	public Object getDbNullValue(Object value) {
-		return value;
-	}
-
-
-    public void accumulateScalarTypes(String propName, CtCompoundTypeScalarList list) {
-        list.addScalarType(propName, this);
-    }
-
-    public ScalarType<?> getScalarType() {
-        return this;
-    }
-    
-    public Object jsonFromString(String value, JsonValueAdapter ctx) {
-        return parse(value);
-    }
-
-    public String jsonToString(Object value, JsonValueAdapter ctx) {
-        return EscapeJson.escapeQuote(format(value));
-    }
-
-    public Object readData(DataInput dataInput) throws IOException {
-        String s = dataInput.readUTF();
-        return parse(s);
-    }
-
-    public void writeData(DataOutput dataOutput, Object v) throws IOException {
-        String s = format(v);
-        dataOutput.writeUTF(s);
-    }
-    
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return parse((String)value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return format(value);
-    }
 }

@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -90,5 +93,25 @@ public class ScalarTypeDouble extends ScalarTypeBase<Double> {
 
     public Object luceneToIndexValue(Object value) {
         return value;
+    }
+    
+    public Object readData(DataInput dataInput) throws IOException {
+        if (!dataInput.readBoolean()) {
+            return null;
+        } else {
+            double val = dataInput.readDouble();
+            return Double.valueOf(val);
+        }
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        
+        Double value = (Double)v;
+        if (value == null){
+            dataOutput.writeBoolean(false);
+        } else {
+            dataOutput.writeBoolean(true);
+            dataOutput.writeDouble(value.doubleValue());            
+        }
     }
 }

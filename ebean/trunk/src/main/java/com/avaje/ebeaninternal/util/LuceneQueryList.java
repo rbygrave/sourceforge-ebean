@@ -48,12 +48,11 @@ public class LuceneQueryList implements SpiLuceneExpr {
         return list;
     }
 
-    
     public String getDescription() {
         return description;
     }
 
-    public Object mergeLuceneQuery() {
+    public Query mergeLuceneQuery() {
 
         Occur luceneOccur = getLuceneOccur();
 
@@ -62,7 +61,7 @@ public class LuceneQueryList implements SpiLuceneExpr {
         BooleanQuery bq = new BooleanQuery();
         for (int i = 0; i < list.size(); i++) {
             SpiLuceneExpr luceneExpr = list.get(i);
-            Query lucQuery = (Query) luceneExpr.mergeLuceneQuery();
+            Query lucQuery = luceneExpr.mergeLuceneQuery();
             bq.add(lucQuery, luceneOccur);
             
             if (i > 0){

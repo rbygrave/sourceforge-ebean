@@ -20,42 +20,30 @@
 package com.avaje.ebeaninternal.server.type;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.Types;
 
 import org.joda.time.LocalDate;
 
-import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda LocalDate. This maps to a JDBC Date.
  */
-public class ScalarTypeJodaLocalDate extends ScalarTypeBase<LocalDate> {
+public class ScalarTypeJodaLocalDate extends ScalarTypeBaseDate<LocalDate> {
 
 	public ScalarTypeJodaLocalDate() {
 		super(LocalDate.class, false, Types.DATE);
 	}
 	
-	public void bind(DataBind b, LocalDate value) throws SQLException {
-		if (value == null){
-			b.setNull(Types.DATE);
-		} else {
-			java.sql.Date d = new java.sql.Date(value.toDateMidnight().getMillis());
-			b.setDate(d);
-		}
-	}
+	@Override
+    public LocalDate convertFromDate(Date ts) {
+	    return new LocalDate(((java.util.Date)ts).getTime());
+    }
 
-	public LocalDate read(DataReader dataReader) throws SQLException {
-		
-		java.sql.Date d = dataReader.getDate();
-		if (d == null){
-			return null;
-		} else {
-			return new LocalDate(d.getTime());
-		}
-	}
+    @Override
+    public Date convertToDate(LocalDate t) {
+        return new java.sql.Date(t.toDateMidnight().getMillis());
+    }
 	
 	public Object toJdbcType(Object value) {
 		if (value instanceof LocalDate){
@@ -70,43 +58,9 @@ public class ScalarTypeJodaLocalDate extends ScalarTypeBase<LocalDate> {
 		}
 		return (LocalDate)value;
 	}
-
-    public String formatValue(LocalDate v) {
-        Date sqlDate = new Date(v.toDateTimeAtStartOfDay().getMillis());
-        return sqlDate.toString();
-    }
-
-	public LocalDate parse(String value) {
-		Date ts = Date.valueOf(value);
-		return new LocalDate(ts.getTime());
-	}
 	
 	public LocalDate parseDateTime(long systemTimeMillis) {
 		return new LocalDate(systemTimeMillis);
 	}
-	
-	public boolean isDateTimeCapable() {
-		return true;
-	}
-
-    @Override
-    public String jsonToString(LocalDate value, JsonValueAdapter ctx) {
-        java.sql.Date d = (java.sql.Date)toJdbcType(value);
-        return ctx.jsonFromDate(d);
-    }
-
-    public int getLuceneType() {
-        return LLuceneTypes.DATE;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        Long l = (Long)value;
-        return toBeanType(new Date(l));
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        Date v = (Date)toJdbcType(value);
-        return v.getTime();
-    }  
 	
 }

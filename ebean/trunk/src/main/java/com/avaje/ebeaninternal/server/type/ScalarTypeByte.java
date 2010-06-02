@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -86,5 +89,24 @@ public class ScalarTypeByte extends ScalarTypeBase<Byte> {
         return ((byte[])value)[0];
     }
 	
+    public Object readData(DataInput dataInput) throws IOException {
+        if (!dataInput.readBoolean()) {
+            return null;
+        } else {
+            byte val = dataInput.readByte();
+            return Byte.valueOf(val);
+        }
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+
+        Byte val = (Byte) v;
+        if (val == null) {
+            dataOutput.writeBoolean(false);
+        } else {
+            dataOutput.writeBoolean(true);
+            dataOutput.writeByte(val);
+        }
+    }
 	
 }

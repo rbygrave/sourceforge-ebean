@@ -1,9 +1,11 @@
 package com.avaje.ebean.config;
 
+import com.avaje.ebean.config.GlobalProperties.PropertySource;
+
 /**
  * Helper to read server specific properties from ebean.properties.
  */
-class ConfigPropertyMap {
+class ConfigPropertyMap implements PropertySource {
 
 	private final String serverName;
 		
@@ -11,17 +13,10 @@ class ConfigPropertyMap {
 		this.serverName = serverName;
 	}
 
-	/**
-	 * Return the name of the server. This is also the dataSource name.
-	 */
 	public String getServerName() {
 		return serverName;
 	}
 	
-	/**
-	 * Get a property. This will prepend "ebean" and the server name to lookup
-	 * the value.
-	 */
 	public String get(String key, String defaultValue){
 		String namedKey = "ebean."+serverName+"."+key;
 		String inheritKey = "ebean."+key;
@@ -47,7 +42,6 @@ class ConfigPropertyMap {
 		String value = get(key, String.valueOf(defaultValue));
 		return Boolean.parseBoolean(value);
 	}
-	
 	
 	public <T extends Enum<T>> T getEnum(Class<T> enumType, String key, T defaultValue) {
 		String level = get(key, defaultValue.name());

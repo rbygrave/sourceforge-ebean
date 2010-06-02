@@ -868,7 +868,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     @Override
     public void jsonRead(ReadJsonContext ctx, Object bean){
         
-        T assocBean = targetDescriptor.jsonRead(ctx, name);
+        T assocBean = targetDescriptor.jsonReadBean(ctx, name);
         setValue(bean, assocBean);
     }
 }

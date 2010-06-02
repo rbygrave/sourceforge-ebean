@@ -25,14 +25,13 @@ import java.sql.Types;
 import java.util.Date;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for java.util.Date.
  */
 public class ScalarTypeUtilDate {
 
-	public static class TimestampType extends ScalarTypeBase<java.util.Date> {
+	public static class TimestampType extends ScalarTypeBaseDateTime<java.util.Date> {
 
 		public TimestampType() {
 			super(java.util.Date.class, false, Types.TIMESTAMP);
@@ -66,27 +65,21 @@ public class ScalarTypeUtilDate {
 			return BasicTypeConverter.toUtilDate(value);
 		}
 
-		public String formatValue(Date v) {
-            Timestamp ts = new Timestamp(v.getTime());
-		    return ts.toString();
+		
+		
+		@Override
+        public Date convertFromTimestamp(Timestamp ts) {
+		    return new java.util.Date(ts.getTime());
         }
 
-        public java.util.Date parse(String value) {
-			Timestamp ts = Timestamp.valueOf(value);
-			return new java.util.Date(ts.getTime());
-		}
+        @Override
+        public Timestamp convertToTimestamp(Date t) {
+            return new Timestamp(t.getTime());
+        }
 
 		public java.util.Date parseDateTime(long systemTimeMillis) {
 			return new java.util.Date(systemTimeMillis);
 		}
-
-		public boolean isDateTimeCapable() {
-			return true;
-		}
-
-        public int getLuceneType() {
-            return LLuceneTypes.TIMESTAMP;
-        }
 
         public Object luceneFromIndexValue(Object value) {
             Long l = (Long)value;
@@ -98,31 +91,21 @@ public class ScalarTypeUtilDate {
         }		
 	}
 
-	public static class DateType extends ScalarTypeBase<java.util.Date> {
+	public static class DateType extends ScalarTypeBaseDate<java.util.Date> {
 
 		public DateType() {
 			super(Date.class, false, Types.DATE);
 		}
 
-		public java.util.Date read(DataReader dataReader) throws SQLException {
-			java.sql.Date d = dataReader.getDate();
-			if (d != null) {
-				return new java.util.Date(d.getTime());
-			}
+		@Override
+        public Date convertFromDate(java.sql.Date ts) {
+            return new java.util.Date(ts.getTime());
+        }
 
-			return null;
-		}
-
-		public void bind(DataBind b, java.util.Date value)
-				throws SQLException {
-			if (value == null) {
-				b.setNull(Types.TIMESTAMP);
-			} else {
-
-				java.sql.Date d = new java.sql.Date(value.getTime());
-				b.setDate(d);
-			}
-		}
+        @Override
+        public java.sql.Date convertToDate(Date t) {
+            return new java.sql.Date(t.getTime());
+        }
 
 		public Object toJdbcType(Object value) {
 			return BasicTypeConverter.toDate(value);
@@ -131,36 +114,5 @@ public class ScalarTypeUtilDate {
 		public java.util.Date toBeanType(Object value) {
 			return BasicTypeConverter.toUtilDate(value);
 		}
-
-        public String formatValue(Date v) {
-            java.sql.Date sqlDate = new java.sql.Date(v.getTime());
-            return sqlDate.toString();
-        }
-
-		public java.util.Date parse(String value) {
-			java.sql.Date ts = java.sql.Date.valueOf(value);
-			return new java.util.Date(ts.getTime());
-		}
-
-		public java.util.Date parseDateTime(long systemTimeMillis) {
-			return new java.util.Date(systemTimeMillis);
-		}
-
-		public boolean isDateTimeCapable() {
-			return true;
-		}
-
-        public int getLuceneType() {
-            return LLuceneTypes.DATE;
-        }
-
-        public Object luceneFromIndexValue(Object value) {
-            Long l = (Long)value;
-            return new java.util.Date(l);
-        }
-
-        public Object luceneToIndexValue(Object value) {
-            return ((java.util.Date)value).getTime();
-        }   
 	}
 }

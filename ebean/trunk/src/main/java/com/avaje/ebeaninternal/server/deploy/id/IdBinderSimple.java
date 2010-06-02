@@ -48,6 +48,14 @@ public final class IdBinderSimple implements IdBinder {
 		// do nothing
 	}
 	
+    public Object readTerm(String idTermValue) {
+        return scalarType.parse(idTermValue);
+    }
+
+    public String writeTerm(Object idValue) {
+        return scalarType.format(idValue);
+    }
+
     public String getOrderBy(String pathPrefix, boolean ascending){
         
         StringBuilder sb = new StringBuilder();

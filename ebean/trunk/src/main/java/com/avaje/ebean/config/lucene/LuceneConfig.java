@@ -22,6 +22,8 @@ package com.avaje.ebean.config.lucene;
 import org.apache.lucene.analysis.Analyzer;
 
 import com.avaje.ebean.Query.UseIndex;
+import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.GlobalProperties.PropertySource;
 
 public class LuceneConfig {
 
@@ -53,6 +55,14 @@ public class LuceneConfig {
 
     public void setDefaultUseIndex(UseIndex defaultUseIndex) {
         this.defaultUseIndex = defaultUseIndex;
+    }
+    
+    public void loadSettings(String serverName){
+        
+        PropertySource p = GlobalProperties.getPropertySource(serverName);
+        
+        baseDirectory = p.get("lucene.baseDirectory", "lucene");
+        defaultUseIndex = p.getEnum(UseIndex.class, "lucene.useIndex", UseIndex.NO);
     }
     
 }

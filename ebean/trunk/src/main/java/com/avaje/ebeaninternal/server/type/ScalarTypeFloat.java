@@ -19,6 +19,9 @@
  */
 package com.avaje.ebeaninternal.server.type;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -89,5 +92,25 @@ public class ScalarTypeFloat extends ScalarTypeBase<Float> {
 
     public Object luceneToIndexValue(Object value) {
         return value;
+    }
+    
+    public Object readData(DataInput dataInput) throws IOException {
+        if (!dataInput.readBoolean()) {
+            return null;
+        } else {
+            float val = dataInput.readFloat();
+            return Float.valueOf(val);
+        }
+    }
+
+    public void writeData(DataOutput dataOutput, Object v) throws IOException {
+        
+        Float value = (Float)v;
+        if (value == null){
+            dataOutput.writeBoolean(false);
+        } else {
+            dataOutput.writeBoolean(true);
+            dataOutput.writeFloat(value.floatValue());            
+        }
     }
 }

@@ -85,7 +85,7 @@ public class DJsonContext implements JsonContext {
 
         BeanDescriptor<T> d = getDecriptor(cls);
         ReadJsonContext ctx = new ReadJsonContext(src, dfltValueAdapter, options);
-        return d.jsonRead(ctx, null);
+        return d.jsonReadBean(ctx, null);
     }
 
     public <T> List<T> toList(Class<T> cls, String json){
@@ -114,7 +114,7 @@ public class DJsonContext implements JsonContext {
             ReadJsonContext ctx = new ReadJsonContext(src, dfltValueAdapter, options);
             ctx.readArrayBegin();
             do {
-                T bean = d.jsonRead(ctx, null);
+                T bean = d.jsonReadBean(ctx, null);
                 if (bean != null){
                     list.add(bean);
                 }

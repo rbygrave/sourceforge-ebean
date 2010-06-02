@@ -26,8 +26,24 @@ public interface IdBinder {
 	 */
 	public void initialise();
 	
+	/**
+     * Convert the Id value as a Lucene string term.
+     */
+	public String writeTerm(Object idValue);
+
+	/**
+     * Convert the Lucene string term into an Id value.
+     */
+    public Object readTerm(String idTermValue);
+
+    /**
+     * Write the Id value to binary DataOuput.
+     */
     public void writeData(DataOutput dataOutput, Object idValue) throws IOException;
 
+    /**
+     * Read the Id value from the binary DataInput.
+     */
     public Object readData(DataInput dataInput) throws IOException;
 
 	/**

@@ -26,26 +26,14 @@ import java.sql.Types;
 import java.util.Calendar;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for java.util.Calendar.
  */
-public class ScalarTypeCalendar extends ScalarTypeBase<Calendar> {
+public class ScalarTypeCalendar extends ScalarTypeBaseDateTime<Calendar> {
 	
 	public ScalarTypeCalendar(int jdbcType) {
 		super(Calendar.class, false, jdbcType);
-	}
-	
-	public Calendar read(DataReader dataReader) throws SQLException {
-		Timestamp timestamp = dataReader.getTimestamp();
-		if (timestamp == null){
-			return null;
-		} else {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(timestamp.getTime());
-			return cal;
-		}
 	}
 	
 	public void bind(DataBind b, Calendar value) throws SQLException {
@@ -63,51 +51,24 @@ public class ScalarTypeCalendar extends ScalarTypeBase<Calendar> {
 		}
 	}
 	
-	public Object toJdbcType(Object value) {
+	@Override
+    public Calendar convertFromTimestamp(Timestamp ts) {
+	    Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(ts.getTime());
+        return calendar;
+    }
+
+    @Override
+    public Timestamp convertToTimestamp(Calendar t) {
+        return new Timestamp(t.getTimeInMillis());
+    }
+
+    public Object toJdbcType(Object value) {
 		return BasicTypeConverter.convert(value, jdbcType);
 	}
 
 	public Calendar toBeanType(Object value) {
 		return BasicTypeConverter.toCalendar(value);
 	}
-	
-	public String formatValue(Calendar t) {
-	    Timestamp ts = new Timestamp(t.getTimeInMillis());
-	    return ts.toString();
-    }
-
-    public Calendar parse(String value) {
-		Timestamp ts = Timestamp.valueOf(value);
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTimeInMillis(ts.getTime());
-		return calendar;
-	}
-	
-	public Calendar parseDateTime(long systemTimeMillis) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTimeInMillis(systemTimeMillis);
-		return calendar;
-	}
-
-	public boolean isDateTimeCapable() {
-		return true;
-	}
-
-    public int getLuceneType() {
-        return LLuceneTypes.TIMESTAMP;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        Long l = (Long)value;
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(l);
-        return c;
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        Calendar c = (Calendar)value;
-        return c.getTime().getTime();
-    }
-    
 	
 }

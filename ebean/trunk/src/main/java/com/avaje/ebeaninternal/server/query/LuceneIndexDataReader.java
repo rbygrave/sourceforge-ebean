@@ -67,7 +67,7 @@ public class LuceneIndexDataReader implements DataReader {
         
         this.indexFieldDefn = luceneIndex.getIndexFieldDefn();
         readFields = indexFieldDefn.getReadFields();
-        this.searcher = luceneIndex.getSearcher();
+        this.searcher = luceneIndex.getIndexSearcher();
 
         LuceneOrmQueryRequest luceneRequest = request.getLuceneOrmQueryRequest();
         

@@ -129,7 +129,7 @@ public class JdbcTransaction implements SpiTransaction {
 	HashSet<Integer> persistingBeans;
 	
 	TransactionLogBuffer logBuffer;
-	
+		
 	/**
 	 * Create a new JdbcTransaction.
 	 */
@@ -208,8 +208,8 @@ public class JdbcTransaction implements SpiTransaction {
 		depth += diff;
 		return depth;
 	}
-	
-	public boolean isReadOnly() {
+
+    public boolean isReadOnly() {
 		if (!isActive()) {
 			throw new IllegalStateException(illegalStateMessage);
 		}
@@ -314,7 +314,6 @@ public class JdbcTransaction implements SpiTransaction {
 			batchControl.setBatchFlushOnMixed(batchFlushOnMixed);
 		}
 	}
-
 
 	/**
 	 * Flush any queued persist requests.

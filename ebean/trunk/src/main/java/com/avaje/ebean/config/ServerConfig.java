@@ -33,6 +33,7 @@ import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.AdminLogging.LogLevelStmt;
 import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
 import com.avaje.ebean.annotation.Encrypted;
+import com.avaje.ebean.config.GlobalProperties.PropertySource;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.ldap.LdapConfig;
@@ -42,6 +43,7 @@ import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebeaninternal.api.ClassUtil;
+import com.avaje.ebeaninternal.server.core.DetectLucene;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -1394,7 +1396,7 @@ public class ServerConfig {
      * Return a configuration property using a default value.
      */
     public String getProperty(String propertyName, String defaultValue) {
-        ConfigPropertyMap p = new ConfigPropertyMap(name);
+        PropertySource p = new ConfigPropertyMap(name);
         return p.get(propertyName, defaultValue);
     }
 
@@ -1406,7 +1408,7 @@ public class ServerConfig {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T createInstance(ConfigPropertyMap p, Class<T> type, String key) {
+    private <T> T createInstance(PropertySource p, Class<T> type, String key) {
 
         String classname = p.get(key, null);
         if (classname == null) {
@@ -1441,6 +1443,12 @@ public class ServerConfig {
                 ldapConfig = new LdapConfig();
                 ldapConfig.setContextFactory(ctxFact);
                 ldapConfig.setVanillaMode(p.getBoolean("ldapVanillaMode", false));
+            }
+        }
+        if (luceneConfig == null){
+            if (DetectLucene.isPresent()) {
+                luceneConfig = new LuceneConfig();
+                luceneConfig.loadSettings(name);
             }
         }
         
@@ -1506,7 +1514,7 @@ public class ServerConfig {
         classes = getClasses(p);
     }
 
-    private NamingConvention createNamingConvention(ConfigPropertyMap p) {
+    private NamingConvention createNamingConvention(PropertySource p) {
         
         NamingConvention nc = createInstance(p, NamingConvention.class, "namingconvention");
         if (nc == null){
@@ -1595,7 +1603,7 @@ public class ServerConfig {
      * 
      * @return the classes
      */
-    private ArrayList<Class<?>> getClasses(ConfigPropertyMap p) {
+    private ArrayList<Class<?>> getClasses(PropertySource p) {
 
         String classNames = p.get("classes", null);
         if (classNames == null) {

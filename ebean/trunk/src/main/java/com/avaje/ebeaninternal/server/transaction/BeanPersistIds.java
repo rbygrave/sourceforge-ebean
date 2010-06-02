@@ -46,7 +46,7 @@ import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
  * size of data sent around the network.
  * </p>
  */
-public class RemoteBeanPersist implements Serializable {
+public class BeanPersistIds implements Serializable {
 
     private static final long serialVersionUID = 8389469180931531409L;
 
@@ -61,16 +61,16 @@ public class RemoteBeanPersist implements Serializable {
     /**
      * Create the payload.
      */
-    public RemoteBeanPersist(BeanDescriptor<?> desc) {
+    public BeanPersistIds(BeanDescriptor<?> desc) {
         this.beanDescriptor = desc;
         this.descriptorId = desc.getDescriptorId();
     }
 
-    public static RemoteBeanPersist readBinaryMessage(SpiEbeanServer server, DataInput dataInput) throws IOException {
+    public static BeanPersistIds readBinaryMessage(SpiEbeanServer server, DataInput dataInput) throws IOException {
 
         String descriptorId = dataInput.readUTF();
         BeanDescriptor<?> desc = server.getBeanDescriptorById(descriptorId);
-        RemoteBeanPersist bp = new RemoteBeanPersist(desc);
+        BeanPersistIds bp = new BeanPersistIds(desc);
         bp.read(dataInput);
         return bp;
     }

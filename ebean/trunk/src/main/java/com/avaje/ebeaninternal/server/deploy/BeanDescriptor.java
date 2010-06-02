@@ -86,6 +86,7 @@ import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
+import com.avaje.ebeaninternal.server.text.json.ReadJsonContext.ReadBeanState;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext.WriteBeanState;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.TypeManager;
@@ -400,7 +401,7 @@ public class BeanDescriptor<T> {
     /**
      * Construct the BeanDescriptor.
      */
-    public BeanDescriptor(BeanDescriptorMap owner, TypeManager typeManager, DeployBeanDescriptor<T> deploy) {
+    public BeanDescriptor(BeanDescriptorMap owner, TypeManager typeManager, DeployBeanDescriptor<T> deploy, String descriptorId) {
 
         this.owner = owner;
         this.cacheManager = owner.getCacheManager();
@@ -410,7 +411,7 @@ public class BeanDescriptor<T> {
         this.name = InternString.intern(deploy.getName());
         this.baseTableAlias = InternString.intern(name.substring(0, 1).toLowerCase());
         this.fullName = InternString.intern(deploy.getFullName());
-        this.descriptorId = String.valueOf(fullName.hashCode());
+        this.descriptorId = descriptorId;
         
         this.useIndex = deploy.getUseIndex();
         this.typeManager = typeManager;
@@ -2373,9 +2374,18 @@ public class BeanDescriptor<T> {
         }
     }
     
-    
     @SuppressWarnings("unchecked")
-    public T jsonRead(ReadJsonContext ctx, String path){
+    public T jsonReadBean(ReadJsonContext ctx, String path){
+        ReadBeanState beanState = jsonRead(ctx, path);
+        if (beanState == null){
+            return null;
+        } else {
+            beanState.setLoadedState();
+            return (T)beanState.getBean();
+        }
+    }
+    
+    public ReadBeanState jsonRead(ReadJsonContext ctx, String path){
         if (!ctx.readObjectBegin()) {
             // the object is null
             return null;
@@ -2408,12 +2418,12 @@ public class BeanDescriptor<T> {
             // determine the sub type for this particular json object
             InheritInfo localInheritInfo = inheritInfo.readType(discValue);
             BeanDescriptor<?> localDescriptor = localInheritInfo.getBeanDescriptor();
-            return (T)localDescriptor.jsonReadObject(ctx, path);
+            return localDescriptor.jsonReadObject(ctx, path);
         } 
     }
     
     @SuppressWarnings("unchecked")
-    private T jsonReadObject(ReadJsonContext ctx, String path) {
+    private ReadBeanState jsonReadObject(ReadJsonContext ctx, String path) {
         
         T bean = (T)createEntityBean();
         ctx.pushBean(bean, path, this);
@@ -2439,8 +2449,7 @@ public class BeanDescriptor<T> {
             } 
         } while(true);
         
-        ctx.popBean();
-        return bean;
+        return ctx.popBeanState();
     }
     
     /**

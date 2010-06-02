@@ -169,7 +169,11 @@ public class TransactionManager {
 	    transLogger.shutdown();
 	}
 	
-	/**
+	public BeanDescriptorManager getBeanDescriptorManager() {
+        return beanDescriptorManager;
+    }
+
+    /**
 	 * Return the logging level for transactions.
 	 */
 	public LogLevel getTransactionLogLevel(){
@@ -447,14 +451,13 @@ public class TransactionManager {
 		    
 		    log(transaction.getLogBuffer());
 	
-			TransactionEvent event = transaction.getEvent();
-			
-			// notify cache with bean changes returning any table events
-			TransactionEventTable tableEvents = event.notifyCache();
-			processTableEvents(tableEvents);
+		    PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, transaction.getEvent());
+
+            postCommit.localBeanDeltaNotify();
+		    postCommit.localCacheNotify();
 			
 			// cluster and text indexing
-			localCommitBackgroundProcess(event);
+			localCommitBackgroundProcess(postCommit);
 			
 			if (debugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] commit");
@@ -473,15 +476,16 @@ public class TransactionManager {
 	 * </p>
 	 */
 	public void externalModification(TransactionEventTable tableEvents) {
-		
-		// invalidate parts of local cache 
-		processTableEvents(tableEvents);
-		
+				
 		TransactionEvent event = new TransactionEvent();
 		event.add(tableEvents);
 		
+		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, event);
+        // invalidate parts of local cache 
+		postCommit.localCacheNotify();
+		
 		// send to cluster
-		localCommitBackgroundProcess(event);
+		localCommitBackgroundProcess(postCommit);
 	}
 	
 	
@@ -502,10 +506,10 @@ public class TransactionManager {
             }
         }
         
-        List<RemoteBeanPersist> beanPersistList = remoteEvent.getBeanPersistList();
+        List<BeanPersistIds> beanPersistList = remoteEvent.getBeanPersistList();
         if (beanPersistList != null){
             for (int i = 0; i < beanPersistList.size(); i++) {
-                RemoteBeanPersist beanPersist = beanPersistList.get(i);
+                BeanPersistIds beanPersist = beanPersistList.get(i);
                 beanPersist.notifyCacheAndListener();
             }
         }
@@ -517,23 +521,8 @@ public class TransactionManager {
 	 * be relatively expensive/long running and includes notifying the cluster
 	 * and BeanPersitListeners.
 	 */
-	private void localCommitBackgroundProcess(TransactionEvent event) {
-
-		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, event);
+	private void localCommitBackgroundProcess(PostCommitProcessing postCommit) {
 		threadPool.assign(postCommit, true);
 	}
 
-	/**
-	 * Table events are where SQL or external tools are used. In this case
-	 * the cache is notified based on the table name (rather than bean type).
-	 */
-	private void processTableEvents(TransactionEventTable tableEvents) {
-		
-		if (tableEvents != null && !tableEvents.isEmpty()){
-			// notify cache with table based changes
-			for (TableIUD tableIUD : tableEvents.values()) {
-				beanDescriptorManager.cacheNotify(tableIUD);
-			}
-		}
-	}
 }
