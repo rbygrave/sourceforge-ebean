@@ -19,6 +19,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlType;
 
 import com.avaje.ebean.annotation.CreatedTimestamp;
 import com.avaje.ebean.annotation.Formula;
@@ -34,7 +35,7 @@ public class Order implements Serializable {
     
 	private static final long serialVersionUID = 1L;
 
-	//@EnumMapping(nameValuePairs="APPROVED=A, COMPLETE=C, NEW=N, SHIPPED=S")
+	@XmlType(name="status")
 	public enum Status {
 		NEW,
 		APPROVED,
