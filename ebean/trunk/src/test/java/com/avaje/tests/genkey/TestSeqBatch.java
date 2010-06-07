@@ -21,11 +21,11 @@ public class TestSeqBatch extends TestCase {
 		if (seqSupport){
 			BeanDescriptor<TOne> d = spiServer.getBeanDescriptor(TOne.class);
 	
-			Object id = d.nextId();
+			Object id = d.nextId(null);
 			Assert.assertNotNull(id);
 			
-			for (int i = 0; i < 6; i++) {
-				Object id2 = d.nextId();
+			for (int i = 0; i < 16; i++) {
+				Object id2 = d.nextId(null);
 				Assert.assertNotNull(id2);		
 			}
 		}
