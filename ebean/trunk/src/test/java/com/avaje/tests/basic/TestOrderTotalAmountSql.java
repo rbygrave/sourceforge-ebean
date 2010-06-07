@@ -24,8 +24,8 @@ public class TestOrderTotalAmountSql extends TestCase {
         for (SqlRow sqlRow : sqlRows) {
             Integer id = sqlRow.getInteger("order_id");
             Double amount = sqlRow.getDouble("total_amount");
-            Assert.assertNotNull(id);
-            Assert.assertNotNull(amount);
+            Assert.assertNotNull("sqlRows: "+sqlRows,id);
+            Assert.assertNotNull("sqlRows: "+sqlRows,amount);
         }
     }
 
