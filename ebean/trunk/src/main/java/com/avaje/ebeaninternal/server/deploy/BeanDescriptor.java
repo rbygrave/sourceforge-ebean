@@ -43,6 +43,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.Transaction;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
@@ -1130,9 +1131,9 @@ public class BeanDescriptor<T> {
         }
     }
 
-    public Object nextId() {
+    public Object nextId(Transaction t) {
         if (idGenerator != null) {
-            return idGenerator.nextId();
+            return idGenerator.nextId(t);
         } else {
             return null;
         }

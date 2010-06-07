@@ -335,6 +335,8 @@ public final class DefaultServer implements SpiEbeanServer {
         for (int i = 0; i < list.size(); i++) {
             list.get(i).cacheInitialise();
         }
+        
+        //luceneIndexManager.start();
     }
     
     public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {
@@ -373,6 +375,7 @@ public final class DefaultServer implements SpiEbeanServer {
             // shutdown services
             transactionManager.shutdown();
             autoFetchManager.shutdown();
+            //luceneIndexManager.shutdown();
         }
     }
 
@@ -905,7 +908,7 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     public Object nextId(Class<?> beanType) {
         BeanDescriptor<?> desc = getBeanDescriptor(beanType);
-        return desc.nextId();
+        return desc.nextId(null);
     }
 
     @SuppressWarnings("unchecked")
