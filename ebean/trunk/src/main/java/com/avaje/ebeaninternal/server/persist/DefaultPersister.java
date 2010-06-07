@@ -1121,7 +1121,7 @@ public final class DefaultPersister implements Persister {
 		if (DmlUtil.isNullOrZero(uid)) {
 			
 			// generate the nextId and set it to the property
-			Object nextId = desc.nextId();
+			Object nextId = desc.nextId(request.getTransaction());
 
 			// cast the data type if required and set it
 			desc.convertSetId(nextId, bean);

@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
+import com.avaje.ebean.Transaction;
+
 /**
  * A very simple Database sequence based IdGenerator.
  * <p>
@@ -47,14 +49,15 @@ public class SimpleSequenceIdGenerator implements IdGenerator {
 		// just ignore this 
 	}
 
-
-	public Object nextId() {
+	public Object nextId(Transaction t) {
 		
+	    boolean useTxnConnection = t != null;
+	    
 		Connection c = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
 		try {
-			c = dataSource.getConnection();
+			c = useTxnConnection ? t.getConnection() : dataSource.getConnection();
 			pstmt = c.prepareStatement(sql);
 			rset = pstmt.executeQuery();
 			if (rset.next()){
@@ -68,30 +71,37 @@ public class SimpleSequenceIdGenerator implements IdGenerator {
 			throw new PersistenceException("Error getting sequence nextval", e);
 			
 		} finally {
-			try {
-				if (rset != null){
-					rset.close();
-				}
-			} catch (SQLException e){
-				logger.log(Level.SEVERE, "Error closing ResultSet", e);
-			}
-			try {
-				if (pstmt != null){
-					pstmt.close();
-				}
-			} catch (SQLException e){
-				logger.log(Level.SEVERE, "Error closing PreparedStatement", e);
-			}
-			try {
-				if (c != null){
-					c.close();
-				}
-			} catch (SQLException e){
-				logger.log(Level.SEVERE, "Error closing Connection", e);
-			}
+		    if (useTxnConnection){
+	            closeResources(rset, pstmt, null);		        
+		    } else {
+		        closeResources(rset, pstmt, c);
+		    }
 		}
-
 	}
 
+	private void closeResources(ResultSet rset, PreparedStatement pstmt, Connection c) {
+        try {
+            if (rset != null){
+                rset.close();
+            }
+        } catch (SQLException e){
+            logger.log(Level.SEVERE, "Error closing ResultSet", e);
+        }
+        try {
+            if (pstmt != null){
+                pstmt.close();
+            }
+        } catch (SQLException e){
+            logger.log(Level.SEVERE, "Error closing PreparedStatement", e);
+        }
+        try {
+            if (c != null){
+                c.close();
+            }
+        } catch (SQLException e){
+            logger.log(Level.SEVERE, "Error closing Connection", e);
+        }
+	}
+	
 	
 }
