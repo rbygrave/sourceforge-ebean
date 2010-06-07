@@ -12,6 +12,7 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.Transaction;
 
 /**
  * Database sequence based IdGenerator.
@@ -99,19 +100,22 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 		// so we will just go ahead and load those anyway in background
 		backgroundExecutor.execute(new Runnable() {			
 			public void run() {
-				loadMoreIds(allocateSize);
+				loadMoreIds(allocateSize, null);
 			}
 		});	
 	}
 	
 	/**
 	 * Return the next Id.
+     * <p>
+     * If a Transaction has been passed in use the Connection from it.
+     * </p>
 	 */
-	public Object nextId() {
+	public Object nextId(Transaction t) {
 		synchronized (monitor) {
 			
 			if (idList.size() == 0){
-				loadMoreIds(batchSize);
+				loadMoreIds(batchSize, t);
 			}
 			Integer nextId = idList.remove(0);
 		
@@ -145,7 +149,7 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 			
 			backgroundExecutor.execute(new Runnable() {			
 				public void run() {
-					loadMoreIds(batchSize);
+					loadMoreIds(batchSize, null);
 					synchronized (backgroundLoadMonitor) {
 						currentlyBackgroundLoading = 0;	
 					}
@@ -154,9 +158,9 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 		}
 	}
 	
-	protected void loadMoreIds(final int numberToLoad) {
+	protected void loadMoreIds(final int numberToLoad, Transaction t) {
 		
-		ArrayList<Integer> newIds = getMoreIds(numberToLoad);
+		ArrayList<Integer> newIds = getMoreIds(numberToLoad, t);
 		
 		if (logger.isLoggable(Level.FINE)){
 			logger.log(Level.FINE, "... seq:"+seqName+" loaded:"+numberToLoad+" ids:"+newIds);
@@ -172,17 +176,20 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 	/**
 	 * Get more Id's by executing a query and reading the Id's returned.
 	 */
-	protected ArrayList<Integer> getMoreIds(int loadSize){
+	protected ArrayList<Integer> getMoreIds(int loadSize, Transaction t){
 		
 		String sql = getSql(loadSize);
 		
 		ArrayList<Integer> newIds = new ArrayList<Integer>(loadSize);
 		
+		boolean useTxnConnection = t != null;
+		
 		Connection c = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
 		try {
-			c = dataSource.getConnection();
+			c = useTxnConnection ? t.getConnection() : dataSource.getConnection();
+			
 			pstmt = c.prepareStatement(sql);
 			rset = pstmt.executeQuery();
 			while (rset.next()){
@@ -206,7 +213,11 @@ public abstract class SequenceIdGenerator implements IdGenerator {
 		        throw new PersistenceException("Error getting sequence nextval", e);
 		    }
 		} finally {
-			closeResources(c, pstmt, rset);
+		    if (useTxnConnection){
+		        closeResources(null, pstmt, rset);
+		    } else {
+	            closeResources(c, pstmt, rset);		        
+		    }
 		}
 	}
 

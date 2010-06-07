@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
+import com.avaje.ebean.Transaction;
+
 
 /**
  * Generates unique id's for objects. This occurs prior to the actual insert.
@@ -48,8 +50,11 @@ public interface IdGenerator {
     
     /**
      * return the next unique identity value.
+     * <p>
+     * Note the transaction passed in can be null.
+     * </p>
      */
-    public Object nextId();
+    public Object nextId(Transaction transaction);
 
     /**
      * Is called prior to inserting OneToMany's as an indication
