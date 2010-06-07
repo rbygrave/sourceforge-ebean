@@ -387,7 +387,8 @@ public class BootupClasses implements ClassPathSearchMatcher {
         }
         ann = cls.getAnnotation(XmlType.class);
         if (ann != null) {
-            return true;
+            // Only looking for Beans and not Enums
+            return !cls.isEnum();
         }
         return false;
     }
