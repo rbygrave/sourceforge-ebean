@@ -39,6 +39,8 @@ public class PostgresPlatform extends DatabasePlatform {
         super();
         this.name = "postgres";
         this.blobDbType = Types.LONGVARBINARY;
+        this.clobDbType = Types.VARCHAR;
+        
         this.dbEncrypt = new PostgresDbEncrypt();
         
         this.dbIdentity.setSupportsGetGeneratedKeys(false);
