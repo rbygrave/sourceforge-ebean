@@ -58,7 +58,10 @@ public class DatabasePlatform {
 
 	/** The JDBC type to map Blob to. */
     protected int blobDbType = Types.BLOB;
-	
+
+    /** The JDBC type to map Clob to. */
+    protected int clobDbType = Types.CLOB;
+
 	/** For Oracle treat empty strings as null. */
 	protected boolean treatEmptyStringsAsNull;
 
@@ -179,7 +182,17 @@ public class DatabasePlatform {
 	public int getBlobDbType() {
 	    return blobDbType;
 	}
-	
+
+    /**
+     * Return the data type that should be used for Clob.
+     * <p>
+     * This is typically Types.CLOB but for Postgres is Types.VARCHAR.
+     * </p>
+     */
+    public int getClobDbType() {
+        return clobDbType;
+    }
+
 	/**
 	 * Return true if empty strings should be treated as null.
 	 *

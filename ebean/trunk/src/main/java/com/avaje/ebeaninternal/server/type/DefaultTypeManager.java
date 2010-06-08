@@ -145,9 +145,9 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 */
 	public DefaultTypeManager(ServerConfig config, BootupClasses bootupClasses) {
 		
-	    
+        int clobType = config == null ? Types.CLOB : config.getDatabasePlatform().getClobDbType();
 	    int blobType = config == null ? Types.BLOB : config.getDatabasePlatform().getBlobDbType();
-	    
+   
 	    this.checkImmutable = new CheckImmutable(this);
 	    this.reflectScalarBuilder = new ReflectionBasedTypeBuilder(this);
 	    
@@ -157,7 +157,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 
         this.extraTypeFactory = new DefaultTypeFactory(config);
 		
-		initialiseStandard(blobType);		
+		initialiseStandard(clobType, blobType);		
 		initialiseJodaTypes();
 		
 		if (bootupClasses != null){
@@ -639,7 +639,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * types plus some other common types such as java.util.Date and
 	 * java.util.Calendar.
 	 */
-	protected void initialiseStandard(int platformBlobType) {
+	protected void initialiseStandard(int platformClobType, int platformBlobType) {
 
 		ScalarType<?> utilDateType = extraTypeFactory.createUtilDate();
 		typeMap.put(java.util.Date.class, utilDateType);
@@ -677,7 +677,17 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 		nativeMap.put(Types.VARCHAR, stringType);
 		nativeMap.put(Types.CHAR, stringType);
 		nativeMap.put(Types.LONGVARCHAR, longVarcharType);
-		nativeMap.put(Types.CLOB, clobType);
+		
+		if (platformClobType == Types.CLOB) {
+	        nativeMap.put(Types.CLOB, clobType);		    
+		} else {
+            // for Postgres Clobs handled by Varchar ScalarType...
+		    ScalarType<?> platClobScalarType = nativeMap.get(Integer.valueOf(platformClobType));
+		    if (platClobScalarType == null){
+		        throw new IllegalArgumentException("Type for dbPlatform clobType ["+clobType+"] not found.");
+		    }
+		    nativeMap.put(Types.CLOB, platClobScalarType);
+		}
 
 		// Binary type
 		typeMap.put(byte[].class, varbinaryType);
@@ -685,10 +695,16 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 		nativeMap.put(Types.VARBINARY, varbinaryType);
 		nativeMap.put(Types.LONGVARBINARY, longVarbinaryType);
 		
-		// for Postgres Blobs handled by LongVarbinary ...
-		ScalarType<?> pltBlob = platformBlobType == Types.LONGVARBINARY ? longVarbinaryType : blobType;
-		nativeMap.put(Types.BLOB, pltBlob);
-		
+		if (platformBlobType == Types.BLOB) {
+		    nativeMap.put(Types.BLOB, blobType);
+		} else {
+	        // for Postgres Blobs handled by LongVarbinary ScalarType...
+		    ScalarType<?> platBlobScalarType = nativeMap.get(Integer.valueOf(platformBlobType));
+            if (platBlobScalarType == null){
+                throw new IllegalArgumentException("Type for dbPlatform blobType ["+blobType+"] not found.");
+            }
+            nativeMap.put(Types.BLOB, platBlobScalarType);
+		}		
 
 		// Number types
 		typeMap.put(Byte.class, byteType);
