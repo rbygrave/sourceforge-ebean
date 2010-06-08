@@ -25,7 +25,7 @@ public class TestRawSqlOrmWrapper extends TestCase {
             + " from o_order o" 
             + " join o_customer c on c.id = o.kcustomer_id "
             + " join o_order_detail d on d.order_id = o.id "
-            + " group by order_id, o.status ";
+            + " group by order_id, o.status, c.id, c.name ";
         
         RawSql rawSql = 
             RawSqlBuilder
