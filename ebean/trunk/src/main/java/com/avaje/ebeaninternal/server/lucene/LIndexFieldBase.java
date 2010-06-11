@@ -49,7 +49,6 @@ public abstract class LIndexFieldBase implements LIndexField {
     protected final ScalarType<?> scalarType;
     
     protected final FieldFactory fieldFactory;
-    //protected final Fieldable fieldPrototype;
     
     protected final boolean indexed;
     protected final boolean stored;

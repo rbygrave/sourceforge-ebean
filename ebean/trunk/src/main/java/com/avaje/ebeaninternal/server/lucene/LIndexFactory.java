@@ -53,11 +53,11 @@ public class LIndexFactory {
     static class Factory {
 
         private final Analyzer defaultAnalyzer;
-        private final LuceneIndexManager manager;
+        private final DefaultLuceneIndexManager manager;
         private final IndexDefn<?> indexDefn;
         private final BeanDescriptor<?> descriptor;
 
-        private Factory(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor, LuceneIndexManager manager,
+        private Factory(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor, DefaultLuceneIndexManager manager,
                 Analyzer defaultAnalyzer) {
             
             this.indexDefn = indexDefn;

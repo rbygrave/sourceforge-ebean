@@ -131,14 +131,20 @@ public final class PostCommitProcessing implements Runnable {
 	    if (clusterManager.isClustering()){
 	        
     		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
-    		for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
-                remoteEvent.add(beanPersist);
+    		
+    		//TODO: Should only transport BeanDelta's to Index Writers 
+            for (BeanDeltaList deltaList: beanDeltaMap.deltaLists()) {
+                remoteEvent.addBeanDeltaList(deltaList);
+            }
+
+            for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
+                remoteEvent.addBeanPersistIds(beanPersist);
             }
     		
     		TransactionEventTable eventTables = event.getEventTables();
     		if (eventTables != null && !eventTables.isEmpty()){
     		    for (TableIUD tableIUD : eventTables.values()) {
-    		        remoteEvent.add(tableIUD);
+    		        remoteEvent.addTableIUD(tableIUD);
                 }		    
     		}
     

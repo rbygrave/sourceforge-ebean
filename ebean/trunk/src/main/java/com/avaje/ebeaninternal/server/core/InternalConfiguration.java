@@ -151,7 +151,7 @@ public class InternalConfiguration {
 		
 		this.debugLazyLoad = new DebugLazyLoad(serverConfig.isDebugLazyLoad());
 		
-		this.transactionManager = new TransactionManager(clusterManager, serverConfig, beanDescriptorManager);
+		this.transactionManager = new TransactionManager(clusterManager, luceneIndexManager, backgroundExecutor, serverConfig, beanDescriptorManager);
 
 		this.logControl = new MAdminLogging(serverConfig, transactionManager);
 		
@@ -180,7 +180,7 @@ public class InternalConfiguration {
 	        return new NoLuceneIndexManager();
 	    }
 	    
-	    return LuceneManagerFactory.createLuceneManager(serverConfig);
+	    return LuceneManagerFactory.createLuceneManager(clusterManager, backgroundExecutor, serverConfig);
     }
 	 
 	public JsonContext createJsonContext(SpiEbeanServer server) {

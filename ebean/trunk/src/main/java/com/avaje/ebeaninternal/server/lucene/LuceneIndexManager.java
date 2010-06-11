@@ -24,15 +24,27 @@ import java.io.IOException;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.transaction.IndexEvent;
 
 public interface LuceneIndexManager {
-
+    
+    public void start();
+    
+    public void shutdown();
+    
     public boolean isLuceneAvailable();
+    
+    public LuceneClusterIndexSync getClusterIndexSync();
+    
+    public void processEvent(IndexEvent indexEvent);
 
     public UseIndex getDefaultUseIndex();
 
     public LIndex create(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor) throws IOException;
+
+    public LIndex getIndex(String defnName);
 
     public SpiEbeanServer getServer();
 
@@ -43,5 +55,7 @@ public interface LuceneIndexManager {
     public LIndex getIndexByTypeAndName(Class<?> beanType, String name);
 
     public String getIndexDirectory(String indexName);
+
+    public void notifyCluster(IndexEvent event);
 
 }

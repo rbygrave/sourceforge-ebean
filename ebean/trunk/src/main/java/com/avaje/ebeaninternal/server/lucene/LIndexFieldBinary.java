@@ -86,7 +86,7 @@ public final class LIndexFieldBinary extends LIndexFieldBase {
             if (value == null){
                 
             } else {
-                System.out.println("- write "+field.name()+" "+value);   
+                //System.out.println("- write "+field.name()+" "+value);   
                 byte[] s = (byte[])scalarType.luceneToIndexValue(value);
                 field.setValue(s); 
                 document.add(field);

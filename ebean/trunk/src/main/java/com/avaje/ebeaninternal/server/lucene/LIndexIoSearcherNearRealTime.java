@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.store.Directory;
 
 public class LIndexIoSearcherNearRealTime implements LIndexIoSearcher {
 
@@ -37,47 +39,106 @@ public class LIndexIoSearcherNearRealTime implements LIndexIoSearcher {
     
     public LIndexIoSearcherNearRealTime(IndexWriter indexWriter) {
         this.indexWriter = indexWriter;
+        this.indexSearcher = createDirectorySearcher();
     }
 
-    
-    /**
-     * Not used for Near Real Time.
-     */
     public void postCommit() {
-        
-    }
-    public IndexSearcher getIndexSearcher() {
-
-        IndexSearcher s = internalGetIndexSearcher();
-        s.getIndexReader().incRef();
-        return s;
+        try {
+            IndexSearcher s = getIndexSearcher(true, true);
+            s.getIndexReader().decRef();
+        } catch (Exception e){
+            String msg = "Error postCommit() refreshing IndexSearcher";
+            logger.log(Level.SEVERE, msg, e);
+        }
     }
     
-    private IndexSearcher internalGetIndexSearcher() {
+    
+    public void refresh(boolean nearRealTime) {
+        try {
+            getIndexSearcher(true, nearRealTime);
+            //s.getIndexReader().decRef();
+        } catch (Exception e){
+            String msg = "Error postCommit() refreshing IndexSearcher";
+            logger.log(Level.SEVERE, msg, e);
+        }
+    }
+    
+    public LIndexVersion getLastestVersion() {
+        
+        IndexSearcher s = getIndexSearcher();
+        try {
+            IndexCommit c = s.getIndexReader().getIndexCommit();
+            return new LIndexVersion(c.getGeneration(), c.getVersion());
+            
+        } catch (IOException e) {
+            throw new PersistenceLuceneException(e);
+            
+        } finally {
+            try {
+                s.getIndexReader().decRef();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Error on IndexReader.decRef()", e);
+            }
+        }
+    }
+    
+    public IndexSearcher getIndexSearcher() {
+        
+        return getIndexSearcher(false, true);
+    }
+
+    
+    private IndexSearcher getIndexSearcher(boolean forceNew, boolean nearRealTime) {
         
         IndexSearcher s = this.indexSearcher;
         try {
-            if (s != null && s.getIndexReader().isCurrent()){
-                return s;
+            if (!forceNew && s != null) {
+                IndexReader r = s.getIndexReader();
+                if (r.getRefCount() > 0 && r.isCurrent()){
+                    r.incRef();
+                    return s;
+                }
             }
         } catch (IOException e){
-            String msg = "Error checking IndexReader().isCurrent()";
+            String msg = "Error checking IndexReader.isCurrent()";
             logger.log(Level.SEVERE, msg, e);
         }
-        return createNewIndexSearcher();
+        
+        IndexSearcher newSearcher = createDirectorySearcher();
+        //IndexSearcher newSearcher = nearRealTime ? createNearRealTimeSearcher() : createDirectorySearcher();
+        this.indexSearcher = newSearcher;
+        
+//        if (s != null){
+//            try {
+//                //IndexReader r = s.getIndexReader();
+//                //if (r.)
+//                //.decRef();
+//            } catch (IOException e){
+//                String msg = "Error checking IndexReader.decRef()";
+//                logger.log(Level.SEVERE, msg, e);
+//            }
+//        }
+        return newSearcher;
     }
     
-    private IndexSearcher createNewIndexSearcher() {
-        try {            
-            IndexReader r = indexWriter.getReader();
-            IndexSearcher s = new IndexSearcher(r);
-            this.indexSearcher = s;
-            
-            return s;
-                    
+//    private IndexSearcher createNearRealTimeSearcher() {
+//        try {            
+//            IndexReader r = indexWriter.getReader();
+//            return new IndexSearcher(r);
+//                    
+//        } catch (IOException e){
+//            String msg = "Fatal error getting Lucene IndexReader for "+indexWriter.getDirectory();
+//            throw new PersistenceLuceneException(msg, e);
+//        }
+//    }
+    
+    private IndexSearcher createDirectorySearcher() {
+        try {
+            Directory directory = indexWriter.getDirectory();
+            IndexReader r = IndexReader.open(directory);
+            return new IndexSearcher(r);
         } catch (IOException e){
-            String msg = "Fatal error getting Lucene IndexReader for "+indexWriter.getDirectory();
-            throw new PersistenceLuceneException(msg, e);
+            throw new PersistenceLuceneException(e);
         }
     }
 }

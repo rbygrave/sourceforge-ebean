@@ -111,7 +111,7 @@ public final class LIndexFieldStringConcat extends LIndexFieldBase {
                     sb.append(" ");
                 }            
             }
-            System.out.println("- write "+field.name()+" "+sb.toString());
+            //System.out.println("- write "+field.name()+" "+sb.toString());
             
             String s = sb.toString();
             if (indexAnalyzer == null){

@@ -24,8 +24,10 @@ import java.util.logging.Logger;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.ClassUtil;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync.Mode;
 import com.avaje.ebeaninternal.server.cluster.mcast.McastClusterManager;
 import com.avaje.ebeaninternal.server.cluster.socket.SocketClusterBroadcast;
+import com.avaje.ebeaninternal.server.lucene.cluster.SLuceneClusterFactory;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
@@ -39,6 +41,10 @@ public class ClusterManager {
     
     private final ConcurrentHashMap<String, EbeanServer> serverMap = new ConcurrentHashMap<String, EbeanServer>();
 
+    private LuceneClusterListener luceneListener;
+
+    private LuceneClusterIndexSync luceneIndexSync;
+    
     private boolean started;
         
     public ClusterManager() {
@@ -47,8 +53,23 @@ public class ClusterManager {
         if (clusterType == null || clusterType.trim().length() == 0){
             // not clustering this instance
             this.broadcast = null;
+            logger.info("... no ClusterManager broadcast");
             
         } else {
+            
+            //TODO: support pluggable implementation of SLuceneClusterSocketListener
+            LuceneClusterFactory luceneFactory = new SLuceneClusterFactory();
+
+            int lucenePort = GlobalProperties.getInt("ebean.cluster.lucene.port", 9991);
+            this.luceneListener = luceneFactory.createListener(this, lucenePort);
+            
+            String masterHostPort = GlobalProperties.get("ebean.cluster.lucene.masterHostPort", null);
+            this.luceneIndexSync = luceneFactory.createIndexSync();
+            this.luceneIndexSync.setMasterHost(masterHostPort);
+            this.luceneIndexSync.setMode(masterHostPort == null ? Mode.MASTER_MODE : Mode.SLAVE_MODE);
+            
+            //new SLuceneClusterSocketListener(this, lucenePort);
+            logger.info("... luceneListener using ["+lucenePort+"]");
             try {
                 if ("mcast".equalsIgnoreCase(clusterType)) {
                     this.broadcast = new McastClusterManager();
@@ -78,6 +99,10 @@ public class ClusterManager {
         }
     }
     
+    public LuceneClusterIndexSync getLuceneClusterIndexSync() {
+        return luceneIndexSync;
+    }
+    
     public EbeanServer getServer(String name){
         synchronized (serverMap) {
             return serverMap.get(name);
@@ -88,6 +113,9 @@ public class ClusterManager {
         started = true;
         if (broadcast != null){
             broadcast.startup(this);
+        }
+        if (luceneListener != null) {
+            luceneListener.startup();
         }
     }
     
@@ -111,7 +139,9 @@ public class ClusterManager {
      * Shutdown the service and Deregister from the cluster.
      */
     public void shutdown() {
-        
+        if (luceneListener != null){
+            luceneListener.shutdown();            
+        }
         if (broadcast != null) {
             logger.info("ClusterManager shutdown ");
             broadcast.shutdown();
