@@ -19,16 +19,26 @@
  */
 package com.avaje.ebeaninternal.server.lucene;
 
-import org.apache.lucene.search.IndexSearcher;
+public class LIndexVersion {
 
-public interface LIndexIoSearcher {
-
-    public void postCommit();
-
-    public void refresh(boolean nearRealTime);
+    private final long generation;
     
-    public IndexSearcher getIndexSearcher();
+    private final long version;
+    
+    public LIndexVersion(long generation, long version) {
+        this.generation = generation;
+        this.version = version;
+    }
 
-    public LIndexVersion getLastestVersion();
+    public long getGeneration() {
+        return generation;
+    }
 
+    public long getVersion() {
+        return version;
+    }
+    
+    public String toString() {
+        return "gen["+generation+"] ver["+version+"]";
+    }
 }

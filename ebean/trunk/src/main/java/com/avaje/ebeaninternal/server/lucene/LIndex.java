@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.lucene;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,10 @@ import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 
 public class LIndex implements LuceneIndex {
 
+    //private static final Logger logger = Logger.getLogger(LIndex.class.getName());
+    
+    private final DefaultLuceneIndexManager manager;
+    
     private final String indexName;
     
     private final Analyzer analyzer;
@@ -56,9 +61,16 @@ public class LIndex implements LuceneIndex {
 
     private final LIndexFieldId idField;
     
-    public LIndex(LuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, MaxFieldLength maxFieldLength,
-            BeanDescriptor<?> desc, LIndexFields fieldDefn) throws IOException {
+    private final Object syncMonitor = new Object();
+    
+    private boolean runningSync;
+    
+    private LIndexSync queuedSync;
+    
+    public LIndex(DefaultLuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, 
+            MaxFieldLength maxFieldLength, BeanDescriptor<?> desc, LIndexFields fieldDefn) throws IOException {
         
+        this.manager = manager;
         this.indexName = indexName;
         this.analyzer = analyzer;
         this.maxFieldLength = maxFieldLength;
@@ -72,8 +84,85 @@ public class LIndex implements LuceneIndex {
         fieldDefn.registerIndexWithProperties(this);
     }
     
+    /**
+     * A sync was finished.
+     */
+    protected void syncFinished(boolean success) {
+        
+        // TODO If error could try 5 times to sync ?
+        synchronized (syncMonitor) {
+            runningSync = false;
+        }
+    }
+    
+    /**
+     * Queue a sync to execute in a background thread.
+     * <p>
+     * If there is already a sync running then queue it to run again when the
+     * currently running sync has finished.
+     * </p>
+     */
+    public void queueSync(String masterHost) {
+        
+        synchronized (syncMonitor) {
+            LIndexSync sync  = new LIndexSync(this, masterHost);
+            if (!runningSync){
+                // run this is the background
+                runningSync = true;
+                manager.execute(sync);
+            } else {
+                // a sync is already in process so just queue it
+                // to run again after it has finished. Note its
+                // okay to overwrite a previous queuedSync as we
+                // just want to run the last one really
+                queuedSync = sync;
+            }
+        }
+    }
+
+    /**
+     * Called periodically to commit or run queued sync.
+     */
     public void manage(LuceneIndexManager indexManager) {
-        indexIo.manage(indexManager);
+        
+        synchronized (syncMonitor) {
+            indexIo.manage(indexManager);
+            if (!runningSync && queuedSync != null){
+                // run a queuedSync
+                LIndexSync sync = queuedSync;
+                runningSync = true;
+                queuedSync = null;
+                manager.execute(sync);
+            }
+        }
+    }
+    
+    public LIndexVersion getLastestVersion() {
+        return indexIo.getLastestVersion();
+    }
+    
+    public File getIndexDir() {
+        return indexIo.getIndexDir();
+    }
+    
+    public void refresh(boolean nearRealTime) {
+        indexIo.refresh(nearRealTime);
+    }
+    
+    public LIndexFileInfo getLocalFile(String fileName) {
+        return indexIo.getLocalFile(fileName);
+    }
+    
+    public LIndexCommitInfo obtainLastIndexCommitIfNewer(long remoteIndexVersion) {
+        return indexIo.obtainLastIndexCommitIfNewer(remoteIndexVersion);
+    }
+    
+    public void releaseIndexCommit(long remoteIndexVersion) {
+        indexIo.releaseIndexCommit(remoteIndexVersion);
+    }
+    
+    public LIndexFileInfo getFile(long remoteIndexVersion, String fileName) {
+        return indexIo.getFile(remoteIndexVersion, fileName);
     }
     
     public Term createIdTerm(Object id) {

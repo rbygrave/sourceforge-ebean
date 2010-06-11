@@ -17,38 +17,36 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.transaction;
+package com.avaje.ebeaninternal.server.cluster;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 
-import com.avaje.ebeaninternal.server.cluster.BinaryMessage;
-import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.lucene.LIndex;
 
-public class BeanDeltaProperty {
+public interface LuceneClusterIndexSync {
 
-    private final BeanProperty beanProperty;
-    
-    private final Object value;
-    
-    public BeanDeltaProperty(BeanProperty beanProperty, Object value) {
-        this.beanProperty = beanProperty;
-        this.value = value;
+    public enum Mode {
+        /**
+         * Effective owner and commit's are notified to cluster.
+         */
+        MASTER_MODE,
+        
+        /**
+         * Listens for commit's from Master to trigger synch.
+         */
+        SLAVE_MODE
     }
     
-    public String toString() {
-        return beanProperty.getName()+":"+value;
-    }
-    
-    public void apply(Object bean) {
-        beanProperty.setValue(bean, value);
-    }
-    
-    public void writeBinaryMessage(BinaryMessage m) throws IOException {
+    public boolean sync(LIndex index, String master) throws IOException;
 
-        DataOutputStream os = m.getOs();
-        os.writeUTF(beanProperty.getName());
-        beanProperty.getScalarType().writeData(os, value);
-    }
+    public boolean isMaster();
+    
+    public Mode getMode();
+    
+    public void setMode(Mode mode);
+    
+    public String getMasterHost();
+    
+    public void setMasterHost(String masterHost);
     
 }

@@ -24,43 +24,70 @@ import java.io.IOException;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.transaction.IndexEvent;
 
 /**
  * Used when Lucene is not in the class path.
  */
 public class NoLuceneIndexManager implements LuceneIndexManager {
 
-    public boolean isLuceneAvailable() {
-        return false;
+    
+    public void start() {
     }
-
-    public void addIndex(LIndex index) throws IOException {
-    }
-
-    public LIndex create(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor) throws IOException {
-        return null;
-    }
-
-    public UseIndex getDefaultUseIndex() {
-        return null;
-    }
-
-    public LIndex getIndexByTypeAndName(Class<?> beanType, String name) {
-        return null;
-    }
-
-    public String getIndexDirectory(String indexName) {
-        return null;
-    }
-
-    public SpiEbeanServer getServer() {
-        return null;
+    
+    public void shutdown() {        
     }
 
     public void setServer(SpiEbeanServer server) {
         
     }
+
+    public boolean isLuceneAvailable() {
+        return false;
+    }
+    
+    public void processEvent(IndexEvent indexEvent) {
+        
+    }
+
+    public LuceneClusterIndexSync getClusterIndexSync() {
+        throw new RuntimeException("Never Called");
+    }
+    
+    public void notifyCluster(IndexEvent event) {
+        throw new RuntimeException("Never Called");
+    }
+
+    public void addIndex(LIndex index) throws IOException {
+        throw new RuntimeException("Never Called");        
+    }
+    
+    public LIndex getIndex(String defnName) {
+        throw new RuntimeException("Never Called");
+    }
+
+    public LIndex create(IndexDefn<?> indexDefn, BeanDescriptor<?> descriptor) throws IOException {
+        throw new RuntimeException("Never Called");
+    }
+
+    public UseIndex getDefaultUseIndex() {
+        throw new RuntimeException("Never Called");
+    }
+
+    public LIndex getIndexByTypeAndName(Class<?> beanType, String name) {
+        throw new RuntimeException("Never Called");
+    }
+
+    public String getIndexDirectory(String indexName) {
+        throw new RuntimeException("Never Called");
+    }
+
+    public SpiEbeanServer getServer() {
+        throw new RuntimeException("Never Called");
+    }
+
 
     
 }

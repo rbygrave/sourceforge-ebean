@@ -24,7 +24,9 @@ import java.io.IOException;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
+import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 import com.avaje.ebeaninternal.server.transaction.BeanPersistIds;
+import com.avaje.ebeaninternal.server.transaction.IndexEvent;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
@@ -69,13 +71,21 @@ public class PacketTransactionEvent extends Packet {
         
         switch (msgType) {
         case BinaryMessage.TYPE_BEANIUD:
-            event.add(BeanPersistIds.readBinaryMessage(server, dataInput));
+            event.addBeanPersistIds(BeanPersistIds.readBinaryMessage(server, dataInput));
             break;
             
         case BinaryMessage.TYPE_TABLEIUD:
-            event.add(TableIUD.readBinaryMessage(dataInput));
+            event.addTableIUD(TableIUD.readBinaryMessage(dataInput));
             break;
-            
+
+        case BinaryMessage.TYPE_BEANDELTA:
+            event.addBeanDelta(BeanDelta.readBinaryMessage(server, dataInput));
+            break;
+
+        case BinaryMessage.TYPE_INDEX:
+            event.addIndexEvent(IndexEvent.readBinaryMessage(dataInput));
+            break;
+
         default:
             throw new RuntimeException("Invalid Transaction msgType "+msgType);
         }

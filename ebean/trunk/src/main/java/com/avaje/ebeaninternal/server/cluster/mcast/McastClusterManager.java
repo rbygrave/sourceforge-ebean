@@ -574,7 +574,7 @@ public class McastClusterManager implements ClusterBroadcast, Runnable {
             return true;
         } 
     }
-         
+
     /**
      * Send the remoteTransEvent to all the other members of the cluster.
      */

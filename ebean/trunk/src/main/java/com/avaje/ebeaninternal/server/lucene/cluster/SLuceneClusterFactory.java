@@ -17,18 +17,23 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.lucene;
+package com.avaje.ebeaninternal.server.lucene.cluster;
 
-import org.apache.lucene.search.IndexSearcher;
+import com.avaje.ebeaninternal.server.cluster.ClusterManager;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterFactory;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterListener;
 
-public interface LIndexIoSearcher {
+public class SLuceneClusterFactory implements LuceneClusterFactory {
 
-    public void postCommit();
+    public LuceneClusterListener createListener(ClusterManager m, int port) {
+        
+        return new SLuceneClusterSocketListener(m, port);
+    }
 
-    public void refresh(boolean nearRealTime);
+    public LuceneClusterIndexSync createIndexSync() {
+        
+        return new SLuceneIndexSync();
+    }
     
-    public IndexSearcher getIndexSearcher();
-
-    public LIndexVersion getLastestVersion();
-
 }

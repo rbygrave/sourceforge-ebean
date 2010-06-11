@@ -1393,6 +1393,13 @@ public class ServerConfig {
     }
 
     /**
+     * Return a PropertySource for this server.
+     */
+    public PropertySource getPropertySource() {
+        return GlobalProperties.getPropertySource(name);
+    }
+    
+    /**
      * Return a configuration property using a default value.
      */
     public String getProperty(String propertyName, String defaultValue) {

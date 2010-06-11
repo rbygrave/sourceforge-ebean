@@ -27,10 +27,15 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.Analyzer;
 
+import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.server.cluster.ClusterManager;
+import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.transaction.IndexEvent;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
 
@@ -38,6 +43,12 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     
     private final ConcurrentHashMap<String, LIndex> indexMap;
     private final ConcurrentHashMap<String, LIndex> indexByTypeAndName;
+    
+    private final ClusterManager clusterManager;
+    
+    private final LuceneClusterIndexSync clusterIndexSync;
+    
+    private final BackgroundExecutor backgroundExecutor;
     
     private final Analyzer defaultAnalyzer;
     
@@ -49,15 +60,29 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     
     private final UseIndex defaultUseIndex;
     
+    private final String serverName;
+    
     private SpiEbeanServer server;
     
     private Thread thread;
     
+    private volatile boolean shutdown;
+
+    private volatile boolean shutdownComplete;
+
+    private long manageFreqMillis = 100;
+     
     /**
      * Construct when Lucene is available.
      */
-    public DefaultLuceneIndexManager(Analyzer defaultAnalyzer, String baseDir, String serverName, UseIndex defaultUseIndex) {
+    public DefaultLuceneIndexManager(ClusterManager clusterManager, BackgroundExecutor backgroundExecutor, 
+            Analyzer defaultAnalyzer, String baseDir, String serverName, UseIndex defaultUseIndex) {
+        
         this.luceneAvailable = true;
+        this.serverName = serverName;
+        this.clusterManager = clusterManager;
+        this.clusterIndexSync = clusterManager.getLuceneClusterIndexSync();
+        this.backgroundExecutor = backgroundExecutor;
         this.defaultUseIndex = defaultUseIndex;
         this.defaultAnalyzer = defaultAnalyzer;
         this.baseDir = baseDir + File.separator + serverName + File.separator;
@@ -65,9 +90,49 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         this.indexMap = new ConcurrentHashMap<String, LIndex>();
         this.indexFactory = new LIndexFactory(this);
         
-        this.thread = new Thread(this, "EbeanLuceneManager");
+        this.thread = new Thread(this, "Ebean-"+serverName+"-LuceneManager");
     }
     
+    public void notifyCluster(IndexEvent event) {
+        
+        if (clusterIndexSync.isMaster()) {
+            // we are the master, notify the slaves 
+            System.out.println("-- notifyCluster commit ... ");
+            
+            RemoteTransactionEvent e = new RemoteTransactionEvent(serverName);
+            e.addIndexEvent(event);
+            clusterManager.broadcast(e);
+        }
+    }
+
+    protected void execute(LIndexSync indexSync){
+        IndexSynchRun r = new IndexSynchRun(clusterIndexSync, indexSync);
+        backgroundExecutor.execute(r);
+    }
+    
+    public void processEvent(IndexEvent indexEvent) {
+        
+        String masterHost = clusterIndexSync.getMasterHost();
+        if (masterHost == null) {
+            logger.warning("Master got IndexEvent "+indexEvent+" ?");
+            
+        } else {
+            String idxName = indexEvent.getIndexName();
+            if (idxName != null){
+                LIndex index = getIndex(idxName);
+                if (index == null){
+                    logger.warning("Can't find Lucene Index ["+idxName+"]");
+                } else {
+                    index.queueSync(masterHost);
+                }
+            }
+        }
+    }
+
+    public LuceneClusterIndexSync getClusterIndexSync() {
+        return clusterIndexSync;
+    }
+
     public boolean isLuceneAvailable() {
         return luceneAvailable;
     }
@@ -101,6 +166,10 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         }
     }
 
+    public LIndex getIndex(String defnName){
+        return indexMap.get(defnName);
+    }
+    
     public LIndex getIndexByTypeAndName(Class<?> beanType, String name){
         String key = beanType.getName()+":"+name;
         return indexByTypeAndName.get(key);
@@ -108,17 +177,14 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     
     public String getIndexDirectory(String indexName) {
         return baseDir + indexName;
-    }
-
+    }  
+    
     public void start() {
         this.thread.setDaemon(true);
         this.thread.start();
         logger.info("Lucene Manager started");
     }
     
-    private volatile boolean shutdown;
-    private volatile boolean shutdownComplete;
-
     public void shutdown() {
         
         shutdown = true;
@@ -137,9 +203,7 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
             logger.warning(msg);
         }
     }
-    
-    private long manageFreqMillis = 100;
-    
+        
     public void run() {
         while (!shutdown) {
             synchronized (indexMap) {
@@ -164,4 +228,30 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         }
     }
     
+    
+    private static class IndexSynchRun implements Runnable {
+        
+        private final LuceneClusterIndexSync clusterIndexSync;
+        private final LIndex index;
+        private final String masterHost;
+        
+        private IndexSynchRun(LuceneClusterIndexSync clusterIndexSync, LIndexSync indexSync) {
+            this.clusterIndexSync = clusterIndexSync;
+            this.index = indexSync.getIndex();
+            this.masterHost = indexSync.getMasterHost();
+        }
+        
+        public void run() {
+            boolean success = false;
+            try {
+                clusterIndexSync.sync(index, masterHost);
+                success = true;
+            } catch (IOException e) {
+                String msg = "Failed to sync Lucene index "+index.getDefnName();
+                logger.log(Level.SEVERE, msg, e);
+            } finally {
+                index.syncFinished(success);
+            }
+        }
+    }
 }

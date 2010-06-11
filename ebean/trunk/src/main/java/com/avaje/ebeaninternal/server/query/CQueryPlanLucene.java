@@ -36,6 +36,11 @@ public class CQueryPlanLucene extends CQueryPlan {
     }
 
     @Override
+    public boolean isLucene() {
+        return true;
+    }
+
+    @Override
     public DataReader createDataReader(ResultSet rset) {
         return new LuceneIndexDataReader(request);
     }

@@ -158,7 +158,7 @@ public class SocketClusterBroadcast implements ClusterBroadcast {
             }
         }
     }
-    
+
     /**
      * Send the payload to all the members of the cluster.
      */

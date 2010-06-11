@@ -90,6 +90,10 @@ public class CQueryPlan {
 		this.encryptedProps = sqlTree.getEncryptedProps();
 	}
 
+	public boolean isLucene() {
+	    return false;
+	}
+	
     public DataReader createDataReader(ResultSet rset){
         
         return new RsetDataReader(rset);

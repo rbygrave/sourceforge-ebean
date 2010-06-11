@@ -272,7 +272,11 @@ public class CQueryBuilder implements Constants {
 		if (queryPlan != null){
 			// Reuse the query plan so skip generating SqlTree and SQL.
 			// We do prepare and bind the new parameters
-			predicates.prepare(false);
+		    if (queryPlan.isLucene()){
+		        predicates.isLuceneResolvable();
+		    } else {
+		        predicates.prepare(false);
+		    }
 			return new CQuery<T>(request, predicates, queryPlan);
 		}
 

@@ -34,8 +34,14 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
 
     private ArrayList<BeanPersistIds> beanPersistList = new ArrayList<BeanPersistIds>();
     
-    private ArrayList<TableIUD> tableList = new ArrayList<TableIUD>(4);
+    private ArrayList<TableIUD> tableList;
 
+    private ArrayList<BeanDeltaList> beanDeltaLists;
+    
+    private BeanDeltaMap beanDeltaMap;
+
+    private ArrayList<IndexEvent> indexEventList;
+    
     private String serverName;
 
     private transient SpiEbeanServer server;
@@ -54,34 +60,79 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if (beanDeltaMap != null){
+            sb.append(beanDeltaMap);
+        }
         sb.append(beanPersistList);
-        sb.append(tableList);
+        if (tableList != null){
+            sb.append(tableList);
+        }
         return sb.toString();
     }
     
     public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
         
-        for (int i = 0; i < tableList.size(); i++) {
-            tableList.get(i).writeBinaryMessage(msgList);
+        if (tableList != null){
+            for (int i = 0; i < tableList.size(); i++) {
+                tableList.get(i).writeBinaryMessage(msgList);
+            }
         }
         
-        for (int i = 0; i < beanPersistList.size(); i++) {
-            beanPersistList.get(i).writeBinaryMessage(msgList);
+        if (beanPersistList != null){
+            for (int i = 0; i < beanPersistList.size(); i++) {
+                beanPersistList.get(i).writeBinaryMessage(msgList);
+            }
+        }
+        
+        if (beanDeltaLists != null){
+            for (int i = 0; i < beanDeltaLists.size(); i++) {
+                beanDeltaLists.get(i).writeBinaryMessage(msgList);
+            }
+        }
+        
+        if (indexEventList != null){
+            for (int i = 0; i < indexEventList.size(); i++) {
+                indexEventList.get(i).writeBinaryMessage(msgList);
+            }
         }
     }
     
     public boolean isEmpty() {
-        return beanPersistList.isEmpty() && tableList.isEmpty();
+        return beanPersistList.isEmpty() && (tableList == null || tableList.isEmpty());
     }
     
-    public void add(BeanPersistIds beanPersist){
+    public void addBeanPersistIds(BeanPersistIds beanPersist){
         beanPersistList.add(beanPersist);
     }
     
-    public void add(TableIUD tableIud){
+    public void addTableIUD(TableIUD tableIud){
+        if (tableList == null){
+            tableList = new ArrayList<TableIUD>(4);
+        }
         tableList.add(tableIud);
     }
-
+    
+    public void addBeanDeltaList(BeanDeltaList deltaList){
+        if (beanDeltaLists == null){
+            beanDeltaLists = new ArrayList<BeanDeltaList>();
+        }
+        beanDeltaLists.add(deltaList);
+    }
+        
+    public void addBeanDelta(BeanDelta beanDelta){
+        if (beanDeltaMap == null){
+            beanDeltaMap = new BeanDeltaMap();
+        }
+        beanDeltaMap.addBeanDelta(beanDelta);
+    }
+    
+    public void addIndexEvent(IndexEvent indexEvent){
+        if (indexEventList == null){
+            indexEventList = new ArrayList<IndexEvent>(2);
+        }
+        indexEventList.add(indexEvent);
+    }
+    
     public String getServerName() {
         return serverName;
     }
@@ -94,6 +145,10 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
         this.server = server;
     }
     
+    public List<IndexEvent> getIndexEventList() {
+        return indexEventList;
+    }
+
     public List<TableIUD> getTableIUDList() {
         return tableList;
     }
@@ -101,5 +156,11 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
     public List<BeanPersistIds> getBeanPersistList() {
         return beanPersistList;
     }
-    
+
+    public List<BeanDeltaList> getBeanDeltaLists() {
+        if (beanDeltaMap != null){
+            beanDeltaLists.addAll(beanDeltaMap.deltaLists());
+        }
+        return beanDeltaLists;
+    }
 }

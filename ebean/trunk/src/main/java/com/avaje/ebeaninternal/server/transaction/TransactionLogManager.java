@@ -71,7 +71,7 @@ public class TransactionLogManager {
             int maxFileSize = GlobalProperties.getInt("ebean.logging.maxFileSize", 100*1024*1024);
             
             String logPrefix = serverName + middleName;
-            String threadName = "EbeanTxnLogWriter-"+serverName;
+            String threadName = "Ebean-"+serverName+"-TxnLogWriter";
             this.logWriter = new FileTransactionLogger(threadName, dir, logPrefix, maxFileSize);
 		}
 		

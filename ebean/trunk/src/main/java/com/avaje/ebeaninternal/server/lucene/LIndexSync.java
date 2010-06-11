@@ -19,16 +19,24 @@
  */
 package com.avaje.ebeaninternal.server.lucene;
 
-import org.apache.lucene.search.IndexSearcher;
 
-public interface LIndexIoSearcher {
+public class LIndexSync {
 
-    public void postCommit();
-
-    public void refresh(boolean nearRealTime);
+    private final String masterHost;
     
-    public IndexSearcher getIndexSearcher();
+    private final LIndex index;
+    
+    public LIndexSync(LIndex index, String masterHost) {
+        this.index = index;
+        this.masterHost = masterHost;
+    }
 
-    public LIndexVersion getLastestVersion();
+    public String getMasterHost() {
+        return masterHost;
+    }
+
+    public LIndex getIndex() {
+        return index;
+    }
 
 }

@@ -35,6 +35,7 @@ import com.avaje.ebeaninternal.server.core.PstmtBatch;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.query.CQuery;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
@@ -80,6 +81,12 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 * Return the AutoFetchListener.
 	 */
 	public AutoFetchManager getAutoFetchManager();
+	
+	/**
+	 * Return the LuceneIndexManager
+	 */
+    public LuceneIndexManager getLuceneIndexManager();
+
 
 	/**
 	 * Clear the query execution statistics.

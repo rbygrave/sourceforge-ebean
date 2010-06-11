@@ -20,6 +20,7 @@ package com.avaje.ebeaninternal.server.cluster.socket;
 import java.io.Serializable;
 
 import com.avaje.ebeaninternal.server.cluster.DataHolder;
+import com.avaje.ebeaninternal.server.cluster.Packet;
 
 /**
  * The messages broadcast around the cluster.
@@ -40,6 +41,11 @@ public class SocketClusterMessage implements Serializable {
 
     public static SocketClusterMessage transEvent(DataHolder transEvent){
         return new SocketClusterMessage(transEvent);
+    }
+    
+    public static SocketClusterMessage packet(Packet packet){
+        DataHolder d = new DataHolder(packet.getBytes());
+        return new SocketClusterMessage(d);
     }
     
     /**

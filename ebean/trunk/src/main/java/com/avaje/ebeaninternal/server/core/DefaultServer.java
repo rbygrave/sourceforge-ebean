@@ -279,7 +279,11 @@ public final class DefaultServer implements SpiEbeanServer {
         
         ShutdownManager.register(new Shutdown());        
     }
-    
+
+    public LuceneIndexManager getLuceneIndexManager(){
+        return luceneIndexManager;
+    }
+
     public LuceneIndex getLuceneIndex(Class<?> beanType){
         return luceneIndexManager.getIndexByTypeAndName(beanType, null);
     }
@@ -325,18 +329,25 @@ public final class DefaultServer implements SpiEbeanServer {
     }
 
     /**
-     * Run any initialisation required.
+     * Run any initialisation required before registering with the
+     * ClusterManager.
      */
     public void initialise() {
-        if (encryptKeyManager != null){
+        if (encryptKeyManager != null) {
             encryptKeyManager.initialise();
         }
         List<BeanDescriptor<?>> list = beanDescriptorManager.getBeanDescriptorList();
         for (int i = 0; i < list.size(); i++) {
             list.get(i).cacheInitialise();
         }
-        
-        //luceneIndexManager.start();
+
+    }
+
+    /**
+     * Start any services after registering with the ClusterManager.
+     */
+    public void start() {
+        luceneIndexManager.start();
     }
     
     public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {

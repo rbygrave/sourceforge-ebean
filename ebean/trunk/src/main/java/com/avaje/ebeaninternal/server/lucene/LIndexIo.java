@@ -42,6 +42,7 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.transaction.BeanDelta;
+import com.avaje.ebeaninternal.server.transaction.IndexEvent;
 
 public class LIndexIo {
 
@@ -69,12 +70,16 @@ public class LIndexIo {
     
     private final LIndexIoSearcher ioSearcher;
     
+    private final HoldAwareIndexDeletionPolicy commitDeletionPolicy;
+    
     private long queueCommitStart;
     
     private int queueCommitCount;
     
     private int totalCommitCount;
+    
     private long totalCommitNanos;
+    
     private long totalPostCommitNanos;
 
     public LIndexIo(LuceneIndexManager manager, String indexDir, LIndex index) throws IOException {
@@ -85,26 +90,60 @@ public class LIndexIo {
         this.maxFieldLength = index.getMaxFieldLength();
         this.beanType = index.getBeanType();
         this.ormQueryDetail = index.getOrmQueryDetail();
-        this.directory = getDirectory();
+        this.directory = createDirectory();
         this.beanDescriptor = index.getBeanDescriptor();
         
+        this.commitDeletionPolicy = new HoldAwareIndexDeletionPolicy(indexDir);
         this.indexWriter = createIndexWriter();
+        
         this.ioSearcher = createIoSearcher();
+    }
+    
+    public LIndexVersion getLastestVersion(){
+        return ioSearcher.getLastestVersion();
+    }
+
+    public long getLastVersion() {
+        return commitDeletionPolicy.getLastVersion();
+    }
+    
+    public LIndexCommitInfo obtainLastIndexCommitIfNewer(long remoteIndexVersion) {
+        return commitDeletionPolicy.obtainLastIndexCommitIfNewer(remoteIndexVersion);
+    }
+    
+    public File getIndexDir() {
+        return new File(indexDir);
+    }
+    
+    public LIndexFileInfo getLocalFile(String fileName) {
+
+        File f = new File(indexDir, fileName);
+        return new LIndexFileInfo(f);
+    }
+    
+    public void refresh(boolean nearRealTime) {
+        ioSearcher.refresh(nearRealTime);
+    }
+    
+    
+    public LIndexFileInfo getFile(long remoteIndexVersion, String fileName) {
+        
+        commitDeletionPolicy.touch(remoteIndexVersion);
+        
+        File f = new File(indexDir, fileName);
+        return new LIndexFileInfo(f);
+    }
+    
+    public void releaseIndexCommit(long remoteIndexVersion) {
+        commitDeletionPolicy.releaseIndexCommit(remoteIndexVersion);
     }
     
     public void manage(LuceneIndexManager indexManager) {
         if (commit()){
             
-        }
+        }        
     }
     
-    private LIndexIoSearcher createIoSearcher() {
-        
-        // FIXME: Also have commit based implementation 
-        return new LIndexIoSearcherNearRealTime(indexWriter);
-    }
-    
-
     public void shutdown() {
         synchronized (indexWriter) { 
             try {
@@ -127,6 +166,10 @@ public class LIndexIo {
                 }
             }
         }
+    }
+    
+    private void notifyCluster(IndexEvent event) {
+        manager.notifyCluster(event);
     }
     
     public LIndexDeltaHandler createDeltaHandler(List<BeanDelta> deltaBeans) {
@@ -178,10 +221,16 @@ public class LIndexIo {
         }
     }
     
+    /**
+     * Invoke a commit if there are uncommitted changes. Return true if commit
+     * occurred or false if no commit was required.
+     */
     public boolean commit() {
         synchronized (indexWriter) { 
             try {
                 if (queueCommitStart == 0){
+                    // no pending uncommitted changes
+                    // so just return false
                     return false;
                 }
                 if (logger.isLoggable(Level.INFO)){
@@ -196,6 +245,8 @@ public class LIndexIo {
                     logger.info(m);
                 }
                 long nanoStart = System.nanoTime();
+                
+                // do the actual commit
                 indexWriter.commit();
                 queueCommitStart = 0;
                 queueCommitCount = 0;
@@ -203,12 +254,16 @@ public class LIndexIo {
                 long nanoCommit = System.nanoTime();
                 long nanoCommitExe = nanoCommit - nanoStart;
 
+                // notify the searcher
                 ioSearcher.postCommit();
                 long nanoPostCommitExe = System.nanoTime() - nanoCommitExe;
                 
                 totalCommitCount++;
                 totalCommitNanos += nanoCommitExe;
                 totalPostCommitNanos += nanoPostCommitExe;
+                
+                IndexEvent indexEvent = new IndexEvent(IndexEvent.COMMIT_EVENT, index.getDefnName());
+                notifyCluster(indexEvent);
                 
                 return true;
                 
@@ -218,34 +273,11 @@ public class LIndexIo {
             }
         }
     }
-        
-    public SpiQuery<?> createQuery() {
-        
-        SpiEbeanServer server = manager.getServer();
-        SpiQuery<?> query = (SpiQuery<?>)server.createQuery(beanType);
-        query.setUseIndex(UseIndex.NO);
-        query.getDetail().tuneFetchProperties(ormQueryDetail);
-        
-        return query;
-    }
-    
-    private Directory getDirectory() throws IOException {
-        File dir = new File(indexDir);
-        return FSDirectory.open(dir); 
-    }
-    
-    private IndexWriter createIndexWriter() {
-        try {
-            boolean create = true;
-            return new IndexWriter(directory, analyzer, create, maxFieldLength);
-        } catch (IOException e) {
-            String msg = "Error getting Lucene IndexWriter for " + indexDir;
-            throw new PersistenceLuceneException(msg, e);
-        }
-    }
     
     @SuppressWarnings("unchecked")
     public int rebuild() throws IOException {
+        
+        //TODO: Parallel index rebuild
         
         IndexWriter indexWriter = getIndexWriter();
         try {
@@ -264,7 +296,38 @@ public class LIndexIo {
             indexWriter.commit();
         }
     }
+        
+    public SpiQuery<?> createQuery() {
+        
+        SpiEbeanServer server = manager.getServer();
+        SpiQuery<?> query = (SpiQuery<?>)server.createQuery(beanType);
+        query.setUseIndex(UseIndex.NO);
+        query.getDetail().tuneFetchProperties(ormQueryDetail);
+        
+        return query;
+    }
     
+    private Directory createDirectory() throws IOException {
+        File dir = new File(indexDir);
+        return FSDirectory.open(dir); 
+    }
+    
+    private IndexWriter createIndexWriter() {
+        try {
+            boolean create = true;
+            return new IndexWriter(directory, analyzer, create, commitDeletionPolicy, maxFieldLength);
+        } catch (IOException e) {
+            String msg = "Error getting Lucene IndexWriter for " + indexDir;
+            throw new PersistenceLuceneException(msg, e);
+        }
+    }
+    
+    private LIndexIoSearcher createIoSearcher() {
+        
+        // TODO: Also have commit based implementation 
+        return new LIndexIoSearcherNearRealTime(indexWriter);
+    }
+  
     @SuppressWarnings("unchecked")
     private static class WriteListener implements QueryListener {
 
