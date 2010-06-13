@@ -19,7 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.lucene;
 
-import org.apache.lucene.search.IndexSearcher;
 
 public interface LIndexIoSearcher {
 
@@ -27,7 +26,7 @@ public interface LIndexIoSearcher {
 
     public void refresh(boolean nearRealTime);
     
-    public IndexSearcher getIndexSearcher();
+    public LIndexSearch getIndexSearch();
 
     public LIndexVersion getLastestVersion();
 

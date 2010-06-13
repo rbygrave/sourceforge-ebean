@@ -45,6 +45,8 @@ public class LIndexDeltaHandler {
     private static final Logger logger = Logger.getLogger(LIndexDeltaHandler.class.getName());
     
     private final LIndex index;
+    
+    private final LIndexSearch search;
 
     private final IndexSearcher searcher;
 
@@ -60,11 +62,12 @@ public class LIndexDeltaHandler {
 
     private final Document document = new Document();
 
-    public LIndexDeltaHandler(LIndex index, IndexSearcher searcher, IndexWriter indexWriter, Analyzer analyzer,
+    public LIndexDeltaHandler(LIndex index, LIndexSearch search, IndexWriter indexWriter, Analyzer analyzer,
             BeanDescriptor<?> beanDescriptor, DocFieldWriter docFieldWriter, List<BeanDelta> deltaBeans) {
 
         this.index = index;
-        this.searcher = searcher;
+        this.search = search;
+        this.searcher = search.getIndexSearcher();
         this.indexWriter = indexWriter;
         this.analyzer = analyzer;
         this.beanDescriptor = beanDescriptor;
@@ -101,7 +104,7 @@ public class LIndexDeltaHandler {
     
     private void closeResources(){
         try {
-            searcher.getIndexReader().decRef();
+            search.releaseClose();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error with IndexReader decRef()", e);
         }         

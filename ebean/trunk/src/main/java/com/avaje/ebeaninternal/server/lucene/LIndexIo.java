@@ -31,7 +31,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -174,18 +173,19 @@ public class LIndexIo {
     
     public LIndexDeltaHandler createDeltaHandler(List<BeanDelta> deltaBeans) {
         
-        IndexSearcher searcher = getIndexSearcher();
+        LIndexSearch search = getIndexSearch();
+        //TODO Review this...
         IndexWriter indexWriter = getIndexWriter();
         DocFieldWriter docFieldWriter = index.createDocFieldWriter();
-        return new LIndexDeltaHandler(index, searcher, indexWriter, analyzer, beanDescriptor, docFieldWriter, deltaBeans);
+        return new LIndexDeltaHandler(index, search, indexWriter, analyzer, beanDescriptor, docFieldWriter, deltaBeans);
     }
 
     public IndexWriter getIndexWriter() {
         return indexWriter;
     }
     
-    public IndexSearcher getIndexSearcher() {
-        return ioSearcher.getIndexSearcher();
+    public LIndexSearch getIndexSearch() {
+        return ioSearcher.getIndexSearch();
     }
     
     public void commitQueuedChanges(long freqMillis) {
@@ -324,8 +324,7 @@ public class LIndexIo {
     
     private LIndexIoSearcher createIoSearcher() {
         
-        // TODO: Also have commit based implementation 
-        return new LIndexIoSearcherNearRealTime(indexWriter);
+        return new LIndexIoSearcherDefault(indexWriter);
     }
   
     @SuppressWarnings("unchecked")
