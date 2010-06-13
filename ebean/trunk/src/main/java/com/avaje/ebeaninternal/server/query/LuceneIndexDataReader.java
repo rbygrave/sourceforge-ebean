@@ -30,8 +30,8 @@ import java.sql.Timestamp;
 import javax.persistence.PersistenceException;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
@@ -40,6 +40,7 @@ import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.lucene.LIndexField;
 import com.avaje.ebeaninternal.server.lucene.LIndexFields;
+import com.avaje.ebeaninternal.server.lucene.LIndexSearch;
 import com.avaje.ebeaninternal.server.type.DataReader;
 
 public class LuceneIndexDataReader implements DataReader {
@@ -50,7 +51,8 @@ public class LuceneIndexDataReader implements DataReader {
 
     private ScoreDoc[] scoreDocs;
     
-    private Searcher searcher;
+    private LIndexSearch indexSearch;
+    private IndexSearcher searcher;
     
     private int maxReadRows;
 
@@ -66,8 +68,9 @@ public class LuceneIndexDataReader implements DataReader {
         LIndex luceneIndex = request.getLuceneIndex();
         
         this.indexFieldDefn = luceneIndex.getIndexFieldDefn();
-        readFields = indexFieldDefn.getReadFields();
-        this.searcher = luceneIndex.getIndexSearcher();
+        this.readFields = indexFieldDefn.getReadFields();
+        this.indexSearch = luceneIndex.getIndexSearch();
+        this.searcher = indexSearch.getIndexSearcher();
 
         LuceneOrmQueryRequest luceneRequest = request.getLuceneOrmQueryRequest();
         
@@ -114,11 +117,7 @@ public class LuceneIndexDataReader implements DataReader {
     }
     
     public void close() throws SQLException {
-        try {
-            searcher.close();
-        } catch (IOException e) {
-            throw new PersistenceException(e);
-        }
+        indexSearch.releaseClose();
     }
 
     public Array getArray() throws SQLException {

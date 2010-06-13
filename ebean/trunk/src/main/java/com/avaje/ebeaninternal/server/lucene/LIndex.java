@@ -32,7 +32,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.queryParser.QueryParser.Operator;
-import org.apache.lucene.search.IndexSearcher;
 
 import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -201,8 +200,8 @@ public class LIndex implements LuceneIndex {
         return desc;
     }
 
-    public IndexSearcher getIndexSearcher() {
-        return indexIo.getIndexSearcher();
+    public LIndexSearch getIndexSearch() {
+        return indexIo.getIndexSearch();
     }
     
     public Analyzer getAnalyzer() {
