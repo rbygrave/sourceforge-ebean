@@ -307,21 +307,24 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 		
 	}
 
-	/**
-	 * Generate the equals method.
-	 * 
-	 * <pre>
-	 * public boolean equals(Object obj) {
-	 * 	if (obj instanceof FooEntity == false) {
-	 * 		return false;
-	 * 	}
-	 * 	if (obj == this) {
-	 * 		return true;
-	 * 	}
-	 * 	return _ebean_getIdentity().equals(((FooEntity) obj)._ebean_getIdentity());
-	 * }
-	 * </pre>
-	 */
+    /**
+     * Generate the equals method.
+     * 
+     * <pre>
+     * public boolean equals(Object o) {
+     *     if (o == null) {
+     *         return false;
+     *     }
+     *     if (!this.getClass().equals(o.getClass())) {
+     *         return false;
+     *     }
+     *     if (o == this) {
+     *         return true;
+     *     }
+     *     return _ebean_getIdentity().equals(((FooEntity)o)._ebean_getIdentity());
+     * }
+     * </pre>
+     */
 	private static void addEquals(ClassVisitor cv, ClassMeta classMeta) {
 
 		MethodVisitor mv;
@@ -332,41 +335,56 @@ public class MethodEquals implements Opcodes, EnhanceConstants {
 		mv.visitLabel(l0);
 		mv.visitLineNumber(1, l0);
 		mv.visitVarInsn(ALOAD, 1);
-		mv.visitTypeInsn(INSTANCEOF, classMeta.getClassName());
 		Label l1 = new Label();
-		mv.visitJumpInsn(IFNE, l1);
+		mv.visitJumpInsn(IFNONNULL, l1);
 		Label l2 = new Label();
 		mv.visitLabel(l2);
-		mv.visitLineNumber(1, l2);
+		mv.visitLineNumber(2, l2);
 		mv.visitInsn(ICONST_0);
 		mv.visitInsn(IRETURN);
 		mv.visitLabel(l1);
-		mv.visitLineNumber(1, l1);
-		mv.visitVarInsn(ALOAD, 1);
+		mv.visitLineNumber(3, l1);
+		mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 		mv.visitVarInsn(ALOAD, 0);
+		mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;");
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;");
+		mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "equals", "(Ljava/lang/Object;)Z");
 		Label l3 = new Label();
-		mv.visitJumpInsn(IF_ACMPNE, l3);
+		mv.visitJumpInsn(IFNE, l3);
 		Label l4 = new Label();
 		mv.visitLabel(l4);
-		mv.visitLineNumber(1, l4);
-		mv.visitInsn(ICONST_1);
+		mv.visitLineNumber(4, l4);
+		mv.visitInsn(ICONST_0);
 		mv.visitInsn(IRETURN);
 		mv.visitLabel(l3);
-		mv.visitLineNumber(1, l3);
+		mv.visitLineNumber(5, l3);
+		mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+		mv.visitVarInsn(ALOAD, 1);
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitMethodInsn(INVOKESPECIAL, classMeta.getClassName(), _EBEAN_GET_IDENTITY, "()Ljava/lang/Object;");
+		Label l5 = new Label();
+		mv.visitJumpInsn(IF_ACMPNE, l5);
+		Label l6 = new Label();
+		mv.visitLabel(l6);
+		mv.visitLineNumber(6, l6);
+		mv.visitInsn(ICONST_1);
+		mv.visitInsn(IRETURN);
+		mv.visitLabel(l5);
+		mv.visitLineNumber(7, l5);
+		mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), _EBEAN_GET_IDENTITY, "()Ljava/lang/Object;");
 		mv.visitVarInsn(ALOAD, 1);
 		mv.visitTypeInsn(CHECKCAST, classMeta.getClassName());
-		mv.visitMethodInsn(INVOKESPECIAL, classMeta.getClassName(), _EBEAN_GET_IDENTITY, "()Ljava/lang/Object;");
+		mv.visitMethodInsn(INVOKEVIRTUAL, classMeta.getClassName(), _EBEAN_GET_IDENTITY, "()Ljava/lang/Object;");
 		mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "equals", "(Ljava/lang/Object;)Z");
 		mv.visitInsn(IRETURN);
-		Label l5 = new Label();
-		mv.visitLabel(l5);
-		mv.visitLocalVariable("this", "L" + classMeta.getClassName() + ";", null, l0, l5, 0);
-		mv.visitLocalVariable("obj", "Ljava/lang/Object;", null, l0, l5, 1);
+		Label l7 = new Label();
+		mv.visitLabel(l7);
+		mv.visitLocalVariable("this", "L"+classMeta.getClassName()+";", null, l0, l7, 0);
+		mv.visitLocalVariable("obj", "Ljava/lang/Object;", null, l0, l7, 1);
 		mv.visitMaxs(2, 2);
 		mv.visitEnd();
-
 	}
 
 	/**
