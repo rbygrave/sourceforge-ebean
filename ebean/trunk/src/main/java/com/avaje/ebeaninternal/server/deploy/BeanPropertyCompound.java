@@ -96,6 +96,14 @@ public class BeanPropertyCompound extends BeanProperty {
         }
     }
 
+    @Override
+    public void setDeployOrder(int deployOrder) {
+        this.deployOrder = deployOrder;
+        for (CtCompoundPropertyElAdapter adapter : nonScalarMap.values()) {
+            adapter.setDeployOrder(deployOrder);
+        }
+    }
+
     /**
      * Get the underlying compound type.
      */

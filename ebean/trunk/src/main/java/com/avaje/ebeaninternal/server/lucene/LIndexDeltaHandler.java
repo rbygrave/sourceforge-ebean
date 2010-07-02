@@ -20,10 +20,15 @@
 package com.avaje.ebeaninternal.server.lucene;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.persistence.PersistenceException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -37,8 +42,10 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.transaction.BeanDelta;
+import com.avaje.ebeaninternal.server.transaction.BeanPersistIds;
 
 public class LIndexDeltaHandler {
 
@@ -58,12 +65,21 @@ public class LIndexDeltaHandler {
 
     private final DocFieldWriter docFieldWriter;
 
+    private final IndexUpdates indexUpdates;
+    
     private final List<BeanDelta> deltaBeans;
 
     private final Document document = new Document();
 
+    private Set<Object> deltaBeanKeys;
+    private int deltaCount;
+    private int insertCount;
+    private int updateCount;
+    private int deleteCount;
+    
+    
     public LIndexDeltaHandler(LIndex index, LIndexSearch search, IndexWriter indexWriter, Analyzer analyzer,
-            BeanDescriptor<?> beanDescriptor, DocFieldWriter docFieldWriter, List<BeanDelta> deltaBeans) {
+            BeanDescriptor<?> beanDescriptor, DocFieldWriter docFieldWriter, IndexUpdates indexUpdates) {
 
         this.index = index;
         this.search = search;
@@ -72,10 +88,96 @@ public class LIndexDeltaHandler {
         this.analyzer = analyzer;
         this.beanDescriptor = beanDescriptor;
         this.docFieldWriter = docFieldWriter;
-        this.deltaBeans = deltaBeans;
+        this.indexUpdates = indexUpdates;
+        this.deltaBeans = indexUpdates.getDeltaList().getDeltaBeans();
     }
 
     public void process() {
+        deltaBeanKeys = processDeltaBeans();
+        deltaCount = deltaBeanKeys.size();
+        
+        BeanPersistIds beanPersistIds = indexUpdates.getBeanPersistIds();
+        if (beanPersistIds != null){
+            processDeletes(beanPersistIds.getDeleteIds());
+            processInserts(beanPersistIds.getDeleteIds());
+            processUpdates(beanPersistIds.getUpdateIds());
+        }
+        
+        String msg = String.format("Lucene update index %s deltas[%s] insert[%s] update[%s] delete[%s]",
+                index, deltaCount, insertCount, updateCount, deleteCount);
+        
+        logger.info(msg);
+    }
+
+    private void processUpdates(List<Serializable> updateIds) {
+
+        ArrayList<Object> filterIdList = new ArrayList<Object>();
+        
+        // filter out Id's that where already 
+        // processed as a BeanDelta
+        for (int i = 0; i < updateIds.size(); i++) {
+            Serializable id = updateIds.get(i);
+            if (!deltaBeanKeys.contains(id)){
+                filterIdList.add(id);
+            }
+        }
+        
+        if (!filterIdList.isEmpty()) {
+            SpiQuery<?> ormQuery = index.createQuery();
+            ormQuery.where().idIn(filterIdList);
+            
+            List<?> list = ormQuery.findList();
+            for (int i = 0; i < list.size(); i++) {
+                Object bean = list.get(i);
+                try {
+                    Object id = beanDescriptor.getId(bean);
+                    Term term = index.createIdTerm(id);
+                    docFieldWriter.writeValue(bean, document);
+                    indexWriter.updateDocument(term, document);
+                    
+                } catch (Exception e) {
+                    throw new PersistenceException(e);
+                }
+            }
+            updateCount = list.size();
+        }
+    }
+    
+    private void processInserts(List<Serializable> insertIds) {
+        if (insertIds != null && !insertIds.isEmpty()) {
+            SpiQuery<?> ormQuery = index.createQuery();
+            ormQuery.where().idIn(insertIds);
+            List<?> list = ormQuery.findList();
+            for (int i = 0; i < list.size(); i++) {
+                Object bean = list.get(i);
+                try {
+                    docFieldWriter.writeValue(bean, document);
+                    indexWriter.addDocument(document);
+                    
+                } catch (Exception e) {
+                    throw new PersistenceException(e);
+                }
+            }
+            insertCount = list.size();
+        }
+    }
+    
+    private void processDeletes(List<Serializable> deleteIds) {
+        if (deleteIds != null && !deleteIds.isEmpty()){
+            for (int i = 0; i < deleteIds.size(); i++) {
+                Serializable id = deleteIds.get(i);
+                Term term = index.createIdTerm(id);
+                try {
+                    indexWriter.deleteDocuments(term);
+                } catch (Exception e) {
+                    throw new PersistenceLuceneException(e);
+                }
+            }
+            deleteCount = deleteIds.size();
+        }
+    }
+    
+    private Set<Object> processDeltaBeans() {
 
         try {
             LinkedHashMap<Object, Object> beanMap = getBeans();
@@ -96,6 +198,8 @@ public class LIndexDeltaHandler {
                     throw new PersistenceLuceneException(e);
                 }
             }
+            
+            return beanMap.keySet();
             
         } finally {
             closeResources();

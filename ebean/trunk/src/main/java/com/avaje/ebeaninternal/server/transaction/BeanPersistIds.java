@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -230,6 +231,10 @@ public class BeanPersistIds implements Serializable {
         deleteIds.add(id);
     }
 
+    public BeanDescriptor<?> getBeanDescriptor() {
+        return beanDescriptor;
+    }
+
     /**
      * Return the Descriptor Id. A more compact alternative to using the
      * beanType.
@@ -238,15 +243,15 @@ public class BeanPersistIds implements Serializable {
         return descriptorId;
     }
 
-    protected ArrayList<Serializable> getInsertIds() {
+    public List<Serializable> getInsertIds() {
         return insertIds;
     }
 
-    protected ArrayList<Serializable> getUpdateIds() {
+    public List<Serializable> getUpdateIds() {
         return updateIds;
     }
 
-    protected ArrayList<Serializable> getDeleteIds() {
+    public List<Serializable> getDeleteIds() {
         return deleteIds;
     }
 

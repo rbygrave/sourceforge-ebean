@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.transaction;
 
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +31,7 @@ import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 
 /**
  * Performs post commit processing using a background thread.
@@ -37,11 +39,13 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
  * This includes Cluster notification, and BeanPersistListeners.
  * </p>
  */
-public final class PostCommitProcessing implements Runnable {
+public final class PostCommitProcessing {
     
     private static final Logger logger = Logger.getLogger(PostCommitProcessing.class.getName());
     
 	private final ClusterManager clusterManager;
+	
+	private final LuceneIndexManager luceneIndexManager;
 	
 	private final TransactionEvent event;
 
@@ -55,56 +59,52 @@ public final class PostCommitProcessing implements Runnable {
 	
 	private final BeanDeltaMap beanDeltaMap;
 	
+	private final TransactionEventTable bulkEventTables;
+	
+	private final RemoteTransactionEvent remoteTransactionEvent;
+	
 	/**
 	 * Create for a TransactionManager and event.
 	 */
-	public PostCommitProcessing(ClusterManager clusterManager, TransactionManager manager, TransactionEvent event) {
+	public PostCommitProcessing(ClusterManager clusterManager, LuceneIndexManager luceneIndexManager, 
+	        TransactionManager manager, TransactionEvent event) {
+	    
 		this.clusterManager = clusterManager;
+		this.luceneIndexManager = luceneIndexManager;
 		this.manager = manager;
 		this.serverName = manager.getServerName();
 		this.event = event;
-		this.persistBeanRequests = getPersistBeanRequests();
+		this.persistBeanRequests = createPersistBeanRequests();
+		
 		this.beanPersistIdMap = createBeanPersistIdMap();
 		this.beanDeltaMap = new BeanDeltaMap(event.getBeanDeltas());
-	}
-
-	private List<PersistRequestBean<?>> getPersistBeanRequests() {
-	    TransactionEventBeans eventBeans = event.getEventBeans();
-        if (eventBeans != null){
-            return eventBeans.getRequests();
-        }
-        return null;
+		this.bulkEventTables = event.getEventTables();
+		
+		this.remoteTransactionEvent = createRemoteTransactionEvent();
 	}
 	
-	private BeanPersistIdMap createBeanPersistIdMap() {
-	    BeanPersistIdMap m = new BeanPersistIdMap();
-        if (persistBeanRequests != null){
-            for (int i = 0; i < persistBeanRequests.size(); i++) {
-                // notify local BeanPersistListener's and at the 
-                // request IUD type and id to the RemoteTransactionEvent
-                persistBeanRequests.get(i).addToPersistMap(m);
-            }
-        }
-        return m;
-	}
-	
-	/**
-	 * Return a the Id's of the beans persisted organised by their type.
-	 */
-	public BeanPersistIdMap getBeanPersistIdMap() {
+    public BeanPersistIdMap getBeanPersistIdMap() {
         return beanPersistIdMap;
     }
-	
-	public void localBeanDeltaNotify() {
-	    beanDeltaMap.process();
-	}
 
-	public void localCacheNotify() {
+    public BeanDeltaMap getBeanDeltaMap() {
+        return beanDeltaMap;
+    }
+
+    public TransactionEventTable getBulkEventTables() {
+        return bulkEventTables;
+    }
+
+    public void notifyLocalCacheIndex() {
+
+        luceneIndexManager.processEvent(remoteTransactionEvent);
+        
+	    // notify cache with bulk insert/update/delete statements
+        processTableEvents(event.getEventTables());
+
         // notify cache with bean changes
         event.notifyCache();
-        TransactionEventTable tableEvents = event.getEventTables();
-        processTableEvents(tableEvents);
-    }
+	}
 	
 	   /**
      * Table events are where SQL or external tools are used. In this case
@@ -120,43 +120,24 @@ public final class PostCommitProcessing implements Runnable {
             }
         }
     }
-
-    /**
-	 * Run the processing.
-	 */
-	public void run() {
-
-	    localPersistListenersNotify();
-		
-	    if (clusterManager.isClustering()){
-	        
-    		RemoteTransactionEvent remoteEvent = new RemoteTransactionEvent(serverName);
-    		
-    		//TODO: Should only transport BeanDelta's to Index Writers 
-            for (BeanDeltaList deltaList: beanDeltaMap.deltaLists()) {
-                remoteEvent.addBeanDeltaList(deltaList);
+	
+   public void notifyCluster() {
+        if (remoteTransactionEvent != null && !remoteTransactionEvent.isEmpty()) {
+            // send the interesting events to the cluster
+            if (manager.getClusterDebugLevel() > 0 || logger.isLoggable(Level.FINE)) {
+                logger.info("Cluster Send: " + remoteTransactionEvent.toString());
             }
-
-            for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
-                remoteEvent.addBeanPersistIds(beanPersist);
-            }
-    		
-    		TransactionEventTable eventTables = event.getEventTables();
-    		if (eventTables != null && !eventTables.isEmpty()){
-    		    for (TableIUD tableIUD : eventTables.values()) {
-    		        remoteEvent.addTableIUD(tableIUD);
-                }		    
-    		}
     
-    		if (!remoteEvent.isEmpty()) {
-    			// send the interesting events to the cluster
-                if (manager.getClusterDebugLevel() > 0 || logger.isLoggable(Level.FINE)) {
-                    logger.info("Cluster Send: " + remoteEvent.toString());
-                }
-    
-                clusterManager.broadcast(remoteEvent);
-    		}
-	    }
+            clusterManager.broadcast(remoteTransactionEvent);
+        }
+    }
+	   
+	public Runnable notifyPersistListeners() {
+	    return new Runnable() {
+	        public void run() {
+	            localPersistListenersNotify();
+	        }
+	    };
 	}
 	
     private void localPersistListenersNotify() {
@@ -167,5 +148,57 @@ public final class PostCommitProcessing implements Runnable {
         }
     }
 
+    private List<PersistRequestBean<?>> createPersistBeanRequests() {
+        TransactionEventBeans eventBeans = event.getEventBeans();
+        if (eventBeans != null){
+            return eventBeans.getRequests();
+        }
+        return null;
+    }
+    
+    private BeanPersistIdMap createBeanPersistIdMap() {
+        BeanPersistIdMap m = new BeanPersistIdMap();
+        if (persistBeanRequests != null){
+            for (int i = 0; i < persistBeanRequests.size(); i++) {
+                // notify local BeanPersistListener's and at the 
+                // request IUD type and id to the RemoteTransactionEvent
+                persistBeanRequests.get(i).addToPersistMap(m);
+            }
+        }
+        return m;
+    }
+    
+	private RemoteTransactionEvent createRemoteTransactionEvent() {
+	    
+	    if (!clusterManager.isClustering() && !luceneIndexManager.isLuceneAvailable()){
+	        return null;
+	    }
+	    
+	    RemoteTransactionEvent remoteTransactionEvent = new RemoteTransactionEvent(serverName);
+        
+        for (BeanDeltaList deltaList: beanDeltaMap.deltaLists()) {
+            remoteTransactionEvent.addBeanDeltaList(deltaList);
+        }
+
+        for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
+            remoteTransactionEvent.addBeanPersistIds(beanPersist);
+        }
+        
+        TransactionEventTable eventTables = event.getEventTables();
+        if (eventTables != null && !eventTables.isEmpty()){
+            for (TableIUD tableIUD : eventTables.values()) {
+                remoteTransactionEvent.addTableIUD(tableIUD);
+            }           
+        }
+        
+        Set<IndexInvalidate> indexInvalidations = event.getIndexInvalidations();
+        if (indexInvalidations != null){
+            for (IndexInvalidate indexInvalidate : indexInvalidations) {
+                remoteTransactionEvent.addIndexInvalidate(indexInvalidate);
+            }
+        }
+
+        return remoteTransactionEvent;
+	}
 
 }

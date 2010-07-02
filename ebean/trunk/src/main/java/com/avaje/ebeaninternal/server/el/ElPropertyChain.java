@@ -186,12 +186,31 @@ public class ElPropertyChain implements ElPropertyValue {
     public String getAssocIdInValueExpr(int size) {
         return lastElPropertyValue.getAssocIdInValueExpr(size);
     }
+    
+    public int getDeployOrder() {
+        int i = lastBeanProperty.getDeployOrder();
+        int max = chain.length-1;
+        for (int j = 0; j < max; j++) {
+            int xtra = ((max-j)*1000) * chain[j].getDeployOrder();
+            i += xtra;
+        }
+        return i;
+    }
 
     public boolean isAssocId() {
 		return assocId;
 	}
+    
+	public boolean isAssocProperty() {
+       for (int i = 0; i < chain.length; i++) {
+            if (chain[i].isAssocProperty()){
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public String getDbColumn() {
+    public String getDbColumn() {
 		return lastElPropertyValue.getDbColumn();
 	}
 	

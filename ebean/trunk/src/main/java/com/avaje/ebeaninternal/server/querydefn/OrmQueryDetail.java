@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +46,7 @@ public class OrmQueryDetail implements Serializable {
 	 */
 	private LinkedHashMap<String, OrmQueryProperties> fetchPaths = new LinkedHashMap<String, OrmQueryProperties>(8);
 
-	private HashSet<String> includes = new HashSet<String>(8);
+	private LinkedHashSet<String> includes = new LinkedHashSet<String>(8);
 
 	/**
 	 * Return a deep copy of the OrmQueryDetail.
@@ -58,7 +59,7 @@ public class OrmQueryDetail implements Serializable {
 			Map.Entry<String, OrmQueryProperties> entry = it.next();
 			copy.fetchPaths.put(entry.getKey(), entry.getValue().copy());
 		}
-		copy.includes = new HashSet<String>(includes);
+		copy.includes = new LinkedHashSet<String>(includes);
 		return copy;
 	}
 	

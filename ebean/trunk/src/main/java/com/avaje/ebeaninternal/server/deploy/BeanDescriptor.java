@@ -64,6 +64,7 @@ import com.avaje.ebean.validation.factory.Validator;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiUpdatePlan;
+import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
@@ -89,6 +90,7 @@ import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext.ReadBeanState;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext.WriteBeanState;
+import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.TypeManager;
 import com.avaje.ebeaninternal.util.SortByClause;
@@ -387,17 +389,19 @@ public class BeanDescriptor<T> {
     private final Set<String> defaultSelectClauseSet;
     private final String[] defaultSelectDbArray;
 
+    private final String descriptorId;
+        
+    private final UseIndex useIndex;
+
     private SpiEbeanServer ebeanServer;
 
     private ServerCache beanCache;
 
     private ServerCache queryCache;
-    
-    private final String descriptorId;
-    
+        
     private LIndex luceneIndex;
     
-    private final UseIndex useIndex;
+    private Set<IndexInvalidate> luceneIndexInvalidations;
     
     /**
      * Construct the BeanDescriptor.
@@ -661,6 +665,22 @@ public class BeanDescriptor<T> {
         this.luceneIndex = luceneIndex;
     }
 
+    public void addIndexInvalidate(IndexInvalidate e){
+        if (luceneIndexInvalidations == null){
+            luceneIndexInvalidations = new HashSet<IndexInvalidate>();
+        }
+        luceneIndexInvalidations.add(e);
+    }
+    
+    public boolean isNotifyLucene(TransactionEvent txnEvent){
+        if (luceneIndexInvalidations != null){
+            for (IndexInvalidate invalidate : luceneIndexInvalidations) {
+                txnEvent.addIndexInvalidate(invalidate);
+            }
+        }
+        return luceneIndex != null;
+    }
+    
     /**
      * Initialise the Id properties first.
      * <p>

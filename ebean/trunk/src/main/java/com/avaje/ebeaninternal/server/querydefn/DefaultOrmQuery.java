@@ -612,6 +612,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		int hc = beanType.getName().hashCode();
 
         hc = hc * 31 + (type == null ? 0 : type.ordinal());
+        hc = hc * 31 + (useIndex == null ? 0 : useIndex.hashCode());
 
         hc = hc * 31 + (rawSql == null ? 0 : rawSql.queryHash());
 

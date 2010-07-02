@@ -59,6 +59,11 @@ public interface ElPropertyValue extends ElPropertyDeploy {
     public boolean isAssocId();
 
     /**
+     * Return true if any path of this path contains a Associated One or Many.
+     */
+    public boolean isAssocProperty();
+
+    /**
      * Return true if the property is encrypted via Java.
      */
     public boolean isLocalEncrypted();
@@ -68,6 +73,11 @@ public interface ElPropertyValue extends ElPropertyDeploy {
      */
     public boolean isDbEncrypted();
 
+    /**
+     * Return the deploy order for the property.
+     */
+    public int getDeployOrder();
+    
     /**
      * Return the default StringParser for the scalar property.
      */

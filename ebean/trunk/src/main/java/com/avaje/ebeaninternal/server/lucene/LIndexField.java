@@ -63,4 +63,5 @@ public interface LIndexField {
 
     public QueryParser createQueryParser();
 
+    public int getPropertyOrder();
 }

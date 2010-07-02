@@ -283,6 +283,8 @@ public class BeanProperty implements ElPropertyValue {
 
     final boolean dynamicSubclassWithInheritance;
 
+    int deployOrder;
+    
     public BeanProperty(DeployBeanProperty deploy) {
         this(null, null, deploy);
     }
@@ -453,6 +455,20 @@ public class BeanProperty implements ElPropertyValue {
             String msg = "No ScalarType assigned to " + descriptor.getFullName() + "." + getName();
             throw new RuntimeException(msg);
         }
+    }
+
+    /**
+     * Return the order this property appears in the bean.
+     */
+    public int getDeployOrder() {
+        return deployOrder;
+    }
+    
+    /**
+     * Set the order this property appears in the bean.
+     */
+    public void setDeployOrder(int deployOrder) {
+        this.deployOrder = deployOrder;
     }
 
     public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
@@ -943,6 +959,11 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     public boolean isAssocId() {
+        // Returns false - override in BeanPropertyAssocOne.
+        return false;
+    }
+    
+    public boolean isAssocProperty() {
         // Returns false - override in BeanPropertyAssocOne.
         return false;
     }

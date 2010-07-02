@@ -21,36 +21,37 @@ package com.avaje.ebeaninternal.server.transaction;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.lucene.LIndex;
 
 public class BeanDeltaList {
 
-    private final BeanDescriptor<?> d;
+    private final BeanDescriptor<?> beanDescriptor;
     
-    private final ArrayList<BeanDelta> deltaBeans = new ArrayList<BeanDelta>();
+    private final List<BeanDelta> deltaBeans = new ArrayList<BeanDelta>();
 
-    public BeanDeltaList(BeanDescriptor<?> d) {
-        this.d = d;
+    public BeanDeltaList(BeanDescriptor<?> beanDescriptor) {
+        this.beanDescriptor = beanDescriptor;
     }
 
     public String toString() {
         return deltaBeans.toString();
     }
     
+    public BeanDescriptor<?> getBeanDescriptor() {
+        return beanDescriptor;
+    }
+
     public void add(BeanDelta b) {
         deltaBeans.add(b);
     }
     
-    public void process() {
-        if (!deltaBeans.isEmpty()){
-            LIndex luceneIndex = d.getLuceneIndex();
-            luceneIndex.process(deltaBeans);
-        }
+    public List<BeanDelta> getDeltaBeans() {
+        return deltaBeans;
     }
-    
+
     public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
         for (int i = 0; i < deltaBeans.size(); i++) {
             deltaBeans.get(i).writeBinaryMessage(msgList);

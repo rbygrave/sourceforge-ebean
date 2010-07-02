@@ -52,12 +52,6 @@ public class BeanDeltaMap {
         list.add(beanDelta);        
     }
     
-    public void process() {
-        for (BeanDeltaList deltaBeanList : deltaMap.values()) {
-            deltaBeanList.process();
-        }
-    }
-    
     public Collection<BeanDeltaList> deltaLists() {
         return deltaMap.values();
     }

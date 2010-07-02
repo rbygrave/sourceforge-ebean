@@ -76,7 +76,7 @@ public final class LIndexFieldNumeric extends LIndexFieldBase {
                 
             } else {
                 
-                //System.out.println("- write "+field.name()+" "+value);
+                System.out.println("- write "+field.name()+" "+value);
                 
                 value = scalarType.luceneToIndexValue(value);
                 setValueToField(value);

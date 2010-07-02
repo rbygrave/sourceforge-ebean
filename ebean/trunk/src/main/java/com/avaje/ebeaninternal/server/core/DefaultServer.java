@@ -285,7 +285,7 @@ public final class DefaultServer implements SpiEbeanServer {
     }
 
     public LuceneIndex getLuceneIndex(Class<?> beanType){
-        return luceneIndexManager.getIndexByTypeAndName(beanType, null);
+        return luceneIndexManager.getIndex(beanType.getName());
     }
         
     public boolean isVanillaMode() {
@@ -1884,6 +1884,13 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> beanClass) {
         return beanDescriptorManager.getBeanDescriptor(beanClass);
+    }
+    
+    /**
+     * Return the BeanDescriptor's for a given table name.
+     */
+    public List<BeanDescriptor<?>> getBeanDescriptors(String tableName) {
+        return beanDescriptorManager.getBeanDescriptors(tableName);
     }
     
     /**

@@ -340,12 +340,17 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return targetDescriptor.getIdBinder().getAssocIdInExpr(prefix);
     }
 
-
     @Override
     public boolean isAssocId() {
         return !embedded;
     }
 
+    @Override
+    public boolean isAssocProperty() {
+        return !embedded;
+    }
+
+    
     /**
      * Create a vanilla bean of the target type to be used as an embeddedId
      * value.

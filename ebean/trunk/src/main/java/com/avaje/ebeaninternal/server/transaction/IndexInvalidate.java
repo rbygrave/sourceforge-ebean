@@ -26,40 +26,45 @@ import java.io.IOException;
 import com.avaje.ebeaninternal.server.cluster.BinaryMessage;
 import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
 
-public class IndexEvent {
+public class IndexInvalidate {
 
-    public static final int COMMIT_EVENT = 1;
-    public static final int OPTIMISE_EVENT = 2;
-    
-    private final int eventType;
     private final String indexName;
     
-    public IndexEvent(int eventType, String indexName) {
-        this.eventType = eventType;
+    public IndexInvalidate(String indexName) {
         this.indexName = indexName;
-    }
-
-    public int getEventType() {
-        return eventType;
     }
 
     public String getIndexName() {
         return indexName;
     }
     
-    public static IndexEvent readBinaryMessage(DataInput dataInput) throws IOException {
+    @Override
+    public int hashCode() {
+        int hc = IndexInvalidate.class.hashCode();
+        hc = hc * 31 + indexName.hashCode();
+        return hc;
+    }
+    
+    @Override
+    public boolean equals(Object o){
+        if (o instanceof IndexInvalidate == false){
+            return false;
+        }
+        return indexName.equals(((IndexInvalidate)o).indexName);
+    }
+    
+    public static IndexInvalidate readBinaryMessage(DataInput dataInput) throws IOException {
         
-        int eventType = dataInput.readInt();
+        
         String indexName = dataInput.readUTF();
-        return new IndexEvent(eventType, indexName);
+        return new IndexInvalidate(indexName);
     }
     
     public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
         
         BinaryMessage msg = new BinaryMessage(indexName.length()+10);
         DataOutputStream os = msg.getOs();
-        os.writeInt(BinaryMessage.TYPE_INDEX);
-        os.writeInt(eventType);
+        os.writeInt(BinaryMessage.TYPE_INDEX_INVALIDATE);
         os.writeUTF(indexName);
         
         msgList.add(msg);

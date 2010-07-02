@@ -14,16 +14,18 @@ public final class BeanFkeyProperty implements ElPropertyValue {
     private final String name;
     private final String dbColumn;
 
-    public BeanFkeyProperty(String name, String dbColumn) {
-        this(null, name, dbColumn);
-    }
+    private int deployOrder;
 
-    public BeanFkeyProperty(String prefix, String name, String dbColumn) {
+    public BeanFkeyProperty(String prefix, String name, String dbColumn, int deployOrder) {
         this.prefix = prefix;
         this.name = name;
         this.dbColumn = dbColumn;
+        this.deployOrder = deployOrder;
         this.placeHolder = calcPlaceHolder(prefix, dbColumn);
+    }
 
+    public int getDeployOrder() {
+        return deployOrder;
     }
 
     private String calcPlaceHolder(String prefix, String dbColumn) {
@@ -38,7 +40,7 @@ public final class BeanFkeyProperty implements ElPropertyValue {
         int len = expression.length() - name.length() - 1;
         String prefix = expression.substring(0, len);
 
-        return new BeanFkeyProperty(prefix, name, dbColumn);
+        return new BeanFkeyProperty(prefix, name, dbColumn, deployOrder);
     }
 
     /**
@@ -117,6 +119,10 @@ public final class BeanFkeyProperty implements ElPropertyValue {
      * Returns false as not an AssocOne.
      */
     public boolean isAssocId() {
+        return false;
+    }
+    
+    public boolean isAssocProperty() {
         return false;
     }
 

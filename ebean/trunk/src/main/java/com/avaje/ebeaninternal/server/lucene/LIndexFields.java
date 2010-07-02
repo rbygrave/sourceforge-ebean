@@ -20,6 +20,8 @@
 package com.avaje.ebeaninternal.server.lucene;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +39,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
+import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 
 public class LIndexFields {
 
@@ -105,9 +108,20 @@ public class LIndexFields {
     }
     
     public void registerIndexWithProperties(LuceneIndex luceneIndex) {
+        
+        IndexInvalidate invalidate = new IndexInvalidate(descriptor.getBeanType().getName());
+        
         for (String prop : restorePropertyNames) {
             ElPropertyValue elProp  = descriptor.getElGetValue(prop);
-            elProp.getBeanProperty().registerLuceneIndex(luceneIndex);
+            if (elProp.isAssocProperty()) {
+                // any change to beans of this type cause this index to get invalidated
+                // and the index needs to be updated using DB query to search for dirty rows
+                elProp.getBeanProperty().getBeanDescriptor().addIndexInvalidate(invalidate);
+                
+            } else {
+                // will support Delta Updates (Index update without DB query)
+                elProp.getBeanProperty().registerLuceneIndex(luceneIndex);
+            }
         }
     }
     
@@ -180,9 +194,21 @@ public class LIndexFields {
             if (field.isStored() && field.isBeanProperty()) {
                 // this is an index field that maps to a
                 // bean property and can be read
+                
+                
                 readFieldList.add(field);
             }
         }
+        
+        // sort into deployment order
+        Collections.sort(readFieldList, new Comparator<LIndexField>(){
+            public int compare(LIndexField o1, LIndexField o2) {
+                int v1 = o1.getPropertyOrder();
+                int v2 = o2.getPropertyOrder();
+                return (v1 < v2 ? -1 : (v1 == v2 ? 0 : 1));
+            }
+        });
+        
         return readFieldList.toArray(new LIndexField[readFieldList.size()]);
     }
     
