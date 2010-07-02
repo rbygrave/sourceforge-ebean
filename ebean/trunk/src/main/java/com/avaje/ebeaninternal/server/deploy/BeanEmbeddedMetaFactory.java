@@ -21,6 +21,8 @@ package com.avaje.ebeaninternal.server.deploy;
 
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocOne;
 
 /**
@@ -39,6 +41,11 @@ public class BeanEmbeddedMetaFactory {
 		// and know that it is NOT recursive, as Embedded beans are
 		// only allow to hold simple scalar types...
 		BeanDescriptor<?> targetDesc = owner.getBeanDescriptor(prop.getTargetType());
+		if (targetDesc == null){
+		    String msg = "Could not find BeanDescriptor for "+prop.getTargetType()
+		        +". Perhaps the EmbeddedId class is not registered?";
+		    throw new PersistenceException(msg);
+		}
 
 		// deployment override information (column names)
 		Map<String, String> propColMap = prop.getDeployEmbedded().getPropertyColumnMap();
