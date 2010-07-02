@@ -21,10 +21,13 @@ package com.avaje.ebeaninternal.api;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.transaction.BeanDelta;
+import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 
 /**
  * Holds information for a transaction. There is one TransactionEvent instance
@@ -56,6 +59,8 @@ public class TransactionEvent implements Serializable {
 	
 	private boolean invalidateAll;
 	
+	private transient Set<IndexInvalidate> indexInvalidations;
+	
 	/**
 	 * Create the TransactionEvent, one per Transaction.
 	 */
@@ -78,6 +83,16 @@ public class TransactionEvent implements Serializable {
 		return invalidateAll;
 	}
 
+	/**
+	 * Add an IndexInvalidation notices to the transaction.
+	 */
+	public void addIndexInvalidate(IndexInvalidate indexEvent){
+	    if (indexInvalidations == null){
+	        indexInvalidations = new HashSet<IndexInvalidate>();
+	    }
+	    indexInvalidations.add(indexEvent);
+	}
+	
     public void addBeanDelta(BeanDelta delta) {
         if (beanDeltas == null) {
             beanDeltas = new ArrayList<BeanDelta>();
@@ -107,8 +122,12 @@ public class TransactionEvent implements Serializable {
 	public TransactionEventTable getEventTables() {
 		return eventTables;
 	}
+	
+	public Set<IndexInvalidate> getIndexInvalidations() {
+        return indexInvalidations;
+    }
 
-	public void add(String tableName, boolean inserts, boolean updates, boolean deletes){
+    public void add(String tableName, boolean inserts, boolean updates, boolean deletes){
 		if (eventTables == null){
 			eventTables = new TransactionEventTable();
 		}
@@ -127,7 +146,7 @@ public class TransactionEvent implements Serializable {
 	 */
 	public void add(PersistRequestBean<?> request) {
 
-		if (request.isNotify()){
+		if (request.isNotify(this)){
 			// either a BeanListener or Cache is interested
 			if (eventBeans == null) {
 				eventBeans = new TransactionEventBeans();

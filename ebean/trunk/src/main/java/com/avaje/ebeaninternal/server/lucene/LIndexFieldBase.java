@@ -75,6 +75,10 @@ public abstract class LIndexFieldBase implements LIndexField {
             this.propertyName = SplitName.add(property.getElPrefix(), property.getName());
         }
     }
+    
+    public String toString() {
+        return propertyName;
+    }
 
     public void addIndexRequiredPropertyNames(Set<String> requiredPropertyNames) {
         if (propertyName != null){
@@ -108,6 +112,10 @@ public abstract class LIndexFieldBase implements LIndexField {
     
     public boolean isBeanProperty() {
         return property != null;
+    }
+    
+    public int getPropertyOrder() {
+        return property == null ? 0 : property.getDeployOrder();
     }
 
     public ElPropertyValue getElBeanProperty() {

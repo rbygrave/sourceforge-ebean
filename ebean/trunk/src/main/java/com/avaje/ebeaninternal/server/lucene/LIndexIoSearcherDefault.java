@@ -33,11 +33,14 @@ public class LIndexIoSearcherDefault implements LIndexIoSearcher {
 
     private static final Logger logger = Logger.getLogger(LIndexIoSearcherDefault.class.getName());
     
+    private final String name;
+    
     private final IndexWriter indexWriter;
     
     private volatile LIndexSearch indexSearch;
     
-    public LIndexIoSearcherDefault(IndexWriter indexWriter) {
+    public LIndexIoSearcherDefault(IndexWriter indexWriter, String name) {
+        this.name = name;
         this.indexWriter = indexWriter;
         this.indexSearch = refreshIndexSearch();
     }
@@ -124,9 +127,10 @@ public class LIndexIoSearcherDefault implements LIndexIoSearcher {
                 if (currentSearch != null) {
                     currentSearch.markForClose();
                 }
+                logger.info("Lucene Searcher refreshed "+name);
                 this.indexSearch = newSearch;
-                
                 return newSearch;
+                
             } catch (IOException e){
                 throw new PersistenceLuceneException(e);
             }

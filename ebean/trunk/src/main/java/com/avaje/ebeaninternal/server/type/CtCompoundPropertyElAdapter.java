@@ -37,8 +37,14 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
 
     private final CtCompoundProperty prop;
 
+    private int deployOrder;
+    
     public CtCompoundPropertyElAdapter(CtCompoundProperty prop) {
         this.prop = prop;
+    }
+    
+    public void setDeployOrder(int deployOrder) {
+        this.deployOrder = deployOrder;
     }
 
     public Object elConvertType(Object value) {
@@ -59,6 +65,10 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
 
     public void elSetValue(Object bean, Object value, boolean populate, boolean reference) {
         prop.setValue(bean, value);
+    }
+
+    public int getDeployOrder() {
+        return deployOrder;
     }
 
     public String getAssocOneIdExpr(String prefix, String operator) {
@@ -98,6 +108,10 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
     }
 
     public boolean isAssocId() {
+        return false;
+    }
+    
+    public boolean isAssocProperty() {
         return false;
     }
 

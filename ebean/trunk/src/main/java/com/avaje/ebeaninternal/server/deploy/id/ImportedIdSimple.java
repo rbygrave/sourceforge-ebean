@@ -74,7 +74,7 @@ public final class ImportedIdSimple implements ImportedId, Comparable<ImportedId
     }
 
     public void addFkeys(String name) {
-		BeanFkeyProperty fkey = new BeanFkeyProperty(null, name+"."+foreignProperty.getName(), localDbColumn);
+		BeanFkeyProperty fkey = new BeanFkeyProperty(null, name+"."+foreignProperty.getName(), localDbColumn, owner.getDeployOrder());
 		owner.getBeanDescriptor().add(fkey);
 	}
 

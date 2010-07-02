@@ -67,7 +67,7 @@ public class SLuceneClient {
         DataOutput dataOutput = client.getDataOutput();
         dataOutput.writeUTF(serverName);
         dataOutput.writeShort(msgType);
-        dataOutput.writeUTF(index.getDefnName());
+        dataOutput.writeUTF(index.getName());
         dataOutput.writeLong(version);
     }
 

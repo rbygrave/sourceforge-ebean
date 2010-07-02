@@ -34,9 +34,10 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.queryParser.QueryParser.Operator;
 
 import com.avaje.ebean.config.lucene.LuceneIndex;
+import com.avaje.ebeaninternal.api.SpiQuery;
+import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
-import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 
 public class LIndex implements LuceneIndex {
 
@@ -44,7 +45,7 @@ public class LIndex implements LuceneIndex {
     
     private final DefaultLuceneIndexManager manager;
     
-    private final String indexName;
+    private final String name;
     
     private final Analyzer analyzer;
     
@@ -70,7 +71,7 @@ public class LIndex implements LuceneIndex {
             MaxFieldLength maxFieldLength, BeanDescriptor<?> desc, LIndexFields fieldDefn) throws IOException {
         
         this.manager = manager;
-        this.indexName = indexName;
+        this.name = desc.getFullName();
         this.analyzer = analyzer;
         this.maxFieldLength = maxFieldLength;
         this.desc = desc;
@@ -185,13 +186,13 @@ public class LIndex implements LuceneIndex {
     }
 
     public String toString() {
-        return getDefnName();
+        return name;
     }
     
-    public String getDefnName() {
-        return indexName;
+    public String getName() {
+        return name;
     }
-    
+
     public Class<?> getBeanType() {
         return desc.getBeanType();
     }
@@ -241,9 +242,37 @@ public class LIndex implements LuceneIndex {
         return fieldDefn.createDocFieldWriter();
     }
 
-    public void process(List<BeanDelta> deltaBeans) {
-        LIndexDeltaHandler h = indexIo.createDeltaHandler(deltaBeans);
+    public SpiQuery<?> createQuery() {
+        return indexIo.createQuery();
+    }
+    
+    public void process(IndexUpdates indexUpdates) {
+        
+        List<TableIUD> tableList = indexUpdates.getTableList();
+        if (tableList != null && tableList.size() > 0){
+            boolean bulkDelete = false;
+            for (int i = 0; i < tableList.size(); i++) {
+                TableIUD bulkTableEvent = tableList.get(i);
+                if (bulkTableEvent.isDelete()){
+                    bulkDelete = true;
+                }
+            }
+            if (bulkDelete){
+                rebuild();
+            } else {
+                update();
+            }
+            return;
+        }
+        
+        if (indexUpdates.isInvalidate()){
+            update();
+            return;
+        }
+
+        LIndexDeltaHandler h = indexIo.createDeltaHandler(indexUpdates);
         h.process();
+        
         indexIo.queueCommit();
     }
 

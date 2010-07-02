@@ -22,7 +22,9 @@ package com.avaje.ebeaninternal.server.transaction;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
@@ -32,15 +34,17 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
 
     private static final long serialVersionUID = 757920022500956949L;
 
-    private ArrayList<BeanPersistIds> beanPersistList = new ArrayList<BeanPersistIds>();
+    private List<BeanPersistIds> beanPersistList = new ArrayList<BeanPersistIds>();
     
-    private ArrayList<TableIUD> tableList;
+    private List<TableIUD> tableList;
 
-    private ArrayList<BeanDeltaList> beanDeltaLists;
+    private List<BeanDeltaList> beanDeltaLists;
     
     private BeanDeltaMap beanDeltaMap;
 
-    private ArrayList<IndexEvent> indexEventList;
+    private List<IndexEvent> indexEventList;
+    
+    private Set<IndexInvalidate> indexInvalidations;
     
     private String serverName;
 
@@ -71,6 +75,12 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
     }
     
     public void writeBinaryMessage(BinaryMessageList msgList) throws IOException {
+        
+        if (indexInvalidations != null){
+            for (IndexInvalidate indexInvalidate : indexInvalidations) {
+                indexInvalidate.writeBinaryMessage(msgList);
+            }
+        }
         
         if (tableList != null){
             for (int i = 0; i < tableList.size(); i++) {
@@ -104,7 +114,14 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
     public void addBeanPersistIds(BeanPersistIds beanPersist){
         beanPersistList.add(beanPersist);
     }
-    
+
+    public void addIndexInvalidate(IndexInvalidate indexInvalidate){
+        if (indexInvalidations == null){
+            indexInvalidations = new HashSet<IndexInvalidate>();
+        }
+        indexInvalidations.add(indexInvalidate);
+    }
+
     public void addTableIUD(TableIUD tableIud){
         if (tableList == null){
             tableList = new ArrayList<TableIUD>(4);
@@ -145,6 +162,10 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
         this.server = server;
     }
     
+    public Set<IndexInvalidate> getIndexInvalidations() {
+        return indexInvalidations;
+    }
+
     public List<IndexEvent> getIndexEventList() {
         return indexEventList;
     }

@@ -96,8 +96,10 @@ public class DeployBeanPropertyLists {
 
         Iterator<BeanProperty> it = propertyMap.values().iterator();
 
+        int order = 0;
         while (it.hasNext()) {
             BeanProperty prop = it.next();
+            prop.setDeployOrder(order++);
             allocateToList(prop);
         }
 

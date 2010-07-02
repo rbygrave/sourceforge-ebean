@@ -27,6 +27,7 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.transaction.IndexEvent;
+import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
 /**
  * Used when Lucene is not in the class path.
@@ -48,8 +49,12 @@ public class NoLuceneIndexManager implements LuceneIndexManager {
         return false;
     }
     
+    public void processEvent(RemoteTransactionEvent txnEvent) {
+        throw new RuntimeException("Never Called");
+    }
+
     public void processEvent(IndexEvent indexEvent) {
-        
+        throw new RuntimeException("Never Called");        
     }
 
     public LuceneClusterIndexSync getClusterIndexSync() {

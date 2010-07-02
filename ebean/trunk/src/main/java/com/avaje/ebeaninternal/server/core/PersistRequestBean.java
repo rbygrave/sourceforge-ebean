@@ -180,8 +180,8 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         }
     }
 
-    public boolean isNotify() {
-        return notifyCache || isNotifyPersistListener();
+    public boolean isNotify(TransactionEvent txnEvent) {
+        return notifyCache || isNotifyPersistListener() || beanDescriptor.isNotifyLucene(txnEvent);
     }
 
     public boolean isNotifyCache() {

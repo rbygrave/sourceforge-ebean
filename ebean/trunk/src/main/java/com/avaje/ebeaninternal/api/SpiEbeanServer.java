@@ -103,7 +103,15 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 */
 	public <T> BeanDescriptor<T> getBeanDescriptor(Class<T> type);
 
+    /**
+     * Return BeanDescriptor using it's unique id.
+     */
     public BeanDescriptor<?> getBeanDescriptorById(String descriptorId);
+
+    /**
+     * Return BeanDescriptors mapped to this table.
+     */
+    public List<BeanDescriptor<?>> getBeanDescriptors(String tableName);
 
 	/**
 	 * Process committed changes from another framework.

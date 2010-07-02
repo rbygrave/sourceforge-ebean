@@ -319,12 +319,19 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
      */
     public void cacheNotify(TransactionEventTable.TableIUD tableIUD) {
 
-        List<BeanDescriptor<?>> list = tableToDescMap.get(tableIUD.getTable());
+        List<BeanDescriptor<?>> list = getBeanDescriptors(tableIUD.getTable());
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 list.get(i).cacheNotify(tableIUD);
             }
         }
+    }
+    
+    /**
+     * Return the BeanDescriptors mapped to the table.
+     */
+    public List<BeanDescriptor<?>> getBeanDescriptors(String tableName) {
+        return tableToDescMap.get(tableName.toLowerCase());
     }
 
     /**
@@ -340,7 +347,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             if (baseTable == null) {
 
             } else {
-                baseTable = baseTable.toUpperCase();
+                baseTable = baseTable.toLowerCase();
 
                 List<BeanDescriptor<?>> list = tableToDescMap.get(baseTable);
                 if (list == null) {

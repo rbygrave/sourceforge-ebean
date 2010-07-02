@@ -369,7 +369,12 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
     public boolean isAssocId() {
         return true;
     }
-	
+    
+    @Override
+    public boolean isAssocProperty() {
+        return true;
+    }
+
 	/**
 	 * Returns true.
 	 */

@@ -70,7 +70,7 @@ public class SLuceneClusterSocketClient implements SLuceneSocketMessageTypes {
         try {
             LIndexCommitInfo commitInfo = getCommitInfo();
             if (commitInfo == null){
-                logger.info("Lucene index up to date ["+index.getDefnName()+"]");
+                logger.info("Lucene index up to date ["+index.getName()+"]");
                 return false;
             } 
             
@@ -78,7 +78,7 @@ public class SLuceneClusterSocketClient implements SLuceneSocketMessageTypes {
             return true;
             
         } catch (IOException e){
-            String msg = "Error synch'ing index "+index.getDefnName();
+            String msg = "Error synch'ing index "+index.getName();
             logger.log(Level.SEVERE, msg, e); 
             throw e;
         }
@@ -107,7 +107,7 @@ public class SLuceneClusterSocketClient implements SLuceneSocketMessageTypes {
             try {
                 client.sendRelease();
             } catch (IOException e) {
-                String msg = "Error sending release for index "+client.getIndex().getDefnName();
+                String msg = "Error sending release for index "+client.getIndex();
                 logger.log(Level.SEVERE, msg, e);
             }
         }

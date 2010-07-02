@@ -21,7 +21,6 @@ package com.avaje.ebeaninternal.server.lucene;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +39,6 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
-import com.avaje.ebeaninternal.server.transaction.BeanDelta;
 import com.avaje.ebeaninternal.server.transaction.IndexEvent;
 
 public class LIndexIo {
@@ -70,6 +68,8 @@ public class LIndexIo {
     private final LIndexIoSearcher ioSearcher;
     
     private final HoldAwareIndexDeletionPolicy commitDeletionPolicy;
+    
+    private final Object writeMonitor = new Object();
     
     private long queueCommitStart;
     
@@ -144,7 +144,7 @@ public class LIndexIo {
     }
     
     public void shutdown() {
-        synchronized (indexWriter) { 
+        synchronized (writeMonitor) { 
             try {
                 if (queueCommitStart > 0){
                     indexWriter.commit();
@@ -171,25 +171,25 @@ public class LIndexIo {
         manager.notifyCluster(event);
     }
     
-    public LIndexDeltaHandler createDeltaHandler(List<BeanDelta> deltaBeans) {
+    public LIndexDeltaHandler createDeltaHandler(IndexUpdates indexUpdates) {
         
         LIndexSearch search = getIndexSearch();
         //TODO Review this...
-        IndexWriter indexWriter = getIndexWriter();
+        IndexWriter indexWriter = this.indexWriter;
         DocFieldWriter docFieldWriter = index.createDocFieldWriter();
-        return new LIndexDeltaHandler(index, search, indexWriter, analyzer, beanDescriptor, docFieldWriter, deltaBeans);
+        return new LIndexDeltaHandler(index, search, indexWriter, analyzer, beanDescriptor, docFieldWriter, indexUpdates);
     }
 
-    public IndexWriter getIndexWriter() {
-        return indexWriter;
-    }
+//    public IndexWriter getIndexWriter() {
+//        return indexWriter;
+//    }
     
     public LIndexSearch getIndexSearch() {
         return ioSearcher.getIndexSearch();
     }
     
     public void commitQueuedChanges(long freqMillis) {
-        synchronized (indexWriter) {
+        synchronized (writeMonitor) {
             if (queueCommitStart > 0){
                 if (freqMillis == 0 || (System.currentTimeMillis() - freqMillis) > queueCommitStart ){
                     commit();
@@ -202,7 +202,7 @@ public class LIndexIo {
      * Queue a commit for execution later via the Lucene Manager thread.
      */
     public void queueCommit() {
-        synchronized (indexWriter) {
+        synchronized (writeMonitor) {
             if (queueCommitStart == 0){
                 queueCommitStart = System.currentTimeMillis();
             }
@@ -211,7 +211,7 @@ public class LIndexIo {
     }
     
     public long getQueueCommitStart(boolean reset) {
-        synchronized (indexWriter) {   
+        synchronized (writeMonitor) {   
             long start = this.queueCommitStart;
             if (reset){
                 this.queueCommitStart = 0;
@@ -226,7 +226,7 @@ public class LIndexIo {
      * occurred or false if no commit was required.
      */
     public boolean commit() {
-        synchronized (indexWriter) { 
+        synchronized (writeMonitor) { 
             try {
                 if (queueCommitStart == 0){
                     // no pending uncommitted changes
@@ -262,7 +262,7 @@ public class LIndexIo {
                 totalCommitNanos += nanoCommitExe;
                 totalPostCommitNanos += nanoPostCommitExe;
                 
-                IndexEvent indexEvent = new IndexEvent(IndexEvent.COMMIT_EVENT, index.getDefnName());
+                IndexEvent indexEvent = new IndexEvent(IndexEvent.COMMIT_EVENT, index.getName());
                 notifyCluster(indexEvent);
                 
                 return true;
@@ -276,24 +276,29 @@ public class LIndexIo {
     
     @SuppressWarnings("unchecked")
     public int rebuild() throws IOException {
-        
-        //TODO: Parallel index rebuild
-        
-        IndexWriter indexWriter = getIndexWriter();
-        try {
-            indexWriter.deleteAll();
+        synchronized (writeMonitor) { 
             
-            SpiQuery<?> query = createQuery();
+            logger.info("Lucene rebuild "+indexDir);
             
-            WriteListener writeListener = new WriteListener(index, indexWriter);
-            query.setListener(writeListener);
+            //TODO: Parallel index rebuild
             
-            manager.getServer().findList(query, null);
-                   
-            return writeListener.getCount();
-            
-        } finally {
-            indexWriter.commit();
+            //IndexWriter indexWriter = getIndexWriter();
+            try {
+                indexWriter.deleteAll();
+                
+                SpiQuery<?> query = createQuery();
+                
+                WriteListener writeListener = new WriteListener(index, indexWriter);
+                query.setListener(writeListener);
+                
+                manager.getServer().findList(query, null);
+                 
+                return writeListener.getCount();
+                
+            } finally {
+                queueCommit();
+                commit();
+            }
         }
     }
         
@@ -324,7 +329,7 @@ public class LIndexIo {
     
     private LIndexIoSearcher createIoSearcher() {
         
-        return new LIndexIoSearcherDefault(indexWriter);
+        return new LIndexIoSearcherDefault(indexWriter, index.getName());
     }
   
     @SuppressWarnings("unchecked")

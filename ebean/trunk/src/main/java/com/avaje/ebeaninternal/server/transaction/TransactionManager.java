@@ -447,22 +447,25 @@ public class TransactionManager {
 		    
 		    log(transaction.getLogBuffer());
 	
-		    PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, transaction.getEvent());
-
-            postCommit.localBeanDeltaNotify();
-		    postCommit.localCacheNotify();
+		    PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, transaction.getEvent());
+	    
+		    postCommit.notifyLocalCacheIndex();
+		    postCommit.notifyCluster();
 			
 			// cluster and text indexing
-			localCommitBackgroundProcess(postCommit);
+	        backgroundExecutor.execute(postCommit.notifyPersistListeners());
 			
 			if (debugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] commit");
 			}
 		} catch (Exception ex) {
-			String m = "Potentially Transaction Log incomplete due to error:";
+			String m = "NotifyOfCommit failed. Cache/Lucene potentially not notified.";
 			logger.log(Level.SEVERE, m, ex);
 		}
 	}
+	
+
+
 
 	/**
 	 * Process a Transaction that comes from another framework or local code.
@@ -476,12 +479,12 @@ public class TransactionManager {
 		TransactionEvent event = new TransactionEvent();
 		event.add(tableEvents);
 		
-		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, event);
-        // invalidate parts of local cache 
-		postCommit.localCacheNotify();
+		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, event);
+        
+		// invalidate parts of local cache and index
+		postCommit.notifyLocalCacheIndex();
 		
-		// send to cluster
-		localCommitBackgroundProcess(postCommit);
+		backgroundExecutor.execute(postCommit.notifyPersistListeners());
 	}
 	
 	
@@ -494,13 +497,8 @@ public class TransactionManager {
             logger.info("Cluster Received: "+remoteEvent.toString());
         }
 
-        List<BeanDeltaList> beanDeltaLists = remoteEvent.getBeanDeltaLists();
-        if (beanDeltaLists != null){
-            for (int i = 0; i < beanDeltaLists.size(); i++) {
-                beanDeltaLists.get(i).process();
-            }
-        }
-
+        luceneIndexManager.processEvent(remoteEvent);
+        
         List<TableIUD> tableIUDList = remoteEvent.getTableIUDList();
         if (tableIUDList != null){
             for (int i = 0; i < tableIUDList.size(); i++) {
@@ -527,13 +525,5 @@ public class TransactionManager {
         
     }
 	
-	/**
-	 * Run some of the post commit processing in a background thread. This can
-	 * be relatively expensive/long running and includes notifying the cluster
-	 * and BeanPersitListeners.
-	 */
-	private void localCommitBackgroundProcess(PostCommitProcessing postCommit) {
-		backgroundExecutor.execute(postCommit);
-	}
 
 }
