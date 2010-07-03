@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ebean Enhancer
 Bundle-SymbolicName: com.avaje.ebean.enhancer.plugin;singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.7.0.qualifier
 Bundle-Activator: com.avaje.eclipse.buildplugin.BuildPluginActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -14,4 +14,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: avaje.org
 Bundle-ClassPath: .,
- lib/ebean-2.5.0-agent.jar
+ lib/ebean-2.7.0-20100703-agent.jar
