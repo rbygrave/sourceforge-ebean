@@ -495,13 +495,7 @@ public final class DefaultPersister implements Persister {
      */
     private int delete(BeanDescriptor<?> descriptor, Object id, List<Object> idList, Transaction transaction) {
 
-        SpiTransaction t = (SpiTransaction)transaction;
-        if (idList != null){
-            t.getEvent().addDeleteByIdList(descriptor, idList);
-        } else {
-            t.getEvent().addDeleteById(descriptor, id);
-        }
-        
+        SpiTransaction t = (SpiTransaction)transaction;        
         if (t.isPersistCascade()){
             BeanPropertyAssocOne<?>[] propImportDelete = descriptor.propertiesOneImportedDelete();
             if (propImportDelete.length > 0){
@@ -511,14 +505,14 @@ public final class DefaultPersister implements Persister {
                 Query<?> q = deleteRequiresQuery(descriptor, propImportDelete);
                 if (idList != null){
                     q.where().idIn(idList);
-                    t.log("-- Deleting list of "+descriptor.getName()+" requires fetch of foreign key values");
+                    t.log("-- DeleteById of "+descriptor.getName()+" ids["+idList+"] requires fetch of foreign key values");
                     List<?> beanList = server.findList(q, t);
                     deleteList(beanList, t);
                     return beanList.size();
                     
                 } else {
                     q.where().idEq(id);
-                    t.log("-- Delete of "+descriptor.getName()+" id:"+id+" requires fetch of foreign key values");
+                    t.log("-- DeleteById of "+descriptor.getName()+" id["+id+"] requires fetch of foreign key values");
                     Object bean = server.findUnique(q, t);
                     if (bean == null){
                         return 0;
@@ -539,7 +533,7 @@ public final class DefaultPersister implements Persister {
                     SqlUpdate sqlDelete = expOnes[i].deleteByParentId(id, idList);
                     executeSqlUpdate(sqlDelete, t);
                 } else {
-                    List<Object> childIds = expOnes[i].findIdsByParentId(id, idList);
+                    List<Object> childIds = expOnes[i].findIdsByParentId(id, idList, t);
                     delete(targetDesc, null, childIds, t);
                 }
             }
@@ -554,7 +548,7 @@ public final class DefaultPersister implements Persister {
                     executeSqlUpdate(sqlDelete, t);
                 } else {
                     // we need to fetch the Id's to delete (recurse or notify L2 cache/lucene)
-                    List<Object> childIds = manys[i].findIdsByParentId(id, idList);
+                    List<Object> childIds = manys[i].findIdsByParentId(id, idList, t);
                     delete(targetDesc, null, childIds, t);
                 }
             }
@@ -564,12 +558,21 @@ public final class DefaultPersister implements Persister {
         BeanPropertyAssocMany<?>[] manys = descriptor.propertiesManyToMany();
         for (int i = 0; i < manys.length; i++) {
             SqlUpdate sqlDelete = manys[i].deleteByParentId(id, idList);
+            t.log("-- Deleting intersection table entries: "+manys[i].getFullBeanName());
             executeSqlUpdate(sqlDelete, t);
         }
         
         // delete the bean(s) 
         SqlUpdate deleteById = descriptor.deleteById(id, idList);
+        t.log("-- Deleting "+descriptor.getName()+" Ids"+idList);
+        
+        // use Id's to update L2 cache rather than Bulk table event
         deleteById.setAutoTableMod(false);
+        if (idList != null){
+            t.getEvent().addDeleteByIdList(descriptor, idList);
+        } else {
+            t.getEvent().addDeleteById(descriptor, id);
+        }
         return executeSqlUpdate(deleteById, t);
     }
 
@@ -1004,7 +1007,7 @@ public final class DefaultPersister implements Persister {
 				    } else {
 				        // Delete recurse using the Id values of the children
                         Object parentId = desc.getId(parentBean);
-                        List<Object> idsByParentId = manys[i].findIdsByParentId(parentId, null);
+                        List<Object> idsByParentId = manys[i].findIdsByParentId(parentId, null, t);
                         if (!idsByParentId.isEmpty()){                            
                             delete(targetDesc, null, idsByParentId, t);
                         }

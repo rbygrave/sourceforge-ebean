@@ -30,6 +30,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
@@ -196,15 +197,15 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return delete;
     }
     
-    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist) {
+    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist, Transaction t) {
         if (parentId != null){
-            return findIdsByParentId(parentId);
+            return findIdsByParentId(parentId, t);
         } else {
-            return findIdsByParentIdList(parentIdist);
+            return findIdsByParentIdList(parentIdist, t);
         }
     }
     
-    private List<Object> findIdsByParentId(Object parentId) {
+    private List<Object> findIdsByParentId(Object parentId, Transaction t) {
         
         String rawWhere = deriveWhereParentIdSql(false);
         
@@ -213,10 +214,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             .where().raw(rawWhere).query();
         
         bindWhereParendId(q, parentId);
-        return q.findIds();
+        return server.findIds(q, t);
     }
     
-    private List<Object> findIdsByParentIdList(List<Object> parentIdist) {
+    private List<Object> findIdsByParentIdList(List<Object> parentIdist, Transaction t) {
 
         String rawWhere = deriveWhereParentIdSql(true);
         String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
@@ -231,7 +232,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             bindWhereParendId(q, parentIdist.get(i));
         }
         
-        return q.findIds();
+        return server.findIds(q, t);
     }
     
     private void bindWhereParendId(Query<?> q, Object parentId) {
