@@ -3,7 +3,6 @@ package com.avaje.tests.model.basic;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -22,7 +21,7 @@ public class OrderDetail implements Serializable {
     @Id
     Integer id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     Order order;
 
     Integer orderQty;
