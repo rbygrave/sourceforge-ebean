@@ -30,6 +30,7 @@ import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.transaction.BeanDeltaList;
 import com.avaje.ebeaninternal.server.transaction.BeanPersistIds;
+import com.avaje.ebeaninternal.server.transaction.DeleteByIdMap;
 import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 
@@ -73,6 +74,13 @@ public class IndexUpdatesBuilder {
                         getEventByType(d).addTableIUD(tableIUD);
                     }
                 }
+            }
+        }
+        
+        DeleteByIdMap deleteByIdMap = txnEvent.getDeleteByIdMap();
+        if (deleteByIdMap != null){
+            for (BeanPersistIds delIds : deleteByIdMap.values()) {
+                getEventByType(delIds.getBeanDescriptor()).setDeleteIds(delIds);
             }
         }
 

@@ -26,7 +26,9 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -174,7 +176,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         
         String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
         sb.append(inClause);
-
+        
         DefaultSqlUpdate delete = new DefaultSqlUpdate(sb.toString());
         for (int i = 0; i < parentIdist.size(); i++) {            
             targetIdBinder.bindId(delete, parentIdist.get(i));
@@ -192,6 +194,58 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             targetDescriptor.getIdBinder().bindId(delete, parentId);
         }
         return delete;
+    }
+    
+    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist) {
+        if (parentId != null){
+            return findIdsByParentId(parentId);
+        } else {
+            return findIdsByParentIdList(parentIdist);
+        }
+    }
+    
+    private List<Object> findIdsByParentId(Object parentId) {
+        
+        String rawWhere = deriveWhereParentIdSql(false);
+        
+        EbeanServer server = getBeanDescriptor().getEbeanServer();
+        Query<?> q = server.find(getPropertyType())
+            .where().raw(rawWhere).query();
+        
+        bindWhereParendId(q, parentId);
+        return q.findIds();
+    }
+    
+    private List<Object> findIdsByParentIdList(List<Object> parentIdist) {
+
+        String rawWhere = deriveWhereParentIdSql(true);
+        String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
+        
+        String expr = rawWhere+inClause;
+ 
+        EbeanServer server = getBeanDescriptor().getEbeanServer();
+        Query<?> q = (Query<?>)server.find(getPropertyType())
+            .where().raw(expr);
+       
+        for (int i = 0; i < parentIdist.size(); i++) {            
+            bindWhereParendId(q, parentIdist.get(i));
+        }
+        
+        return q.findIds();
+    }
+    
+    private void bindWhereParendId(Query<?> q, Object parentId) {
+
+        if (exportedProperties.length == 1) {
+            q.setParameter(1, parentId);
+            
+        } else {
+            int pos = 1;
+            for (int i = 0; i < exportedProperties.length; i++) {
+                Object embVal = exportedProperties[i].getValue(parentId);
+                q.setParameter(pos++, embVal);
+            }
+        }
     }
 
     public void addFkey() {

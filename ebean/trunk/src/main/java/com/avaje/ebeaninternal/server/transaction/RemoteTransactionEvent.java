@@ -46,6 +46,8 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
     
     private Set<IndexInvalidate> indexInvalidations;
     
+    private DeleteByIdMap deleteByIdMap;
+    
     private String serverName;
 
     private transient SpiEbeanServer server;
@@ -85,6 +87,12 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
         if (tableList != null){
             for (int i = 0; i < tableList.size(); i++) {
                 tableList.get(i).writeBinaryMessage(msgList);
+            }
+        }
+        
+        if (deleteByIdMap != null){
+            for (BeanPersistIds deleteIds : deleteByIdMap.values()) {
+                deleteIds.writeBinaryMessage(msgList);
             }
         }
         
@@ -162,6 +170,14 @@ public class RemoteTransactionEvent implements Serializable, Runnable {
         this.server = server;
     }
     
+    public DeleteByIdMap getDeleteByIdMap() {
+        return deleteByIdMap;
+    }
+
+    public void setDeleteByIdMap(DeleteByIdMap deleteByIdMap) {
+        this.deleteByIdMap = deleteByIdMap;
+    }
+
     public Set<IndexInvalidate> getIndexInvalidations() {
         return indexInvalidations;
     }

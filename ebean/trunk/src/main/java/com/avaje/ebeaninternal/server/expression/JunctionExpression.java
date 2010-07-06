@@ -223,6 +223,10 @@ abstract class JunctionExpression<T> implements Junction<T>, SpiExpression, Expr
     public FutureRowCount<T> findFutureRowCount() {
         return exprList.findFutureRowCount();
     }
+    
+    public List<Object> findIds() {
+        return exprList.findIds();
+    }
 
     public List<T> findList() {
         return exprList.findList();
@@ -292,7 +296,7 @@ abstract class JunctionExpression<T> implements Junction<T>, SpiExpression, Expr
         return exprList.in(propertyName, values);
     }
 
-    public ExpressionList<T> in(String propertyName, Object[] values) {
+    public ExpressionList<T> in(String propertyName, Object... values) {
         return exprList.in(propertyName, values);
     }
 

@@ -114,6 +114,13 @@ public interface ExpressionList<T> extends Serializable {
     public List<T> findList();
 
     /**
+     * Execute the query returning the list of Id's.
+     * 
+     * @see Query#findIds()
+     */
+    public List<Object> findIds();
+
+    /**
      * Return the count of entities this query should return.
      * <p>
      * This is the number of 'top level' or 'root level' entities.
@@ -462,7 +469,7 @@ public interface ExpressionList<T> extends Serializable {
     /**
      * In - property has a value in the array of values.
      */
-    public ExpressionList<T> in(String propertyName, Object[] values);
+    public ExpressionList<T> in(String propertyName, Object... values);
 
     /**
      * In - property has a value in the collection of values.

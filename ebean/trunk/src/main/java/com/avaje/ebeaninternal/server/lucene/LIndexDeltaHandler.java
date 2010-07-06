@@ -76,6 +76,7 @@ public class LIndexDeltaHandler {
     private int insertCount;
     private int updateCount;
     private int deleteCount;
+    private int deleteByIdCount;
     
     
     public LIndexDeltaHandler(LIndex index, LIndexSearch search, IndexWriter indexWriter, Analyzer analyzer,
@@ -96,15 +97,20 @@ public class LIndexDeltaHandler {
         deltaBeanKeys = processDeltaBeans();
         deltaCount = deltaBeanKeys.size();
         
+        BeanPersistIds deleteById = indexUpdates.getDeleteIds();
+        if (deleteById != null ){
+            deleteByIdCount = processDeletes(deleteById.getDeleteIds());
+        }
+        
         BeanPersistIds beanPersistIds = indexUpdates.getBeanPersistIds();
         if (beanPersistIds != null){
-            processDeletes(beanPersistIds.getDeleteIds());
+            deleteCount = processDeletes(beanPersistIds.getDeleteIds());
             processInserts(beanPersistIds.getDeleteIds());
             processUpdates(beanPersistIds.getUpdateIds());
         }
         
         String msg = String.format("Lucene update index %s deltas[%s] insert[%s] update[%s] delete[%s]",
-                index, deltaCount, insertCount, updateCount, deleteCount);
+                index, deltaCount, insertCount, updateCount, (deleteCount+deleteByIdCount));
         
         logger.info(msg);
     }
@@ -162,7 +168,7 @@ public class LIndexDeltaHandler {
         }
     }
     
-    private void processDeletes(List<Serializable> deleteIds) {
+    private int processDeletes(List<Serializable> deleteIds) {
         if (deleteIds != null && !deleteIds.isEmpty()){
             for (int i = 0; i < deleteIds.size(); i++) {
                 Serializable id = deleteIds.get(i);
@@ -173,8 +179,9 @@ public class LIndexDeltaHandler {
                     throw new PersistenceLuceneException(e);
                 }
             }
-            deleteCount = deleteIds.size();
+            return deleteIds.size();
         }
+        return 0;
     }
     
     private Set<Object> processDeltaBeans() {
