@@ -379,6 +379,9 @@ public class TransactionManager {
 			if (debugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] "+msg);
 			}
+			
+			log(transaction.getLogBuffer());
+			
 		} catch (Exception ex) {
 			String m = "Potentially Transaction Log incomplete due to error:";
 			logger.log(Level.SEVERE, m, ex);

@@ -229,15 +229,15 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	    return sqlDelete;
 	}
 	
-    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist) {
+    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist, Transaction t) {
         if (parentId != null){
-            return findIdsByParentId(parentId);
+            return findIdsByParentId(parentId, t);
         } else {
-            return findIdsByParentIdList(parentIdist);
+            return findIdsByParentIdList(parentIdist, t);
         }
     }
     
-    private List<Object> findIdsByParentId(Object parentId) {
+    private List<Object> findIdsByParentId(Object parentId, Transaction t) {
         
         String rawWhere = deriveWhereParentIdSql(false);
         
@@ -246,10 +246,10 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
             .where().raw(rawWhere).query();
         
         bindWhereParendId(1, q, parentId);
-        return q.findIds();
+        return server.findIds(q, t);
     }
     
-    private List<Object> findIdsByParentIdList(List<Object> parentIdist) {
+    private List<Object> findIdsByParentIdList(List<Object> parentIdist, Transaction t) {
 
         String rawWhere = deriveWhereParentIdSql(true);
         String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
@@ -265,7 +265,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
             pos = bindWhereParendId(pos, q, parentIdist.get(i));
         }
         
-        return q.findIds();
+        return server.findIds(q, t);
     }
 	
 	private SqlUpdate deleteByParentIdList(List<Object> parentIdist) {

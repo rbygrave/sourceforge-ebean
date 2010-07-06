@@ -94,7 +94,7 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     
     public void notifyCluster(IndexEvent event) {
         
-        if (clusterIndexSync.isMaster()) {
+        if (clusterIndexSync != null && clusterIndexSync.isMaster()) {
             // we are the master, notify the slaves 
             System.out.println("-- notifyCluster commit ... ");
             
@@ -105,11 +105,17 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     }
 
     protected void execute(LIndexSync indexSync){
-        IndexSynchRun r = new IndexSynchRun(clusterIndexSync, indexSync);
-        backgroundExecutor.execute(r);
+        if (clusterIndexSync != null){
+            IndexSynchRun r = new IndexSynchRun(clusterIndexSync, indexSync);
+            backgroundExecutor.execute(r);
+        }
     }
     
     public void processEvent(IndexEvent indexEvent) {
+        
+        if (clusterIndexSync == null){
+            return;
+        }
         
         String masterHost = clusterIndexSync.getMasterHost();
         if (masterHost == null) {
@@ -209,7 +215,7 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     }
         
     private void fireOnStartup() {
-        if (!clusterIndexSync.isMaster()){
+        if (clusterIndexSync != null && !clusterIndexSync.isMaster()){
             String masterHost = clusterIndexSync.getMasterHost();
             if (masterHost != null){
                 for (LIndex index : indexMap.values()) {
