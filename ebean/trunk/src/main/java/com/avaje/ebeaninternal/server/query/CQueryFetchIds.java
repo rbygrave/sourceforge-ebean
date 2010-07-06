@@ -123,7 +123,7 @@ public class CQueryFetchIds {
 		StringBuilder sb = new StringBuilder();
 			sb.append("FindIds exeMicros[").append(executionTimeMicros)
 			.append("] rows[").append(rowCount)
-			.append("] type[").append(desc.getFullName())
+			.append("] type[").append(desc.getName())
 			.append("] predicates[").append(predicates.getLogWhereSql())
 			.append("] bind[").append(bindLog).append("]");
 		
