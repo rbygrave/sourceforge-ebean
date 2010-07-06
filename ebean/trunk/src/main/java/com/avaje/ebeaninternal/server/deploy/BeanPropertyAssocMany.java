@@ -229,6 +229,45 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	    return sqlDelete;
 	}
 	
+    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist) {
+        if (parentId != null){
+            return findIdsByParentId(parentId);
+        } else {
+            return findIdsByParentIdList(parentIdist);
+        }
+    }
+    
+    private List<Object> findIdsByParentId(Object parentId) {
+        
+        String rawWhere = deriveWhereParentIdSql(false);
+        
+        EbeanServer server = getBeanDescriptor().getEbeanServer();
+        Query<?> q = server.find(getPropertyType())
+            .where().raw(rawWhere).query();
+        
+        bindWhereParendId(1, q, parentId);
+        return q.findIds();
+    }
+    
+    private List<Object> findIdsByParentIdList(List<Object> parentIdist) {
+
+        String rawWhere = deriveWhereParentIdSql(true);
+        String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
+        
+        String expr = rawWhere+inClause;
+        
+        EbeanServer server = getBeanDescriptor().getEbeanServer();
+        Query<?> q = server.find(getPropertyType())
+            .where().raw(expr).query();
+       
+        int pos = 1;
+        for (int i = 0; i < parentIdist.size(); i++) {            
+            pos = bindWhereParendId(pos, q, parentIdist.get(i));
+        }
+        
+        return q.findIds();
+    }
+	
 	private SqlUpdate deleteByParentIdList(List<Object> parentIdist) {
 
         StringBuilder sb = new StringBuilder(100);
@@ -483,6 +522,21 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
         }
 	}
 	
+    private int bindWhereParendId(int pos, Query<?> q, Object parentId) {
+
+        if (exportedProperties.length == 1) {
+            q.setParameter(pos++, parentId);
+            
+        } else {
+            
+            for (int i = 0; i < exportedProperties.length; i++) {
+                Object embVal = exportedProperties[i].getValue(parentId);
+                q.setParameter(pos++, embVal);
+            }
+        }
+        return pos;
+    }
+	
     private String deriveWhereParentIdSql(boolean inClause) {
         
         StringBuilder sb = new StringBuilder();
@@ -698,10 +752,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		return row;
 	}
 
-	/**
-	 * Set the predicates for lazy loading of the association.
-	 * Handles predicates for both OneToMany and ManyToMany.
-	 */
 	private void buildExport(IntersectionRow row, Object parentBean) {
 
 		if (embeddedExportedProperties) {
@@ -715,7 +765,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 			row.put(fkColumn, val);
 		}
 	}
-
+	
 	/**
 	 * Set the predicates for lazy loading of the association.
 	 * Handles predicates for both OneToMany and ManyToMany.

@@ -58,10 +58,10 @@ public final class PostCommitProcessing {
 	private final BeanPersistIdMap beanPersistIdMap;
 	
 	private final BeanDeltaMap beanDeltaMap;
-	
-	private final TransactionEventTable bulkEventTables;
-	
+		
 	private final RemoteTransactionEvent remoteTransactionEvent;
+
+    private final DeleteByIdMap deleteByIdMap;
 	
 	/**
 	 * Create for a TransactionManager and event.
@@ -74,26 +74,14 @@ public final class PostCommitProcessing {
 		this.manager = manager;
 		this.serverName = manager.getServerName();
 		this.event = event;
+		this.deleteByIdMap = event.getDeleteByIdMap();;
 		this.persistBeanRequests = createPersistBeanRequests();
 		
 		this.beanPersistIdMap = createBeanPersistIdMap();
 		this.beanDeltaMap = new BeanDeltaMap(event.getBeanDeltas());
-		this.bulkEventTables = event.getEventTables();
 		
 		this.remoteTransactionEvent = createRemoteTransactionEvent();
 	}
-	
-    public BeanPersistIdMap getBeanPersistIdMap() {
-        return beanPersistIdMap;
-    }
-
-    public BeanDeltaMap getBeanDeltaMap() {
-        return beanDeltaMap;
-    }
-
-    public TransactionEventTable getBulkEventTables() {
-        return bulkEventTables;
-    }
 
     public void notifyLocalCacheIndex() {
 
@@ -157,13 +145,14 @@ public final class PostCommitProcessing {
     }
     
     private BeanPersistIdMap createBeanPersistIdMap() {
+
+        if (persistBeanRequests == null){
+            return null;
+        }
+        
         BeanPersistIdMap m = new BeanPersistIdMap();
-        if (persistBeanRequests != null){
-            for (int i = 0; i < persistBeanRequests.size(); i++) {
-                // notify local BeanPersistListener's and at the 
-                // request IUD type and id to the RemoteTransactionEvent
-                persistBeanRequests.get(i).addToPersistMap(m);
-            }
+        for (int i = 0; i < persistBeanRequests.size(); i++) {
+            persistBeanRequests.get(i).addToPersistMap(m);
         }
         return m;
     }
@@ -176,12 +165,20 @@ public final class PostCommitProcessing {
 	    
 	    RemoteTransactionEvent remoteTransactionEvent = new RemoteTransactionEvent(serverName);
         
-        for (BeanDeltaList deltaList: beanDeltaMap.deltaLists()) {
-            remoteTransactionEvent.addBeanDeltaList(deltaList);
-        }
+	    if (beanDeltaMap != null){
+            for (BeanDeltaList deltaList: beanDeltaMap.deltaLists()) {
+                remoteTransactionEvent.addBeanDeltaList(deltaList);
+            }
+	    }
 
-        for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
-            remoteTransactionEvent.addBeanPersistIds(beanPersist);
+        if (beanPersistIdMap != null){
+            for (BeanPersistIds beanPersist : beanPersistIdMap.values()) {
+                remoteTransactionEvent.addBeanPersistIds(beanPersist);
+            }
+        }
+        
+        if (deleteByIdMap != null){
+            remoteTransactionEvent.setDeleteByIdMap(deleteByIdMap);
         }
         
         TransactionEventTable eventTables = event.getEventTables();

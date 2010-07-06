@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.transaction.BeanDelta;
+import com.avaje.ebeaninternal.server.transaction.DeleteByIdMap;
 import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 
 /**
@@ -61,6 +63,8 @@ public class TransactionEvent implements Serializable {
 	
 	private transient Set<IndexInvalidate> indexInvalidations;
 	
+	private transient DeleteByIdMap deleteByIdMap;
+	
 	/**
 	 * Create the TransactionEvent, one per Transaction.
 	 */
@@ -93,6 +97,24 @@ public class TransactionEvent implements Serializable {
 	    indexInvalidations.add(indexEvent);
 	}
 	
+	public void addDeleteById(BeanDescriptor<?> desc, Object id){
+	    if (deleteByIdMap == null){
+	        deleteByIdMap = new DeleteByIdMap();
+	    }
+	    deleteByIdMap.add(desc, id);
+	}
+	
+    public void addDeleteByIdList(BeanDescriptor<?> desc, List<Object> idList) {
+        if (deleteByIdMap == null) {
+            deleteByIdMap = new DeleteByIdMap();
+        }
+        deleteByIdMap.addList(desc, idList);
+    }
+	
+    public DeleteByIdMap getDeleteByIdMap() {
+        return deleteByIdMap;
+    }
+
     public void addBeanDelta(BeanDelta delta) {
         if (beanDeltas == null) {
             beanDeltas = new ArrayList<BeanDelta>();
@@ -166,6 +188,9 @@ public class TransactionEvent implements Serializable {
 	public void notifyCache(){
 		if (eventBeans != null){
 			eventBeans.notifyCache();
+		}
+		if (deleteByIdMap != null) {
+		    deleteByIdMap.notifyCache();
 		}
 	}
 

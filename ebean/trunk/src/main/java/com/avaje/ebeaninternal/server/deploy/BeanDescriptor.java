@@ -1014,6 +1014,13 @@ public class BeanDescriptor<T> {
     }
 
     /**
+     * Return true if there is L2 caching (Lucene or Bean cache) for this bean type.
+     */
+    public boolean isUsingL2Cache() {
+        return beanCache != null || luceneIndex != null;
+    }
+    
+    /**
      * Invalidate parts of cache due to SqlUpdate or external modification etc.
      */
     public void cacheNotify(TableIUD tableIUD) {
@@ -1105,6 +1112,9 @@ public class BeanDescriptor<T> {
     public void cacheRemove(Object id) {
         if (beanCache != null) {
             beanCache.remove(id);
+        }
+        if (queryCache != null){
+            queryCache.clear();
         }
     }
 

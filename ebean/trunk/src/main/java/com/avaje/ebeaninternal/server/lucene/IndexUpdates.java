@@ -32,7 +32,9 @@ public class IndexUpdates {
     private final BeanDescriptor<?> beanDescriptor;
     
     private List<TableIUD> tableList;
-    
+
+    private BeanPersistIds deleteIds;
+
     private BeanPersistIds beanPersistIds;
     
     private BeanDeltaList deltaList;
@@ -76,6 +78,14 @@ public class IndexUpdates {
 
     public void setBeanPersistIds(BeanPersistIds beanPersistIds) {
         this.beanPersistIds = beanPersistIds;
+    }
+    
+    public BeanPersistIds getDeleteIds() {
+        return deleteIds;
+    }
+
+    public void setDeleteIds(BeanPersistIds deleteIds) {
+        this.deleteIds = deleteIds;
     }
 
     public BeanDeltaList getDeltaList() {

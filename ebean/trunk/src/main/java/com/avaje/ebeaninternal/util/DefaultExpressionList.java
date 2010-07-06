@@ -183,6 +183,10 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         return query.findRowCount();
     }
 
+    public List<Object> findIds() {
+        return query.findIds();
+    }
+
     public List<T> findList() {
         return query.findList();
     }
@@ -420,7 +424,7 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
         return this;
     }
 
-    public ExpressionList<T> in(String propertyName, Object[] values) {
+    public ExpressionList<T> in(String propertyName, Object... values) {
         add(expr.in(propertyName, values));
         return this;
     }
