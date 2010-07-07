@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.lucene;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,6 +71,8 @@ public class LIndexIo {
     private final HoldAwareIndexDeletionPolicy commitDeletionPolicy;
     
     private final Object writeMonitor = new Object();
+    
+    private ArrayList<Runnable> notifyCommits = new ArrayList<Runnable>();
     
     private long queueCommitStart;
     
@@ -138,7 +141,7 @@ public class LIndexIo {
     }
     
     public void manage(LuceneIndexManager indexManager) {
-        if (commit()){
+        if (commit(false)){
             
         }        
     }
@@ -192,21 +195,34 @@ public class LIndexIo {
         synchronized (writeMonitor) {
             if (queueCommitStart > 0){
                 if (freqMillis == 0 || (System.currentTimeMillis() - freqMillis) > queueCommitStart ){
-                    commit();
+                    commit(false);
                 }
             }
         }
+    }
+
+    public void queueCommit() {
+        queueCommit(null);
     }
     
     /**
      * Queue a commit for execution later via the Lucene Manager thread.
      */
-    public void queueCommit() {
+    public void queueCommit(Runnable r) {
         synchronized (writeMonitor) {
             if (queueCommitStart == 0){
                 queueCommitStart = System.currentTimeMillis();
             }
+            if (r != null){
+                notifyCommits.add(r);
+            }
             queueCommitCount++;
+        }
+    }
+    
+    public void addRunnable(Runnable r) {
+        synchronized (writeMonitor) {   
+            notifyCommits.add(r);
         }
     }
     
@@ -220,17 +236,25 @@ public class LIndexIo {
             return start;
         }
     }
+
+    public void commitForce() {
+        commit(true);
+    }
     
     /**
      * Invoke a commit if there are uncommitted changes. Return true if commit
      * occurred or false if no commit was required.
      */
-    public boolean commit() {
+    public boolean commit(boolean force) {
         synchronized (writeMonitor) { 
             try {
-                if (queueCommitStart == 0){
+                if (!force && queueCommitStart == 0){
                     // no pending uncommitted changes
                     // so just return false
+//                    for (int i = 0; i < notifyCommits.size(); i++) {
+//                        notifyCommits.get(i).run();
+//                    }
+//                    notifyCommits.clear();
                     return false;
                 }
                 if (logger.isLoggable(Level.INFO)){
@@ -256,6 +280,12 @@ public class LIndexIo {
 
                 // notify the searcher
                 ioSearcher.postCommit();
+                
+                for (int i = 0; i < notifyCommits.size(); i++) {
+                    notifyCommits.get(i).run();
+                }
+                notifyCommits.clear();
+                
                 long nanoPostCommitExe = System.nanoTime() - nanoCommitExe;
                 
                 totalCommitCount++;
@@ -297,7 +327,7 @@ public class LIndexIo {
                 
             } finally {
                 queueCommit();
-                commit();
+                commit(false);
             }
         }
     }

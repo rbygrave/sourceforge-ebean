@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.lucene;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +46,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.transaction.BeanDelta;
+import com.avaje.ebeaninternal.server.transaction.BeanDeltaList;
 import com.avaje.ebeaninternal.server.transaction.BeanPersistIds;
 
 public class LIndexDeltaHandler {
@@ -90,7 +92,9 @@ public class LIndexDeltaHandler {
         this.beanDescriptor = beanDescriptor;
         this.docFieldWriter = docFieldWriter;
         this.indexUpdates = indexUpdates;
-        this.deltaBeans = indexUpdates.getDeltaList().getDeltaBeans();
+        
+        BeanDeltaList deltaList = indexUpdates.getDeltaList();
+        this.deltaBeans = deltaList == null ? null : deltaList.getDeltaBeans();
     }
 
     public void process() {
@@ -105,7 +109,7 @@ public class LIndexDeltaHandler {
         BeanPersistIds beanPersistIds = indexUpdates.getBeanPersistIds();
         if (beanPersistIds != null){
             deleteCount = processDeletes(beanPersistIds.getDeleteIds());
-            processInserts(beanPersistIds.getDeleteIds());
+            processInserts(beanPersistIds.getInsertIds());
             processUpdates(beanPersistIds.getUpdateIds());
         }
         
@@ -117,6 +121,10 @@ public class LIndexDeltaHandler {
 
     private void processUpdates(List<Serializable> updateIds) {
 
+        if (updateIds == null || updateIds.isEmpty()){
+            return;
+        }
+        
         ArrayList<Object> filterIdList = new ArrayList<Object>();
         
         // filter out Id's that where already 
@@ -150,42 +158,48 @@ public class LIndexDeltaHandler {
     }
     
     private void processInserts(List<Serializable> insertIds) {
-        if (insertIds != null && !insertIds.isEmpty()) {
-            SpiQuery<?> ormQuery = index.createQuery();
-            ormQuery.where().idIn(insertIds);
-            List<?> list = ormQuery.findList();
-            for (int i = 0; i < list.size(); i++) {
-                Object bean = list.get(i);
-                try {
-                    docFieldWriter.writeValue(bean, document);
-                    indexWriter.addDocument(document);
-                    
-                } catch (Exception e) {
-                    throw new PersistenceException(e);
-                }
-            }
-            insertCount = list.size();
+    
+        if (insertIds == null || insertIds.isEmpty()) {
+            return;
         }
+        SpiQuery<?> ormQuery = index.createQuery();
+        ormQuery.where().idIn(insertIds);
+        List<?> list = ormQuery.findList();
+        for (int i = 0; i < list.size(); i++) {
+            Object bean = list.get(i);
+            try {
+                docFieldWriter.writeValue(bean, document);
+                indexWriter.addDocument(document);
+                
+            } catch (Exception e) {
+                throw new PersistenceException(e);
+            }
+        }
+        insertCount = list.size();
     }
     
     private int processDeletes(List<Serializable> deleteIds) {
-        if (deleteIds != null && !deleteIds.isEmpty()){
-            for (int i = 0; i < deleteIds.size(); i++) {
-                Serializable id = deleteIds.get(i);
-                Term term = index.createIdTerm(id);
-                try {
-                    indexWriter.deleteDocuments(term);
-                } catch (Exception e) {
-                    throw new PersistenceLuceneException(e);
-                }
-            }
-            return deleteIds.size();
+    
+        if (deleteIds == null || deleteIds.isEmpty()){
+            return 0;
         }
-        return 0;
+        for (int i = 0; i < deleteIds.size(); i++) {
+            Serializable id = deleteIds.get(i);
+            Term term = index.createIdTerm(id);
+            try {
+                indexWriter.deleteDocuments(term);
+            } catch (Exception e) {
+                throw new PersistenceLuceneException(e);
+            }
+        }
+        return deleteIds.size();
     }
     
     private Set<Object> processDeltaBeans() {
 
+        if (deltaBeans == null){
+            return Collections.emptySet();
+        }
         try {
             LinkedHashMap<Object, Object> beanMap = getBeans();
             

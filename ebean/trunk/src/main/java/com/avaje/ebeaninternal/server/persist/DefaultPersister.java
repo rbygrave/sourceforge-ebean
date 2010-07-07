@@ -602,6 +602,13 @@ public final class DefaultPersister implements Persister {
 
 	    DeleteUnloadedForeignKeys unloadedForeignKeys = null;
 	    
+	    boolean pauseIndexInvalidate = request.getBeanDescriptor().isLuceneIndexed();
+	    if (pauseIndexInvalidate){
+	        // Stop any deletions of child beans to Invalidate the Index as we 
+	        // will use the delete of this top level object to maintain the index
+	        request.pauseIndexInvalidate();
+	    }
+	    
 		if (request.isPersistCascade()) {
 			// delete children first ... register the
 			// bean to handle bi-directional cascading
@@ -626,6 +633,9 @@ public final class DefaultPersister implements Persister {
 			    unloadedForeignKeys.deleteCascade();
 			}
 		}
+        if (pauseIndexInvalidate){
+            request.resumeIndexInvalidate();
+        }
 	}
 
 	/**
