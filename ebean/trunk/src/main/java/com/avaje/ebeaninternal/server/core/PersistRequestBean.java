@@ -198,6 +198,14 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         }
     }
 
+    public void pauseIndexInvalidate() {
+        transaction.getEvent().pauseIndexInvalidate(beanDescriptor.getBeanType());    
+    }
+    
+    public void resumeIndexInvalidate() {
+        transaction.getEvent().resumeIndexInvalidate(beanDescriptor.getBeanType());    
+    }
+    
     public void addToPersistMap(BeanPersistIdMap beanPersistMap) {
                 
         beanPersistMap.add(beanDescriptor, type, idValue);

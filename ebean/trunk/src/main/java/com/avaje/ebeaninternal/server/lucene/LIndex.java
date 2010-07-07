@@ -137,6 +137,10 @@ public class LIndex implements LuceneIndex {
         }
     }
     
+    public void addRunnable(Runnable r) {
+        indexIo.addRunnable(r);
+    }
+    
     public LIndexVersion getLastestVersion() {
         return indexIo.getLastestVersion();
     }
@@ -274,6 +278,7 @@ public class LIndex implements LuceneIndex {
         h.process();
         
         indexIo.queueCommit();
+        //indexIo.commitForce();
     }
 
 }

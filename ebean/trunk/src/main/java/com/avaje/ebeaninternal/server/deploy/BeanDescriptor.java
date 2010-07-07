@@ -1021,6 +1021,13 @@ public class BeanDescriptor<T> {
     }
     
     /**
+     * Return true if there is a Lucene Index on this bean type.
+     */
+    public boolean isLuceneIndexed() {
+        return luceneIndex != null;
+    }
+    
+    /**
      * Invalidate parts of cache due to SqlUpdate or external modification etc.
      */
     public void cacheNotify(TableIUD tableIUD) {

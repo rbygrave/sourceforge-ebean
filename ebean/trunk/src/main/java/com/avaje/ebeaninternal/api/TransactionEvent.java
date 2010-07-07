@@ -49,21 +49,19 @@ public class TransactionEvent implements Serializable {
 	 */
 	private transient boolean local;
 
-	/**
-	 * Lists of beans for BeanListener notification. Not sent across cluster in
-	 * this form.
-	 */
+    private boolean invalidateAll;
+
+    private TransactionEventTable eventTables;
+    
 	private transient TransactionEventBeans eventBeans;
 
     private transient List<BeanDelta> beanDeltas;
 
-	private TransactionEventTable eventTables;
-	
-	private boolean invalidateAll;
+    private transient DeleteByIdMap deleteByIdMap;
 	
 	private transient Set<IndexInvalidate> indexInvalidations;
 	
-	private transient DeleteByIdMap deleteByIdMap;
+	private transient Set<String> pauseIndexInvalidate;
 	
 	/**
 	 * Create the TransactionEvent, one per Transaction.
@@ -86,11 +84,34 @@ public class TransactionEvent implements Serializable {
 	public boolean isInvalidateAll() {
 		return invalidateAll;
 	}
-
+	
+	/**
+     * Temporarily pause/ignore any index invalidation for this bean type.
+     */
+	public void pauseIndexInvalidate(Class<?> beanType) {
+	    if (pauseIndexInvalidate == null){
+	        pauseIndexInvalidate = new HashSet<String>();
+	    }
+	    pauseIndexInvalidate.add(beanType.getName());
+	}
+	
+    /**
+     * Resume listening for index invalidation for this bean type.
+     */
+	public void resumeIndexInvalidate(Class<?> beanType) {
+	    if (pauseIndexInvalidate != null){
+            pauseIndexInvalidate.remove(beanType.getName());
+        }
+    }
+	
 	/**
 	 * Add an IndexInvalidation notices to the transaction.
 	 */
 	public void addIndexInvalidate(IndexInvalidate indexEvent){
+	    if (pauseIndexInvalidate != null && pauseIndexInvalidate.contains(indexEvent.getIndexName())){
+	        System.out.println("--- IGNORE Invalidate on "+indexEvent.getIndexName());
+	        return;
+	    }
 	    if (indexInvalidations == null){
 	        indexInvalidations = new HashSet<IndexInvalidate>();
 	    }
