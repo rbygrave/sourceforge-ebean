@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventBeans;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
@@ -47,6 +48,8 @@ public final class PostCommitProcessing {
 	
 	private final LuceneIndexManager luceneIndexManager;
 	
+	private final SpiTransaction transaction;
+	
 	private final TransactionEvent event;
 
 	private final String serverName;
@@ -67,12 +70,13 @@ public final class PostCommitProcessing {
 	 * Create for a TransactionManager and event.
 	 */
 	public PostCommitProcessing(ClusterManager clusterManager, LuceneIndexManager luceneIndexManager, 
-	        TransactionManager manager, TransactionEvent event) {
+	        TransactionManager manager, SpiTransaction transaction, TransactionEvent event) {
 	    
 		this.clusterManager = clusterManager;
 		this.luceneIndexManager = luceneIndexManager;
 		this.manager = manager;
 		this.serverName = manager.getServerName();
+		this.transaction = transaction;
 		this.event = event;
 		this.deleteByIdMap = event.getDeleteByIdMap();;
 		this.persistBeanRequests = createPersistBeanRequests();
@@ -85,7 +89,7 @@ public final class PostCommitProcessing {
 
     public void notifyLocalCacheIndex() {
 
-        luceneIndexManager.processEvent(remoteTransactionEvent);
+        luceneIndexManager.processEvent(remoteTransactionEvent, transaction);
         
 	    // notify cache with bulk insert/update/delete statements
         processTableEvents(event.getEventTables());

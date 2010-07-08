@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.PersistenceException;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -68,7 +66,7 @@ public class LIndex implements LuceneIndex {
     private LIndexSync queuedSync;
     
     public LIndex(DefaultLuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, 
-            MaxFieldLength maxFieldLength, BeanDescriptor<?> desc, LIndexFields fieldDefn) throws IOException {
+            MaxFieldLength maxFieldLength, BeanDescriptor<?> desc, LIndexFields fieldDefn, String[] updateProps) throws IOException {
         
         this.manager = manager;
         this.name = desc.getFullName();
@@ -79,7 +77,7 @@ public class LIndex implements LuceneIndex {
         this.idField = fieldDefn.getIdField();
         this.ormQueryDetail = fieldDefn.getOrmQueryDetail();
         
-        this.indexIo = new LIndexIo(manager, indexDir, this); 
+        this.indexIo = new LIndexIo(manager, indexDir, this, updateProps); 
         manager.addIndex(this);
         fieldDefn.registerIndexWithProperties(this);
     }
@@ -137,8 +135,8 @@ public class LIndex implements LuceneIndex {
         }
     }
     
-    public void addRunnable(Runnable r) {
-        indexIo.addRunnable(r);
+    public void addNotifyCommitRunnable(Runnable r) {
+        indexIo.addNotifyCommitRunnable(r);
     }
     
     public LIndexVersion getLastestVersion() {
@@ -177,16 +175,16 @@ public class LIndex implements LuceneIndex {
         indexIo.shutdown();
     }
     
-    public int rebuild() {
-        try {
-            return indexIo.rebuild();
-        } catch (IOException e){
-            throw new PersistenceException(e);
-        }
+    public LIndexUpdateFuture rebuild() {
+        LIndexUpdateFuture future = new LIndexUpdateFuture(desc.getBeanType());
+        indexIo.addWorkToQueue(LIndexWork.newRebuild(future));
+        return future;
     }
     
-    public int update() {
-        return rebuild();
+    public LIndexUpdateFuture update() {
+        LIndexUpdateFuture future = new LIndexUpdateFuture(desc.getBeanType());
+        indexIo.addWorkToQueue(LIndexWork.newQueryUpdate(future));
+        return future;
     }
 
     public String toString() {
@@ -250,7 +248,7 @@ public class LIndex implements LuceneIndex {
         return indexIo.createQuery();
     }
     
-    public void process(IndexUpdates indexUpdates) {
+    public LIndexUpdateFuture process(IndexUpdates indexUpdates) {
         
         List<TableIUD> tableList = indexUpdates.getTableList();
         if (tableList != null && tableList.size() > 0){
@@ -262,23 +260,19 @@ public class LIndex implements LuceneIndex {
                 }
             }
             if (bulkDelete){
-                rebuild();
+                return rebuild();
             } else {
-                update();
+                return update();
             }
-            return;
         }
         
         if (indexUpdates.isInvalidate()){
-            update();
-            return;
+            return update();
         }
 
-        LIndexDeltaHandler h = indexIo.createDeltaHandler(indexUpdates);
-        h.process();
-        
-        indexIo.queueCommit();
-        //indexIo.commitForce();
+        LIndexUpdateFuture f = new LIndexUpdateFuture(desc.getBeanType());
+        indexIo.addWorkToQueue(LIndexWork.newTxnUpdate(f, indexUpdates));
+        return f;
     }
 
 }

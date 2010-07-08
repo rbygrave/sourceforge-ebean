@@ -19,18 +19,22 @@
  */
 package com.avaje.ebean.config.lucene;
 
-/**
- * A Lucene index for a bean type.
- */
-public interface LuceneIndex {
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-    /**
-     * Manually invoke an update of the lucene index.
-     */
-    public IndexUpdateFuture update();
+public interface IndexUpdateFuture {
 
-    /**
-     * Manually invoke a complete rebuild of the lucene index.
-     */
-    public IndexUpdateFuture rebuild();
+    public Class<?> getBeanType();
+
+    public boolean isCancelled();
+
+    public boolean cancel(boolean mayInterruptIfRunning);
+
+    public Integer get() throws InterruptedException, ExecutionException;
+
+    public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
+
+    public boolean isDone();
+
 }

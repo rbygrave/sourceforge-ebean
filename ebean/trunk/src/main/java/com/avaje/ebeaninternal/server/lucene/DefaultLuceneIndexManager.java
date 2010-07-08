@@ -32,6 +32,7 @@ import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -134,14 +135,17 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         }
     }
 
-    public void processEvent(RemoteTransactionEvent txnEvent) {
+    public void processEvent(RemoteTransactionEvent txnEvent, SpiTransaction localTransaction) {
         
         Collection<IndexUpdates> events = IndexUpdatesBuilder.create(server, txnEvent);
         for (IndexUpdates e : events) {
             BeanDescriptor<?> beanDescriptor = e.getBeanDescriptor();
             LIndex luceneIndex = beanDescriptor.getLuceneIndex();
             if (luceneIndex != null){
-                luceneIndex.process(e);
+                LIndexUpdateFuture future = luceneIndex.process(e);
+                if (localTransaction != null){
+                    localTransaction.addIndexUpdateFuture(future);
+                }
             }
         }
         

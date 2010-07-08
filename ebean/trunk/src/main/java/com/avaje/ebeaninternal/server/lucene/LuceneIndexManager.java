@@ -24,6 +24,7 @@ import java.io.IOException;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.cluster.LuceneClusterIndexSync;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.transaction.IndexEvent;
@@ -39,7 +40,7 @@ public interface LuceneIndexManager {
     
     public LuceneClusterIndexSync getClusterIndexSync();
     
-    public void processEvent(RemoteTransactionEvent txnEvent);
+    public void processEvent(RemoteTransactionEvent txnEvent, SpiTransaction localTransaction);
     
     public void processEvent(IndexEvent indexEvent);
 

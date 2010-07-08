@@ -21,7 +21,10 @@ package com.avaje.ebeaninternal.server.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,8 +32,11 @@ import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.config.lucene.IndexUpdateFuture;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEvent;
+import com.avaje.ebeaninternal.server.lucene.LIndexUpdateFuture;
+import com.avaje.ebeaninternal.server.lucene.PersistenceLuceneException;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager.OnQueryOnly;
 
@@ -130,6 +136,8 @@ public class JdbcTransaction implements SpiTransaction {
 	
 	TransactionLogBuffer logBuffer;
 		
+	List<LIndexUpdateFuture> indexUpdateFutures;
+	
 	/**
 	 * Create a new JdbcTransaction.
 	 */
@@ -154,7 +162,29 @@ public class JdbcTransaction implements SpiTransaction {
 		return "Trans["+id+"]";
 	}
 
-	/**
+	
+	public void addIndexUpdateFuture(LIndexUpdateFuture future) {
+        if (indexUpdateFutures == null){
+            indexUpdateFutures = new ArrayList<LIndexUpdateFuture>();
+        }
+        indexUpdateFutures.add(future);
+    }
+	
+    public void waitForIndexUpdates() {
+        if (indexUpdateFutures != null){
+            try {
+                for (IndexUpdateFuture f : indexUpdateFutures) {
+                    f.get();
+                }
+            } catch (InterruptedException e) {
+                throw new PersistenceLuceneException(e);
+            } catch (ExecutionException e) {
+                throw new PersistenceLuceneException(e);
+            }
+        }
+    }
+
+    /**
 	 * Add a bean to the registed list.
 	 * <p>
 	 * This is to handle bi-directional relationships where
