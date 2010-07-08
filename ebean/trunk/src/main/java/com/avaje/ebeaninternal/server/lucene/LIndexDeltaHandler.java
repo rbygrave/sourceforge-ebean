@@ -97,7 +97,7 @@ public class LIndexDeltaHandler {
         this.deltaBeans = deltaList == null ? null : deltaList.getDeltaBeans();
     }
 
-    public void process() {
+    public int process() {
         deltaBeanKeys = processDeltaBeans();
         deltaCount = deltaBeanKeys.size();
         
@@ -117,6 +117,8 @@ public class LIndexDeltaHandler {
                 index, deltaCount, insertCount, updateCount, (deleteCount+deleteByIdCount));
         
         logger.info(msg);
+        
+        return deltaCount + insertCount + updateCount + deleteCount + deleteByIdCount;
     }
 
     private void processUpdates(List<Serializable> updateIds) {

@@ -97,7 +97,7 @@ public class LIndexFactory {
             String indexName = indexDefn.getClass().getName();
             String indexDir = manager.getIndexDirectory(indexName);
             
-            return new LIndex(manager, indexName, indexDir, analyzer, maxFieldLength, descriptor, fieldGroup);
+            return new LIndex(manager, indexName, indexDir, analyzer, maxFieldLength, descriptor, fieldGroup, indexDefn.getUpdateSinceProperties());
         }
 
         private ElPropertyValue getProperty(String name) {

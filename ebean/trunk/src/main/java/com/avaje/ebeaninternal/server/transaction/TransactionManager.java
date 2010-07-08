@@ -450,7 +450,7 @@ public class TransactionManager {
 		    
 		    log(transaction.getLogBuffer());
 	
-		    PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, transaction.getEvent());
+		    PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, transaction, transaction.getEvent());
 	    
 		    postCommit.notifyLocalCacheIndex();
 		    postCommit.notifyCluster();
@@ -482,7 +482,7 @@ public class TransactionManager {
 		TransactionEvent event = new TransactionEvent();
 		event.add(tableEvents);
 		
-		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, event);
+		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, null, event);
         
 		// invalidate parts of local cache and index
 		postCommit.notifyLocalCacheIndex();
@@ -500,7 +500,7 @@ public class TransactionManager {
             logger.info("Cluster Received: "+remoteEvent.toString());
         }
 
-        luceneIndexManager.processEvent(remoteEvent);
+        luceneIndexManager.processEvent(remoteEvent, null);
         
         List<TableIUD> tableIUDList = remoteEvent.getTableIUDList();
         if (tableIUDList != null){

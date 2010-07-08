@@ -21,7 +21,11 @@ package com.avaje.ebeaninternal.server.lucene;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,15 +34,18 @@ import javax.persistence.PersistenceException;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import com.avaje.ebean.Junction;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.lucene.LIndexWork.WorkType;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.transaction.IndexEvent;
 
@@ -70,10 +77,18 @@ public class LIndexIo {
     
     private final HoldAwareIndexDeletionPolicy commitDeletionPolicy;
     
+    private final String[] updateProps;
+    
     private final Object writeMonitor = new Object();
     
-    private ArrayList<Runnable> notifyCommits = new ArrayList<Runnable>();
+    private final Object workQueueMonitor = new Object();
     
+    private final ArrayList<LIndexWork> workQueue = new ArrayList<LIndexWork>();
+    
+    private final ArrayList<Runnable> notifyCommitRunnables = new ArrayList<Runnable>();
+    
+    private long lastUpdateTime;
+
     private long queueCommitStart;
     
     private int queueCommitCount;
@@ -84,10 +99,11 @@ public class LIndexIo {
     
     private long totalPostCommitNanos;
 
-    public LIndexIo(LuceneIndexManager manager, String indexDir, LIndex index) throws IOException {
+    public LIndexIo(LuceneIndexManager manager, String indexDir, LIndex index, String[] updateProps) throws IOException {
         this.manager = manager;
         this.indexDir = indexDir;
         this.index = index;
+        this.updateProps = updateProps;
         this.analyzer = index.getAnalyzer();
         this.maxFieldLength = index.getMaxFieldLength();
         this.beanType = index.getBeanType();
@@ -140,12 +156,6 @@ public class LIndexIo {
         commitDeletionPolicy.releaseIndexCommit(remoteIndexVersion);
     }
     
-    public void manage(LuceneIndexManager indexManager) {
-        if (commit(false)){
-            
-        }        
-    }
-    
     public void shutdown() {
         synchronized (writeMonitor) { 
             try {
@@ -170,64 +180,165 @@ public class LIndexIo {
         }
     }
     
-    private void notifyCluster(IndexEvent event) {
-        manager.notifyCluster(event);
+    protected void manage(LuceneIndexManager indexManager) {
+        processWorkQueue();
+        commit(false);
     }
     
-    public LIndexDeltaHandler createDeltaHandler(IndexUpdates indexUpdates) {
+    protected void addWorkToQueue(LIndexWork work){
+        synchronized (workQueueMonitor) {
+            workQueue.add(work);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected void processWorkQueue() {
+        synchronized (workQueueMonitor) {
+            if (!workQueue.isEmpty()){
+                
+                WorkType maxWorkType = null;
+                
+                for (int i = 0; i < workQueue.size(); i++) {
+                    LIndexWork work = workQueue.get(i);
+                    if (maxWorkType == null || maxWorkType.ordinal() < work.getWorkType().ordinal()){
+                        maxWorkType = work.getWorkType();
+                    }
+                }
+                List<LIndexWork> workQueueClone = (List<LIndexWork>)workQueue.clone();
+                workQueue.clear();
+                
+                Callable<Integer> workCallable = getWorkCallable(maxWorkType, workQueueClone);
+                FutureTask<Integer> ft = new FutureTask<Integer>(workCallable);
+                
+                for (int i = 0; i < workQueueClone.size(); i++) {
+                    workQueueClone.get(i).getFuture().setTask(ft);
+                }
+                
+                manager.getServer().getBackgroundExecutor().execute(ft);
+                
+            }
+        }
+    }
+    
+    private Callable<Integer> getWorkCallable(WorkType maxWorkType, List<LIndexWork> workQueueClone) {
+        switch (maxWorkType) {
+        case REBUILD:
+            return newRebuildCallable(workQueueClone);
+        case QUERY_UPDATE:
+            return newQueryUpdateCallable(workQueueClone);
+        case TXN_UPDATE:
+            return newTxnUpdateCallable(workQueueClone);
+
+        default:
+            throw new IllegalStateException("Unknown workType "+maxWorkType);
+        }
+    }
+    
+    private Callable<Integer> newTxnUpdateCallable(List<LIndexWork> workQueueClone) {
+        
+        final List<LIndexWork> updates = workQueueClone;
+        
+        return new Callable<Integer>() {
+            public String toString() {
+                return "TxnUpdate";
+            }
+            
+            public Integer call() throws IOException {
+                
+                int totalDocs = 0;
+                
+                for (int i = 0; i < updates.size(); i++) {
+                    LIndexWork lIndexWork = updates.get(i);
+                    IndexUpdates indexUpdates = lIndexWork.getIndexUpdates();
+                    LIndexDeltaHandler h = createDeltaHandler(indexUpdates);
+                    totalDocs += h.process();
+                }
+                
+                queueCommit(updates);
+                
+                return totalDocs;
+            }
+        };
+    }
+    
+    private Callable<Integer> newRebuildCallable(List<LIndexWork> workQueueClone) {
+        return new QueryUpdater(true, workQueueClone);
+    }
+    
+    private Callable<Integer> newQueryUpdateCallable(List<LIndexWork> workQueueClone) {
+        return new QueryUpdater(false, workQueueClone);
+    }
+    
+    class QueryUpdater implements Callable<Integer> {
+        
+        private final boolean rebuild;
+        private final List<LIndexWork> workQueueClone;
+        
+        private QueryUpdater(boolean rebuild, List<LIndexWork> workQueueClone){
+            this.rebuild = rebuild;
+            this.workQueueClone = workQueueClone;
+        }
+        
+        public String toString() {
+            return rebuild ? "Rebuild" : "QueryUpdate";
+        }
+        
+        public Integer call() throws Exception {
+            if (rebuild){
+                return rebuildIndex(workQueueClone);
+            } else {
+                return updateIndex(workQueueClone);
+            }
+        }
+    }
+
+    private LIndexDeltaHandler createDeltaHandler(IndexUpdates indexUpdates) {
         
         LIndexSearch search = getIndexSearch();
-        //TODO Review this...
         IndexWriter indexWriter = this.indexWriter;
         DocFieldWriter docFieldWriter = index.createDocFieldWriter();
         return new LIndexDeltaHandler(index, search, indexWriter, analyzer, beanDescriptor, docFieldWriter, indexUpdates);
     }
-
-//    public IndexWriter getIndexWriter() {
-//        return indexWriter;
-//    }
     
     public LIndexSearch getIndexSearch() {
         return ioSearcher.getIndexSearch();
     }
     
-    public void commitQueuedChanges(long freqMillis) {
-        synchronized (writeMonitor) {
-            if (queueCommitStart > 0){
-                if (freqMillis == 0 || (System.currentTimeMillis() - freqMillis) > queueCommitStart ){
-                    commit(false);
-                }
-            }
-        }
-    }
+//    public void commitQueuedChanges(long freqMillis) {
+//        synchronized (writeMonitor) {
+//            if (queueCommitStart > 0){
+//                if (freqMillis == 0 || (System.currentTimeMillis() - freqMillis) > queueCommitStart ){
+//                    commit(false);
+//                }
+//            }
+//        }
+//    }
 
-    public void queueCommit() {
-        queueCommit(null);
-    }
-    
     /**
      * Queue a commit for execution later via the Lucene Manager thread.
      */
-    public void queueCommit(Runnable r) {
-        synchronized (writeMonitor) {
+    private void queueCommit(List<LIndexWork> workQueueClone) {
+        synchronized (workQueueMonitor) {
             if (queueCommitStart == 0){
                 queueCommitStart = System.currentTimeMillis();
             }
-            if (r != null){
-                notifyCommits.add(r);
-            }
             queueCommitCount++;
+            
+            for (LIndexWork w : workQueueClone) {
+                // register so that on the next commit these are run
+                notifyCommitRunnables.add(w.getFuture().getCommitRunnable());
+            }
         }
     }
     
-    public void addRunnable(Runnable r) {
-        synchronized (writeMonitor) {   
-            notifyCommits.add(r);
+    protected void addNotifyCommitRunnable(Runnable r) {
+        synchronized (workQueueMonitor) {   
+            notifyCommitRunnables.add(r);
         }
     }
     
-    public long getQueueCommitStart(boolean reset) {
-        synchronized (writeMonitor) {   
+    protected long getQueueCommitStart(boolean reset) {
+        synchronized (workQueueMonitor) {   
             long start = this.queueCommitStart;
             if (reset){
                 this.queueCommitStart = 0;
@@ -236,32 +347,46 @@ public class LIndexIo {
             return start;
         }
     }
-
-    public void commitForce() {
-        commit(true);
-    }
     
     /**
      * Invoke a commit if there are uncommitted changes. Return true if commit
      * occurred or false if no commit was required.
      */
-    public boolean commit(boolean force) {
+    private boolean commit(boolean force) {
+        
         synchronized (writeMonitor) { 
+            
+            long start = 0;
+            long count = 0;
+            ArrayList<Runnable> notifyRunnables = new ArrayList<Runnable>();
+            
+            synchronized (workQueueMonitor) {
+                start = queueCommitStart;
+                count = queueCommitCount;
+                queueCommitStart = 0;
+                queueCommitCount = 0;
+                notifyRunnables.addAll(notifyCommitRunnables);
+                notifyCommitRunnables.clear();
+            }
+            
             try {
-                if (!force && queueCommitStart == 0){
+                if (!force && start == 0){
                     // no pending uncommitted changes
                     // so just return false
-//                    for (int i = 0; i < notifyCommits.size(); i++) {
-//                        notifyCommits.get(i).run();
-//                    }
-//                    notifyCommits.clear();
+                    
+                    if (!notifyRunnables.isEmpty()){
+                        // Add notifyRunnables back onto the notify queue
+                        for (int i = 0; i < notifyRunnables.size(); i++) {
+                            addNotifyCommitRunnable(notifyRunnables.get(i));
+                        }                        
+                    }
                     return false;
                 }
                 if (logger.isLoggable(Level.INFO)){
                     String delayMsg;
                     if (queueCommitStart > 0){
-                        long delay = System.currentTimeMillis()-queueCommitStart;
-                        delayMsg = " queueDelayMillis:"+delay+" queueCount:"+queueCommitCount;
+                        long delay = System.currentTimeMillis()-start;
+                        delayMsg = " queueDelayMillis:"+delay+" queueCount:"+count;
                     } else {
                         delayMsg = "";
                     }
@@ -272,8 +397,7 @@ public class LIndexIo {
                 
                 // do the actual commit
                 indexWriter.commit();
-                queueCommitStart = 0;
-                queueCommitCount = 0;
+
 
                 long nanoCommit = System.nanoTime();
                 long nanoCommitExe = nanoCommit - nanoStart;
@@ -281,10 +405,9 @@ public class LIndexIo {
                 // notify the searcher
                 ioSearcher.postCommit();
                 
-                for (int i = 0; i < notifyCommits.size(); i++) {
-                    notifyCommits.get(i).run();
+                for (int i = 0; i < notifyRunnables.size(); i++) {
+                    notifyRunnables.get(i).run();
                 }
-                notifyCommits.clear();
                 
                 long nanoPostCommitExe = System.nanoTime() - nanoCommitExe;
                 
@@ -293,7 +416,7 @@ public class LIndexIo {
                 totalPostCommitNanos += nanoPostCommitExe;
                 
                 IndexEvent indexEvent = new IndexEvent(IndexEvent.COMMIT_EVENT, index.getName());
-                notifyCluster(indexEvent);
+                manager.notifyCluster(indexEvent);
                 
                 return true;
                 
@@ -303,22 +426,20 @@ public class LIndexIo {
             }
         }
     }
-    
+
     @SuppressWarnings("unchecked")
-    public int rebuild() throws IOException {
+    private int rebuildIndex(List<LIndexWork> workQueueClone) throws IOException {
         synchronized (writeMonitor) { 
             
             logger.info("Lucene rebuild "+indexDir);
             
             //TODO: Parallel index rebuild
-            
-            //IndexWriter indexWriter = getIndexWriter();
             try {
                 indexWriter.deleteAll();
-                
+                lastUpdateTime = System.currentTimeMillis();
                 SpiQuery<?> query = createQuery();
                 
-                WriteListener writeListener = new WriteListener(index, indexWriter);
+                WriteListener writeListener = new WriteListener(index, indexWriter, false);
                 query.setListener(writeListener);
                 
                 manager.getServer().findList(query, null);
@@ -326,13 +447,51 @@ public class LIndexIo {
                 return writeListener.getCount();
                 
             } finally {
-                queueCommit();
+                queueCommit(workQueueClone);
                 commit(false);
             }
         }
     }
         
-    public SpiQuery<?> createQuery() {
+    @SuppressWarnings("unchecked")
+    private int updateIndex(List<LIndexWork> workQueueClone) throws IOException {
+        synchronized (writeMonitor) { 
+            
+            logger.info("Lucene update "+indexDir);
+            
+            try {
+                long updateTime = System.currentTimeMillis();
+                SpiQuery<?> query = createUpdateQuery();
+                lastUpdateTime = updateTime;
+                
+                WriteListener writeListener = new WriteListener(index, indexWriter, true);
+                query.setListener(writeListener);
+                
+                manager.getServer().findList(query, null);
+                 
+                return writeListener.getCount();
+                
+            } finally {
+                queueCommit(workQueueClone);
+            }
+        }
+    }
+    
+    private SpiQuery<?> createUpdateQuery() {
+        
+        SpiQuery<?> q = createQuery();
+        Junction<?> disjunction = q.where().disjunction();
+        
+        Timestamp lastUpdate = new Timestamp(lastUpdateTime);
+        
+        for (int i = 0; i < updateProps.length; i++) {
+            disjunction.ge(updateProps[i], lastUpdate);
+        }
+        
+        return q;
+    }
+    
+    protected SpiQuery<?> createQuery() {
         
         SpiEbeanServer server = manager.getServer();
         SpiQuery<?> query = (SpiQuery<?>)server.createQuery(beanType);
@@ -365,18 +524,29 @@ public class LIndexIo {
     @SuppressWarnings("unchecked")
     private static class WriteListener implements QueryListener {
 
+        private final boolean updateMode;
+        private final LIndex index;
+        private final BeanDescriptor beanDescriptor;
         private final IndexWriter indexWriter;
         private final DocFieldWriter docFieldWriter;
         private final Document document = new Document();
         private int count;
         
-        private WriteListener(LIndex index,IndexWriter indexWriter) {
+        private WriteListener(LIndex index,IndexWriter indexWriter, boolean updateMode) {
+            this.updateMode = updateMode;
+            this.index = index;
+            this.beanDescriptor = index.getBeanDescriptor();
             this.indexWriter = indexWriter;
             this.docFieldWriter = index.createDocFieldWriter();
         }
         
         public void process(Object bean) {
             try {
+                if (updateMode) {
+                    Object id = beanDescriptor.getId(bean);
+                    Term term = index.createIdTerm(id);
+                    indexWriter.deleteDocuments(term);
+                }
                 docFieldWriter.writeValue(bean, document);
                 indexWriter.addDocument(document);
                 count++;
