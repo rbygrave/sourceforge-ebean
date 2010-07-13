@@ -195,7 +195,10 @@ public class FileTransactionLogger implements Runnable, TransactionLogWriter {
 
 	    while(!shutdown || missCount < 10){
 	        if (missCount > 50){
-                out.flush();
+	        	
+	        	if (out != null){
+	        		out.flush();
+	        	}
 	            try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {
