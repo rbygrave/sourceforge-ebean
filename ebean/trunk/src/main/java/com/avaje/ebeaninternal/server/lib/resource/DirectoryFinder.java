@@ -83,16 +83,16 @@ public class DirectoryFinder {
     					return list[i];
     				}
     			}
-			}
-
-			// go through the directories again
-			// Aka *NOT* a depth first search
-			if (depth < maxDepth) {
-				for (int i = 0; i < list.length; i++) {
-					if (list[i].isDirectory()) {
-						File found = find(list[i], match, matchSub, depth + 1, maxDepth);
-						if (found != null) {
-							return found;
+	
+				// go through the directories again
+				// Aka *NOT* a depth first search
+				if (depth < maxDepth) {
+					for (int i = 0; i < list.length; i++) {
+						if (list[i].isDirectory()) {
+							File found = find(list[i], match, matchSub, depth + 1, maxDepth);
+							if (found != null) {
+								return found;
+							}
 						}
 					}
 				}
