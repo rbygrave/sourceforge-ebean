@@ -12,7 +12,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ebean-agent-2.2.0-SNAP.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ebean-2.7.0-SNAP-agent.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
