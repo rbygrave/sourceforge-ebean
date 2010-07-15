@@ -32,6 +32,10 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	// avoid writing columns twice, e.g. when used in associations with insertable=false and updateable=false
 	private final Set<String> wroteColumns = new HashSet<String>();
 
+	public Set<String> getWroteColumns() {
+		return wroteColumns;
+	}
+
 	private ArrayList<String> checkConstraints = new ArrayList<String>();
 	
 
@@ -43,11 +47,14 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	}
 	
 	public boolean isDbColumnWritten(String dbColumn) {
-	    return wroteColumns.contains(dbColumn);
+		// Columns are not case sensitive - user lower case
+		// as e.g. @JoinColumn(s) may use a different case
+	    return wroteColumns.contains(dbColumn.toLowerCase());
 	}
 	
 	public void addDbColumnWritten(String dbColumn){
-	    wroteColumns.add(dbColumn);
+		// Column names are case insensitive
+	    wroteColumns.add(dbColumn.toLowerCase());
 	}
 
 	/**
@@ -88,7 +95,7 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	 */
 	protected void writeConstraint(BeanProperty p, String prefix, String constraintExpression) {
 		
-		if (constraintExpression != null){
+		if (p != null && constraintExpression != null){
 
 			// build constraint clause 
 			String s = "constraint "+getConstraintName(prefix, p)+" "+constraintExpression;
@@ -151,36 +158,42 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 			checkConstraints = new ArrayList<String>();
 		}
 		
-		String pkName = ddl.getPrimaryKeyName(descriptor.getBaseTable());
 
-		ctx.write("  constraint ").write(pkName).write(" primary key (");
 		
 		BeanProperty[] ids = descriptor.propertiesId();
-		VisitorUtil.visit(ids, new AbstractPropertyVisitor() {
 
-			@Override
-			public void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded) {
-				ctx.write(p.getDbColumn()).write(", ");
-			}
-
-			@Override
-			public void visitScalar(BeanProperty p) {
-				ctx.write(p.getDbColumn()).write(", ");
-			}
-			
-			@Override
-            public void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p) {
-                ctx.write(p.getDbColumn()).write(", ");
-            }
-
-		});
-		
-		// remove the last comma, end of PK
-		ctx.removeLast().write(")"); 
+		if (ids.length > 0){
+			String pkName = ddl.getPrimaryKeyName(descriptor.getBaseTable());
+			ctx.write("  constraint ").write(pkName).write(" primary key (");
+	
+			VisitorUtil.visit(ids, new AbstractPropertyVisitor() {
+	
+				@Override
+				public void visitEmbeddedScalar(BeanProperty p, BeanPropertyAssocOne<?> embedded) {
+					ctx.write(p.getDbColumn()).write(", ");
+				}
+	
+				@Override
+				public void visitScalar(BeanProperty p) {
+					ctx.write(p.getDbColumn()).write(", ");
+				}
+				
+				@Override
+	            public void visitCompoundScalar(BeanPropertyCompound compound, BeanProperty p) {
+	                ctx.write(p.getDbColumn()).write(", ");
+	            }
+	
+			});
+			// remove the last comma, end of PK
+			ctx.removeLast().write(")"); 
+		}else{
+			ctx.removeLast().removeLast();		// No comma + new line
+		}		
 		
 		// end of table
 		ctx.write(")").writeNewLine(); 
 		ctx.write(";").writeNewLine().writeNewLine();
+		ctx.flush();
 	}
 	
 	public void visitBeanDescriptorEnd() {
@@ -198,6 +211,7 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 
 	public void visitEnd() {
 		ctx.addIntersectionCreateTables();
+		ctx.flush();
 	}
 
 }

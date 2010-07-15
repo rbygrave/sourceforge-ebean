@@ -163,8 +163,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		parent.writeConstraint(p);
 
 		ctx.write(",").writeNewLine();
-		
-	}
+}
 
 	protected void writeIdentity() {
 		String identity = ddl.getIdentity();

@@ -136,7 +136,7 @@ public class DdlGenerator {
 		DropSequenceVisitor dropSequence = new DropSequenceVisitor(ctx);
 		VisitorUtil.visit(server, dropSequence);
 
-
+		ctx.flush();
 		dropContent = ctx.getContent();
 		return dropContent;
 	}
@@ -153,6 +153,7 @@ public class DdlGenerator {
 		AddForeignKeysVisitor fkeys = new AddForeignKeysVisitor(ctx);
 		VisitorUtil.visit(server, fkeys);
 
+		ctx.flush();
 		createContent = ctx.getContent();
 		return createContent;
 	}
