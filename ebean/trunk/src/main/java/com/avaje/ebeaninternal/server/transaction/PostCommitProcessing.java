@@ -89,7 +89,9 @@ public final class PostCommitProcessing {
 
     public void notifyLocalCacheIndex() {
 
-        luceneIndexManager.processEvent(remoteTransactionEvent, transaction);
+        if (luceneIndexManager.isLuceneAvailable()){
+            luceneIndexManager.processEvent(remoteTransactionEvent, transaction);
+        }
         
 	    // notify cache with bulk insert/update/delete statements
         processTableEvents(event.getEventTables());
