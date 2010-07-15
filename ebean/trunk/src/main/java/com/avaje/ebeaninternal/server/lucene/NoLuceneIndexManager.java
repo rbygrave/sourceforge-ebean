@@ -79,7 +79,7 @@ public class NoLuceneIndexManager implements LuceneIndexManager {
     }
 
     public UseIndex getDefaultUseIndex() {
-        throw new RuntimeException("Never Called");
+        return UseIndex.NO;
     }
 
     public LIndex getIndexByTypeAndName(Class<?> beanType, String name) {
