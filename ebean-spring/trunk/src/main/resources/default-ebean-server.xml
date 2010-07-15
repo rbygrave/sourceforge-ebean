@@ -10,11 +10,11 @@
 	<bean id="defaultEbeanServerConfig" class="com.avaje.ebean.config.ServerConfig" abstract="true">
 		<property name="autofetchConfig">
 			<bean class="com.avaje.ebean.config.AutofetchConfig">
-				<property name="logDirectory" value="log"/>
+				<property name="logDirectory" value="logs"/>
 			</bean>
 		</property>
 
-		<property name="loggingDirectory" value="log"></property>
+		<property name="loggingDirectory" value="logs"></property>
 
 		<property name="externalTransactionManager">
 			<bean class="com.avaje.ebean.springsupport.txn.SpringAwareJdbcTransactionManager"/>
