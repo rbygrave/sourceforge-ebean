@@ -46,7 +46,7 @@ public class DdlGenContext {
 	/**
 	 * Last content written (used with removeLast())
 	 */
-	private String lastContent;
+	private final List<String> contentBuffer = new ArrayList<String>();
 
 	private Set<String> intersectionTables = new HashSet<String>();
 
@@ -93,17 +93,17 @@ public class DdlGenContext {
 
 	public void addIntersectionCreateTables() {
 		for (String intTableCreate : intersectionTablesCreateDdl) {
-			stringWriter.write(newLine);
-			stringWriter.write(intTableCreate);
+			write(newLine);
+			write(intTableCreate);
 		}
 	}
 
 	public void addIntersectionFkeys() {
-		stringWriter.write(newLine);
-		stringWriter.write(newLine);
+		write(newLine);
+		write(newLine);
 		for (String intTableFk : intersectionTablesFkDdl) {
-			stringWriter.write(newLine);
-			stringWriter.write(intTableFk);
+			write(newLine);
+			write(intTableFk);
 		}
 	}
 
@@ -111,7 +111,6 @@ public class DdlGenContext {
 	 * Return the generated content (DDL script).
 	 */
 	public String getContent(){
-
 		return stringWriter.toString();
 	}
 
@@ -154,10 +153,8 @@ public class DdlGenContext {
 
 		content = pad(content, minWidth);
 
-		if (lastContent != null){
-			stringWriter.write(lastContent);
-		}
-		lastContent = content;
+		contentBuffer.add(content);
+		
 		return this;
 
 	}
@@ -170,7 +167,7 @@ public class DdlGenContext {
 	}
 
 	public DdlGenContext writeNewLine() {
-		flush().write(newLine);
+		write(newLine);
 		return this;
 	}
 
@@ -178,8 +175,8 @@ public class DdlGenContext {
 	 * Remove the last content that was written.
 	 */
 	public DdlGenContext removeLast() {
-		if (lastContent != null){
-			lastContent = null;
+		if (!contentBuffer.isEmpty()){
+			contentBuffer.remove(contentBuffer.size()-1);
 		} else {
 			throw new RuntimeException("No lastContent to remove?");
 		}
@@ -190,10 +187,15 @@ public class DdlGenContext {
 	 * Flush the content to the buffer.
 	 */
 	public DdlGenContext flush() {
-		if (lastContent != null){
-			stringWriter.write(lastContent);
+		if (!contentBuffer.isEmpty()){
+			for (String s:contentBuffer){
+				
+				if (s != null){
+					stringWriter.write(s);
+				}
+			}
+			contentBuffer.clear();
 		}
-		lastContent = null;
 		return this;
 	}
 
