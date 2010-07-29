@@ -69,7 +69,7 @@ public class BFAutoFetchStatisticFinder implements BeanFinder<MetaAutoFetchStati
 		
 		String orderBy = request.getQuery().order().toStringFormat();
 		if (orderBy == null){
-			orderBy = "beanType, origQueryPlanHash";
+			orderBy = "beanType";
 		}
 		server.sort(list, orderBy);
 
