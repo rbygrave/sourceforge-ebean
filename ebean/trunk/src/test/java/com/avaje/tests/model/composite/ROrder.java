@@ -15,7 +15,7 @@ import javax.persistence.Table;
  * @author rnentjes
  */
 @Entity
-@Table(name="orders")
+@Table(name="r_orders")
 public class ROrder {
 
     @EmbeddedId
