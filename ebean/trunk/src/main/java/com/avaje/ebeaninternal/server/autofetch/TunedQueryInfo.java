@@ -31,8 +31,6 @@ public class TunedQueryInfo implements Serializable {
 
 	private final String rateMonitor = new String();
 
-	private final String countMonitor = new String();
-
 	/**
 	 * The number of queries tuned by this object.
 	 * Could use AtomicInteger perhaps.
@@ -132,10 +130,8 @@ public class TunedQueryInfo implements Serializable {
 	    }
 	    if (tuned){
             query.setAutoFetchTuned(true);
-    		synchronized (countMonitor) {
-    			// a case for AtomicInteger
-    			tunedCount++;	
-    		}
+    		// a case for AtomicInteger but good enough for statistics
+    		tunedCount++;	
 	    }
 		return tuned;
 	}
