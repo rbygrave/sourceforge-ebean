@@ -222,18 +222,30 @@ public class CQueryPredicates {
 	private void buildBindWhereRawSql(boolean buildSql, boolean parseRaw, DeployParser parser) {
 		if (buildSql || bindParams != null) {
 			whereRawSql = buildWhereRawSql();
-			if (parseRaw){
-			    // parse with encrypted property awareness. This means that if we have an 
-			    // encrypted property we will insert special named parameter place holders
-			    // for binding the encryption key values
-			    parser.setEncrypted(true);
-			    whereRawSql = parser.parse(whereRawSql);
+			boolean hasRaw = !"".equals(whereRawSql);
+			if (hasRaw && parseRaw){
+                // parse with encrypted property awareness. This means that if we have an 
+                // encrypted property we will insert special named parameter place holders
+                // for binding the encryption key values
+                parser.setEncrypted(true);
+                whereRawSql = parser.parse(whereRawSql);
                 parser.setEncrypted(false);
-			}
-			if (bindParams != null) {
-				// convert and order named parameters if required
-				whereRawSql = BindParamsParser.parse(bindParams, whereRawSql, request.getBeanDescriptor());
-			}
+            }
+			
+	        if (bindParams != null) {
+	            if (hasRaw) {
+	                whereRawSql = BindParamsParser.parse(bindParams, whereRawSql, request.getBeanDescriptor());
+	                
+	            } else if (query.isRawSql() && !buildSql) {
+	                // RawSql query hit cached query plan. Need to convert
+	                // named parameters into positioned parameters so that 
+	                // the named parameters are bound
+	                String s = query.getRawSql().getSql().getPreWhere();
+	                if (bindParams.requiresNamedParamsPrepare()){
+	                    BindParamsParser.parse(bindParams, s);
+	                }	                
+	            }
+	        }
 		}
 	}
 
