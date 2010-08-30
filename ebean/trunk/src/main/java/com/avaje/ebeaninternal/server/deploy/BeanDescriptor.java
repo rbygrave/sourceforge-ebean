@@ -1558,7 +1558,13 @@ public class BeanDescriptor<T> {
      * </p>
      */
     public BeanPropertyAssocOne<?> getUnidirectional() {
-        return unidirectional;
+        if (unidirectional != null) {
+            return unidirectional;
+        }
+        if (inheritInfo != null && !inheritInfo.isRoot()){
+            return inheritInfo.getParent().getBeanDescriptor().getUnidirectional();
+        }
+        return null;
     }
 
     /**
