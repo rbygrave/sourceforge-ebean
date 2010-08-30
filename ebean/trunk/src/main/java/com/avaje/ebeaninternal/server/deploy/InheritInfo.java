@@ -272,6 +272,13 @@ public class InheritInfo {
 	}
 
 	/**
+	 * Return the parent node.
+	 */
+    public InheritInfo getParent() {
+        return parent;
+    }
+    
+	/**
 	 * Return true if this is abstract node.
 	 */
 	public boolean isAbstract() {
