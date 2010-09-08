@@ -201,8 +201,8 @@ public class CQueryEngine {
 
 		} catch (SQLException e) {
 			String sql = cquery.getGeneratedSql();
-			String m = Message.msg("fetch.error", e.getMessage(), sql);
-			throw new PersistenceException(m, e);
+			String m = Message.msg("fetch.sqlerror", e.getMessage(), cquery.getBindLog(), sql);
+            throw new PersistenceException(m, e);
 
 		} finally {
 			if (useBackgroundToContinueFetch) {

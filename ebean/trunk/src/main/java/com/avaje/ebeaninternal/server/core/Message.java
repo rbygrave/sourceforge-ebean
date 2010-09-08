@@ -48,7 +48,15 @@ public class Message {
         args[1] = arg2;
         return MessageFormat.format(getPattern(key), args);
     }
-    
+
+    public static String msg(String key, Object arg, Object arg2, Object arg3) {
+        Object[] args = new Object[3];
+        args[0] = arg;
+        args[1] = arg2;
+        args[2] = arg3;
+        return MessageFormat.format(getPattern(key), args);
+    }
+
     /**
      * Return a message that has an array of arguments.
      */
