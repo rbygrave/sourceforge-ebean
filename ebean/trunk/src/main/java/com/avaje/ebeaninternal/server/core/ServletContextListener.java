@@ -19,6 +19,8 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
+import java.util.logging.Logger;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
@@ -35,6 +37,8 @@ import com.avaje.ebeaninternal.server.lib.ShutdownManager;
  * </p>
  */
 public class ServletContextListener implements javax.servlet.ServletContextListener {
+
+    private static final Logger logger = Logger.getLogger(ServletContextListener.class.getName());
 
     /**
      * The servlet container is stopping.
@@ -54,8 +58,13 @@ public class ServletContextListener implements javax.servlet.ServletContextListe
 
         try {
             ServletContext servletContext = event.getServletContext();
-
             GlobalProperties.setServletContext(servletContext);
+
+            if (servletContext != null) {
+                String servletRealPath = servletContext.getRealPath("/");
+                GlobalProperties.put("servlet.realpath", servletRealPath);
+                logger.info("servlet.realpath=[" + servletRealPath + "]");
+            }            
  
             Ebean.getServer(null);
             
