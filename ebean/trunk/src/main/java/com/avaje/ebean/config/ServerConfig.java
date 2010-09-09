@@ -1024,7 +1024,7 @@ public class ServerConfig {
      * ${catalina.base} etc.
      */
     public String getLoggingDirectoryWithEval() {
-        return PropertyExpression.eval(loggingDirectory);
+        return GlobalProperties.evaluateExpressions(loggingDirectory);
     }
 
     /**

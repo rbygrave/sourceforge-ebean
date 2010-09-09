@@ -43,7 +43,7 @@ final class PropertyExpression {
 	 * Return the property value evaluating and replacing any expressions such
 	 * as ${CATALINA_HOME}.
 	 */
-	static String eval(String val) {
+	static String eval(String val, PropertyMap map) {
 		if (val == null){
 			return null;
 		}
@@ -51,7 +51,7 @@ final class PropertyExpression {
 		if (sp > -1) {
 			int ep = val.indexOf(END, sp + 1);
 			if (ep > -1) {
-				return eval(val, sp, ep);
+				return eval(val, sp, ep, map);
 			}
 		}
 		return val;
@@ -61,7 +61,7 @@ final class PropertyExpression {
 	 * Convert the expression using JNDI, Environment variables, System
 	 * Properties or existing an property in SystemProperties itself.
 	 */
-	private static String evaluateExpression(String exp) {
+	private static String evaluateExpression(String exp, PropertyMap map) {
 
 		if (isJndiExpression(exp)) {
 			// JNDI property lookup...
@@ -77,32 +77,38 @@ final class PropertyExpression {
 			// then check system properties
 			val = System.getProperty(exp);
 		}
+        if (val == null && map != null) {
+            // then check PropertyMap
+            val = map.get(exp);
+        }
 		
 		if (val != null) {
 			return val;
 
 		} else {
-			// this is probably an error
-			String msg = "Unable to evaluate expression [" + exp + "]";
-			logger.warning(msg);
-			return exp;
+			// unable to evaluate yet... but maybe later based on the order
+		    // in which properties are being set/loaded. You can use
+		    // GlobalProperties.evaluateExpressions() to get any unresolved
+		    // expressions to be evaluated
+			logger.fine("Unable to evaluate expression [" + exp + "]");
+			return null;
 		}
 	}
 
-	private static String eval(String val, int sp, int ep) {
+	private static String eval(String val, int sp, int ep, PropertyMap map) {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(val.substring(0, sp));
 
-		String cal = evalExpression(val, sp, ep);
+		String cal = evalExpression(val, sp, ep, map);
 		sb.append(cal);
 
-		eval(val, ep + 1, sb);
+		eval(val, ep + 1, sb, map);
 
 		return sb.toString();
 	}
 
-	private static void eval(String val, int startPos, StringBuilder sb) {
+	private static void eval(String val, int startPos, StringBuilder sb, PropertyMap map) {
 		if (startPos < val.length()) {
 			int sp = val.indexOf(START, startPos);
 			if (sp > -1) {
@@ -110,9 +116,9 @@ final class PropertyExpression {
 				sb.append(val.substring(startPos, sp));
 				int ep = val.indexOf(END, sp + 1);
 				if (ep > -1) {
-					String cal = evalExpression(val, sp, ep);
+					String cal = evalExpression(val, sp, ep, map);
 					sb.append(cal);
-					eval(val, ep + 1, sb);
+					eval(val, ep + 1, sb, map);
 					return;
 				}
 			}
@@ -121,12 +127,18 @@ final class PropertyExpression {
 		sb.append(val.substring(startPos));
 	}
 
-	private static String evalExpression(String val, int sp, int ep) {
+	private static String evalExpression(String val, int sp, int ep, PropertyMap map) {
 		// trim off start and end ${ and }
 		String exp = val.substring(sp + START.length(), ep);
 
 		// evaluate the variable
-		return evaluateExpression(exp);
+		String evaled = evaluateExpression(exp, map);
+		if (evaled != null){
+		    return evaled;
+		} else {
+		    // unable to evaluate at this stage (maybe later)
+		    return START+exp+END;
+		}
 	}
 
 	private static boolean isJndiExpression(String exp) {

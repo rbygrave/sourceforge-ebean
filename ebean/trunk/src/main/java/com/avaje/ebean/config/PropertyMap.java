@@ -3,6 +3,7 @@ package com.avaje.ebean.config;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 /**
@@ -11,11 +12,31 @@ import java.util.Map.Entry;
 final class PropertyMap {
 	
 	private static final long serialVersionUID = 1L;
-
+	    
 	private LinkedHashMap<String,String> map = new LinkedHashMap<String,String>();
 	
 	public String toString() {
 		return map.toString();
+	}
+	
+	   /**
+     * Go through all the properties and evaluate any expressions
+     * that have not been resolved.
+     */
+	public void evaluateProperties() {
+        
+        for (Entry<String, String> e : entrySet()) {
+            String key = e.getKey();
+            String val = e.getValue();
+            String eval = eval(val);
+            if (eval != null && !eval.equals(val)) {
+                put(key, eval);
+            }
+        }
+    }
+	
+	public synchronized String eval(String val) {
+	    return PropertyExpression.eval(val, this);
 	}
 	
 	public synchronized boolean getBoolean(String key, boolean defaultValue){
@@ -53,12 +74,21 @@ final class PropertyMap {
 		}
 	}
 
+    synchronized String putEval(String key, String value){
+        value = PropertyExpression.eval(value, this);
+        return map.put(key.toLowerCase(), value);
+    }
+	
 	synchronized String put(String key, String value){
 		return map.put(key.toLowerCase(), value);
 	}
 
 	synchronized String remove(String key){
 		return map.remove(key.toLowerCase());
+	}
+	
+	synchronized Set<Entry<String, String>> entrySet() {
+	    return map.entrySet();
 	}
 
 }
