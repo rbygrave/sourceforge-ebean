@@ -61,7 +61,7 @@ public class ServletContextListener implements javax.servlet.ServletContextListe
             GlobalProperties.setServletContext(servletContext);
 
             if (servletContext != null) {
-                String servletRealPath = servletContext.getRealPath("/");
+                String servletRealPath = servletContext.getRealPath("");
                 GlobalProperties.put("servlet.realpath", servletRealPath);
                 logger.info("servlet.realpath=[" + servletRealPath + "]");
             }            
