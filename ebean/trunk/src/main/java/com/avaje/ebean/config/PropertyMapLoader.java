@@ -53,6 +53,8 @@ final class PropertyMapLoader {
 		}
 	}
 	
+
+	
 	/**
 	 * Load the inputstream returning the property map.
 	 * @param p an existing property map to load into.
@@ -72,16 +74,16 @@ final class PropertyMapLoader {
 			p = new PropertyMap();
 		}
 		
+		// put values in initially without any evaluation
 		Iterator<Entry<Object, Object>> it = props.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<Object, Object> entry = it.next();
 			String key = ((String)entry.getKey()).toLowerCase();
 			String val = ((String)entry.getValue());
-			val = PropertyExpression.eval(val);
-			
-			logger.finer("... loading "+key+" = "+val);
 			p.put(key, val);
 		}
+		
+		p.evaluateProperties();
 		
 		String otherProps = p.remove("load.properties");
 		if (otherProps == null){

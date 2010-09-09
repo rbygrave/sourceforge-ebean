@@ -7,12 +7,14 @@ import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.tests.model.basic.Order;
 
 public class TestErrorBindLog extends TestCase {
 
     public void test() {
         
+        GlobalProperties.put("somethingelse", "d:/junk2");
         try {
             Ebean.find(Order.class)
                 .where().gt("id", "JUNK")

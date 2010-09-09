@@ -1,6 +1,7 @@
 package com.avaje.ebean.config;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 
@@ -41,9 +42,17 @@ public final class GlobalProperties {
 	 * </p>
 	 */
 	public static String evaluateExpressions(String val) {
-		return PropertyExpression.eval(val);
+	    return getPropertyMap().eval(val);
 	}
 	
+	   
+	/**
+	 * Parse and evaluate any expressions that have not already been evaluated.
+	 */
+    public static synchronized void evaluateExpressions() {
+        getPropertyMap().evaluateProperties();
+    }
+    
 	/**
 	 * In a servlet container environment this will additionally look in WEB-INF 
 	 * for the ebean.properties file.
@@ -126,17 +135,20 @@ public final class GlobalProperties {
 	}
 	
 	/**
-	 * Set a property return the previous value.
+	 * Set a property return the previous value. This will evaluate any
+     * expressions in the value.
 	 */
-	public static synchronized String put(String key, String defaultValue) {
-		return getPropertyMap().put(key, defaultValue);
+	public static synchronized String put(String key, String value) {
+		return getPropertyMap().putEval(key, value);
 	}
 
 	/**
 	 * Set a Map of key value properties.
 	 */
 	public static synchronized void putAll(Map<String,String> keyValueMap) {
-		getPropertyMap().putAll(keyValueMap);
+	    for (Entry<String,String> e: keyValueMap.entrySet()) {
+	        getPropertyMap().putEval(e.getKey(), e.getValue());   
+        }
 	}
 	
 	public static PropertySource getPropertySource(String name) {

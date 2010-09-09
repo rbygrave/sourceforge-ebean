@@ -178,7 +178,7 @@ public class AutofetchConfig {
 	 * such as ${catalina.base} etc.
 	 */
 	public String getLogDirectoryWithEval() {
-		return PropertyExpression.eval(logDirectory);
+	    return GlobalProperties.evaluateExpressions(logDirectory);
 	}
 
 	/**
