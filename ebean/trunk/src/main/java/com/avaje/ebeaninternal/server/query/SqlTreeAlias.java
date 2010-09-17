@@ -213,7 +213,13 @@ public class SqlTreeAlias {
 	}
 	
 	private boolean validAlias(String alias) {
-		return !SqlReservedWords.isKeyword(alias) 
-			&& !aliasMap.containsValue(alias);
+	    boolean v = !SqlReservedWords.isKeyword(alias) 
+			&& !aliasMap.containsValue(alias)
+			&& !manyWhereAliasMap.containsValue(alias);
+	    
+	    if (v && manyWhereAliasMap.containsValue(alias)){
+	        System.out.println("BUG");
+	    }
+	    return v;
 	}
 }
