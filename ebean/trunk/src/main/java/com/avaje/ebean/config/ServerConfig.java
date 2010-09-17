@@ -28,7 +28,6 @@ import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.Query;
-import com.avaje.ebean.AdminLogging.LogFileSharing;
 import com.avaje.ebean.AdminLogging.LogLevel;
 import com.avaje.ebean.AdminLogging.LogLevelStmt;
 import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
@@ -187,11 +186,6 @@ public class ServerConfig {
      * The directory transaction logs go (when loggingToJavaLogger is false).
      */
     private String loggingDirectory = "logs";
-
-    /**
-     * The log file sharing.
-     */
-    private LogFileSharing loggingLogFileSharing = LogFileSharing.EXPLICIT;
 
     /**
      * The overall transaction logging level.
@@ -988,31 +982,6 @@ public class ServerConfig {
     }
 
     /**
-     * Return how transaction logging should share log files.
-     */
-    public LogFileSharing getLoggingLogFileSharing() {
-        if (externalTransactionManager != null) {
-            // with external transaction managers we need to share a
-            // single transaction log file as we don't get notified
-            // of commit/rollback events
-            return LogFileSharing.ALL;
-        }
-        return loggingLogFileSharing;
-    }
-
-    /**
-     * Set how the transaction logging should share log files.
-     * <p>
-     * Transactions can each have a separate transaction log or they can share
-     * one single transaction log. Alternatively explicit transactions can have
-     * their own transaction log.
-     * </p>
-     */
-    public void setLoggingLogFileSharing(LogFileSharing logSharing) {
-        this.loggingLogFileSharing = logSharing;
-    }
-
-    /**
      * Return the directory where transaction logs go.
      */
     public String getLoggingDirectory() {
@@ -1501,7 +1470,6 @@ public class ServerConfig {
         debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
         loggingLevel = p.getEnum(LogLevel.class, "logging", LogLevel.ALL);
-        loggingLogFileSharing = getLogFileSharing(p);
 
         String s = p.get("useJuliTransactionLogger", null);
         s = p.get("loggingToJavaLogger", s);
@@ -1541,18 +1509,6 @@ public class ServerConfig {
             }
         }
         return nc;
-    }
-    
-    /**
-     * Return the LogFileSharing (with support for the previous "logsharing"
-     * property name.
-     */
-    private LogFileSharing getLogFileSharing(ConfigPropertyMap p) {
-        if (p.get("logging.logfilesharing", null) != null) {
-            return p.getEnum(LogFileSharing.class, "logging.logfilesharing", LogFileSharing.EXPLICIT);
-        }
-        // additionally support the old property setting
-        return p.getEnum(LogFileSharing.class, "logsharing", LogFileSharing.EXPLICIT);
     }
 
     private LogLevelTxnCommit getTxnCommitLogLevel(ConfigPropertyMap p) {
