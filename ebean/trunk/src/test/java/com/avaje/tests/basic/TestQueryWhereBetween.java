@@ -27,6 +27,6 @@ public class TestQueryWhereBetween extends TestCase {
         query.findList();
 
         String sql = query.getGeneratedSql();
-        Assert.assertTrue(sql.indexOf("between o.cretime and o.updtime") > -1);
+        Assert.assertTrue(sql.indexOf("between t0.cretime and t0.updtime") > -1);
     }
 }

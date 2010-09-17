@@ -30,8 +30,8 @@ public class TestQueryInAssocOne extends TestCase {
         query.findList();
         String sql = query.getGeneratedSql();
         
-        Assert.assertTrue(sql, sql.indexOf("join o_customer oc on oc.id = o.kcustomer_id") > -1);
-        Assert.assertTrue(sql, sql.indexOf("o.kcustomer_id in (?") > -1);
+        Assert.assertTrue(sql, sql.indexOf("join o_customer t1 on t1.id = t0.kcustomer_id") > -1);
+        Assert.assertTrue(sql, sql.indexOf("t0.kcustomer_id in (?") > -1);
         
     }
 }

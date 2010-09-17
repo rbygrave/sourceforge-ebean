@@ -25,12 +25,12 @@ public class TestWhereAnnotation extends TestCase {
 		
 		
 		Query<Customer> q1 = Ebean.find(Customer.class)
-			.join("orders")
+			.fetch("orders")
 			.where().idEq(1)
 			.query();
 		
 		q1.findUnique();
 		String s1 = q1.getGeneratedSql();
-		Assert.assertTrue(s1.contains("co.order_date is not null"));
+		Assert.assertTrue(s1.contains("t1.order_date is not null"));
 	}
 }

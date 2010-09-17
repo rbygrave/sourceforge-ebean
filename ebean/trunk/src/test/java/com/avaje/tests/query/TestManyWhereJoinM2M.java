@@ -47,7 +47,7 @@ public class TestManyWhereJoinM2M extends TestCase {
        
         
         Query<MUser> query = Ebean.find(MUser.class)
-            .join("roles")
+            .fetch("roles")
             // the where on a 'many' (like orders) requires an 
             // additional join and distinct which is independent
             // of a fetch join (if there is a fetch join) 
@@ -59,9 +59,9 @@ public class TestManyWhereJoinM2M extends TestCase {
         
         String sql = query.getGeneratedSql();
         Assert.assertTrue(sql.indexOf("select distinct") > -1);
-        Assert.assertTrue(sql.indexOf("left outer join mrole mr") > -1);
-        Assert.assertTrue(sql.indexOf("join mrole xr") > -1);
-        Assert.assertTrue(sql.indexOf("xr.role_name = ?") > -1);
+        Assert.assertTrue(sql.indexOf("left outer join mrole ") > -1);
+        Assert.assertTrue(sql.indexOf("join mrole ") > -1);
+        Assert.assertTrue(sql.indexOf(".role_name = ?") > -1);
         
     }
 }

@@ -18,10 +18,10 @@ public class TestQueryMultiManyOrder extends TestCase {
         ResetBasicData.reset();
         
         Query<Order> q = Ebean.find(Order.class)
-            .join("shipments")
-            .join("details")
-            .join("details.product")
-            .join("customer")
+            .fetch("shipments")
+            .fetch("details")
+            .fetch("details.product")
+            .fetch("customer")
             .where().gt("id", 0)
             .query();
 
@@ -29,9 +29,9 @@ public class TestQueryMultiManyOrder extends TestCase {
         String sql = q.getGeneratedSql();
         
         Assert.assertTrue(list.size() > 0);
-        Assert.assertTrue(sql.contains("join o_customer oc on oc.id "));
+        Assert.assertTrue(sql.contains("join o_customer "));
         
-        Assert.assertFalse(sql.contains("left outer join contact occ on"));
+        Assert.assertFalse(sql.contains("left outer join contact "));
         Assert.assertFalse(sql.contains("left outer join o_order_detail "));
         Assert.assertFalse(sql.contains("left outer join o_product "));
                 

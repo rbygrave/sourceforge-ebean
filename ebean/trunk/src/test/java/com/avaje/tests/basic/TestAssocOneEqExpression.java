@@ -25,7 +25,7 @@ public class TestAssocOneEqExpression extends TestCase {
 		
 		query.findList();
 		String sql = query.getGeneratedSql();
-		Assert.assertTrue(sql.contains("where o.kcustomer_id = ?"));
+		Assert.assertTrue(sql.contains("where t0.kcustomer_id = ?"));
 		
 		Address b = new Address();
 		b.setId((short)1);
@@ -36,7 +36,7 @@ public class TestAssocOneEqExpression extends TestCase {
 		
 		q2.findList();
 		sql = q2.getGeneratedSql();
-		Assert.assertTrue(sql.contains("where oc.billing_address_id = ?"));
+		Assert.assertTrue(sql.contains("where t1.billing_address_id = ?"));
 
 	}
 }

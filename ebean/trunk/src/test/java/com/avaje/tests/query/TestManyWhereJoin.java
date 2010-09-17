@@ -30,7 +30,7 @@ public class TestManyWhereJoin extends TestCase {
         String sql = query.getGeneratedSql();
         
         Assert.assertTrue(sql.indexOf("select distinct ") > -1);
-        Assert.assertTrue(sql.indexOf("join o_order xo") > -1);
-        Assert.assertTrue(sql.indexOf("xo.status = ?") > -1);
+        Assert.assertTrue(sql.indexOf("join o_order ") > -1);
+        Assert.assertTrue(sql.indexOf(".status = ?") > -1);
     }
 }

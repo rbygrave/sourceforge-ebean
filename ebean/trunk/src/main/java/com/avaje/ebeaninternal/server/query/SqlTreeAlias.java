@@ -7,8 +7,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import com.avaje.ebeaninternal.server.deploy.parse.SqlReservedWords;
-
 /**
  * Special Map of the logical property joins to table alias.
  * 
@@ -16,8 +14,10 @@ import com.avaje.ebeaninternal.server.deploy.parse.SqlReservedWords;
  */
 public class SqlTreeAlias {
 
-	private static final String alphabet = "abcdefghijklmnopqrstuvwxy";
-	
+    private int counter;
+    
+    private int manyWhereCounter;
+    
 	private TreeSet<String> joinProps = new TreeSet<String>();
 
 	private TreeSet<String> manyWhereJoinProps = new TreeSet<String>();
@@ -82,31 +82,17 @@ public class SqlTreeAlias {
 	
 	private String calcAlias(String prefix) {
 		
-		String[] split = SplitName.split(prefix);
-		String attempt = parentAlias(split[0])+split[1].charAt(0);
-		String alias = nextAlias(attempt);
+		String alias = nextTableAlias();
 		aliasMap.put(prefix, alias);
 		return alias;
 	}
 
     private String calcAliasManyWhere(String prefix) {
 
-        String[] split = SplitName.split(prefix);
-        // "x" for "extra join" to help identify them
-        String attempt = "x"+ split[1].charAt(0);
-        String alias = nextAlias(attempt);
-        
+        String alias = nextManyWhereTableAlias();        
         manyWhereAliasMap.put(prefix, alias);
         return alias;
     }
-	
-	private String parentAlias(String s) {
-		if (s == null){
-			return rootTableAlias;
-		} else {
-			return aliasMap.get(s);
-		}
-	}
 	
 	/**
 	 * Return the table alias for a given property name.
@@ -190,36 +176,11 @@ public class SqlTreeAlias {
 	/**
 	 * Return the next valid table alias given the preferred table alias.
 	 */
-	private String nextAlias(String prefAlias){
-		
-		if (validAlias(prefAlias)){
-			return prefAlias;
-		}
-		String prefix;
-		if (prefAlias.length()>1){
-			prefix = prefAlias.substring(0,prefAlias.length()-1);
-		} else{
-			prefix = "";
-		}
-		
-		for (int i = 0; i < 26; i++) {
-			String test = prefix+alphabet.charAt(i);
-			if (validAlias(test)){
-				return test;
-			}
-		}
-		
-		return nextAlias(prefAlias+"z");
+	private String nextTableAlias() {
+	    return "t"+(++counter);
 	}
 	
-	private boolean validAlias(String alias) {
-	    boolean v = !SqlReservedWords.isKeyword(alias) 
-			&& !aliasMap.containsValue(alias)
-			&& !manyWhereAliasMap.containsValue(alias);
-	    
-	    if (v && manyWhereAliasMap.containsValue(alias)){
-	        System.out.println("BUG");
-	    }
-	    return v;
-	}
+	private String nextManyWhereTableAlias() {   
+        return "u"+(++manyWhereCounter);
+    }
 }
