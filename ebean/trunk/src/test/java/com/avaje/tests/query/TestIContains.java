@@ -23,7 +23,7 @@ public class TestIContains extends TestCase {
 		q0.findList();
 		String generatedSql = q0.getGeneratedSql();
 		
-		Assert.assertTrue(generatedSql.contains("lower(c.name)"));
+		Assert.assertTrue(generatedSql.contains("lower(t0.name)"));
 		
 
 		// not case insensitive
@@ -35,7 +35,7 @@ public class TestIContains extends TestCase {
 		q0.findList();
 		generatedSql = q0.getGeneratedSql();
 		
-		Assert.assertTrue(generatedSql.contains(" c.name "));
+		Assert.assertTrue(generatedSql.contains(" t0.name "));
 
 		
 	}

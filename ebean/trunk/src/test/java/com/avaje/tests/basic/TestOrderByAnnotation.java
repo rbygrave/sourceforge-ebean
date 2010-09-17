@@ -30,6 +30,6 @@ public class TestOrderByAnnotation extends TestCase {
 		
 		String s1 = q1.getGeneratedSql();
 
-		Assert.assertTrue(s1.contains("order by o.id , od.id asc, od.order_qty asc, od.cretime desc"));
+		Assert.assertTrue(s1.contains("order by t0.id , t1.id asc, t1.order_qty asc, t1.cretime desc"));
 	}
 }

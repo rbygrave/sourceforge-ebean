@@ -64,8 +64,7 @@ public class TestSubQuery extends TestCase {
 		
 		String sql = pq.getGeneratedSql();
 
-		//String golden = "(c.one_key) in (select c.one_key c0 from ckey_parent c)";
-		String golden = "(c.one_key) in (select c.one_key  from ckey_parent c) ";
+		String golden = "(t0.one_key) in (select t0.one_key  from ckey_parent t0) ";
 		
 		if (sql.indexOf(golden) < 0)
 		{

@@ -35,7 +35,7 @@ public class TestExprNestedDisjunction extends TestCase {
         q.findList();
         String s = q.getGeneratedSql();
 
-        assertTrue(s.contains("(c.name like ?  and c.anniversary = ? )  or (c.status = ?  and c.id > ? )"));        
+        assertTrue(s.contains("(t0.name like ?  and t0.anniversary = ? )  or (t0.status = ?  and t0.id > ? )"));        
     }
     
 }

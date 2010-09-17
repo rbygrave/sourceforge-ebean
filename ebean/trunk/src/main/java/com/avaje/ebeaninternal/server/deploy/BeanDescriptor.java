@@ -414,7 +414,7 @@ public class BeanDescriptor<T> {
         this.luceneIndexDefn = deploy.getIndexDefn();
         this.entityType = deploy.getEntityType();
         this.name = InternString.intern(deploy.getName());
-        this.baseTableAlias = InternString.intern(name.substring(0, 1).toLowerCase());
+        this.baseTableAlias = "t0";
         this.fullName = InternString.intern(deploy.getFullName());
         this.descriptorId = descriptorId;
         

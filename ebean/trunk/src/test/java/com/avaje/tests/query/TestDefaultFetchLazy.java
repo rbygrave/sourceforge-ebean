@@ -39,14 +39,14 @@ public class TestDefaultFetchLazy extends TestCase {
 
 		// the details is also tuned
 		Query<MyLobSize> queryMany = Ebean.find(MyLobSize.class)
-				.join("details")// ,"+query")
+				.fetch("details")// ,"+query")
 				.where().gt("id", 0).query();
 
 		queryMany.findList();
 
 		String generatedSql = queryMany.getGeneratedSql();
-		Assert.assertTrue(generatedSql.contains("md.other "));
-		Assert.assertFalse(generatedSql.contains("md.something "));
+		Assert.assertTrue(generatedSql.contains("t1.other "));
+		Assert.assertFalse(generatedSql.contains("t1.something "));
 	}
 	
 }

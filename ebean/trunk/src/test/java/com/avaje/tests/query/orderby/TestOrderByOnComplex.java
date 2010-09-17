@@ -19,7 +19,7 @@ public class TestOrderByOnComplex extends TestCase {
         query.findList();
         
         String sql = query.getGeneratedSql();
-        assertTrue(sql.contains("order by o.kcustomer_id desc"));
+        assertTrue(sql.contains("order by t0.kcustomer_id desc"));
             
     }
     
