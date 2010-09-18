@@ -335,6 +335,9 @@ public final class Ebean {
 
     /**
      * Log a comment to the transaction log of the current transaction.
+     * <p>
+     * If there is no current transaction this comment does not go anywhere.
+     * </p>
      */
     public static void logComment(String msg) {
         serverMgr.getPrimaryServer().logComment(msg);

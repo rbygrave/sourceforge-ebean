@@ -428,6 +428,9 @@ public interface EbeanServer {
 
     /**
      * Log a comment to the transaction log of the current transaction.
+     * <p>
+     * If there is no current transaction this comment does not go anywhere.
+     * </p>
      * 
      * @see Ebean#logComment(String)
      */
