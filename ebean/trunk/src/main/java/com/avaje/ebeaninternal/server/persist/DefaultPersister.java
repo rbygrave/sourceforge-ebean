@@ -905,7 +905,6 @@ public final class DefaultPersister implements Persister {
     					// build a intersection row for 'insert'
     					IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherBean);
     					SqlUpdate sqlInsert = intRow.createInsert(server);
-    					t.log(sqlInsert.getSql());
     					executeSqlUpdate(sqlInsert, t);
 				    }
 				}
@@ -920,7 +919,6 @@ public final class DefaultPersister implements Persister {
 				// build a intersection row for 'delete'
 				IntersectionRow intRow = prop.buildManyToManyMapBean(parentBean, otherDelete);
 				SqlUpdate sqlDelete = intRow.createDelete(server);
-				t.log(sqlDelete.getSql());
 				executeSqlUpdate(sqlDelete, t);
 			}
 		}
@@ -935,7 +933,6 @@ public final class DefaultPersister implements Persister {
         IntersectionRow intRow = many.buildManyToManyDeleteChildren(bean);
         SqlUpdate sqlDelete = intRow.createDeleteChildren(server);
 
-        t.log(sqlDelete.getSql());
         return executeSqlUpdate(sqlDelete, t);
     }
    
