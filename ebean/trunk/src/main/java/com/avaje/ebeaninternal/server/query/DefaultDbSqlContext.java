@@ -24,6 +24,8 @@ public class DefaultDbSqlContext implements DbSqlContext {
     private final ArrayStack<String> tableAliasStack = new ArrayStack<String>();
 
     private final ArrayStack<String> joinStack = new ArrayStack<String>();
+    
+    private final ArrayStack<String> prefixStack = new ArrayStack<String>();
 
     private final boolean useColumnAlias;
 
@@ -129,11 +131,6 @@ public class DefaultDbSqlContext implements DbSqlContext {
         sb.append(" ");
     }
 
-    public String getRelativePrefix(String propName) {
-
-        return currentPrefix == null ? propName : currentPrefix + "." + propName;
-    }
-
     public String getTableAlias(String prefix) {
         return alias.getTableAlias(prefix);
     }
@@ -146,14 +143,22 @@ public class DefaultDbSqlContext implements DbSqlContext {
         tableAliasStack.push(alias);
     }
 
+    public String getRelativePrefix(String propName) {
+
+        return currentPrefix == null ? propName : currentPrefix + "." + propName;
+    }
+    
     public void pushTableAlias(String prefix) {
+        // store the currentPrefix on a stack
+        prefixStack.push(currentPrefix);
         currentPrefix = prefix;
         tableAliasStack.push(getTableAlias(prefix));
     }
 
     public void popTableAlias() {
         tableAliasStack.pop();
-        currentPrefix = null;
+        // pop the currentPrefix from the stack
+        currentPrefix = prefixStack.pop();;
     }
 
     public StringBuilder getBuffer() {
