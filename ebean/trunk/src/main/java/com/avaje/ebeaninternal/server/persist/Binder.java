@@ -247,6 +247,11 @@ public class Binder {
 				Boolean bo = (Boolean) data;
 				b.setBoolean(bo.booleanValue());
 				break;
+            case java.sql.Types.BIT:
+                // Types.BIT should map to Java Boolean
+                Boolean bitBool = (Boolean) data;
+                b.setBoolean(bitBool.booleanValue());
+                break;				
 
 			case java.sql.Types.VARCHAR:
 				b.setString((String) data);
