@@ -49,6 +49,7 @@ import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.deploy.ChainedBeanPersistController;
 import com.avaje.ebeaninternal.server.deploy.ChainedBeanPersistListener;
 import com.avaje.ebeaninternal.server.deploy.ChainedBeanQueryAdapter;
+import com.avaje.ebeaninternal.server.deploy.CompoundUniqueContraint;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedUpdate;
 import com.avaje.ebeaninternal.server.deploy.InheritInfo;
@@ -137,6 +138,8 @@ public class DeployBeanDescriptor<T> {
 	 * The tables this bean is dependent on.
 	 */
 	private String[] dependantTables;
+
+    private List<CompoundUniqueContraint> compoundUniqueConstraints;
 
 	/**
 	 * Extra deployment attributes.
@@ -482,6 +485,27 @@ public class DeployBeanDescriptor<T> {
 		return dependantTables;
 	}
 
+	/**
+	 * Add a compound unique constraint.
+	 */
+	public void addCompoundUniqueConstraint(CompoundUniqueContraint c) {
+	    if (compoundUniqueConstraints == null){
+	        compoundUniqueConstraints = new ArrayList<CompoundUniqueContraint>();
+	    }
+	    compoundUniqueConstraints.add(c);
+	}
+	
+	/**
+	 * Return the compound unique constraints (can be null).
+	 */
+	public CompoundUniqueContraint[] getCompoundUniqueConstraints(){
+	    if (compoundUniqueConstraints == null){
+	        return null;
+	    } else {
+	        return compoundUniqueConstraints.toArray(new CompoundUniqueContraint[compoundUniqueConstraints.size()]);
+	    }
+	}
+    
 	/**
 	 * Set the tables this bean is dependant on. This implies that if any of
 	 * these tables are modified then cached beans may be invalidated.

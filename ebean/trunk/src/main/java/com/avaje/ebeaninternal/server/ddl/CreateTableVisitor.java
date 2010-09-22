@@ -11,6 +11,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyCompound;
+import com.avaje.ebeaninternal.server.deploy.CompoundUniqueContraint;
 import com.avaje.ebeaninternal.server.deploy.InheritInfo;
 import com.avaje.ebeaninternal.server.deploy.parse.SqlReservedWords;
 
@@ -32,11 +33,13 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	// avoid writing columns twice, e.g. when used in associations with insertable=false and updateable=false
 	private final Set<String> wroteColumns = new HashSet<String>();
 
+    private ArrayList<String> checkConstraints = new ArrayList<String>();
+
+    private ArrayList<String> uniqueConstraints = new ArrayList<String>();
+
 	public Set<String> getWroteColumns() {
 		return wroteColumns;
 	}
-
-	private ArrayList<String> checkConstraints = new ArrayList<String>();
 	
 
 	public CreateTableVisitor(DdlGenContext ctx) {
@@ -93,7 +96,7 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	 * Typically check constraint based on Enum mapping values.
 	 * </p>
 	 */
-	protected void writeConstraint(BeanProperty p, String prefix, String constraintExpression) {
+	protected void addCheckConstraint(BeanProperty p, String prefix, String constraintExpression) {
 		
 		if (p != null && constraintExpression != null){
 
@@ -109,12 +112,17 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 		return prefix + p.getBeanDescriptor().getBaseTable()+"_"+p.getDbColumn();
 	}
 
-	protected void writeConstraint(String constraintExpression) {
+
+    protected void addUniqueConstraint(String constraintExpression) {
+        uniqueConstraints.add(constraintExpression);
+    }
+    
+	protected void addCheckConstraint(String constraintExpression) {
 		checkConstraints.add(constraintExpression);
 	}
 	
-	protected void writeConstraint(BeanProperty p) {
-		writeConstraint(p,"ck_", p.getDbConstraintExpression());
+	protected void addCheckConstraint(BeanProperty p) {
+	    addCheckConstraint(p,"ck_", p.getDbConstraintExpression());
 	}
 	
 	public boolean visitBean(BeanDescriptor<?> descriptor) {
@@ -158,6 +166,21 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 			checkConstraints = new ArrayList<String>();
 		}
 		
+		if (uniqueConstraints.size() > 0){
+            for (String constraint : uniqueConstraints) {
+                ctx.write("  ").write(constraint).write(",").writeNewLine();
+            }
+            uniqueConstraints = new ArrayList<String>();
+        }
+		
+		CompoundUniqueContraint[] compoundUniqueConstraints = descriptor.getCompoundUniqueConstraints();
+		if (compoundUniqueConstraints != null){
+		    String table = descriptor.getBaseTable();
+		    for (int i = 0; i < compoundUniqueConstraints.length; i++) {
+		        String constraint = createUniqueConstraint(table, i, compoundUniqueConstraints[i]);
+		        ctx.write("  ").write(constraint).write(",").writeNewLine();
+            }
+		}
 
 		
 		BeanProperty[] ids = descriptor.propertiesId();
@@ -195,6 +218,28 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 		ctx.write(";").writeNewLine().writeNewLine();
 		ctx.flush();
 	}
+	
+    private String createUniqueConstraint(String table, int idx, CompoundUniqueContraint uc) {
+        
+        String uqConstraintName = "uq_"+table+"_"+(idx+1) ;
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("constraint ")
+            .append(uqConstraintName)
+            .append(" unique (");
+        
+        String[] columns = uc.getColumns();
+        
+        for (int i = 0; i < columns.length; i++) {
+            if (i > 0){
+                sb.append(",");
+            }
+            sb.append(columns[i]);
+        }
+        sb.append(")");
+        
+        return sb.toString();
+    }
 	
 	public void visitBeanDescriptorEnd() {
 		ctx.write(");").writeNewLine().writeNewLine();
