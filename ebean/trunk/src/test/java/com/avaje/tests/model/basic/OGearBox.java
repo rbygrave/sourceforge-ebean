@@ -2,6 +2,7 @@ package com.avaje.tests.model.basic;
 
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
@@ -17,6 +18,7 @@ public class OGearBox {
 
 	private String boxDesc;
 
+	@Column(name="box_size")
 	private Integer size;
 	
 	@Version

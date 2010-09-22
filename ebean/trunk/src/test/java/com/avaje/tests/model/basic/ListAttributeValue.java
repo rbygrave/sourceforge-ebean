@@ -4,8 +4,10 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 
 @Entity
+@Table(name="la_attr_value")
 public class ListAttributeValue extends BasicDomain{
 	private static final long serialVersionUID = 1L;
 
