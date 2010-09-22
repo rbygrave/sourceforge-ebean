@@ -23,6 +23,8 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -34,6 +36,7 @@ import com.avaje.ebean.annotation.NamedUpdates;
 import com.avaje.ebean.annotation.UpdateMode;
 import com.avaje.ebean.config.TableName;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
+import com.avaje.ebeaninternal.server.deploy.CompoundUniqueContraint;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedUpdate;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
@@ -68,7 +71,7 @@ public class AnnotationClass extends AnnotationParser {
             descriptor.setBaseTable(tableName);
 		}
 	}
-	
+    
 	private String[] parseLdapObjectclasses(String objectclasses) {
 	    
 	    if (objectclasses == null || objectclasses.length() == 0){
@@ -118,6 +121,21 @@ public class AnnotationClass extends AnnotationParser {
 		    descriptor.setEntityType(EntityType.EMBEDDED);
 			descriptor.setName("Embeddable:"+cls.getSimpleName());
 		}
+		
+		UniqueConstraint uc = cls.getAnnotation(UniqueConstraint.class);
+		if (uc != null){
+		    descriptor.addCompoundUniqueConstraint(new CompoundUniqueContraint(uc.columnNames()));
+		}
+		
+		Table table = cls.getAnnotation(Table.class);
+        if (table != null){
+            UniqueConstraint[] uniqueConstraints = table.uniqueConstraints();
+            if (uniqueConstraints != null){
+                for (UniqueConstraint c : uniqueConstraints) {
+                    descriptor.addCompoundUniqueConstraint(new CompoundUniqueContraint(c.columnNames()));                    
+                }
+            }
+        }
 
 		UpdateMode updateMode = cls.getAnnotation(UpdateMode.class);
 		if (updateMode != null){

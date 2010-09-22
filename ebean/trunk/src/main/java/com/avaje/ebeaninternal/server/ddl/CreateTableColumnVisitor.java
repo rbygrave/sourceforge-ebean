@@ -72,6 +72,22 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		visitScalar(p);
 	}
 
+    private StringBuilder createUniqueConstraintBuffer(String table, String column) {
+        
+        String uqConstraintName = "uq_"+ table+ "_"+column;
+        
+        if (uqConstraintName.length() > ddl.getMaxConstraintNameLength()){
+            uqConstraintName = uqConstraintName.substring(0, ddl.getMaxConstraintNameLength());
+        }
+        
+        StringBuilder constraintExpr = new StringBuilder();
+        constraintExpr.append("constraint ")
+            .append(uqConstraintName)
+            .append(" unique (");
+        
+        return constraintExpr;
+    }
+    
 	@Override
 	public void visitOneImported(BeanPropertyAssocOne<?> p) {
 
@@ -83,18 +99,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 			throw new RuntimeException(msg);
 		}
 		
-		String uqConstraintName = "uq_"
-			+ p.getBeanDescriptor().getBaseTable()
-			+ "_"+columns[0].getLocalDbColumn();
-		
-		if (uqConstraintName.length() > ddl.getMaxConstraintNameLength()){
-			uqConstraintName = uqConstraintName.substring(0, ddl.getMaxConstraintNameLength());
-		}
-		
-		StringBuilder constraintExpr = new StringBuilder();
-		constraintExpr.append("constraint ")
-			.append(uqConstraintName)
-			.append(" unique (");
+		StringBuilder constraintExpr = createUniqueConstraintBuffer(p.getBeanDescriptor().getBaseTable(), columns[0].getLocalDbColumn());
 		
 		for (int i = 0; i < columns.length; i++) {
 			
@@ -130,7 +135,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		
 		if (p.isOneToOne()){
 			if (ddl.isAddOneToOneUniqueContraint()){
-				parent.writeConstraint( constraintExpr.toString());
+				parent.addUniqueConstraint( constraintExpr.toString());
 			}
 		}
 		
@@ -159,12 +164,23 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		if (isIdentity(p)) {
 			writeIdentity();
 		}
+		if (p.isUnique() && !p.isId()){
+		    parent.addUniqueConstraint(createUniqueConstraint(p));
+		}
 
-		parent.writeConstraint(p);
+		parent.addCheckConstraint(p);
 
 		ctx.write(",").writeNewLine();
-}
+	}
 
+	private String createUniqueConstraint(BeanProperty p) {
+	    
+	    StringBuilder expr = createUniqueConstraintBuffer(p.getBeanDescriptor().getBaseTable(), p.getDbColumn());
+	    expr.append(p.getDbColumn()).append(")");
+        
+        return expr.toString();
+	}
+	
 	protected void writeIdentity() {
 		String identity = ddl.getIdentity();
 		if (identity != null && identity.length() > 0) {

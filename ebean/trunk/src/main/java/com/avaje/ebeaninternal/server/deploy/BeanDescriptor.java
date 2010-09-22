@@ -168,6 +168,8 @@ public class BeanDescriptor<T> {
      */
     private final String[] dependantTables;
 
+    private final CompoundUniqueContraint[] compoundUniqueConstraints;
+    
     /**
      * Extra deployment attributes.
      */
@@ -448,6 +450,7 @@ public class BeanDescriptor<T> {
         this.updateChangesOnly = deploy.isUpdateChangesOnly();
 
         this.dependantTables = deploy.getDependantTables();
+        this.compoundUniqueConstraints = deploy.getCompoundUniqueConstraints();
 
         this.extraAttrMap = deploy.getExtraAttributeMap();
 
@@ -1929,6 +1932,13 @@ public class BeanDescriptor<T> {
      */
     public String[] getDependantTables() {
         return dependantTables;
+    }
+    
+    /**
+     * Return the compound unique constraints.
+     */
+    public CompoundUniqueContraint[] getCompoundUniqueConstraints() {
+        return compoundUniqueConstraints;
     }
 
     /**
