@@ -163,7 +163,7 @@ public class SqlTreeBuilder {
         if (rawSql){
             return "Not Used";
         }
-        rootNode.appendSelect(ctx);
+        rootNode.appendSelect(ctx, subQuery);
 
         String selectSql = ctx.getContent();
 
