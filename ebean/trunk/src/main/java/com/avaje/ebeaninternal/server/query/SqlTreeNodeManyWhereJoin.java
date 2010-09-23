@@ -97,7 +97,7 @@ public class SqlTreeNodeManyWhereJoin implements SqlTreeNode {
         // nothing to add
     }
 
-    public void appendSelect(DbSqlContext ctx) {
+    public void appendSelect(DbSqlContext ctx, boolean subQuery) {
         // nothing to do here
     }
 

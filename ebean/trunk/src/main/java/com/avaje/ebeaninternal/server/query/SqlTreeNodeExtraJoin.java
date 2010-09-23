@@ -108,7 +108,7 @@ public class SqlTreeNodeExtraJoin implements SqlTreeNode {
 	/**
 	 * Does nothing.
 	 */
-	public void appendSelect(DbSqlContext ctx) {		
+	public void appendSelect(DbSqlContext ctx, boolean subQuery) {		
 	}
 
 	/**

@@ -30,7 +30,7 @@ public interface SqlTreeNode {
 	 * Append the required column information to the SELECT part of the sql
 	 * statement.
 	 */
-	public void appendSelect(DbSqlContext ctx);
+	public void appendSelect(DbSqlContext ctx, boolean subQuery);
 
 	/**
 	 * Append to the FROM part of the sql.

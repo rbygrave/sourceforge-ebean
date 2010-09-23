@@ -395,7 +395,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	/**
 	 * Append the property columns to the buffer.
 	 */
-	public void appendSelect(DbSqlContext ctx) {
+	public void appendSelect(DbSqlContext ctx, boolean subQuery) {
 		
 		ctx.pushJoin(prefix);
 		ctx.pushTableAlias(prefix);
@@ -404,11 +404,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			ctx.append(NEW_LINE).append("        ");
 		}
 				
-		if (inheritInfo != null){
-			ctx.append(COMMA);
-			ctx.append(ctx.getTableAlias(prefix));
-			ctx.append(PERIOD);
-			ctx.append(inheritInfo.getDiscriminatorColumn());
+		if (!subQuery && inheritInfo != null){
+			ctx.appendColumn(inheritInfo.getDiscriminatorColumn());
 		}
 		
 		if (readId) {
@@ -420,7 +417,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		for (int i = 0; i < children.length; i++) {
 			// read each child... and let them set their
 			// values back to this localBean
-			children[i].appendSelect(ctx);
+			children[i].appendSelect(ctx, subQuery);
 		}
 		
 		ctx.popTableAlias();
