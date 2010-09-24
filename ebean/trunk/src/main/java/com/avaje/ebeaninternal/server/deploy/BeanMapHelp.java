@@ -146,7 +146,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	@SuppressWarnings("unchecked")
 	public void add(BeanCollection<?> collection, Object bean) {
 
-		Object keyValue = beanProperty.getValue(bean);
+		Object keyValue = beanProperty.getValueIntercept(bean);
 
 		Map<Object, Object> map = (Map<Object, Object>) collection;
 		map.put(keyValue, bean);
