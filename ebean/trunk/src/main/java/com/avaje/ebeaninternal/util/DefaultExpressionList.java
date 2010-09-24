@@ -198,6 +198,10 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     public Map<?, T> findMap() {
         return query.findMap();
     }
+    
+    public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType) {
+        return query.findMap(keyProperty, keyType);
+    }
 
     public T findUnique() {
         return query.findUnique();

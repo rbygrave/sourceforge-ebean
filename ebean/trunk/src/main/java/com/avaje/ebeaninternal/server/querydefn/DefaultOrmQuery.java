@@ -903,8 +903,14 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public Map<?, T> findMap() {
 		return server.findMap(this, null);
 	}
+	
+	@SuppressWarnings("unchecked")
+    public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType) {
+        setMapKey(keyProperty);
+        return (Map<K, T>)findMap();
+    }
 
-	public T findUnique() {
+    public T findUnique() {
 		return server.findUnique(this, null);
 	}
 	

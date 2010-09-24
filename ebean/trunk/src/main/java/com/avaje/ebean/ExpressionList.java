@@ -143,6 +143,11 @@ public interface ExpressionList<T> extends Serializable {
     public Map<?, T> findMap();
 
     /**
+     * Return a typed map specifying the key property and type.
+     */
+    public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType);
+
+    /**
      * Execute the query returning a single bean.
      * 
      * @see Query#findUnique()

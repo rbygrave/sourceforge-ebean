@@ -227,6 +227,10 @@ abstract class LdJunctionExpression<T> implements Junction<T>, SpiExpression {
         return exprList.findMap();
     }
 
+    public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType) {
+        return exprList.findMap(keyProperty, keyType);
+    }
+    
     public PagingList<T> findPagingList(int pageSize) {
         return exprList.findPagingList(pageSize);
     }
