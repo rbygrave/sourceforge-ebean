@@ -588,6 +588,11 @@ public interface Query<T> extends Serializable {
 	public Map<?, T> findMap();
 
 	/**
+	 * Return a typed map specifying the key property and type.
+	 */
+    public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType);
+
+	/**
 	 * Execute the query returning either a single bean or null (if no matching
 	 * bean is found).
 	 * <p>
