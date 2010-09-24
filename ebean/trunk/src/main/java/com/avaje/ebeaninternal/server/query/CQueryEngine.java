@@ -36,6 +36,7 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
+import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 
@@ -100,7 +101,7 @@ public class CQueryEngine {
 			return list;
 
 		} catch (SQLException e) {
-			throw new PersistenceException(e);
+		    throw createPersistenceException(request, e, rcQuery.getBindLog(), rcQuery.getGeneratedSql());
 		}
 	}
 	
@@ -133,10 +134,11 @@ public class CQueryEngine {
 				logger.fine("Future findRowCount completed!");
 				request.getTransaction().end();
 			}
+			
 			return rowCount;
 
 		} catch (SQLException e) {
-			throw new PersistenceException(e);
+		    throw createPersistenceException(request, e, rcQuery.getBindLog(), rcQuery.getGeneratedSql());
 		} 
 	}
 
@@ -200,9 +202,7 @@ public class CQueryEngine {
 			return beanCollection;
 
 		} catch (SQLException e) {
-			String sql = cquery.getGeneratedSql();
-			String m = Message.msg("fetch.sqlerror", e.getMessage(), cquery.getBindLog(), sql);
-            throw new PersistenceException(m, e);
+            throw createPersistenceException(request, e, cquery.getBindLog(), cquery.getGeneratedSql());
 
 		} finally {
 			if (useBackgroundToContinueFetch) {
@@ -220,6 +220,7 @@ public class CQueryEngine {
 			}
 		}
 	}
+
 	
 	/**
 	 * Find and return a single bean using its unique id.
@@ -253,16 +254,29 @@ public class CQueryEngine {
 			return bean;
 
 		} catch (SQLException e) {
-			String sql = cquery.getGeneratedSql();
-			String msg = Message.msg("fetch.error", e.getMessage(), sql);
-			throw new PersistenceException(msg, e);
+		    throw createPersistenceException(request, e, cquery.getBindLog(), cquery.getGeneratedSql());
 
 		} finally {
 			cquery.close();
 		}
 	}
-	
-	/**
+
+    private <T> PersistenceException createPersistenceException(OrmQueryRequest<T> request, SQLException e, String bindLog, String sql) {
+        
+        // log the error to the transaction log
+        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[]{"\r","\n"}, "\\n ");
+        String msg = "ERROR executing query:   bindLog["+bindLog+"] error["+errMsg+"]";
+        request.getTransaction().log(msg);
+        
+        // ensure 'rollback' is logged if queryOnly transaction
+        request.getTransaction().getConnection();
+        
+        // build a decent error message for the exception
+        String m = Message.msg("fetch.sqlerror", e.getMessage(), bindLog, sql);
+        return new PersistenceException(m, e);
+    }
+
+    /**
 	 * Log the generated SQL to the console.
 	 */
 	private void logSqlToConsole(CQuery<?> cquery) {

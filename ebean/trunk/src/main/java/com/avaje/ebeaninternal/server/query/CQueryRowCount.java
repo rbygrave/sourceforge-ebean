@@ -109,6 +109,13 @@ public class CQueryRowCount {
 	}
 
 	/**
+	 * Return the bind log.
+	 */
+	public String getBindLog() {
+        return bindLog;
+    }
+
+    /**
 	 * Return the generated sql.
 	 */
 	public String getGeneratedSql() {
