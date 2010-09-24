@@ -139,6 +139,13 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	}
 
 	/**
+	 * Return the bind log.
+	 */
+	public String getBindLog() {
+	    return bindLog == null ? "" : bindLog.toString();
+	}
+	
+	/**
 	 * Set the Id value that was bound. This value is used for logging summary
 	 * level information.
 	 */

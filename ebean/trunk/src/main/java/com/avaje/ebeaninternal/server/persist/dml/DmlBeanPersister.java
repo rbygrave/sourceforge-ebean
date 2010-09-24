@@ -28,6 +28,7 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.PersistRequest;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
+import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.persist.BeanPersister;
 
 /**
@@ -104,8 +105,13 @@ public final class DmlBeanPersister implements BeanPersister {
 				handler.execute();
 			}
 
-		} catch (SQLException ex) {
-			throw new PersistenceException(ex);
+		} catch (SQLException e) {
+	        // log the error to the transaction log
+	        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[]{"\r","\n"}, "\\n ");
+	        String msg = "ERROR executing DML bindLog["+handler.getBindLog()+"] error["+errMsg+"]";
+	        request.getTransaction().log(msg);
+	        
+			throw new PersistenceException(msg, e);
 
 		} finally {
 			if (!batchThisRequest && handler != null) {

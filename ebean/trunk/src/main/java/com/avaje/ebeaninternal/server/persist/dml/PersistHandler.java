@@ -26,6 +26,11 @@ import java.sql.SQLException;
  */
 public interface PersistHandler {
 	
+    /**
+     * Return the bind log.
+     */
+    public String getBindLog();
+
 	/**
 	 * Get the sql and bind the statement.
 	 */
