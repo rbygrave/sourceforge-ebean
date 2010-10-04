@@ -30,6 +30,11 @@ import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
  */
 public interface LoadContext {
 
+    /**
+     * Return the minimum batch size when using QueryIterator with query joins.
+     */
+    public int getSecondaryQueriesMinBatchSize(OrmQueryRequest<?> parentRequest, int defaultQueryBatch);
+
 	/**
 	 * Execute any secondary (+query) queries if there are any defined.
 	 * @param parentRequest the originating query request

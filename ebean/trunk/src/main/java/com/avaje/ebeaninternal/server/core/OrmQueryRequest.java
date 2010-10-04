@@ -26,6 +26,8 @@ import java.util.Set;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.QueryIterator;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
@@ -139,6 +141,18 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 	public void executeSecondaryQueries(int defaultQueryBatch){
 		graphContext.executeSecondaryQueries(this, defaultQueryBatch);
 	}
+
+    /**
+     * For use with QueryIterator and secondary queries this returns the minimum
+     * batch size that should be loaded before executing the secondary queries.
+     * <p>
+     * If -1 is returned then NO secondary queries are registered and simple
+     * iteration is fine.
+     * </p>
+     */
+    public int getSecondaryQueriesMinBatchSize(int defaultQueryBatch) {
+        return graphContext.getSecondaryQueriesMinBatchSize(this, defaultQueryBatch);
+    }
 
 	/**
 	 * Return the Normal, sharedInstance, ReadOnly state of this query.
@@ -304,6 +318,23 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 		return idList.getIdList();
 	}
 
+    public void findVisit(QueryResultVisitor<T> visitor) {
+        QueryIterator<T> it = queryEngine.findIterate(this);
+        try {
+            while (it.hasNext()) {
+                if (!visitor.accept(it.next())) {
+                    break;
+                }
+            }
+        } finally {
+            it.close();
+        }
+    }
+
+    public QueryIterator<T> findIterate() {
+        return queryEngine.findIterate(this);
+    }
+	 
 	/**
 	 * Execute the query as findList.
 	 */

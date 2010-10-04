@@ -32,7 +32,9 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.EntityBean;
@@ -47,6 +49,7 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
+import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
@@ -57,6 +60,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
+import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
@@ -206,11 +210,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final int backgroundFetchAfter;
 
 	private final int maxRowsLimit;
-
-	/**
-	 * Flag set when max rows hit.
-	 */
-	private boolean hasHitMaxRows;
 
 	/**
 	 * Flag set when backgroundFetchAfter limit is hit.
@@ -524,6 +523,15 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 
+    private boolean hasMoreRows() throws SQLException {
+        synchronized (this) {
+            if (cancelled){
+                return false;
+            }
+            return dataReader.next();
+        }
+    }
+    
 	/**
 	 * Read a row from the result set returning a bean.
 	 * <p>
@@ -562,22 +570,27 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	
 	public boolean readBean() throws SQLException {
 		
-		boolean result = readBeanInternal();
+		boolean result = readBeanInternal(true);
 
-		long exeNano = System.nanoTime() - startNano;
-		executionTimeMicros = (int)exeNano/1000;
-		
-		if (autoFetchProfiling){			
-			autoFetchManager.collectQueryInfo(autoFetchParentNode, loadedBeanCount, executionTimeMicros);	
-		}		
-		
-		queryPlan.executionTime(loadedBeanCount, executionTimeMicros);
+		updateExecutionStatistics();
 		
 		return result;
 	}
 	
-	private boolean readBeanInternal() throws SQLException {
-		if (!manyIncluded) {
+	private boolean readBeanInternal(boolean inForeground) throws SQLException {
+		
+        if (loadedBeanCount >= maxRowsLimit) {
+            collection.setHasMoreRows(hasMoreRows());
+            return false;    
+        }
+        
+        if (inForeground && loadedBeanCount >= backgroundFetchAfter) {
+            hasHitBackgroundFetchAfter = true;
+            collection.setFinishedFetch(false);
+            return false;
+        }
+        
+	    if (!manyIncluded) {
 			// simple query... no details...
 			return readRow();
 		}
@@ -660,51 +673,60 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 		readTheRows(true);
 
-		long exeNano = System.nanoTime() - startNano;
-		executionTimeMicros = (int)exeNano/1000;
-		
-		if (autoFetchProfiling){
-			autoFetchManager.collectQueryInfo(autoFetchParentNode, loadedBeanCount, executionTimeMicros);	
-		}
-		
-		queryPlan.executionTime(loadedBeanCount, executionTimeMicros);
+		updateExecutionStatistics();
 		
 		return collection;
 	}
 
-	private void readTheRows(boolean inForeground) throws SQLException {
-		while (readBeanInternal()) {
-			loadedBeanCount++;
-			
-			if (loadedBeanCount >= maxRowsLimit) {
-				hasHitMaxRows = true;
-			} else if (loadedBeanCount >= backgroundFetchAfter) {
-				hasHitBackgroundFetchAfter = true;
-			}
-			
-			if (queryListener != null) {
-				queryListener.process(getLoadedBean());
-				// clear the transaction context after each
-				// 'master' bean has been sent to the listener
-				persistenceContext.clear();
-
-			} else {
-				// add to the list/set/map
-				help.add(collection, getLoadedBean());
-			}
-
-			if (hasHitMaxRows) {
-				boolean hasMoreRows = readRow();
-				collection.setHasMoreRows(hasMoreRows);
-				break;
-
-			} else if (inForeground && hasHitBackgroundFetchAfter) {
-				collection.setFinishedFetch(false);
-				break;
-			}
-		}
+    protected void updateExecutionStatistics() {
+        try {
+            long exeNano = System.nanoTime() - startNano;
+    		executionTimeMicros = (int)exeNano/1000;
+    		
+    		if (autoFetchProfiling){
+    			autoFetchManager.collectQueryInfo(autoFetchParentNode, loadedBeanCount, executionTimeMicros);	
+    		}
+    		queryPlan.executionTime(loadedBeanCount, executionTimeMicros);
+    		
+        } catch (Exception e){ 
+            logger.log(Level.SEVERE, null, e);
+        }
+    }
+	
+	public QueryIterator<T> readIterate(int bufferSize, OrmQueryRequest<T> request) {
+	    
+	    if (bufferSize > 0){
+            return new CQueryIteratorWithBuffer<T>(this, request, bufferSize);
+	        
+	    } else {
+	        return new CQueryIteratorSimple<T>(this, request);
+	    }
 	}
 
+	private void readTheRows(boolean inForeground) throws SQLException {
+        while (hasNextBean(inForeground)) {
+            if (queryListener != null) {
+                queryListener.process(getLoadedBean());
+
+            } else {
+                // add to the list/set/map
+                help.add(collection, getLoadedBean());
+            }
+        }
+   }
+
+
+   protected boolean hasNextBean(boolean inForeground) throws SQLException {
+      
+       if (!readBeanInternal(inForeground)) {
+           return false;
+           
+       } else {
+           loadedBeanCount++;
+           return true;
+       } 
+   }
+   
 	public String getLoadedRowDetail() {
 		if (!manyIncluded) {
 			return String.valueOf(rowCount);
@@ -799,6 +821,32 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	public String getGeneratedSql() {
 		return sql;
 	}
+	
+	/**
+	 * Create a PersistenceException including interesting information like the bindLog and sql used.
+	 */
+    public PersistenceException createPersistenceException(SQLException e) {
+        
+        return createPersistenceException(e, getTransaction(), bindLog, sql);
+    }
+    
+    /**
+     * Create a PersistenceException including interesting information like the bindLog and sql used.
+     */
+    public static PersistenceException createPersistenceException(SQLException e, Transaction t, String bindLog, String sql) {
+
+        // log the error to the transaction log
+        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[] { "\r", "\n" }, "\\n ");
+        String msg = "ERROR executing query:   bindLog[" + bindLog + "] error[" + errMsg + "]";
+        t.log(msg);
+
+        // ensure 'rollback' is logged if queryOnly transaction
+        t.getConnection();
+
+        // build a decent error message for the exception
+        String m = Message.msg("fetch.sqlerror", e.getMessage(), bindLog, sql);
+        return new PersistenceException(m, e);
+    }
 	
 	/**
 	 * Should we create profileNodes for beans created in this query.

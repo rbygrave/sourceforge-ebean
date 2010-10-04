@@ -93,6 +93,26 @@ public class DLoadContext implements LoadContext {
 	}	
 
 	/**
+	 * Return the minimum batch size when using QueryIterator with query joins.
+	 */
+    public int getSecondaryQueriesMinBatchSize(OrmQueryRequest<?> parentRequest, int defaultQueryBatch) {
+
+        if (secQuery == null){
+            return -1;
+        }
+        
+        int maxBatch = 0;
+        for (int i = 0; i < secQuery.size(); i++) {
+            int batchSize = secQuery.get(i).getQueryFetchBatch();
+            if (batchSize == 0){
+                batchSize = defaultQueryBatch;
+            }
+            maxBatch = Math.max(maxBatch, batchSize);
+        }
+        return maxBatch;
+    }
+    
+	/**
 	 * Execute all the secondary queries.
 	 */
 	public void executeSecondaryQueries(OrmQueryRequest<?> parentRequest, int defaultQueryBatch) {

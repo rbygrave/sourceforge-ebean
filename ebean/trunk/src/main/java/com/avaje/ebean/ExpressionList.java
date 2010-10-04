@@ -107,6 +107,20 @@ public interface ExpressionList<T> extends Serializable {
     public Query<T> setOrderBy(String orderBy);
 
     /**
+     * Execute the query iterating over the results.
+     *
+     * @see Query#findIterate()
+     */
+    public QueryIterator<T> findIterate();
+    
+    /**
+     * Execute the query visiting the results.
+     *
+     * @see Query#findVisit(QueryResultVisitor)
+     */
+    public void findVisit(QueryResultVisitor<T> visitor);
+
+    /**
      * Execute the query returning a list.
      * 
      * @see Query#findList()

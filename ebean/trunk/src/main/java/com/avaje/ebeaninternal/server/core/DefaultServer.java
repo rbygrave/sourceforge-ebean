@@ -53,6 +53,8 @@ import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.QueryIterator;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.SqlFutureList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
@@ -1381,6 +1383,35 @@ public final class DefaultServer implements SpiEbeanServer {
         }
 
         return new LimitOffsetPagingQuery<T>(this, spiQuery, pageSize);
+    }
+
+    public <T> void findVisit(Query<T> query, QueryResultVisitor<T> visitor, Transaction t) {
+
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.LIST, query, t);
+
+        try {
+            request.initTransIfRequired();
+            request.findVisit(visitor);
+
+        } catch (RuntimeException ex) {
+            request.rollbackTransIfRequired();
+            throw ex;
+        }
+    }
+    
+    public <T> QueryIterator<T> findIterate(Query<T> query, Transaction t) {
+
+        SpiOrmQueryRequest<T> request = createQueryRequest(Type.LIST, query, t);
+
+        try {
+            request.initTransIfRequired();
+            return request.findIterate();
+            //request.endTransIfRequired();
+
+        } catch (RuntimeException ex) {
+            request.rollbackTransIfRequired();
+            throw ex;
+        }
     }
     
     @SuppressWarnings("unchecked")
