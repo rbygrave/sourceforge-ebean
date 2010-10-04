@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.QueryIterator;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -79,6 +81,16 @@ public interface SpiOrmQueryRequest<T> {
      */
     public List<Object> findIds();
 
+    /**
+     * Execute the find returning a QueryIterator and visitor pattern.
+     */
+    public void findVisit(QueryResultVisitor<T> visitor);
+
+    /**
+     * Execute the find returning a QueryIterator.
+     */
+    public QueryIterator<T> findIterate();
+    
     /**
      * Execute the query as findList.
      */

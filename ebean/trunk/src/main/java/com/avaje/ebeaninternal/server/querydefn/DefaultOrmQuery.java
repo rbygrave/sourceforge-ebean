@@ -20,7 +20,9 @@ import com.avaje.ebean.JoinConfig;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.bean.BeanCollectionTouched;
@@ -891,8 +893,16 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// the copy rather than this query instance)
 		return server.findRowCount(this, null);
 	}
+	
+	public void findVisit(QueryResultVisitor<T> visitor) {
+        server.findVisit(this, visitor, null);
+    }
 
-	public List<T> findList() {
+    public QueryIterator<T> findIterate() {
+        return server.findIterate(this, null);
+    }
+
+    public List<T> findList() {
 		return server.findList(this, null);
 	}
 

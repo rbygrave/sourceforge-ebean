@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.avaje.ebean.QueryIterator;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
@@ -58,6 +60,14 @@ public class LdapOrmQueryRequest<T> implements SpiOrmQueryRequest<T> {
 
     public List<T> findList() {
         return queryEngine.findList(this);
+    }
+    
+    public void findVisit(QueryResultVisitor<T> visitor) {
+        throw new RuntimeException("Not Implemented yet");
+    }
+
+    public QueryIterator<T> findIterate() {
+        throw new RuntimeException("Not Implemented yet");
     }
 
     public Map<?, ?> findMap() {

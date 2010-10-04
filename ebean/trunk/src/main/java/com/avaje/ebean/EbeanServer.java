@@ -487,6 +487,20 @@ public interface EbeanServer {
     public <T> List<Object> findIds(Query<T> query, Transaction t);
 
     /**
+     * Return a QueryIterator for the query. This is similar to findVisit in
+     * that not all the result beans need to be held in memory at the same time
+     * and as such is go for processing large queries.
+     */
+    public <T> QueryIterator<T> findIterate(Query<T> query, Transaction t);
+
+    /**
+     * Execute the query visiting the results. This is similar to findIterate in
+     * that not all the result beans need to be held in memory at the same time
+     * and as such is go for processing large queries.
+     */
+    public <T> void findVisit(Query<T> query, QueryResultVisitor<T> visitor, Transaction t);
+
+    /**
      * Execute a query returning a list of beans.
      * <p>
      * Generally you are able to use {@link Query#findList()} rather than

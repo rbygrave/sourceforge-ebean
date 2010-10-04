@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.query;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebeaninternal.api.BeanIdList;
@@ -62,6 +63,20 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
     	return queryEngine.findIds(request);
     }
 
+
+    public <T> QueryIterator<T> findIterate(OrmQueryRequest<T> request) {
+
+        // LIMITATION: You can not use QueryIterator to load bean cache
+ 
+        SpiTransaction t = request.getTransaction();
+        
+        // before we perform a query, we need to flush any
+        // previous persist requests that are queued/batched.
+        // The query may read data affected by those requests.
+        t.flushBatch();
+        
+        return queryEngine.findIterate(request);
+    }
     
 	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 

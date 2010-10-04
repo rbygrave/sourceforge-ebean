@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebeaninternal.api.BeanIdList;
 
@@ -37,6 +38,11 @@ public interface OrmQueryEngine {
      */
     public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request);
 
+    /**
+     * Execute the query using a QueryIterator.
+     */
+    public <T> QueryIterator<T> findIterate(OrmQueryRequest<T> request);
+    
     /**
      * Execute the row count query.
      */

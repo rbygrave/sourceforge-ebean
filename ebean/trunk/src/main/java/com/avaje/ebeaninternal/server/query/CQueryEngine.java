@@ -23,9 +23,8 @@ import java.sql.SQLException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
 
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -33,10 +32,8 @@ import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebeaninternal.api.BeanIdList;
 import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
-import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 
@@ -68,7 +65,7 @@ public class CQueryEngine {
 	}
 
 	/**
-	 * Build and execute the row count query.
+	 * Build and execute the find Id's query.
 	 */
 	public <T> BeanIdList findIds(OrmQueryRequest<T> request) {
 
@@ -101,7 +98,7 @@ public class CQueryEngine {
 			return list;
 
 		} catch (SQLException e) {
-		    throw createPersistenceException(request, e, rcQuery.getBindLog(), rcQuery.getGeneratedSql());
+		    throw CQuery.createPersistenceException(e, request.getTransaction(), rcQuery.getBindLog(), rcQuery.getGeneratedSql());
 		}
 	}
 	
@@ -138,10 +135,48 @@ public class CQueryEngine {
 			return rowCount;
 
 		} catch (SQLException e) {
-		    throw createPersistenceException(request, e, rcQuery.getBindLog(), rcQuery.getGeneratedSql());
+		    throw CQuery.createPersistenceException(e, request.getTransaction(), rcQuery.getBindLog(), rcQuery.getGeneratedSql());
 		} 
 	}
 
+    /**
+     * Read many beans using an iterator (except you need to close() the iterator when you have finished).
+     */
+    public <T> QueryIterator<T> findIterate(OrmQueryRequest<T> request) {
+
+        CQuery<T> cquery = queryBuilder.buildQuery(request);
+        request.setCancelableQuery(cquery);
+        
+        try {
+
+            if (logControl.isDebugGeneratedSql()) {
+                logSqlToConsole(cquery);
+            }
+            if (logControl.isLogQuery(MAdminLogging.SQL)) {
+                logSql(cquery);
+            }
+
+            if (!cquery.prepareBindExecuteQuery()) {
+                // query has been cancelled already
+                logger.finest("Future fetch already cancelled");
+                return null;
+            }
+
+            int iterateBufferSize = request.getSecondaryQueriesMinBatchSize(defaultSecondaryQueryBatchSize);
+            
+            QueryIterator<T> readIterate = cquery.readIterate(iterateBufferSize, request);
+            
+            if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+                logFindManySummary(cquery);
+            }
+            
+            return readIterate;
+
+        } catch (SQLException e) {
+            throw cquery.createPersistenceException(e);
+        } 
+    }
+	
 	/**
 	 * Find a list/map/set of beans.
 	 */
@@ -202,7 +237,7 @@ public class CQueryEngine {
 			return beanCollection;
 
 		} catch (SQLException e) {
-            throw createPersistenceException(request, e, cquery.getBindLog(), cquery.getGeneratedSql());
+            throw cquery.createPersistenceException(e);//request, e, cquery.getBindLog(), cquery.getGeneratedSql());
 
 		} finally {
 			if (useBackgroundToContinueFetch) {
@@ -254,27 +289,12 @@ public class CQueryEngine {
 			return bean;
 
 		} catch (SQLException e) {
-		    throw createPersistenceException(request, e, cquery.getBindLog(), cquery.getGeneratedSql());
+		    throw cquery.createPersistenceException(e);
 
 		} finally {
 			cquery.close();
 		}
 	}
-
-    private <T> PersistenceException createPersistenceException(OrmQueryRequest<T> request, SQLException e, String bindLog, String sql) {
-        
-        // log the error to the transaction log
-        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[]{"\r","\n"}, "\\n ");
-        String msg = "ERROR executing query:   bindLog["+bindLog+"] error["+errMsg+"]";
-        request.getTransaction().log(msg);
-        
-        // ensure 'rollback' is logged if queryOnly transaction
-        request.getTransaction().getConnection();
-        
-        // build a decent error message for the exception
-        String m = Message.msg("fetch.sqlerror", e.getMessage(), bindLog, sql);
-        return new PersistenceException(m, e);
-    }
 
     /**
 	 * Log the generated SQL to the console.

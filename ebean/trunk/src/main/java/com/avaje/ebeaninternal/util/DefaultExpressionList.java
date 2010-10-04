@@ -16,7 +16,9 @@ import com.avaje.ebean.Junction;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
@@ -185,6 +187,14 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
     public List<Object> findIds() {
         return query.findIds();
+    }
+    
+    public void findVisit(QueryResultVisitor<T> visitor) {
+        query.findVisit(visitor);
+    }
+
+    public QueryIterator<T> findIterate() {
+        return query.findIterate();
     }
 
     public List<T> findList() {

@@ -13,7 +13,9 @@ import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.Junction;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.PagingList;
+import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
+import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
@@ -228,6 +230,14 @@ abstract class JunctionExpression<T> implements Junction<T>, SpiExpression, Expr
         return exprList.findIds();
     }
 
+    public void findVisit(QueryResultVisitor<T> visitor) {
+        exprList.findVisit(visitor);
+    }
+
+    public QueryIterator<T> findIterate() {
+        return exprList.findIterate();
+    }
+    
     public List<T> findList() {
         return exprList.findList();
     }
