@@ -130,6 +130,10 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 
     private final ScalarType<?> stringType = new ScalarTypeString();
 
+    private final ScalarType<?> classType = new ScalarTypeClass();
+
+    
+    
     private final ScalarTypeLongToTimestamp longToTimestamp = new ScalarTypeLongToTimestamp();
     
     private final List<ScalarType<?>> customScalarTypes = new ArrayList<ScalarType<?>>();
@@ -677,6 +681,9 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 		nativeMap.put(Types.VARCHAR, stringType);
 		nativeMap.put(Types.CHAR, stringType);
 		nativeMap.put(Types.LONGVARCHAR, longVarcharType);
+		
+		// Class<?>
+		typeMap.put(Class.class, classType);
 		
 		if (platformClobType == Types.CLOB) {
 	        nativeMap.put(Types.CLOB, clobType);		    
