@@ -171,7 +171,7 @@ public class TestSubQuery extends TestCase {
 	}
 
 	/**
-	 * show that ebean is using the wrong column name for the selected column in the subquery.
+	 * show that ebean is using the wrong column (from the vehicle_driver table instead of vehicle) for the selected column in the subquery.
 	 * In contrast to testInheritance2+3 this test forces ebean to "drill down" to the key of the relation.
 	 */
 	public void testInheritance4()
