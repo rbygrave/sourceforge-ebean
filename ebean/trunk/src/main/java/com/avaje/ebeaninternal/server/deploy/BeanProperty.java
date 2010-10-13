@@ -99,7 +99,7 @@ public class BeanProperty implements ElPropertyValue {
      * Flag to make this as a dummy property for unidirecitonal relationships.
      */
     final boolean unidirectionalShadow;
-    
+
     /**
      * Flag to mark the property as embedded. This could be on
      * BeanPropertyAssocOne rather than here. Put it here for checking Id type
@@ -251,7 +251,7 @@ public class BeanProperty implements ElPropertyValue {
      * For LDAP attributes that have custom conversion.
      */
     final LdapAttributeAdapter ldapAttributeAdapter;
-    
+
     final Validator[] validators;
 
     final boolean hasLocalValidators;
@@ -277,13 +277,13 @@ public class BeanProperty implements ElPropertyValue {
      * DB Constraint (typically check constraint on enum)
      */
     final String dbConstraintExpression;
-    
-    final DbEncryptFunction dbEncryptFunction; 
+
+    final DbEncryptFunction dbEncryptFunction;
 
     final boolean dynamicSubclassWithInheritance;
 
     int deployOrder;
-    
+
     public BeanProperty(DeployBeanProperty deploy) {
         this(null, null, deploy);
     }
@@ -292,7 +292,7 @@ public class BeanProperty implements ElPropertyValue {
 
         this.descriptor = descriptor;
         this.name = InternString.intern(deploy.getName());
-        if (descriptor != null){
+        if (descriptor != null) {
             this.dynamicSubclassWithInheritance = (descriptor.isDynamicSubclass() && descriptor.hasInheritance());
         } else {
             this.dynamicSubclassWithInheritance = false;
@@ -306,10 +306,10 @@ public class BeanProperty implements ElPropertyValue {
         this.dbRead = deploy.isDbRead();
         this.dbInsertable = deploy.isDbInsertable();
         this.dbUpdatable = deploy.isDbUpdateable();
-        
+
         this.secondaryTable = deploy.isSecondaryTable();
-        if (secondaryTable){
-            this.secondaryTableJoin = new TableJoin(deploy.getSecondaryTableJoin(), null);    
+        if (secondaryTable) {
+            this.secondaryTableJoin = new TableJoin(deploy.getSecondaryTableJoin(), null);
             this.secondaryTableJoinPrefix = deploy.getSecondaryTableJoinPrefix();
         } else {
             this.secondaryTableJoin = null;
@@ -335,7 +335,7 @@ public class BeanProperty implements ElPropertyValue {
         this.writeMethod = deploy.getWriteMethod();
         this.getter = deploy.getGetter();
         if (descriptor != null && getter == null) {
-            if (!unidirectionalShadow){
+            if (!unidirectionalShadow) {
                 String m = "Null Getter for: " + getFullBeanName();
                 throw new RuntimeException(m);
             }
@@ -367,11 +367,11 @@ public class BeanProperty implements ElPropertyValue {
         if (descriptor != null) {
             s = StringHelper.replaceString(s, "${ta}.", "${}");
             s = StringHelper.replaceString(s, "${ta}", "${}");
-            
-            if (dbEncrypted){
+
+            if (dbEncrypted) {
                 s = dbEncryptFunction.getDecryptSql(s);
-                String namedParam = ":encryptkey_"+descriptor.getBaseTable()+"___"+dbColumn;
-                s = StringHelper.replaceString(s,"?",namedParam);
+                String namedParam = ":encryptkey_" + descriptor.getBaseTable() + "___" + dbColumn;
+                s = StringHelper.replaceString(s, "?", namedParam);
             }
         }
         return InternString.intern(s);
@@ -389,7 +389,7 @@ public class BeanProperty implements ElPropertyValue {
         this.descriptor = source.descriptor;
         this.name = InternString.intern(source.getName());
         this.dynamicSubclassWithInheritance = source.dynamicSubclassWithInheritance;
-        
+
         this.dbColumn = InternString.intern(override.getDbColumn());
         this.sqlFormulaJoin = InternString.intern(override.getSqlFormulaJoin());
         this.sqlFormulaSelect = InternString.intern(override.getSqlFormulaSelect());
@@ -401,7 +401,7 @@ public class BeanProperty implements ElPropertyValue {
         this.secondaryTable = source.isSecondaryTable();
         this.secondaryTableJoin = source.secondaryTableJoin;
         this.secondaryTableJoinPrefix = source.secondaryTableJoinPrefix;
-        
+
         this.dbBind = source.getDbBind();
         this.dbEncrypted = source.isDbEncrypted();
         this.dbEncryptedType = source.getDbEncryptedType();
@@ -462,7 +462,7 @@ public class BeanProperty implements ElPropertyValue {
     public int getDeployOrder() {
         return deployOrder;
     }
-    
+
     /**
      * Set the order this property appears in the bean.
      */
@@ -470,10 +470,11 @@ public class BeanProperty implements ElPropertyValue {
         this.deployOrder = deployOrder;
     }
 
-    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
-        throw new PersistenceException("Not valid on scalar bean property "+getFullBeanName());
+    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain,
+            boolean propertyDeploy) {
+        throw new PersistenceException("Not valid on scalar bean property " + getFullBeanName());
     }
-    
+
     /**
      * Return the BeanDescriptor that owns this property.
      */
@@ -502,16 +503,16 @@ public class BeanProperty implements ElPropertyValue {
         return !ValueUtil.areEqual(value, oldVal);
     }
 
-    public void copyProperty(Object sourceBean, Object destBean){
+    public void copyProperty(Object sourceBean, Object destBean) {
         Object value = getValue(sourceBean);
         setValue(destBean, value);
     }
 
-    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
+    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth) {
         Object value = getValue(sourceBean);
         setValue(destBean, value);
     }
-    
+
     /**
      * Return the encrypt key for the column matching this property.
      */
@@ -526,15 +527,15 @@ public class BeanProperty implements ElPropertyValue {
     public String getDecryptProperty(String propertyName) {
         return dbEncryptFunction.getDecryptSql(propertyName);
     }
-    
+
     public String getDecryptSql() {
         return dbEncryptFunction.getDecryptSql(this.getDbColumn());
     }
-    
+
     public String getDecryptSql(String tableAlias) {
         return dbEncryptFunction.getDecryptSql(tableAlias + "." + this.getDbColumn());
     }
-    
+
     /**
      * Add any extra joins required to support this property. Generally a no
      * operation except for a OneToOne exported.
@@ -542,30 +543,29 @@ public class BeanProperty implements ElPropertyValue {
     public void appendFrom(DbSqlContext ctx, boolean forceOuterJoin) {
         if (formula && sqlFormulaJoin != null) {
             ctx.appendFormulaJoin(sqlFormulaJoin, forceOuterJoin);
-        
+
         } else if (secondaryTableJoin != null) {
-        
+
             String relativePrefix = ctx.getRelativePrefix(secondaryTableJoinPrefix);
             secondaryTableJoin.addJoin(forceOuterJoin, relativePrefix, ctx);
         }
     }
-    
+
     /**
-     * Returns null unless this property is using a secondary table.
-     * In that case this returns the logical property prefix.
+     * Returns null unless this property is using a secondary table. In that
+     * case this returns the logical property prefix.
      */
     public String getSecondaryTableJoinPrefix() {
         return secondaryTableJoinPrefix;
     }
-
 
     public void appendSelect(DbSqlContext ctx, boolean subQuery) {
         if (formula) {
             ctx.appendFormulaSelect(sqlFormulaSelect);
 
         } else if (!isTransient) {
-            
-            if (secondaryTableJoin != null){
+
+            if (secondaryTableJoin != null) {
                 String relativePrefix = ctx.getRelativePrefix(secondaryTableJoinPrefix);
                 ctx.pushTableAlias(relativePrefix);
             }
@@ -578,10 +578,10 @@ public class BeanProperty implements ElPropertyValue {
             } else {
                 ctx.appendColumn(dbColumn);
             }
-            
-            if (secondaryTableJoin != null){
+
+            if (secondaryTableJoin != null) {
                 ctx.popTableAlias();
-            }            
+            }
         }
     }
 
@@ -614,12 +614,12 @@ public class BeanProperty implements ElPropertyValue {
     public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
         sqlBeanLoad.load(this);
     }
-    
+
     public void buildSelectExpressionChain(String prefix, List<String> selectChain) {
-        if (prefix == null){
+        if (prefix == null) {
             selectChain.add(name);
         } else {
-            selectChain.add(prefix+"."+name);
+            selectChain.add(prefix + "." + name);
         }
     }
 
@@ -658,7 +658,7 @@ public class BeanProperty implements ElPropertyValue {
     public void bind(DataBind b, Object value) throws SQLException {
         scalarType.bind(b, value);
     }
-    
+
     public void writeData(DataOutput dataOutput, Object value) throws IOException {
         scalarType.writeData(dataOutput, value);
     }
@@ -772,33 +772,33 @@ public class BeanProperty implements ElPropertyValue {
 
     public Attribute createAttribute(Object bean) {
         Object v = getValue(bean);
-        if (v == null){
-        	return null;
+        if (v == null) {
+            return null;
         }
-        if (ldapAttributeAdapter != null){
+        if (ldapAttributeAdapter != null) {
             return ldapAttributeAdapter.createAttribute(v);
         }
         Object ldapValue = scalarType.toJdbcType(v);
         return new BasicAttribute(dbColumn, ldapValue);
     }
-    
+
     public void setAttributeValue(Object bean, Attribute attr) {
         try {
-            if (attr != null){
+            if (attr != null) {
                 Object beanValue;
-                if (ldapAttributeAdapter != null){
+                if (ldapAttributeAdapter != null) {
                     beanValue = ldapAttributeAdapter.readAttribute(attr);
                 } else {
                     beanValue = scalarType.toBeanType(attr.get());
                 }
-                
+
                 setValue(bean, beanValue);
             }
         } catch (NamingException e) {
             throw new LdapPersistenceException(e);
         }
     }
-    
+
     /**
      * Set the value of the property without interception or
      * PropertyChangeSupport.
@@ -841,17 +841,17 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     private static Object[] NO_ARGS = new Object[0];
-    
+
     /**
      * Return the property value taking inheritance into account.
      */
     public Object getValueWithInheritance(Object bean) {
         if (dynamicSubclassWithInheritance) {
-            return descriptor.getBeanPropertyWithInheritance(bean, name);            
+            return descriptor.getBeanPropertyWithInheritance(bean, name);
         }
         return getValue(bean);
     }
-    
+
     /**
      * Return the value of the property method.
      */
@@ -921,7 +921,7 @@ public class BeanProperty implements ElPropertyValue {
     public String getElName() {
         return name;
     }
-    
+
     /**
      * This is a full ElGetValue.
      */
@@ -932,7 +932,7 @@ public class BeanProperty implements ElPropertyValue {
     public boolean containsManySince(String sinceProperty) {
         return containsMany();
     }
-    
+
     public boolean containsMany() {
         return false;
     }
@@ -961,7 +961,7 @@ public class BeanProperty implements ElPropertyValue {
         // Returns false - override in BeanPropertyAssocOne.
         return false;
     }
-    
+
     public boolean isAssocProperty() {
         // Returns false - override in BeanPropertyAssocOne.
         return false;
@@ -1068,6 +1068,14 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     /**
+     * Return true if DDL Not NULL constraint should be defined for this column
+     * based on it being a version column or having a generated property.
+     */
+    public boolean isDDLNotNull() {
+        return isVersion() || (generatedProperty != null && generatedProperty.isDDLNotNullable());
+    }
+
+    /**
      * Return true if the DB column should be unique.
      */
     public boolean isUnique() {
@@ -1117,18 +1125,18 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     private ArrayList<LuceneIndex> luceneIndexes;
-    
-    public void registerLuceneIndex(LuceneIndex luceneIndex){
-        if (luceneIndexes == null){
+
+    public void registerLuceneIndex(LuceneIndex luceneIndex) {
+        if (luceneIndexes == null) {
             luceneIndexes = new ArrayList<LuceneIndex>();
         }
         luceneIndexes.add(luceneIndex);
     }
-    
+
     public boolean isDeltaRequired() {
         return luceneIndexes != null;
     }
-    
+
     /**
      * Return true if this is mapped to a Clob Blob LongVarchar or
      * LongVarbinary.
@@ -1178,7 +1186,7 @@ public class BeanProperty implements ElPropertyValue {
     public int getDbEncryptedType() {
         return dbEncryptedType;
     }
-    
+
     /**
      * Return true if this property should be included in an Insert.
      */
@@ -1250,9 +1258,9 @@ public class BeanProperty implements ElPropertyValue {
 
     @SuppressWarnings("unchecked")
     public void jsonWrite(WriteJsonContext ctx, Object bean) {
-        
+
         Object value = getValueIntercept(bean);
-        if (value == null){
+        if (value == null) {
             ctx.appendNull(name);
         } else {
             String jv = scalarType.jsonToString(value, ctx.getValueAdapter());
@@ -1260,12 +1268,12 @@ public class BeanProperty implements ElPropertyValue {
         }
     }
 
-    public void jsonRead(ReadJsonContext ctx, Object bean){
-        
+    public void jsonRead(ReadJsonContext ctx, Object bean) {
+
         String jsonValue = ctx.readScalarValue();
-        
+
         Object objValue;
-        if (jsonValue == null){
+        if (jsonValue == null) {
             objValue = null;
         } else {
             objValue = scalarType.jsonFromString(jsonValue, ctx.getValueAdapter());

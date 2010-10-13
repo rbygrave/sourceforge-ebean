@@ -22,23 +22,21 @@ package com.avaje.ebeaninternal.server.deploy.generatedproperty;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 
-
-
 /**
  * A general number counter for various number types.
  */
 public class GeneratedCounter implements GeneratedProperty {
 
-	final int numberType;
-	
-	public GeneratedCounter(int numberType) {
-		this.numberType = numberType;
-	}
-	
+    final int numberType;
+
+    public GeneratedCounter(int numberType) {
+        this.numberType = numberType;
+    }
+
     /**
      * Always returns a 1.
      */
-    public Object getInsertValue(BeanProperty prop, Object bean){
+    public Object getInsertValue(BeanProperty prop, Object bean) {
         Integer i = Integer.valueOf(1);
         return BasicTypeConverter.convert(i, numberType);
     }
@@ -46,23 +44,28 @@ public class GeneratedCounter implements GeneratedProperty {
     /**
      * Increments the current value by one.
      */
-    public Object getUpdateValue(BeanProperty prop, Object bean){
-        Number currVal = (Number)prop.getValue(bean);
-        Integer nextVal = Integer.valueOf(currVal.intValue()+1);
+    public Object getUpdateValue(BeanProperty prop, Object bean) {
+        Number currVal = (Number) prop.getValue(bean);
+        Integer nextVal = Integer.valueOf(currVal.intValue() + 1);
         return BasicTypeConverter.convert(nextVal, numberType);
     }
-    
+
     /**
-     * Include this in every update. 
+     * Include this in every update.
      */
-    public boolean includeInUpdate(){
+    public boolean includeInUpdate() {
         return true;
     }
 
     /**
-     * Include this in every insert setting initial counter value to 1. 
+     * Include this in every insert setting initial counter value to 1.
      */
-    public boolean includeInInsert(){
+    public boolean includeInInsert() {
         return true;
     }
+
+    public boolean isDDLNotNullable() {
+        return true;
+    }
+
 }
