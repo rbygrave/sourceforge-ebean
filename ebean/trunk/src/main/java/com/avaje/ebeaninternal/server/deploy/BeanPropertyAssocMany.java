@@ -310,7 +310,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	}
 
 	@Override
-	public void appendSelect(DbSqlContext ctx) {
+	public void appendSelect(DbSqlContext ctx, boolean subQuery) {
 	}
 
     @Override

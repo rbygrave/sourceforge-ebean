@@ -164,7 +164,7 @@ public interface IdBinder {
 	/**
 	 * Append to the select clause.
 	 */
-	public void appendSelect(DbSqlContext ctx);
+	public void appendSelect(DbSqlContext ctx, boolean subQuery);
 	
 	/**
 	 * Return the sql for binding the id to. This includes table alias and columns that make up the id.

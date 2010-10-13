@@ -19,15 +19,15 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-
 import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployTableJoin;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployTableJoinColumn;
 import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
+
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
 
 /**
  * Represents a join to another table.
@@ -133,9 +133,9 @@ public final class TableJoin {
         return sb.toString();
     }
 
-    public void appendSelect(DbSqlContext ctx) {
+    public void appendSelect(DbSqlContext ctx, boolean subQuery) {
     	for (int i = 0, x = properties.length; i < x; i++) {
-    		properties[i].appendSelect(ctx);
+    		properties[i].appendSelect(ctx, subQuery);
 		}
     }
     

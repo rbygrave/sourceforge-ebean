@@ -134,7 +134,7 @@ public final class IdBinderEmpty implements IdBinder {
 		return null;
 	}
 	
-	public void appendSelect(DbSqlContext ctx) {
+	public void appendSelect(DbSqlContext ctx, boolean subQuery) {
 	}
 	
 	public Object convertSetId(Object idValue, Object bean){

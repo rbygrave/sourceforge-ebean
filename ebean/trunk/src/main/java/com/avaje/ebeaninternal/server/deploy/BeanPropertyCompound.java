@@ -19,10 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
-
 import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyCompound;
 import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
@@ -33,6 +29,10 @@ import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.type.CtCompoundProperty;
 import com.avaje.ebeaninternal.server.type.CtCompoundPropertyElAdapter;
 import com.avaje.ebeaninternal.server.type.CtCompoundType;
+
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Property mapped to an Immutable Compound Value Object.
@@ -160,10 +160,10 @@ public class BeanPropertyCompound extends BeanProperty {
     }
 
     @Override
-    public void appendSelect(DbSqlContext ctx) {
+    public void appendSelect(DbSqlContext ctx, boolean subQuery) {
         if (!isTransient) {
             for (int i = 0; i < scalarProperties.length; i++) {
-                scalarProperties[i].appendSelect(ctx);
+                scalarProperties[i].appendSelect(ctx, subQuery);
             }
         }
     }

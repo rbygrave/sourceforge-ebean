@@ -19,12 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -40,6 +34,12 @@ import com.avaje.ebeaninternal.server.deploy.InheritInfo;
 import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Normal bean included in the query.
@@ -409,9 +409,9 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		}
 		
 		if (readId) {
-			appendSelect(ctx, idBinder.getProperties());
+			appendSelect(ctx, false, idBinder.getProperties());
 		}
-		appendSelect(ctx, properties);
+		appendSelect(ctx, subQuery, properties);
 		appendSelectTableJoins(ctx);
 
 		for (int i = 0; i < children.length; i++) {
@@ -434,7 +434,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 			String alias = baseAlias+i;
 
 			ctx.pushSecondaryTableAlias(alias);
-			join.appendSelect(ctx);
+			join.appendSelect(ctx, false);
 			ctx.popTableAlias();
 		}
 	}
@@ -442,10 +442,10 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	/**
 	 * Append the properties to the buffer.
 	 */
-	private void appendSelect(DbSqlContext ctx, BeanProperty[] props) {
+	private void appendSelect(DbSqlContext ctx, boolean subQuery, BeanProperty[] props) {
 
 		for (int i = 0; i < props.length; i++) {
-			props[i].appendSelect(ctx);
+			props[i].appendSelect(ctx, subQuery);
 		}
 	}
 	
