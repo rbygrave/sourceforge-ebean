@@ -157,7 +157,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		String columnDefn = ctx.getColumnDefn(p);
 		ctx.write(columnDefn);
 
-		if (!p.isNullable()) {
+		if (!p.isNullable() || p.isDDLNotNull()) {
 			ctx.write(" not null");
 		}
 

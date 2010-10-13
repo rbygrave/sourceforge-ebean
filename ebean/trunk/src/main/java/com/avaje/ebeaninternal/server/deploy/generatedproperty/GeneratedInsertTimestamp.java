@@ -23,8 +23,6 @@ import java.sql.Timestamp;
 
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 
-
-
 /**
  * Used to generate a timestamp when a bean is inserted.
  */
@@ -47,14 +45,19 @@ public class GeneratedInsertTimestamp implements GeneratedProperty {
     /**
      * Return false.
      */
-    public boolean includeInUpdate(){
+    public boolean includeInUpdate() {
         return false;
     }
 
     /**
      * Return true.
      */
-    public boolean includeInInsert(){
+    public boolean includeInInsert() {
         return true;
     }
+
+    public boolean isDDLNotNullable() {
+        return true;
+    }
+
 }
