@@ -1,18 +1,5 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.core.InternString;
@@ -21,6 +8,18 @@ import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.deploy.DbSqlContext;
 import com.avaje.ebeaninternal.server.lib.util.MapFromString;
 import com.avaje.ebeaninternal.server.type.DataBind;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import javax.persistence.PersistenceException;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Bind an Id that is made up of multiple separate properties.
@@ -372,9 +371,9 @@ public final class IdBinderMultiple implements IdBinder {
 		}
 	}
 	
-	public void appendSelect(DbSqlContext ctx) {
+	public void appendSelect(DbSqlContext ctx, boolean subQuery) {
 		for (int i = 0; i < props.length; i++) {
-    		props[i].appendSelect(ctx);
+    		props[i].appendSelect(ctx, subQuery);
 		}
 	}
 	        

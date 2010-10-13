@@ -1,15 +1,5 @@
 package com.avaje.ebeaninternal.server.deploy.id;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.core.InternString;
@@ -18,6 +8,15 @@ import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.deploy.DbSqlContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.ScalarType;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Bind an Id where the Id is made of a single property (not embedded).
@@ -191,8 +190,8 @@ public final class IdBinderSimple implements IdBinder {
 		return idProperty.read(ctx);
 	}
 	
-	public void appendSelect(DbSqlContext ctx) {
-		idProperty.appendSelect(ctx);
+	public void appendSelect(DbSqlContext ctx, boolean subQuery) {
+		idProperty.appendSelect(ctx, subQuery);
 	}
 	
 	public String getAssocOneIdExpr(String prefix, String operator){

@@ -19,18 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiQuery;
@@ -45,6 +33,18 @@ import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Factory for SqlTree.
@@ -349,7 +349,9 @@ public class SqlTreeBuilder {
         if (p == null) {
             logger.log(Level.SEVERE, "property [" + propName + "]not found on " + desc + " for query - excluding it.");
 
-        } else if (p instanceof BeanPropertyAssoc<?>) {
+        }
+		else if (p instanceof BeanPropertyAssoc<?> && p.isEmbedded()) {
+			// if the property is embedded we need to lookup the real column name
             int pos = propName.indexOf(".");
             if (pos > -1) {
                 String name = propName.substring(pos + 1);

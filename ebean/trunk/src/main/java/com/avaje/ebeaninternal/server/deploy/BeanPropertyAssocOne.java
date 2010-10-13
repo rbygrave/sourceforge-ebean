@@ -19,13 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
@@ -45,6 +38,12 @@ import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
+
+import javax.persistence.PersistenceException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Property mapped to a joined bean.
@@ -521,9 +520,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
     
     @Override
-    public void appendSelect(DbSqlContext ctx) {
+    public void appendSelect(DbSqlContext ctx, boolean subQuery) {
         if (!isTransient) {
-            localHelp.appendSelect(ctx);
+            localHelp.appendSelect(ctx, subQuery);
         }
     }
 
@@ -584,7 +583,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
         abstract Object readSet(DbReadContext ctx, Object bean, boolean assignAble) throws SQLException;
 
-        abstract void appendSelect(DbSqlContext ctx);
+        abstract void appendSelect(DbSqlContext ctx, boolean subQuery);
 
         abstract void appendFrom(DbSqlContext ctx, boolean forceOuterJoin);
         
@@ -666,9 +665,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         }
 
         @Override
-        void appendSelect(DbSqlContext ctx) {
+        void appendSelect(DbSqlContext ctx, boolean subQuery) {
             for (int i = 0; i < embeddedProps.length; i++) {
-                embeddedProps[i].appendSelect(ctx);
+                embeddedProps[i].appendSelect(ctx, subQuery);
             }
         }
     }
@@ -806,9 +805,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
          * Append columns for foreign key columns.
          */
         @Override
-        void appendSelect(DbSqlContext ctx) {
+        void appendSelect(DbSqlContext ctx, boolean subQuery) {
 
-            if (targetInheritInfo != null) {
+            if (!subQuery && targetInheritInfo != null) {
                 // add discriminator column
                 String relativePrefix = ctx.getRelativePrefix(getName());
                 String tableAlias = ctx.getTableAlias(relativePrefix);
@@ -881,7 +880,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
          * Append columns for foreign key columns.
          */
         @Override
-        void appendSelect(DbSqlContext ctx) {
+        void appendSelect(DbSqlContext ctx, boolean subQuery) {
 
             // set appropriate tableAlias for
             // the exported id columns
@@ -890,7 +889,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             ctx.pushTableAlias(relativePrefix);
 
             IdBinder idBinder = targetDescriptor.getIdBinder();
-            idBinder.appendSelect(ctx);
+            idBinder.appendSelect(ctx, subQuery);
 
             ctx.popTableAlias();
         }

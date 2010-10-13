@@ -19,22 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.EncryptKey;
@@ -61,6 +45,21 @@ import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.util.ValueUtil;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.persistence.PersistenceException;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Description of a property of a bean. Includes its deployment information such
@@ -560,7 +559,7 @@ public class BeanProperty implements ElPropertyValue {
     }
 
 
-    public void appendSelect(DbSqlContext ctx) {
+    public void appendSelect(DbSqlContext ctx, boolean subQuery) {
         if (formula) {
             ctx.appendFormulaSelect(sqlFormulaSelect);
 

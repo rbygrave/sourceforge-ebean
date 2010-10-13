@@ -76,7 +76,7 @@ public class TestSubQuery extends TestCase {
 
 	/**
 	 * show that ebean is not using the correct table name in the subquery (sq)
-	 */
+	 *
 	public void testInheritance1()
 	{
 		ResetBasicData.reset();
@@ -104,6 +104,7 @@ public class TestSubQuery extends TestCase {
 		}
 
 	}
+	 */
 
 	/**
 	 * show that ebean is adding the discriminator to the list of columns in the subquery
@@ -193,7 +194,7 @@ public class TestSubQuery extends TestCase {
 		String sql = pq.getGeneratedSql();
 		System.err.println(sql);
 
-		String golden = "(t0.id) in (select t1.id  from vehicle_driver t0 left outer join vehicle t1 on t1.id = t0.vehicle_id)";
+		String golden = "(t0.id) in (select t0.vehicle_id  from vehicle_driver t0 left outer join vehicle t1 on t1.id = t0.vehicle_id )";
 		// OR without join
 		// String golden = "(t0.id) in (select t0.vehicle_id  from vehicle_driver t0)";
 		if (sql.indexOf(golden) < 0)
