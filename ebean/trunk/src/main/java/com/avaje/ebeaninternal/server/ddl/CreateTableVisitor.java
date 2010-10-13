@@ -37,6 +37,8 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 
     private ArrayList<String> uniqueConstraints = new ArrayList<String>();
 
+    private String tableName;
+    
 	public Set<String> getWroteColumns() {
 		return wroteColumns;
 	}
@@ -65,7 +67,7 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	 */
 	protected void writeTableName(BeanDescriptor<?> descriptor) {
 		
-		String tableName = descriptor.getBaseTable();
+		tableName = descriptor.getBaseTable();
 		
 		if (SqlReservedWords.isKeyword(tableName)) {
 			logger.warning("Table name ["+tableName+"] is a suspected SQL reserved word for bean "+descriptor.getFullName());
@@ -74,6 +76,10 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 		ctx.write(tableName);		
 	}
 
+	protected String getTableName() {
+	    return tableName;
+	}
+	
 	/**
 	 * Write the column name including a check for the SQL reserved words.
 	 * @param p
@@ -108,10 +114,9 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 		}
 	}
 	
-	protected String getConstraintName(String prefix, BeanProperty p) {
-		return prefix + p.getBeanDescriptor().getBaseTable()+"_"+p.getDbColumn();
-	}
-
+    protected String getConstraintName(String prefix, BeanProperty p) {
+        return prefix + tableName + "_" + p.getDbColumn();
+    }
 
     protected void addUniqueConstraint(String constraintExpression) {
         uniqueConstraints.add(constraintExpression);
