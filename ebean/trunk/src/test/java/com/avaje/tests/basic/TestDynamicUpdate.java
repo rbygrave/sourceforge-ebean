@@ -11,7 +11,7 @@ public class TestDynamicUpdate extends TestCase {
 
 		// insert
 		EMain b = new EMain();
-		b.setName("123");
+		b.setName("aaa");
 		b.getEmbeddable().setDescription("123");
 
 		EbeanServer server = Ebean.getServer(null);
@@ -26,7 +26,14 @@ public class TestDynamicUpdate extends TestCase {
 		server.save(b2);
 
 		EMain b3 = server.find(EMain.class, b.getId());
-
 		assertEquals("ABC", b3.getEmbeddable().getDescription());
+
+		EMain b4 = server.find(EMain.class, b.getId());
+		b4.setName("bbb");
+		b4.getEmbeddable().setDescription("123");
+		server.save(b4);
+
+		EMain b5 = server.find(EMain.class, b.getId());
+		assertEquals("123", b5.getEmbeddable().getDescription());
 	}
 }
