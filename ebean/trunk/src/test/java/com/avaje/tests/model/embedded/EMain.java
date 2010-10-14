@@ -44,4 +44,13 @@ public class EMain
 	public void setEmbeddable(Eembeddable embeddable) {
 		this.embeddable = embeddable;
 	}
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+	
 }
