@@ -606,6 +606,35 @@ public class BeanDescriptor<T> {
     }
     
     /**
+     * Return the Set of embedded beans that have changed.
+     */
+    public Set<String> getDirtyEmbeddedProperties(Object bean) {
+        
+        HashSet<String> dirtyProperties = null;
+        
+        for (int i = 0; i < propertiesEmbedded.length; i++) {
+            Object embValue = propertiesEmbedded[i].getValue(bean);
+            if (embValue instanceof EntityBean){
+                if (((EntityBean)embValue)._ebean_getIntercept().isDirty()) {
+                    // this embedded is dirty so should be included in an update
+                    if (dirtyProperties == null){
+                        dirtyProperties = new HashSet<String>();
+                    }
+                    dirtyProperties.add(propertiesEmbedded[i].getName());
+                }
+            } else {
+                // must assume it is dirty
+                if (dirtyProperties == null){
+                    dirtyProperties = new HashSet<String>();
+                }
+                dirtyProperties.add(propertiesEmbedded[i].getName());  
+            }
+        }
+        
+        return dirtyProperties;
+    }
+    
+    /**
      * Determine the non-null properties of the bean.
      */
     public Set<String> determineLoadedProperties(Object bean) {

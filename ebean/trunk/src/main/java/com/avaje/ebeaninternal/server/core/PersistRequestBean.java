@@ -132,15 +132,16 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
         this.isDirty = true;
         this.oldValues = bean;
         if (bean instanceof EntityBean) {
-            this.intercept = ((EntityBean)bean)._ebean_getIntercept();
+            this.intercept = ((EntityBean) bean)._ebean_getIntercept();
         } else {
             this.intercept = null;
         }
     }
 
     @SuppressWarnings("unchecked")
-    public PersistRequestBean(SpiEbeanServer server, T bean, Object parentBean, BeanManager<T> mgr, SpiTransaction t,
-            PersistExecute persistExecute) {
+    public PersistRequestBean(SpiEbeanServer server, T bean, Object parentBean, BeanManager<T> mgr, 
+            SpiTransaction t, PersistExecute persistExecute) {
+        
         super(server, t, persistExecute);
         this.beanManager = mgr;
         this.beanDescriptor = mgr.getBeanDescriptor();
@@ -160,7 +161,14 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
             }
             // this is ok to not use isNewOrDirty() as used for updates only
             this.isDirty = intercept.isDirty();
-            this.changedProps = intercept.getChangedProps();
+            if (!isDirty) {
+                this.changedProps = intercept.getChangedProps();
+            } else {
+                // merge changed properties on the bean with changed embedded beans
+                Set<String> beanChangedProps = intercept.getChangedProps();
+                Set<String> dirtyEmbedded = beanDescriptor.getDirtyEmbeddedProperties(bean);
+                this.changedProps = mergeChangedProperties(beanChangedProps, dirtyEmbedded);
+            } 
             this.loadedProps = intercept.getLoadedProps();
             this.oldValues = (T) intercept.getOldValues();
             this.vanilla = false;
@@ -177,6 +185,20 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
             if (concurrencyMode.equals(ConcurrencyMode.ALL)) {
                 this.concurrencyMode = ConcurrencyMode.NONE;
             }
+        }
+    }
+
+    /**
+     * Merge the changed properties for the bean and embedded beans.
+     */
+    private Set<String> mergeChangedProperties(Set<String> beanChangedProps, Set<String> embChanged) {
+        if (embChanged == null) {
+            return beanChangedProps;
+        } else if (beanChangedProps == null) {
+            return embChanged;
+        } else {
+            beanChangedProps.addAll(embChanged);
+            return beanChangedProps;
         }
     }
 
@@ -199,18 +221,17 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     }
 
     public void pauseIndexInvalidate() {
-        transaction.getEvent().pauseIndexInvalidate(beanDescriptor.getBeanType());    
-    }
-    
-    public void resumeIndexInvalidate() {
-        transaction.getEvent().resumeIndexInvalidate(beanDescriptor.getBeanType());    
-    }
-    
-    public void addToPersistMap(BeanPersistIdMap beanPersistMap) {
-                
-        beanPersistMap.add(beanDescriptor, type, idValue);
+        transaction.getEvent().pauseIndexInvalidate(beanDescriptor.getBeanType());
     }
 
+    public void resumeIndexInvalidate() {
+        transaction.getEvent().resumeIndexInvalidate(beanDescriptor.getBeanType());
+    }
+
+    public void addToPersistMap(BeanPersistIdMap beanPersistMap) {
+
+        beanPersistMap.add(beanDescriptor, type, idValue);
+    }
 
     public boolean notifyLocalPersistListener() {
         if (beanPersistListener == null) {
@@ -236,7 +257,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     public boolean isParent(Object o) {
         return o == parentBean;
     }
-    
+
     /**
      * The hash used to register the bean with the transaction.
      * <p>
@@ -244,7 +265,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
      * </p>
      */
     private Integer getBeanHash() {
-        if (beanHash == null){
+        if (beanHash == null) {
             Object id = beanDescriptor.getId(bean);
             int hc = bean.getClass().getName().hashCode();
             beanHash = Integer.valueOf(hc * 31 + id.hashCode());
@@ -321,15 +342,15 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     }
 
     /**
-     * Set loaded properties when generated values has added properties
-     * such as created and updated timestamps.
+     * Set loaded properties when generated values has added properties such as
+     * created and updated timestamps.
      */
-    public void setLoadedProps(Set<String> additionalProps){
-        if (intercept != null){
+    public void setLoadedProps(Set<String> additionalProps) {
+        if (intercept != null) {
             intercept.setLoadedProps(additionalProps);
         }
     }
-    
+
     public Set<String> getLoadedProperties() {
         return loadedProps;
     }
@@ -359,11 +380,11 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     public Object getBeanId() {
         return beanDescriptor.getId(bean);
     }
-    
+
     public BeanDelta createDeltaBean() {
         return new BeanDelta(beanDescriptor, getBeanId());
     }
-    
+
     /**
      * Get the old values bean. This is used to perform optimistic concurrency
      * checking on updates and deletes.
@@ -499,7 +520,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
             controllerPost();
         }
 
-        if (intercept != null){
+        if (intercept != null) {
             // if bean persisted again then should result in an update
             intercept.setLoaded();
         }
