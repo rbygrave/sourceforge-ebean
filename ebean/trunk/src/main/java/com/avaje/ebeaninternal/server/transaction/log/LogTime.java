@@ -31,13 +31,13 @@ import java.util.GregorianCalendar;
  */
 public class LogTime {
 
-	// this is really approximate? as sometimes a second is skipped?
-	//private static final long ONE_DAY = 24 * 60 * 60 * 1000;
-
 	private static final String[] sep = { ":", "." };
 
-	private static LogTime day = new LogTime();
-
+	private static LogTime day;
+	static {
+	    day = new LogTime();
+	}
+	
 	public static LogTime get() {
 		return day;
 	}
