@@ -37,12 +37,11 @@ import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanManager;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
-import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.persist.PersistExecute;
 import com.avaje.ebeaninternal.server.persist.dml.GenerateDmlRequest;
-import com.avaje.ebeaninternal.server.transaction.BeanPersistIdMap;
 import com.avaje.ebeaninternal.server.transaction.BeanDelta;
+import com.avaje.ebeaninternal.server.transaction.BeanPersistIdMap;
 
 /**
  * PersistRequest for insert update or delete of a bean.
@@ -527,10 +526,8 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
         addEvent();
 
-        if (transaction.isLoggingOn()) {
-            if (logLevel >= MAdminLogging.SUMMARY) {
-                logSummary();
-            }
+        if (isLogSummary()) {
+            logSummary();
         }
     }
 

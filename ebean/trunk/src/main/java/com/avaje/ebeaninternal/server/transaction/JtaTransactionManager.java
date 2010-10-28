@@ -36,6 +36,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.config.ExternalTransactionManager;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 
@@ -141,7 +142,7 @@ public class JtaTransactionManager implements ExternalTransactionManager {
     
         // "wrap" it in a Ebean specific JtaTransaction
         String txnId = String.valueOf(System.currentTimeMillis());
-        JtaTransaction newTrans = new JtaTransaction(txnId, true, ut, dataSource, transactionManager);
+        JtaTransaction newTrans = new JtaTransaction(txnId, true, LogLevel.NONE, ut, dataSource, transactionManager);
 
         // create and register transaction listener
         JtaTxnListener txnListener = createJtaTxnListener(newTrans);

@@ -245,7 +245,7 @@ public class AutofetchConfig {
 		String rate = p.get("autofetch.profiling.rate", "0.05");
 		profilingRate = Double.parseDouble(rate);
 		
-		useFileLogging = p.getBoolean("autofetch.useFileLogging", true);
+		useFileLogging = p.getBoolean("autofetch.useFileLogging", profiling);
 		profileUpdateFrequency = p.getInt("autofetch.profiling.updatefrequency", 60);
 		
 	}

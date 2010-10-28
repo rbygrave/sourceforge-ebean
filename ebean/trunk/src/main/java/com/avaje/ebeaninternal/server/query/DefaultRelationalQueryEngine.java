@@ -55,14 +55,11 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 	private final int defaultMaxRows;
 
 	private final Binder binder;
-
-	private final MAdminLogging logControl;
 	
 	private final String dbTrueValue;
 
 	public DefaultRelationalQueryEngine(MAdminLogging logControl, Binder binder, String dbTrueValue) {
 		this.binder = binder;
-		this.logControl = logControl;
 		this.defaultMaxRows = GlobalProperties.getInt("nativesql.defaultmaxrows",100000);
 		this.dbTrueValue = dbTrueValue == null ? "true" : dbTrueValue;
 	}
@@ -115,7 +112,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 					bindLog = binder.bind(bindParams, new DataBind(pstmt));
 				}
 	
-				if (logControl.isLogSqlQuery(MAdminLogging.SQL)) {
+				if (request.isLogSql()) {
 					String sOut = sql.replace(Constants.NEW_LINE, ' ');
 					sOut = sOut.replace(Constants.CARRIAGE_RETURN, ' ');
 					t.log(sOut);
@@ -193,7 +190,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				beanColl.setFinishedFetch(true);
 			}
 
-			if (logControl.isLogSqlQuery(MAdminLogging.SUMMARY)) {
+			if (request.isLogSummary()) {
 
 				long exeTime = System.currentTimeMillis() - startTime;
 

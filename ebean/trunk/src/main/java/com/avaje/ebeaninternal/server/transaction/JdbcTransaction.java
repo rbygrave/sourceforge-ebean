@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
+import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.config.lucene.IndexUpdateFuture;
 import com.avaje.ebeaninternal.api.SpiTransaction;
@@ -108,11 +109,8 @@ public class JdbcTransaction implements SpiTransaction {
 	
 	boolean localReadOnly;
 
-	/**
-	 * Flag to explicitly turn off transaction logging for this transaction.
-	 */
-	boolean loggingOn = true;
-
+	LogLevel logLevel;
+	
 	/**
 	 * Set to true if using batch processing.
 	 */
@@ -141,11 +139,12 @@ public class JdbcTransaction implements SpiTransaction {
 	/**
 	 * Create a new JdbcTransaction.
 	 */
-	public JdbcTransaction(String id, boolean explicit, Connection connection, TransactionManager manager) {
+	public JdbcTransaction(String id, boolean explicit, LogLevel logLevel, Connection connection, TransactionManager manager) {
 		try {
 			this.active = true;
 			this.id = id;
 			this.explicit = explicit;
+			this.logLevel = logLevel;
 			this.manager = manager;
 			this.connection = connection;
 			this.onQueryOnly = manager == null ? OnQueryOnly.ROLLBACK : manager.getOnQueryOnly();
@@ -403,14 +402,18 @@ public class JdbcTransaction implements SpiTransaction {
 	 * Is transaction logging on for this transaction.
 	 */
 	public boolean isLoggingOn() {
-		return loggingOn;
+		return logLevel.ordinal() > LogLevel.NONE.ordinal();
 	}
 
 	/**
 	 * Set whether transaction logging is on for this transaction.
 	 */
 	public void setLoggingOn(boolean loggingOn) {
-		this.loggingOn = loggingOn;
+	    if (loggingOn){
+	        logLevel = LogLevel.SQL;
+	    } else {
+	        logLevel = LogLevel.NONE;
+	    }
 	}
 
 	/**
@@ -420,11 +423,28 @@ public class JdbcTransaction implements SpiTransaction {
 		return explicit;
 	}
 
-	/**
+	
+	public boolean isLogSql() {
+        return logLevel.ordinal() >= LogLevel.SQL.ordinal();
+    }
+
+    public boolean isLogSummary() {
+        return logLevel.ordinal() >= LogLevel.SUMMARY.ordinal();
+    }
+
+    public LogLevel getLogLevel() {
+        return logLevel;
+    }
+
+    public void setLogLevel(LogLevel logLevel) {
+        this.logLevel = logLevel;
+    }
+
+    /**
 	 * Log a message to the transaction log.
 	 */
 	public void log(String msg) {
-		if (loggingOn && manager != null) {
+		if (isLoggingOn() && manager != null) {
 		    if (logBuffer.add(msg)) {
 		        // buffer full so flush it
 	            manager.log(logBuffer);

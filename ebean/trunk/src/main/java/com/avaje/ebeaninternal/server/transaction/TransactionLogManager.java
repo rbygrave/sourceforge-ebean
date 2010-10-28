@@ -19,25 +19,14 @@
  */
 package com.avaje.ebeaninternal.server.transaction;
 
-import java.io.File;
-import java.util.logging.Logger;
-
-import com.avaje.ebean.AdminLogging.LogLevel;
-import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebeaninternal.server.transaction.log.FileTransactionLogger;
+import com.avaje.ebeaninternal.server.transaction.log.FileTransactionLoggerWrapper;
 import com.avaje.ebeaninternal.server.transaction.log.JuliTransactionLogger;
 
 /**
  * Manages the transaction logs.
  */
 public class TransactionLogManager {
-
-	private static final Logger logger = Logger.getLogger(TransactionLogManager.class.getName());
-
-	private final String serverName;
-
-	private LogLevel logLevel;
 
 	private final TransactionLogWriter logWriter;
 
@@ -51,65 +40,17 @@ public class TransactionLogManager {
 	 */
 	public TransactionLogManager(ServerConfig serverConfig) {
 
-		this.serverName = serverConfig.getName();
-		this.logLevel = serverConfig.getLoggingLevel();
-		
-		boolean logToJavaLogger = serverConfig.isLoggingToJavaLogger();
-		if (logToJavaLogger){
-		    logWriter = new JuliTransactionLogger();
-		    
+		if (serverConfig.isLoggingToJavaLogger()){
+		    logWriter = new JuliTransactionLogger();		    
 		} else {
-		
-    		String dir = serverConfig.getLoggingDirectoryWithEval();
-    		if (dir == null) {
-    			dir = createDefaultLogsDirectory();
-    		}
-    		String m = "Transaction logs in: "+dir;
-            logger.info(m);       
-            
-            String middleName = GlobalProperties.get("ebean.logging.filename", "_txn_");
-            int maxFileSize = GlobalProperties.getInt("ebean.logging.maxFileSize", 100*1024*1024);
-            
-            String logPrefix = serverName + middleName;
-            String threadName = "Ebean-"+serverName+"-TxnLogWriter";
-            this.logWriter = new FileTransactionLogger(threadName, dir, logPrefix, maxFileSize);
+		    logWriter = new FileTransactionLoggerWrapper(serverConfig);
 		}
-		
-        if (logLevel == LogLevel.NONE){
-            String m = "Transaction logging is OFF  ... ebean.log.level=0";
-            logger.info(m);
-        }
-        
-        logWriter.start();
 	}
 
 	public void shutdown() {
 	    logWriter.shutdown();
     }
-	
-	private String createDefaultLogsDirectory() {
-		String dftlDir = "logs/trans";
-		File f = new File(dftlDir);
-		if (f.mkdirs()) {
-			return dftlDir;
-		}
-		return "logs";
-	}
 
-	/**
-	 * Set the logging level.
-	 */
-	public void setLogLevel(LogLevel logLevel) {
-		this.logLevel = logLevel;
-	}
-
-	/**
-	 * Return the log level.
-	 */
-	public LogLevel getLogLevel() {
-		return logLevel;
-	}
-	
     public void log(TransactionLogBuffer logBuffer) {
         logWriter.log(logBuffer);
     }

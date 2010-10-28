@@ -24,13 +24,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
+import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.Query;
-import com.avaje.ebean.AdminLogging.LogLevel;
-import com.avaje.ebean.AdminLogging.LogLevelStmt;
-import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
 import com.avaje.ebean.annotation.Encrypted;
 import com.avaje.ebean.config.GlobalProperties.PropertySource;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
@@ -190,27 +187,7 @@ public class ServerConfig {
     /**
      * The overall transaction logging level.
      */
-    private LogLevel loggingLevel = LogLevel.ALL;
-
-    /**
-     * The insert update delete log level.
-     */
-    private LogLevelStmt loggingLevelIud = LogLevelStmt.SQL;
-
-    /**
-     * The Query log level.
-     */
-    private LogLevelStmt loggingLevelQuery = LogLevelStmt.SQL;
-
-    /**
-     * The Sql Query log level.
-     */
-    private LogLevelStmt loggingLevelSqlQuery = LogLevelStmt.SQL;
-
-    /**
-     * The transaction commit log level (was transactionDebugLevel).
-     */
-    private LogLevelTxnCommit loggingLevelTxnCommit;
+    private LogLevel logLevel = LogLevel.SQL;
 
     /**
      * Used to unwrap PreparedStatements to perform JDBC Driver specific
@@ -893,92 +870,23 @@ public class ServerConfig {
     }
 
     /**
-     * Return the overall transaction logging level.
-     */
-    public LogLevel getLoggingLevel() {
-        return loggingLevel;
-    }
-
-    /**
-     * Set the overall transaction logging level.
+     * Return the default transaction logging level.
      * <p>
-     * Set this to LogLevel.NONE to turn off transaction logging. Alternatively
-     * you can change the log level for specific functions.
-     * </p>
-     * <p>
-     * See also setLoggingLevelIud(...), setLoggingLevelQuery(...)
-     * and setLoggingLevelSqlQuery(...).
+     * The logging level can be changed on a per transaction basis.
      * </p>
      */
-    public void setLoggingLevel(LogLevel logging) {
-        this.loggingLevel = logging;
+    public LogLevel getLogLevel() {
+        return logLevel;
     }
 
     /**
-     * Return the logging level on Insert Update and Delete statements.
-     */
-    public LogLevelStmt getLoggingLevelIud() {
-        return loggingLevelIud;
-    }
-
-    /**
-     * Set the logging level on Insert Update and Delete statements.
+     * Set the default transaction logging level.
      * <p>
-     * Note this logging level can be changed at runtime via
-     * {@link EbeanServer#getAdminLogging()} and
-     * {@link AdminLogging#setLoggingLevelIud(LogLevelStmt)}
+     * The logging level can be changed on a per transaction basis.
      * </p>
      */
-    public void setLoggingLevelIud(LogLevelStmt iudLoglevel) {
-        this.loggingLevelIud = iudLoglevel;
-    }
-
-    /**
-     * Return the logging level for query statements.
-     */
-    public LogLevelStmt getLoggingLevelQuery() {
-        return loggingLevelQuery;
-    }
-
-    /**
-     * Set the logging level for query statements.
-     * <p>
-     * Note this logging level can be changed at runtime via
-     * {@link EbeanServer#getAdminLogging()} and
-     * {@link AdminLogging#setLoggingLevelQuery(LogLevelStmt)}
-     * </p>
-     */
-    public void setLoggingLevelQuery(LogLevelStmt queryLogLevel) {
-        this.loggingLevelQuery = queryLogLevel;
-    }
-
-    /**
-     * Return the logging level on SqlQuery statements.
-     */
-    public LogLevelStmt getLoggingLevelSqlQuery() {
-        return loggingLevelSqlQuery;
-    }
-
-    /**
-     * Set the logging level on SqlQuery statements.
-     */
-    public void setLoggingLevelSqlQuery(LogLevelStmt sqlQueryLogLevel) {
-        this.loggingLevelSqlQuery = sqlQueryLogLevel;
-    }
-
-    /**
-     * Return the logging level for transaction begin, commit and rollback
-     * events.
-     */
-    public LogLevelTxnCommit getLoggingLevelTxnCommit() {
-        return loggingLevelTxnCommit;
-    }
-
-    /**
-     * Set the logging level for transaction begin, commit and rollback events.
-     */
-    public void setLoggingLevelTxnCommit(LogLevelTxnCommit transactionDebugLevel) {
-        this.loggingLevelTxnCommit = transactionDebugLevel;
+    public void setLogLevel(LogLevel logLevel) {
+        this.logLevel = logLevel;
     }
 
     /**
@@ -1469,7 +1377,9 @@ public class ServerConfig {
         debugSql = p.getBoolean("debug.sql", false);
         debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
-        loggingLevel = p.getEnum(LogLevel.class, "logging", LogLevel.ALL);
+//        LogLevel oldLogLevel = p.getEnum(LogLevel.class, "logging", LogLevel.SQL);
+//        logLevel = p.getEnum(LogLevel.class, "log.level", oldLogLevel);
+        logLevel = getLogLevelValue(p);
 
         String s = p.get("useJuliTransactionLogger", null);
         s = p.get("loggingToJavaLogger", s);
@@ -1478,15 +1388,16 @@ public class ServerConfig {
         s = p.get("log.directory", "logs");
         loggingDirectory = p.get("logging.directory", s);
 
-        loggingLevelIud = p.getEnum(LogLevelStmt.class, "logging.iud", LogLevelStmt.SQL);
-        loggingLevelSqlQuery = p.getEnum(LogLevelStmt.class, "logging.sqlquery", LogLevelStmt.SQL);
-        loggingLevelQuery = p.getEnum(LogLevelStmt.class, "logging.query", LogLevelStmt.SQL);
-        loggingLevelTxnCommit = getOldTxnCommitLogLevel(p);
-        if (loggingLevelTxnCommit == null) {
-            loggingLevelTxnCommit = getTxnCommitLogLevel(p);
-        }
-
         classes = getClasses(p);
+    }
+    
+    private LogLevel getLogLevelValue(ConfigPropertyMap p) {
+        String logValue = p.get("logging", "SQL");
+        logValue = p.get("log.level", logValue);
+        if (logValue.trim().equalsIgnoreCase("ALL")){
+            logValue = "SQL";
+        }
+        return Enum.valueOf(LogLevel.class, logValue.toUpperCase());
     }
 
     private NamingConvention createNamingConvention(PropertySource p) {
@@ -1509,53 +1420,6 @@ public class ServerConfig {
             }
         }
         return nc;
-    }
-
-    private LogLevelTxnCommit getTxnCommitLogLevel(ConfigPropertyMap p) {
-        return p.getEnum(LogLevelTxnCommit.class, "logging.txnCommit", LogLevelTxnCommit.NONE);
-    }
-
-    /**
-     * Support previous versions of this property.
-     * <p>
-     * Changing to NONE, DEBUG and VERBOSE from NONE, LOG_ROLLBACKS and LOG_ALL.
-     * </p>
-     */
-    private LogLevelTxnCommit getOldTxnCommitLogLevel(ConfigPropertyMap p) {
-
-        if (p.get("logging.txnCommit", null) != null) {
-            return getTxnCommitLogLevel(p);
-        }
-
-        // try to get the value from the old property
-        String dt = p.get("debug.transaction", null);
-        if (dt != null) {
-            try {
-                int i = Integer.parseInt(dt);
-                switch (i) {
-                case 0:
-                    return LogLevelTxnCommit.NONE;
-                case 1:
-                    return LogLevelTxnCommit.DEBUG;
-
-                default:
-                    return LogLevelTxnCommit.VERBOSE;
-                }
-            } catch (NumberFormatException e) {
-                dt = dt.toLowerCase();
-                if (dt.indexOf("all") > -1) {
-                    return LogLevelTxnCommit.VERBOSE;
-                }
-                if (dt.indexOf("rollback") > -1) {
-                    return LogLevelTxnCommit.DEBUG;
-                }
-                if (dt.indexOf("none") > -1) {
-                    return LogLevelTxnCommit.NONE;
-                }
-                return null;
-            }
-        }
-        return null;
     }
 
     /**

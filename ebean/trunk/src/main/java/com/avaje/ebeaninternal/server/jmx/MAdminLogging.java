@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.jmx;
 
 import com.avaje.ebean.AdminLogging;
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager;
 
@@ -32,105 +33,27 @@ import com.avaje.ebeaninternal.server.transaction.TransactionManager;
  */
 public class MAdminLogging implements MAdminLoggingMBean, AdminLogging {
 
-	public static final int NONE = LogLevelStmt.NONE.ordinal();
-	public static final int SQL = LogLevelStmt.SQL.ordinal();
-	public static final int BIND = LogLevelStmt.BINDING.ordinal();
-	public static final int SUMMARY = LogLevelStmt.SUMMARY.ordinal();
-
 	private final TransactionManager transactionManager;
 
-	LogLevelStmt queryLevel;
-	int ordinalQuery;
-	
-	LogLevelStmt sqlQueryLevel;
-	int ordinalSqlQuery;
-	
-	LogLevelStmt iudLevel;
-	int ordinalIud;
-	
-	boolean debugSql;
-
-	boolean debugLazyLoad;
-	
+	private boolean debugSql;
+	private boolean debugLazyLoad;
 	
 	/**
-	 * Configure from plugin properties.
+	 * Configure from serverConfig properties.
 	 */
 	public MAdminLogging(ServerConfig serverConfig, TransactionManager txManager) {
 
 		this.transactionManager = txManager;
-		
-		debugSql = serverConfig.isDebugSql();
-		debugLazyLoad = serverConfig.isDebugLazyLoad();
-		
-		sqlQueryLevel = serverConfig.getLoggingLevelSqlQuery();
-		ordinalSqlQuery = sqlQueryLevel == null ? 0 : sqlQueryLevel.ordinal();
-		
-		queryLevel = serverConfig.getLoggingLevelQuery();
-		ordinalQuery = queryLevel == null ? 0 : queryLevel.ordinal();
-		
-		iudLevel = serverConfig.getLoggingLevelIud();
-		ordinalIud = iudLevel == null ? 0 : iudLevel.ordinal();
+		this.debugSql = serverConfig.isDebugSql();
+		this.debugLazyLoad = serverConfig.isDebugLazyLoad();
 	}
 
-	public void setLoggingLevel(LogLevel txLogLevel){
-		transactionManager.setTransactionLogLevel(txLogLevel);
+	public void setLogLevel(LogLevel logLevel){
+		transactionManager.setTransactionLogLevel(logLevel);
 	}
 	
-	public LogLevel getLoggingLevel() {
+	public LogLevel getLogLevel() {
 		return transactionManager.getTransactionLogLevel();
-	}
-
-	public boolean isLogQuery(int level){
-		return ordinalQuery >= level;
-	}
-	
-	public boolean isLogSqlQuery(int level){
-		return ordinalSqlQuery >= level;
-	}
-	public boolean isLogIud(int level){
-		return ordinalIud >= level;
-	}
-	
-	
-	public boolean isLogBind(LogLevelStmt l){
-		return l.ordinal() >= LogLevelStmt.BINDING.ordinal();
-	}
-
-	public boolean isLogSummary(LogLevelStmt l){
-		return l.ordinal() >= LogLevelStmt.SUMMARY.ordinal();
-	}
-
-	public LogLevelStmt getLoggingLevelQuery() {
-		return queryLevel;
-	}
-
-	public void setLoggingLevelQuery(LogLevelStmt queryLevel) {
-		this.queryLevel = queryLevel;
-		this.ordinalQuery = queryLevel == null ? 0 : queryLevel.ordinal();
-
-	}
-
-	public LogLevelStmt getLoggingLevelSqlQuery() {
-		return sqlQueryLevel;
-	}
-
-	public void setLoggingLevelSqlQuery(LogLevelStmt sqlQueryLevel) {
-		this.sqlQueryLevel = sqlQueryLevel;
-		this.ordinalSqlQuery = sqlQueryLevel == null ? 0 : sqlQueryLevel.ordinal();
-	}
-
-	public int getIudOrdinal(){
-		return ordinalIud;
-	}
-	
-	public LogLevelStmt getLoggingLevelIud() {
-		return iudLevel;
-	}
-
-	public void setLoggingLevelIud(LogLevelStmt iudLevel) {
-		this.iudLevel = iudLevel;
-		this.ordinalIud = iudLevel == null ? 0 : iudLevel.ordinal();
 	}
 
 	public boolean isDebugGeneratedSql() {

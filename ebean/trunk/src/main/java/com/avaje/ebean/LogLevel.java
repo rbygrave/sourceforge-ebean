@@ -17,21 +17,29 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.transaction;
+package com.avaje.ebean;
 
 /**
- * Write transaction log events to a file or other destination.
+ * The transaction log level.
+ * <p>
+ * This is used to define how much Ebean should log such as generated SQL.
+ * </p>
  */
-public interface TransactionLogWriter {
+public enum LogLevel {
 
     /**
-     * Log all the messages in the buffer.
+     * No logging.
      */
-    public void log(TransactionLogBuffer logBuffer);
+    NONE,
 
     /**
-     * Shutdown the writer.
+     * Log only a summary level.
      */
-    public void shutdown();
+    SUMMARY,
 
+    /**
+     * Log generated SQL/DML and binding variables.
+     */
+    SQL
 }
+

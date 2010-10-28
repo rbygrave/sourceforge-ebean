@@ -61,7 +61,6 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.IntersectionRow;
 import com.avaje.ebeaninternal.server.deploy.ManyType;
-import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.ldap.DefaultLdapPersister;
 import com.avaje.ebeaninternal.server.ldap.LdapPersistBeanRequest;
 
@@ -96,13 +95,13 @@ public final class DefaultPersister implements Persister {
 
 	private final BeanDescriptorManager beanDescriptorManager;
 	
-	public DefaultPersister(SpiEbeanServer server, boolean validate, MAdminLogging logControl, 
+	public DefaultPersister(SpiEbeanServer server, boolean validate,  
 			Binder binder, BeanDescriptorManager descMgr, PstmtBatch pstmtBatch, LdapContextFactory contextFactory) {
 
 		this.server = server;
 		this.beanDescriptorManager = descMgr;
 		
-		this.persistExecute = new DefaultPersistExecute(validate, logControl, binder, pstmtBatch);
+		this.persistExecute = new DefaultPersistExecute(validate, binder, pstmtBatch);
 		this.ldapPersister = new DefaultLdapPersister(contextFactory);
 	}
 

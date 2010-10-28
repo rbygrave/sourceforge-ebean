@@ -224,7 +224,7 @@ public class InternalConfiguration {
 	    if (ldapConfig != null){
 	        ldapCtxFactory = ldapConfig.getContextFactory();
 	    }
-		return new DefaultPersister(server, serverConfig.isValidateOnSave(), logControl, binder, beanDescriptorManager, pstmtBatch, ldapCtxFactory);
+		return new DefaultPersister(server, serverConfig.isValidateOnSave(), binder, beanDescriptorManager, pstmtBatch, ldapCtxFactory);
 	}
 
 	public PstmtBatch getPstmtBatch() {

@@ -21,7 +21,6 @@ package com.avaje.ebeaninternal.server.core;
 
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiTransaction;
-import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.persist.BatchPostExecute;
 import com.avaje.ebeaninternal.server.persist.PersistExecute;
@@ -41,12 +40,6 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 	 * One of INSERT, UPDATE, DELETE, UPDATESQL or CALLABLESQL.
 	 */
 	Type type;
-
-	/**
-	 * The log level of for this request. One of LOG_NONE LOG_SUMMARY LOG_BIND
-	 * or LOG_SQL.
-	 */
-	int logLevel;
 	
 	final PersistExecute persistExecute;
 
@@ -73,7 +66,11 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
     }
  
     public boolean isLogSql() {
-        return logLevel >= MAdminLogging.SQL && transaction.isLoggingOn();
+        return transaction.isLogSql();
+    }
+    
+    public boolean isLogSummary() {
+        return transaction.isLogSummary();
     }
     
 	/**
@@ -119,21 +116,6 @@ public abstract class PersistRequest extends BeanRequest implements BatchPostExe
 	public void setType(Type type) {
 		this.type = type;
 	}
-
-	/**
-	 * Set the logLevel for this request.
-	 */
-	public void setLogLevel(int logLevel) {
-		this.logLevel = logLevel;
-	}
-
-	/**
-	 * Return the logLevel for this request.
-	 */
-	public int getLogLevel() {
-		return logLevel;
-	}
-
 
 	/**
 	 * Return true if save and delete should cascade.

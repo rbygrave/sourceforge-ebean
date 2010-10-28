@@ -32,7 +32,6 @@ import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.core.PstmtBatch;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
-import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 import com.avaje.ebeaninternal.server.persist.BatchedPstmt;
 import com.avaje.ebeaninternal.server.persist.BatchedPstmtHolder;
 import com.avaje.ebeaninternal.server.persist.dmlbind.BindableRequest;
@@ -59,11 +58,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 */
 	protected final PersistRequestBean<?> persistRequest;
 
-	protected final int logLevel;
-
 	protected final StringBuilder bindLog;
-
-	protected final boolean loggingBind;
 
 	protected final Set<String> loadedProps;
 
@@ -71,7 +66,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	
 	protected final boolean emptyStringToNull;
 	
-    protected final boolean logSql;
+    protected final boolean logLevelSql;
 
     private Set<String> additionalProps;
 
@@ -84,13 +79,10 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		this.emptyStringToNull = emptyStringToNull;
 		this.loadedProps = persistRequest.getLoadedProperties();
 		this.transaction = persistRequest.getTransaction();
-		this.logLevel = persistRequest.getLogLevel();
-        this.logSql = logLevel >= MAdminLogging.SQL && transaction.isLoggingOn();
-		if (logLevel >= MAdminLogging.BIND) {
-			this.loggingBind = true;
+        this.logLevelSql = transaction.isLogSql();
+		if (logLevelSql) {
 			this.bindLog = new StringBuilder();
 		} else {
-			this.loggingBind = false;
 			this.bindLog = null;
 		}
 	}
@@ -157,10 +149,8 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Log the bind information to the transaction log.
 	 */
 	protected void logBinding() {
-		if (logLevel >= MAdminLogging.BIND) {
-			if (transaction.isLoggingOn()) {
-				transaction.log(bindLog.toString());
-			}
+		if (logLevelSql) {
+		    transaction.log(bindLog.toString());
 		}
 	}
 
@@ -168,7 +158,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Log the sql to the transaction log.
 	 */
 	protected void logSql(String sql) {
-		if (logSql) {
+		if (logLevelSql) {
 			transaction.log(sql);
 		}
 	}
@@ -192,7 +182,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Bind a raw value. Used to bind the discriminator column.
 	 */
 	public Object bind(String propName, Object value, int sqlType) throws SQLException {
-		if (loggingBind) {
+		if (logLevelSql) {
 			bindLog.append(propName).append("=");
 			bindLog.append(value).append(", ");
 		}
@@ -201,7 +191,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	}
 
     public Object bindNoLog(Object value, int sqlType, String logPlaceHolder) throws SQLException {
-        if (loggingBind) {
+        if (logLevelSql) {
             bindLog.append(logPlaceHolder).append(" ");
         }
         dataBind.setObject(value, sqlType);
@@ -212,7 +202,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
      * Bind the value to the preparedStatement.
      */
     public Object bind(Object value, BeanProperty prop, String propName, boolean bindNull) throws SQLException {
-        return bindInternal(loggingBind, value, prop, propName, bindNull);
+        return bindInternal(logLevelSql, value, prop, propName, bindNull);
     }
     
     /**
@@ -271,7 +261,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 * Add the comment to the bind information log.
 	 */
 	protected void bindLogAppend(String comment) {
-		if (loggingBind) {
+		if (logLevelSql) {
 			bindLog.append(comment);
 		}
 	}
@@ -365,7 +355,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 			return stmt;
 		}
 
-		if (logSql){
+		if (logLevelSql){
 		    t.log(sql);
 		}
 		

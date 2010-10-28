@@ -75,9 +75,20 @@ public interface Transaction {
 	 * Log a comment to the transaction log.
 	 */
 	public void log(String msg);
-
+	
 	/**
-	 * Set this to false to disable logging for this transaction.
+	 * Set the logLevel to use for this transaction.
+	 */
+	public void setLogLevel(LogLevel logLevel);
+    
+	/**
+	 * Return the logLevel this transaction is using.
+	 */
+	public LogLevel getLogLevel();
+    
+	/**
+	 * Deprecated in favour of using {@link #setLogLevel} Set this to false to disable logging for this transaction.
+	 * @deprecated
 	 */
 	public void setLoggingOn(boolean isLoggingOn);
 
