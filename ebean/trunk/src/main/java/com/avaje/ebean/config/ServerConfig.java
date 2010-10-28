@@ -187,7 +187,7 @@ public class ServerConfig {
     /**
      * The overall transaction logging level.
      */
-    private LogLevel logLevel = LogLevel.SQL;
+    private LogLevel loggingLevel = LogLevel.SQL;
 
     /**
      * Used to unwrap PreparedStatements to perform JDBC Driver specific
@@ -875,8 +875,8 @@ public class ServerConfig {
      * The logging level can be changed on a per transaction basis.
      * </p>
      */
-    public LogLevel getLogLevel() {
-        return logLevel;
+    public LogLevel getLoggingLevel() {
+        return loggingLevel;
     }
 
     /**
@@ -885,8 +885,8 @@ public class ServerConfig {
      * The logging level can be changed on a per transaction basis.
      * </p>
      */
-    public void setLogLevel(LogLevel logLevel) {
-        this.logLevel = logLevel;
+    public void setLoggingLevel(LogLevel logLevel) {
+        this.loggingLevel = logLevel;
     }
 
     /**
@@ -1377,9 +1377,7 @@ public class ServerConfig {
         debugSql = p.getBoolean("debug.sql", false);
         debugLazyLoad = p.getBoolean("debug.lazyload", false);
 
-//        LogLevel oldLogLevel = p.getEnum(LogLevel.class, "logging", LogLevel.SQL);
-//        logLevel = p.getEnum(LogLevel.class, "log.level", oldLogLevel);
-        logLevel = getLogLevelValue(p);
+        loggingLevel = getLogLevelValue(p);
 
         String s = p.get("useJuliTransactionLogger", null);
         s = p.get("loggingToJavaLogger", s);
@@ -1392,8 +1390,10 @@ public class ServerConfig {
     }
     
     private LogLevel getLogLevelValue(ConfigPropertyMap p) {
+        // logging.level preferred but others parameters will work
         String logValue = p.get("logging", "SQL");
         logValue = p.get("log.level", logValue);
+        logValue = p.get("logging.level", logValue);
         if (logValue.trim().equalsIgnoreCase("ALL")){
             logValue = "SQL";
         }
