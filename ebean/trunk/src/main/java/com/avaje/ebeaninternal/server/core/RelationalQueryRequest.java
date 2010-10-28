@@ -37,103 +37,111 @@ import com.avaje.ebeaninternal.api.SpiTransaction;
  */
 public final class RelationalQueryRequest {
 
-	private final SpiSqlQuery query;
+    private final SpiSqlQuery query;
 
-	private final RelationalQueryEngine queryEngine;
+    private final RelationalQueryEngine queryEngine;
 
-	private final SpiEbeanServer ebeanServer;
+    private final SpiEbeanServer ebeanServer;
 
-	private SpiTransaction trans;
+    private SpiTransaction trans;
 
-	private boolean createdTransaction;
+    private boolean createdTransaction;
 
-	private Query.Type queryType;
+    private Query.Type queryType;
 
-	/**
-	 * Create the BeanFindRequest.
-	 */
-	public RelationalQueryRequest(SpiEbeanServer server, RelationalQueryEngine engine, SqlQuery q, Transaction t) {
-		this.ebeanServer = server;
-		this.queryEngine = engine;
-		this.query = (SpiSqlQuery) q;
-		this.trans = (SpiTransaction) t;
-	}
+    /**
+     * Create the BeanFindRequest.
+     */
+    public RelationalQueryRequest(SpiEbeanServer server, RelationalQueryEngine engine, SqlQuery q, Transaction t) {
+        this.ebeanServer = server;
+        this.queryEngine = engine;
+        this.query = (SpiSqlQuery) q;
+        this.trans = (SpiTransaction) t;
+    }
 
-	/**
-	 * Rollback the transaction if it was created for this request.
-	 */
-	public void rollbackTransIfRequired() {
-		if (createdTransaction) {
-			trans.rollback();
-		}
-	}
-	
-	/**
-	 * Create a transaction if none currently exists.
-	 */
-	public void initTransIfRequired() {
-		if (trans == null) {
-			trans = ebeanServer.getCurrentServerTransaction();
-			if (trans == null || !trans.isActive()){
-				// create a local readOnly transaction
-				trans = ebeanServer.createServerTransaction(false, -1);
-				
-				// commented out for performance reasons...
-				// TODO: review performance of trans.setReadOnly(true)
-				//trans.setReadOnly(true);
-				createdTransaction = true;
-			}
-		}
-	}
+    /**
+     * Rollback the transaction if it was created for this request.
+     */
+    public void rollbackTransIfRequired() {
+        if (createdTransaction) {
+            trans.rollback();
+        }
+    }
 
-	/**
-	 * End the transaction if it was locally created.
-	 */
-	public void endTransIfRequired() {
-		if (createdTransaction) {
-			// we can rollback as a readOnly transaction.
-			trans.rollback();
-		}
-	}
+    /**
+     * Create a transaction if none currently exists.
+     */
+    public void initTransIfRequired() {
+        if (trans == null) {
+            trans = ebeanServer.getCurrentServerTransaction();
+            if (trans == null || !trans.isActive()) {
+                // create a local readOnly transaction
+                trans = ebeanServer.createServerTransaction(false, -1);
 
-	@SuppressWarnings("unchecked")
-	public List<SqlRow> findList() {
-		queryType = Query.Type.LIST;
-		return (List<SqlRow>) queryEngine.findMany(this);
-	}
+                // commented out for performance reasons...
+                // TODO: review performance of trans.setReadOnly(true)
+                // trans.setReadOnly(true);
+                createdTransaction = true;
+            }
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	public Set<SqlRow> findSet() {
-		queryType = Query.Type.SET;
-		return (Set<SqlRow>) queryEngine.findMany(this);
-	}
+    /**
+     * End the transaction if it was locally created.
+     */
+    public void endTransIfRequired() {
+        if (createdTransaction) {
+            // we can rollback as a readOnly transaction.
+            trans.rollback();
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	public Map<?, SqlRow> findMap() {
-		queryType = Query.Type.MAP;
-		return (Map<?, SqlRow>) queryEngine.findMany(this);
-	}
+    @SuppressWarnings("unchecked")
+    public List<SqlRow> findList() {
+        queryType = Query.Type.LIST;
+        return (List<SqlRow>) queryEngine.findMany(this);
+    }
 
-	/**
-	 * Return the find that is to be performed.
-	 */
-	public SpiSqlQuery getQuery() {
-		return query;
-	}
+    @SuppressWarnings("unchecked")
+    public Set<SqlRow> findSet() {
+        queryType = Query.Type.SET;
+        return (Set<SqlRow>) queryEngine.findMany(this);
+    }
 
-	/**
-	 * Return the type (List, Set or Map) that this fetch returns.
-	 */
-	public Query.Type getQueryType() {
-		return queryType;
-	}
+    @SuppressWarnings("unchecked")
+    public Map<?, SqlRow> findMap() {
+        queryType = Query.Type.MAP;
+        return (Map<?, SqlRow>) queryEngine.findMany(this);
+    }
 
-	public EbeanServer getEbeanServer() {
-		return ebeanServer;
-	}
+    /**
+     * Return the find that is to be performed.
+     */
+    public SpiSqlQuery getQuery() {
+        return query;
+    }
 
-	public SpiTransaction getTransaction() {
-		return trans;
-	}
+    /**
+     * Return the type (List, Set or Map) that this fetch returns.
+     */
+    public Query.Type getQueryType() {
+        return queryType;
+    }
+
+    public EbeanServer getEbeanServer() {
+        return ebeanServer;
+    }
+
+    public SpiTransaction getTransaction() {
+        return trans;
+    }
+
+    public boolean isLogSql() {
+        return trans.isLogSql();
+    }
+
+    public boolean isLogSummary() {
+        return trans.isLogSummary();
+    }
 
 }

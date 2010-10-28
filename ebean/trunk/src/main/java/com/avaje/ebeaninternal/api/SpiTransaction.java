@@ -35,6 +35,10 @@ import com.avaje.ebeaninternal.server.transaction.TransactionLogBuffer;
  */
 public interface SpiTransaction extends Transaction {
 
+    public boolean isLogSql();
+    public boolean isLogSummary();
+    
+    
     /**
      * Add a IndexUpdateFuture.
      */

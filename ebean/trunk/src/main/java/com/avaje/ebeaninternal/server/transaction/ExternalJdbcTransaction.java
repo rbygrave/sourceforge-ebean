@@ -5,6 +5,8 @@ import java.sql.Connection;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
+import com.avaje.ebean.LogLevel;
+
 /**
  * Transaction based on a java.sql.Connection supplied by an external
  * transaction manager such as Spring.
@@ -26,12 +28,12 @@ public class ExternalJdbcTransaction extends JdbcTransaction {
 	 * You need to create with a TransactionManager to have transaction logging.
 	 * </p>
 	 */
-	public ExternalJdbcTransaction(Connection connection) {
-		super(null, true, connection, null);
-	}
+    public ExternalJdbcTransaction(Connection connection) {
+        super(null, true, LogLevel.NONE, connection, null);
+    }
 	
-	public ExternalJdbcTransaction(String id, boolean explicit, Connection connection, TransactionManager manager) {
-		super(id, explicit, connection, manager);
+	public ExternalJdbcTransaction(String id, boolean explicit, LogLevel logLevel, Connection connection, TransactionManager manager) {
+		super(id, explicit, logLevel, connection, manager);
 	}
 
 	/**

@@ -79,13 +79,12 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				System.out.println(sql);
 			}
-			if (logControl.isLogQuery(MAdminLogging.SQL)) {
-				request.getTransaction().log(sql);
-			}
+			request.logSql(sql);
+			
 
 			BeanIdList list = rcQuery.findIds();
 
-			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+			if (request.isLogSummary()) {
 				request.getTransaction().log(rcQuery.getSummary());
 			}
 
@@ -117,13 +116,11 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				System.out.println(sql);
 			}
-			if (logControl.isLogQuery(MAdminLogging.SQL)) {
-				request.getTransaction().log(sql);
-			}
+			request.logSql(sql);
 
 			int rowCount = rcQuery.findRowCount();
 
-			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+			if (request.isLogSummary()) {
 				request.getTransaction().log(rcQuery.getSummary());
 			}
 			
@@ -152,7 +149,8 @@ public class CQueryEngine {
             if (logControl.isDebugGeneratedSql()) {
                 logSqlToConsole(cquery);
             }
-            if (logControl.isLogQuery(MAdminLogging.SQL)) {
+            
+            if (request.isLogSql()) {
                 logSql(cquery);
             }
 
@@ -166,7 +164,7 @@ public class CQueryEngine {
             
             QueryIterator<T> readIterate = cquery.readIterate(iterateBufferSize, request);
             
-            if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+            if (request.isLogSummary()) {
                 logFindManySummary(cquery);
             }
             
@@ -193,7 +191,7 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				logSqlToConsole(cquery);
 			}
-			if (logControl.isLogQuery(MAdminLogging.SQL)) {
+			if (request.isLogSql()) {
 				logSql(cquery);
 			}
 
@@ -228,7 +226,7 @@ public class CQueryEngine {
 				backgroundExecutor.execute(future);
 			}
 
-			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+			if (request.isLogSummary()) {
 				logFindManySummary(cquery);
 			}
 			
@@ -270,7 +268,7 @@ public class CQueryEngine {
 			if (logControl.isDebugGeneratedSql()) {
 				logSqlToConsole(cquery);
 			}
-			if (logControl.isLogQuery(MAdminLogging.SQL)) {
+			if (request.isLogSql()) {
 				logSql(cquery);
 			}
 
@@ -280,7 +278,7 @@ public class CQueryEngine {
 				bean = cquery.getLoadedBean();
 			}
 
-			if (logControl.isLogQuery(MAdminLogging.SUMMARY)) {
+			if (request.isLogSummary()) {
 				logFindBeanSummary(cquery);
 			}
 

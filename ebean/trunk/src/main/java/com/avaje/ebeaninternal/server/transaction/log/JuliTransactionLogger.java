@@ -50,13 +50,8 @@ public class JuliTransactionLogger implements TransactionLogWriter {
         }
     }
 
-	public void start() {
-    }
-
     public void shutdown() {
     }
-
-
 
     private void log(String txnId, LogEntry entry) {
 		

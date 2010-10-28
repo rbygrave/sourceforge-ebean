@@ -73,6 +73,13 @@ public class TransactionLogBuffer {
         buffer.add(new LogEntry(msg));
         return ++currentSize >= maxSize;
     }
+    
+    /**
+     * Return true if the buffer is empty.
+     */
+    public boolean isEmpty() {
+        return buffer.isEmpty();
+    }
 
     /**
      * Return all the messages.

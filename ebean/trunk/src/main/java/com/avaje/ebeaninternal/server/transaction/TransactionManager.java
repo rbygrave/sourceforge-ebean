@@ -30,9 +30,8 @@ import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
 import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.AdminLogging.LogLevel;
-import com.avaje.ebean.AdminLogging.LogLevelTxnCommit;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.api.SpiTransaction;
@@ -79,6 +78,8 @@ public class TransactionManager {
     
 	private final BeanDescriptorManager beanDescriptorManager;
 	
+	private LogLevel logLevel;
+	
 	/**
 	 * The logger.
 	 */
@@ -111,7 +112,7 @@ public class TransactionManager {
 			
 	private final ClusterManager clusterManager;
 	
-	private final int debugLevel;
+	private final int commitDebugLevel;
 
 	private final String serverName;
 	
@@ -133,23 +134,13 @@ public class TransactionManager {
 		this.luceneIndexManager = luceneIndexManager;
 		this.serverName = config.getName();
 		
+		this.logLevel = config.getLogLevel();
 		this.transLogger = new TransactionLogManager(config);
 		this.backgroundExecutor = backgroundExecutor;		
 		this.dataSource = config.getDataSource();
 		
-		if (config.isLoggingToJavaLogger()){
-			// turn this off as already logging these using a java util logger
-			this.debugLevel = 0;
-		} else {
-			// log some transaction events using a java util logger
-		    LogLevelTxnCommit txDebugLevel = config.getLoggingLevelTxnCommit();
-			int debug = txDebugLevel == null ? 0 : txDebugLevel.ordinal();
-			if (debug < 1 && GlobalProperties.getBoolean("log.commit", false)){
-				debug = 1;
-			}
-			this.debugLevel = debug;	
-		}
-		
+		// log some transaction events using a java util logger          
+        this.commitDebugLevel = GlobalProperties.getInt("ebean.commit.debuglevel", 0);
 		this.clusterDebugLevel = GlobalProperties.getInt("ebean.cluster.debuglevel", 0);
 		
 		this.defaultBatchMode = config.isPersistBatching();
@@ -173,14 +164,14 @@ public class TransactionManager {
 	 * Return the logging level for transactions.
 	 */
 	public LogLevel getTransactionLogLevel(){
-		return transLogger.getLogLevel();
+		return logLevel;
 	}
 	
 	/**
 	 * Set the log level for transactions.
 	 */
-	public void setTransactionLogLevel(LogLevel txLogLevel){
-		transLogger.setLogLevel(txLogLevel);
+	public void setTransactionLogLevel(LogLevel logLevel){
+		this.logLevel = logLevel;
 	}
 	
 	/**
@@ -277,7 +268,9 @@ public class TransactionManager {
 	}
 
 	public void log(TransactionLogBuffer logBuffer){
-	    transLogger.log(logBuffer);
+	    if (!logBuffer.isEmpty()){
+	        transLogger.log(logBuffer);
+	    }
 	}
 
 	/**
@@ -293,7 +286,7 @@ public class TransactionManager {
 	 */
 	public SpiTransaction wrapExternalConnection(String id, Connection c) {
 
-		ExternalJdbcTransaction t = new ExternalJdbcTransaction(id, true, c, this);
+		ExternalJdbcTransaction t = new ExternalJdbcTransaction(id, true, logLevel, c, this);
 
 		// set the default batch mode. This can be on for
 		// jdbc drivers that support getGeneratedKeys
@@ -313,7 +306,7 @@ public class TransactionManager {
 			
 			Connection c = dataSource.getConnection();
 
-			JdbcTransaction t = new JdbcTransaction(prefix + id, explicit, c, this);
+			JdbcTransaction t = new JdbcTransaction(prefix + id, explicit, logLevel, c, this);
 
 			// set the default batch mode. This can be on for
 			// jdbc drivers that support getGeneratedKeys
@@ -324,7 +317,7 @@ public class TransactionManager {
 				c.setTransactionIsolation(isolationLevel);
 			}
 
-			if (debugLevel >= 3){
+			if (commitDebugLevel >= 3){
 				String msg = "Transaction ["+t.getId()+"] begin";
 				if (isolationLevel > -1){
 					TxIsolation txi = TxIsolation.fromLevel(isolationLevel);
@@ -345,7 +338,7 @@ public class TransactionManager {
 			long id = transactionCounter.incrementAndGet();
 			Connection c = dataSource.getConnection();
 
-			JdbcTransaction t = new JdbcTransaction(prefix + id, false, c, this);
+			JdbcTransaction t = new JdbcTransaction(prefix + id, false, logLevel, c, this);
 			
 			// set the default batch mode. Can be true for
 			// jdbc drivers that support getGeneratedKeys
@@ -353,7 +346,7 @@ public class TransactionManager {
 				t.setBatchMode(true);
 			}
 
-			if (debugLevel >= 3){
+			if (commitDebugLevel >= 3){
 				logger.info("Transaction ["+t.getId()+"] begin - queryOnly");
 			}
 			
@@ -376,7 +369,7 @@ public class TransactionManager {
 			}
 			transaction.log(msg);
 			
-			if (debugLevel >= 1){
+			if (commitDebugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] "+msg);
 			}
 			
@@ -394,7 +387,7 @@ public class TransactionManager {
 	public void notifyOfQueryOnly(boolean onCommit, SpiTransaction transaction, Throwable cause) {
 		
 		try {
-            if (debugLevel >= 2){
+            if (commitDebugLevel >= 2){
     			String msg;
     			if (onCommit){
     				msg = "Commit queryOnly";
@@ -458,7 +451,7 @@ public class TransactionManager {
 			// cluster and text indexing
 	        backgroundExecutor.execute(postCommit.notifyPersistListeners());
 			
-			if (debugLevel >= 1){
+			if (commitDebugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] commit");
 			}
 		} catch (Exception ex) {

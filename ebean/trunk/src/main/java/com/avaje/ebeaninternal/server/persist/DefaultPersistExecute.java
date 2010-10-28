@@ -28,7 +28,6 @@ import com.avaje.ebeaninternal.server.core.PersistRequestOrmUpdate;
 import com.avaje.ebeaninternal.server.core.PersistRequestUpdateSql;
 import com.avaje.ebeaninternal.server.core.PstmtBatch;
 import com.avaje.ebeaninternal.server.deploy.BeanManager;
-import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
 
 /**
  * Default PersistExecute implementation using DML statements.
@@ -37,12 +36,7 @@ import com.avaje.ebeaninternal.server.jmx.MAdminLogging;
  * </p>
  */
 public final class DefaultPersistExecute implements PersistExecute {
-  
-    /**
-     * Defines the logging levels.
-     */
-    private final MAdminLogging logControl;
-    
+      
     private final ExeCallableSql exeCallableSql;
     
     private final ExeUpdateSql exeUpdateSql;
@@ -64,10 +58,9 @@ public final class DefaultPersistExecute implements PersistExecute {
     /**
      * Construct this DmlPersistExecute.
      */
-    public DefaultPersistExecute(boolean validate, MAdminLogging logControl, Binder binder, PstmtBatch pstmtBatch) {
+    public DefaultPersistExecute(boolean validate, Binder binder, PstmtBatch pstmtBatch) {
     
     	this.validate = validate;
-        this.logControl = logControl;
         this.exeOrmUpdate = new ExeOrmUpdate(binder, pstmtBatch);
         this.exeUpdateSql = new ExeUpdateSql(binder, pstmtBatch);
         this.exeCallableSql = new ExeCallableSql(binder, pstmtBatch);
@@ -86,8 +79,6 @@ public final class DefaultPersistExecute implements PersistExecute {
      * execute the bean insert request.
      */
     public <T> void executeInsertBean(PersistRequestBean<T> request) {
-    	
-    	request.setLogLevel(logControl.getIudOrdinal());
     	
     	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
@@ -108,8 +99,6 @@ public final class DefaultPersistExecute implements PersistExecute {
      */
     public <T> void executeUpdateBean(PersistRequestBean<T> request) {
     	
-    	request.setLogLevel(logControl.getIudOrdinal());
-
     	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
@@ -130,8 +119,6 @@ public final class DefaultPersistExecute implements PersistExecute {
      */
     public <T> void executeDeleteBean(PersistRequestBean<T> request) {
 
-    	request.setLogLevel(logControl.getIudOrdinal());
-
     	BeanManager<T> mgr = request.getBeanManager();
     	BeanPersister persister = mgr.getBeanPersister();
     	
@@ -147,7 +134,6 @@ public final class DefaultPersistExecute implements PersistExecute {
      * Execute the updateSqlRequest 
 	 */
     public int executeOrmUpdate(PersistRequestOrmUpdate request) {
-    	request.setLogLevel(logControl.getIudOrdinal());
     	return exeOrmUpdate.execute(request);
     }
     
@@ -155,7 +141,6 @@ public final class DefaultPersistExecute implements PersistExecute {
      * Execute the updateSqlRequest 
 	 */
     public int executeSqlUpdate(PersistRequestUpdateSql request) {
-    	request.setLogLevel(logControl.getIudOrdinal());
     	return exeUpdateSql.execute(request);
     }
     
@@ -163,7 +148,6 @@ public final class DefaultPersistExecute implements PersistExecute {
      * Execute the CallableSqlRequest.
 	 */
     public int executeSqlCallable(PersistRequestCallableSql request) {
-    	request.setLogLevel(logControl.getIudOrdinal());
     	return exeCallableSql.execute(request);
     }
 
