@@ -26,8 +26,16 @@ import org.apache.lucene.document.Field.Store;
 
 import com.avaje.ebean.config.lucene.IndexFieldDefn.Sortable;
 
+/**
+ * A helper that can be used to build/define index fields on an index.
+ * 
+ * @author rbygrave
+ */
 public interface IndexDefnBuilder {
 
+    /**
+     * Add all the 
+     */
     public void addAllFields();
 
     public IndexDefnBuilder assocOne(String propertyName);

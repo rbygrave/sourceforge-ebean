@@ -24,31 +24,74 @@ import java.util.List;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 
+/**
+ * Defines a Lucene Index for a given entity type.
+ * 
+ * @author rbygrave
+ * 
+ * @param <T>
+ *            The type of the entity to build the index on.
+ */
 public interface IndexDefn<T> {
-    
+
+    /**
+     * Initialise the index defining the fields on the index.
+     * <p>
+     * The IndexDefnBuilder can be used to make defining fields a little easier.
+     * </p>
+     * 
+     * @param helper
+     *            to help create index field definitions
+     */
     public void initialise(IndexDefnBuilder helper);
-    
+
     /**
      * Return the name of the default query field.
      */
     public String getDefaultField();
-    
+
+    /**
+     * Return the index fields.
+     */
     public List<IndexFieldDefn> getFields();
-        
+
+    /**
+     * Return true if incremental index updates are supported via 'last updated
+     * timestamp' properties(s).
+     */
     public boolean isUpdateSinceSupported();
-    
+
+    /**
+     * Return the properties that are the 'last updated timestamp'
+     * properties(s).
+     */
     public String[] getUpdateSinceProperties();
-    
-    public Analyzer getAnalyzer(); 
-    
+
+    /**
+     * Return the default Analyzer to use for this index.
+     */
+    public Analyzer getAnalyzer();
+
+    /**
+     * Return the max field length to use for this index.
+     */
     public MaxFieldLength getMaxFieldLength();
-    
+
+    /**
+     * Return the max buffered documents for this index.
+     */
     public int getMaxBufferedDocs();
-    
+
+    /**
+     * Return the ram buffer size for this index.
+     */
     public double getRAMBufferSizeMB();
-    
+
+    /**
+     * Return the term index interval.
+     */
     public int getTermIndexInterval();
-    
+
     // Similarity
     // useCompoundFile
     // MergePolicy

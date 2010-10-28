@@ -25,6 +25,11 @@ import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.GlobalProperties.PropertySource;
 
+/**
+ * Provides default configuration for defining indexes.
+ *  
+ * @author rbygrave
+ */
 public class LuceneConfig {
 
     protected String baseDirectory;
@@ -33,30 +38,51 @@ public class LuceneConfig {
 
     protected UseIndex defaultUseIndex;
     
+    /**
+     * Return the default Analyzer.
+     */
     public Analyzer getDefaultAnalyzer() {
         return defaultAnalyzer;
     }
 
+    /**
+     * Set the default Analyzer.
+     */
     public void setDefaultAnalyzer(Analyzer defaultAnalyzer) {
         this.defaultAnalyzer = defaultAnalyzer;
     }
 
+    /**
+     * Return the base directory.
+     */
     public String getBaseDirectory() {
         return baseDirectory;
     }
 
+    /**
+     * Set the base directory.
+     */
     public void setBaseDirectory(String baseDirectory) {
         this.baseDirectory = baseDirectory;
     }
 
+    /**
+     * Return the default UseIndex setting for queries.
+     */
     public UseIndex getDefaultUseIndex() {
         return defaultUseIndex;
     }
 
+    /**
+     * Set the default UseIndex setting for queries.
+     */
     public void setDefaultUseIndex(UseIndex defaultUseIndex) {
         this.defaultUseIndex = defaultUseIndex;
     }
     
+    /**
+     * Load settings from the properties file.
+     */
     public void loadSettings(String serverName){
         
         PropertySource p = GlobalProperties.getPropertySource(serverName);

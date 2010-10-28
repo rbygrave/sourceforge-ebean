@@ -23,18 +23,38 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * A Future returned when indexes are updated.
+ * 
+ * @author rbygrave
+ */
 public interface IndexUpdateFuture {
 
+    /**
+     * Return the type of the bean index being updated.
+     */
     public Class<?> getBeanType();
 
+    /**
+     * Return true if the update is cancelled.
+     */
     public boolean isCancelled();
 
     public boolean cancel(boolean mayInterruptIfRunning);
 
+    /**
+     * Return the number of entries updated.
+     */
     public Integer get() throws InterruptedException, ExecutionException;
 
+    /**
+     * Return the number of entries updated with a timeout.
+     */
     public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 
+    /**
+     * Return true if the update is finished.
+     */
     public boolean isDone();
 
 }
