@@ -103,91 +103,151 @@ public class IndexFieldDefn {
         return copy;
     }
     
+    /**
+     * Return the index field name.
+     */
     public String getName() {
         return name;
     }
     
+    /**
+     * Return the matching bean property name.
+     */
     public String getPropertyName() {
         return propertyName;
     }
 
+    /**
+     * Set the associated bean property name.
+     */
     public IndexFieldDefn setPropertyName(String propertyName) {
         this.propertyName = propertyName;
         return this;
     }
 
+    /**
+     * Return the index this field belongs to.
+     */
     public Index getIndex() {
         return index;
     }
 
+    /**
+     * Set the index this field belongs to.
+     */
     public IndexFieldDefn setIndex(Index index) {
         this.index = index;
         return this;
     }
 
+    /**
+     * Return the Store option for this field.
+     */
     public Store getStore() {
         return store;
     }
 
+    /**
+     * Set the Store option for this field.
+     */
     public IndexFieldDefn setStore(Store store) {
         this.store = store;
         return this;
     }
 
+    /**
+     * Return the Sortable option for this field.
+     */
     public Sortable getSortable() {
         return sortable;
     }
 
+    /**
+     * Set the Sortable option for this field.
+     */
     public IndexFieldDefn setSortable(Sortable sortable) {
         this.sortable = sortable;
         return this;
     }
     
+    /**
+     * Return the precision step for this field.
+     */
     public int getPrecisionStep() {
         return precisionStep;
     }
 
+    /**
+     * Set the precision step for this field.
+     */
     public IndexFieldDefn setPrecisionStep(int precisionStep) {
         this.precisionStep = precisionStep;
         return this;
     }
 
+    /**
+     * Return the boost for this field.
+     */
     public float getBoost() {
         return boost;
     }
 
+    /**
+     * Set the boost for this field.
+     */
     public void setBoost(float boost) {
         this.boost = boost;
     }
 
+    /**
+     * Return the Analyzer to use to query this field.
+     */
     public Analyzer getQueryAnalyzer() {
         return queryAnalyzer;
     }
 
+    /**
+     * Return the Analyzer to use to index the values for this field.
+     */
     public Analyzer getIndexAnalyzer() {
         return indexAnalyzer;
     }
     
+    /**
+     * Set the Analyzer to use to query this field.
+     */
     public IndexFieldDefn setQueryAnalyzer(Analyzer queryAnalyzer) {
         this.queryAnalyzer = queryAnalyzer;
         return this;
     }
 
+    /**
+     * Set the Analyzer to use to index the values for this field.
+     */
     public IndexFieldDefn setIndexAnalyzer(Analyzer indexAnalyzer) {
         this.indexAnalyzer = indexAnalyzer;
         return this;
     }
 
+    /**
+     * Set the Analyzer to use to both query and index this field.
+     */
     public IndexFieldDefn setBothAnalyzers(Analyzer analyzer) {
         this.queryAnalyzer = analyzer;
         this.indexAnalyzer = analyzer;
         return this;
     }
 
+    /**
+     * Return the bean properties associated with this field.
+     */
     public String[] getPropertyNames() {
         return properties;
     }
 
+    /**
+     * Set the bean properties associated with this field.
+     */
     public void setPropertyNames(String[] properties) {
         this.properties = properties;
     } 
