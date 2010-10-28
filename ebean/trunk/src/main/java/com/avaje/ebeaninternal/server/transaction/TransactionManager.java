@@ -134,7 +134,7 @@ public class TransactionManager {
 		this.luceneIndexManager = luceneIndexManager;
 		this.serverName = config.getName();
 		
-		this.logLevel = config.getLogLevel();
+		this.logLevel = config.getLoggingLevel();
 		this.transLogger = new TransactionLogManager(config);
 		this.backgroundExecutor = backgroundExecutor;		
 		this.dataSource = config.getDataSource();
