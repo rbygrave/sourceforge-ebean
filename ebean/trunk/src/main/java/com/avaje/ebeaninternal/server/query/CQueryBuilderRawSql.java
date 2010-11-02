@@ -101,7 +101,7 @@ public class CQueryBuilderRawSql implements Constants {
         }
 
         String dbWhere = predicates.getDbWhere();
-        if (dbWhere != null && dbWhere.length() > 0) {
+        if (!isEmpty(dbWhere)) {
             if (dynamicWhere == null) {
                 dynamicWhere = dbWhere;
             } else {
@@ -109,7 +109,7 @@ public class CQueryBuilderRawSql implements Constants {
             }
         }
 
-        if (dynamicWhere != null) {
+        if (!isEmpty(dynamicWhere)) {
             sb.append(NEW_LINE);            
             if (sql.isAndWhereExpr()) {
                 sb.append("and ");
@@ -121,15 +121,14 @@ public class CQueryBuilderRawSql implements Constants {
         }
 
         String preHaving = sql.getPreHaving();
-        if (preHaving != null) {
+        if (!isEmpty(preHaving)) {
             sb.append(NEW_LINE);
             sb.append(preHaving);
             sb.append(" ");
         }
 
         String dbHaving = predicates.getDbHaving();
-        
-        if (dbHaving != null && dbHaving.length() > 0) {
+        if (!isEmpty(dbHaving)) {
             sb.append(" ");
             sb.append(NEW_LINE);
             if (sql.isAndHavingExpr()) {
@@ -141,13 +140,16 @@ public class CQueryBuilderRawSql implements Constants {
             sb.append(" ");
         }
 
-        //String orderBy = getOrderBy(predicates, sql);
-        if (orderBy != null) {
+        if (!isEmpty(orderBy)) {
             sb.append(NEW_LINE);
             sb.append(" order by ").append(orderBy);
         }
 
         return sb.toString().trim();
+    }
+    
+    private boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
     }
 
     private String getOrderBy(CQueryPredicates predicates, RawSql.Sql sql) {

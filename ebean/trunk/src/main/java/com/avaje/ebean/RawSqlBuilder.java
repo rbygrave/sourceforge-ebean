@@ -82,7 +82,6 @@ public class RawSqlBuilder {
         this.columnMapping = columnMapping;
     }
     
-    
     /**
      * Set the mapping of a DB Column to a bean property.
      * <p>
@@ -113,5 +112,12 @@ public class RawSqlBuilder {
      */
     public RawSql create() {
         return new RawSql(sql, columnMapping.createImmutableCopy());
+    }
+    
+    /**
+     * Return the internal parsed Sql object (for testing).
+     */
+    protected Sql getSql() {
+        return sql;
     }
 }
