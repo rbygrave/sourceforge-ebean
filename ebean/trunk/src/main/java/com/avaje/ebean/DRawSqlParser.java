@@ -135,7 +135,7 @@ class DRawSqlParser {
 	private String findOrderBySql() {
 		if (orderByPos > -1) {
 			int pos = orderByPos + ORDER_BY.length();
-			return sql.substring(pos);
+			return sql.substring(pos).trim();
 		}
 		return null;
 	}
@@ -146,8 +146,15 @@ class DRawSqlParser {
 			return sql.substring(whereExprPos, havingExprPos - 1);
 		}
 		if (whereExprPos > -1) {
-			// the rest of the sql...
-			return sql.substring(whereExprPos);
+		    if (orderByPos == -1) {
+	            return sql.substring(whereExprPos);	
+	            
+		    } else if (whereExprPos == orderByPos) {
+		        return "";
+		        
+		    } else {
+	            return sql.substring(whereExprPos, orderByPos - 1);
+		    }
 		}
 		return null;
 	}
