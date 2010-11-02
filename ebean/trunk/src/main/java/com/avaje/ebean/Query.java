@@ -376,6 +376,17 @@ public interface Query<T> extends Serializable {
     public void cancel();
 
     /**
+     * Return a copy of the query.
+     * <p>
+     * This is so that you can use a Query as a "prototype" for creating other
+     * query instances. You could create a Query with various where expressions
+     * and use that as a "prototype" - using this copy() method to create a new
+     * instance that you can then add other expressions then execute.
+     * </p>
+     */
+    public Query<T> copy();
+    
+    /**
      * Return the ExpressionFactory used by this query.
      */
     public ExpressionFactory getExpressionFactory();

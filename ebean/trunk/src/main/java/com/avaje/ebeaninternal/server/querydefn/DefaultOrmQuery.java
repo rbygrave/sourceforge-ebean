@@ -389,15 +389,18 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	public DefaultOrmQuery<T> copy() {
 		// Not including these in the copy:
-		// ArrayList<EntityBean> contextAdditions;
-		// QueryListener<T> queryListener;
-		// TransactionContext transactionContext;
-
+		// contextAdditions
+		// queryListener
+		// transactionContext
+        // autoFetchTuned
+        // autoFetchQueryPlanHash
+	    // copy.generatedSql
+	    
 		DefaultOrmQuery<T> copy = new DefaultOrmQuery<T>(beanType, server, expressionFactory, (String)null);
 		copy.name = name;
 		copy.includeTableJoin = includeTableJoin;
 		copy.autoFetchManager = autoFetchManager;
-		//copy.generatedSql = generatedSql;
+
 		copy.query = query;
 		copy.additionalWhere = additionalWhere;
 		copy.additionalHaving = additionalHaving;
@@ -434,12 +437,9 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.usageProfiling = usageProfiling;
 		copy.autoFetch = autoFetch;
 		copy.parentNode = parentNode;
-		//copy.autoFetchTuned = autoFetchTuned;
-		//copy.autoFetchQueryPlanHash = autoFetchQueryPlanHash;
-		
+
 		return copy;
 	}
-	
 
 	public Type getType() {
 		return type;
