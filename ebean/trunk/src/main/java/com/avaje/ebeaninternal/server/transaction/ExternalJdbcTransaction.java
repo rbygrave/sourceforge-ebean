@@ -31,7 +31,17 @@ public class ExternalJdbcTransaction extends JdbcTransaction {
     public ExternalJdbcTransaction(Connection connection) {
         super(null, true, LogLevel.NONE, connection, null);
     }
-	
+
+    /**
+     * Using the TransactionManager and its current LogLevel. 
+     */
+    public ExternalJdbcTransaction(String id, boolean explicit, Connection connection, TransactionManager manager) {
+        super(id, explicit, manager.getTransactionLogLevel(), connection, manager);
+    }
+
+    /**
+     * Construct will all explicit parameters.
+     */
 	public ExternalJdbcTransaction(String id, boolean explicit, LogLevel logLevel, Connection connection, TransactionManager manager) {
 		super(id, explicit, logLevel, connection, manager);
 	}
