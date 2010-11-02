@@ -212,7 +212,18 @@ public abstract class AbstractNamingConvention implements NamingConvention {
 
             tableName = getTableNameByConvention(beanClass);
         }
-        return tableName;
+        
+        // Use naming convention for catalog or schema, 
+        // if not set in the annotation.
+        String catalog = tableName.getCatalog();
+        if (isEmpty(catalog)) {
+            catalog = getCatalog();
+        }
+        String schema = tableName.getSchema();
+        if (isEmpty(schema)) {
+            schema = getSchema();
+        }
+        return new TableName(catalog, schema, tableName.getName());
     }
 
     public TableName getM2MJoinTableName(TableName lhsTable, TableName rhsTable) {
