@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
@@ -11,7 +10,7 @@
     <groupId>org.avaje</groupId>
     <artifactId>ebean</artifactId>
     <name>Ebean</name>
-    <version>2.7.0-SNAPSHOT</version>
+    <version>2.7.0</version>
     <packaging>jar</packaging>
     <description>Ebean</description>
     <properties>
@@ -26,9 +25,9 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/</connection>
-		<developerConnection>scm:svn:https://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/</developerConnection>
-		<url>http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/</url>
+		<connection>scm:svn:http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/tags/ebean-2.7.0</connection>
+		<developerConnection>scm:svn:https://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/tags/ebean-2.7.0</developerConnection>
+		<url>http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/tags/ebean-2.7.0</url>
 	</scm>
     
     <dependencies>
@@ -291,15 +290,11 @@
                         <phase>process-test-classes</phase>
                         <configuration>
                             <tasks>
-                                <property name="compile_classpath" refid="maven.compile.classpath"/>
-                                <echo
-                                        message="Ebean enhancing test classes debug level -----------------------------------"/>
-                                <echo message="Classpath: ${compile_classpath}"/>
-                                <taskdef name="ebeanEnhance"
-                                         classname="com.avaje.ebean.enhance.ant.AntEnhanceTask"
-                                         classpath="${compile_classpath}"/>
-                                <ebeanEnhance classSource="${project.build.testOutputDirectory}"
-                                              packages="com.avaje.tests.**" transformArgs="debug=1"/>
+                                <property name="compile_classpath" refid="maven.compile.classpath" />
+                                <echo message="Ebean enhancing test classes debug level -----------------------------------" />
+                                <echo message="Classpath: ${compile_classpath}" />
+                                <taskdef name="ebeanEnhance" classname="com.avaje.ebean.enhance.ant.AntEnhanceTask" classpath="${compile_classpath}" />
+                                <ebeanEnhance classSource="${project.build.testOutputDirectory}" packages="com.avaje.tests.**" transformArgs="debug=1" />
                             </tasks>
                             <encoding>UTF-8</encoding>
                         </configuration>
