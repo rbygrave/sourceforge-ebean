@@ -13,188 +13,188 @@ import javax.persistence.PersistenceException;
  */
 public class OrmQueryDetailParser {
 
-	private final OrmQueryDetail detail = new OrmQueryDetail();
+    private final OrmQueryDetail detail = new OrmQueryDetail();
 
-	private int maxRows;
+    private int maxRows;
 
-	private int firstRow;
+    private int firstRow;
 
-	private String rawWhereClause;
+    private String rawWhereClause;
 
-	private String rawOrderBy;
-	
-	private final SimpleTextParser parser;
+    private String rawOrderBy;
 
-	public OrmQueryDetailParser(String oql) {
-		this.parser = new SimpleTextParser(oql);
-	}
+    private final SimpleTextParser parser;
 
-	public void parse() throws PersistenceException {
+    public OrmQueryDetailParser(String oql) {
+        this.parser = new SimpleTextParser(oql);
+    }
 
-		parser.nextWord();
-		processInitial();
-	}	
-	
-	protected void assign(DefaultOrmQuery<?> query){
-		query.setOrmQueryDetail(detail);
-		query.setFirstRow(firstRow);
-		query.setMaxRows(maxRows);
-		query.setRawWhereClause(rawWhereClause);
-		query.order(rawOrderBy);
-	}
+    public void parse() throws PersistenceException {
 
+        parser.nextWord();
+        processInitial();
+    }
 
-	private void processInitial() {
-		if (parser.isMatch("find")) {
-			OrmQueryProperties props = readFindFetch();
-			detail.setBase(props);
-		} else {
-			process();
-		}
-		while (!parser.isFinished()) {
-			process();
-		}
-	}
+    protected void assign(DefaultOrmQuery<?> query) {
+        query.setOrmQueryDetail(detail);
+        query.setFirstRow(firstRow);
+        query.setMaxRows(maxRows);
+        query.setRawWhereClause(rawWhereClause);
+        query.order(rawOrderBy);
+    }
 
-	private boolean isFetch() {
-	    return parser.isMatch("fetch") || parser.isMatch("join");
-	}
-	
-	private void process() {
-		if (isFetch()) {
-			OrmQueryProperties props = readFindFetch();
-			detail.putFetchPath(props);
+    private void processInitial() {
+        if (parser.isMatch("find")) {
+            OrmQueryProperties props = readFindFetch();
+            detail.setBase(props);
+        } else {
+            process();
+        }
+        while (!parser.isFinished()) {
+            process();
+        }
+    }
 
-		} else if (parser.isMatch("where")) {
-			readWhere();
+    private boolean isFetch() {
+        return parser.isMatch("fetch") || parser.isMatch("join");
+    }
 
-		} else if (parser.isMatch("order", "by")) {
-			readOrderBy();
+    private void process() {
+        if (isFetch()) {
+            OrmQueryProperties props = readFindFetch();
+            detail.putFetchPath(props);
 
-		} else if (parser.isMatch("limit")) {
-			readLimit();
+        } else if (parser.isMatch("where")) {
+            readWhere();
 
-		} else {
-			throw new PersistenceException(
-					"Query expected 'fetch', 'where','order by' or 'limit' keyword but got ["
-							+ parser.getWord() + "] \r " + parser.getOql());
-		}
-	}
+        } else if (parser.isMatch("order", "by")) {
+            readOrderBy();
 
-	private void readLimit() {
-		try {
-			String maxLimit = parser.nextWord();
-			maxRows = Integer.parseInt(maxLimit);
-			
-			String offsetKeyword = parser.nextWord();
-			if (offsetKeyword != null) {
-				if (!parser.isMatch("offset")) {
-					throw new PersistenceException("expected offset keyword but got "
-							+ parser.getWord());
-				}
-				String firstRowLimit = parser.nextWord();
-				firstRow = Integer.parseInt(firstRowLimit);
-				parser.nextWord();
-			}
-		} catch (NumberFormatException e) {
-			String msg = "Expected an integer for maxRows or firstRows in limit offset clause";
-			throw new PersistenceException(msg, e);
-		}
-	}
+        } else if (parser.isMatch("limit")) {
+            readLimit();
 
-	private void readOrderBy() {
-		// read the by
-		parser.nextWord();
+        } else {
+            throw new PersistenceException("Query expected 'fetch', 'where','order by' or 'limit' keyword but got ["
+                    + parser.getWord() + "] \r " + parser.getOql());
+        }
+    }
 
-		StringBuilder sb = new StringBuilder();
-		while (parser.nextWord() != null) {
-			if (parser.isMatch("limit")) {
-				break;
-			} else {
-				sb.append(" ").append(parser.getWord());
-			}
-		}
-		rawOrderBy = sb.toString().trim();
-		
-		if (!parser.isFinished()) {
-			readLimit();
-		}
-	}
+    private void readLimit() {
+        try {
+            String maxLimit = parser.nextWord();
+            maxRows = Integer.parseInt(maxLimit);
 
-	private void readWhere() {
+            String offsetKeyword = parser.nextWord();
+            if (offsetKeyword != null) {
+                if (!parser.isMatch("offset")) {
+                    throw new PersistenceException("expected offset keyword but got " + parser.getWord());
+                }
+                String firstRowLimit = parser.nextWord();
+                firstRow = Integer.parseInt(firstRowLimit);
+                parser.nextWord();
+            }
+        } catch (NumberFormatException e) {
+            String msg = "Expected an integer for maxRows or firstRows in limit offset clause";
+            throw new PersistenceException(msg, e);
+        }
+    }
 
-		int nextMode = 0;
-		StringBuilder sb = new StringBuilder();
-		while ((parser.nextWord()) != null) {
-			if (parser.isMatch("order", "by")) {
-				nextMode = 1;
-				break;
+    private void readOrderBy() {
+        // read the by
+        parser.nextWord();
 
-			} else if (parser.isMatch("limit")) {
-				nextMode = 2;
-				break;
+        StringBuilder sb = new StringBuilder();
+        while (parser.nextWord() != null) {
+            if (parser.isMatch("limit")) {
+                break;
+            } else {
+                String w = parser.getWord();
+                if (!w.startsWith("(")) {
+                    sb.append(" ");
+                }
+                sb.append(w);
+            }
+        }
+        rawOrderBy = sb.toString().trim();
 
-			} else {
-				sb.append(" ").append(parser.getWord());
-			}
-		}
-		String whereClause = sb.toString().trim();
-		if (whereClause.length() > 0) {
-			rawWhereClause = whereClause;
-		}
+        if (!parser.isFinished()) {
+            readLimit();
+        }
+    }
 
-		if (nextMode == 1) {
-			readOrderBy();
-		} else if (nextMode == 2) {
-			readLimit();
-		}
-	}
+    private void readWhere() {
 
-	private OrmQueryProperties readFindFetch() {
+        int nextMode = 0;
+        StringBuilder sb = new StringBuilder();
+        while ((parser.nextWord()) != null) {
+            if (parser.isMatch("order", "by")) {
+                nextMode = 1;
+                break;
 
-		boolean readAlias = false;
+            } else if (parser.isMatch("limit")) {
+                nextMode = 2;
+                break;
 
-		String props = null;
-		String path = parser.nextWord();
-		String token = null;
-		while ((token = parser.nextWord()) != null) {
-			if (!readAlias && parser.isMatch("as")) {
-				// next token is alias
-				parser.nextWord();
-				readAlias = true;
+            } else {
+                sb.append(" ").append(parser.getWord());
+            }
+        }
+        String whereClause = sb.toString().trim();
+        if (whereClause.length() > 0) {
+            rawWhereClause = whereClause;
+        }
 
-			} else if ('(' == token.charAt(0)) {
-				props = token;
-				parser.nextWord();
-				break;
+        if (nextMode == 1) {
+            readOrderBy();
+        } else if (nextMode == 2) {
+            readLimit();
+        }
+    }
 
-			} else if (isFindFetchEnd()) {
-				break;
+    private OrmQueryProperties readFindFetch() {
 
-			} else if (!readAlias) {
-				readAlias = true;
+        boolean readAlias = false;
 
-			} else {
-				throw new PersistenceException("Expected (props) or new 'fetch' 'where' but got "
-						+ token);
-			}
-		}
-		if (props != null) {
-			props = props.substring(1, props.length() - 1);
-		}
-		return new OrmQueryProperties(path, props);
-	}
+        String props = null;
+        String path = parser.nextWord();
+        String token = null;
+        while ((token = parser.nextWord()) != null) {
+            if (!readAlias && parser.isMatch("as")) {
+                // next token is alias
+                parser.nextWord();
+                readAlias = true;
 
-	private boolean isFindFetchEnd() {
-		if (isFetch()) {
-			return true;
-		}
-		if (parser.isMatch("where")) {
-			return true;
-		}
-		if (parser.isMatch("order", "by")) {
-			return true;
-		}
-		return false;
-	}
+            } else if ('(' == token.charAt(0)) {
+                props = token;
+                parser.nextWord();
+                break;
+
+            } else if (isFindFetchEnd()) {
+                break;
+
+            } else if (!readAlias) {
+                readAlias = true;
+
+            } else {
+                throw new PersistenceException("Expected (props) or new 'fetch' 'where' but got " + token);
+            }
+        }
+        if (props != null) {
+            props = props.substring(1, props.length() - 1);
+        }
+        return new OrmQueryProperties(path, props);
+    }
+
+    private boolean isFindFetchEnd() {
+        if (isFetch()) {
+            return true;
+        }
+        if (parser.isMatch("where")) {
+            return true;
+        }
+        if (parser.isMatch("order", "by")) {
+            return true;
+        }
+        return false;
+    }
 }
