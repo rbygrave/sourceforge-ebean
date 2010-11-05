@@ -187,7 +187,7 @@ public class ServerConfig {
     /**
      * The overall transaction logging level.
      */
-    private LogLevel loggingLevel = LogLevel.SQL;
+    private LogLevel loggingLevel = LogLevel.NONE;
 
     /**
      * Used to unwrap PreparedStatements to perform JDBC Driver specific
@@ -1391,7 +1391,7 @@ public class ServerConfig {
     
     private LogLevel getLogLevelValue(ConfigPropertyMap p) {
         // logging.level preferred but others parameters will work
-        String logValue = p.get("logging", "SQL");
+        String logValue = p.get("logging", "NONE");
         logValue = p.get("log.level", logValue);
         logValue = p.get("logging.level", logValue);
         if (logValue.trim().equalsIgnoreCase("ALL")){
