@@ -56,7 +56,7 @@ public class SubClassManager implements EnhanceConstants {
 	/**
 	 * Construct with the ClassLoader used to load Ebean.class.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public SubClassManager(ServerConfig serverConfig) {
 		
 	    String s = serverConfig.getProperty("subClassManager.preferContextClassloader", "true");

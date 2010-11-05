@@ -298,7 +298,7 @@ public class AnnotationFields extends AnnotationParser {
 	
 	private static final ScalarTypeLdapBoolean LDAP_BOOLEAN_SCALARTYPE = new ScalarTypeLdapBoolean();
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
     private void adjustTypesForLdap(DeployBeanProperty prop) {
 	    
         Class<?> pt = prop.getPropertyType();
@@ -362,7 +362,7 @@ public class AnnotationFields extends AnnotationParser {
         }
 	}
 	
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private ScalarTypeEncryptedWrapper<?> createScalarType(DeployBeanProperty prop, ScalarType<?> st ) {
         
         // Use Java Encryptor wrapping the logical scalar type 

@@ -521,7 +521,7 @@ public class LIndexIo {
         return new LIndexIoSearcherDefault(indexWriter, index.getName());
     }
   
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static class WriteListener implements QueryListener {
 
         private final boolean updateMode;

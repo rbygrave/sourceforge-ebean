@@ -35,7 +35,7 @@ public class BeanPropertyCompoundScalar extends BeanProperty {
     
     private final CtCompoundProperty ctProperty;
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private final ScalarTypeConverter typeConverter;
     
     public BeanPropertyCompoundScalar(BeanPropertyCompoundRoot rootProperty, DeployBeanProperty scalarDeploy,

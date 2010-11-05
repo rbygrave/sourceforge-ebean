@@ -38,7 +38,7 @@ package com.avaje.ebean.enhance.asm;
  *
  * @author Eric Bruneton
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class ClassWriter implements ClassVisitor {
 
     /**

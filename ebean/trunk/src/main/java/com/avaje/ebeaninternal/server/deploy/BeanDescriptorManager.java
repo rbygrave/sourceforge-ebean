@@ -679,7 +679,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void readEntityRelationships() {
 
         // We only perform 'circular' checks etc after we have
@@ -860,7 +860,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
      * into the order_id column on the order_lines table).
      * </p>
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void makeUnidirectional(DeployBeanInfo<?> info, DeployBeanPropertyAssocMany<?> oneToMany) {
 
         DeployBeanDescriptor<?> targetDesc = getTargetDescriptor(oneToMany);

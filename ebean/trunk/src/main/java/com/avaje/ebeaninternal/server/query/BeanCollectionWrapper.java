@@ -126,7 +126,7 @@ public final class BeanCollectionWrapper {
 		this.map = getMap(isMap);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map<Object,Object> getMap(boolean isMap) {
 		return isMap ? (Map)beanCollection : null;
 	}
@@ -180,7 +180,7 @@ public final class BeanCollectionWrapper {
 	 * @param collection
 	 *            the collection or map to add the bean to
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void add(Object bean, Object collection) {
 		if (bean == null) {
 			return;

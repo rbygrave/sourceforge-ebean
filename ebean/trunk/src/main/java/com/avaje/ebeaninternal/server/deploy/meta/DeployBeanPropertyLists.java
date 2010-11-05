@@ -74,7 +74,7 @@ public class DeployBeanPropertyLists {
 
     private final BeanPropertyAssocOne<?> unidirectional;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public DeployBeanPropertyLists(BeanDescriptorMap owner, BeanDescriptor<?> desc, DeployBeanDescriptor<?> deploy) {
         this.desc = desc;
 
@@ -363,7 +363,7 @@ public class DeployBeanPropertyLists {
         return (BeanPropertyAssocMany[]) list.toArray(new BeanPropertyAssocMany[list.size()]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private BeanProperty createBeanProperty(BeanDescriptorMap owner, DeployBeanProperty deployProp) {
 
         if (deployProp instanceof DeployBeanPropertyAssocOne) {

@@ -85,7 +85,7 @@ public class CopyBeanCollection<T> {
 		return newSet;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private BeanCollection<T> copyMap() {
 		BeanMap<Object,T> newMap = new BeanMap();
 		Map<Object,T> actualMap = ((BeanMap<Object,T>)bc).getActualMap();

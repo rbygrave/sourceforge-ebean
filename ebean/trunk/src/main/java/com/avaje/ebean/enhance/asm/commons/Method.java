@@ -41,7 +41,7 @@ import com.avaje.ebean.enhance.asm.Type;
  * @author Chris Nokleberg
  * @author Eric Bruneton
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class Method {
 
     /**

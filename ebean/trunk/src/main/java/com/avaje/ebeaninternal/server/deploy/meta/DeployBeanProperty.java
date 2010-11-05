@@ -245,7 +245,7 @@ public class DeployBeanProperty {
     /**
      * Wrap the ScalarType using a ScalarTypeConverter.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private ScalarType<?> wrapScalarType(Class<?> propertyType, ScalarType<?> scalarType, ScalarTypeConverter<?, ?> typeConverter) {
         if (typeConverter == null){
             return scalarType;

@@ -34,7 +34,7 @@ public class ReflectionBasedTypeBuilder {
         this.typeManager = typeManager;
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public ScalarType<?> buildScalarType(ImmutableMeta meta) {
         
         if (meta.isCompoundType()){

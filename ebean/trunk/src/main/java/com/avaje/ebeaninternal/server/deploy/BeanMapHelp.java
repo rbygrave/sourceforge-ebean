@@ -102,7 +102,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 	}
 	
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Object copyCollection(Object source, CopyContext ctx, int maxDepth, Object parentBean) {
         if (source instanceof Map<?,?> == false){
             return null;
@@ -138,7 +138,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 
         
     
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
     public Object createEmpty(boolean vanilla) {
 		return vanilla ? new LinkedHashMap() : new BeanMap();
 	}
@@ -152,7 +152,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 		map.put(keyValue, bean);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public BeanCollection<T> createReference(Object parentBean, String propertyName) {
 
 		return new BeanMap(loader, parentBean, propertyName);

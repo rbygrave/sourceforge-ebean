@@ -67,7 +67,8 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
     @SuppressWarnings("unchecked")
     static class VanillaAdd implements BeanCollectionAdd {
 
-        private final Set set;
+        @SuppressWarnings("rawtypes")
+		private final Set set;
 
         private VanillaAdd(Set<?> set) {
             this.set = set;

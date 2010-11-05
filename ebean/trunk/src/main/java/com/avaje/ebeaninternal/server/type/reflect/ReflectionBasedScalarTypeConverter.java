@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 
 import com.avaje.ebean.config.ScalarTypeConverter;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "rawtypes" })
 public class ReflectionBasedScalarTypeConverter implements ScalarTypeConverter {
 
     private static final Object[] NO_ARGS = new Object[0];

@@ -48,7 +48,7 @@ public class BeanPropertyCompound extends BeanProperty {
     /**
      * Type Converter for scala.Option and similar type wrapping.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private final ScalarTypeConverter typeConverter;
     
     private final BeanProperty[] scalarProperties;

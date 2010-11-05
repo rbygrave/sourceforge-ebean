@@ -45,7 +45,7 @@ import com.avaje.ebeaninternal.server.query.LuceneIndexDataReader;
  */
 public class ScalarTypeEnumStandard {
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
     public static class StringEnum extends EnumBase implements ScalarTypeEnum {
 		
 		private final int length;
@@ -121,7 +121,7 @@ public class ScalarTypeEnumStandard {
 			if (beanValue == null) {
 				return null;
 			}
-			Enum e = (Enum)beanValue;
+			Enum<?> e = (Enum<?>)beanValue;
 			return e.toString();
 		}
 	
@@ -135,7 +135,7 @@ public class ScalarTypeEnumStandard {
 
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
     public static class OrdinalEnum extends EnumBase implements ScalarTypeEnum {
 
 		private final Object[] enumArray;
@@ -227,7 +227,7 @@ public class ScalarTypeEnumStandard {
 
 	}
 	
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes","unchecked"})
     public abstract static class EnumBase extends ScalarTypeBase {
 
         protected final Class enumType;

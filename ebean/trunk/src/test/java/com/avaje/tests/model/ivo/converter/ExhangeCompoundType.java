@@ -31,7 +31,7 @@ public class ExhangeCompoundType implements CompoundType<ExhangeCMoneyRate> {
         return new ExhangeCMoneyRate((Rate)propertyValues[0], (CMoney)propertyValues[1]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public CompoundTypeProperty<ExhangeCMoneyRate, ?>[] getProperties() {
 
         CompoundTypeProperty[] props = {new RateProp(), new CMoneyProp()};

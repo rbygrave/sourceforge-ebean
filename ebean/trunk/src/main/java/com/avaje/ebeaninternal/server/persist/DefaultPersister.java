@@ -219,7 +219,7 @@ public final class DefaultPersister implements Persister {
         forceUpdate(bean, t, null, mgr, updateProps);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void forceUpdate(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr, Set<String> updateProps) {
         
         BeanDescriptor<?> descriptor = mgr.getBeanDescriptor();
@@ -1193,7 +1193,7 @@ public final class DefaultPersister implements Persister {
      * Create the Persist Request Object that wraps all the objects used to
      * perform an insert, update or delete.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private PersistRequestBean<?> createRequest(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr) {
 
         if (mgr.isLdapEntityType()){

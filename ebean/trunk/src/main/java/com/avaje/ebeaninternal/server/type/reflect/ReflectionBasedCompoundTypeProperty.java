@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 
 import com.avaje.ebean.config.CompoundTypeProperty;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "rawtypes" })
 public class ReflectionBasedCompoundTypeProperty implements CompoundTypeProperty {
 
     private static final Object[] NO_ARGS = new Object[0];

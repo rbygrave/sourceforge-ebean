@@ -62,7 +62,8 @@ public final class BeanListHelp<T> implements BeanCollectionHelp<T> {
     @SuppressWarnings("unchecked")
     static class VanillaAdd implements BeanCollectionAdd {
 
-        private final List list;
+		@SuppressWarnings("rawtypes")
+		private final List list;
 
         private VanillaAdd(List<?> list) {
             this.list = list;

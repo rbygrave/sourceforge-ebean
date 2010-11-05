@@ -79,7 +79,7 @@ import com.avaje.ebean.enhance.asm.Type;
  * @author Chris Nokleberg
  * @author Eric Bruneton
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class GeneratorAdapter extends LocalVariablesSorter {
 
     private static final String CLDESC = "Ljava/lang/Class;";

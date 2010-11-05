@@ -62,14 +62,14 @@ public class DeployCreateProperties {
 	/**
 	 * Use to wrap and unwrap Scala Option.
 	 */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private final ScalarTypeConverter scalaOptionTypeConverter;
     
     private final DetermineManyType determineManyType;
 
 	private final TypeManager typeManager;
 	
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public DeployCreateProperties(TypeManager typeManager) {
     	this.typeManager = typeManager;
     	
@@ -291,7 +291,7 @@ public class DeployCreateProperties {
     	return null;
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DeployBeanProperty createManyType(DeployBeanDescriptor<?> desc, Class<?> targetType, ManyType manyType) {
 
         ScalarType<?> scalarType = typeManager.getScalarType(targetType);
@@ -302,7 +302,7 @@ public class DeployCreateProperties {
         return new DeployBeanPropertyAssocMany(desc, targetType, manyType);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DeployBeanProperty createProp(DeployBeanDescriptor<?> desc, Field field) {
         
         Class<?> propertyType = field.getType();
