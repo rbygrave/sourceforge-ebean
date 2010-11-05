@@ -591,7 +591,7 @@ public final class EntityBeanIntercept implements Serializable {
 	/**
 	 * Helper method to check if two objects are equal.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected boolean areEqual(Object obj1, Object obj2) {
 		if (obj1 == null) {
 			return (obj2 == null);

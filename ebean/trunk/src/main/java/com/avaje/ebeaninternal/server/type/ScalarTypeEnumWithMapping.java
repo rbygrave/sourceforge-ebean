@@ -27,7 +27,7 @@ import com.avaje.ebeaninternal.server.query.LuceneIndexDataReader;
 /**
  * Additional control over mapping to DB values.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ScalarTypeEnumWithMapping extends ScalarTypeEnumStandard.EnumBase implements ScalarType, ScalarTypeEnum {
 	
 	private final EnumToDbValueMap beanDbMap;

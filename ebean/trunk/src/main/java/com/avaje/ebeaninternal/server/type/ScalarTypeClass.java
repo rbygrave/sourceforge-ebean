@@ -27,7 +27,7 @@ import javax.persistence.PersistenceException;
  * @author emcgreal
  * @author rbygrave
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "rawtypes" })
 public class ScalarTypeClass extends ScalarTypeBaseVarchar<Class> {
 	
     public ScalarTypeClass() {

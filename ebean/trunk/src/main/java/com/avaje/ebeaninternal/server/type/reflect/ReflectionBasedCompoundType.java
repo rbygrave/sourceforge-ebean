@@ -25,7 +25,7 @@ import java.util.Arrays;
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.CompoundTypeProperty;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "rawtypes" })
 public class ReflectionBasedCompoundType implements CompoundType {
 
     private final Constructor<?> constructor;

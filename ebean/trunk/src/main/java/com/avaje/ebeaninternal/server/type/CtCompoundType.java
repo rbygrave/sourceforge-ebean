@@ -257,7 +257,7 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
     }
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void jsonWriteProps(WriteJsonContext ctx, Object valueObject, String propertyName) {
             
         ctx.appendObjectBegin();

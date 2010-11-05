@@ -74,19 +74,19 @@ public class BeanCollectionFactory {
         
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private BeanMap createMap(BeanCollectionParams params) {
         
         return new BeanMap(new LinkedHashMap(defaultMapInitialCapacity));       
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private BeanSet createSet(BeanCollectionParams params) {
 
         return new BeanSet(new LinkedHashSet(defaultSetInitialCapacity));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private BeanList createList(BeanCollectionParams params) {
         
         return new BeanList(new ArrayList(defaultListInitialCapacity));

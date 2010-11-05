@@ -53,7 +53,7 @@ public final class ElComparatorProperty<T> implements Comparator<T>, ElComparato
 		return compareValues(value, val2);
 	}	
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public int compareValues(Object val1, Object val2){
 		
 		if (val1 == null){

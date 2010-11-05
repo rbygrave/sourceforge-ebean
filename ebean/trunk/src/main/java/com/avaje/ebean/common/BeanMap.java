@@ -210,7 +210,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 		return map.containsValue(value);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Set<Entry<K, E>> entrySet() {
 		init();
 		if (isReadOnly()){
@@ -253,7 +253,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 		return map.put(key, value);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void putAll(Map<? extends K, ? extends E> t) {
 		checkReadOnly();
 		init();

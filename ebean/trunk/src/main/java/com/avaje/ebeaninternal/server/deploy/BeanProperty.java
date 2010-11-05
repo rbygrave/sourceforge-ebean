@@ -244,7 +244,7 @@ public class BeanProperty implements ElPropertyValue {
      * Used for non-jdbc native types (java.util.Date Enums etc). Converts from
      * logical to jdbc types.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     final ScalarType scalarType;
 
     /**

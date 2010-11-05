@@ -602,7 +602,7 @@ public final class DefaultServer implements SpiEbeanServer {
      * loaded then it will returned that object.
      * </p>
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T getReference(Class<T> type, Object id) {
 
         if (id == null) {
@@ -1205,7 +1205,7 @@ public final class DefaultServer implements SpiEbeanServer {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> Set<T> findSet(Query<T> query, Transaction t) {
 
         SpiOrmQueryRequest request = createQueryRequest(Type.SET, query, t);
@@ -1229,7 +1229,7 @@ public final class DefaultServer implements SpiEbeanServer {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> Map<?, T> findMap(Query<T> query, Transaction t) {
 
         SpiOrmQueryRequest request = createQueryRequest(Type.MAP, query, t);

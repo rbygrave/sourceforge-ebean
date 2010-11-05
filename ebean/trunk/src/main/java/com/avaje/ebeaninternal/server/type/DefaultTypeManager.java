@@ -446,7 +446,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	 * Given the name value mapping and integer/string type and explicit DB column length
 	 * create the ScalarType for the Enum.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ScalarType<?> createEnumScalarType(Class enumType, Map<String, String> nameValueMap, boolean integerType, int dbColumnLength) {
 	    
 		EnumToDbValueMap<?> beanDbMap = EnumToDbValueMap.create(integerType);
@@ -503,7 +503,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
     protected void initialiseScalarConverters(BootupClasses bootupClasses) {
 
 	    
@@ -567,7 +567,7 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
         }
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected CtCompoundType createCompoundScalarDataReader(Class<?> compoundTypeClass, CompoundType<?> compoundType, String info) {
 
         CtCompoundType<?> ctCompoundType = compoundTypeMap.get(compoundTypeClass);

@@ -80,7 +80,7 @@ public class DeployBeanTable {
 		return props;
 	}
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private BeanProperty createProperty(BeanDescriptorMap owner, DeployBeanProperty prop){
     	
     	if (prop instanceof DeployBeanPropertyAssocOne<?>){

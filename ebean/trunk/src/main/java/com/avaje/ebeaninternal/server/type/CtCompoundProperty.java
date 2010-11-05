@@ -35,7 +35,7 @@ public class CtCompoundProperty {
 
     private final CtCompoundType<?> compoundType;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     private final CompoundTypeProperty property;
 
     public CtCompoundProperty(String relativeName, CtCompoundProperty parent, CtCompoundType<?> ctType,

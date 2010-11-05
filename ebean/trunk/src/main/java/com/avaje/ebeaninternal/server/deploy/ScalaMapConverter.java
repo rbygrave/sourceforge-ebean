@@ -28,7 +28,7 @@ import scala.collection.JavaConversions;
  */
 public class ScalaMapConverter implements CollectionTypeConverter {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     public Object toUnderlying(Object wrapped) {
         
         if (wrapped instanceof JavaConversions.JMapWrapper){

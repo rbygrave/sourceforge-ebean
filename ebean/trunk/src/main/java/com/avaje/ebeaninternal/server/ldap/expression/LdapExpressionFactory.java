@@ -45,7 +45,7 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return new LdapExpressionFactory();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     public Expression allEq(Map<String, Object> propertyMap) {
         
         Junction conjunction = new LdJunctionExpression.Conjunction(this);
@@ -166,7 +166,7 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return new LdLikeExpression(propertyName, value);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     public Expression in(String propertyName, Collection<?> values) {
 
         if (values == null || values.isEmpty()){
@@ -181,7 +181,7 @@ public class LdapExpressionFactory implements ExpressionFactory {
         return disjunction;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Expression in(String propertyName, Object[] values) {
 
         if (values == null || values.length == 0){

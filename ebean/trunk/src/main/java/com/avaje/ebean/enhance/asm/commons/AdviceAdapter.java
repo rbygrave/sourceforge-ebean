@@ -57,7 +57,7 @@ import java.util.Map;
  * @author Eugene Kuleshov
  * @author Eric Bruneton
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes
 {
     private static final Object THIS = new Object();
@@ -68,7 +68,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes
 
     private boolean constructor;
     private boolean superInitialized;
-    private List stackFrame;
+    
+	private List stackFrame;
     private Map branches;
 
     /**

@@ -32,7 +32,7 @@ import com.avaje.ebean.config.ScalarTypeConverter;
  */
 public class ScalaOptionTypeConverter<S> implements ScalarTypeConverter<scala.Option<S>, S>{
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Option<S> getNullValue() {
         return (scala.Option)scala.None$.MODULE$;
     }
@@ -46,7 +46,7 @@ public class ScalaOptionTypeConverter<S> implements ScalarTypeConverter<scala.Op
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Option<S> wrapValue(S scalarType) {
         if (scalarType == null){
             return (scala.Option)scala.None$.MODULE$;

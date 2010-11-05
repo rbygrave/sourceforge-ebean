@@ -8,7 +8,7 @@ import com.avaje.tests.model.ivo.Money;
 
 public class CMoneyCompoundType {//implements CompoundType<CMoney> {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     private CompoundTypeProperty[] props = {new PropertyMoney(), new PropertyCurrency()};
     
     public CMoney create(Object[] v) {

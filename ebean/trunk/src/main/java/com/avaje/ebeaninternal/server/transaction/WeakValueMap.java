@@ -68,7 +68,7 @@ public class WeakValueMap<K, V> {
         return new WeakReferenceWithKey<K, V>(key, value, refQueue);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     private void expunge() {
 
         Reference ref;

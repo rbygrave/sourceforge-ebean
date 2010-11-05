@@ -31,7 +31,7 @@ public final class IdBinderSimple implements IdBinder {
 	
 	private final Class<?> expectedType;
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
     private final ScalarType scalarType;
 	
 	public IdBinderSimple(BeanProperty idProperty) {
