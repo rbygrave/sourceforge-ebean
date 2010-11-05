@@ -7,11 +7,11 @@ public class AutofetchConfig {
 
 	private AutofetchMode mode = AutofetchMode.DEFAULT_ONIFEMPTY;
 	
-	private boolean queryTuning = true;
+	private boolean queryTuning = false;
 	
 	private boolean queryTuningAddVersion = false;
 	
-	private boolean profiling = true;
+	private boolean profiling = false;
 	
 	private int profilingMin = 1;
 	
@@ -19,7 +19,7 @@ public class AutofetchConfig {
 	
 	private double profilingRate = 0.05; 
 	
-	private boolean useFileLogging = true;
+	private boolean useFileLogging = false;
 	
 	private String logDirectory;
 	
@@ -233,10 +233,10 @@ public class AutofetchConfig {
 	public void loadSettings(ConfigPropertyMap p){
 		
 	    logDirectory = p.get("autofetch.logDirectory", null);
-		queryTuning = p.getBoolean("autofetch.querytuning", true);
+		queryTuning = p.getBoolean("autofetch.querytuning", false);
 		queryTuningAddVersion = p.getBoolean("autofetch.queryTuningAddVersion", false);
 		
-		profiling = p.getBoolean("autofetch.profiling", true);
+		profiling = p.getBoolean("autofetch.profiling", false);
 		mode = p.getEnum(AutofetchMode.class, "autofetch.implicitmode", AutofetchMode.DEFAULT_ONIFEMPTY);
 		
 		profilingMin = p.getInt("autofetch.profiling.min", 1);
