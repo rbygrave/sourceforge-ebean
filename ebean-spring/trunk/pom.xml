@@ -16,7 +16,9 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
 		<spring.framework.version>3.0.0.RELEASE</spring.framework.version>
+		<ebean.version>2.7.1</ebean.version>
 	</properties>
+	
     <url>http://www.avaje.org</url>
 	<licenses>
 		<license>
@@ -39,37 +41,36 @@
 		<dependency>
 			<groupId>org.avaje</groupId>
 			<artifactId>ebean</artifactId>
-			<version>2.7.0</version>
+			<version>${ebean.version}</version>
 		</dependency>
 		
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>${spring.framework.version}
-			</version>
+			<version>${spring.framework.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
-			<version>${spring.framework.version}
-			</version>
+			<version>${spring.framework.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
 			<version>${spring.framework.version}</version>
+			<scope>provided</scope>
 		</dependency>	
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${spring.framework.version}
-			</version>
+			<version>${spring.framework.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -80,14 +81,8 @@
 			<groupId>org.apache.xbean</groupId>
 			<artifactId>xbean-spring</artifactId>
 			<version>3.5</version>
-		</dependency>
-<!-- 
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>1.3.0</version>
-		</dependency>
--->		
+			<scope>test</scope>
+		</dependency>	
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -95,20 +90,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<!-- 
-	<distributionManagement>
-		<repository>
-			<id>avaje.repo</id>
-			<name>avaje.repo</name>
-			<url>http://www.avaje.org/archiva/repository/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>avaje.repo</id>
-			<name>avaje.repo</name>
-			<url>http://www.avaje.org/archiva/repository/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-	 -->
+	
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -142,7 +124,7 @@
 			<plugin>
 				<groupId>org.avaje</groupId>
 				<artifactId>ebean-maven-enhancement-plugin</artifactId>
-				<version>2.7.0</version>
+				<version>${ebean.version}</version>
 				<executions>
 					<execution>
 						<id>main</id>
