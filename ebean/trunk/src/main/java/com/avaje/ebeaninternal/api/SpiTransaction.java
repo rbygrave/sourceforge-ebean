@@ -35,10 +35,22 @@ import com.avaje.ebeaninternal.server.transaction.TransactionLogBuffer;
  */
 public interface SpiTransaction extends Transaction {
 
+	/**
+	 * Return true if generated SQL and Bind values should be logged to the transaction log.
+	 */
     public boolean isLogSql();
+    
+    /**
+     * Return true if summary level events should be logged to the transaction log.
+     */
     public boolean isLogSummary();
     
-    
+	/**
+	 * Log a comment to the transaction log for Ebean INTERNAL use. There should
+	 * always be an external LogLevel check prior to calling this method.
+	 */
+	public void logInternal(String msg);
+	
     /**
      * Add a IndexUpdateFuture.
      */
@@ -95,11 +107,6 @@ public interface SpiTransaction extends Transaction {
      * </p>
      */
 	public int depth(int diff);
-		
-    /**
-     * Returns true if logging is enabled for this transaction.
-     */
-    public boolean isLoggingOn();
 
     /**
      * Return true if this transaction was created explicitly via

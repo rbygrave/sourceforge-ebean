@@ -107,15 +107,9 @@ public final class PersistRequestCallableSql extends PersistRequest {
 	 */
 	public void postExecute() throws SQLException {
 
-		if (transaction.isLoggingOn()) {
-
-			String label = callableSql.getLabel();
-
-			String m = "CallableSql label[" + label + "]" + " rows[" + rowCount
-					+ "]" + " bind[" + bindLog + "]";
-
-			// log the summary of the CallableSql
-			transaction.log(m);
+		if (transaction.isLogSummary()) {
+			String m = "CallableSql label[" + callableSql.getLabel() + "]" + " rows[" + rowCount+ "]" + " bind[" + bindLog + "]";
+			transaction.logInternal(m);
 		}
 
 		// register table modifications with the transaction event

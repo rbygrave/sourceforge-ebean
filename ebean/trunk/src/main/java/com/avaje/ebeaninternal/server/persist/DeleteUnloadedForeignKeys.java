@@ -86,7 +86,9 @@ public class DeleteUnloadedForeignKeys {
         q.where().idEq(id);
 
         SpiTransaction t = request.getTransaction();
-        t.log("-- Ebean fetching foreign key values for delete of " + descriptor.getName() + " id:" + id);
+        if (t.isLogSummary()) {
+        	t.logInternal("-- Ebean fetching foreign key values for delete of " + descriptor.getName() + " id:" + id);
+        }
         beanWithForeignKeys = server.findUnique(q, t);
     }
 

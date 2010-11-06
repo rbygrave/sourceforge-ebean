@@ -134,7 +134,7 @@ public class ExeUpdateSql {
     		
     	} else {
     	    if (logSql){
-    	        t.log(sql);
+    	        t.logInternal(sql);
     	    }
     		pstmt = pstmtFactory.getPstmt(t, sql);
     	}

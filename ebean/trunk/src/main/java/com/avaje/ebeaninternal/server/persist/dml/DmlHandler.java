@@ -150,7 +150,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 */
 	protected void logBinding() {
 		if (logLevelSql) {
-		    transaction.log(bindLog.toString());
+		    transaction.logInternal(bindLog.toString());
 		}
 	}
 
@@ -159,7 +159,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 */
 	protected void logSql(String sql) {
 		if (logLevelSql) {
-			transaction.log(sql);
+			transaction.logInternal(sql);
 		}
 	}
 	
@@ -356,7 +356,7 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 		}
 
 		if (logLevelSql){
-		    t.log(sql);
+		    t.logInternal(sql);
 		}
 		
 		stmt = getPstmt(t, sql, genKeys);

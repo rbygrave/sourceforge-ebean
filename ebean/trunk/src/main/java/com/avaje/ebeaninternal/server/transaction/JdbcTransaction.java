@@ -399,13 +399,6 @@ public class JdbcTransaction implements SpiTransaction {
 	}
 
 	/**
-	 * Is transaction logging on for this transaction.
-	 */
-	public boolean isLoggingOn() {
-		return logLevel.ordinal() > LogLevel.NONE.ordinal();
-	}
-
-	/**
 	 * Set whether transaction logging is on for this transaction.
 	 */
 	public void setLoggingOn(boolean loggingOn) {
@@ -441,10 +434,20 @@ public class JdbcTransaction implements SpiTransaction {
     }
 
     /**
-	 * Log a message to the transaction log.
+     * Log a message to the transaction log - for PUBLIC use.
+     */
+    public void log(String msg) {
+    	if (isLogSummary()){
+    		logInternal(msg);
+    	}
+    }
+    
+    /**
+	 * Log a message to the transaction log - for Ebean INTERNAL use.
+	 * The LogLevel should be explicitly checked before calling this method.
 	 */
-	public void log(String msg) {
-		if (isLoggingOn() && manager != null) {
+	public void logInternal(String msg) {
+		if (manager != null) {
 		    if (logBuffer.add(msg)) {
 		        // buffer full so flush it
 	            manager.log(logBuffer);

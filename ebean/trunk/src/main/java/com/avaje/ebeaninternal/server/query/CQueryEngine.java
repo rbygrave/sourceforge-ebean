@@ -85,7 +85,7 @@ public class CQueryEngine {
 			BeanIdList list = rcQuery.findIds();
 
 			if (request.isLogSummary()) {
-				request.getTransaction().log(rcQuery.getSummary());
+				request.getTransaction().logInternal(rcQuery.getSummary());
 			}
 
 			if (!list.isFetchingInBackground() && request.getQuery().isFutureFetch()){
@@ -121,7 +121,7 @@ public class CQueryEngine {
 			int rowCount = rcQuery.findRowCount();
 
 			if (request.isLogSummary()) {
-				request.getTransaction().log(rcQuery.getSummary());
+				request.getTransaction().logInternal(rcQuery.getSummary());
 			}
 			
 			if (request.getQuery().isFutureFetch()){
@@ -333,7 +333,7 @@ public class CQueryEngine {
 
 		String sql = query.getGeneratedSql();
 		sql = sql.replace(Constants.NEW_LINE, ' ');
-		query.getTransaction().log(sql);
+		query.getTransaction().logInternal(sql);
 	}
 
 	/**
@@ -370,7 +370,7 @@ public class CQueryEngine {
 		msg.append("] rows[").append(q.getLoadedRowDetail());
 		msg.append("] bind[").append(q.getBindLog()).append("]");
 
-		q.getTransaction().log(msg.toString());
+		q.getTransaction().logInternal(msg.toString());
 	}
 
 	/**
@@ -410,6 +410,6 @@ public class CQueryEngine {
 		msg.append("] bind[").append(q.getBindLog()).append("]");
 		
 		
-		q.getTransaction().log(msg.toString());
+		q.getTransaction().logInternal(msg.toString());
 	}
 }

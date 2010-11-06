@@ -504,14 +504,18 @@ public final class DefaultPersister implements Persister {
                 Query<?> q = deleteRequiresQuery(descriptor, propImportDelete);
                 if (idList != null){
                     q.where().idIn(idList);
-                    t.log("-- DeleteById of "+descriptor.getName()+" ids["+idList+"] requires fetch of foreign key values");
+                    if (t.isLogSummary()) {
+                    	t.logInternal("-- DeleteById of "+descriptor.getName()+" ids["+idList+"] requires fetch of foreign key values");
+                    }
                     List<?> beanList = server.findList(q, t);
                     deleteList(beanList, t);
                     return beanList.size();
                     
                 } else {
                     q.where().idEq(id);
-                    t.log("-- DeleteById of "+descriptor.getName()+" id["+id+"] requires fetch of foreign key values");
+                    if (t.isLogSummary()) {
+                    	t.logInternal("-- DeleteById of "+descriptor.getName()+" id["+id+"] requires fetch of foreign key values");
+                    }
                     Object bean = server.findUnique(q, t);
                     if (bean == null){
                         return 0;
@@ -557,13 +561,17 @@ public final class DefaultPersister implements Persister {
         BeanPropertyAssocMany<?>[] manys = descriptor.propertiesManyToMany();
         for (int i = 0; i < manys.length; i++) {
             SqlUpdate sqlDelete = manys[i].deleteByParentId(id, idList);
-            t.log("-- Deleting intersection table entries: "+manys[i].getFullBeanName());
+            if (t.isLogSummary()) {
+            	t.logInternal("-- Deleting intersection table entries: "+manys[i].getFullBeanName());
+            }
             executeSqlUpdate(sqlDelete, t);
         }
         
         // delete the bean(s) 
         SqlUpdate deleteById = descriptor.deleteById(id, idList);
-        t.log("-- Deleting "+descriptor.getName()+" Ids"+idList);
+        if (t.isLogSummary()) {
+        	t.logInternal("-- Deleting "+descriptor.getName()+" Ids"+idList);
+        }
         
         // use Id's to update L2 cache rather than Bulk table event
         deleteById.setAutoTableMod(false);
@@ -892,7 +900,9 @@ public final class DefaultPersister implements Persister {
 				Object otherBean = it.next();
 				if (deletions != null && deletions.remove(otherBean)) {
 					String m = "Inserting and Deleting same object? " + otherBean;
-					t.log(m);
+					if (t.isLogSummary()) {
+						t.logInternal(m);
+					}
 					logger.log(Level.WARNING, m);
 
 				} else {

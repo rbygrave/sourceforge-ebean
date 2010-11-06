@@ -115,7 +115,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				if (request.isLogSql()) {
 					String sOut = sql.replace(Constants.NEW_LINE, ' ');
 					sOut = sOut.replace(Constants.CARRIAGE_RETURN, ' ');
-					t.log(sOut);
+					t.logInternal(sOut);
 				}
 	
 				rset = pstmt.executeQuery();
@@ -197,7 +197,7 @@ public class DefaultRelationalQueryEngine implements RelationalQueryEngine {
 				String msg = "SqlQuery  rows[" + loadRowCount + "] time[" + exeTime + "] bind["
 						+ bindLog + "] finished[" + beanColl.isFinishedFetch() + "]";
 
-				t.log(msg);
+				t.logInternal(msg);
 			}
 			
 			if (query.isCancelled()){
