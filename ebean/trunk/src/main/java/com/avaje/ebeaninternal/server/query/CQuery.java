@@ -34,7 +34,6 @@ import javax.persistence.PersistenceException;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
-import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.EntityBean;
@@ -46,8 +45,8 @@ import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.api.LoadContext;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
+import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
@@ -833,12 +832,14 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
     /**
      * Create a PersistenceException including interesting information like the bindLog and sql used.
      */
-    public static PersistenceException createPersistenceException(SQLException e, Transaction t, String bindLog, String sql) {
+    public static PersistenceException createPersistenceException(SQLException e, SpiTransaction t, String bindLog, String sql) {
 
-        // log the error to the transaction log
-        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[] { "\r", "\n" }, "\\n ");
-        String msg = "ERROR executing query:   bindLog[" + bindLog + "] error[" + errMsg + "]";
-        t.log(msg);
+    	if (t.isLogSummary()) {
+	        // log the error to the transaction log
+	        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[] { "\r", "\n" }, "\\n ");
+	        String msg = "ERROR executing query:   bindLog[" + bindLog + "] error[" + errMsg + "]";
+	        t.logInternal(msg);
+    	}
 
         // ensure 'rollback' is logged if queryOnly transaction
         t.getConnection();

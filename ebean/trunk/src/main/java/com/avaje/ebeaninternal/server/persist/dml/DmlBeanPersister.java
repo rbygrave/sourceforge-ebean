@@ -109,7 +109,9 @@ public final class DmlBeanPersister implements BeanPersister {
 	        // log the error to the transaction log
 	        String errMsg = StringHelper.replaceStringMulti(e.getMessage(), new String[]{"\r","\n"}, "\\n ");
 	        String msg = "ERROR executing DML bindLog["+handler.getBindLog()+"] error["+errMsg+"]";
-	        request.getTransaction().log(msg);
+	        if (request.getTransaction().isLogSummary()) {
+	        	request.getTransaction().logInternal(msg);
+	        }
 	        
 			throw new PersistenceException(msg, e);
 

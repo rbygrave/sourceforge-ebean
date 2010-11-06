@@ -110,14 +110,9 @@ public final class PersistRequestOrmUpdate extends PersistRequest {
 		OrmUpdateType ormUpdateType = ormUpdate.getOrmUpdateType();
 		String tableName = ormUpdate.getBaseTable();
 		
-		if (transaction.isLoggingOn()) {
-
-			String m = ormUpdateType + " table[" + tableName + "] rows["
-					+ rowCount + "] bind[" + bindLog + "]";
-
-			// log the summary of the sql to the transaction log
-			transaction.log(m);
-
+		if (transaction.isLogSummary()) {
+			String m = ormUpdateType + " table[" + tableName + "] rows["+ rowCount + "] bind[" + bindLog + "]";
+			transaction.logInternal(m);
 		}
 		
 		if (ormUpdate.isNotifyCache()) {

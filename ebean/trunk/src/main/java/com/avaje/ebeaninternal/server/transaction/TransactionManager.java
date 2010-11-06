@@ -363,14 +363,18 @@ public class TransactionManager {
 	public void notifyOfRollback(SpiTransaction transaction, Throwable cause) {
 		
 		try {
-			String msg = "Rollback";
-			if (cause != null){
-				msg += " error: "+formatThrowable(cause);
-			}
-			transaction.log(msg);
-			
-			if (commitDebugLevel >= 1){
-				logger.info("Transaction ["+transaction.getId()+"] "+msg);
+			if (transaction.isLogSummary() || commitDebugLevel >= 1) {
+				String msg = "Rollback";
+				if (cause != null){
+					msg += " error: "+formatThrowable(cause);
+				}
+				if (transaction.isLogSummary()) {
+					transaction.logInternal(msg);
+				}
+				
+				if (commitDebugLevel >= 1){
+					logger.info("Transaction ["+transaction.getId()+"] "+msg);
+				}
 			}
 			
 			log(transaction.getLogBuffer());
@@ -398,7 +402,9 @@ public class TransactionManager {
     					msg += " error: "+formatThrowable(cause);
     				}		
     			}
-    			transaction.log(msg);
+    			if (transaction.isLogSummary()) {
+    				transaction.logInternal(msg);
+    			}
                 logger.info("Transaction ["+transaction.getId()+"] "+msg);
             }
             
