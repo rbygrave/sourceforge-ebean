@@ -27,14 +27,15 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.Expression;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebean.bean.BeanCollectionAdd;
 import com.avaje.ebean.bean.BeanCollectionLoader;
-import com.avaje.ebean.bean.BeanCollection.ModifyListenMode;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedId;
@@ -44,8 +45,8 @@ import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
-import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext.ReadBeanState;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 
 /**
  * Property mapped to a List Set or Map.
@@ -229,15 +230,18 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	    return sqlDelete;
 	}
 	
-    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist, Transaction t) {
+	/**
+	 * Find the Id's of detail beans given a parent Id or list of parent Id's.
+	 */
+    public List<Object> findIdsByParentId(Object parentId, List<Object> parentIdist, Transaction t, ArrayList<Object> excludeDetailIds) {
         if (parentId != null){
-            return findIdsByParentId(parentId, t);
+            return findIdsByParentId(parentId, t, excludeDetailIds);
         } else {
-            return findIdsByParentIdList(parentIdist, t);
+            return findIdsByParentIdList(parentIdist, t, excludeDetailIds);
         }
     }
     
-    private List<Object> findIdsByParentId(Object parentId, Transaction t) {
+    private List<Object> findIdsByParentId(Object parentId, Transaction t, ArrayList<Object> excludeDetailIds) {
         
         String rawWhere = deriveWhereParentIdSql(false);
         
@@ -246,10 +250,16 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
             .where().raw(rawWhere).query();
         
         bindWhereParendId(1, q, parentId);
+        
+        if (excludeDetailIds != null && !excludeDetailIds.isEmpty()) {
+    		Expression idIn = q.getExpressionFactory().idIn(excludeDetailIds);
+        	q.where().not(idIn);
+        }
+        
         return server.findIds(q, t);
     }
     
-    private List<Object> findIdsByParentIdList(List<Object> parentIdist, Transaction t) {
+    private List<Object> findIdsByParentIdList(List<Object> parentIdist, Transaction t, ArrayList<Object> excludeDetailIds) {
 
         String rawWhere = deriveWhereParentIdSql(true);
         String inClause = targetIdBinder.getIdInValueExpr(parentIdist.size());
@@ -263,6 +273,11 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
         int pos = 1;
         for (int i = 0; i < parentIdist.size(); i++) {            
             pos = bindWhereParendId(pos, q, parentIdist.get(i));
+        }
+        
+        if (excludeDetailIds != null && !excludeDetailIds.isEmpty()) {
+    		Expression idIn = q.getExpressionFactory().idIn(excludeDetailIds);
+        	q.where().not(idIn);
         }
         
         return server.findIds(q, t);
@@ -729,9 +744,12 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 		throw new PersistenceException(msg);
 	}
 
-    public IntersectionRow buildManyDeleteChildren(Object parentBean) {
+    public IntersectionRow buildManyDeleteChildren(Object parentBean, ArrayList<Object> excludeDetailIds) {
 
         IntersectionRow row = new IntersectionRow(tableJoin.getTable());
+        if (excludeDetailIds != null && !excludeDetailIds.isEmpty()) {
+        	row.setExcludeIds(excludeDetailIds, getTargetDescriptor());
+        }
         buildExport(row, parentBean);
         return row;
     }

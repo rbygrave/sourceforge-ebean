@@ -107,6 +107,8 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
     protected boolean notifyCache;
 
+    private boolean statelessUpdate;
+    
     /**
      * Used for forced update of a bean.
      */
@@ -326,6 +328,20 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     }
 
     /**
+     * Return true if this is a stateless update.
+     */
+	public boolean isStatelessUpdate() {
+		return statelessUpdate;
+	}
+
+	/**
+	 * Set to true if this is a stateless update.
+	 */
+	public void setStatelessUpdate(boolean statelessUpdate) {
+		this.statelessUpdate = statelessUpdate;
+	}
+
+	/**
      * Used to skip updates if we know the bean is not dirty. This is the case
      * for EntityBeans that have not been modified.
      */

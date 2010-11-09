@@ -16,13 +16,13 @@ import com.avaje.ebeaninternal.util.DefaultExpressionRequest;
 /**
  * Slightly redundant as Query.setId() ultimately also does the same job.
  */
-class IdInExpression implements SpiExpression {
+public class IdInExpression implements SpiExpression {
 
 	private static final long serialVersionUID = 1L;
 
 	private final List<?> idList;
 	
-	IdInExpression(List<?> idList) {
+	public IdInExpression(List<?> idList) {
 	    this.idList = idList;
 	}
 
@@ -49,6 +49,20 @@ class IdInExpression implements SpiExpression {
 		}	
 	}
 
+	/**
+	 * For use with deleting non attached detail beans during stateless update.
+	 */
+	public void addSqlNoAlias(SpiExpressionRequest request) {
+		
+		DefaultExpressionRequest r = (DefaultExpressionRequest)request;
+		BeanDescriptor<?> descriptor = r.getBeanDescriptor();
+		IdBinder idBinder = descriptor.getIdBinder();
+		
+		request.append(descriptor.getIdBinder().getBindIdInSql(null));
+		String inClause = idBinder.getIdInValueExpr(idList.size());
+		request.append(inClause);
+	}
+	
 	public void addSql(SpiExpressionRequest request) {
 		
 		DefaultExpressionRequest r = (DefaultExpressionRequest)request;
