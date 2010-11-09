@@ -12,6 +12,8 @@ public class DefaultExpressionRequest implements SpiExpressionRequest {
 
 	private final SpiOrmQueryRequest<?> queryRequest;
 	
+	private final BeanDescriptor<?> beanDescriptor;
+	
 	private final StringBuilder sb = new StringBuilder();
 	
 	private final ArrayList<Object> bindValues = new ArrayList<Object>();
@@ -21,16 +23,24 @@ public class DefaultExpressionRequest implements SpiExpressionRequest {
 	private int paramIndex;
 	
 	private LIndex luceneIndex;
-	    
+	
 	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, DeployParser deployParser) {
 		this.queryRequest = queryRequest;
+		this.beanDescriptor = queryRequest.getBeanDescriptor();
 		this.deployParser = deployParser;
 	}
 
 	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, LIndex index) {
 	    this.queryRequest = queryRequest;
+	    this.beanDescriptor = queryRequest.getBeanDescriptor();
 	    this.deployParser = null;
 	    this.luceneIndex = index;
+	}
+	
+	public DefaultExpressionRequest(BeanDescriptor<?> beanDescriptor) {
+		this.beanDescriptor = beanDescriptor;
+		this.queryRequest = null;
+		this.deployParser = null;
 	}
 	
 	public LIndex getLuceneIndex() {
@@ -51,13 +61,12 @@ public class DefaultExpressionRequest implements SpiExpressionRequest {
     }
 
     public BeanDescriptor<?> getBeanDescriptor(){
-		return queryRequest.getBeanDescriptor();
+		return beanDescriptor;
 	}
 	
 	public SpiOrmQueryRequest<?> getQueryRequest() {
 		return queryRequest;
 	}
-
 
 	public SpiExpressionRequest append(String sql) {
 		sb.append(sql);

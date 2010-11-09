@@ -1,5 +1,6 @@
 package com.avaje.ebeaninternal.server.deploy;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,6 +10,8 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebeaninternal.api.BindParams;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
+import com.avaje.ebeaninternal.server.expression.IdInExpression;
+import com.avaje.ebeaninternal.util.DefaultExpressionRequest;
 
 public class IntersectionRow {
 
@@ -16,8 +19,19 @@ public class IntersectionRow {
 
 	private final LinkedHashMap<String,Object> values = new LinkedHashMap<String,Object>();
 
+	private ArrayList<Object> excludeIds;
+	private BeanDescriptor<?> excludeDescriptor;
+
 	public IntersectionRow(String tableName){
 		this.tableName = tableName;
+	}
+	
+	/**
+	 * Set Id's to exclude. This is for deleting non-attached detail Id's.
+	 */
+	public void setExcludeIds(ArrayList<Object> excludeIds, BeanDescriptor<?> excludeDescriptor){
+		this.excludeIds = excludeIds;
+		this.excludeDescriptor = excludeDescriptor;
 	}
 
 	public void put(String key, Object value){
@@ -81,6 +95,22 @@ public class IntersectionRow {
 			sb.append(" = ?");
 
 			bindParams.setParameter(count, entry.getValue());
+		}
+		if (excludeIds != null){
+			IdInExpression idIn = new IdInExpression(excludeIds);
+			
+			DefaultExpressionRequest er = new DefaultExpressionRequest(excludeDescriptor);
+			idIn.addSqlNoAlias(er);
+			idIn.addBindValues(er);
+			
+			sb.append(" and not ( ");
+			sb.append(er.getSql());
+			sb.append(" ) ");
+			
+			ArrayList<Object> bindValues = er.getBindValues();
+			for (int i = 0; i < bindValues.size(); i++) {
+				bindParams.setParameter(++count, bindValues.get(i));
+			}
 		}
 
 		return new DefaultSqlUpdate(server, sb.toString(), bindParams);

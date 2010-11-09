@@ -2339,12 +2339,29 @@ public class BeanDescriptor<T> {
         return propertyFirstVersion;
     }
 
+    /**
+     * Return true if this an Insert (rather than Update) on a non-enhanced bean.
+     */
     public boolean isVanillaInsert(Object bean) {
         if (propertyFirstVersion == null){
             return true;
         }
         Object versionValue = propertyFirstVersion.getValue(bean);
         return DmlUtil.isNullOrZero(versionValue);
+    }
+    
+	/**
+	 * Return true if this is an Update (rather than insert) given that the bean
+	 * is involved in a stateless update.
+	 */
+    public boolean isStatelessUpdate(Object bean) {
+        if (propertyFirstVersion == null){
+            Object versionValue = getId(bean);
+            return !DmlUtil.isNullOrZero(versionValue);        	
+        } else {
+            Object versionValue = propertyFirstVersion.getValue(bean);
+            return !DmlUtil.isNullOrZero(versionValue);        	
+        }
     }
     
     /**

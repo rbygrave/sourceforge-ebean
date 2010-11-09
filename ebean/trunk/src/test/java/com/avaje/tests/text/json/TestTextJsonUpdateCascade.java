@@ -1,21 +1,18 @@
 package com.avaje.tests.text.json;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.Update;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
+import com.avaje.tests.model.basic.Order.Status;
 import com.avaje.tests.model.basic.OrderDetail;
 import com.avaje.tests.model.basic.Product;
 import com.avaje.tests.model.basic.ResetBasicData;
-import com.avaje.tests.model.basic.Order.Status;
 
 public class TestTextJsonUpdateCascade extends TestCase {
 
@@ -62,43 +59,7 @@ public class TestTextJsonUpdateCascade extends TestCase {
         
         Order updOrder = jsonContext.toBean(Order.class, jsonString);
         
-        Transaction t = server.beginTransaction();
-        try {
-            // turn of the cascading persist for the moment
-            t.setPersistCascade(false);
-            
-            t.log("-- stateless update of order ... ");
-            server.update(updOrder);
-        
-            List<Integer> detailIds = new ArrayList<Integer>();
-            
-            t.log("-- insert/update of order details ... ");
-            List<OrderDetail> details = updOrder.getDetails();
-            for (OrderDetail orderDetail : details) {
-                detailIds.add(orderDetail.getId());
-                
-                if (orderDetail.getUpdtime() == null) {
-                    // force insert
-                    //server.insert(orderDetail);
-                    //orderDetail.setOrder(updOrder);
-                    server.save(orderDetail);
-                } else {
-                    // force update
-                    server.update(orderDetail);
-                }
-            }
-            String del = "delete from OrderDetail where order.id=:orderId and id not in (:detailIds)";
-            Update<OrderDetail> deleteOtherDetails = server.createUpdate(OrderDetail.class, del);
-            deleteOtherDetails.setParameter("orderId", updOrder.getId());
-            deleteOtherDetails.setParameter("detailIds", detailIds);
-            
-            t.log("-- deleting details that are not in list ");
-            deleteOtherDetails.execute();
-            t.commit();
-            
-        } finally {
-            t.end();
-        }
+        server.update(updOrder);
         
     }
     

@@ -15,22 +15,7 @@ import com.avaje.ebeaninternal.api.SpiExpressionFactory;
 import com.avaje.ebeaninternal.api.SpiQuery;
 
 /**
- * Expression factory for creating standard expressions.
- * <p>
- * Creates standard common expressions for using in a Query Where or Having clause.
- * </p>
- * <p>
- * </p>
- * <pre class="code">
- *  // Example: fetch orders where status equals new and orderDate > lastWeek.
- * Query&lt;Order&gt; query = Ebean.createQuery(Order.class);
- * query.where()
- *     .add(Expr.eq(&quot;status&quot;, Order.NEW))
- *     .add(Expr.gt(&quot;orderDate&quot;, lastWeek));
- * List&lt;Order&gt; list = query.findList();
- * ...
- * </pre>
- * @see Query#where()
+ * Default Expression factory for creating standard expressions.
  */
 public class DefaultExpressionFactory implements SpiExpressionFactory {
 
@@ -53,14 +38,6 @@ public class DefaultExpressionFactory implements SpiExpressionFactory {
 	public String getLang() {
         return "sql";
     }
-
-//    protected String name(String propName){
-//        if (propertyNamePrefix == null){
-//            return propName;
-//        } else {
-//            return propertyNamePrefix+"."+propName;
-//        }
-//    }
     
     /**
 	 * Equal To - property equal to the given value.
