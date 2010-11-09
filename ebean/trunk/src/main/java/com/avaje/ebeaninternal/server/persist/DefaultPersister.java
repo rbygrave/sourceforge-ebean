@@ -696,10 +696,10 @@ public final class DefaultPersister implements Persister {
             // save the beans that are in the manyToMany
             if (cascade) {
                 // Need explicit Cascade to save the beans on other side
-                saveAssocManyDetails(insertedParent, many, parentBean, t, statelessUpdate);
+                saveAssocManyDetails(insertedParent, many, parentBean, t, false);
                 // for ManyToMany save the 'relationship' via inserts/deletes
                 // into/from the intersection table
-                saveAssocManyIntersection(insertedParent, many, parentBean, t);
+                saveAssocManyIntersection(insertedParent, many, parentBean, t, statelessUpdate);
             }
 
         } else {
@@ -853,7 +853,7 @@ public final class DefaultPersister implements Persister {
         BeanDescriptor<?> descriptor = beanDescriptorManager.getBeanDescriptor(ownerBean.getClass());
         BeanPropertyAssocMany<?> prop = (BeanPropertyAssocMany<?>)descriptor.getBeanProperty(propertyName);
         
-        saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t);
+        saveAssocManyIntersection(false, prop, ownerBean, (SpiTransaction)t, false);
     }
 
     public void saveAssociation(Object parentBean, String propertyName, Transaction t) {
@@ -897,7 +897,7 @@ public final class DefaultPersister implements Persister {
 	 * This is done via MapBeans.
 	 * </p>
 	 */
-	private void saveAssocManyIntersection(boolean insertedParent, BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t) {
+	private void saveAssocManyIntersection(boolean insertedParent, BeanPropertyAssocMany<?> prop, Object parentBean, SpiTransaction t, boolean statelessUpdate) {
 
 		Object value = prop.getValueUnderlying(parentBean);
 		if (value == null) {
@@ -909,7 +909,13 @@ public final class DefaultPersister implements Persister {
 		
 		boolean vanillaCollection = (value instanceof BeanCollection<?> == false);
 
-		if (vanillaCollection || insertedParent){
+		if (statelessUpdate) {
+			// delete all intersection rows and then treat all
+			// beans in the collection as additions
+			deleteAssocManyIntersection(parentBean, prop, t);
+		} 
+		
+		if (statelessUpdate || vanillaCollection || insertedParent){
 			// treat everything in the list/set/map as an intersection addition  
 			if (value instanceof Map<?,?>){
 				additions = ((Map<?,?>)value).values();
