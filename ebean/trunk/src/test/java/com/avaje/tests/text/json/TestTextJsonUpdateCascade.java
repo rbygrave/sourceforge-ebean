@@ -8,6 +8,8 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.tests.model.basic.Customer;
+import com.avaje.tests.model.basic.MRole;
+import com.avaje.tests.model.basic.MUser;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.Order.Status;
 import com.avaje.tests.model.basic.OrderDetail;
@@ -61,6 +63,38 @@ public class TestTextJsonUpdateCascade extends TestCase {
         
         server.update(updOrder);
         
+        
+        MRole r1 = new MRole();
+        r1.setRoleName("rolej1");
+        Ebean.save(r1);
+
+        MRole r2 = new MRole();
+        r2.setRoleName("rolej2");
+        Ebean.save(r2);
+
+        MRole r3 = new MRole();
+        r3.setRoleName("rolej3");
+        Ebean.save(r3);
+
+        MUser u0 = new MUser();
+        u0.setUserName("userj1");
+        u0.addRole(r1);
+        u0.addRole(r2);
+        u0.addRole(r3);
+        
+        Ebean.save(u0);
+        
+        String jsonUser = jsonContext.toJsonString(u0, true);
+        
+        System.out.println(jsonUser);
+        
+        String s = "{\"userid\":1,\"userName\":\"userj1\", \"roles\":[{\"roleid\":2},{\"roleid\":3}]} ";
+        
+        MUser updMUser = jsonContext.toBean(MUser.class, s);
+               
+        server.update(updMUser);
+        
+        // checked transaction log to confirm correct behaviour
     }
     
 }
