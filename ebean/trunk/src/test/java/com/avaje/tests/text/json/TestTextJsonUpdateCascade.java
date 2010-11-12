@@ -88,7 +88,7 @@ public class TestTextJsonUpdateCascade extends TestCase {
         
         System.out.println(jsonUser);
         
-        String s = "{\"userid\":1,\"userName\":\"userj1\", \"roles\":[{\"roleid\":2},{\"roleid\":3}]} ";
+        String s = "{\"userid\":"+u0.getUserid()+",\"userName\":\"userj1\", \"roles\":[{\"roleid\":"+r2.getRoleid()+"},{\"roleid\":"+r3.getRoleid()+"}]} ";
         
         MUser updMUser = jsonContext.toBean(MUser.class, s);
                

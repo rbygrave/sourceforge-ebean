@@ -36,7 +36,7 @@ public interface Persister {
     /**
      * Force an Update using the given bean.
      */
-    public void forceUpdate(Object entityBean, Set<String> updateProps, Transaction t);
+    public void forceUpdate(Object entityBean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren);
 
     /**
      * Force an Insert using the given bean.

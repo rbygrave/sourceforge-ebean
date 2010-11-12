@@ -1557,15 +1557,22 @@ public final class DefaultServer implements SpiEbeanServer {
     public void update(Object bean, Transaction t) {
         update(bean, null, t);
     }
-    
+
     /**
      * Force an update using the bean explicitly stating which properties to include in the update.
      */
     public void update(Object bean, Set<String> updateProps, Transaction t) {
+        update(bean, updateProps, t, true);
+    }
+    
+    /**
+     * Force an update using the bean explicitly stating which properties to include in the update.
+     */
+    public void update(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren) {
         if (bean == null) {
             throw new NullPointerException(Message.msg("bean.isnull"));
         }
-        persister.forceUpdate(bean, updateProps, t);
+        persister.forceUpdate(bean, updateProps, t, deleteMissingChildren);
     }
 
     /**

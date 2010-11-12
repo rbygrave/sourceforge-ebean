@@ -538,38 +538,45 @@ public final class Ebean {
         serverMgr.getPrimaryServer().save(bean);
     }
 
-    /**
-     * Force an update using the bean updating the non-null properties.
-     * <p>
-     * You can use this method to FORCE an update to occur. When
-     * {@link Ebean#save(Object)} is used Ebean determines whether to use an
-     * insert or an update based on the state of the bean. Using this method
-     * will force an update to occur.
-     * </p>
-     * <p>
-     * It is expected that this method is most useful in stateless web
-     * applications where you have the values you wish to update but no existing
-     * bean.
-     * </p>
-     * 
-     * <pre class="code">
-     * 
-     * Customer c = new Customer();
-     * c.setId(7);
-     * c.setName(&quot;ModifiedNameNoOCC&quot;);
-     * 
-     * // generally you should set the version property 
-     * // so that Optimistic Concurrency Checking is used.
-     * // If a version property is not set then no Optimistic
-     * // Concurrency Checking occurs for the update
-     * //c.setLastUpdate(lastUpdateTime);
-     * 
-     * // by default the Non-null properties 
-     * // are included in the update
-     * Ebean.update(c);
-     * 
-     * </pre>
-     */
+	/**
+	 * Force an update using the bean updating the non-null properties.
+	 * <p>
+	 * You can use this method to FORCE an update to occur (even on a bean that
+	 * has not been fetched but say built from JSON or XML). When
+	 * {@link Ebean#save(Object)} is used Ebean determines whether to use an
+	 * insert or an update based on the state of the bean. Using this method
+	 * will force an update to occur.
+	 * </p>
+	 * <p>
+	 * It is expected that this method is most useful in stateless REST services
+	 * or web applications where you have the values you wish to update but no
+	 * existing bean.
+	 * </p>
+	 * <p>
+	 * For updates against beans that have not been fetched (say built from JSON
+	 * or XML) this will treat deleteMissingChildren=true and will delete any
+	 * 'missing children'. Refer to
+	 * {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * </p>
+	 * 
+	 * <pre class="code">
+	 * 
+	 * Customer c = new Customer();
+	 * c.setId(7);
+	 * c.setName(&quot;ModifiedNameNoOCC&quot;);
+	 * 
+	 * // generally you should set the version property
+	 * // so that Optimistic Concurrency Checking is used.
+	 * // If a version property is not set then no Optimistic
+	 * // Concurrency Checking occurs for the update
+	 * // c.setLastUpdate(lastUpdateTime);
+	 * 
+	 * // by default the Non-null properties
+	 * // are included in the update
+	 * Ebean.update(c);
+	 * 
+	 * </pre>
+	 */
     public static void update(Object bean) {
         serverMgr.getPrimaryServer().update(bean);
     }
@@ -581,20 +588,23 @@ public final class Ebean {
      * If you don't specify explicit properties to use in the update then
      * the non-null properties are included in the update.
      * </p>
-     * 
+	 * <p>
+	 * For updates against beans that have not been fetched (say built from JSON or
+	 * XML) this will treat deleteMissingChildren=true and will delete any
+	 * 'missing children'. Refer to {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * </p>
+	 * 
      * @param bean The bean holding the values to be included in the update.
-     * @param updateProps the explicit set of properties to include in the update.
+     * @param updateProps the explicit set of properties to include in the update (can be null).
      */
     public static void update(Object bean, Set<String> updateProps) {
         serverMgr.getPrimaryServer().update(bean, updateProps);
     }
 
-    
     /**
      * Save all the beans from an Iterator.
      */
     public static int save(Iterator<?> iterator) throws OptimisticLockException {
-
         return serverMgr.getPrimaryServer().save(iterator);
     }
 
