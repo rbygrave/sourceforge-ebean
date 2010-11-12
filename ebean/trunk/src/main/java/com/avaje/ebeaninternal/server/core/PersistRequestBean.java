@@ -108,6 +108,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     protected boolean notifyCache;
 
     private boolean statelessUpdate;
+    private boolean deleteMissingChildren;
     
     /**
      * Used for forced update of a bean.
@@ -335,10 +336,22 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	}
 
 	/**
-	 * Set to true if this is a stateless update.
+	 * Return true if a stateless update should also delete any missing details beans.
 	 */
-	public void setStatelessUpdate(boolean statelessUpdate) {
+	public boolean isDeleteMissingChildren() {
+		return deleteMissingChildren;
+	}
+
+	/**
+	 * Set to true if this is a stateless update.
+	 * <p>
+	 * By Stateless it means that the bean was not previously fetched (and so does not have it's previous state) so we
+	 * are doing an update on a bean that was probably created from JSON or XML.
+	 * </p>
+	 */
+	public void setStatelessUpdate(boolean statelessUpdate, boolean deleteMissingChildren) {
 		this.statelessUpdate = statelessUpdate;
+		this.deleteMissingChildren = deleteMissingChildren;
 	}
 
 	/**
@@ -519,7 +532,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
     /**
      * Check for optimistic concurrency exception.
      */
-    public void checkRowCount(int rowCount) throws SQLException {
+    public final void checkRowCount(int rowCount) throws SQLException {
         if (rowCount != 1) {
             String m = Message.msg("persist.conc2", "" + rowCount);
             throw new OptimisticLockException(m, null, bean);
