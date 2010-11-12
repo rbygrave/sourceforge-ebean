@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.persistence.OptimisticLockException;
+
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.core.PstmtBatch;
@@ -45,13 +47,6 @@ import com.avaje.ebeaninternal.server.type.DataBind;
 public abstract class DmlHandler implements PersistHandler, BindableRequest {
 
     protected static final Logger logger = Logger.getLogger(DmlHandler.class.getName());
-
-	/**
-	 * The PreparedStatement used for the dml.
-	 */
-    protected DataBind dataBind;
-    
-    protected ArrayList<UpdateGenValue> updateGenValues;
 	
 	/**
 	 * The originating request.
@@ -68,6 +63,15 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	
     protected final boolean logLevelSql;
 
+	/**
+	 * The PreparedStatement used for the dml.
+	 */
+    protected DataBind dataBind;
+    
+    protected String sql;
+    
+    protected ArrayList<UpdateGenValue> updateGenValues;
+    
     private Set<String> additionalProps;
 
     private boolean checkDelta;
@@ -105,6 +109,19 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	 */
 	public abstract void execute() throws SQLException;
 
+	/**
+	 * Check the rowCount.
+	 */
+	protected final void checkRowCount(int rowCount) throws SQLException, OptimisticLockException {
+		try {
+			persistRequest.checkRowCount(rowCount);
+			persistRequest.postExecute();
+		} catch (OptimisticLockException e){
+			// add the SQL and bind values to error message 
+			throw new OptimisticLockException(e.getMessage()+" sql["+sql+"] bind["+bindLog+"]", null, e.getEntity());
+		}
+	}
+	
 	/**
 	 * Add this for batch execution.
 	 */
