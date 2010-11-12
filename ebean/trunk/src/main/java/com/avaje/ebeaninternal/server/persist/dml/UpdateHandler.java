@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Set;
 
+import javax.persistence.OptimisticLockException;
+
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.SpiUpdatePlan;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
@@ -60,7 +62,7 @@ public class UpdateHandler extends DmlHandler {
 		
 		updatedProperties = updatePlan.getProperties();
 
-		String sql  = updatePlan.getSql();
+		sql  = updatePlan.getSql();
 		
 		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
@@ -98,11 +100,10 @@ public class UpdateHandler extends DmlHandler {
 	 * Execute the update in non-batch.
 	 */
     @Override	
-	public void execute() throws SQLException {
+	public void execute() throws SQLException, OptimisticLockException {
 	    if (!emptySetClause){	    
     		int rowCount = dataBind.executeUpdate();
-    		persistRequest.checkRowCount(rowCount);
-    		persistRequest.postExecute();
+    		checkRowCount(rowCount);
     		setAdditionalProperties();
 	    }
 	}

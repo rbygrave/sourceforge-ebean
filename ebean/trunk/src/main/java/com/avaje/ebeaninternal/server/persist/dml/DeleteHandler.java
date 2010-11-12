@@ -22,6 +22,8 @@ package com.avaje.ebeaninternal.server.persist.dml;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.persistence.OptimisticLockException;
+
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -31,7 +33,6 @@ import com.avaje.ebeaninternal.server.type.DataBind;
  * Delete bean handler.
  */
 public class DeleteHandler extends DmlHandler {
-
 
 	private final DeleteMeta meta;
 
@@ -45,7 +46,7 @@ public class DeleteHandler extends DmlHandler {
 	 */
 	public void bind() throws SQLException {
 		
-		String sql = meta.getSql(persistRequest);
+		sql = meta.getSql(persistRequest);
 		
 		SpiTransaction t = persistRequest.getTransaction();
 		boolean isBatch = t.isBatchThisRequest();
@@ -75,10 +76,9 @@ public class DeleteHandler extends DmlHandler {
 	/**
 	 * Execute the delete non-batch.
 	 */
-	public void execute() throws SQLException {
+	public void execute() throws SQLException, OptimisticLockException {
 		int rowCount = dataBind.executeUpdate();
-		persistRequest.checkRowCount(rowCount);
-		persistRequest.postExecute();
+		checkRowCount(rowCount);
 	}
 	
     @Override

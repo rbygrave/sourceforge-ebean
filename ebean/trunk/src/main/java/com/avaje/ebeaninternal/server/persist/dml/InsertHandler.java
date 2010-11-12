@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 
+import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebeaninternal.api.SpiTransaction;
@@ -109,7 +110,7 @@ public class InsertHandler extends DmlHandler {
 		boolean isBatch = t.isBatchThisRequest();
 
 		// get the appropriate sql
-		String sql = meta.getSql(withId);
+		sql = meta.getSql(withId);
 
 		PreparedStatement pstmt;
 		if (isBatch) {
@@ -150,7 +151,7 @@ public class InsertHandler extends DmlHandler {
 	 * Execute the insert in a normal non batch fashion. Additionally using
 	 * getGeneratedKeys if required.
 	 */
-	public void execute() throws SQLException {
+	public void execute() throws SQLException, OptimisticLockException {
 		int rc = dataBind.executeUpdate();
 		if (useGeneratedKeys) {
 			// get the auto-increment value back and set into the bean
@@ -161,8 +162,7 @@ public class InsertHandler extends DmlHandler {
 			fetchGeneratedKeyUsingSelect();
 		}
 
-		persistRequest.checkRowCount(rc);
-		persistRequest.postExecute();
+		checkRowCount(rc);
 		setAdditionalProperties();
 	}
 	
