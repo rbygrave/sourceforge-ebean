@@ -129,7 +129,12 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < camelCase.length(); i++) {
             char c = camelCase.charAt(i);
-            if (Character.isDigit(c)) {
+            
+            if ('_' == c){
+            	// Underscores should just be passed through  
+                sb.append(c);
+                lastUpper = i;
+            }else  if (Character.isDigit(c)) {
                 if (i > lastUpper+1 && !digitsCompressed){
                     sb.append("_");
                 }
