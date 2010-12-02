@@ -134,7 +134,7 @@ public class UnderscoreNamingConvention extends AbstractNamingConvention {
             	// Underscores should just be passed through  
                 sb.append(c);
                 lastUpper = i;
-            }else  if (Character.isDigit(c)) {
+            } else if (Character.isDigit(c)) {
                 if (i > lastUpper+1 && !digitsCompressed){
                     sb.append("_");
                 }
