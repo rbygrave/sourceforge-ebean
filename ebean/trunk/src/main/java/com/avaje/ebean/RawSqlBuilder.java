@@ -45,7 +45,7 @@ public class RawSqlBuilder {
     private final ColumnMapping columnMapping;
 
     /**
-     * Return an unparsed DRaw. Unlike a parsed one this query can not be
+     * Return an unparsed RawSqlBuilder. Unlike a parsed one this query can not be
      * modified - so no additional WHERE or HAVING expressions can be added to
      * this query.
      */
@@ -56,7 +56,7 @@ public class RawSqlBuilder {
     }
 
     /**
-     * Return a DRaw parsing the sql.
+     * Return a RawSqlBuilder parsing the sql.
      * <p>
      * The sql statement will be parsed so that Ebean can determine where it can
      * insert additional WHERE or HAVING expressions.
