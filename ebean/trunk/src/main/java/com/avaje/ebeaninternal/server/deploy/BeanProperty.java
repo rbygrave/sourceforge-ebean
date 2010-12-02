@@ -155,6 +155,8 @@ public class BeanProperty implements ElPropertyValue {
      * True if the property is a Clob, Blob LongVarchar or LongVarbinary.
      */
     final boolean lob;
+    
+    final boolean fetchEager;
 
     final boolean isTransient;
 
@@ -315,6 +317,7 @@ public class BeanProperty implements ElPropertyValue {
             this.secondaryTableJoin = null;
             this.secondaryTableJoinPrefix = null;
         }
+        this.fetchEager = deploy.isFetchEager();
         this.isTransient = deploy.isTransient();
         this.nullable = deploy.isNullable();
         this.unique = deploy.isUnique();
@@ -395,6 +398,7 @@ public class BeanProperty implements ElPropertyValue {
         this.sqlFormulaSelect = InternString.intern(override.getSqlFormulaSelect());
         this.formula = sqlFormulaSelect != null;
 
+        this.fetchEager = source.fetchEager;
         this.unidirectionalShadow = source.unidirectionalShadow;
         this.localEncrypted = source.isLocalEncrypted();
         this.isTransient = source.isTransient();
@@ -1138,6 +1142,14 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     /**
+     * Return true if by default this property is set to fetch eager.
+     * Lob's usually default to fetch lazy.
+     */
+    public boolean isFetchEager() {
+    	return fetchEager;
+    }
+
+	/**
      * Return true if this is mapped to a Clob Blob LongVarchar or
      * LongVarbinary.
      */
