@@ -326,9 +326,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
                 EntityBeanIntercept ebi = ((EntityBean)localBean)._ebean_getIntercept();
                 ebi.setPersistenceContext(persistenceContext);
                 ebi.setLoadedProps(includedProps);
-                if (queryMode.isLoadContextBean()){
-                    // finished Lazy Load or Refresh so we 
-                    // don't reset the dirty state
+                if (Mode.LAZYLOAD_BEAN.equals(queryMode)) {
+                    // Lazy Load does not reset the dirty state
                     ebi.setLoadedLazy();
                 } else {
                     // normal bean loading
