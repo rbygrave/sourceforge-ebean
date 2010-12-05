@@ -82,16 +82,23 @@ public class SqlBeanLoad {
 	}
 	
 	/**
+	 * Return true if this is a lazy loading.
+	 */
+	public boolean isLazyLoad() {
+    	return isLazyLoad;
+    }
+
+	/**
 	 * Increment the resultSet index 1.
 	 */
 	public void loadIgnore(int increment) {
 	    ctx.getDataReader().incrementPos(increment);
 	}
 	
-	public void load(BeanProperty prop) throws SQLException {
+	public Object load(BeanProperty prop) throws SQLException {
 		
 		if (!rawSql && prop.isTransient()){
-			return;
+			return null;
 		}
 		
 		if ((bean == null) 
@@ -104,7 +111,7 @@ public class SqlBeanLoad {
 			// ... type: inheritance and not assignable to this instance
 			
 		    prop.loadIgnore(ctx);
-			return;
+			return null;
 		}
 		
 		try {
@@ -118,6 +125,8 @@ public class SqlBeanLoad {
 				// maintain original oldValues for partially loaded bean
 				prop.setValue(originalOldValues, dbVal);
 			}	
+			return dbVal;
+			
 		} catch (Exception e) {
 			String msg = "Error loading on " + prop.getFullBeanName();
 			throw new PersistenceException(msg, e);

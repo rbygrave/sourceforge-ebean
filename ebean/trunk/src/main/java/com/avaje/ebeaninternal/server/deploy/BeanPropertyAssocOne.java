@@ -556,7 +556,12 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
     @Override
     public void load(SqlBeanLoad sqlBeanLoad) throws SQLException {
-        sqlBeanLoad.load(this);
+        Object dbVal = sqlBeanLoad.load(this);
+        if (embedded && sqlBeanLoad.isLazyLoad()){
+    		if (dbVal instanceof EntityBean){
+    			((EntityBean)dbVal)._ebean_getIntercept().setLoaded();
+    		}
+        }
     }
 
     private LocalHelp createHelp(boolean embedded, boolean oneToOneExported) {
