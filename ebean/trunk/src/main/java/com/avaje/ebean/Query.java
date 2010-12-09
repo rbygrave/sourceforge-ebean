@@ -506,10 +506,8 @@ public interface Query<T> extends Serializable {
     /**
      * Additionally specify a JoinConfig to specify a "query join" and or define
      * the lazy loading query.
-     * <p>
-     * This will eventually be deprecated in favour of the matching "fetch"
-     * method.
-     * </p>
+     * 
+     * @deprecated Deprecated in favour of {@link #fetch(String, String, FetchConfig)}
      */
     public Query<T> join(String assocProperty, String fetchProperties, JoinConfig joinConfig);
 
@@ -526,11 +524,9 @@ public interface Query<T> extends Serializable {
     public Query<T> fetch(String path);
 
     /**
-     * Same as {@link #fetch(String)}
-     * <p>
-     * This will eventually be deprecated in favour of the matching "fetch"
-     * method.
-     * </p>
+     * Deprecated in favour of {@link #fetch(String)}
+     * 
+     * @deprecated in favour of {@link #fetch(String)}
      */
     public Query<T> join(String path);
 
@@ -541,11 +537,9 @@ public interface Query<T> extends Serializable {
     public Query<T> fetch(String path, FetchConfig joinConfig);
 
     /**
-     * Same as {@link #fetch(String, FetchConfig)}
-     * <p>
-     * This will eventually be deprecated in favour of the matching "fetch"
-     * method.
-     * </p>
+     * Deprecated in favour of {@link #fetch(String, FetchConfig)}
+     * 
+     * @deprecated in favour of {@link #fetch(String, FetchConfig)}
      */
     public Query<T> join(String path, JoinConfig joinConfig);
 
