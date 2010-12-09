@@ -1,11 +1,15 @@
 package com.avaje.ebeaninternal.server.query;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
+
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 
 /**
  * Special Map of the logical property joins to table alias.
@@ -19,6 +23,8 @@ public class SqlTreeAlias {
     private int manyWhereCounter;
     
 	private TreeSet<String> joinProps = new TreeSet<String>();
+
+    private HashSet<String> embeddedPropertyJoins;
 
 	private TreeSet<String> manyWhereJoinProps = new TreeSet<String>();
 
@@ -43,23 +49,41 @@ public class SqlTreeAlias {
             }
         }
     }
-   
+    
+    private void addEmbeddedPropertyJoin(String embProp){
+    	if (embeddedPropertyJoins == null){
+    		embeddedPropertyJoins = new HashSet<String>();
+    	}
+    	embeddedPropertyJoins.add(embProp);
+    }
+    
 	/**
 	 * Add joins.
 	 */
-	public void addJoin(Set<String> propJoins) {
+	public void addJoin(Set<String> propJoins, BeanDescriptor<?> desc) {
 		if (propJoins != null){
 			for (String propJoin : propJoins) {
-				addPropertyJoin(propJoin, joinProps);
+				ElPropertyDeploy elProp = desc.getElPropertyDeploy(propJoin);
+	    		if (elProp != null && elProp.getBeanProperty().isEmbedded()) {
+	    			String[] split = SplitName.split(propJoin);
+	    			addPropertyJoin(split[0], joinProps);
+	    			addEmbeddedPropertyJoin(propJoin);
+	    			
+	    		} else {
+					addPropertyJoin(propJoin, joinProps);	    			
+	    		}
 			}
 		}
 	}
 	
+
+	
 	private void addPropertyJoin(String include, TreeSet<String> set){
-		set.add(include);
-		String[] split = SplitName.split(include);
-		if (split[0] != null){
-			addPropertyJoin(split[0], set);
+		if (set.add(include)) {
+			String[] split = SplitName.split(include);
+			if (split[0] != null){
+				addPropertyJoin(split[0], set);
+			}
 		}
 	}
 	
@@ -78,6 +102,19 @@ public class SqlTreeAlias {
         while (i.hasNext()) {
             calcAliasManyWhere(i.next());
         }
+        
+        mapEmbeddedPropertyAlias();
+	}
+	
+	private void mapEmbeddedPropertyAlias() {
+		if (embeddedPropertyJoins != null){
+			for (String propJoin : embeddedPropertyJoins) {
+				String[] split = SplitName.split(propJoin);
+				// the table alias of the parent path
+				String alias = getTableAlias(split[0]);
+				aliasMap.put(propJoin, alias);
+			}
+		}
 	}
 	
 	private String calcAlias(String prefix) {

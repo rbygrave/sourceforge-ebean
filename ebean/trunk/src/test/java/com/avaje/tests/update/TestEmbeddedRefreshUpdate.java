@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.tests.model.embedded.EEmbDatePeriod;
+import com.avaje.tests.model.embedded.EEmbInner;
 import com.avaje.tests.model.embedded.EEmbOuter;
 
 public class TestEmbeddedRefreshUpdate extends TestCase {
@@ -29,14 +30,11 @@ public class TestEmbeddedRefreshUpdate extends TestCase {
 		
 		loaded.getDatePeriod().setDate2(new Date());
 		
-		// fails
+		// BUG 343
 		Ebean.save(loaded);
 		
-		
-		
-//		// another problem?
-//		// fails
-//		Ebean.find(EEmbInner.class).join("outer").orderBy("outer.embeddedBean.date1").findList();
+		// See BUG 344
+		Ebean.find(EEmbInner.class).fetch("outer").orderBy("outer.datePeriod.date1").findList();
 		
 	}
 }
