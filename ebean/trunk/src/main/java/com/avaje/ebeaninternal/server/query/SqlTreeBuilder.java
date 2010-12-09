@@ -19,6 +19,18 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.avaje.ebean.Query.Type;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiQuery;
@@ -33,18 +45,6 @@ import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Factory for SqlTree.
@@ -98,8 +98,8 @@ public class SqlTreeBuilder {
         
         this.includeJoin = null;
         this.manyWhereJoins = null;
-        this.alias = null;//new SqlTreeAlias(request.getBeanDescriptor().getBaseTableAlias());
-        this.ctx = null;//new DefaultDbSqlContext(alias, tableAliasPlaceHolder, columnAliasPrefix, !subQuery);
+        this.alias = null;
+        this.ctx = null;
     }
     
     /**
@@ -107,8 +107,7 @@ public class SqlTreeBuilder {
      * support the where and/or order by clause. If so these extra joins are
      * added to the root node.
      */
-    public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, OrmQueryRequest<?> request,
-            CQueryPredicates predicates) {
+    public SqlTreeBuilder(String tableAliasPlaceHolder, String columnAliasPrefix, OrmQueryRequest<?> request, CQueryPredicates predicates) {
 
         this.rawSql = false;
         this.desc = request.getBeanDescriptor();
@@ -128,8 +127,6 @@ public class SqlTreeBuilder {
      * Build based on the includes and using the BeanJoinTree.
      */
     public SqlTree build() {
-
-        //BeanDescriptor<?> desc = request.getBeanDescriptor();
 
         SqlTree sqlTree = new SqlTree();
 
@@ -199,23 +196,22 @@ public class SqlTreeBuilder {
         sqlTree.setRootNode(selectRoot);
 
         if (!rawSql){
-            alias.addJoin(queryDetail.getIncludes());
-            alias.addJoin(predicates.getPredicateIncludes());
+            alias.addJoin(queryDetail.getIncludes(), desc);
+            alias.addJoin(predicates.getPredicateIncludes(), desc);
             alias.addManyWhereJoins(manyWhereJoins.getJoins());
     
             // build set of table alias
             alias.buildAlias();
-    
+            
             predicates.parseTableAlias(alias);
         }
     }
-
+    
     /**
      * Recursively build the query tree depending on what leaves in the tree
      * should be included.
      */
-    private SqlTreeNode buildSelectChain(String prefix, BeanPropertyAssoc<?> prop, BeanDescriptor<?> desc,
-            List<SqlTreeNode> joinList) {
+    private SqlTreeNode buildSelectChain(String prefix, BeanPropertyAssoc<?> prop, BeanDescriptor<?> desc, List<SqlTreeNode> joinList) {
 
         List<SqlTreeNode> myJoinList = new ArrayList<SqlTreeNode>();
 
@@ -265,8 +261,7 @@ public class SqlTreeBuilder {
         }
     }
 
-    private SqlTreeNode buildNode(String prefix, BeanPropertyAssoc<?> prop, BeanDescriptor<?> desc,
-            List<SqlTreeNode> myList) {
+    private SqlTreeNode buildNode(String prefix, BeanPropertyAssoc<?> prop, BeanDescriptor<?> desc, List<SqlTreeNode> myList) {
 
         OrmQueryProperties queryProps = queryDetail.getChunk(prefix, false);
 
@@ -342,8 +337,7 @@ public class SqlTreeBuilder {
      * This means it can included individual properties of an embedded bean.
      * </p>
      */
-    private void addPropertyToSubQuery(SqlTreeProperties selectProps, BeanDescriptor<?> desc,
-            OrmQueryProperties queryProps, String propName) {
+    private void addPropertyToSubQuery(SqlTreeProperties selectProps, BeanDescriptor<?> desc, OrmQueryProperties queryProps, String propName) {
 
         BeanProperty p = desc.findBeanProperty(propName);
         if (p == null) {
@@ -362,8 +356,7 @@ public class SqlTreeBuilder {
         selectProps.add(p);
     }
 
-    private void addProperty(SqlTreeProperties selectProps, BeanDescriptor<?> desc, OrmQueryProperties queryProps,
-            String propName) {
+    private void addProperty(SqlTreeProperties selectProps, BeanDescriptor<?> desc, OrmQueryProperties queryProps, String propName) {
 
         if (subQuery) {
             addPropertyToSubQuery(selectProps, desc, queryProps, propName);
