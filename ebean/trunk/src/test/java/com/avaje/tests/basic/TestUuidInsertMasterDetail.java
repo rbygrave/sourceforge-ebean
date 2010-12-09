@@ -12,7 +12,6 @@ public class TestUuidInsertMasterDetail extends TestCase {
 
     public void testInsert() {
         
-        
         UUTwo two = new UUTwo();
         two.setName("something");
         
@@ -32,7 +31,13 @@ public class TestUuidInsertMasterDetail extends TestCase {
         oneB.getComments().add(twoB);
         
         Ebean.save(oneB);
-
+    }
+    
+    public void testNullFK() {
+    	
+    	UUTwo two = new UUTwo();
+        two.setName("something");
+        Ebean.save(two);
     }
     
 }

@@ -50,13 +50,12 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
     
     public abstract String convertToDbString(T beanValue);
     
-	public void bind(DataBind b, T value) throws SQLException {
-	    
-	    String s = convertToDbString(value);
-	    
-		if (s == null){
+	public void bind(DataBind b, T value) throws SQLException { 
+		if (value == null){
 			b.setNull(Types.VARCHAR);
+			
 		} else {
+			String s = convertToDbString(value);
 			b.setString(s);
 		}
 	}
