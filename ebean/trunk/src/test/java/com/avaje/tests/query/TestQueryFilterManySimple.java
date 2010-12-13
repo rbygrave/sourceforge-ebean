@@ -6,7 +6,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
@@ -23,8 +23,8 @@ public class TestQueryFilterManySimple extends TestCase {
         List<Customer> list = Ebean.find(Customer.class)
         //  .join("orders", new JoinConfig().lazy())
         //  .join("orders", new JoinConfig().query())
-            .join("orders")
-            .join("contacts", new JoinConfig().query())
+            .fetch("orders")
+            .fetch("contacts", new FetchConfig().query())
             .where().ilike("name","rob%")
             .filterMany("orders")
                 .eq("status", Order.Status.NEW)

@@ -24,7 +24,7 @@ public class TestSaveAssociation extends TestCase {
         
         
         TSMaster m0Check = Ebean.find(TSMaster.class)
-            .join("details")
+            .fetch("details")
             .where().idEq(m0.getId())
             .findUnique();
         

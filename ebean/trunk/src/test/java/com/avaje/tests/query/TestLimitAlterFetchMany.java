@@ -23,7 +23,7 @@ public class TestLimitAlterFetchMany extends TestCase {
         Query<Customer> query = Ebean.find(Customer.class)
             // this will automatically get converted to a
             // query join ... due to the maxRows
-            .join("contacts")//, new JoinConfig().query())
+            .fetch("contacts")
             .setMaxRows(5);
         
         List<Customer> list = query.findList();

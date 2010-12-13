@@ -39,8 +39,8 @@ public class TestPersistContextClear extends TestCase {
             
             EbeanServer server = Ebean.getServer(null);
             List<Order> list = server.find(Order.class)
-                .join("customer")
-                .join("details")
+                .fetch("customer")
+                .fetch("details")
                 .findList();
 
             int orderSize = list.size();

@@ -264,7 +264,7 @@ public class OrmQueryProperties implements Serializable {
     public void configureManyQuery(SpiQuery<?> query) {
 
         if (trimmedProperties != null && trimmedProperties.length() > 0) {
-            query.join(query.getLazyLoadManyPath(), trimmedProperties);
+            query.fetch(query.getLazyLoadManyPath(), trimmedProperties);
         }
         if (filterMany != null){
             query.setFilterMany(path, filterMany);

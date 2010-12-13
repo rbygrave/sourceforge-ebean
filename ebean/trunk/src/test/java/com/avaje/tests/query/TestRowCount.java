@@ -17,7 +17,7 @@ public class TestRowCount extends TestCase {
         ResetBasicData.reset();
         
         Query<Order> query = Ebean.find(Order.class)
-            .join("details")
+            .fetch("details")
             .where().gt("id", 1)
                 .gt("details.id", 1)
                 .order("id desc");

@@ -23,7 +23,7 @@ public class TestSecondaryQueries extends TestCase {
 		
 		Customer cust  = Ebean.find(Customer.class)
 			.select("name")
-			.join("contacts","+query")
+			.fetch("contacts","+query")
 			.setId(custId)
 			.findUnique();
 		
@@ -31,9 +31,9 @@ public class TestSecondaryQueries extends TestCase {
 		
 		List<Order> list = Ebean.find(Order.class)
 			.select("status")
-			.join("details","+query(10)")
-			.join("customer","+query name, status")
-			.join("customer.contacts")
+			.fetch("details","+query(10)")
+			.fetch("customer","+query name, status")
+			.fetch("customer.contacts")
 			.where().eq("status", Order.Status.NEW)
 			.findList();
 

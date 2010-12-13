@@ -25,7 +25,7 @@ public class TestQueryWithCache extends TestCase {
 		
 		Query<Order> query = Ebean.createQuery(Order.class)
 			.setAutofetch(false)
-			.join("customer","+cache +readonly")
+			.fetch("customer","+cache +readonly")
 			.setId(1);
 		
 		Order order = query.findUnique();

@@ -28,7 +28,7 @@ public class MainAutoQueryTune1 {
 	{
 		List<Order> list = Ebean.find(Order.class)
 			.setAutofetch(true)
-			.join("customer")
+			.fetch("customer")
 			.where()
 			.eq("status", Order.Status.NEW)
 			.eq("customer.name", "Rob")

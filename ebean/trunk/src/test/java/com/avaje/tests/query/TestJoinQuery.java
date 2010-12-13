@@ -20,8 +20,8 @@ public class TestJoinQuery extends TestCase {
 		// test that join to order.details is not included
 		Query<Customer> query = Ebean.find(Customer.class)
 			.setAutofetch(false)
-			.join("orders")
-			.join("orders.details");
+			.fetch("orders")
+			.fetch("orders.details");
 		
 		List<Customer> list = query.findList();
 		Assert.assertTrue("has rows", list.size() > 0);
@@ -29,8 +29,8 @@ public class TestJoinQuery extends TestCase {
 		// test that join to order.details is not included
 		Query<OrderShipment> shipQuery = Ebean.find(OrderShipment.class)
 			.setAutofetch(false)
-			.join("order")
-			.join("order.details");
+			.fetch("order")
+			.fetch("order.details");
 		
 		
 		List<OrderShipment> shipList = shipQuery.findList();

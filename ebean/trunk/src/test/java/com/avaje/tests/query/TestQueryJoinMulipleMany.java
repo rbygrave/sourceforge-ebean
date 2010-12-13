@@ -18,8 +18,8 @@ public class TestQueryJoinMulipleMany extends TestCase {
         ResetBasicData.reset();
         
         List<Order> list = Ebean.find(Order.class)
-            .join("customer")
-            .join("customer.contacts")
+            .fetch("customer")
+            .fetch("customer.contacts")
             .where().gt("id", 0)
             .findList();
 

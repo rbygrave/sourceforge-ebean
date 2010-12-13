@@ -32,8 +32,8 @@ public class TestAutofetchTuneWithJoin extends TestCase {
 
         Query<Order> q = Ebean.find(Order.class)
             .setAutofetch(true)
-            .join("customer")//, new JoinConfig().query())
-            .join("customer.contacts")
+            .fetch("customer")
+            .fetch("customer.contacts")
             .where().lt("id", 3)
             .query();
 
