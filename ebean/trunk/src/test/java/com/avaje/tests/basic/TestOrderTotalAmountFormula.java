@@ -17,7 +17,7 @@ public class TestOrderTotalAmountFormula extends TestCase {
     	
       List<Customer> l0 = Ebean.find(Customer.class)
     	.select("id, name")
-    	.join("orders", "status, totalAmount")
+    	.fetch("orders", "status, totalAmount")
     	.where()
     	    .eq("orders.details.product.name", "Desk")
     	    .like("contacts.firstName", "Ji%")

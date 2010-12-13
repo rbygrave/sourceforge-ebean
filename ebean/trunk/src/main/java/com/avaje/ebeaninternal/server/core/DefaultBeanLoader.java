@@ -140,7 +140,7 @@ public class DefaultBeanLoader {
         query.setLazyLoadManyPath(many.getName());
 		query.setPersistenceContext(pc);
 		query.select(idProperty);
-		query.join(many.getName());
+		query.fetch(many.getName());
 
 		if (idList.size() == 1){
 			query.where().idEq(idList.get(0));
@@ -156,7 +156,7 @@ public class DefaultBeanLoader {
 
 		if (loadRequest.isOnlyIds()){
 			// override to just select the Id values
-			query.join(many.getName(), many.getTargetIdProperty());
+			query.fetch(many.getName(), many.getTargetIdProperty());
 		}
 		
 		server.findList(query, loadRequest.getTransaction());

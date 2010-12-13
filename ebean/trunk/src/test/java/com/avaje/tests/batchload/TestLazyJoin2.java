@@ -6,7 +6,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.Query;
 import com.avaje.tests.model.basic.Address;
 import com.avaje.tests.model.basic.Contact;
@@ -24,12 +24,12 @@ public class TestLazyJoin2 extends TestCase {
  List<Order> l0 = Ebean.find(Order.class)
    .select("status, shipDate")
    
-   .join("details", "orderQty, unitPrice", new JoinConfig().query())
-   .join("details.product", "sku, name")
+   .fetch("details", "orderQty, unitPrice", new FetchConfig().query())
+   .fetch("details.product", "sku, name")
    
-   .join("customer", "name", new JoinConfig().query(10))
-   .join("customer.contacts","firstName, lastName, mobile")
-   .join("customer.shippingAddress","line1, city")
+   .fetch("customer", "name", new FetchConfig().query(10))
+   .fetch("customer.contacts","firstName, lastName, mobile")
+   .fetch("customer.shippingAddress","line1, city")
    .findList();
 		 
 		 
@@ -47,7 +47,7 @@ public class TestLazyJoin2 extends TestCase {
 				 
 		List<Order> orders = Ebean.find(Order.class)
 			//.select("status")
-			.join("customer", new JoinConfig().query(3).lazy(10))
+			.fetch("customer", new FetchConfig().query(3).lazy(10))
 			.findList();
 			//.join("customer.contacts");
 
@@ -67,9 +67,9 @@ public class TestLazyJoin2 extends TestCase {
 		
 				
 		 List<Order> list = Ebean.find(Order.class)
-		   .join("customer","name", new JoinConfig().lazy(5))
-		   .join("customer.contacts","contactName, phone, email")
-		   .join("customer.shippingAddress")
+		   .fetch("customer","name", new FetchConfig().lazy(5))
+		   .fetch("customer.contacts","contactName, phone, email")
+		   .fetch("customer.shippingAddress")
 		   .where().eq("status",Order.Status.NEW)
 		   .findList();
 				 

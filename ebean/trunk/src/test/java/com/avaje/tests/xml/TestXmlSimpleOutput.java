@@ -58,8 +58,8 @@ public class TestXmlSimpleOutput extends TestCase {
         
 
         List<Order> list = Ebean.find(Order.class)
-            .join("details")
-            .join("details.product","sku,name")
+            .fetch("details")
+            .fetch("details.product","sku,name")
             .findList();
         
         XHeader header = new XHeader();

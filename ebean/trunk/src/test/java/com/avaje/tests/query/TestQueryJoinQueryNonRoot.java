@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
@@ -30,9 +30,9 @@ public class TestQueryJoinQueryNonRoot extends TestCase {
         ResetBasicData.reset();
         
         List<Order> list = Ebean.find(Order.class)
-            .join("customer")
-            .join("customer.contacts", "firstName",  new JoinConfig().query().lazy(10))
-            .join("customer.contacts.group")
+            .fetch("customer")
+            .fetch("customer.contacts", "firstName",  new FetchConfig().query().lazy(10))
+            .fetch("customer.contacts.group")
             .where().lt("id", 3)
             .findList();
 

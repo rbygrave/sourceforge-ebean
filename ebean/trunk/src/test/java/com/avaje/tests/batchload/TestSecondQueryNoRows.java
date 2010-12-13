@@ -4,7 +4,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.JoinConfig;
+import com.avaje.ebean.FetchConfig;
 import com.avaje.tests.model.basic.Customer;
 
 public class TestSecondQueryNoRows extends TestCase {
@@ -19,7 +19,7 @@ public class TestSecondQueryNoRows extends TestCase {
         Customer c = Ebean.find(Customer.class)
             .setAutofetch(false)
             .setId(cnew.getId())
-            .join("contacts", new JoinConfig().query())
+            .fetch("contacts", new FetchConfig().query())
             .findUnique();
 
         Assert.assertNotNull(c);

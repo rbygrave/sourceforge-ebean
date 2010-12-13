@@ -38,7 +38,7 @@ public class TestCacheJoin {
         Assert.assertTrue(c == c2);
         
         List<Order> orders = Ebean.find(Order.class)
-            .join("customer","+cache +readonly")
+            .fetch("customer","+cache +readonly")
             .where().eq("customer.id", c.getId())
             .findList();
         

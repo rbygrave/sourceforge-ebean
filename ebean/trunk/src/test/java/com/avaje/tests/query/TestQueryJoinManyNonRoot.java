@@ -62,10 +62,10 @@ public class TestQueryJoinManyNonRoot extends TestCase {
         ResetBasicData.reset();
         
         Query<Order> q = Ebean.find(Order.class)
-            .join("customer")
-            .join("customer.contacts")
-            .join("details")
-            .join("details.product")
+            .fetch("customer")
+            .fetch("customer.contacts")
+            .fetch("details")
+            .fetch("details.product")
             .where().gt("id", 0)
             .query();
 

@@ -31,8 +31,8 @@ public class TestQueryJoin extends TestCase {
 		Query<Order> query = Ebean.find(Order.class)
 			.select("status")
 			//.join("details","+query(10)")
-			.join("customer","+lazy(10) name, status")
-			.join("customer.contacts")
+			.fetch("customer","+lazy(10) name, status")
+			.fetch("customer.contacts")
 			.orderBy().asc("id");
 			//.join("customer.billingAddress");
 		

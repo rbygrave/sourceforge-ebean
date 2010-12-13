@@ -23,7 +23,7 @@ public class TestLazyLoadEmptyOneToMany extends TestCase {
         Customer c1 = Ebean.find(Customer.class)
             .setAutofetch(false)
             .select("id")
-            .join("contacts","id")
+            .fetch("contacts","id")
             .where().idEq(c.getId())
             .findUnique();
         

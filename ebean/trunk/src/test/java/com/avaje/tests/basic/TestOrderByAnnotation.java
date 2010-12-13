@@ -24,7 +24,7 @@ public class TestOrderByAnnotation extends TestCase {
 
 
 		Query<Order> q1 = Ebean.find(Order.class)
-			.join("details");
+			.fetch("details");
 
 		q1.findList();
 		

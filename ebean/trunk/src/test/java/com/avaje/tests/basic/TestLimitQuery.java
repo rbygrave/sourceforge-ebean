@@ -29,7 +29,7 @@ public class TestLimitQuery extends TestCase {
 		
 		Query<Order> query = Ebean.find(Order.class)
 			.setAutofetch(false)
-			.join("details")
+			.fetch("details")
 			.where().gt("details.id", 0)
 			.setMaxRows(10);
 			//.findList();
@@ -53,7 +53,7 @@ public class TestLimitQuery extends TestCase {
 		
 		query = Ebean.find(Order.class)
 			.setAutofetch(false)
-			.join("details")
+			.fetch("details")
 			.setMaxRows(10);
 		
 		query.findList();

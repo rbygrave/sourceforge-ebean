@@ -40,7 +40,7 @@ public class TestVanillaQuery extends TestCase {
         
         List<Order> list = 
             Ebean.find(Order.class)
-            .join("details")
+            .fetch("details")
             .setVanillaMode(true)
             .findList();
         

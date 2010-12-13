@@ -226,11 +226,11 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     }
 
     public Query<T> join(String assocProperties) {
-        return query.join(assocProperties);
+        return query.fetch(assocProperties);
     }
 
     public Query<T> join(String assocProperty, String assocProperties) {
-        return query.join(assocProperty, assocProperties);
+        return query.fetch(assocProperty, assocProperties);
     }
 
     public Query<T> setFirstRow(int firstRow) {

@@ -20,7 +20,7 @@ public class TestBackgroundFetchAfter extends TestCase {
 		
 		// limit not in sql as join to many
 		Query<Order> q = Ebean.find(Order.class)
-			.join("details")
+			.fetch("details")
 			.setBackgroundFetchAfter(3)
 			.setMaxRows(10);
 		
@@ -45,7 +45,7 @@ public class TestBackgroundFetchAfter extends TestCase {
 		
 		// allows limit use as join to one (not many)
 		q = Ebean.find(Order.class)
-			.join("customer")
+			.fetch("customer")
 			.setBackgroundFetchAfter(3)
 			.setMaxRows(10);
 	

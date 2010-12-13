@@ -21,7 +21,7 @@ public class TestFetchId extends TestCase {
 		
 		Query<Order> query = Ebean.find(Order.class)
 			.setAutofetch(false)
-			.join("details")
+			.fetch("details")
 			.where().gt("id", 1)
 			.gt("details.id", 0)
 			.query();

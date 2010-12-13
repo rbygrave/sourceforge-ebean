@@ -494,6 +494,7 @@ public interface Query<T> extends Serializable {
      * This will eventually be deprecated in favour of the matching "fetch"
      * method.
      * </p>
+     * @deprecated Deprecated in favour of {@link #fetch(String, String)}
      */
     public Query<T> join(String assocProperty, String fetchProperties);
 
