@@ -109,6 +109,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
     private boolean statelessUpdate;
     private boolean deleteMissingChildren;
+    private boolean updateNullProperties;
     
     /**
      * Used for forced update of a bean.
@@ -343,15 +344,23 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	}
 
 	/**
+	 * Return true if null properties should be updated (treated as loaded) for stateless updates.
+	 */
+	public boolean isUpdateNullProperties() {
+    	return updateNullProperties;
+    }
+
+	/**
 	 * Set to true if this is a stateless update.
 	 * <p>
 	 * By Stateless it means that the bean was not previously fetched (and so does not have it's previous state) so we
 	 * are doing an update on a bean that was probably created from JSON or XML.
 	 * </p>
 	 */
-	public void setStatelessUpdate(boolean statelessUpdate, boolean deleteMissingChildren) {
+	public void setStatelessUpdate(boolean statelessUpdate, boolean deleteMissingChildren, boolean updateNullProperties) {
 		this.statelessUpdate = statelessUpdate;
 		this.deleteMissingChildren = deleteMissingChildren;
+		this.updateNullProperties = updateNullProperties;
 	}
 
 	/**

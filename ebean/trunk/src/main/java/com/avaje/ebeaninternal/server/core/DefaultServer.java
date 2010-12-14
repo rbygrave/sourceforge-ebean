@@ -53,6 +53,7 @@ import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.SqlFutureList;
@@ -67,7 +68,6 @@ import com.avaje.ebean.TxScope;
 import com.avaje.ebean.TxType;
 import com.avaje.ebean.Update;
 import com.avaje.ebean.ValuePair;
-import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
@@ -88,10 +88,10 @@ import com.avaje.ebeaninternal.api.LoadManyRequest;
 import com.avaje.ebeaninternal.api.ScopeTrans;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
+import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.api.SpiSqlQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
-import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -163,7 +163,9 @@ public final class DefaultServer implements SpiEbeanServer {
      * false;
      */
     private final boolean rollbackOnChecked;
-
+    private final boolean defaultDeleteMissingChildren;
+    private final boolean defaultUpdateNullProperties;
+    
     /**
      * Set to true if vanilla objects should be returned by default from queries
      * (with dynamic subclassing).
@@ -254,6 +256,9 @@ public final class DefaultServer implements SpiEbeanServer {
 
         this.maxCallStack = GlobalProperties.getInt("ebean.maxCallStack", 5);
         
+        this.defaultUpdateNullProperties = "true".equalsIgnoreCase(config.getServerConfig().getProperty("defaultUpdateNullProperties", "false"));
+        this.defaultDeleteMissingChildren = "true".equalsIgnoreCase(config.getServerConfig().getProperty("defaultDeleteMissingChildren", "true"));
+        
         this.rollbackOnChecked = GlobalProperties.getBoolean("ebean.transaction.rollbackOnChecked", true);
         this.transactionManager = config.getTransactionManager();
         this.transactionScopeManager = config.getTransactionScopeManager();
@@ -289,8 +294,16 @@ public final class DefaultServer implements SpiEbeanServer {
     public LuceneIndex getLuceneIndex(Class<?> beanType){
         return luceneIndexManager.getIndex(beanType.getName());
     }
-        
-    public boolean isVanillaMode() {
+            
+    public boolean isDefaultDeleteMissingChildren() {
+    	return defaultDeleteMissingChildren;
+    }
+
+	public boolean isDefaultUpdateNullProperties() {
+    	return defaultUpdateNullProperties;
+    }
+
+	public boolean isVanillaMode() {
         return vanillaMode;
     }
 
@@ -1562,17 +1575,17 @@ public final class DefaultServer implements SpiEbeanServer {
      * Force an update using the bean explicitly stating which properties to include in the update.
      */
     public void update(Object bean, Set<String> updateProps, Transaction t) {
-        update(bean, updateProps, t, true);
+        update(bean, updateProps, t, defaultDeleteMissingChildren, defaultUpdateNullProperties);
     }
     
     /**
      * Force an update using the bean explicitly stating which properties to include in the update.
      */
-    public void update(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren) {
+    public void update(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren, boolean updateNullProperties) {
         if (bean == null) {
             throw new NullPointerException(Message.msg("bean.isnull"));
         }
-        persister.forceUpdate(bean, updateProps, t, deleteMissingChildren);
+        persister.forceUpdate(bean, updateProps, t, deleteMissingChildren, updateNullProperties);
     }
 
     /**

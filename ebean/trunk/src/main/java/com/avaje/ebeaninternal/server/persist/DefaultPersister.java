@@ -94,6 +94,9 @@ public final class DefaultPersister implements Persister {
 
 	private final BeanDescriptorManager beanDescriptorManager;
 
+	private final boolean defaultUpdateNullProperties;
+	private final boolean defaultDeleteMissingChildren;
+
 	public DefaultPersister(SpiEbeanServer server, boolean validate,
 	        Binder binder, BeanDescriptorManager descMgr, PstmtBatch pstmtBatch, LdapContextFactory contextFactory) {
 
@@ -102,6 +105,9 @@ public final class DefaultPersister implements Persister {
 
 		this.persistExecute = new DefaultPersistExecute(validate, binder, pstmtBatch);
 		this.ldapPersister = new DefaultLdapPersister(contextFactory);
+		
+        this.defaultUpdateNullProperties = server.isDefaultUpdateNullProperties();
+        this.defaultDeleteMissingChildren = server.isDefaultDeleteMissingChildren();
 	}
 
 	/**
@@ -178,7 +184,7 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Force an Update using the given bean.
 	 */
-	public void forceUpdate(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren) {
+	public void forceUpdate(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren, boolean updateNullProperties) {
 
 		if (bean == null) {
 			throw new NullPointerException(Message.msg("bean.isnull"));
@@ -218,14 +224,15 @@ public final class DefaultPersister implements Persister {
 			throw new PersistenceException(errNotRegistered(bean.getClass()));
 		}
 
-		forceUpdateStateless(bean, t, null, mgr, updateProps, deleteMissingChildren);
+		forceUpdateStateless(bean, t, null, mgr, updateProps, deleteMissingChildren, updateNullProperties);
 	}
 
 	/**
 	 * Force a 'stateless' update determining which properties to update.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void forceUpdateStateless(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr, Set<String> updateProps, boolean deleteMissingChildren) {
+	private void forceUpdateStateless(Object bean, Transaction t, Object parentBean, BeanManager<?> mgr, Set<String> updateProps, 
+			boolean deleteMissingChildren, boolean updateNullProperties) {
 
 		BeanDescriptor<?> descriptor = mgr.getBeanDescriptor();
 
@@ -233,8 +240,8 @@ public final class DefaultPersister implements Persister {
 		ConcurrencyMode mode = descriptor.determineConcurrencyMode(bean);
 
 		if (updateProps == null) {
-			// determine based on anything that is non-null
-			updateProps = descriptor.determineLoadedProperties(bean);
+			// determine based on null treatment (all properties updated or just the non-null ones)
+			updateProps = updateNullProperties ? null : descriptor.determineLoadedProperties(bean);
 
 		} else if (updateProps.isEmpty()) {
 			// in this case means we want to include all properties in the update
@@ -257,7 +264,7 @@ public final class DefaultPersister implements Persister {
 		} else {
 			// special constructor for force 'stateless' Update mode ...
 			req = new PersistRequestBean(server, bean, parentBean, mgr, (SpiTransaction) t, persistExecute, updateProps, mode);
-			req.setStatelessUpdate(true, deleteMissingChildren);
+			req.setStatelessUpdate(true, deleteMissingChildren, updateNullProperties);
 		}
 
 		try {
@@ -355,7 +362,7 @@ public final class DefaultPersister implements Persister {
 
 		} else {
 			// update non-null properties (no partial object knowledge with vanilla bean)
-			forceUpdateStateless(bean, t, parentBean, mgr, null, false);
+			forceUpdateStateless(bean, t, parentBean, mgr, null, defaultDeleteMissingChildren, defaultUpdateNullProperties);
 		}
 	}
 
@@ -702,6 +709,7 @@ public final class DefaultPersister implements Persister {
 		private final boolean cascade;
 		private final boolean statelessUpdate;
 		private final boolean deleteMissingChildren;
+		private final boolean updateNullProperties;
 
 		private SaveManyPropRequest(boolean insertedParent, BeanPropertyAssocMany<?> many, Object parentBean, PersistRequestBean<?> request) {
 			this.insertedParent = insertedParent;
@@ -711,6 +719,7 @@ public final class DefaultPersister implements Persister {
 			this.t = request.getTransaction();
 			this.statelessUpdate = request.isStatelessUpdate();
 			this.deleteMissingChildren = request.isDeleteMissingChildren();
+			this.updateNullProperties = request.isUpdateNullProperties();
 		}
 
 		private SaveManyPropRequest(BeanPropertyAssocMany<?> many, Object parentBean, SpiTransaction t) {
@@ -721,6 +730,7 @@ public final class DefaultPersister implements Persister {
 			this.cascade = true;
 			this.statelessUpdate = false;
 			this.deleteMissingChildren = false;
+			this.updateNullProperties = false;
 		}
 
 		private Object getValueUnderlying() {
@@ -738,6 +748,10 @@ public final class DefaultPersister implements Persister {
 		private boolean isDeleteMissingChildren() {
 			return deleteMissingChildren;
 		}
+		
+		private boolean isUpdateNullProperties() {
+        	return updateNullProperties;
+        }
 
 		private boolean isInsertedParent() {
 			return insertedParent;
@@ -766,7 +780,7 @@ public final class DefaultPersister implements Persister {
 			// save the beans that are in the manyToMany
 			if (saveMany.isCascade()) {
 				// Need explicit Cascade to save the beans on other side
-				saveAssocManyDetails(saveMany, false);
+				saveAssocManyDetails(saveMany, false, saveMany.isUpdateNullProperties());
 				// for ManyToMany save the 'relationship' via inserts/deletes
 				// into/from the intersection table
 				saveAssocManyIntersection(saveMany, saveMany.isDeleteMissingChildren());
@@ -774,7 +788,7 @@ public final class DefaultPersister implements Persister {
 
 		} else {
 			if (saveMany.isCascade()) {
-				saveAssocManyDetails(saveMany, saveMany.isDeleteMissingChildren());
+				saveAssocManyDetails(saveMany, saveMany.isDeleteMissingChildren(), saveMany.isUpdateNullProperties());
 			}
 			if (saveMany.isModifyListenMode()) {
 				removeAssocManyPrivateOwned(saveMany);
@@ -808,7 +822,7 @@ public final class DefaultPersister implements Persister {
 	/**
 	 * Save the details from a OneToMany collection.
 	 */
-	private void saveAssocManyDetails(SaveManyPropRequest saveMany, boolean deleteMissingChildren) {
+	private void saveAssocManyDetails(SaveManyPropRequest saveMany, boolean deleteMissingChildren, boolean updateNullProperties) {
 
 		BeanPropertyAssocMany<?> prop = saveMany.getMany();
 
@@ -897,7 +911,7 @@ public final class DefaultPersister implements Persister {
 				if (targetDescriptor.isStatelessUpdate(detailBean)) {
 					// update based on the value of Version/Id properties
 					// cascade update in stateless mode
-					forceUpdate(detailBean, null, t, deleteMissingChildren);
+					forceUpdate(detailBean, null, t, deleteMissingChildren, updateNullProperties);
 				} else {
 					// cascade insert
 					forceInsert(detailBean, t);
