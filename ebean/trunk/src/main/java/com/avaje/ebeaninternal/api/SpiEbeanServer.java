@@ -45,6 +45,16 @@ import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
  */
 public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionLoader {
 
+	/**
+	 * Return true if DeleteMissingChildren defaults to true for stateless updates.
+	 */
+    public boolean isDefaultDeleteMissingChildren();
+
+	/**
+	 * Return true if UpdateNullProperties defaults to true for stateless updates.
+	 */
+	public boolean isDefaultUpdateNullProperties();
+
     /**
      * Return true if vanilla beans should be returned by queries by default.
      */

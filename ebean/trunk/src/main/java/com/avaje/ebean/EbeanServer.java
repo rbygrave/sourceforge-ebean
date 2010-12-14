@@ -931,7 +931,7 @@ public interface EbeanServer {
 	 * For updates against beans that have not been fetched (say built from JSON
 	 * or XML) this will treat deleteMissingChildren=true and will delete any
 	 * 'missing children'. Refer to
-	 * {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * {@link EbeanServer#update(Object, Set, Transaction, boolean, boolean)}.
 	 * </p>
 	 * <pre class="code">
 	 * 
@@ -999,7 +999,7 @@ public interface EbeanServer {
 	 * or web applications where you have the values you wish to update but no
 	 * existing bean.
 	 * </p>
-	 *  
+	 * 
 	 * @param bean
 	 *            the bean to update
 	 * @param updateProps
@@ -1011,8 +1011,13 @@ public interface EbeanServer {
 	 * @param deleteMissingChildren
 	 *            specify false if you do not want 'missing children' of a
 	 *            OneToMany or ManyToMany to be automatically deleted.
+	 * @param updateNullProperties
+	 *            specify true if by default you want properties with null
+	 *            values to be included in the update and false if those
+	 *            properties should be treated as 'unloaded' and excluded from
+	 *            the update. This only takes effect if the updateProps is null.
 	 */
-	public void update(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren);
+	public void update(Object bean, Set<String> updateProps, Transaction t, boolean deleteMissingChildren, boolean updateNullProperties);
 
 	/**
 	 * Force the bean to be saved with an explicit insert.
