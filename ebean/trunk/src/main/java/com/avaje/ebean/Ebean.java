@@ -556,7 +556,7 @@ public final class Ebean {
 	 * For updates against beans that have not been fetched (say built from JSON
 	 * or XML) this will treat deleteMissingChildren=true and will delete any
 	 * 'missing children'. Refer to
-	 * {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * {@link EbeanServer#update(Object, Set, Transaction, boolean, boolean)}.
 	 * </p>
 	 * 
 	 * <pre class="code">
@@ -591,7 +591,7 @@ public final class Ebean {
 	 * <p>
 	 * For updates against beans that have not been fetched (say built from JSON or
 	 * XML) this will treat deleteMissingChildren=true and will delete any
-	 * 'missing children'. Refer to {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * 'missing children'. Refer to {@link EbeanServer#update(Object, Set, Transaction, boolean, boolean)}.
 	 * </p>
 	 * 
      * @param bean The bean holding the values to be included in the update.
