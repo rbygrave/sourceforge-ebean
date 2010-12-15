@@ -16,7 +16,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
 		<spring.framework.version>3.0.0.RELEASE</spring.framework.version>
-		<ebean.version>2.7.1</ebean.version>
+		<ebean.version>2.7.2</ebean.version>
 	</properties>
 	
     <url>http://www.avaje.org</url>
