@@ -865,7 +865,7 @@ public interface EbeanServer {
 	 * For updates against beans that have not been fetched (say built from JSON
 	 * or XML) this will treat deleteMissingChildren=true and will delete any
 	 * 'missing children'. Refer to
-	 * {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * {@link EbeanServer#update(Object, Set, Transaction, boolean, boolean)}.
 	 * </p>
 	 * 
 	 * <pre class="code">
@@ -907,7 +907,7 @@ public interface EbeanServer {
 	 * For updates against beans that have not been fetched (say built from JSON
 	 * or XML) this will treat deleteMissingChildren=true and will delete any
 	 * 'missing children'. Refer to
-	 * {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * {@link EbeanServer#update(Object, Set, Transaction, boolean, boolean)}.
 	 * </p>
 	 */
 	public void update(Object bean, Transaction t);
@@ -972,7 +972,7 @@ public interface EbeanServer {
 	 * For updates against beans that have not been fetched (say built from JSON
 	 * or XML) this will treat deleteMissingChildren=true and will delete any
 	 * 'missing children'. Refer to
-	 * {@link EbeanServer#update(Object, Set, Transaction, boolean)}.
+	 * {@link EbeanServer#update(Object, Set, Transaction, boolean, boolean)}.
 	 * </p>
 	 */
 	public void update(Object bean, Set<String> updateProps, Transaction t);
