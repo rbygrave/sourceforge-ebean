@@ -55,7 +55,6 @@ import com.avaje.ebeaninternal.server.jdbc.StandardPstmtDelegate;
 import com.avaje.ebeaninternal.server.lib.ShutdownManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourcePool;
-import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
 
@@ -472,16 +471,7 @@ public class DefaultServerFactory implements BootupEbeanManager {
 				String m = "DataSource [" + serverConfig.getName()+ "] has autoCommit defaulting to true!";
 				logger.warning(m);
 			}
-
-			int isolationLevel = c.getTransactionIsolation();
-			if (isolationLevel != Connection.TRANSACTION_READ_COMMITTED) {
-				
-				String desc = TransactionIsolation.getLevelDescription(isolationLevel);
-				String m = "DataSource [" + serverConfig.getName() 
-						+ "] has Transaction Isolation [" + desc
-						+ "] rather than READ_COMMITTED!";
-				logger.warning(m);
-			}
+			
 			return true;
 			
 		} catch (SQLException ex) {
