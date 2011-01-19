@@ -1,5 +1,8 @@
 package com.avaje.ebean.config;
 
+import com.avaje.ebean.Transaction;
+import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
+
 /**
  * Used to config a DataSource when using the internal Ebean
  * DataSource implementation.
@@ -22,6 +25,8 @@ public class DataSourceConfig {
 	private int minConnections = 2;
 	
 	private int maxConnections = 20;
+	
+	private int isolationLevel = Transaction.READ_COMMITTED;
 	
 	private String heartbeatSql;
 	
@@ -97,6 +102,20 @@ public class DataSourceConfig {
 	public void setDriver(String driver) {
 		this.driver = driver;
 	}
+
+	/**
+	 * Return the transaction isolation level.
+	 */
+	public int getIsolationLevel() {
+    	return isolationLevel;
+    }
+
+	/**
+	 * Set the transaction isolation level.
+	 */
+	public void setIsolationLevel(int isolationLevel) {
+    	this.isolationLevel = isolationLevel;
+    }
 
 	/**
 	 * Return the minimum number of connections the pool should maintain.
@@ -343,11 +362,13 @@ public class DataSourceConfig {
 		this.pstmtCacheSize = GlobalProperties.getInt(prefix+"pstmtCacheSize", 20);
 		this.cstmtCacheSize = GlobalProperties.getInt(prefix+"cstmtCacheSize", 20);
 		
-		this.waitTimeoutMillis = GlobalProperties.getInt(prefix+"waitTimeout", 1);
+		this.waitTimeoutMillis = GlobalProperties.getInt(prefix+"waitTimeout", 1000);
 		
 		this.heartbeatSql = GlobalProperties.get(prefix+"heartbeatSql", null);
 		this.poolListener = GlobalProperties.get(prefix+"poolListener", null);
 		this.offline = GlobalProperties.getBoolean(prefix+"offline", false);
 
+		String isoLevel = GlobalProperties.get(prefix+"isolationlevel", "READ_COMMITTED");
+		this.isolationLevel = TransactionIsolation.getLevel(isoLevel);
 	}
 }

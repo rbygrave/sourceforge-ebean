@@ -31,23 +31,18 @@ public class TransactionIsolation {
      */
 	public static int getLevel(String level) {
 	    level = level.toUpperCase();
+	    if (level.startsWith("TRANSACTION")){
+	    	level = level.substring("TRANSACTION".length());
+	    }
+	    level = level.replace("_", "");
 	    if ("NONE".equalsIgnoreCase(level)){
 	        return Connection.TRANSACTION_NONE;
-	    }
-	    if ("READ_COMMITTED".equalsIgnoreCase(level)){
-	        return Connection.TRANSACTION_READ_COMMITTED;
 	    }
 	    if ("READCOMMITTED".equalsIgnoreCase(level)){
 	        return Connection.TRANSACTION_READ_COMMITTED;
 	    }
-	    if ("READ_UNCOMMITTED".equalsIgnoreCase(level)){
-	        return Connection.TRANSACTION_READ_UNCOMMITTED;
-	    }
 	    if ("READUNCOMMITTED".equalsIgnoreCase(level)){
 	        return Connection.TRANSACTION_READ_UNCOMMITTED;
-	    }
-	    if ("REPEATABLE_READ".equalsIgnoreCase(level)){
-	        return Connection.TRANSACTION_REPEATABLE_READ;
 	    }
 	    if ("REPEATABLEREAD".equalsIgnoreCase(level)){
 	        return Connection.TRANSACTION_REPEATABLE_READ;
@@ -55,9 +50,7 @@ public class TransactionIsolation {
 	    if ("SERIALIZABLE".equalsIgnoreCase(level)){
 	        return Connection.TRANSACTION_SERIALIZABLE;
 	    }
-        if ("SERIALISABLE".equalsIgnoreCase(level)){
-            return Connection.TRANSACTION_SERIALIZABLE;
-        }
+
 		throw new RuntimeException("Transaction Isolaction level [" + level + "] is not known.");
 	}
     

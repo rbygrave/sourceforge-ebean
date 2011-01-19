@@ -175,7 +175,7 @@ public class DataSourcePool implements DataSource {
         this.poolListener = createPoolListener(params.getPoolListener());
 
         this.autoCommit = false;
-        this.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
+        this.transactionIsolation = params.getIsolationLevel();
 
         this.maxInactiveTimeSecs = params.getMaxInactiveTimeSecs();
         this.leakTimeMinutes = params.getLeakTimeMinutes();
