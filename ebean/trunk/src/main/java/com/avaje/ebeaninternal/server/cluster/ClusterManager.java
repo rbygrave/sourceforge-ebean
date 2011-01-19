@@ -53,7 +53,6 @@ public class ClusterManager {
         if (clusterType == null || clusterType.trim().length() == 0){
             // not clustering this instance
             this.broadcast = null;
-            logger.info("... no ClusterManager broadcast");
             
         } else {
             
