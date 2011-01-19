@@ -13,8 +13,8 @@ public class SQLitePlatform extends DatabasePlatform {
         this.name = "sqlite";
         
         this.dbIdentity.setIdType(IdType.IDENTITY);
-        this.dbIdentity.setSupportsGetGeneratedKeys(true);
-        
+        this.dbIdentity.setSupportsGetGeneratedKeys(false);
+        this.dbIdentity.setSelectLastInsertedIdTemplate("select last_insert_rowid()");
         this.openQuote = "\"";
         this.closeQuote = "\"";
         
@@ -23,6 +23,8 @@ public class SQLitePlatform extends DatabasePlatform {
         dbTypeMap.put(Types.BIT, new DbType("int default 0"));
         dbTypeMap.put(Types.BOOLEAN, new DbType("int default 0"));
         
+        dbDdlSyntax.setInlinePrimaryKeyConstraint(true);
+        dbDdlSyntax.setIdentity("AUTOINCREMENT");
         dbDdlSyntax.setDisableReferentialIntegrity("PRAGMA foreign_keys = OFF");
         dbDdlSyntax.setEnableReferentialIntegrity("PRAGMA foreign_keys = ON");
     }

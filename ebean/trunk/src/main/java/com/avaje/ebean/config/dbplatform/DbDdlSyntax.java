@@ -8,6 +8,8 @@ public class DbDdlSyntax {
 
 	private boolean renderIndexForFkey = true;
 	
+	private boolean inlinePrimaryKeyConstraint = false;
+	
 	private boolean addOneToOneUniqueContraint = false;
 	
 	private int maxConstraintNameLength= 32;
@@ -213,6 +215,20 @@ public class DbDdlSyntax {
 		this.addOneToOneUniqueContraint = addOneToOneUniqueContraint;
 	}
 
+	/**
+	 * Return true if primary key constraints should be inlined when they are a single column.
+	 */
+	public boolean isInlinePrimaryKeyConstraint() {
+		return inlinePrimaryKeyConstraint;
+    }
+
+	/**
+	 * Set whether to inline primary key constraints.
+	 */
+	public void setInlinePrimaryKeyConstraint(boolean inlinePrimaryKeyConstraint) {
+    	this.inlinePrimaryKeyConstraint = inlinePrimaryKeyConstraint;
+    }
+
 	public String getIndexName(String table, String propName, int ixCount){
 		
 		StringBuilder buffer = new StringBuilder();
@@ -254,5 +270,6 @@ public class DbDdlSyntax {
 		}
 		buffer.append("_");
 		buffer.append(suffixNr);
-	}
+	}	
+	
 }
