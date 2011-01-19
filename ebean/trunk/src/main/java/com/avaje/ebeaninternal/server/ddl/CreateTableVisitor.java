@@ -190,7 +190,16 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 		
 		BeanProperty[] ids = descriptor.propertiesId();
 
-		if (ids.length > 0){
+		if (ids.length == 0){
+			// No comma + new line
+			ctx.removeLast().removeLast();		
+		} else if (ids.length > 1 || ddl.isInlinePrimaryKeyConstraint()) {
+			// The Primary Key constraint was inlined with the column
+			// ... No comma + new line
+			ctx.removeLast().removeLast();					
+			
+		} else {
+			// Add the primay key constraint
 			String pkName = ddl.getPrimaryKeyName(descriptor.getBaseTable());
 			ctx.write("  constraint ").write(pkName).write(" primary key (");
 	
@@ -214,8 +223,6 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 			});
 			// remove the last comma, end of PK
 			ctx.removeLast().write(")"); 
-		}else{
-			ctx.removeLast().removeLast();		// No comma + new line
 		}		
 		
 		// end of table
