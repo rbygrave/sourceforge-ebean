@@ -267,9 +267,10 @@ public class BeanPersistIds implements Serializable {
 
         BeanPersistListener<?> listener = beanDescriptor.getPersistListener();
 
+        // any change invalidates the query cache
+        beanDescriptor.queryCacheClear();
+        
         if (insertIds != null) {
-            // any insert invalidates the query cache
-            beanDescriptor.queryCacheClear();
             if (listener != null) {
                 // notify listener
                 for (int i = 0; i < insertIds.size(); i++) {

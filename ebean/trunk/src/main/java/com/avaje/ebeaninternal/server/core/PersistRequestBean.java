@@ -219,7 +219,12 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
     public void notifyCache() {
         if (notifyCache) {
-            beanDescriptor.cacheRemove(idValue);
+        	if (type == Type.INSERT){
+        		beanDescriptor.queryCacheClear();
+        		
+        	} else {
+        		beanDescriptor.cacheRemove(idValue);
+        	}
         }
     }
 
@@ -312,9 +317,9 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
             if (oldValues == null) {
                 oldValues = bean;
             }
-            if (beanDescriptor.isCaching()) {
-                notifyCache = true;
-            }
+            notifyCache = beanDescriptor.isCacheNotify(false);
+        } else {
+            notifyCache = beanDescriptor.isCacheNotify(true);        	
         }
     }
 
