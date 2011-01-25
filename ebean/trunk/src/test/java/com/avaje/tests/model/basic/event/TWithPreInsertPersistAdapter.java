@@ -20,6 +20,20 @@ public class TWithPreInsertPersistAdapter extends BeanPersistAdapter {
 		return true;
 	}
 
+	@Override
+    public boolean preUpdate(BeanPersistRequest<?> request) {
+	    
+		TWithPreInsert b = (TWithPreInsert)request.getBean();
+		System.out.println("title is Missus:"+b.getTitle());
+		
+		//Ebean.refresh(b);
+		request.getEbeanServer().refresh(b);
+		System.out.println("title is Mister:"+b.getTitle());
+		
+		return super.preUpdate(request);
+    }
+
+	
 	
 	
 }

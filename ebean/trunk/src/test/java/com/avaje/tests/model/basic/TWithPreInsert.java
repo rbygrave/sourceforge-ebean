@@ -13,6 +13,8 @@ public class TWithPreInsert {
 	
 	@NotEmpty
 	private String name;
+	
+	private String title;
 
 	public Integer getId() {
 		return id;
@@ -29,5 +31,13 @@ public class TWithPreInsert {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public String getTitle() {
+    	return title;
+    }
+
+	public void setTitle(String title) {
+    	this.title = title;
+    }
 	
 }
