@@ -42,9 +42,9 @@ import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Transaction;
-import com.avaje.ebean.Query.UseIndex;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -87,15 +87,15 @@ import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
-import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext.ReadBeanState;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext.WriteBeanState;
 import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.TypeManager;
 import com.avaje.ebeaninternal.util.SortByClause;
-import com.avaje.ebeaninternal.util.SortByClauseParser;
 import com.avaje.ebeaninternal.util.SortByClause.Property;
+import com.avaje.ebeaninternal.util.SortByClauseParser;
 
 /**
  * Describes Beans including their deployment information.
@@ -1041,8 +1041,21 @@ public class BeanDescriptor<T> {
     /**
      * Return true if there is currently bean caching for this type of bean.
      */
-    public boolean isCaching() {
+    public boolean isBeanCaching() {
         return beanCache != null;
+    }
+    
+    /**
+     * Return true if the persist request needs to notify the cache.
+     */
+    public boolean isCacheNotify(boolean isInsertRequest){
+
+    	if (isInsertRequest) {
+    		// only invalidates query cache
+	        return queryCache != null;
+    	} else {
+	        return beanCache != null || queryCache != null;
+        }
     }
 
     /**
@@ -1144,16 +1157,13 @@ public class BeanDescriptor<T> {
             return (T) beanCache.get(id);
         }
     }
-
+    
     /**
      * Remove a bean from the cache given its Id.
      */
     public void cacheRemove(Object id) {
         if (beanCache != null) {
             beanCache.remove(id);
-        }
-        if (queryCache != null){
-            queryCache.clear();
         }
     }
 

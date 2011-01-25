@@ -44,6 +44,7 @@ public final class DeleteByIdMap {
 	        BeanDescriptor<?> d  = deleteIds.getBeanDescriptor();
 	        List<Serializable> idValues = deleteIds.getDeleteIds();
 	        if (idValues != null){
+	            d.queryCacheClear();
 	            for (int i = 0; i < idValues.size(); i++) {
                     d.cacheRemove(idValues.get(i));
                 }
