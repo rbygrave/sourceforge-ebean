@@ -1,29 +1,59 @@
 package com.avaje.tests.inheritance;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Query;
-import com.avaje.tests.model.basic.Car;
-import com.avaje.tests.model.basic.Vehicle;
-import com.avaje.tests.model.basic.VehicleDriver;
+import java.util.List;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import java.util.List;
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Query;
+import com.avaje.tests.model.basic.Car;
+import com.avaje.tests.model.basic.Truck;
+import com.avaje.tests.model.basic.Vehicle;
+import com.avaje.tests.model.basic.VehicleDriver;
 
 public class TestInheritInsert extends TestCase {
-
-//	public void test() {
-//		
-//		VehicleDriver d = new VehicleDriver();
-//		d.setName("Rob");
-//		
-//		Ebean.save(d);
-//		
-//		VehicleDriver driver = Ebean.find(VehicleDriver.class, d.getId());
-//		
-//		Assert.assertNotNull(driver);
-//		
-//	}
+	
+	public void testCasting() {
+		
+		Truck t = new Truck();
+		t.setCapacity(10d);
+		Ebean.save(t);
+		
+		Vehicle v  = Ebean.find(Vehicle.class, t.getId());
+		if (v instanceof Truck){
+			Truck t0 = (Truck)v;
+			Assert.assertEquals(10d, t0.getCapacity());
+			Assert.assertEquals(10d, ((Truck)v).getCapacity());
+			Assert.assertNotNull(t0.getId());
+		} else {
+			Assert.assertTrue("v not a Truck?", false);
+		}
+		
+		VehicleDriver driver = new VehicleDriver();
+		driver.setName("Jim");
+		driver.setVehicle(v);
+		
+		Ebean.save(driver);
+		
+		VehicleDriver d1 = Ebean.find(VehicleDriver.class, driver.getId());
+		v = d1.getVehicle();
+		if (v instanceof Truck){
+			Double capacity = ((Truck)v).getCapacity();
+			Assert.assertEquals(10d, capacity);
+			Assert.assertNotNull(v.getId());
+		} else {
+			Assert.assertTrue("v not a Truck?", false);
+		}
+		
+		List<VehicleDriver> list = Ebean.find(VehicleDriver.class).findList();
+		for (VehicleDriver vehicleDriver : list) {
+	        if (vehicleDriver.getVehicle() instanceof Truck){
+	        	Double capacity = ((Truck)vehicleDriver.getVehicle()).getCapacity();
+	        	Assert.assertEquals(10d, capacity);
+	        }
+        }
+	}
 
 	public void testQuery()
 	{

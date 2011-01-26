@@ -872,6 +872,19 @@ public class BeanProperty implements ElPropertyValue {
             throw new RuntimeException(msg, ex);
         }
     }
+    
+    /**
+     * Explicitly use reflection to get value.
+     */
+    public Object getValueViaReflection(Object bean) {
+    	try {
+            return readMethod.invoke(bean, NO_ARGS);
+        } catch (Exception ex) {
+            String beanType = bean == null ? "null" : bean.getClass().getName();
+            String msg = "get " + name + " on [" + descriptor + "] type[" + beanType + "] threw error.";
+            throw new RuntimeException(msg, ex);
+        }
+    }
 
     public Object getValueIntercept(Object bean) {
         try {
