@@ -206,6 +206,8 @@ public class BeanDescriptor<T> {
      * The EntityBean type used to create new EntityBeans.
      */
     private final Class<?> factoryType;
+    
+    private final boolean enhancedBean;
 
     /**
      * Intercept pre post on insert,update,delete and postLoad(). Server side
@@ -424,6 +426,7 @@ public class BeanDescriptor<T> {
         this.typeManager = typeManager;
         this.beanType = deploy.getBeanType();
         this.factoryType = deploy.getFactoryType();
+        this.enhancedBean = beanType.equals(factoryType);
         this.namedQueries = deploy.getNamedQueries();
         this.namedUpdates = deploy.getNamedUpdates();
 
@@ -1683,7 +1686,13 @@ public class BeanDescriptor<T> {
     public Object getId(Object bean) {
 
         if (propertySingleId != null) {
-            return propertySingleId.getValue(bean);
+        	if (inheritInfo != null && !enhancedBean) {
+        		// avoid generated method via forced reflection use
+        		return propertySingleId.getValueViaReflection(bean); 
+       		
+        	} else {
+                return propertySingleId.getValue(bean);        		
+        	}
         }
 
         // it is a concatenated id Not embedded
