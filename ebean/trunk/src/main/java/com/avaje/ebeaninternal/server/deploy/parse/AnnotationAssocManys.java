@@ -233,8 +233,8 @@ public class AnnotationAssocManys extends AnnotationParser {
     	BeanTable localTable = factory.getBeanTable(descriptor.getBeanType());
     	BeanTable otherTable = factory.getBeanTable(prop.getTargetType());
 
-    	String localTableName = localTable.getBaseTable();
-    	String otherTableName = otherTable.getBaseTable();
+    	final String localTableName = localTable.getUnqualifiedBaseTable();
+    	final String otherTableName = otherTable.getUnqualifiedBaseTable();
 
     	if (intTableName == null){
     		// define intersection table name
@@ -266,7 +266,7 @@ public class AnnotationAssocManys extends AnnotationParser {
 			BeanProperty[] otherIds = otherTable.getIdProperties();
 			for (int i = 0; i < otherIds.length; i++) {
 				// set the intersection to dest table join columns
-				String fkCol = otherTableName+"_"+otherIds[i].getDbColumn();
+				final String fkCol = otherTableName+"_"+otherIds[i].getDbColumn();
 				destJoin.addJoinColumn(new DeployTableJoinColumn(fkCol, otherIds[i].getDbColumn()));
 			}
 		}
