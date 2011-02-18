@@ -74,6 +74,16 @@ public class BeanTable {
     }
     
     /**
+     * Gets the unqualified base table.
+     * 
+     * @return the unqualified base table
+     */
+    public String getUnqualifiedBaseTable(){
+		final String[] chunks = baseTable.split("\\.");
+		return chunks.length == 2 ? chunks[1] :chunks[0];
+    }
+    
+    /**
      * Return the Id properties.
      */
     public BeanProperty[] getIdProperties() {
