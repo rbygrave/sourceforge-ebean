@@ -225,6 +225,8 @@ public final class DefaultServer implements SpiEbeanServer {
      */
     private int lazyLoadBatchSize;
 
+    /** The query batch size */
+    private int queryBatchSize;
     /**
      * JDBC driver specific handling for JDBC batch execution.
      */
@@ -246,6 +248,7 @@ public final class DefaultServer implements SpiEbeanServer {
         this.backgroundExecutor = config.getBackgroundExecutor();
         this.serverName = config.getServerConfig().getName();
         this.lazyLoadBatchSize = config.getServerConfig().getLazyLoadBatchSize();
+        this.queryBatchSize = config.getServerConfig().getQueryBatchSize();
         this.cqueryEngine = config.getCQueryEngine();
         this.expressionFactory = config.getExpressionFactory();
         this.adminLogging = config.getLogControl();
@@ -1151,7 +1154,7 @@ public final class DefaultServer implements SpiEbeanServer {
             allowOneManyFetch = false;
         }
         
-        query.convertManyFetchJoinsToQueryJoins(allowOneManyFetch, 100);
+        query.convertManyFetchJoinsToQueryJoins(allowOneManyFetch, queryBatchSize);
                 
         SpiTransaction serverTrans = (SpiTransaction) t;
         OrmQueryRequest<T> request = new OrmQueryRequest<T>(this, queryEngine, query, desc, serverTrans);

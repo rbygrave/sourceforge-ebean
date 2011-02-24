@@ -86,7 +86,9 @@ import com.avaje.ebeaninternal.server.core.DetectLucene;
  * @author rbygrave
  */
 public class ServerConfig {
-
+    /** The Constant DEFAULT_QUERY_BATCH_SIZE. Default: 100 */
+    private final static int DEFAULT_QUERY_BATCH_SIZE = 100;
+    
     /**
      * The EbeanServer name.
      */
@@ -157,8 +159,11 @@ public class ServerConfig {
 
     /** The default batch size for lazy loading */
     private int lazyLoadBatchSize = 1;
-
-    private boolean ddlGenerate;
+    
+    /** The query batch size. */
+    private int queryBatchSize = -1;
+    
+	private boolean ddlGenerate;
 
     private boolean ddlRun;
 
@@ -376,6 +381,24 @@ public class ServerConfig {
         return lazyLoadBatchSize;
     }
 
+    /**
+     * Gets the query batch size.
+     * 
+     * @return the query batch size
+     */
+    public int getQueryBatchSize() {
+		return queryBatchSize;
+	}
+    
+    /**
+     * Sets the query batch size.
+     * 
+     * @param queryBatchSize the new query batch size
+     */
+    public void setQueryBatchSize(int queryBatchSize) {
+		this.queryBatchSize = queryBatchSize;
+	}
+    
     /**
      * Set the default batch size for lazy loading.
      * <p>
@@ -1371,6 +1394,7 @@ public class ServerConfig {
         databasePlatformName = p.get("databasePlatformName", null);
 
         lazyLoadBatchSize = p.getInt("lazyLoadBatchSize", 1);
+        queryBatchSize = p.getInt("queryBatchSize", DEFAULT_QUERY_BATCH_SIZE);
 
         ddlGenerate = p.getBoolean("ddl.generate", false);
         ddlRun = p.getBoolean("ddl.run", false);
@@ -1468,5 +1492,7 @@ public class ServerConfig {
         }
         return hitList;
     }
+
+	
 
 }
