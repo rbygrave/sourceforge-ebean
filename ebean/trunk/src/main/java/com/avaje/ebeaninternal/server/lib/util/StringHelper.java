@@ -17,8 +17,9 @@
  */
 package com.avaje.ebeaninternal.server.lib.util;
 
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility String class that supports String manipulation functions.
@@ -573,20 +574,43 @@ public class StringHelper {
 	 */
 	public static String removeChar(String s, char chr) {
 
-		StringReader rd = new StringReader(s);
-		StringWriter wt = new StringWriter();
-
-		int iChr = 0;
-		try {
-			while ((iChr = rd.read()) > -1) {
-				if (iChr != chr)
-					wt.write(iChr);
+		StringBuilder sb = new StringBuilder(s.length());
+		
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c != chr){
+				sb.append(c);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        }
 
-		return wt.toString();
+		return sb.toString();
+	}
+	
+	/**
+	 * This method takes a String as an argument and removes all occurrences of
+	 * the supplied Chars. It returns the resulting String.
+	 */
+	public static String removeChars(String s, char[] chr) {
+
+		StringBuilder sb = new StringBuilder(s.length());
+		
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (!charMatch(c, chr)){
+				sb.append(c);
+			}
+        }
+
+		return sb.toString();
+	}
+	
+	private static boolean charMatch(int iChr, char[] chr) {
+		for (int i = 0; i < chr.length; i++) {
+			if (iChr == chr[i]) {
+				return true;
+			}
+        }
+		return false;
 	}
 
 }
