@@ -104,7 +104,6 @@ public class BatchedPstmtHolder {
 	public void flush(boolean getGeneratedKeys) throws PersistenceException {
 
 		SQLException firstError = null;
-		SQLException nextError = null;
 		String errorSql = null;
 
 		// flag set if something fails. Will not execute
@@ -119,9 +118,14 @@ public class BatchedPstmtHolder {
 					bs.executeBatch(getGeneratedKeys);
 				}
 			} catch (SQLException ex) {
+	    		SQLException next = ex.getNextException();
+	    		while(next != null) {
+	    			logger.log(Level.SEVERE, "Next Exception during batch execution", next);
+	    			next = next.getNextException();
+	    		}
+				
 				if (firstError == null) {
 					firstError = ex;
-					nextError = ex.getNextException();
 					errorSql = bs.getSql();
 				} else {
 		        	logger.log(Level.SEVERE, null, ex);
@@ -144,10 +148,6 @@ public class BatchedPstmtHolder {
 
 		if (firstError != null) {
 			String msg = "Error when batch flush on sql: "+errorSql;
-			if (nextError != null){
-				logger.log(Level.SEVERE, "Also got SQLException.getNextException() as", nextError);
-			}
-			
 			throw new PersistenceException(msg, firstError);
 		}
 	}
