@@ -137,8 +137,12 @@ public final class BeanFkeyProperty implements ElPropertyValue {
     public boolean isDateTimeCapable() {
         return false;
     }
+    
+    public int getJdbcType() {
+	    return 0;
+    }
 
-    public Object parseDateTime(long systemTimeMillis) {
+	public Object parseDateTime(long systemTimeMillis) {
         throw new RuntimeException("ElPropertyDeploy only - not implemented");
     }
 

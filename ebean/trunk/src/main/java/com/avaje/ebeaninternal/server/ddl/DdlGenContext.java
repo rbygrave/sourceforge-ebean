@@ -8,6 +8,7 @@
 package com.avaje.ebeaninternal.server.ddl;
 
 import java.io.StringWriter;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -140,11 +141,21 @@ public class DdlGenContext {
 		if (scalarType == null) {
 			throw new RuntimeException("No scalarType for " + p.getFullBeanName());
 		}
+		if (p.isLob() && scalarType.getJdbcType() == Types.VARCHAR){
+			System.out.println("here");
+		}
+
 		if (p.isDbEncrypted()){
 		    return dbTypeMap.get(p.getDbEncryptedType());
 		}
 		
-		return dbTypeMap.get(scalarType.getJdbcType());
+		int jdbcType = scalarType.getJdbcType();
+		if (p.isLob() && jdbcType == Types.VARCHAR){
+			// workaround for Postgres TEXT type which is 
+			// VARCHAR in jdbc API but TEXT in ddl
+			jdbcType = Types.CLOB;
+		}
+		return dbTypeMap.get(jdbcType);
 	}
 	/**
 	 * Write content to the buffer.

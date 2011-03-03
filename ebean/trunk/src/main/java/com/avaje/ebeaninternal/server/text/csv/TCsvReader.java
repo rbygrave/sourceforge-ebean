@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.text.csv;
 
 import java.io.Reader;
+import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,10 +34,12 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.text.TextException;
+import com.avaje.ebean.text.TimeStringParser;
 import com.avaje.ebean.text.csv.CsvCallback;
 import com.avaje.ebean.text.csv.CsvReader;
 import com.avaje.ebean.text.csv.DefaultCsvCallback;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 
 /**
@@ -45,241 +48,341 @@ import com.avaje.ebeaninternal.server.el.ElPropertyValue;
  */
 public class TCsvReader<T> implements CsvReader<T> {
 
-    //private static final Logger logger = Logger.getLogger(TCsvReader.class.getName());
+	// private static final Logger logger =
+	// Logger.getLogger(TCsvReader.class.getName());
 
-    private final EbeanServer server;
+	private static final TimeStringParser TIME_PARSER = new TimeStringParser();
 
-    private final BeanDescriptor<T> descriptor;
+	private final EbeanServer server;
 
-    private final List<CsvColumn> columnList = new ArrayList<CsvColumn>();
+	private final BeanDescriptor<T> descriptor;
 
-    private final CsvColumn ignoreColumn = new CsvColumn();
+	private final List<CsvColumn> columnList = new ArrayList<CsvColumn>();
 
-    private boolean treatEmptyStringAsNull = true;
+	private final CsvColumn ignoreColumn = new CsvColumn();
 
-    private boolean hasHeader;
+	private boolean treatEmptyStringAsNull = true;
 
-    private int logInfoFrequency = 1000;
+	private boolean hasHeader;
 
-    /**
-     * The batch size used for JDBC statement batching.
-     */
-    protected int persistBatchSize = 30;
+	private int logInfoFrequency = 1000;
 
-    public TCsvReader(EbeanServer server, BeanDescriptor<T> descriptor) {
-        this.server = server;
-        this.descriptor = descriptor;
-    }
+	private String defaultTimeFormat = "HH:mm:ss";
+	private String defaultDateFormat = "yyyy-MM-dd";
+	private String defaultTimestampFormat = "yyyy-MM-dd hh:mm:ss.fffffffff";
+	private Locale defaultLocale = Locale.getDefault();
 
-    public void setPersistBatchSize(int persistBatchSize) {
-        this.persistBatchSize = persistBatchSize;
-    }
+	/**
+	 * The batch size used for JDBC statement batching.
+	 */
+	protected int persistBatchSize = 30;
 
-    public void setHasHeader(boolean hasHeader) {
-        this.hasHeader = hasHeader;
-    }
+	private boolean addPropertiesFromHeader;
 
-    public void setLogInfoFrequency(int logInfoFrequency) {
-        this.logInfoFrequency = logInfoFrequency;
-    }
+	// private String addHeaderDateTimeFormat;
+	// private Locale addHeaderLocale;
 
-    public void addIgnore() {
-        columnList.add(ignoreColumn);
-    }
+	public TCsvReader(EbeanServer server, BeanDescriptor<T> descriptor) {
+		this.server = server;
+		this.descriptor = descriptor;
+	}
 
-    public void addProperty(String propertyName) {
-        addProperty(propertyName, null);
-    }
+	public void setDefaultLocale(Locale defaultLocale) {
+		this.defaultLocale = defaultLocale;
+	}
 
-    public void addReference(String propertyName) {
-        addProperty(propertyName, null, true);
-    }
+	public void setDefaultTimeFormat(String defaultTimeFormat) {
+		this.defaultTimeFormat = defaultTimeFormat;
+	}
 
-    public void addProperty(String propertyName, StringParser parser) {
-        addProperty(propertyName, parser, false);
-    }
+	public void setDefaultDateFormat(String defaultDateFormat) {
+		this.defaultDateFormat = defaultDateFormat;
+	}
 
-    public void addDateTime(String propertyName, String dateTimeFormat) {
-        addDateTime(propertyName, dateTimeFormat, Locale.getDefault());
-    }
+	public void setDefaultTimestampFormat(String defaultTimestampFormat) {
+		this.defaultTimestampFormat = defaultTimestampFormat;
+	}
 
-    public void addDateTime(String propertyName, String dateTimeFormat, Locale locale) {
+	public void setPersistBatchSize(int persistBatchSize) {
+		this.persistBatchSize = persistBatchSize;
+	}
 
-        ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
-        if (!elProp.isDateTimeCapable()) {
-            throw new TextException("Property " + propertyName + " is not DateTime capable");
-        }
+	public void setIgnoreHeader() {
+		setHasHeader(true, false);
+	}
 
-        SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat, locale);
-        DateTimeParser parser = new DateTimeParser(sdf, dateTimeFormat, elProp);
+	public void setAddPropertiesFromHeader() {
+		setHasHeader(true, true);
+	}
 
-        CsvColumn column = new CsvColumn(elProp, parser, false);
-        columnList.add(column);
-    }
+	public void setHasHeader(boolean hasHeader, boolean addPropertiesFromHeader) {
+		this.hasHeader = hasHeader;
+		this.addPropertiesFromHeader = addPropertiesFromHeader;
+	}
 
-    public void addProperty(String propertyName, StringParser parser, boolean reference) {
+	public void setLogInfoFrequency(int logInfoFrequency) {
+		this.logInfoFrequency = logInfoFrequency;
+	}
 
-        ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
-        if (parser == null) {
-            parser = elProp.getStringParser();
-        }
-        CsvColumn column = new CsvColumn(elProp, parser, reference);
-        columnList.add(column);
-    }
+	public void addIgnore() {
+		columnList.add(ignoreColumn);
+	}
 
-    public void process(Reader reader) throws Exception {
-        DefaultCsvCallback<T> callback = new DefaultCsvCallback<T>(persistBatchSize, logInfoFrequency);
-        process(reader, callback);
-    }
+	public void addProperty(String propertyName) {
+		addProperty(propertyName, null);
+	}
 
-    public void process(Reader reader, CsvCallback<T> callback) throws Exception {
+	public void addReference(String propertyName) {
+		addProperty(propertyName, null, true);
+	}
 
-        if (reader == null){
-            throw new NullPointerException("reader is null?");
-        }
-        if (callback == null){
-            throw new NullPointerException("callback is null?");
-        }
+	public void addProperty(String propertyName, StringParser parser) {
+		addProperty(propertyName, parser, false);
+	}
 
-        CsvUtilReader utilReader = new CsvUtilReader(reader);
+	public void addDateTime(String propertyName, String dateTimeFormat) {
+		addDateTime(propertyName, dateTimeFormat, Locale.getDefault());
+	}
 
-        callback.begin(server);
+	public void addDateTime(String propertyName, String dateTimeFormat, Locale locale) {
 
-        int row = 0;
+		ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
+		if (!elProp.isDateTimeCapable()) {
+			throw new TextException("Property " + propertyName + " is not DateTime capable");
+		}
 
-        if (hasHeader) {
-            String[] line = utilReader.readNext();
-            callback.readHeader(line);
-        }
+		if (dateTimeFormat == null) {
+			dateTimeFormat = getDefaultDateTimeFormat(elProp.getJdbcType());
+		}
 
-        try {
-            do {
-                ++row;
-                String[] line = utilReader.readNext();
-                if (line == null) {
-                    --row;
-                    break;
-                }
-                
-                if (callback.processLine(row, line)) {
-                    // the line content is expected to be ok for processing
-                    if (line.length != columnList.size()) {
-                        // we have not got the expected number of columns
-                        String msg = "Error at line " + row + ". Expected [" + columnList.size() + "] columns "
-                                + "but instead we have [" + line.length + "].  Line[" + Arrays.toString(line) + "]";
-                        throw new TextException(msg);
-                    }
+		if (locale == null) {
+			locale = defaultLocale;
+		}
 
-                    T bean = buildBeanFromLineContent(line);
+		SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat, locale);
+		DateTimeParser parser = new DateTimeParser(sdf, dateTimeFormat, elProp);
 
-                    callback.processBean(row, line, bean);
+		CsvColumn column = new CsvColumn(elProp, parser, false);
+		columnList.add(column);
+	}
 
-                }
-            } while (true);
+	private String getDefaultDateTimeFormat(int jdbcType) {
+		switch (jdbcType) {
+		case Types.TIME:
+			return defaultTimeFormat;
+		case Types.DATE:
+			return defaultDateFormat;
+		case Types.TIMESTAMP:
+			return defaultTimestampFormat;
 
-            callback.end(row);
+		default:
+			throw new RuntimeException("Expected java.sql.Types TIME,DATE or TIMESTAMP but got [" + jdbcType + "]");
+		}
+	}
 
+	public void addProperty(String propertyName, StringParser parser, boolean reference) {
 
-        } catch (Exception e) {
-            // notify that an error occured so that any 
-            // transaction can be rolled back if required 
-            callback.endWithError(row, e);
-            throw e;
-        }
-    }
+		ElPropertyValue elProp = descriptor.getElGetValue(propertyName);
+		if (parser == null) {
+			parser = elProp.getStringParser();
+		}
+		CsvColumn column = new CsvColumn(elProp, parser, reference);
+		columnList.add(column);
+	}
 
-    @SuppressWarnings("unchecked")
-    protected T buildBeanFromLineContent(String[] line) {
+	public void process(Reader reader) throws Exception {
+		DefaultCsvCallback<T> callback = new DefaultCsvCallback<T>(persistBatchSize, logInfoFrequency);
+		process(reader, callback);
+	}
 
-        EntityBean entityBean = descriptor.createEntityBean();
-        T bean = (T) entityBean;
+	public void process(Reader reader, CsvCallback<T> callback) throws Exception {
 
-        int columnPos = 0;
-        for (; columnPos < line.length; columnPos++) {
-            convertAndSetColumn(columnPos, line[columnPos], entityBean);
-        }
+		if (reader == null) {
+			throw new NullPointerException("reader is null?");
+		}
+		if (callback == null) {
+			throw new NullPointerException("callback is null?");
+		}
 
-        return bean;
-    }
+		CsvUtilReader utilReader = new CsvUtilReader(reader);
 
-    protected void convertAndSetColumn(int columnPos, String strValue, Object bean) {
+		callback.begin(server);
 
-        if (strValue.length() == 0 && treatEmptyStringAsNull) {
-            return;
-        }
+		int row = 0;
 
-        CsvColumn c = columnList.get(columnPos);
-        c.convertAndSet(strValue, bean);
-    }
+		if (hasHeader) {
+			String[] line = utilReader.readNext();
+			if (addPropertiesFromHeader) {
+				addPropertiesFromHeader(line);
+			}
+			callback.readHeader(line);
+		}
 
-    /**
-     * Processes a column in the csv content.
-     */
-    public static class CsvColumn {
+		try {
+			do {
+				++row;
+				String[] line = utilReader.readNext();
+				if (line == null) {
+					--row;
+					break;
+				}
 
-        private final ElPropertyValue elProp;
-        private final StringParser parser;
-        private final boolean ignore;
-        private final boolean reference;
+				if (callback.processLine(row, line)) {
+					// the line content is expected to be ok for processing
+					if (line.length != columnList.size()) {
+						// we have not got the expected number of columns
+						String msg = "Error at line " + row + ". Expected [" + columnList.size() + "] columns "
+						        + "but instead we have [" + line.length + "].  Line[" + Arrays.toString(line) + "]";
+						throw new TextException(msg);
+					}
 
-        /**
-         * Constructor for the IGNORE column.
-         */
-        private CsvColumn() {
-            this.elProp = null;
-            this.parser = null;
-            this.reference = false;
-            this.ignore = true;
-        }
+					T bean = buildBeanFromLineContent(row, line);
 
-        /**
-         * Construct with a property and parser.
-         */
-        public CsvColumn(ElPropertyValue elProp, StringParser parser, boolean reference) {
-            this.elProp = elProp;
-            this.parser = parser;
-            this.reference = reference;
-            this.ignore = false;
-        }
+					callback.processBean(row, line, bean);
 
-        /**
-         * Convert the string to the appropriate value and set it to the bean.
-         */
-        public void convertAndSet(String strValue, Object bean) {
+				}
+			} while (true);
 
-            if (!ignore) {
-                Object value = parser.parse(strValue);
-                elProp.elSetValue(bean, value, true, reference);
-            }
-        }
-    }
+			callback.end(row);
 
-    /**
-     * A StringParser for converting custom date/time/datetime strings into
-     * appropriate java types (Date, Calendar, SQL Date, Time, Timestamp, JODA
-     * etc).
-     */
-    private static class DateTimeParser implements StringParser {
+		} catch (Exception e) {
+			// notify that an error occured so that any
+			// transaction can be rolled back if required
+			callback.endWithError(row, e);
+			throw e;
+		}
+	}
 
-        private final DateFormat dateFormat;
-        private final ElPropertyValue elProp;
-        private final String format;
+	private void addPropertiesFromHeader(String[] line) {
+		for (int i = 0; i < line.length; i++) {
+			ElPropertyValue elProp = descriptor.getElGetValue(line[i]);
+			if (elProp == null) {
+				throw new TextException("Property [" + line[i] + "] not found");
+			}
 
-        DateTimeParser(DateFormat dateFormat, String format, ElPropertyValue elProp) {
-            this.dateFormat = dateFormat;
-            this.elProp = elProp;
-            this.format = format;
-        }
+			if (Types.TIME == elProp.getJdbcType()) {
+				addProperty(line[i], TIME_PARSER);
 
-        public Object parse(String value) {
-            try {
-                Date dt = dateFormat.parse(value);
-                return elProp.parseDateTime(dt.getTime());
+			} else if (isDateTimeType(elProp.getJdbcType())) {
+				addDateTime(line[i], null, null);
 
-            } catch (ParseException e) {
-                throw new TextException("Error parsing [" + value + "] using format[" + format + "]", e);
-            }
-        }
+			} else if (elProp.isAssocProperty()) {
+				BeanPropertyAssocOne<?> assocOne = (BeanPropertyAssocOne<?>) elProp.getBeanProperty();
+				String idProp = assocOne.getBeanDescriptor().getIdBinder().getIdProperty();
+				addReference(line[i] + "." + idProp);
+			} else {
+				addProperty(line[i]);
+			}
+		}
+	}
 
-    }
+	private boolean isDateTimeType(int t) {
+		if (t == Types.TIMESTAMP || t == Types.DATE || t == Types.TIME) {
+			return true;
+		}
+		return false;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected T buildBeanFromLineContent(int row, String[] line) {
+
+		try {
+			EntityBean entityBean = descriptor.createEntityBean();
+			T bean = (T) entityBean;
+
+			int columnPos = 0;
+			for (; columnPos < line.length; columnPos++) {
+				convertAndSetColumn(columnPos, line[columnPos], entityBean);
+			}
+
+			return bean;
+			
+		} catch (RuntimeException e) {
+			String msg = "Error at line: " + row + " line[" + Arrays.toString(line) + "]";
+			throw new RuntimeException(msg, e);
+		}
+	}
+
+	protected void convertAndSetColumn(int columnPos, String strValue, Object bean) {
+
+		strValue = strValue.trim();
+
+		if (strValue.length() == 0 && treatEmptyStringAsNull) {
+			return;
+		}
+
+		CsvColumn c = columnList.get(columnPos);
+		c.convertAndSet(strValue, bean);
+	}
+
+	/**
+	 * Processes a column in the csv content.
+	 */
+	public static class CsvColumn {
+
+		private final ElPropertyValue elProp;
+		private final StringParser parser;
+		private final boolean ignore;
+		private final boolean reference;
+
+		/**
+		 * Constructor for the IGNORE column.
+		 */
+		private CsvColumn() {
+			this.elProp = null;
+			this.parser = null;
+			this.reference = false;
+			this.ignore = true;
+		}
+
+		/**
+		 * Construct with a property and parser.
+		 */
+		public CsvColumn(ElPropertyValue elProp, StringParser parser, boolean reference) {
+			this.elProp = elProp;
+			this.parser = parser;
+			this.reference = reference;
+			this.ignore = false;
+		}
+
+		/**
+		 * Convert the string to the appropriate value and set it to the bean.
+		 */
+		public void convertAndSet(String strValue, Object bean) {
+
+			if (!ignore) {
+				Object value = parser.parse(strValue);
+				elProp.elSetValue(bean, value, true, reference);
+			}
+		}
+	}
+
+	/**
+	 * A StringParser for converting custom date/time/datetime strings into
+	 * appropriate java types (Date, Calendar, SQL Date, Time, Timestamp, JODA
+	 * etc).
+	 */
+	private static class DateTimeParser implements StringParser {
+
+		private final DateFormat dateFormat;
+		private final ElPropertyValue elProp;
+		private final String format;
+
+		DateTimeParser(DateFormat dateFormat, String format, ElPropertyValue elProp) {
+			this.dateFormat = dateFormat;
+			this.elProp = elProp;
+			this.format = format;
+		}
+
+		public Object parse(String value) {
+			try {
+				Date dt = dateFormat.parse(value);
+				return elProp.parseDateTime(dt.getTime());
+
+			} catch (ParseException e) {
+				throw new TextException("Error parsing [" + value + "] using format[" + format + "]", e);
+			}
+		}
+
+	}
 }

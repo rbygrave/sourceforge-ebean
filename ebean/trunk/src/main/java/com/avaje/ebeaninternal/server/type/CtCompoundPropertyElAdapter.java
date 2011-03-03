@@ -119,7 +119,11 @@ public class CtCompoundPropertyElAdapter implements ElPropertyValue {
         return false;
     }
 
-    public Object parseDateTime(long systemTimeMillis) {
+    public int getJdbcType() {
+	    return 0;
+    }
+
+	public Object parseDateTime(long systemTimeMillis) {
         throw new RuntimeException("Not Supported or Expected");
     }
     

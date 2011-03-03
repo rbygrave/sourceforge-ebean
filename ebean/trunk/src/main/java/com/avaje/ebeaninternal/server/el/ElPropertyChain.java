@@ -223,6 +223,10 @@ public class ElPropertyChain implements ElPropertyValue {
 		return scalarType != null && scalarType.isDateTimeCapable();
 	}
 
+	public int getJdbcType() {
+	    return scalarType == null ? 0 : scalarType.getJdbcType();
+    }
+
 	public Object parseDateTime(long systemTimeMillis) {
 		return scalarType.parseDateTime(systemTimeMillis);
 	}
