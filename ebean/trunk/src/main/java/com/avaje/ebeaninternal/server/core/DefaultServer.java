@@ -373,16 +373,37 @@ public final class DefaultServer implements SpiEbeanServer {
         this.mbeanServer = mbeanServer;
         this.mbeanName = "Ebean:server=" + serverName + uniqueServerId;
 
+        
+        ObjectName adminName;
+        ObjectName autofethcName;
         try {
-            mbeanServer.registerMBean(adminLogging, new ObjectName(mbeanName + ",function=Logging"));
-            mbeanServer.registerMBean(adminAutofetch, new ObjectName(mbeanName + ",key=AutoFetch"));
-
+	        adminName = new ObjectName(mbeanName + ",function=Logging");
+	        autofethcName = new ObjectName(mbeanName + ",key=AutoFetch");
+        } catch (Exception e) {
+        	String msg = "Failed to register the JMX beans for Ebean server [" + serverName+ "].";
+        	logger.log(Level.SEVERE, msg, e);
+        	return;
+        } 
+        
+        try {
+            mbeanServer.registerMBean(adminLogging, adminName);
+            mbeanServer.registerMBean(adminAutofetch, autofethcName);
+            
         } catch (InstanceAlreadyExistsException e) {
-            String msg = "Error registering the JMX beans for Ebean server [" + serverName
-                    + "]. It seems that the Ebean server name [" + serverName + "] is not unique for this JVM. ";
+        	// tomcat webapp reloading
+            String msg = "JMX beans for Ebean server [" + serverName+ "] already registered. Will try unregister/register"+ e.getMessage();
+            logger.log(Level.WARNING, msg);
+            try {
+	            mbeanServer.unregisterMBean(adminName);
+	            mbeanServer.unregisterMBean(autofethcName);
+	            // re-register
+	            mbeanServer.registerMBean(adminLogging, adminName);
+	            mbeanServer.registerMBean(adminAutofetch, autofethcName);
 
-            logger.log(Level.SEVERE, msg, e);
-
+            } catch (Exception ae) {
+                String amsg = "Unable to unregister/register the JMX beans for Ebean server [" + serverName+ "].";
+                logger.log(Level.SEVERE, amsg, ae);
+            }
         } catch (Exception e) {
             String msg = "Error registering MBean[" + mbeanName + "]";
             logger.log(Level.SEVERE, msg, e);
