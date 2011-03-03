@@ -112,12 +112,13 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 		// not explicitly set
 		mode = autofetchConfig.getMode();
 
-		// log the guts of the autoFetch setup
-		String msg = "AutoFetch queryTuning[" + queryTuning + "] profiling[" + profiling
-				+ "] mode[" + mode + "]  profiling rate[" + profilingRate
-				+ "] min[" + profilingMin + "] base[" + profilingBase + "]";
-
-		logging.logToJavaLogger(msg);
+		if (profiling || queryTuning) {
+			// log the guts of the autoFetch setup
+			String msg = "AutoFetch queryTuning[" + queryTuning + "] profiling[" + profiling
+					+ "] mode[" + mode + "]  profiling rate[" + profilingRate
+					+ "] min[" + profilingMin + "] base[" + profilingBase + "]";
+			logging.logToJavaLogger(msg);
+		}
 	}
 
 	
