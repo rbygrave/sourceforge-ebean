@@ -95,6 +95,11 @@ public interface ElPropertyValue extends ElPropertyDeploy {
     public boolean isDateTimeCapable();
 
     /**
+     * Return the underlying JDBC type or 0 if this is not a scalar type.
+     */
+    public int getJdbcType();
+    
+    /**
      * For DateTime capable scalar types convert the long systemTimeMillis into
      * an appropriate java time (Date,Timestamp,Time,Calendar, JODA type etc).
      */

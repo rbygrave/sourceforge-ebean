@@ -993,6 +993,9 @@ public final class DefaultServer implements SpiEbeanServer {
 
     public <T> CsvReader<T> createCsvReader(Class<T> beanType) {
         BeanDescriptor<T> descriptor = getBeanDescriptor(beanType);
+        if (descriptor == null){
+        	throw new NullPointerException("BeanDescriptor for "+beanType.getName()+" not found");
+        }
         return new TCsvReader<T>(this, descriptor);
     }
 
