@@ -225,16 +225,15 @@ public class CsvUtilReader {
                 		}
                 	}
                 } else if (c == separator && !inQuotes) {
-                    tokensOnThisLine.add(sb.toString());
+                    tokensOnThisLine.add(sb.toString().trim());
                     sb = new StringBuilder(); // start work on next token
                 } else {
                     sb.append(c);
                 }
             }
         } while (inQuotes);
-        tokensOnThisLine.add(sb.toString());
-        return (String[]) tokensOnThisLine.toArray(new String[0]);
-
+        tokensOnThisLine.add(sb.toString().trim());
+        return tokensOnThisLine.toArray(new String[tokensOnThisLine.size()]);
     }
 
     /**
