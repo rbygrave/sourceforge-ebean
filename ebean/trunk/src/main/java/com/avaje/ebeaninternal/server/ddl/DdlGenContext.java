@@ -141,9 +141,6 @@ public class DdlGenContext {
 		if (scalarType == null) {
 			throw new RuntimeException("No scalarType for " + p.getFullBeanName());
 		}
-		if (p.isLob() && scalarType.getJdbcType() == Types.VARCHAR){
-			System.out.println("here");
-		}
 
 		if (p.isDbEncrypted()){
 		    return dbTypeMap.get(p.getDbEncryptedType());
