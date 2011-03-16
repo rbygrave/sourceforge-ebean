@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.H2Platform;
+import com.avaje.ebean.config.dbplatform.HsqldbPlatform;
 import com.avaje.ebean.config.dbplatform.MsSqlServer2000Platform;
 import com.avaje.ebean.config.dbplatform.MsSqlServer2005Platform;
 import com.avaje.ebean.config.dbplatform.MySqlPlatform;
@@ -166,6 +167,9 @@ public class DatabasePlatformFactory {
 		}
 		if (dbProductName.indexOf("h2") > -1) {
 			return new H2Platform();
+		}
+		if (dbProductName.indexOf("hsql database engine") > -1) {
+			return new HsqldbPlatform();
 		}
 		if (dbProductName.indexOf("postgres") > -1) {
 			return new PostgresPlatform();
