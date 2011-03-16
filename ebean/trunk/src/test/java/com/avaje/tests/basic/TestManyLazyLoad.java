@@ -18,8 +18,8 @@ public class TestManyLazyLoad extends TestCase {
 	
 		ResetBasicData.reset();
 		
-		List<Order> list = Ebean.find(Order.class).findList();
-		Assert.assertTrue("sz > 0", list.size() > 0);
+		List<Order> list = Ebean.find(Order.class).order().asc("id").findList();
+		Assert.assertTrue(list.size()+" > 0", list.size() > 0);
 		
 		// just use the first one
 		Order order = list.get(0);
@@ -35,7 +35,7 @@ public class TestManyLazyLoad extends TestCase {
 		
 		// lazy load the details
 		int sz = details.size();
-		Assert.assertTrue("sz > 0", sz > 0);
+		Assert.assertTrue(sz+" > 0", sz > 0);
 		
 		Order o = details.get(0).getOrder();
 		Assert.assertTrue("same instance", o == order1);
@@ -49,7 +49,7 @@ public class TestManyLazyLoad extends TestCase {
 		
 		// lazy load the details
 		int sz2 = details2.size();
-		Assert.assertTrue("sz2 > 0", sz2 > 0);
+		Assert.assertTrue(sz2+" > 0", sz2 > 0);
 		
 		Order o2 = details2.get(0).getOrder();
 		Assert.assertTrue("same instance", o2 == order2);

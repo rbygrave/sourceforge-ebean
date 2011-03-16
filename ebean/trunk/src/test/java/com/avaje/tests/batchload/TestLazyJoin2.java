@@ -21,16 +21,17 @@ public class TestLazyJoin2 extends TestCase {
 		ResetBasicData.reset();
 
 		 // This will use 3 SQL queries to build this object graph
- List<Order> l0 = Ebean.find(Order.class)
-   .select("status, shipDate")
-   
-   .fetch("details", "orderQty, unitPrice", new FetchConfig().query())
-   .fetch("details.product", "sku, name")
-   
-   .fetch("customer", "name", new FetchConfig().query(10))
-   .fetch("customer.contacts","firstName, lastName, mobile")
-   .fetch("customer.shippingAddress","line1, city")
-   .findList();
+		 List<Order> l0 = Ebean.find(Order.class)
+		   .select("status, shipDate")
+		   
+		   .fetch("details", "orderQty, unitPrice", new FetchConfig().query())
+		   .fetch("details.product", "sku, name")
+		   
+		   .fetch("customer", "name", new FetchConfig().query(10))
+		   .fetch("customer.contacts","firstName, lastName, mobile")
+		   .fetch("customer.shippingAddress","line1, city")
+		   .order().asc("id")
+		   .findList();
 		 
 		 
 		 Order o0 = l0.get(0);
@@ -48,6 +49,7 @@ public class TestLazyJoin2 extends TestCase {
 		List<Order> orders = Ebean.find(Order.class)
 			//.select("status")
 			.fetch("customer", new FetchConfig().query(3).lazy(10))
+			.order().asc("id")
 			.findList();
 			//.join("customer.contacts");
 
@@ -71,6 +73,7 @@ public class TestLazyJoin2 extends TestCase {
 		   .fetch("customer.contacts","contactName, phone, email")
 		   .fetch("customer.shippingAddress")
 		   .where().eq("status",Order.Status.NEW)
+		   .order().asc("id")
 		   .findList();
 				 
 		Order order2 = list.get(0);
