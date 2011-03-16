@@ -40,8 +40,8 @@ public class CQueryPlanRawSql extends CQueryPlan {
     }
 
     public DataReader createDataReader(ResultSet rset){
-        
-        return new RsetDataReaderIndexed(rset, rsetIndexPositions);
+    	
+        return new RsetDataReaderIndexed(rset, rsetIndexPositions, isRowNumberIncluded());
     }
     
     
