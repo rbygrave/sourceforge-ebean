@@ -37,7 +37,8 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 
     private ArrayList<String> uniqueConstraints = new ArrayList<String>();
 
-    private String tableName;
+    private String table;
+    private String schema;
     
 	public Set<String> getWroteColumns() {
 		return wroteColumns;
@@ -67,17 +68,28 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	 */
 	protected void writeTableName(BeanDescriptor<?> descriptor) {
 		
-		tableName = descriptor.getBaseTable();
+		String tableName = descriptor.getBaseTable();
+		int dotPos = tableName.lastIndexOf('.');
+		if (dotPos > -1){
+			schema = tableName.substring(0, dotPos);
+			table = tableName.substring(dotPos+1);
+		} else {
+			table = tableName;
+		}
 		
-		if (SqlReservedWords.isKeyword(tableName)) {
-			logger.warning("Table name ["+tableName+"] is a suspected SQL reserved word for bean "+descriptor.getFullName());
+		if (SqlReservedWords.isKeyword(table)) {
+			logger.warning("Table name ["+table+"] is a suspected SQL reserved word for bean "+descriptor.getFullName());
 		}
 
 		ctx.write(tableName);		
 	}
 
-	protected String getTableName() {
-	    return tableName;
+	protected String getTable() {
+	    return table;
+	}
+	
+	protected String getSchema() {
+	    return schema;
 	}
 	
 	/**
@@ -115,7 +127,7 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 	}
 	
     protected String getConstraintName(String prefix, BeanProperty p) {
-        return prefix + tableName + "_" + p.getDbColumn();
+        return prefix + table + "_" + p.getDbColumn();
     }
 
     protected void addUniqueConstraint(String constraintExpression) {
@@ -200,7 +212,7 @@ public class CreateTableVisitor extends AbstractBeanVisitor {
 			
 		} else {
 			// Add the primay key constraint
-			String pkName = ddl.getPrimaryKeyName(descriptor.getBaseTable());
+			String pkName = ddl.getPrimaryKeyName(table);
 			ctx.write("  constraint ").write(pkName).write(" primary key (");
 	
 			VisitorUtil.visit(ids, new AbstractPropertyVisitor() {
