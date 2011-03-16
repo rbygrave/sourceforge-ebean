@@ -20,21 +20,17 @@ public class TestBatchLazy extends TestCase {
 		Query<Order> query = Ebean.find(Order.class);
 		List<Order> list = query.findList();
 		
-		Order order = list.get(0);
 		
-		List<OrderDetail> details = order.getDetails();
-		details.get(0).getProduct().getSku();
+		for (Order order : list) {
+			Customer customer = order.getCustomer();
+			customer.getName();
+			
+			List<OrderDetail> details = order.getDetails();
+			for (OrderDetail orderDetail : details) {
+				orderDetail.getProduct().getSku();
+            }
+        }
 		
-		
-		Customer customer = order.getCustomer();
-		//Assert.assertTrue(Ebean.getBeanState(customer).isReference());
-		
-		customer.getName();
-		//customer.getCretime();
-		//Assert.assertFalse(Ebean.getBeanState(customer).isReference());
-
-		// assertTrue(sql.contains())
-
 		AdminAutofetch adminAutofetch = Ebean.getServer(null).getAdminAutofetch();
 		adminAutofetch.collectUsageViaGC();
 
