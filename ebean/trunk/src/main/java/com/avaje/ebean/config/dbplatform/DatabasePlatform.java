@@ -74,6 +74,8 @@ public class DatabasePlatform {
 	protected DbEncrypt dbEncrypt;
 	
 	protected boolean idInExpandedForm;
+
+	protected boolean selectCountWithAlias;
 	
 	/**
 	 * Instantiates a new database platform.
@@ -263,4 +265,11 @@ public class DatabasePlatform {
 		}
 		return dbName;
 	}
+
+	/**
+	 * Set to true if select count against anonymous view requires an alias.
+	 */
+	public boolean isSelectCountWithAlias() {
+	    return selectCountWithAlias;
+    }
 }

@@ -43,8 +43,9 @@ public class MySqlPlatform extends DatabasePlatform {
     public MySqlPlatform(){
         super();
         this.name = "mysql";
+        this.selectCountWithAlias = true;
         this.dbEncrypt = new MySqlDbEncrypt();
-        
+
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         this.dbIdentity.setSupportsIdentity(true);
