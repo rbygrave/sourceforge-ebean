@@ -38,6 +38,7 @@ public class PostgresPlatform extends DatabasePlatform {
     public PostgresPlatform() {
         super();
         this.name = "postgres";
+        this.selectCountWithAlias = true;
         this.blobDbType = Types.LONGVARBINARY;
         this.clobDbType = Types.VARCHAR;
         

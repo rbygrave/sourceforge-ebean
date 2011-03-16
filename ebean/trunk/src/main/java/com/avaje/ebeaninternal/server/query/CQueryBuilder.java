@@ -68,7 +68,7 @@ public class CQueryBuilder implements Constants {
 	
 	private final BackgroundExecutor backgroundExecutor;
 	
-	private final boolean postgresPlatform;
+	private final boolean selectCountWithAlias;
 	
 	private final boolean luceneAvailable;
 	
@@ -91,7 +91,7 @@ public class CQueryBuilder implements Constants {
 		this.sqlLimiter = dbPlatform.getSqlLimiter();
 		this.rawSqlHandler = new CQueryBuilderRawSql(sqlLimiter);
 		
-		this.postgresPlatform = dbPlatform.getName().toLowerCase().indexOf("postgres") > -1;
+		this.selectCountWithAlias = dbPlatform.isSelectCountWithAlias();
 	}
 
 	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
@@ -222,7 +222,7 @@ public class CQueryBuilder implements Constants {
 		String sql = s.getSql();
 		if (hasMany){
 			sql = "select count(*) from ( "+sql+")";
-			if (postgresPlatform){
+			if (selectCountWithAlias){
 			    sql += " as c";
 			}
 		}
