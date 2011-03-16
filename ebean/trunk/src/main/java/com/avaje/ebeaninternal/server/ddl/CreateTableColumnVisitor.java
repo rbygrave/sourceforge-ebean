@@ -157,6 +157,10 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 		String columnDefn = ctx.getColumnDefn(p);
 		ctx.write(columnDefn);
 
+		if (isIdentity(p)) {
+			writeIdentity();
+		}
+
 		if (p.isId() && ddl.isInlinePrimaryKeyConstraint()){
 			ctx.write(" primary key");
 			
@@ -164,9 +168,6 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 			ctx.write(" not null");
 		}
 
-		if (isIdentity(p)) {
-			writeIdentity();
-		}
 		if (p.isUnique() && !p.isId()){
 		    parent.addUniqueConstraint(createUniqueConstraint(p));
 		}
