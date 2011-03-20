@@ -112,13 +112,15 @@ public abstract class DmlHandler implements PersistHandler, BindableRequest {
 	/**
 	 * Check the rowCount.
 	 */
-	protected final void checkRowCount(int rowCount) throws SQLException, OptimisticLockException {
+	protected void checkRowCount(int rowCount) throws SQLException, OptimisticLockException {
 		try {
 			persistRequest.checkRowCount(rowCount);
 			persistRequest.postExecute();
 		} catch (OptimisticLockException e){
 			// add the SQL and bind values to error message 
-			throw new OptimisticLockException(e.getMessage()+" sql["+sql+"] bind["+bindLog+"]", null, e.getEntity());
+			String m = e.getMessage()+" sql["+sql+"] bind["+bindLog+"]";
+			persistRequest.getTransaction().log("OptimisticLockException:"+m);
+			throw new OptimisticLockException(m, null, e.getEntity());
 		}
 	}
 	
