@@ -13,7 +13,7 @@ public class EBasicNoDefaultConstructor {
 
     String name;
 
-    protected EBasicNoDefaultConstructor() {
+    public EBasicNoDefaultConstructor() {
     }
     
     public EBasicNoDefaultConstructor(Integer id, String name) {
