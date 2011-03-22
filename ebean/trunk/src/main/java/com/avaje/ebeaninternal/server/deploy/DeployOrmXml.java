@@ -111,10 +111,7 @@ public class DeployOrmXml {
 		String defaultFile = "orm.xml";
 		readOrmXml(defaultFile, ormXmlList);
 		
-		if (ormXmlList.size() == 0) {
-			logger.info("No deployment xml (orm.xml etc) was loaded.");
-
-		} else {
+		if (!ormXmlList.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			for (Dnode ox : ormXmlList) {
 				sb.append(", ").append(ox.getAttribute("ebean.filename"));
