@@ -388,6 +388,10 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void insert(PersistRequestBean<?> request) {
 
+		if (request.isRegisteredVanillaBean()){
+			// skip as already inserted/updated in this transaction
+			return;
+		}
 		request.setType(PersistRequest.Type.INSERT);
 
 		if (request.isPersistCascade()) {
@@ -397,9 +401,9 @@ public final class DefaultPersister implements Persister {
 
 		// set the IDGenerated value if required
 		setIdGenValue(request);
-
 		request.executeOrQueue();
-
+		request.registerVanillaBean();
+		
 		if (request.isPersistCascade()) {
 			// save any associated List held beans
 			saveAssocMany(true, request);
@@ -411,9 +415,12 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void update(PersistRequestBean<?> request) {
 
+		if (request.isRegisteredVanillaBean()){
+			// skip as already inserted/updated in this transaction
+			return;
+		}
 		// we have determined that it is an update
 		request.setType(PersistRequest.Type.UPDATE);
-
 		if (request.isPersistCascade()) {
 			// save associated One beans recursively first
 			saveAssocOne(request);
@@ -421,6 +428,7 @@ public final class DefaultPersister implements Persister {
 
 		if (request.isDirty()) {
 			request.executeOrQueue();
+			request.registerVanillaBean();
 
 		} else {
 			// skip validation on unchanged bean
