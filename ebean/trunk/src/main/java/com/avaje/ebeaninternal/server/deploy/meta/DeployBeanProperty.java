@@ -650,13 +650,13 @@ public class DeployBeanProperty {
         if (sqlFormulaSelect != null) {
             return sqlFormulaSelect;
         } else if (EntityType.LDAP.equals(et)){
-            return dbColumn;
+            return getDbColumn();
         } else {
             if (secondaryTableJoinPrefix != null){
-                return "${"+secondaryTableJoinPrefix+"}"+dbColumn;
+                return "${"+secondaryTableJoinPrefix+"}"+getDbColumn();
             }
             // prepend table alias placeholder
-            return ElPropertyValue.ROOT_ELPREFIX + dbColumn;
+            return ElPropertyValue.ROOT_ELPREFIX + getDbColumn();
         }
     }
 
