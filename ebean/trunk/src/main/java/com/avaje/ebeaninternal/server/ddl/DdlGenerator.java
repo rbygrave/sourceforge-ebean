@@ -308,7 +308,7 @@ public class DdlGenerator {
 				s = s.trim();
 				int semiPos = s.indexOf(';');
 				if (semiPos == -1) {
-					sb.append(s);
+					sb.append(s).append(" ");
 
 				} else if (semiPos == s.length()-1) {
 					// semicolon at end of line
