@@ -10,7 +10,7 @@
     <groupId>org.avaje</groupId>
     <artifactId>ebean</artifactId>
     <name>Ebean</name>
-    <version>2.7.3-SNAPSHOT</version>
+    <version>2.7.3</version>
     <packaging>jar</packaging>
     <description>Ebean</description>
     <properties>
@@ -25,9 +25,9 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/</connection>
-		<developerConnection>scm:svn:https://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/</developerConnection>
-		<url>http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/trunk/</url>
+		<connection>scm:svn:http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/tags/ebean-2.7.3</connection>
+		<developerConnection>scm:svn:https://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/tags/ebean-2.7.3</developerConnection>
+		<url>http://ebeanorm.svn.sourceforge.net/svnroot/ebeanorm/ebean/tags/ebean-2.7.3</url>
 	</scm>
     
     <dependencies>
