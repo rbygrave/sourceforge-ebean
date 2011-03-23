@@ -189,7 +189,7 @@ public class CQueryFetchIds {
 		
 			boolean hitMaxRows = false;
 			boolean hasMoreRows = false;
-			int rowCount = 0;
+			rowCount = 0;
 			
 			DbReadContext ctx = new DbContext();
 			
