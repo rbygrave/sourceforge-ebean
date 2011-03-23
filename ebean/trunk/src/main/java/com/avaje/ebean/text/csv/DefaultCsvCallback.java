@@ -108,7 +108,7 @@ public class DefaultCsvCallback<T> implements CsvCallback<T> {
     /**
      * Override to read the heading line.
      * <p>
-     * This is only called if {@link CsvReader#setHasHeader(boolean)} is set to
+     * This is only called if {@link CsvReader#setHasHeader(boolean,boolean)} is set to
      * true.
      * </p>
      * <p>

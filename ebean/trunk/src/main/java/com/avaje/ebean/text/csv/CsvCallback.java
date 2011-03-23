@@ -47,7 +47,7 @@ public interface CsvCallback<T> {
     /**
      * Read the header row.
      * <p>
-     * This is only called if {@link CsvReader#setHasHeader(boolean)} has been
+     * This is only called if {@link CsvReader#setHasHeader(boolean,boolean)} has been
      * set to true.
      * </p>
      * 
