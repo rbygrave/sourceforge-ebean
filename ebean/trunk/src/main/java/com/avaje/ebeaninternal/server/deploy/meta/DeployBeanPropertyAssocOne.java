@@ -19,6 +19,8 @@
  */
 package com.avaje.ebeaninternal.server.deploy.meta;
 
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
+
 
 /**
  * Property mapped to a joined bean.
@@ -52,7 +54,19 @@ public class DeployBeanPropertyAssocOne<T> extends DeployBeanPropertyAssoc<T> {
 		return deployEmbedded;
 	}
 
+	@Override
+    public String getDbColumn() {
+		DeployTableJoinColumn[] columns = tableJoin.columns();
+		if (columns.length == 1){
+			return columns[0].getLocalDbColumn();
+		}
+	    return super.getDbColumn();
+    }
 
+	@Override
+    public String getElPlaceHolder(EntityType et) {
+	    return super.getElPlaceHolder(et);
+    }
 
 	/**
 	 * Return true if this a OneToOne property. Otherwise assumed ManyToOne.

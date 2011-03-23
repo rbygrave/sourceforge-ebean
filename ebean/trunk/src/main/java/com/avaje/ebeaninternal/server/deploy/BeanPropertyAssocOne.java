@@ -156,6 +156,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     }
 
     @Override
+    public String getElPlaceholder(boolean encrypted) {
+        return encrypted ? elPlaceHolderEncrypted : elPlaceHolder;
+    }
+
+    @Override
     public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
         
         localHelp.copyProperty(sourceBean, destBean, ctx, maxDepth);
