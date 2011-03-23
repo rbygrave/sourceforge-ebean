@@ -80,6 +80,9 @@ final class PropertyMapLoader {
 			Map.Entry<Object, Object> entry = it.next();
 			String key = ((String)entry.getKey()).toLowerCase();
 			String val = ((String)entry.getValue());
+			if (val != null){
+				val = val.trim();
+			}
 			p.put(key, val);
 		}
 		
