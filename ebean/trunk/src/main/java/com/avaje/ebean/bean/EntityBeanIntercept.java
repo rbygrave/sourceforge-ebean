@@ -45,26 +45,26 @@ public final class EntityBeanIntercept implements Serializable {
 	
 	private static final long serialVersionUID = -3664031775464862648L;
 	
-	    /**
-     * The default state (CacheStrategy readOnly can be applied).
-     */
-    public static final int DEFAULT = 0;
+//	    /**
+//     * The default state (CacheStrategy readOnly can be applied).
+//     */
+//    public static final int DEFAULT = 0;
+//    
+//    /**
+//     * Editable (used when the default results in a Read Only bean).
+//     */
+//    public static final int UPDATE = 1;
+//
+//    /**
+//     * Bean is READ ONLY (not editable).
+//     */
+//    public static final int READONLY = 2;
     
-    /**
-     * Editable (used when the default results in a Read Only bean).
-     */
-    public static final int UPDATE = 1;
-
-    /**
-     * Bean is READ ONLY (not editable).
-     */
-    public static final int READONLY = 2;
-    
-    /**
-     * Read Only immutable state and can't be made
-     * editable (when in cache and sharable).
-     */
-    public static final int SHARED = 3;
+//    /**
+//     * Read Only immutable state and can't be made
+//     * editable (when in cache and sharable).
+//     */
+//    public static final int SHARED = 3;
     
 	private transient NodeUsageCollector nodeUsageCollector;
 
@@ -108,7 +108,7 @@ public final class EntityBeanIntercept implements Serializable {
 	/**
 	 * The state of the Bean (DEFAULT,UDPATE,READONLY,SHARED).
 	 */
-	private int state;
+	private boolean readOnly;
 	
 	/**
 	 * set to true if the lazy loading should use the L2 cache.
@@ -144,23 +144,23 @@ public final class EntityBeanIntercept implements Serializable {
 		this.owner = (EntityBean)owner;
 	}
     
-	/**
-	 * Set the state of the bean (DEFAULT,UPDATE,READONLY,SHARED).
-	 * <p>
-	 * Note that UPDATE is really only to force readOnly = false
-	 * when the default cache setting has readOnly = true.
-	 * </p>
-	 */
-	public void setState(int parentState){
-	    this.state = parentState;
-	}
-	
-	/**
-	 * Return the state of the bean (DEFAULT,UPDATE,READONLY,SHARED).
-	 */
-	public int getState() {
-        return state;
-    }
+//	/**
+//	 * Set the state of the bean (DEFAULT,UPDATE,READONLY,SHARED).
+//	 * <p>
+//	 * Note that UPDATE is really only to force readOnly = false
+//	 * when the default cache setting has readOnly = true.
+//	 * </p>
+//	 */
+//	public void setState(int parentState){
+//	    this.state = parentState;
+//	}
+//	
+//	/**
+//	 * Return the state of the bean (DEFAULT,UPDATE,READONLY,SHARED).
+//	 */
+//	public int getState() {
+//        return state;
+//    }
 	
 	/**
 	 * Copy the internal state of the intercept to another intercept.
@@ -337,33 +337,13 @@ public final class EntityBeanIntercept implements Serializable {
 	public void setUseCache(boolean loadFromCache) {
 		this.useCache = loadFromCache;
 	}
-	
-	/**
-	 * Return true if this is a shared instance.
-	 * Typically this means this instance exists in the server cache and
-	 * other users/threads could also be using the same instance concurrently.
-	 * <p>
-	 * A shared instance must always be treated as read only.
-	 * </p>
-	 */
-	public boolean isSharedInstance() {
-	    return state == SHARED;
-	}
-
-	/**
-	 * Set this called when it is known this is a shared instance.
-	 * This is when this instance is put into the server cache.
-	 */
-	public void setSharedInstance() {
-	    this.state = SHARED;
-	}
 
 	/**
 	 * Return true if the bean should be treated as readOnly. If a setter method
 	 * is called when it is readOnly an Exception is thrown.
 	 */
 	public boolean isReadOnly() {
-	    return state >= READONLY;
+		return readOnly;
 	}
 
 	/**
@@ -371,13 +351,7 @@ public final class EntityBeanIntercept implements Serializable {
 	 * an exception.
 	 */
 	public void setReadOnly(boolean readOnly) {
-	    if (state == SHARED){
-	        if (!readOnly){
-	            throw new IllegalStateException("sharedInstance so must remain readOnly");	            
-	        }
-	    } else {
-	        state = readOnly ? READONLY : DEFAULT;
-	    }
+		this.readOnly = readOnly;
 	}
 	
 	/**
@@ -689,7 +663,7 @@ public final class EntityBeanIntercept implements Serializable {
 		if (!intercepting){
 			return;
 		}
-		if (state >= READONLY) {
+		if (readOnly) {
 			throw new IllegalStateException("This bean is readOnly");
 		}
 		

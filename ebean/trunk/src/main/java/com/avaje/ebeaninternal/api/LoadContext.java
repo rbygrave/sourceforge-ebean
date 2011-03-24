@@ -65,7 +65,7 @@ public interface LoadContext {
 	 * Return the parent state which defines the sharedInstance and readOnly status
 	 * which needs to be propagated to other beans and collections.
 	 */
-	public int getParentState();
+	public boolean isReadOnly();
 
 	/**
 	 * Return the persistence context used by this query and future lazy loading.

@@ -44,7 +44,6 @@ public class TestQueryCache extends TestCase {
 		
 		BeanCollection<Customer> bc = (BeanCollection<Customer>)list;
 		Assert.assertTrue(bc.isReadOnly());
-		Assert.assertTrue(bc.isSharedInstance());
 		Assert.assertFalse(bc.isEmpty());
 		Assert.assertTrue(list.size() > 0);
 		
@@ -59,7 +58,6 @@ public class TestQueryCache extends TestCase {
 		Assert.assertTrue("diff instance",list != list3);
 		BeanCollection<Customer> bc3 = (BeanCollection<Customer>)list3;
 		Assert.assertFalse(bc3.isReadOnly());
-		Assert.assertFalse(bc3.isSharedInstance());
 		Assert.assertFalse(bc3.isEmpty());
 		Assert.assertTrue(list3.size() > 0);
 

@@ -66,6 +66,9 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiUpdatePlan;
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
+import com.avaje.ebeaninternal.server.cache.CachedBeanData;
+import com.avaje.ebeaninternal.server.cache.CachedBeanDataExtract;
+import com.avaje.ebeaninternal.server.cache.CachedBeanDataLoad;
 import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.core.InternString;
@@ -271,6 +274,7 @@ public class BeanDescriptor<T> {
     /**
      * list of properties that are Lists/Sets/Maps (Derived).
      */
+	private final BeanProperty[] propertiesNonMany;
     private final BeanPropertyAssocMany<?>[] propertiesMany;
     private final BeanPropertyAssocMany<?>[] propertiesManySave;
     private final BeanPropertyAssocMany<?>[] propertiesManyDelete;
@@ -406,6 +410,7 @@ public class BeanDescriptor<T> {
     private LIndex luceneIndex;
     
     private Set<IndexInvalidate> luceneIndexInvalidations;
+
     
     /**
      * Construct the BeanDescriptor.
@@ -486,6 +491,7 @@ public class BeanDescriptor<T> {
         this.propertiesOneImportedDelete = listHelper.getOneImportedDelete();
 
         this.propertiesMany = listHelper.getMany();
+        this.propertiesNonMany = listHelper.getNonMany();
         this.propertiesManySave = listHelper.getManySave();
         this.propertiesManyDelete = listHelper.getManyDelete();
         this.propertiesManyToMany = listHelper.getManyToMany();
@@ -578,21 +584,13 @@ public class BeanDescriptor<T> {
             }
             copyEbi.setBeanLoader(0, ebeanServer);
             copyEbi.setPersistenceContext(ctx.getPersistenceContext());
-            
-            if (ctx.isSharing()){
-                copyEbi.setSharedInstance();
-            }
         }
 
         return (T)destBean;
     }
 
-    public T createCopyForUpdate(Object orig, boolean vanilla) {
+    public T createCopy(Object orig, boolean vanilla) {
         return createCopy(orig, new CopyContext(false, false), 3);
-    }
-
-    public T createCopyForSharing(Object orig) {
-        return createCopy(orig, new CopyContext(false, true), 3);
     }
 
     /**
@@ -938,11 +936,7 @@ public class BeanDescriptor<T> {
         if (queryReadOnly != null) {
             return queryReadOnly;
         } else {
-            if (referenceOptions != null) {
-                return referenceOptions.isReadOnly();
-            } else {
-                return false;
-            }
+            return false;
         }
     }
 
@@ -1126,38 +1120,49 @@ public class BeanDescriptor<T> {
             beanCache.clear();
         }
     }
-
-    @SuppressWarnings("unchecked")
-    public T cachePutObject(Object bean) {
-        Object cacheBean = createCopyForSharing(bean);
-        return cachePut((T) cacheBean, true);
-    }
-
+    
     /**
      * Put a bean into the bean cache.
      */
-    @SuppressWarnings("unchecked")
-    public T cachePut(T bean, boolean alreadyShared) {
+    public void cachePutBeanData(Object bean) {
         if (beanCache == null) {
             beanCache = cacheManager.getBeanCache(beanType);
         }
 
-        if (!alreadyShared){
-            bean = createCopyForSharing(bean);
-        }
+        CachedBeanData beanData = CachedBeanDataExtract.extract(this, bean);
+                
         Object id = getId(bean);
-        return (T) beanCache.put(id, bean);
+        beanCache.put(id, beanData);
     }
-    
+
     /**
      * Return a bean from the bean cache.
      */
     @SuppressWarnings("unchecked")
-    public T cacheGet(Object id) {
+    public T cacheGetBean(Object id, boolean vanilla, Boolean readOnly) {
+    	if (beanCache == null) {
+            return null;
+        } else {
+        	CachedBeanData d = (CachedBeanData) beanCache.get(id);
+            if (d == null){
+            	return null;
+            }
+            T bean = (T)createBean(vanilla);
+            convertSetId(id, bean);
+            if (!vanilla && Boolean.TRUE.equals(readOnly)){
+            	((EntityBean)bean)._ebean_getIntercept().setReadOnly(true);
+            }
+            
+            CachedBeanDataLoad.load(this, bean, d);
+            return bean;
+        }
+    }
+    
+    public CachedBeanData cacheGetBeanData(Object id) {
         if (beanCache == null) {
             return null;
         } else {
-            return (T) beanCache.get(id);
+        	return (CachedBeanData) beanCache.get(id);
         }
     }
     
@@ -1178,34 +1183,55 @@ public class BeanDescriptor<T> {
         return baseTableAlias;
     }
 
-    /**
-     * Try to refresh the bean from the cache returning true if successful.
-     */
-    public boolean refreshFromCache(EntityBeanIntercept ebi, Object id) {
-        if (ebi.isUseCache() && ebi.isReference()) {
-            // try to use a bean from the cache to load from
-            Object cacheBean = cacheGet(id);
-            if (cacheBean != null) {
-                // check that the cached bean contains the property we need to
-                // read
-                String lazyLoadProperty = ebi.getLazyLoadProperty();
-                Set<String> loadedProps = ((EntityBean) cacheBean)._ebean_getIntercept().getLoadedProps();
-                if (loadedProps == null || loadedProps.contains(lazyLoadProperty)) {
-                    // refresh using the cached bean
-                    refreshFromCacheBean(ebi, cacheBean, true);
-                    return true;
-                }
-            }
-        }
-        return false;
+    public boolean loadFromCache(EntityBeanIntercept ebi) {
+    	Object bean = ebi.getOwner();
+    	Object id = getId(bean);
+    
+        return loadFromCache(bean, ebi, id);
     }
-
-    /**
-     * Take the values from the dbBean and copy them into the ebi's owner bean.
-     */
-    private void refreshFromCacheBean(EntityBeanIntercept ebi, Object cacheBean, boolean isLazyLoad) {
-        new BeanRefreshFromCacheHelp(this, ebi, cacheBean, isLazyLoad).refresh();
+        
+    public boolean loadFromCache(Object bean, EntityBeanIntercept ebi, Object id) {
+    	
+    	CachedBeanData cacheData = cacheGetBeanData(id);
+    	if (cacheData == null){
+    		return false;
+    	}
+    	String lazyLoadProperty = ebi.getLazyLoadProperty();
+    	if (lazyLoadProperty != null && !cacheData.containsProperty(lazyLoadProperty)){
+    		return false;
+    	}
+    	
+        CachedBeanDataLoad.load(this, bean, ebi, cacheData);
+    	return true;
     }
+    
+//    /**
+//     * Try to refresh the bean from the cache returning true if successful.
+//     */
+//    public boolean refreshFromCache(EntityBeanIntercept ebi, Object id) {
+//        if (ebi.isUseCache() && ebi.isReference()) {
+//            // try to use a bean from the cache to load from
+//            Object cacheBean = cacheGet(id, false);
+//            if (cacheBean != null) {
+//                // check that the cached bean contains the property we need to read
+//                String lazyLoadProperty = ebi.getLazyLoadProperty();
+//                Set<String> loadedProps = ((EntityBean) cacheBean)._ebean_getIntercept().getLoadedProps();
+//                if (loadedProps == null || loadedProps.contains(lazyLoadProperty)) {
+//                    // refresh using the cached bean
+//                    refreshFromCacheBean(ebi, cacheBean, true);
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
+//
+//    /**
+//     * Take the values from the dbBean and copy them into the ebi's owner bean.
+//     */
+//    private void refreshFromCacheBean(EntityBeanIntercept ebi, Object cacheBean, boolean isLazyLoad) {
+//        new BeanRefreshFromCacheHelp(this, ebi, cacheBean, isLazyLoad).refresh();
+//    }
 
     public void preAllocateIds(int batchSize) {
         if (idGenerator != null) {
@@ -1530,7 +1556,6 @@ public class BeanDescriptor<T> {
     
                 if (options != null) {
                     ebi.setUseCache(options.isUseCache());
-                    ebi.setReadOnly(options.isReadOnly());
                 }
                 // Note: not creating proxies for many's...
     
@@ -2319,6 +2344,13 @@ public class BeanDescriptor<T> {
         return namesOfManyProps;
     }
 
+    /**
+     * All Non Assoc Many's for this descriptor.
+     */
+    public BeanProperty[] propertiesNonMany() {
+        return propertiesNonMany;
+    }
+    
     /**
      * All Assoc Many's for this descriptor.
      */

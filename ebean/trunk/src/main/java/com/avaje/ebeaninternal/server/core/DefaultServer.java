@@ -659,16 +659,6 @@ public final class DefaultServer implements SpiEbeanServer {
             ctx = t.getPersistenceContext();
             ref = ctx.get(type, id);
         }
-        if (ref == null) {
-            // check to see if the bean cache should be used
-            ReferenceOptions opts = desc.getReferenceOptions();
-            if (opts != null && opts.isUseCache()) {
-                ref = desc.cacheGet(id);
-                if (ref != null && !opts.isReadOnly()) {
-                    ref = desc.createCopyForUpdate(ref, vanillaMode);
-                }
-            }
-        }
 
         if (ref == null) {
             InheritInfo inheritInfo = desc.getInheritInfo();
@@ -1118,16 +1108,19 @@ public final class DefaultServer implements SpiEbeanServer {
         return findId(query, t);
     }
     
-    public <T> SpiOrmQueryRequest<T> createQueryRequest(Type type, Query<T> q, Transaction t) {
 
-        SpiQuery<T> query = (SpiQuery<T>) q;
-        query.setType(type);
+    private <T> SpiOrmQueryRequest<T> createQueryRequest(Type type, Query<T> query, Transaction t) {
 
-        // check other combinations that make this a sharedInstance query
-        query.deriveSharedInstance();
+    	SpiQuery<T> spiQuery = (SpiQuery<T>)query;
+    	spiQuery.setType(type);
+    	
+        BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(spiQuery.getBeanType());
+        spiQuery.setBeanDescriptor(desc);
 
-        BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(query.getBeanType());
-        query.setBeanDescriptor(desc);
+        return createQueryRequest(desc, spiQuery, t);
+    }
+    
+    public <T> SpiOrmQueryRequest<T> createQueryRequest(BeanDescriptor<T> desc, SpiQuery<T> query, Transaction t) {
         
         if (desc.isLdapEntityType()){
             return new LdapOrmQueryRequest<T>(query, desc, ldapQueryEngine);
@@ -1196,22 +1189,62 @@ public final class DefaultServer implements SpiEbeanServer {
         return request;
     }
 
+    
+    /**
+     * Try to get the object out of the persistence context.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T findIdCheckPersistenceContextAndCache(Transaction transaction, BeanDescriptor<T> beanDescriptor, SpiQuery<T> query) {
+
+        SpiTransaction t = (SpiTransaction)transaction;
+        if (t == null) {
+            t = getCurrentServerTransaction();
+        }
+        if (t != null) {
+            // first look in the persistence context
+            PersistenceContext context = t.getPersistenceContext();
+            if (context != null) {
+                Object o = context.get(beanDescriptor.getBeanType(), query.getId());
+                if (o != null) {
+                    return (T) o;
+                }
+            }
+        }
+
+        if (!beanDescriptor.calculateUseCache(query.isUseBeanCache())) {
+            // not using bean cache
+            return null;
+        }
+        
+    	boolean vanilla = query.isVanillaMode(vanillaMode);
+        Object cachedBean = beanDescriptor.cacheGetBean(query.getId(), vanilla, query.isReadOnly());
+        return (T) cachedBean;
+    }
+    
     @SuppressWarnings("unchecked")
     private <T> T findId(Query<T> query, Transaction t) {
+    	
+    	SpiQuery<T> spiQuery = (SpiQuery<T>)query;
+    	spiQuery.setType(Type.BEAN);
+    	
+    	BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(spiQuery.getBeanType());
+    	spiQuery.setBeanDescriptor(desc);
+        
+    	if (!spiQuery.isLoadBeanCache()){
+            // First have a look in the persistence context and then
+            // the bean cache (if we are using caching)
+    		T bean = findIdCheckPersistenceContextAndCache(t, desc, spiQuery);
+            if (bean != null) {
+                return bean;
+            }
+    	}
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(Type.BEAN, query, t);
-
-        // First have a look in the persistence context and then
-        // the bean cache (if we are using caching)
-        T bean = request.getFromPersistenceContextOrCache();
-        if (bean != null) {
-            return bean;
-        }
+        SpiOrmQueryRequest<T> request = createQueryRequest(desc, spiQuery, t);
 
         try {
             request.initTransIfRequired();
 
-            bean = (T) request.findId();
+            T bean = (T) request.findId();
             request.endTransIfRequired();
 
             return bean;

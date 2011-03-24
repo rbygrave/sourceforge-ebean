@@ -9,7 +9,6 @@ import junit.framework.TestCase;
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
 import com.avaje.tests.model.basic.Address;
-import com.avaje.tests.model.basic.Country;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.ResetBasicData;
 
@@ -40,13 +39,12 @@ public class TestLazyLoadInCache extends TestCase {
 			.setId(id)
 			.findUnique();
 		
-		Assert.assertTrue(cust1 == cust1B);
+		Assert.assertTrue(cust1 != cust1B);
 		
 		Set<String> loadedProps = Ebean.getBeanState(cust1).getLoadedProps();
 		
 		Assert.assertTrue(loadedProps.contains("name"));
 		Assert.assertFalse(loadedProps.contains("status"));
-		Assert.assertTrue(Ebean.getBeanState(cust1).isSharedInstance());
 		
 		cust1.getStatus();
 				
@@ -58,14 +56,10 @@ public class TestLazyLoadInCache extends TestCase {
 		BeanState billAddrState = Ebean.getBeanState(billingAddress);
 		Assert.assertTrue(billAddrState.isReference());
 		Assert.assertTrue(billAddrState.isReadOnly());
-		Assert.assertTrue(billAddrState.isSharedInstance());
 		
 		// lazy load .. no longer a reference
 		billingAddress.getCity();
 		Assert.assertFalse(billAddrState.isReference());
-		
-		Country country = billingAddress.getCountry();
-		Assert.assertTrue(Ebean.getBeanState(country).isSharedInstance());
 		
 	}
 

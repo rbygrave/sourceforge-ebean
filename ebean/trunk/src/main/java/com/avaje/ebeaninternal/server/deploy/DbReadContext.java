@@ -17,7 +17,7 @@ public interface DbReadContext {
     /**
      * Return the state of the object graph.
      */
-    public int getParentState();
+    public boolean isReadOnly();
     
     /**
      * Propagate the state to the bean.

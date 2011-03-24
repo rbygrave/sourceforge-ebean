@@ -170,9 +170,9 @@ public class AnnotationClass extends AnnotationParser {
 	private void readCacheStrategy(CacheStrategy cacheStrategy){
 		
 		boolean useCache = cacheStrategy.useBeanCache();
-		boolean readOnly = cacheStrategy.readOnly();
+		
 		String warmingQuery = cacheStrategy.warmingQuery();
-		ReferenceOptions opt = new ReferenceOptions(useCache, readOnly, warmingQuery);
+		ReferenceOptions opt = new ReferenceOptions(useCache, warmingQuery);
 		// default bean cache options
 		descriptor.setReferenceOptions(opt);
 		

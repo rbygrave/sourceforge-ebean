@@ -237,9 +237,6 @@ public class DefaultBeanLoader {
 		    // populate a new collection
 			Object emptyCollection = many.createEmpty(vanilla);
 			many.setValue(parentBean, emptyCollection);
-			if (!vanilla && ebi != null && ebi.isSharedInstance()){
-				((BeanCollection<?>)emptyCollection).setSharedInstance();
-			}
             query.setLoadDescription("+refresh", null);
 		} else {
 		    query.setLoadDescription("+lazy", null);
@@ -269,9 +266,7 @@ public class DefaultBeanLoader {
 		query.setVanillaMode(vanilla);
 		
 		if (ebi != null){
-    		if (ebi.isSharedInstance()){
-    			query.setSharedInstance();
-    		} else if (ebi.isReadOnly()){
+    		if (ebi.isReadOnly()){
     			query.setReadOnly(true);
     		}
 		}
@@ -311,10 +306,17 @@ public class DefaultBeanLoader {
 		ArrayList<Object> idList = new ArrayList<Object>(batchSize);
 		
 		for (int i = 0; i < batch.size(); i++) {
-			Object bean = batch.get(i).getOwner();
+			EntityBeanIntercept ebi = batch.get(i);
+			Object bean = ebi.getOwner();
 			Object id = desc.getId(bean);
 			idList.add(id);
 		}
+		
+		if (idList.isEmpty()){
+			// everything was loaded from cache
+			return;
+		}
+		
 		int extraIds = batchSize - batch.size();
 		if (extraIds > 0){
 			// for performance make up the Id's to the batch size
@@ -350,7 +352,7 @@ public class DefaultBeanLoader {
 		ctx.configureQuery(query, loadRequest.getLazyLoadProperty());
 		
 		// make sure the query doesn't use the cache
-		query.setUseCache(false);
+		//query.setUseCache(false);
 		if (idList.size() == 1){
 			query.where().idEq(idList.get(0));
 		} else {
@@ -359,9 +361,9 @@ public class DefaultBeanLoader {
 		
 		List<?> list = server.findList(query, loadRequest.getTransaction());
 		
-		if (desc.calculateUseCache(null)){
+		if (loadRequest.isLoadCache()){
 			for (int i = 0; i < list.size(); i++) {
-	            desc.cachePutObject(list.get(i));	
+	            desc.cachePutBeanData(list.get(i));	
 			}
 		}
 	}
@@ -397,17 +399,20 @@ public class DefaultBeanLoader {
                 ebi.setPersistenceContext(pc);
             }
         }
-
-        SpiQuery<?> query = (SpiQuery<?>) server.createQuery(desc.getBeanType());
         
         if (ebi != null) {
-            if (desc.refreshFromCache(ebi, id)) {
-                return;
-            }
+        	if (SpiQuery.Mode.LAZYLOAD_BEAN.equals(mode)){
+                if (desc.loadFromCache(bean, ebi, id)) {
+                    return;
+                }        		
+        	}
             if (desc.lazyLoadMany(ebi)){
                 return;
             }
-
+        }
+        
+        SpiQuery<?> query = (SpiQuery<?>) server.createQuery(desc.getBeanType());
+        if (ebi != null) {
             Object parentBean = ebi.getParentBean();
             if (parentBean != null) {
                 // Special case for OneToOne
@@ -425,31 +430,24 @@ public class DefaultBeanLoader {
         query.setUsageProfiling(false);
         query.setPersistenceContext(pc);
 
-
-		// make sure the query doesn't use the cache and
-		// use readOnly in case we put the bean in the cache
 		query.setMode(mode);
 		query.setId(id);
-		query.setUseCache(false);
+		// make sure the query doesn't use the cache
+		//query.setUseCache(false);
 		query.setVanillaMode(vanilla);
 		
-		if (ebi != null){
-    		if (ebi.isSharedInstance()){
-    			query.setSharedInstance();
-    		} else if (ebi.isReadOnly()){
-    			query.setReadOnly(true);
-    		}
+		if (ebi != null && ebi.isReadOnly()){
+    		query.setReadOnly(true);
 		}
 		
 		Object dbBean = query.findUnique();
-		
 		if (dbBean == null) {
 			String msg = "Bean not found during lazy load or refresh." + " id[" + id + "] type[" + desc.getBeanType() + "]";
 			throw new PersistenceException(msg);
 		}
 		
-		if (desc.calculateUseCache(null) && !vanilla){
-			desc.cachePutObject(dbBean);	
+		if (!vanilla && desc.calculateUseCache(null)){
+			desc.cachePutBeanData(dbBean);	
 		}
 	}
 }

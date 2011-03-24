@@ -87,7 +87,6 @@ public class TestQueryWithCache extends TestCase {
 		
 		Assert.assertNotNull(referenceOptions);
 		Assert.assertTrue(referenceOptions.isUseCache());
-		Assert.assertTrue(referenceOptions.isReadOnly());
 		
 		
 		Country nz1 = Ebean.getReference(Country.class, "NZ");

@@ -11,7 +11,7 @@ import com.avaje.ebean.validation.Length;
 /**
  * Country entity bean.
  */
-@CacheStrategy(readOnly=true,warmingQuery="order by name")
+@CacheStrategy(warmingQuery="order by name")
 @CacheTuning(maxSize=500)
 @Entity
 @Table(name="o_country")

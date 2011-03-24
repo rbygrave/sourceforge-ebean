@@ -35,15 +35,22 @@ public class LoadBeanRequest extends LoadRequest {
 		
 	private final String lazyLoadProperty;
 	
+	private final boolean loadCache;
+	
 	public LoadBeanRequest(LoadBeanContext loadContext, List<EntityBeanIntercept> batch, 
-			Transaction transaction, int batchSize, boolean lazy, String lazyLoadProperty) {
+			Transaction transaction, int batchSize, boolean lazy, String lazyLoadProperty, boolean loadCache) {
 	
 		super(transaction, batchSize, lazy);
 		this.loadContext = loadContext;
 		this.batch = batch;
 		this.lazyLoadProperty = lazyLoadProperty;
+		this.loadCache = loadCache;
 	}
 	
+	public boolean isLoadCache() {
+    	return loadCache;
+    }
+
 	public String getDescription() {
 		String fullPath = loadContext.getFullPath();
 		String s = "path:" + fullPath + " batch:" + batchSize + " actual:"

@@ -19,6 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.loadcontext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.avaje.ebean.bean.BeanLoader;
@@ -69,8 +70,8 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 	
 	public void configureQuery(SpiQuery<?> query, String lazyLoadProperty){
 		
-		// propagate the sharedInstance/ReadOnly state
-		query.setParentState(parent.getParentState());
+		// propagate the readOnly state
+		query.setReadOnly(parent.isReadOnly());
 		query.setParentNode(getObjectGraphNode());
 		query.setLazyLoadProperty(lazyLoadProperty);
 		
@@ -133,13 +134,47 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 	        // lazy load property was a Many
 	        return;
 	    }
-	    
 		int position = ebi.getBeanLoaderIndex();
+
+		boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCaching();
+	    if (hitCache){
+	    	if (desc.loadFromCache(ebi)) {
+	    		// we loaded the bean from cache
+	    		weakList.removeEntry(position);
+	    		return;
+	    	}
+	    }
 		
 		// determine the set of beans to lazy load
 		List<EntityBeanIntercept> batch = weakList.getLoadBatch(position, batchSize);
+		if (hitCache && batchSize > 1){
+			List<EntityBeanIntercept> actualLoadBatch = new ArrayList<EntityBeanIntercept>(batchSize);	
+			List<EntityBeanIntercept> batchToCheck = batch;
+			while (true) {	
+				for (int i = 0; i < batchToCheck.size(); i++) {
+		            if (!desc.loadFromCache(batchToCheck.get(i))){
+		            	actualLoadBatch.add(batchToCheck.get(i));
+		            }
+	            }
+				if (batchToCheck.size() < batchSize) {
+					break;
+				}
+				int more = batchSize - actualLoadBatch.size(); 
+				if (more < 0){
+					break;
+				}
+				// get some more to check 
+				batchToCheck = weakList.getLoadBatch(0, more);
+			} 
+			batch = actualLoadBatch;
+		}
 
-		LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty());
+		if (batch.isEmpty()){
+			// we must have since loaded the bean we missed earlier
+			return;
+		}
+		
+		LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
 		parent.getEbeanServer().loadBean(req);
 	}
 	
@@ -151,7 +186,8 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
     		    // there are no beans to load
     		    break;
     		} else {
-        		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null);
+    			boolean loadCache = false;
+        		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null, loadCache);
         		parent.getEbeanServer().loadBean(req);
         		if (!all){
         		    // queryFirst(batch)

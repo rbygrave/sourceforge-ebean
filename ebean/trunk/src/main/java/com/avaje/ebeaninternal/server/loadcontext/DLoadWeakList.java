@@ -50,6 +50,19 @@ public class DLoadWeakList<T> {
         }
     }
    
+    public void removeEntry(int position) {
+    	synchronized (this) {
+    		int relativePos = position - removedFromTop;
+    		if (relativePos >= list.size()){
+    			relativePos = list.size() - 1;
+    		}
+    		list.remove(relativePos);
+    		if (relativePos == 0){
+    			removedFromTop++;
+    		}
+    	}
+    }
+    
     /**
      * Return the batch of entries based on the position and batch size.
      */

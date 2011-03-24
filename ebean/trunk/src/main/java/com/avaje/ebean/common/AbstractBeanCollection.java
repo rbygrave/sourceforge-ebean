@@ -42,10 +42,7 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 
 	private static final long serialVersionUID = 3365725236140187588L;
 
-	/**
-	 * The state (DEFAULT, READONLY or SHARED).
-	 */
-	protected int state;
+	protected boolean readOnly;
 	
 	/**
 	 * The EbeanServer this is associated with. (used for lazy fetch).
@@ -111,11 +108,8 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		this.propertyName = propertyName;
 		
 		if (ownerBean instanceof EntityBean ){
-    		EntityBeanIntercept ebi = ((EntityBean)ownerBean)._ebean_getIntercept();
-    		int parentState = ebi.getState();
-    		if (parentState != EntityBeanIntercept.DEFAULT) {
-    		    this.state = parentState;
-    		}
+    		EntityBeanIntercept ebi = ((EntityBean)ownerBean)._ebean_getIntercept();    		
+    		this.readOnly = ebi.isReadOnly();
 		}
 	}
 	
@@ -171,30 +165,13 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		this.loader = loader;
 		this.ebeanServerName = loader.getName();
 	}
-	
-	
-	public boolean isSharedInstance() {
-		return state == SHARED;
-	}
-
-	public void setSharedInstance() {
-	    this.state = SHARED;
-	}
 
 	public boolean isReadOnly() {
-	    // READONLY or SHARED
-		return state >= READONLY;
+		return readOnly;
 	}
 
 	public void setReadOnly(boolean readOnly) {
-	    if (state == SHARED){
-	        if (!readOnly){
-	            String msg = "This collection is a sharedInstance and must always be read only";
-	            throw new IllegalStateException(msg);
-	        }
-	    } else {
-	        this.state = readOnly ? READONLY : DEFAULT;
-	    }
+		this.readOnly = readOnly;
 	}
 
 
@@ -260,9 +237,8 @@ public abstract class AbstractBeanCollection<E> implements BeanCollection<E> {
 		}
 	}
 
-
 	protected void checkReadOnly() {
-		if (state >= READONLY){
+		if (readOnly){
 			String msg = "This collection is in ReadOnly mode";
 			throw new IllegalStateException(msg);
 		}

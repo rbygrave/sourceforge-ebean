@@ -26,12 +26,11 @@ import java.util.Set;
 import javax.persistence.PersistenceException;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.RawSql;
-import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
@@ -40,7 +39,6 @@ import com.avaje.ebeaninternal.api.LoadContext;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
-import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
@@ -69,7 +67,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
     private final LoadContext graphContext;
 
-    private final int parentState;
+    private final boolean readOnly;
 
     private final RawSql rawSql;
 
@@ -85,10 +83,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
      * fetching always takes place in its own transaction.
      */
     private boolean backgroundFetching;
-
-    private boolean useBeanCache;
-
-    private boolean useBeanCacheReadOnly;
 
     private LuceneOrmQueryRequest luceneQueryRequest;
 
@@ -106,36 +100,22 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
         this.queryEngine = queryEngine;
         this.query = query;
         this.vanillaMode = query.isVanillaMode(server.isVanillaMode());
-        this.parentState = determineParentState(query);
+        this.readOnly = isReadOnly(query);
 
         int defaultBatchSize = server.getLazyLoadBatchSize();
-        this.graphContext = new DLoadContext(ebeanServer, beanDescriptor, defaultBatchSize, parentState, query);
+        this.graphContext = new DLoadContext(ebeanServer, beanDescriptor, defaultBatchSize, readOnly, query);
 
         graphContext.registerSecondaryQueries(query);
     }
 
-    private int determineParentState(SpiQuery<T> query) {
-        if (query.isSharedInstance()) {
-            return EntityBeanIntercept.SHARED;
-        }
-
+    private boolean isReadOnly(SpiQuery<T> query) {
+        
         Boolean queryReadOnly = query.isReadOnly();
         if (queryReadOnly != null) {
-            // explicit readOnly set on query
-            if (Boolean.TRUE.equals(queryReadOnly)) {
-                return EntityBeanIntercept.READONLY;
-            } else {
-                return EntityBeanIntercept.UPDATE;
-            }
-        }
-        if (query.getMode().equals(Mode.NORMAL)) {
-            // check CacheStrategy readOnly ...
-            if (beanDescriptor.calculateReadOnly(query.isReadOnly())) {
-                return EntityBeanIntercept.READONLY;
-            }
+        	return queryReadOnly;
         }
 
-        return EntityBeanIntercept.DEFAULT;
+        return false;
     }
 
     public void executeSecondaryQueries(int defaultQueryBatch) {
@@ -157,8 +137,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
     /**
      * Return the Normal, sharedInstance, ReadOnly state of this query.
      */
-    public int getParentState() {
-        return parentState;
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     /**
@@ -426,67 +406,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
     }
 
     public boolean isUseBeanCache() {
-        return useBeanCache;
-    }
-
-    public boolean isUseBeanCacheReadOnly() {
-        return useBeanCacheReadOnly;
-    }
-
-    private boolean calculateUseBeanCache() {
-        useBeanCache = beanDescriptor.calculateUseCache(query.isUseBeanCache());
-        if (useBeanCache) {
-            useBeanCacheReadOnly = beanDescriptor.calculateReadOnly(query.isReadOnly());
-        }
-        return useBeanCache;
-    }
-
-    /**
-     * Try to get the object out of the persistence context.
-     */
-    @SuppressWarnings("unchecked")
-    public T getFromPersistenceContextOrCache() {
-
-        if (query.isLoadBeanCache()) {
-            // if we are loading the cache we don't want
-            // to try and read beans from the cache
-            return null;
-        }
-
-        SpiTransaction t = transaction;
-        if (t == null) {
-            t = ebeanServer.getCurrentServerTransaction();
-        }
-        if (t != null) {
-            // first look in the persistence context
-            PersistenceContext context = t.getPersistenceContext();
-            if (context != null) {
-                Object o = context.get(beanDescriptor.getBeanType(), query.getId());
-                if (o != null) {
-                    return (T) o;
-                }
-            }
-        }
-
-        if (!calculateUseBeanCache()) {
-            // not using bean cache
-            return null;
-        }
-
-        Object cachedBean = beanDescriptor.cacheGet(query.getId());
-        if (cachedBean == null) {
-            // not found in bean cache
-            return null;
-        }
-        if (useBeanCacheReadOnly) {
-            // return the same instance as the application
-            // has indicated it won't modify the bean
-            return (T) cachedBean;
-        } else {
-            // need to create a copy as the application
-            // may modify the instance (so can't be shared)
-            return beanDescriptor.createCopyForUpdate(cachedBean, vanillaMode);
-        }
+    	return beanDescriptor.calculateUseCache(query.isUseBeanCache());
     }
 
     /**

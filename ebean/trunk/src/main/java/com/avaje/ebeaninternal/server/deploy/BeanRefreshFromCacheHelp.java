@@ -24,7 +24,6 @@ import java.util.Set;
 
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebeaninternal.server.query.SqlTreeNode;
 
 /**
  * Helper for performing a 'refresh' on an Entity bean.
@@ -42,8 +41,6 @@ public class BeanRefreshFromCacheHelp {
 	private final Object originalOldValues;
 	private final boolean isLazyLoad;
 	private final boolean readOnly;
-	private final boolean sharedInstance;
-	private final int parentState;
 
 	// set of properties to exclude from the refresh because it is
 	// not a refresh but rather a lazyLoading event.
@@ -68,14 +65,6 @@ public class BeanRefreshFromCacheHelp {
 		
 		this.isLazyLoad = isLazyLoad;
 		this.readOnly = ebi.isReadOnly();
-		this.sharedInstance = ebi.isSharedInstance();
-		if (sharedInstance){
-			parentState = SqlTreeNode.SHARED;
-		} else if (readOnly){
-			parentState = SqlTreeNode.READONLY;
-		} else {
-			parentState = SqlTreeNode.NORMAL;
-		}
 		
 		this.excludes = isLazyLoad ? ebi.getLoadedProps() : null;
 		if (excludes != null){
@@ -105,8 +94,8 @@ public class BeanRefreshFromCacheHelp {
 	}
 	
 	private void propagateParentState(Object bean) {
-        if (bean != null && parentState > 0){
-            ((EntityBean)bean)._ebean_getIntercept().setState(parentState);
+        if (bean != null && readOnly){
+            ((EntityBean)bean)._ebean_getIntercept().setReadOnly(true);
         }
 	}
 	
@@ -141,12 +130,10 @@ public class BeanRefreshFromCacheHelp {
 		for (int i = 0; i < ones.length; i++) {
 			BeanPropertyAssocOne<?> prop = ones[i];
 			if (includeProperty(prop)){
-				// returns a reference from the cache with 'sharedInstance' set
+				// returns a reference from the cache
 				Object val = prop.getValue(cacheBean);
-				if (!sharedInstance){
-					// create a copy so that we can change its state...
-					val = prop.getTargetDescriptor().createCopyForUpdate(val, false);
-				}
+				val = prop.getTargetDescriptor().createCopy(val, false);
+				
 				if (isLazyLoad){
 					prop.setValue(bean, val);					
 				} else {
@@ -200,7 +187,7 @@ public class BeanRefreshFromCacheHelp {
 						prop.setValueIntercept(bean, null);
 						
 					} else {
-						Object copyEmb = prop.getTargetDescriptor().createCopyForUpdate(cacheEmb, false);
+						Object copyEmb = prop.getTargetDescriptor().createCopy(cacheEmb, false);
 						prop.setValueIntercept(bean, copyEmb);
 			            propagateParentState(copyEmb);
 					}

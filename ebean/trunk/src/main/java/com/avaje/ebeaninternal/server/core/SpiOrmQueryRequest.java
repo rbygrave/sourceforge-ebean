@@ -109,7 +109,7 @@ public interface SpiOrmQueryRequest<T> {
     /**
      * Try to get the object out of the persistence context.
      */
-    public T getFromPersistenceContextOrCache();
+    //public T getFromPersistenceContextOrCache();
 
     /**
      * Try to get the query result from the query cache.

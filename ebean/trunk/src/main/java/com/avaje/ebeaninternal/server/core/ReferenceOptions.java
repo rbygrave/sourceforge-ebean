@@ -4,8 +4,6 @@ package com.avaje.ebeaninternal.server.core;
  * Options for building references such as useCache and readOnly.
  */
 public class ReferenceOptions {
-
-	private final boolean readOnly;
 	
 	private final boolean useCache;
 
@@ -14,9 +12,8 @@ public class ReferenceOptions {
 	/**
 	 * Construct with options.
 	 */
-	public ReferenceOptions(boolean useCache, boolean readOnly, String warmingQuery) {
+	public ReferenceOptions(boolean useCache, String warmingQuery) {
 		this.useCache = useCache;
-		this.readOnly = readOnly;
 		this.warmingQuery = warmingQuery;
 	}
 
@@ -25,13 +22,6 @@ public class ReferenceOptions {
 	 */
 	public boolean isUseCache() {
 		return useCache;
-	}
-
-	/**
-	 * Return true if the resulting bean should be readOnly.
-	 */
-	public boolean isReadOnly() {
-		return readOnly;
 	}
 
 	/**

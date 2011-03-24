@@ -11,7 +11,7 @@ import com.avaje.tests.model.basic.Country;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.ResetBasicData;
 
-public class TestCacheBasic extends TestCase {
+public class TestCacheSimple extends TestCase {
 
 	
 	public void test(){
@@ -59,10 +59,9 @@ public class TestCacheBasic extends TestCase {
 		Country c2 = billingAddress.getCountry();
 		c2.getName();
 
-		Assert.assertTrue(countryCache.getStatistics(false).getHitCount() > 0);
+		ServerCacheStatistics statistics2 = countryCache.getStatistics(false);
+		System.out.println(statistics2);
 
-		//Country c3 = Ebean.getReference(Country.class, "NZ");
-		//Country c4 = Ebean.find(Country.class, "NZ");
 
 
 		// clear the cache
@@ -74,39 +73,34 @@ public class TestCacheBasic extends TestCase {
 		customer = Ebean.find(Customer.class, id);
 		billingAddress = customer.getBillingAddress();
 		Country c5 = billingAddress.getCountry();
-		// but cache is empty so c5 is reference that will load cache
-		// if it is lazy loaded
+		// but cache is empty at this point
 		Assert.assertEquals("empty cache",0,countryCache.getStatistics(false).getSize());
-		//Assert.assertEquals("missCount 1",1,countryCache.getStatistics(false).getMissCount());
-
+		
 		// lazy load on c5 populates the cache
 		c5.getName();
 		Assert.assertEquals("cache populated via lazy load",1,countryCache.getStatistics(false).getSize());
 		
+		int hcBefore = countryCache.getStatistics(false).getHitCount();
 		// now these get hits in the cache
 		Country c6 = Ebean.find(Country.class, "NZ");
+		Assert.assertNotNull(c6);
 		
-		Assert.assertTrue("different instance as cache cleared",c2 != c5);
-		Assert.assertTrue("these 2 are different",c5 != c6);
+		int hcAfter = countryCache.getStatistics(false).getHitCount();
+		Assert.assertEquals("hit count increments",hcBefore+1, hcAfter);
+				
+
 		
-		// by default readOnly based on deployment annotation
-		Assert.assertTrue("read only",Ebean.getBeanState(c6).isReadOnly());
+		Country cReadOnly = Ebean.find(Country.class)
+			.setId("NZ")
+			.setReadOnly(true)
+			.findUnique();
 		
-		try {
-			// can't modify a readOnly bean
-			c6.setName("Nu Zilund");
-			Assert.assertFalse("Never get here",true);
-		} catch (IllegalStateException e){
-			Assert.assertTrue("This is readOnly",true);
-		}
+		// Explicitly readOnly 
+		Assert.assertTrue("read only",Ebean.getBeanState(cReadOnly).isReadOnly());
 		
 		Country c8 = Ebean.find(Country.class)
 			.setId("NZ")
-			.setReadOnly(false)
 			.findUnique();
-		
-		// Explicitly NOT readOnly 
-		Assert.assertFalse("NOT read only",Ebean.getBeanState(c8).isReadOnly());
 		
 		Assert.assertEquals("1 countries in cache", 1, countryCache.size()); 
 		c8.setName("Nu Zilund");
@@ -122,11 +116,6 @@ public class TestCacheBasic extends TestCase {
 
 		// Find loads cache ...
 		Assert.assertFalse(Ebean.getBeanState(c9).isReadOnly()); 
-		Assert.assertTrue(countryCache.size() > 0); 
-
-		Country c10 = Ebean.find(Country.class,"NZ");
-
-		Assert.assertTrue(Ebean.getBeanState(c10).isReadOnly()); 
 		Assert.assertTrue(countryCache.size() > 0); 
 		
 		Ebean.getServerCacheManager().clear(Country.class);

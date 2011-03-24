@@ -41,20 +41,6 @@ public @interface CacheStrategy {
 	boolean useBeanCache() default true;
 
 	/**
-	 * When set to true the beans returned from the cache will be treated as
-	 * readOnly (effectively immutable) and this means they can be safely 
-	 * shared by many users.
-	 * <p>
-	 * If this is false then a copy of the bean is given back to the application
-	 * and so the application code that modify that bean.
-	 * </p>
-	 * <p>
-	 * If you try to modify a readOnly bean it will throw an IllegalStateException.
-	 * </p>
-	 */
-	boolean readOnly() default false;
-
-	/**
 	 * Specify a query that can be used to warm the cache.
 	 * <p>
 	 * All the beans fetched by this query will be loaded into the bean cache and

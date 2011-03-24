@@ -18,17 +18,16 @@ import com.avaje.ebean.FutureList;
 import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.JoinConfig;
 import com.avaje.ebean.OrderBy;
+import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.RawSql;
-import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.bean.BeanCollectionTouched;
 import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
@@ -142,10 +141,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private boolean futureFetch;
 	
-	/**
-	 * Set to true when this is a lazy load for a sharedInstance.
-	 */
-	private boolean sharedInstance;
+//	/**
+//	 * Set to true when this is a lazy load for a sharedInstance.
+//	 */
+//	private boolean sharedInstance;
 	
 	private List<Object> partialIds;
 	
@@ -301,14 +300,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
     public ExpressionFactory getExpressionFactory() {
 		return expressionFactory;
-	}
-	
-	public void setParentState(int parentState) {
-		if (parentState == EntityBeanIntercept.SHARED){
-			setSharedInstance();
-		} else if (parentState == EntityBeanIntercept.READONLY){
-			setReadOnly(true);
-		} 
 	}
 
 	public MetaAutoFetchStatistic getMetaAutoFetchStatistic() {
@@ -529,27 +520,27 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.autoFetchManager = autoFetchManager;
 	}
 	
-	/**
-	 * Check other combinations that can make this a sharedInstance query. 
-	 */
-	public void deriveSharedInstance() {
-		if (!sharedInstance){
-			if (Boolean.TRUE.equals(useQueryCache)
-				|| (Boolean.TRUE.equals(readOnly) && 
-						(Boolean.TRUE.equals(useBeanCache) || Boolean.TRUE.equals(loadBeanCache)))) {
-				// these combinations also producing shared instance beans 
-				sharedInstance = true;
-			}
-		}
-	}
-	
-	public boolean isSharedInstance() {
-		return sharedInstance;
-	}
-
-	public void setSharedInstance() {
-		this.sharedInstance = true;
-	}
+//	/**
+//	 * Check other combinations that can make this a sharedInstance query. 
+//	 */
+//	public void deriveSharedInstance() {
+//		if (!sharedInstance){
+//			if (Boolean.TRUE.equals(useQueryCache)
+//				|| (Boolean.TRUE.equals(readOnly) && 
+//						(Boolean.TRUE.equals(useBeanCache) || Boolean.TRUE.equals(loadBeanCache)))) {
+//				// these combinations also producing shared instance beans 
+//				sharedInstance = true;
+//			}
+//		}
+//	}
+//	
+//	public boolean isSharedInstance() {
+//		return sharedInstance;
+//	}
+//
+//	public void setSharedInstance() {
+//		this.sharedInstance = true;
+//	}
 
 	public Mode getMode() {
 		return mode;

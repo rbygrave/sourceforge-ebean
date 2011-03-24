@@ -380,8 +380,8 @@ public class OrmQueryProperties implements Serializable {
     }
 
     public ReferenceOptions getReferenceOptions() {
-        if (cache || readOnly) {
-            return new ReferenceOptions(cache, readOnly, null);
+        if (cache) {
+            return new ReferenceOptions(cache, null);
         } else {
             return null;
         }
