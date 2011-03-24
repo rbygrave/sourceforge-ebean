@@ -368,6 +368,33 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return getPropertyType();
     }
 
+    public Object getCacheDataValue(Object bean){
+    	if (embedded) {
+    		throw new RuntimeException();
+    	} else {
+    		return getAssocOneIdValues(bean);
+    	}
+    }
+    
+    public void setCacheDataValue(Object bean, Object cacheData, Object oldValues, boolean readOnly){
+    	if (cacheData != null) {
+    		if (embedded){
+        		throw new RuntimeException();
+    		} else {
+		    	Object[] vals = (Object[])cacheData;
+		    	boolean vanillaMode = false;
+		    	T ref  = targetDescriptor.createReference(vanillaMode, vals[0], null, null);
+		    	setValue(bean, ref);
+		    	if (oldValues != null){
+		    		setValue(oldValues, ref);
+		    	}
+		    	if (readOnly && !vanillaMode){
+		    		((EntityBean)ref)._ebean_intercept().setReadOnly(true);
+		    	}
+    		}
+    	}
+    }
+
     /**
      * Return the Id values from the given bean.
      */
@@ -745,61 +772,33 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             
             // parent always null for this case (but here to document)
             Object parent = null;
-            Object ref = null;
-
             boolean vanillaMode = ctx.isVanillaMode();
-            int parentState = ctx.getParentState();
-
             ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
-            if (options != null && options.isUseCache()) {
-                ref = targetDescriptor.cacheGet(id);
-                if (ref != null) {
-                    if (vanillaMode){
-                        ref = targetDescriptor.createCopy(ref, new CopyContext(true), 5);  
-                        
-                    } else if (parentState == EntityBeanIntercept.UPDATE){
-                        ref = targetDescriptor.createCopy(ref, new CopyContext(false), 5);
-                        
-                    } else if (parentState == EntityBeanIntercept.DEFAULT && !options.isReadOnly()) {
-                        ref = targetDescriptor.createCopy(ref, new CopyContext(false), 5);                                                        
-                    }
-                }
+            
+            Object ref;
+            if (targetInheritInfo != null) {
+				// for inheritance hierarchy create the correct type for this row...
+                ref = rowDescriptor.createReference(vanillaMode, id, parent, options);
+            } else {
+                ref = targetDescriptor.createReference(vanillaMode, id, parent, options);
             }
             
-            boolean createReference = false;
-            if (ref == null) {
-                // create a lazy loading reference/proxy
-                createReference = true;
-                if (targetInheritInfo != null) {
-					// for inheritance hierarchy create the correct type for this row...
-                    ref = rowDescriptor.createReference(vanillaMode, id, parent, options);
-                } else {
-                    ref = targetDescriptor.createReference(vanillaMode, id, parent, options);
-                }
-            }
-
             Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
             if (existingBean != null) {
                 // advanced case when we use multiple concurrent threads to
                 // build a single object graph, and another thread has since
                 // loaded a matching bean so we will use that instead.
                 ref = existingBean;
-                createReference = false;
-            }
-
-            if (!vanillaMode){
+                
+            } else if (!vanillaMode){
                 EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept();
-
-                if (createReference) {
-                    if (parentState != 0){
-                        ebi.setState(parentState);
-                    }
-                    ctx.register(name, ebi);
+                if (ctx.isReadOnly()){
+                    ebi.setReadOnly(true);
                 }
+                ctx.register(name, ebi);
             }
 
             return ref;
-        
         }
 
         @Override
@@ -877,8 +876,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             
             if (!vanillaMode){
                 EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 
-                if (ctx.getParentState() != 0) {
-                    ebi.setState(ctx.getParentState());
+                if (ctx.isReadOnly()) {
+                    ebi.setReadOnly(true);
                 }
                 persistCtx.put(id, ref);
                 ctx.register(name, ebi);

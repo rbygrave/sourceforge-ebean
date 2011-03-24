@@ -14,7 +14,7 @@ import com.avaje.ebean.validation.Length;
 /**
  * Product entity bean.
  */
-@CacheStrategy(readOnly=true,warmingQuery="order by name")
+@CacheStrategy(warmingQuery="order by name")
 @Entity
 @Table(name="o_product")
 public class Product {

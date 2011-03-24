@@ -159,9 +159,7 @@ public final class BeanMap<K, E> extends AbstractBeanCollection<E> implements Ma
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("BeanMap ");
-		if (isSharedInstance()){
-			sb.append("sharedInstance ");			
-		} else if (isReadOnly()){
+		if (isReadOnly()){
 			sb.append("readOnly ");			
 		}
 		if (map == null) {

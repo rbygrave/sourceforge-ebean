@@ -56,7 +56,8 @@ public class DLoadContext implements LoadContext {
 	
 	private final DLoadBeanContext rootBeanContext;
 	
-	private final int parentState;
+	private final boolean readOnly;
+	private final boolean excludeBeanCache;
 	
 	private final int defaultBatchSize;
 
@@ -75,13 +76,14 @@ public class DLoadContext implements LoadContext {
 	
 	private List<OrmQueryProperties> secQuery;
 
-	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, int defaultBatchSize, int parentState, SpiQuery<?> query) {
+	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, int defaultBatchSize, boolean readOnly, SpiQuery<?> query) {
 		
 		this.defaultBatchSize = defaultBatchSize;
 		this.ebeanServer = ebeanServer;
 		this.rootDescriptor = rootDescriptor;
 		this.rootBeanContext = new DLoadBeanContext(this, rootDescriptor, null, defaultBatchSize, null);
-		this.parentState = parentState;
+		this.readOnly = readOnly;
+		this.excludeBeanCache = Boolean.FALSE.equals(query.isUseBeanCache());
 		
 		ObjectGraphNode node = query.getParentNode();
 		if (node != null){
@@ -91,6 +93,11 @@ public class DLoadContext implements LoadContext {
 		
 		useAutofetchManager = query.getAutoFetchManager() != null;		
 	}	
+
+	
+	public boolean isExcludeBeanCache() {
+    	return excludeBeanCache;
+    }
 
 	/**
 	 * Return the minimum batch size when using QueryIterator with query joins.
@@ -220,8 +227,8 @@ public class DLoadContext implements LoadContext {
 		return ebeanServer;
 	}
 	
-	public int getParentState() {
-		return parentState;
+	public boolean isReadOnly() {
+		return readOnly;
 	}
 	
 	public PersistenceContext getPersistenceContext() {

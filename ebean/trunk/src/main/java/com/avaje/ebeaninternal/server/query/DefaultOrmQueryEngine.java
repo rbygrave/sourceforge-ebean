@@ -20,7 +20,6 @@
 package com.avaje.ebeaninternal.server.query;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.bean.BeanCollection;
@@ -28,12 +27,10 @@ import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebeaninternal.api.BeanIdList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
-import com.avaje.ebeaninternal.server.core.CopyBeanCollection;
 import com.avaje.ebeaninternal.server.core.OrmQueryEngine;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
-import com.avaje.ebeaninternal.server.deploy.CopyContext;
 
 /**
  * Main Finder implementation.
@@ -81,11 +78,6 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
 	public <T> BeanCollection<T> findMany(OrmQueryRequest<T> request) {
 
         SpiQuery<T> query = request.getQuery();
-		if (query.isUseQueryCache() || query.isLoadBeanCache()){
-			// by default treat as sharedInstance and copy to 
-			// mutable object later if necessary
-			query.setSharedInstance();
-		}
 		
     	BeanCollection<T> result = null;
  
@@ -108,24 +100,15 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         	// load the individual beans into the bean cache
         	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
         	Collection<T> c  = result.getActualDetails();
-        	Iterator<T> it = c.iterator();
-        	while (it.hasNext()) {
-				T bean = it.next();
-				descriptor.cachePut(bean, query.isSharedInstance());
-			}
+        	for (T bean : c) {
+        		descriptor.cachePutBeanData(bean);
+            }
         }
 
-        if (query.isSharedInstance() && !result.isEmpty()){
-        	if (query.isUseQueryCache()){
-            	// load the query result into the query cache
-            	request.putToQueryCache(result);        		
-        	}
-        	if (Boolean.FALSE.equals(query.isReadOnly())){
-        		// create a copy of the collection and beans that is mutable
-        	    CopyContext ctx = new CopyContext(request.isVanillaMode(), false);
-        		result = new CopyBeanCollection<T>(result, request.getBeanDescriptor(), ctx, 5).copy();
-        	}
-        }
+    	if (!result.isEmpty() && query.isUseQueryCache()){
+        	// load the query result into the query cache
+        	request.putToQueryCache(result);        		
+    	}
         
         return result;
     }
@@ -155,8 +138,7 @@ public class DefaultOrmQueryEngine implements OrmQueryEngine {
         }
         
         if (result != null && request.isUseBeanCache()){
-        	BeanDescriptor<T> descriptor = request.getBeanDescriptor();
-            descriptor.cachePut(result, request.isUseBeanCacheReadOnly());        		
+        	request.getBeanDescriptor().cachePutBeanData(result);        		
         }
         
         return result;

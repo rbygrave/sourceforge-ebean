@@ -25,7 +25,6 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxScope;
-import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.bean.BeanCollectionLoader;
 import com.avaje.ebean.bean.BeanLoader;
 import com.avaje.ebean.bean.CallStack;
@@ -168,7 +167,7 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	/**
 	 * Create a query request object.
 	 */
-	public <T> SpiOrmQueryRequest<T> createQueryRequest(Type type, Query<T> q, Transaction t);
+	public <T> SpiOrmQueryRequest<T> createQueryRequest(BeanDescriptor<T> desc, SpiQuery<T> q, Transaction t);
 
 	/**
 	 * Compile a query.

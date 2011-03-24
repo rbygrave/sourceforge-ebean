@@ -27,7 +27,6 @@ import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.BeanCollectionTouched;
-import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebeaninternal.api.BeanIdList;
@@ -202,10 +201,6 @@ public class CQueryEngine {
 			}
 
 			BeanCollection<T> beanCollection = cquery.readCollection();
-			if (request.getParentState() != EntityBeanIntercept.DEFAULT){
-				// effectively making the collection immutable
-				beanCollection.setSharedInstance();
-			}
 			
 			BeanCollectionTouched collectionTouched = request.getQuery().getBeanCollectionTouched();
 			if (collectionTouched != null){

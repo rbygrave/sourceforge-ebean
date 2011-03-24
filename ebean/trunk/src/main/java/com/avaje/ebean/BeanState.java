@@ -79,20 +79,6 @@ public interface BeanState {
 	public void setReadOnly(boolean readOnly);
 
 	/**
-	 * Return true if this is a shared instance.
-	 * <p>
-	 * This means the instance is potentially being used by other users/threads
-	 * concurrently and must always be read only.
-	 * </p>
-	 * <p>
-	 * Typically this instance has come from the server cache. If a 'readOnly'
-	 * object is request by a query etc and the cache is used then Ebean can
-	 * return the shared instance rather than creating and returning a copy.
-	 * </p>
-	 */
-	public boolean isSharedInstance();
-
-	/**
 	 * Add a propertyChangeListener.
 	 */
 	public void addPropertyChangeListener(PropertyChangeListener listener);

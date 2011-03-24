@@ -166,9 +166,7 @@ public final class BeanList<E> extends AbstractBeanCollection<E> implements List
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("BeanList ");
-		if (isSharedInstance()){
-			sb.append("sharedInstance ");
-		} else if (isReadOnly()){
+		if (isReadOnly()){
 			sb.append("readOnly ");
 		}
 		if (list == null) {

@@ -6,7 +6,7 @@ import javax.persistence.ManyToOne;
 
 import com.avaje.ebean.annotation.CacheStrategy;
 
-@CacheStrategy(readOnly=true, useBeanCache=true)
+@CacheStrategy(useBeanCache=true)
 @Entity
 public class Section extends BasicDomain {
 

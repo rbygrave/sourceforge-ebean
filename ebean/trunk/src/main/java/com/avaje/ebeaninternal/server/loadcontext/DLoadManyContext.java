@@ -72,8 +72,8 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 	
     public void configureQuery(SpiQuery<?> query){
 		
-		// propagate the sharedInstance/ReadOnly state
-		query.setParentState(parent.getParentState());
+		// propagate the readOnly state
+		query.setReadOnly(parent.isReadOnly());
 		query.setParentNode(getObjectGraphNode());
 		
 		if (queryProps != null){

@@ -45,22 +45,6 @@ import com.avaje.ebean.Query;
  */
 public interface BeanCollection<E> extends Serializable {
 	
-    /**
-     * The default state (CacheStrategy readOnly can be applied).
-     */
-    public static final int DEFAULT = EntityBeanIntercept.DEFAULT;
-    
-    /**
-     * Bean is READ ONLY (not editable).
-     */
-    public static final int READONLY = EntityBeanIntercept.READONLY;
-    
-    /**
-     * Read Only immutable state and can't be made
-     * editable (in cache and sharable).
-     */
-    public static final int SHARED = EntityBeanIntercept.SHARED;
-
 	public enum ModifyListenMode {
 		/** The common mode */
 		NONE,
@@ -135,22 +119,6 @@ public interface BeanCollection<E> extends Serializable {
 	 * </p>
 	 */
 	public void backgroundFetchWait();
-		
-	/**
-	 * Return true if this collection is owned by a sharedInstance.
-	 * <p>
-	 * That is, return true if it is a Many property of a bean in the cache.
-	 * </p>
-	 */
-	public boolean isSharedInstance();
-	
-	/**
-	 * Set when this collection is owned by a sharedInstance.
-	 * <p>
-	 * That is, it is a Many property on a bean in the cache.
-	 * </p>
-	 */
-	public void setSharedInstance();
 	
 	/**
 	 * Set a listener to be notified when the BeanCollection is first touched.

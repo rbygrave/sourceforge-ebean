@@ -53,6 +53,7 @@ public class DeployBeanPropertyLists {
     private final ArrayList<BeanProperty> local = new ArrayList<BeanProperty>();
 
     private final ArrayList<BeanProperty> manys = new ArrayList<BeanProperty>();
+    private final ArrayList<BeanProperty> nonManys = new ArrayList<BeanProperty>();
 
     private final ArrayList<BeanProperty> ones = new ArrayList<BeanProperty>();
 
@@ -140,32 +141,34 @@ public class DeployBeanPropertyLists {
         if (prop instanceof BeanPropertyAssocMany<?>) {
             manys.add(prop);
 
-        } else if (prop instanceof BeanPropertyAssocOne<?>) {
-            if (prop.isEmbedded()) {
-                embedded.add(prop);
-            } else {
-                ones.add(prop);
-                BeanPropertyAssocOne<?> assocOne = (BeanPropertyAssocOne<?>) prop;
-                if (assocOne.isOneToOneExported()) {
-                    onesExported.add(prop);
-                } else {
-                    onesImported.add(prop);
-                }
-            }
-
         } else {
-            // its a "base" property...
-            if (prop.isVersion()) {
-                version.add(prop);
-                if (derivedFirstVersionProp == null) {
-                    derivedFirstVersionProp = prop;
-                }
-            }
-            if (prop instanceof BeanPropertyCompound) {
-                baseCompound.add((BeanPropertyCompound) prop);
-            } else {
-                baseScalar.add(prop);
-            }
+        	nonManys.add(prop);
+	        if (prop instanceof BeanPropertyAssocOne<?>) {
+	            if (prop.isEmbedded()) {
+	                embedded.add(prop);
+	            } else {
+	                ones.add(prop);
+	                BeanPropertyAssocOne<?> assocOne = (BeanPropertyAssocOne<?>) prop;
+	                if (assocOne.isOneToOneExported()) {
+	                    onesExported.add(prop);
+	                } else {
+	                    onesImported.add(prop);
+	                }
+	            }
+	        } else {
+	            // its a "base" property...
+	            if (prop.isVersion()) {
+	                version.add(prop);
+	                if (derivedFirstVersionProp == null) {
+	                    derivedFirstVersionProp = prop;
+	                }
+	            }
+	            if (prop instanceof BeanPropertyCompound) {
+	                baseCompound.add((BeanPropertyCompound) prop);
+	            } else {
+	                baseScalar.add(prop);
+	            }
+	        }
         }
     }
 
@@ -262,6 +265,10 @@ public class DeployBeanPropertyLists {
         return getOne(true, Mode.Delete);
     }
 
+    public BeanProperty[] getNonMany() {
+        return (BeanProperty[]) nonManys.toArray(new BeanProperty[nonManys.size()]);
+    }
+    
     public BeanPropertyAssocMany<?>[] getMany() {
         return (BeanPropertyAssocMany[]) manys.toArray(new BeanPropertyAssocMany[manys.size()]);
     }

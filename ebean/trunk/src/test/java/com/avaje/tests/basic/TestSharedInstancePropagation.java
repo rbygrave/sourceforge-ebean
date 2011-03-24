@@ -32,12 +32,10 @@ public class TestSharedInstancePropagation extends TestCase {
 		
 		Assert.assertNotNull(order);
 		Assert.assertTrue(Ebean.getBeanState(order).isReadOnly());
-		Assert.assertTrue(Ebean.getBeanState(order).isSharedInstance());
 		
 		List<OrderDetail> details = order.getDetails();
 		BeanCollection<?> bc = (BeanCollection<?>)details;
 		Assert.assertTrue(bc.isReadOnly());
-		Assert.assertTrue(bc.isSharedInstance());
 		Assert.assertFalse(bc.isPopulated());
 		
 		// lazy load
@@ -48,13 +46,11 @@ public class TestSharedInstancePropagation extends TestCase {
 		OrderDetail detail = details.get(0);
 		
 		Assert.assertTrue(Ebean.getBeanState(detail).isReadOnly());
-		Assert.assertTrue(Ebean.getBeanState(detail).isSharedInstance());
 		Assert.assertFalse(Ebean.getBeanState(detail).isReference());
 		
 		Product product = detail.getProduct();
 
 		Assert.assertTrue(Ebean.getBeanState(product).isReadOnly());
-		Assert.assertTrue(Ebean.getBeanState(product).isSharedInstance());
 		
 		// lazy load
 		product.getName();

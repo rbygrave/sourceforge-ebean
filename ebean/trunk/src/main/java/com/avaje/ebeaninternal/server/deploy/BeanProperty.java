@@ -856,6 +856,14 @@ public class BeanProperty implements ElPropertyValue {
         return getValue(bean);
     }
 
+    public Object getCacheDataValue(Object bean){
+    	return getValue(bean);
+    }
+    
+    public void setCacheDataValue(Object bean, Object cacheData, Object oldValues, boolean readOnly){
+    	setValue(bean, cacheData);
+    }
+    
     /**
      * Return the value of the property method.
      */

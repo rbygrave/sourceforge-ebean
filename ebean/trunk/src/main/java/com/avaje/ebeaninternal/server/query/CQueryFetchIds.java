@@ -271,10 +271,6 @@ public class CQueryFetchIds {
 
 	
 	class DbContext implements DbReadContext {
-			    
-        public int getParentState() {
-            return EntityBeanIntercept.DEFAULT;
-        }
 
         public void propagateState(Object e) {
             throw new RuntimeException("Not Called");
@@ -291,10 +287,6 @@ public class CQueryFetchIds {
         public boolean isVanillaMode() {
             return false;
         }
-
-        public boolean isSharedInstance() {
-			return false;
-		}
 
 		public boolean isReadOnly() {
 			return false;

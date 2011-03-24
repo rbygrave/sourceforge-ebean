@@ -73,26 +73,10 @@ public interface SpiQuery<T> extends Query<T> {
      */
     public Mode getMode();
 
-    /**
-     * Check other combinations that can make this a sharedInstance query.
-     */
-    public void deriveSharedInstance();
-
-    /**
-     * This is a lazy loading query for a shared instance. That means all the
-     * beans returned by this query will also be marked as 'sharedInstance'.
-     */
-    public void setSharedInstance();
-
-    /**
-     * Return true if this is a lazy loading query for a shared instance.
-     */
-    public boolean isSharedInstance();
-
-    /**
-     * Propagate the sharedInstance or readOnly state from a parent.
-     */
-    public void setParentState(int parentState);
+//    /**
+//     * Propagate the readOnly state from a parent.
+//     */
+//    public void setReadOnly(boolean readOnly);
 
     /**
      * Return a listener that wants to be notified when the bean collection is
