@@ -45,9 +45,7 @@ public final class BackgroundThread {
 
 	private static final Logger logger = Logger.getLogger(BackgroundThread.class.getName());
 
-	private static class Single {
-		private static BackgroundThread me = new BackgroundThread();
-	}
+    private static final BackgroundThread me = new BackgroundThread();
 
 	/**
 	 * The list of Runnable tasks.
@@ -107,22 +105,22 @@ public final class BackgroundThread {
 	 * Register a Runnable to execute every freqInSecs seconds.
 	 */
 	public static void add(BackgroundRunnable backgroundRunnable) {
-		Single.me.addTask(backgroundRunnable);
+		me.addTask(backgroundRunnable);
 	}
 
 	/**
 	 * Stop the service.
 	 */
 	public static void shutdown() {
-		Single.me.stop();
+		me.stop();
 	}
 
 	/**
 	 * Return the registered BackgroundRunnable objects.
 	 */
 	public static Iterator<BackgroundRunnable> runnables() {
-		synchronized (Single.me.monitor) {
-			return Single.me.list.iterator();
+		synchronized (me.monitor) {
+			return me.list.iterator();
 		}
 	}
 
