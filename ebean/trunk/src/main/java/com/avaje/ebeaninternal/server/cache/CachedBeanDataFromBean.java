@@ -8,7 +8,7 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 
-public class CachedBeanDataExtract {
+public class CachedBeanDataFromBean {
 
     private final BeanDescriptor<?> desc;
     private final Object bean;
@@ -19,18 +19,18 @@ public class CachedBeanDataExtract {
 
     public static CachedBeanData extract(BeanDescriptor<?> desc, Object bean){
     	if (bean instanceof EntityBean){
-        	return new CachedBeanDataExtract(desc, bean, ((EntityBean)bean)._ebean_getIntercept()).extract();    		
+        	return new CachedBeanDataFromBean(desc, bean, ((EntityBean)bean)._ebean_getIntercept()).extract();    		
     		
     	} else {
-        	return new CachedBeanDataExtract(desc, bean, null).extract();    		
+        	return new CachedBeanDataFromBean(desc, bean, null).extract();    		
     	}
     }
     
     public static CachedBeanData extract(BeanDescriptor<?> desc, Object bean, EntityBeanIntercept ebi){
-    	return new CachedBeanDataExtract(desc, bean, ebi).extract();
+    	return new CachedBeanDataFromBean(desc, bean, ebi).extract();
     }
     
-    private CachedBeanDataExtract(BeanDescriptor<?> desc, Object bean, EntityBeanIntercept ebi) {
+    private CachedBeanDataFromBean(BeanDescriptor<?> desc, Object bean, EntityBeanIntercept ebi) {
         this.desc = desc;
         this.bean = bean;
         this.ebi = ebi;        

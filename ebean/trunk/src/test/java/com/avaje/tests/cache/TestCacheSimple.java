@@ -104,19 +104,16 @@ public class TestCacheSimple extends TestCase {
 		
 		Assert.assertEquals("1 countries in cache", 1, countryCache.size()); 
 		c8.setName("Nu Zilund");
-		// the update will remove the entry from the cache
+		// the update will update the entry in the cache
 		Ebean.save(c8);
 		
-		Assert.assertEquals("0 country in cache", 0, countryCache.size()); 
-		
-		Country c9 = Ebean.find(Country.class)
-			.setReadOnly(false)
-			.setId("NZ")
-			.findUnique();
+		Assert.assertEquals("1 country in cache", 1, countryCache.size()); 
+		int hitCount = countryCache.getStatistics(false).getHitCount();
+		Country c9 = Ebean.find(Country.class).setId("NZ").findUnique();
+		Assert.assertNotNull(c9);
 
-		// Find loads cache ...
-		Assert.assertFalse(Ebean.getBeanState(c9).isReadOnly()); 
-		Assert.assertTrue(countryCache.size() > 0); 
+		int hitCount2 = countryCache.getStatistics(false).getHitCount();
+		Assert.assertEquals(hitCount+1, hitCount2); 
 		
 		Ebean.getServerCacheManager().clear(Country.class);
 		Assert.assertEquals("0 country in cache", 0, countryCache.size()); 

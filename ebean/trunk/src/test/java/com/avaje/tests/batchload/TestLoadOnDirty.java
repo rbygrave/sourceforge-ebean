@@ -33,12 +33,14 @@ public class TestLoadOnDirty extends TestCase {
         customer.setName("dirtyNameProp");
         Assert.assertTrue(beanState.isDirty());
         Assert.assertTrue(beanState.getChangedProps().contains("name"));
+        Assert.assertEquals(1, beanState.getChangedProps().size());
         
         customer.setStatus(Customer.Status.INACTIVE);
         
         Assert.assertTrue(beanState.isDirty());
         Assert.assertTrue(beanState.getChangedProps().contains("status"));
         Assert.assertTrue(beanState.getChangedProps().contains("name"));
+        Assert.assertEquals(2, beanState.getChangedProps().size());
         
     }
 }
