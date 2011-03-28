@@ -9,7 +9,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
 
-public class CachedBeanDataLoad {
+public class CachedBeanDataToBean {
 
     private final BeanDescriptor<?> desc;
     private final Object bean;
@@ -31,10 +31,10 @@ public class CachedBeanDataLoad {
     }
 
     public static void load(BeanDescriptor<?> desc, Object bean, EntityBeanIntercept ebi, CachedBeanData cacheBeandata) {
-    	new CachedBeanDataLoad(desc, bean, ebi, cacheBeandata).load();
+    	new CachedBeanDataToBean(desc, bean, ebi, cacheBeandata).load();
     }
     
-    private CachedBeanDataLoad(BeanDescriptor<?> desc, Object bean, EntityBeanIntercept ebi, CachedBeanData cacheBeandata) {
+    private CachedBeanDataToBean(BeanDescriptor<?> desc, Object bean, EntityBeanIntercept ebi, CachedBeanData cacheBeandata) {
         this.desc = desc;
         this.bean = bean;
         this.ebi = ebi;

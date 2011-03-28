@@ -124,7 +124,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 		this.beanPersistListener = beanDescriptor.getPersistListener();
 		this.bean = bean;
 		this.parentBean = parentBean;
-
+		
 		this.controller = beanDescriptor.getPersistController();
 		this.concurrencyMode = beanDescriptor.getConcurrencyMode();
 
@@ -220,12 +220,19 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
 	public void notifyCache() {
 		if (notifyCache) {
-			if (type == Type.INSERT) {
-				beanDescriptor.queryCacheClear();
-
-			} else {
+			beanDescriptor.queryCacheClear();
+			switch (type) {
+            case INSERT:
+	            break;
+            case UPDATE:
+				beanDescriptor.cacheUpdate(idValue, this);
+	            break;
+            case DELETE:
 				beanDescriptor.cacheRemove(idValue);
-			}
+	            break;
+            default:
+	            throw new IllegalStateException("Invalid type "+type);
+            }
 		}
 	}
 
@@ -310,7 +317,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	 * transaction.
 	 */
 	public boolean isRegisteredVanillaBean() {
-		if (intercept == null && transaction != null) {
+		if (intercept == null) {
 			return transaction.isRegisteredBean(getBeanIdentityHash());
 		} else {
 			return false;

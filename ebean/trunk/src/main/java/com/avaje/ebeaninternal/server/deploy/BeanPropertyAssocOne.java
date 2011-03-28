@@ -372,7 +372,12 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     	if (embedded) {
     		throw new RuntimeException();
     	} else {
-    		return getAssocOneIdValues(bean);
+    		Object ap = getValue(bean);
+    		if (ap == null){
+    			return null;
+    		} else {
+        		return targetDescriptor.getId(ap);    			
+    		}
     	}
     }
     

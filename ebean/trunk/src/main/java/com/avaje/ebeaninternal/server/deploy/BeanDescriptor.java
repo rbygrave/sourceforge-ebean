@@ -67,11 +67,13 @@ import com.avaje.ebeaninternal.api.SpiUpdatePlan;
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cache.CachedBeanData;
-import com.avaje.ebeaninternal.server.cache.CachedBeanDataExtract;
-import com.avaje.ebeaninternal.server.cache.CachedBeanDataLoad;
+import com.avaje.ebeaninternal.server.cache.CachedBeanDataFromBean;
+import com.avaje.ebeaninternal.server.cache.CachedBeanDataToBean;
+import com.avaje.ebeaninternal.server.cache.CachedBeanDataUpdate;
 import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.core.InternString;
+import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanDescriptor;
@@ -1129,7 +1131,7 @@ public class BeanDescriptor<T> {
             beanCache = cacheManager.getBeanCache(beanType);
         }
 
-        CachedBeanData beanData = CachedBeanDataExtract.extract(this, bean);
+        CachedBeanData beanData = CachedBeanDataFromBean.extract(this, bean);
                 
         Object id = getId(bean);
         beanCache.put(id, beanData);
@@ -1153,7 +1155,7 @@ public class BeanDescriptor<T> {
             	((EntityBean)bean)._ebean_getIntercept().setReadOnly(true);
             }
             
-            CachedBeanDataLoad.load(this, bean, d);
+            CachedBeanDataToBean.load(this, bean, d);
             return bean;
         }
     }
@@ -1172,6 +1174,19 @@ public class BeanDescriptor<T> {
     public void cacheRemove(Object id) {
         if (beanCache != null) {
             beanCache.remove(id);
+        }
+    }
+    
+    /**
+     * Update the cached bean data.
+     */
+    public void cacheUpdate(Object id, PersistRequestBean<T> updateRequest) {
+        if (beanCache != null) {
+        	CachedBeanData cd = (CachedBeanData)beanCache.get(id);
+        	if (cd != null){
+        		CachedBeanData newCd = CachedBeanDataUpdate.update(this, cd, updateRequest);
+        		beanCache.put(id, newCd);
+        	}
         }
     }
 
@@ -1201,7 +1216,7 @@ public class BeanDescriptor<T> {
     		return false;
     	}
     	
-        CachedBeanDataLoad.load(this, bean, ebi, cacheData);
+        CachedBeanDataToBean.load(this, bean, ebi, cacheData);
     	return true;
     }
     

@@ -11,9 +11,6 @@ public class CachedBeanData {
         this.loadedProperties= loadedProperties;
         this.data = data;
     }
-//    public boolean isPartiallyLoaded() {
-//    	return loadedProperties != null;
-//    }
     
     public boolean containsProperty(String propName) {
         return loadedProperties == null || loadedProperties.contains(propName);
@@ -27,5 +24,11 @@ public class CachedBeanData {
     	return loadedProperties;
     }
     
+	public Object[] copyData() {
+		Object[] dest = new Object[data.length];
+		System.arraycopy(data, 0, dest, 0, data.length);
+		return dest;
+	}
+	
 }
 
