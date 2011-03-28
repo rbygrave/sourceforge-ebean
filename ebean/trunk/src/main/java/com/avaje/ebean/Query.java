@@ -299,47 +299,6 @@ public interface Query<T> extends Serializable {
     }
 
     /**
-     * The type of query result.
-     */
-    public enum Type {
-
-        /**
-         * Find by Id or unique returning a single bean.
-         */
-        BEAN,
-
-        /**
-         * Find returning a List.
-         */
-        LIST,
-
-        /**
-         * Find returning a Set.
-         */
-        SET,
-
-        /**
-         * Find returning a Map.
-         */
-        MAP,
-
-        /**
-         * Find the Id's.
-         */
-        ID_LIST,
-
-        /**
-         * Find rowCount.
-         */
-        ROWCOUNT,
-
-        /**
-         * A subquery used as part of a where clause.
-         */
-        SUBQUERY
-    }
-
-    /**
      * Explicitly specify how this query should use a Lucene Index if one is
      * defined for this bean type.
      */
@@ -350,11 +309,6 @@ public interface Query<T> extends Serializable {
      * defined for this bean type.
      */
     public UseIndex getUseIndex();
-
-    /**
-     * Return the type of query (List, Set, Map, Bean, rowCount etc).
-     */
-    public Type getType();
 
     /**
      * Return the RawSql that was set to use for this query.

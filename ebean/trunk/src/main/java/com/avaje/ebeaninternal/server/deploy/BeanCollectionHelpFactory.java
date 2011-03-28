@@ -1,6 +1,6 @@
 package com.avaje.ebeaninternal.server.deploy;
 
-import com.avaje.ebean.Query;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 
 
@@ -30,12 +30,12 @@ public class BeanCollectionHelpFactory {
 		
 	public static <T> BeanCollectionHelp<T> create(OrmQueryRequest<T> request) {
 
-		Query.Type manyType = request.getQuery().getType();
+		SpiQuery.Type manyType = request.getQuery().getType();
 		
-		if (manyType.equals(Query.Type.LIST)){
+		if (manyType.equals(SpiQuery.Type.LIST)){
 			return new BeanListHelp<T>();
 		
-		} else if (manyType.equals(Query.Type.SET)) {
+		} else if (manyType.equals(SpiQuery.Type.SET)) {
 			return new BeanSetHelp<T>();
 		
 		} else {

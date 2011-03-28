@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.common.BeanMap;
 import com.avaje.ebean.common.BeanSet;
+import com.avaje.ebeaninternal.api.SpiQuery;
 
 /**
  * Creates the BeanCollections.
@@ -59,7 +59,7 @@ public class BeanCollectionFactory {
     
     private BeanCollection<?> createMany(BeanCollectionParams params) {
 
-        Query.Type manyType = params.getManyType();
+    	SpiQuery.Type manyType = params.getManyType();
         switch (manyType) {
 		case MAP:
 			return createMap(params);

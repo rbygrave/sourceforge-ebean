@@ -53,7 +53,6 @@ import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
-import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.SqlFutureList;
@@ -89,6 +88,7 @@ import com.avaje.ebeaninternal.api.ScopeTrans;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
+import com.avaje.ebeaninternal.api.SpiQuery.Type;
 import com.avaje.ebeaninternal.api.SpiSqlQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEventTable;
@@ -1200,9 +1200,10 @@ public final class DefaultServer implements SpiEbeanServer {
         if (t == null) {
             t = getCurrentServerTransaction();
         }
+        PersistenceContext context = null;
         if (t != null) {
             // first look in the persistence context
-            PersistenceContext context = t.getPersistenceContext();
+            context = t.getPersistenceContext();
             if (context != null) {
                 Object o = context.get(beanDescriptor.getBeanType(), query.getId());
                 if (o != null) {
@@ -1218,6 +1219,13 @@ public final class DefaultServer implements SpiEbeanServer {
         
     	boolean vanilla = query.isVanillaMode(vanillaMode);
         Object cachedBean = beanDescriptor.cacheGetBean(query.getId(), vanilla, query.isReadOnly());
+        if (cachedBean != null){
+        	if (context == null){
+        		context = new DefaultPersistenceContext();
+        	}
+        	context.put(query.getId(), cachedBean);
+        }
+        
         return (T) cachedBean;
     }
     

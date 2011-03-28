@@ -19,7 +19,7 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
-import com.avaje.ebean.Query;
+import com.avaje.ebeaninternal.api.SpiQuery;
 
 /**
  * Represents the type of a OneToMany or ManyToMany property.
@@ -36,7 +36,7 @@ public class ManyType {
         MAP
     }
     
-    private final Query.Type queryType;
+    private final SpiQuery.Type queryType;
     
     private final Underlying underlying;
     
@@ -51,14 +51,14 @@ public class ManyType {
         this.typeConverter = typeConverter;
         switch (underlying) {
         case LIST:
-            queryType = Query.Type.LIST;
+            queryType = SpiQuery.Type.LIST;
             break;
         case SET:
-            queryType = Query.Type.SET;
+            queryType = SpiQuery.Type.SET;
             break;
 
         default:
-            queryType = Query.Type.MAP;
+            queryType = SpiQuery.Type.MAP;
             break;
         }        
     }
@@ -66,7 +66,7 @@ public class ManyType {
     /**
      * Return the matching Query type.
      */
-    public Query.Type getQueryType() {
+    public SpiQuery.Type getQueryType() {
         return queryType;
     }
     

@@ -161,6 +161,11 @@ public class BeanDescriptor<T> {
 
     private final boolean autoFetchTunable;
 
+    /**
+     * Flag indicating this bean has no relationships.
+     */
+    private final boolean lookupReferenceBean;
+
     private final String lazyFetchIncludes;
 
     /**
@@ -497,6 +502,7 @@ public class BeanDescriptor<T> {
         this.propertiesManySave = listHelper.getManySave();
         this.propertiesManyDelete = listHelper.getManyDelete();
         this.propertiesManyToMany = listHelper.getManyToMany();
+        this.lookupReferenceBean = propertiesOne.length + propertiesMany.length == 0;
 
         this.namesOfManyProps = deriveManyPropNames();
         this.namesOfManyPropsHash = namesOfManyProps.hashCode();
@@ -1982,6 +1988,16 @@ public class BeanDescriptor<T> {
     }
 
     /**
+     * Return true if this bean has no relationships.
+     * <p>
+     * This means a readOnly instance is sharable.
+     * </p>
+     */
+    public boolean isLookupReferenceBean() {
+    	return lookupReferenceBean;
+    }
+
+	/**
      * Return true if queries for beans of this type are autoFetch tunable.
      */
     public boolean isAutoFetchTunable() {

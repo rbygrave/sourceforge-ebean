@@ -25,8 +25,6 @@ import java.util.Set;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Query;
-import com.avaje.ebean.Query.Type;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.RawSql;
@@ -38,6 +36,7 @@ import com.avaje.ebeaninternal.api.BeanIdList;
 import com.avaje.ebeaninternal.api.LoadContext;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
+import com.avaje.ebeaninternal.api.SpiQuery.Type;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -352,7 +351,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
         return (Map<?, ?>) (vanillaMode ? bc.getActualCollection() : bc);
     }
 
-    public Query.Type getQueryType() {
+    public SpiQuery.Type getQueryType() {
         return query.getType();
     }
 
