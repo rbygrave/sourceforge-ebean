@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.bean.BeanCollection;
@@ -315,7 +314,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		if (request.isFindById()) {
 			return null;
 		} else {
-			Query.Type manyType = request.getQuery().getType();
+			SpiQuery.Type manyType = request.getQuery().getType();
 			if (manyType == null){
 				// subQuery compiled for InQueryExpression
 				return null;

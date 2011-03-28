@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Query;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiSqlQuery;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 
@@ -47,7 +47,7 @@ public final class RelationalQueryRequest {
 
     private boolean createdTransaction;
 
-    private Query.Type queryType;
+    private SpiQuery.Type queryType;
 
     /**
      * Create the BeanFindRequest.
@@ -98,19 +98,19 @@ public final class RelationalQueryRequest {
 
     @SuppressWarnings("unchecked")
     public List<SqlRow> findList() {
-        queryType = Query.Type.LIST;
+        queryType = SpiQuery.Type.LIST;
         return (List<SqlRow>) queryEngine.findMany(this);
     }
 
     @SuppressWarnings("unchecked")
     public Set<SqlRow> findSet() {
-        queryType = Query.Type.SET;
+        queryType = SpiQuery.Type.SET;
         return (Set<SqlRow>) queryEngine.findMany(this);
     }
 
     @SuppressWarnings("unchecked")
     public Map<?, SqlRow> findMap() {
-        queryType = Query.Type.MAP;
+        queryType = SpiQuery.Type.MAP;
         return (Map<?, SqlRow>) queryEngine.findMany(this);
     }
 
@@ -124,7 +124,7 @@ public final class RelationalQueryRequest {
     /**
      * Return the type (List, Set or Map) that this fetch returns.
      */
-    public Query.Type getQueryType() {
+    public SpiQuery.Type getQueryType() {
         return queryType;
     }
 

@@ -58,6 +58,47 @@ public interface SpiQuery<T> extends Query<T> {
     }
 
     /**
+     * The type of query result.
+     */
+    public enum Type {
+
+        /**
+         * Find by Id or unique returning a single bean.
+         */
+        BEAN,
+
+        /**
+         * Find returning a List.
+         */
+        LIST,
+
+        /**
+         * Find returning a Set.
+         */
+        SET,
+
+        /**
+         * Find returning a Map.
+         */
+        MAP,
+
+        /**
+         * Find the Id's.
+         */
+        ID_LIST,
+
+        /**
+         * Find rowCount.
+         */
+        ROWCOUNT,
+
+        /**
+         * A subquery used as part of a where clause.
+         */
+        SUBQUERY
+    }
+    
+    /**
      * Return true if select all properties was used to ensure the property
      * invoking a lazy load was included in the query.
      */
@@ -72,11 +113,6 @@ public interface SpiQuery<T> extends Query<T> {
      * Return the query mode.
      */
     public Mode getMode();
-
-//    /**
-//     * Propagate the readOnly state from a parent.
-//     */
-//    public void setReadOnly(boolean readOnly);
 
     /**
      * Return a listener that wants to be notified when the bean collection is
@@ -110,6 +146,11 @@ public interface SpiQuery<T> extends Query<T> {
      */
     public SpiQuery<T> copy();
 
+    /**
+     * Return the type of query (List, Set, Map, Bean, rowCount etc).
+     */
+    public Type getType();
+    
     /**
      * Set the query type (List, Set etc).
      */

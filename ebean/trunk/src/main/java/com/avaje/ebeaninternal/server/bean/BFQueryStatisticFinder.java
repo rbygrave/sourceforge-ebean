@@ -5,13 +5,13 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.meta.MetaQueryStatistic;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 
@@ -30,8 +30,8 @@ public class BFQueryStatisticFinder implements BeanFinder<MetaQueryStatistic> {
 	 */
 	public BeanCollection<MetaQueryStatistic> findMany(BeanQueryRequest<MetaQueryStatistic> request) {
 
-		Query.Type queryType = request.getQuery().getType();
-		if (!queryType.equals(Query.Type.LIST)){
+		SpiQuery.Type queryType = ((SpiQuery<?>)request.getQuery()).getType();
+		if (!queryType.equals(SpiQuery.Type.LIST)){
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 		

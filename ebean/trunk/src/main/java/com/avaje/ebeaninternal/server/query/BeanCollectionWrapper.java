@@ -22,8 +22,8 @@ package com.avaje.ebeaninternal.server.query;
 import java.util.Collection;
 import java.util.Map;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.core.RelationalQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -47,7 +47,7 @@ public final class BeanCollectionWrapper {
 	/**
 	 * The type.
 	 */
-	private final Query.Type queryType;
+	private final SpiQuery.Type queryType;
 
 	/**
 	 * A property name used as key for a Map.
@@ -84,7 +84,7 @@ public final class BeanCollectionWrapper {
 		this.desc = null;
 		this.queryType = request.getQueryType();
 		this.mapKey = request.getQuery().getMapKey();
-		this.isMap = Query.Type.MAP.equals(queryType);
+		this.isMap = SpiQuery.Type.MAP.equals(queryType);
 		
 		this.beanCollection = createBeanCollection(queryType);
 		this.collection = getCollection(isMap);
@@ -99,7 +99,7 @@ public final class BeanCollectionWrapper {
 		this.desc = request.getBeanDescriptor();
 		this.queryType = request.getQueryType();
 		this.mapKey = request.getQuery().getMapKey();
-		this.isMap = Query.Type.MAP.equals(queryType);
+		this.isMap = SpiQuery.Type.MAP.equals(queryType);
 		
 		this.beanCollection = createBeanCollection(queryType);
 		this.collection = getCollection(isMap);
@@ -119,7 +119,7 @@ public final class BeanCollectionWrapper {
 		this.queryType = manyProp.getManyType().getQueryType();
 		this.mapKey = manyProp.getMapKey();
 		this.desc = manyProp.getTargetDescriptor();
-		this.isMap = Query.Type.MAP.equals(queryType);
+		this.isMap = SpiQuery.Type.MAP.equals(queryType);
 		
 		this.beanCollection = createBeanCollection(queryType);
 		this.collection = getCollection(isMap);
@@ -146,7 +146,7 @@ public final class BeanCollectionWrapper {
 	/**
 	 * Create a BeanCollection of the correct type.
 	 */
-	private BeanCollection<?> createBeanCollection(Query.Type manyType) {
+	private BeanCollection<?> createBeanCollection(SpiQuery.Type manyType) {
 		BeanCollectionParams p = new BeanCollectionParams(manyType);
 		return BeanCollectionFactory.create(p);
 	}

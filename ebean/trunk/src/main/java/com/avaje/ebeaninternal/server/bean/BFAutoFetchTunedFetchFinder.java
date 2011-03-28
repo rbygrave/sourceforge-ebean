@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import javax.persistence.PersistenceException;
 
-import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.event.BeanFinder;
@@ -47,8 +46,8 @@ public class BFAutoFetchTunedFetchFinder implements BeanFinder<MetaAutoFetchTune
 	 */
 	public BeanCollection<MetaAutoFetchTunedQueryInfo> findMany(BeanQueryRequest<MetaAutoFetchTunedQueryInfo> request) {
 
-		Query.Type queryType = request.getQuery().getType();
-		if (!queryType.equals(Query.Type.LIST)){
+		SpiQuery.Type queryType = ((SpiQuery<?>)request.getQuery()).getType();
+		if (!queryType.equals(SpiQuery.Type.LIST)){
 			throw new PersistenceException("Only findList() supported at this stage.");
 		}
 		
