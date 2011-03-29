@@ -49,17 +49,20 @@ public class CachedBeanDataFromBean {
 
     	Object[] data = new Object[props.length];
     	
+    	int naturalKeyUpdate = -1;
         for (int i = 0; i < props.length; i++) {
         	BeanProperty prop  = props[i];
             if (includeNonManyProperty(prop.getName())){
-            	Object val = prop.getCacheDataValue(bean);
-            	data[i] = val;
             	
+            	data[i] = prop.getCacheDataValue(bean);
+            	if (prop.isNaturalKey()) {
+            		naturalKeyUpdate = i;
+            	}
             	if (ebi != null){
             		if (extractProps != null){
             			extractProps.add(prop.getName());
             		}
-            	} else if (val != null){
+            	} else if (data[i] != null){
             		if (extractProps != null){
             			extractProps.add(prop.getName());
             		}
@@ -68,7 +71,7 @@ public class CachedBeanDataFromBean {
         }
         
         
-        return new CachedBeanData(extractProps,data);
+        return new CachedBeanData(extractProps, data, naturalKeyUpdate);
     }
     
     

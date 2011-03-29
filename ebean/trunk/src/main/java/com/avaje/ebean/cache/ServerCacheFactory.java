@@ -40,6 +40,6 @@ public interface ServerCacheFactory {
 	/**
 	 * Create the cache for the given type with options.
 	 */
-	public ServerCache createCache(Class<?> beanType, ServerCacheOptions cacheOptions);
+	public ServerCache createCache(String cacheKey, ServerCacheOptions cacheOptions);
 
 }

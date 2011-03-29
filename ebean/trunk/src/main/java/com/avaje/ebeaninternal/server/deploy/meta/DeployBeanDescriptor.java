@@ -44,17 +44,17 @@ import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
+import com.avaje.ebeaninternal.server.core.CacheOptions;
 import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.deploy.ChainedBeanPersistController;
 import com.avaje.ebeaninternal.server.deploy.ChainedBeanPersistListener;
 import com.avaje.ebeaninternal.server.deploy.ChainedBeanQueryAdapter;
 import com.avaje.ebeaninternal.server.deploy.CompoundUniqueContraint;
+import com.avaje.ebeaninternal.server.deploy.DRawSqlMeta;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedUpdate;
 import com.avaje.ebeaninternal.server.deploy.InheritInfo;
-import com.avaje.ebeaninternal.server.deploy.DRawSqlMeta;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.reflect.BeanReflect;
 
 /**
@@ -168,7 +168,7 @@ public class DeployBeanDescriptor<T> {
 	private List<BeanPersistListener<T>> persistListeners = new ArrayList<BeanPersistListener<T>>();
 	private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
 
-	private ReferenceOptions referenceOptions;
+	private CacheOptions cacheOptions = new CacheOptions();
 	
 	/**
 	 * If set overrides the find implementation. Server side only.
@@ -420,15 +420,12 @@ public class DeployBeanDescriptor<T> {
 	/**
 	 * Return the reference options. 
 	 */
-	public ReferenceOptions getReferenceOptions() {
-		return referenceOptions;
+	public CacheOptions getCacheOptions() {
+		return cacheOptions;
 	}
-
-	/**
-	 * Set the reference options.
-	 */
-	public void setReferenceOptions(ReferenceOptions referenceOptions) {
-		this.referenceOptions = referenceOptions;
+	
+	public boolean isNaturalKeyProperty(String name){
+		return name.equals(cacheOptions.getNaturalKey());
 	}
 	
 	public DeployBeanPropertyAssocOne<?> getUnidirectional() {

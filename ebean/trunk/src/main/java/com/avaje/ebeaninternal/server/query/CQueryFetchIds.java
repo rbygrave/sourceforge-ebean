@@ -37,14 +37,12 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.api.BeanIdList;
 import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
+import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.DataReader;
@@ -300,11 +298,6 @@ public class CQueryFetchIds {
 		}
 
 		public void register(String path, BeanCollection<?> bc){	
-		}
-
-		public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
-			// always null
-			return null;
 		}
 
 		public BeanPropertyAssocMany<?> getManyProperty() {

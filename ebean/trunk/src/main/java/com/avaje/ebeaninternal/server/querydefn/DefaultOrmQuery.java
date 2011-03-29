@@ -35,6 +35,7 @@ import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebean.meta.MetaAutoFetchStatistic;
 import com.avaje.ebeaninternal.api.BindParams;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
+import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
@@ -42,6 +43,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.DRawSqlSelect;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.TableJoin;
+import com.avaje.ebeaninternal.server.expression.SimpleExpression;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
 
@@ -376,6 +378,42 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		detail.clear();
 		
 		select(beanDescriptor.getIdBinder().getIdProperty());
+	}
+	
+	public void convertWhereNaturalKeyToId(Object idValue) {
+		whereExpressions = new DefaultExpressionList<T>(this, null);
+		where().idEq(idValue);
+	}
+	
+	public NaturalKeyBindParam getNaturalKeyBindParam() {
+		NaturalKeyBindParam namedBind = null;
+		if (bindParams != null){
+			namedBind = bindParams.getNaturalKeyBindParam();
+			if (namedBind == null) {
+				return null;
+			}
+		}
+		
+		if (whereExpressions != null){
+			List<SpiExpression> exprList = whereExpressions.internalList();
+			if (exprList.size() > 1){
+				return null;
+			} else if (exprList.size() == 0) {
+				return namedBind;
+			} else {
+				if (namedBind != null){
+					return null;
+				}
+				SpiExpression se = exprList.get(0);
+				if (se instanceof SimpleExpression){
+					SimpleExpression e = (SimpleExpression)se;
+					if (e.isOpEquals()){
+						return new NaturalKeyBindParam(e.getPropertyName(), e.getValue()); 
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	public DefaultOrmQuery<T> copy() {

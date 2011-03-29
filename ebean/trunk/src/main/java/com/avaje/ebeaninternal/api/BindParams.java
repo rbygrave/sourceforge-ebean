@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
+
 /**
  * Parameters used for binding to a statement.
  * <p>
@@ -107,6 +109,20 @@ public class BindParams implements Serializable {
 	 */
 	public boolean isEmpty() {
 		return positionedParameters.isEmpty() && namedParameters.isEmpty();
+	}
+	
+	/**
+	 * Return a Natural Key bind param if supported.
+	 */
+	public NaturalKeyBindParam getNaturalKeyBindParam() {
+		if (positionedParameters != null){
+			return null;
+		}
+		if (namedParameters != null && namedParameters.size() == 1){
+			Entry<String, Param> e = namedParameters.entrySet().iterator().next();
+			return new NaturalKeyBindParam(e.getKey(), e.getValue().getInValue());
+		}
+		return null;
 	}
 
 	public int size() {

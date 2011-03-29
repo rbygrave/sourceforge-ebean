@@ -17,9 +17,9 @@ public class DefaultServerCacheFactory implements ServerCacheFactory {
 		this.ebeanServer = ebeanServer;
 	}
 	
-	public ServerCache createCache(Class<?> beanType, ServerCacheOptions cacheOptions) {
+	public ServerCache createCache(String cacheKey, ServerCacheOptions cacheOptions) {
 		
-		ServerCache cache =  new DefaultServerCache("Bean:"+beanType, cacheOptions);	
+		ServerCache cache =  new DefaultServerCache(cacheKey, cacheOptions);	
 		cache.init(ebeanServer);
 		return cache;
 	}

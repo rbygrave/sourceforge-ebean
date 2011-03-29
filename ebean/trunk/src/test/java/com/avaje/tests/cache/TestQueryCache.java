@@ -24,6 +24,13 @@ public class TestQueryCache extends TestCase {
 			.where().ilike("name", "Rob")
 			.findList();
 		
+		BeanCollection<Customer> bc = (BeanCollection<Customer>)list;
+		Assert.assertFalse(bc.isReadOnly());
+		Assert.assertFalse(bc.isEmpty());
+		Assert.assertTrue(list.size() > 0);
+		Assert.assertTrue(Ebean.getBeanState(list.get(0)).isReadOnly());
+		
+		
 		List<Customer> list2 = Ebean.find(Customer.class)
 			.setUseQueryCache(true)
 			.setReadOnly(true)
@@ -37,17 +44,10 @@ public class TestQueryCache extends TestCase {
 			.findList();
 
 		
-		Assert.assertTrue("same instance",list == list2);
+		Assert.assertTrue("same instance",list != list2);
 		
 		// readOnly defaults to true for query cache
-		Assert.assertTrue("same instance",list == list2B);
-		
-		BeanCollection<Customer> bc = (BeanCollection<Customer>)list;
-		Assert.assertTrue(bc.isReadOnly());
-		Assert.assertFalse(bc.isEmpty());
-		Assert.assertTrue(list.size() > 0);
-		
-		
+		Assert.assertTrue("same instance",list != list2B);
 
 		List<Customer> list3 = Ebean.find(Customer.class)
 			.setUseQueryCache(true)
@@ -60,6 +60,8 @@ public class TestQueryCache extends TestCase {
 		Assert.assertFalse(bc3.isReadOnly());
 		Assert.assertFalse(bc3.isEmpty());
 		Assert.assertTrue(list3.size() > 0);
+		Assert.assertFalse(Ebean.getBeanState(list3.get(0)).isReadOnly());
+
 
 	}
 	

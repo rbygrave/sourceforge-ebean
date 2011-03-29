@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,17 +48,14 @@ import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanCollectionHelp;
 import com.avaje.ebeaninternal.server.deploy.BeanCollectionHelpFactory;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocOne;
 import com.avaje.ebeaninternal.server.deploy.DbReadContext;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
-import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
@@ -149,8 +145,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 
 	private final SpiQuery<T> query;
 		
-	private final OrmQueryDetail queryDetail;
-
 	private final QueryListener<T> queryListener;
 	
 	private Map<String,String> currentPathMap;
@@ -240,8 +234,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	private final AutoFetchManager autoFetchManager;
 	private final WeakReference<NodeUsageListener> autoFetchManagerRef;
 	
-	private final HashMap<String,ReferenceOptions> referenceOptionsMap = new HashMap<String,ReferenceOptions>();
-
 	private int executionTimeMicros;
 	
 	private final boolean readOnly;
@@ -256,7 +248,6 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		this.request = request;
 		this.queryPlan = queryPlan;
 		this.query = request.getQuery();
-		this.queryDetail = query.getDetail();
 		this.queryMode = query.getMode();
 		
 		this.readOnly = request.isReadOnly();
@@ -445,31 +436,31 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 	
-	/**
-	 * Return the reference options used to define cache use.
-	 */
-	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
-	
-		String beanPropName = beanProp.getName();
-		if (currentPrefix != null){
-			beanPropName = currentPrefix+"."+beanPropName;
-		}
-		ReferenceOptions opt = referenceOptionsMap.get(beanPropName);
-		if (opt == null){
-			OrmQueryProperties chunk = queryDetail.getChunk(beanPropName, false);
-			if (chunk != null) {
-				// get the options from the query
-				opt = chunk.getReferenceOptions();
-			} 
-			if (opt == null){
-				// get the default options defined for the target bean type
-				opt = beanProp.getTargetDescriptor().getReferenceOptions();
-			}
-			referenceOptionsMap.put(beanPropName, opt);
-		}
-
-		return opt;
-	}
+//	/**
+//	 * Return the reference options used to define cache use.
+//	 */
+//	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProp) {
+//	
+//		String beanPropName = beanProp.getName();
+//		if (currentPrefix != null){
+//			beanPropName = currentPrefix+"."+beanPropName;
+//		}
+//		//ReferenceOptions opt = referenceOptionsMap.get(beanPropName);
+//		if (opt == null){
+//			OrmQueryProperties chunk = queryDetail.getChunk(beanPropName, false);
+//			if (chunk != null) {
+//				// get the options from the query
+//				opt = chunk.getReferenceOptions();
+//			} 
+//			if (opt == null){
+//				// get the default options defined for the target bean type
+//				opt = beanProp.getTargetDescriptor().getReferenceOptions();
+//			}
+//			referenceOptionsMap.put(beanPropName, opt);
+//		}
+//
+//		return opt;
+//	}
 
 	/**
 	 * Return the persistence context.

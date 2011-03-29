@@ -14,9 +14,9 @@ import com.avaje.ebean.cache.ServerCacheOptions;
  */
 public class DefaultCacheHolder {
 
-	private final ConcurrentHashMap<Class<?>, ServerCache> concMap = new ConcurrentHashMap<Class<?>, ServerCache>();
+	private final ConcurrentHashMap<String, ServerCache> concMap = new ConcurrentHashMap<String, ServerCache>();
 
-	private final HashMap<Class<?>, ServerCache> synchMap = new HashMap<Class<?>, ServerCache>();
+	private final HashMap<String, ServerCache> synchMap = new HashMap<String, ServerCache>();
 
 	private final Object monitor = new Object();
 
@@ -55,19 +55,19 @@ public class DefaultCacheHolder {
 	/**
 	 * Return the cache for a given bean type.
 	 */
-	public ServerCache getCache(Class<?> beanType) {
+	public ServerCache getCache(String cacheKey) {
 
-		ServerCache cache = concMap.get(beanType);
+		ServerCache cache = concMap.get(cacheKey);
 		if (cache != null) {
 			return cache;
 		}
 		synchronized (monitor) {
-			cache = synchMap.get(beanType);
+			cache = synchMap.get(cacheKey);
 			if (cache == null) {
-				ServerCacheOptions options = getCacheOptions(beanType);
-				cache = cacheFactory.createCache(beanType, options);
-				synchMap.put(beanType, cache);
-				concMap.put(beanType, cache);
+				ServerCacheOptions options = getCacheOptions(cacheKey);
+				cache = cacheFactory.createCache(cacheKey, options);
+				synchMap.put(cacheKey, cache);
+				concMap.put(cacheKey, cache);
 			}
 			return cache;
 		}
@@ -76,7 +76,7 @@ public class DefaultCacheHolder {
 	/**
 	 * Return true if there is an active cache for this bean type.
 	 */
-	public boolean isCaching(Class<?> beanType) {
+	public boolean isCaching(String beanType) {
 		return concMap.containsKey(beanType);
 	}
 
@@ -91,15 +91,20 @@ public class DefaultCacheHolder {
 	/**
 	 * Return the cache options for a given bean type.
 	 */
-	private ServerCacheOptions getCacheOptions(Class<?> beanType) {
+	private ServerCacheOptions getCacheOptions(String beanType) {
 
 		if (useBeanTuning) {
 			// read the deployment annotation
-			CacheTuning cacheTuning = beanType.getAnnotation(CacheTuning.class);
-			if (cacheTuning != null) {
-				ServerCacheOptions o = new ServerCacheOptions(cacheTuning);
-				o.applyDefaults(defaultOptions);
-				return o;
+			try {
+				Class<?> cls = Class.forName(beanType);
+				CacheTuning cacheTuning = cls.getAnnotation(CacheTuning.class);
+				if (cacheTuning != null) {
+					ServerCacheOptions o = new ServerCacheOptions(cacheTuning);
+					o.applyDefaults(defaultOptions);
+					return o;
+				}
+			} catch (ClassNotFoundException e){
+				// ignore
 			}
 		}
 

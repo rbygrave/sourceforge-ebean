@@ -12,13 +12,12 @@ import java.util.Set;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.OrderBy;
-import com.avaje.ebean.Query;
 import com.avaje.ebean.OrderBy.Property;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionFactory;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.expression.FilterExprPath;
 import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.query.SplitName;
@@ -377,14 +376,6 @@ public class OrmQueryProperties implements Serializable {
 
     public String getProperties() {
         return properties;
-    }
-
-    public ReferenceOptions getReferenceOptions() {
-        if (cache) {
-            return new ReferenceOptions(cache, null);
-        } else {
-            return null;
-        }
     }
 
     /**

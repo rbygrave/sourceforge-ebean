@@ -43,6 +43,11 @@ public interface ServerCacheManager {
 	public boolean isBeanCaching(Class<?> beanType);
 
 	/**
+	 * Return the cache for mapping natural keys to id values.
+	 */
+	public ServerCache getNaturalKeyCache(Class<?> beanType);
+	
+	/**
 	 * Return the cache for beans of a particular type.
 	 */
 	public ServerCache getBeanCache(Class<?> beanType);

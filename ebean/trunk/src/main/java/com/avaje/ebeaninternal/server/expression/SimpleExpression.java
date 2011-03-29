@@ -10,7 +10,7 @@ import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 
 
-class SimpleExpression extends AbstractExpression implements LuceneAwareExpression {
+public class SimpleExpression extends AbstractExpression implements LuceneAwareExpression {
 
 	private static final long serialVersionUID = -382881395755603790L;
 
@@ -46,6 +46,10 @@ class SimpleExpression extends AbstractExpression implements LuceneAwareExpressi
 		super(pathPrefix, propertyName);
 		this.type = type;
 		this.value = value;
+	}
+	
+	public boolean isOpEquals() {
+		return Op.EQ.equals(type);
 	}
 	
     public boolean isLuceneResolvable(LuceneResolvableRequest req) {
@@ -156,6 +160,9 @@ class SimpleExpression extends AbstractExpression implements LuceneAwareExpressi
 	public int queryBindHash() {
 		return value.hashCode();
 	}
-	
+
+	public Object getValue() {
+    	return value;
+    }
 	
 }

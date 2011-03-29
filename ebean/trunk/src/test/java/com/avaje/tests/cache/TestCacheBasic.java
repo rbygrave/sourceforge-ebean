@@ -113,7 +113,7 @@ public class TestCacheBasic extends TestCase {
 		// the update will remove the entry from the cache
 		Ebean.save(c8);
 		
-		Assert.assertEquals("0 country in cache", 0, countryCache.size()); 
+		Assert.assertEquals("1 country in cache", 1, countryCache.size()); 
 		
 		Country c9 = Ebean.find(Country.class)
 			.setReadOnly(false)
