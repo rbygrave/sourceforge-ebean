@@ -26,6 +26,7 @@ import com.avaje.ebeaninternal.server.deploy.DRawSqlMeta;
 /**
  * Read the class level deployment annotations.
  */
+@SuppressWarnings("deprecation")
 public class AnnotationSql extends AnnotationParser {
 
 	public AnnotationSql(DeployBeanInfo<?> info) {
@@ -39,7 +40,8 @@ public class AnnotationSql extends AnnotationParser {
 			setSql(sql);
 		}
 		
-		SqlSelect sqlSelect = cls.getAnnotation(SqlSelect.class);
+		
+        SqlSelect sqlSelect = cls.getAnnotation(SqlSelect.class);
 		if (sqlSelect != null){
 			setSqlSelect(sqlSelect);
 		}

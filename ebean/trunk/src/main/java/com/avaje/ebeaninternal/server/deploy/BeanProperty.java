@@ -112,6 +112,8 @@ public class BeanProperty implements ElPropertyValue {
      */
     final boolean version;
 
+    final boolean naturalKey;
+    
     /**
      * Set if this property is nullable.
      */
@@ -321,6 +323,7 @@ public class BeanProperty implements ElPropertyValue {
         this.isTransient = deploy.isTransient();
         this.nullable = deploy.isNullable();
         this.unique = deploy.isUnique();
+        this.naturalKey = deploy.isNaturalKey();
         this.dbLength = deploy.getDbLength();
         this.dbScale = deploy.getDbScale();
         this.dbColumnDefn = InternString.intern(deploy.getDbColumnDefn());
@@ -415,6 +418,7 @@ public class BeanProperty implements ElPropertyValue {
         this.dbUpdatable = source.isDbUpdatable();
         this.nullable = source.isNullable();
         this.unique = source.isUnique();
+        this.naturalKey = source.isNaturalKey();
         this.dbLength = source.getDbLength();
         this.dbScale = source.getDbScale();
         this.dbColumnDefn = InternString.intern(source.getDbColumnDefn());
@@ -1090,6 +1094,13 @@ public class BeanProperty implements ElPropertyValue {
     }
 
     /**
+     * Return true if this is the natural key property.
+     */
+    public boolean isNaturalKey() {
+    	return naturalKey;
+    }
+
+	/**
      * Return true if this property is mandatory.
      */
     public boolean isNullable() {

@@ -16,6 +16,8 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 
 	private final DefaultCacheHolder queryCache;
 
+	private final DefaultCacheHolder uniqueKeyCache;
+	
 	private final ServerCacheFactory cacheFactory;
 	
 	/**
@@ -25,6 +27,7 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 		this.cacheFactory = cacheFactory;
 		this.beanCache = new DefaultCacheHolder(cacheFactory, defaultBeanOptions, true);
 		this.queryCache = new DefaultCacheHolder(cacheFactory, defaultQueryOptions, false);
+		this.uniqueKeyCache = new DefaultCacheHolder(cacheFactory, defaultQueryOptions, false);
 	}	
 	
 		
@@ -51,19 +54,24 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 		queryCache.clearAll();
 	}
 
+    public ServerCache getNaturalKeyCache(Class<?> beanType) {
+	    return uniqueKeyCache.getCache(beanType.getName());
+    }
+
+
 	/**
 	 * Return the query cache for a given bean type.
 	 */
 	public ServerCache getQueryCache(Class<?> beanType) {
 		
-		return queryCache.getCache(beanType);
+		return queryCache.getCache(beanType.getName());
 	}
 	
 	/**
 	 * Return the bean cache for a given bean type.
 	 */
 	public ServerCache getBeanCache(Class<?> beanType) {
-		return beanCache.getCache(beanType);
+		return beanCache.getCache(beanType.getName());
 	}
 
 	/**
@@ -71,11 +79,11 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 	 */
 	public boolean isBeanCaching(Class<?> beanType) {
 		
-		return beanCache.isCaching(beanType);
+		return beanCache.isCaching(beanType.getName());
 	}
 
 	public boolean isQueryCaching(Class<?> beanType) {
 		
-		return queryCache.isCaching(beanType);
+		return queryCache.isCaching(beanType.getName());
 	}
 }

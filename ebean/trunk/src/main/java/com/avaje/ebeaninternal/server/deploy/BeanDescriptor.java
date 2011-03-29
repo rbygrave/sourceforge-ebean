@@ -70,11 +70,11 @@ import com.avaje.ebeaninternal.server.cache.CachedBeanData;
 import com.avaje.ebeaninternal.server.cache.CachedBeanDataFromBean;
 import com.avaje.ebeaninternal.server.cache.CachedBeanDataToBean;
 import com.avaje.ebeaninternal.server.cache.CachedBeanDataUpdate;
+import com.avaje.ebeaninternal.server.core.CacheOptions;
 import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
 import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyLists;
@@ -398,7 +398,7 @@ public class BeanDescriptor<T> {
 
     private final ServerCacheManager cacheManager;
 
-    private final ReferenceOptions referenceOptions;
+    private final CacheOptions cacheOptions;
 
     private final String defaultSelectClause;
     private final Set<String> defaultSelectClauseSet;
@@ -411,7 +411,8 @@ public class BeanDescriptor<T> {
     private SpiEbeanServer ebeanServer;
 
     private ServerCache beanCache;
-
+    private ServerCache naturalKeyCache;
+    
     private ServerCache queryCache;
         
     private LIndex luceneIndex;
@@ -448,7 +449,7 @@ public class BeanDescriptor<T> {
         this.persistController = deploy.getPersistController();
         this.persistListener = deploy.getPersistListener();
         this.queryAdapter = deploy.getQueryAdapter();
-        this.referenceOptions = deploy.getReferenceOptions();
+        this.cacheOptions = deploy.getCacheOptions();
 
         this.defaultSelectClause = deploy.getDefaultSelectClause();
         this.defaultSelectClauseSet = deploy.parseDefaultSelectClause(defaultSelectClause);
@@ -810,9 +811,18 @@ public class BeanDescriptor<T> {
      * Initialise the cache once the server has started.
      */
     public void cacheInitialise() {
-        
-        if (referenceOptions != null && referenceOptions.isUseCache()) {
-            beanCache = cacheManager.getBeanCache(beanType);
+        if (cacheOptions.isUseCache()) {
+            this.beanCache = cacheManager.getBeanCache(beanType);
+            if (cacheOptions.isUseNaturalKeyCache()){
+            	BeanProperty beanProperty = getBeanProperty(cacheOptions.getNaturalKey());
+            	if (beanProperty == null) {
+            		String msg = "naturalKey ["+cacheOptions.getNaturalKey()+"] not found on "+beanType.getName();
+            		logger.log(Level.SEVERE, msg);
+            		cacheOptions.setNaturalKey(null);
+            	} else {
+            		this.naturalKeyCache = cacheManager.getNaturalKeyCache(beanType);
+            	}
+            }
         }        
     }
 
@@ -927,40 +937,37 @@ public class BeanDescriptor<T> {
             propertiesOneImported[i].addFkey();
         }
     }
-
+    
     public boolean calculateUseCache(Boolean queryUseCache) {
         if (queryUseCache != null) {
             return queryUseCache;
         } else {
-            if (referenceOptions != null) {
-                return referenceOptions.isUseCache();
-            } else {
-                return false;
-            }
+        	return cacheOptions.isUseCache();
         }
     }
 
-    public boolean calculateReadOnly(Boolean queryReadOnly) {
-        if (queryReadOnly != null) {
-            return queryReadOnly;
+    public boolean calculateUseNaturalKeyCache(Boolean queryUseCache) {
+        if (queryUseCache != null) {
+            return queryUseCache;
         } else {
-            return false;
+        	return cacheOptions.isUseCache();
+        }
+    }
+    
+    public boolean calculateReadOnly(Boolean readOnly) {
+        if (readOnly != null) {
+            return readOnly;
+        } else {
+        	return cacheOptions.isReadOnly();
         }
     }
 
     /**
-     * Return the reference options.
+     * Return the cache options.
      */
-    public ReferenceOptions getReferenceOptions() {
-        return referenceOptions;
+    public CacheOptions getCacheOptions() {
+        return cacheOptions;
     }
-
-//    /**
-//     * Return the DB decrypt SQL for a given column with its table alias.
-//     */
-//    public String getDecryptSql(String columnWithTableAlias){
-//        return owner.getDecryptSql(columnWithTableAlias);
-//    }
     
     /**
      * Return the Encrypt key given the BeanProperty.
@@ -981,10 +988,10 @@ public class BeanDescriptor<T> {
      * Execute the warming cache query (if defined) and load the cache.
      */
     public void runCacheWarming() {
-        if (referenceOptions == null) {
+        if (cacheOptions == null) {
             return;
         }
-        String warmingQuery = referenceOptions.getWarmingQuery();
+        String warmingQuery = cacheOptions.getWarmingQuery();
         if (warmingQuery != null && warmingQuery.trim().length() > 0) {
             Query<T> query = ebeanServer.createQuery(beanType, warmingQuery);
             query.setUseCache(true);
@@ -1141,13 +1148,16 @@ public class BeanDescriptor<T> {
                 
         Object id = getId(bean);
         beanCache.put(id, beanData);
+        if (beanData.isNaturalKeyUpdate() && naturalKeyCache != null){
+        	naturalKeyCache.put(beanData.getNaturalKey(), id);
+        }
     }
 
     /**
      * Return a bean from the bean cache.
      */
     @SuppressWarnings("unchecked")
-    public T cacheGetBean(Object id, boolean vanilla, Boolean readOnly) {
+    public T cacheGetBean(Object id, boolean vanilla, boolean readOnly) {
     	if (beanCache == null) {
             return null;
         } else {
@@ -1157,13 +1167,25 @@ public class BeanDescriptor<T> {
             }
             T bean = (T)createBean(vanilla);
             convertSetId(id, bean);
-            if (!vanilla && Boolean.TRUE.equals(readOnly)){
+            if (!vanilla && readOnly){
             	((EntityBean)bean)._ebean_getIntercept().setReadOnly(true);
             }
             
             CachedBeanDataToBean.load(this, bean, d);
             return bean;
         }
+    }
+    
+
+	public boolean cacheIsNaturalKey(String propName) {
+	    return propName != null && propName.equals(cacheOptions.getNaturalKey());
+    }
+	
+    public Object cacheGetNaturalKeyId(Object uniqueKeyValue){
+    	if (naturalKeyCache != null){
+    		return naturalKeyCache.get(uniqueKeyValue);
+    	}
+    	return null;
     }
     
     public CachedBeanData cacheGetBeanData(Object id) {
@@ -1192,6 +1214,9 @@ public class BeanDescriptor<T> {
         	if (cd != null){
         		CachedBeanData newCd = CachedBeanDataUpdate.update(this, cd, updateRequest);
         		beanCache.put(id, newCd);
+        		if (newCd.isNaturalKeyUpdate() && naturalKeyCache != null){
+                	naturalKeyCache.put(newCd.getNaturalKey(), id);
+                }
         	}
         }
     }
@@ -1556,7 +1581,7 @@ public class BeanDescriptor<T> {
      * Create a reference bean based on the id.
      */
     @SuppressWarnings("unchecked")
-    public T createReference(boolean vanillaMode, Object id, Object parent, ReferenceOptions options) {
+    public T createReference(boolean vanillaMode, Object id, Object parent) {
 
         try {
             Object bean = createBean(vanillaMode);
@@ -1575,11 +1600,7 @@ public class BeanDescriptor<T> {
                     ebi.setParentBean(parent);
                 }
     
-                if (options != null) {
-                    ebi.setUseCache(options.isUseCache());
-                }
                 // Note: not creating proxies for many's...
-    
                 ebi.setReference();
             }
 
@@ -2665,5 +2686,6 @@ public class BeanDescriptor<T> {
 
         return false;
     }
+
     
 }

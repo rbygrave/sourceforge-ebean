@@ -379,6 +379,9 @@ public class DeployCreateProperties {
         //field.setAccessible(true);        
         prop.setOwningType(beanType);
         prop.setName(field.getName());
+        if (desc.isNaturalKeyProperty(field.getName())){
+        	prop.setNaturalKey(true);
+        }
         
         // the getter or setter could be null if we are using
         // javaagent type enhancement. If we are using subclass

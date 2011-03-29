@@ -166,6 +166,8 @@ public class DeployBeanProperty {
      */
     private boolean lob;
 
+    private boolean naturalKey;
+    
     /**
      * The logical bean property name.
      */
@@ -532,7 +534,15 @@ public class DeployBeanProperty {
         this.field = field;
     }
 
-    /**
+    public boolean isNaturalKey() {
+    	return naturalKey;
+    }
+
+	public void setNaturalKey(boolean naturalKey) {
+    	this.naturalKey = naturalKey;
+    }
+
+	/**
      * Return true if this is a generated property like update timestamp and
      * create timestamp.
      */

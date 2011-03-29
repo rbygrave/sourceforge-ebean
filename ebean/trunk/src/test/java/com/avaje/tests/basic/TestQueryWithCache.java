@@ -7,7 +7,7 @@ import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
+import com.avaje.ebeaninternal.server.core.CacheOptions;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.tests.model.basic.Country;
 import com.avaje.tests.model.basic.Customer;
@@ -17,30 +17,30 @@ import com.avaje.tests.model.basic.ResetBasicData;
 public class TestQueryWithCache extends TestCase {
 
 	
-	public void testJoinCache() {
-
-		ResetBasicData.reset();
-
-		Ebean.getServer(null).runCacheWarming();
-		
-		Query<Order> query = Ebean.createQuery(Order.class)
-			.setAutofetch(false)
-			.fetch("customer","+cache +readonly")
-			.setId(1);
-		
-		Order order = query.findUnique();
-		Customer customer = order.getCustomer();
-		Assert.assertTrue(Ebean.getBeanState(customer).isReadOnly());
-		
-//		// invoke lazy loading
-//		customer.getName();
+//	public void testJoinCache() {
+//
+//		ResetBasicData.reset();
+//
+//		Ebean.getServer(null).runCacheWarming();
 //		
-//		order = query.findUnique();
-//		customer = order.getCustomer();
-//		custState = Ebean.getBeanState(customer);
-//		Assert.assertFalse(custState.isReadOnly());
-		
-	}
+//		Query<Order> query = Ebean.createQuery(Order.class)
+//			.setAutofetch(false)
+//			.fetch("customer","+cache +readonly")
+//			.setId(1);
+//		
+//		Order order = query.findUnique();
+//		Customer customer = order.getCustomer();
+//		Assert.assertTrue(Ebean.getBeanState(customer).isReadOnly());
+//		
+////		// invoke lazy loading
+////		customer.getName();
+////		
+////		order = query.findUnique();
+////		customer = order.getCustomer();
+////		custState = Ebean.getBeanState(customer);
+////		Assert.assertFalse(custState.isReadOnly());
+//		
+//	}
 	
 	public void testFindId() {
 		
@@ -64,7 +64,7 @@ public class TestQueryWithCache extends TestCase {
 		BeanState beanState2 = Ebean.getBeanState(o2);
 
 		// same instance as readOnly = true
-		Assert.assertTrue("same instance", o == o2);
+		Assert.assertTrue("not same instance", o != o2);
 		Assert.assertTrue(beanState2.isReadOnly());
 		
 		Order o3  = Ebean.find(Order.class)
@@ -83,10 +83,12 @@ public class TestQueryWithCache extends TestCase {
 		
 		SpiEbeanServer server = (SpiEbeanServer)Ebean.getServer(null);
 		BeanDescriptor<Country> beanDescriptor = server.getBeanDescriptor(Country.class);
-		ReferenceOptions referenceOptions = beanDescriptor.getReferenceOptions();
+		CacheOptions cacheOptions = beanDescriptor.getCacheOptions();
 		
-		Assert.assertNotNull(referenceOptions);
-		Assert.assertTrue(referenceOptions.isUseCache());
+		Assert.assertNotNull(cacheOptions);
+		Assert.assertTrue(cacheOptions.isUseCache());
+		Assert.assertTrue(cacheOptions.isReadOnly());
+		Assert.assertTrue(beanDescriptor.isLookupReferenceBean());
 		
 		
 		Country nz1 = Ebean.getReference(Country.class, "NZ");

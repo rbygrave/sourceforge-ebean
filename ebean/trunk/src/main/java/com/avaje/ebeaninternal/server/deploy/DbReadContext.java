@@ -6,7 +6,6 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.type.DataReader;
 
 /**
@@ -39,10 +38,10 @@ public interface DbReadContext {
 	 */
 	public boolean isRawSql();
 
-	/**
-	 * Return the reference options for a given bean property.
-	 */
-	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProperty);
+//	/**
+//	 * Return the reference options for a given bean property.
+//	 */
+//	public ReferenceOptions getReferenceOptionsFor(BeanPropertyAssocOne<?> beanProperty);
 	
 	/**
 	 * Set the JoinNode - used by proxy/reference beans for profiling.

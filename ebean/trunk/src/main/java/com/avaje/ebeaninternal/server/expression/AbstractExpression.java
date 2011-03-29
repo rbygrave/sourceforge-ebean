@@ -45,7 +45,7 @@ public abstract class AbstractExpression implements SpiExpression {
 	    this.propName = propName;
 	}
 
-	protected String getPropertyName() {
+	public String getPropertyName() {
 	    if (pathPrefix == null){
 	        return propName;
 	    } else {

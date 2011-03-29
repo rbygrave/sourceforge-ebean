@@ -38,6 +38,7 @@ import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
+import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
 
 /**
  * Object Relational query - Internal extension to Query object.
@@ -189,6 +190,16 @@ public interface SpiQuery<T> extends Query<T> {
      */
     public ManyWhereJoins getManyWhereJoins();
 
+    /**
+     * Convert this natural key query into a find by id query.
+     */
+    public void convertWhereNaturalKeyToId(Object idValue);
+    
+    /**
+     * Return a Natural Key bind parameter if supported by this query.
+     */
+    public NaturalKeyBindParam getNaturalKeyBindParam();
+    
     /**
      * Set the query to select the id property only.
      */

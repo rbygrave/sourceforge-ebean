@@ -6,13 +6,23 @@ public class CachedBeanData {
 
     private final Set<String> loadedProperties;
     private final Object[] data;
+    private final int naturalKeyUpdate;
     
-    public CachedBeanData(Set<String> loadedProperties, Object[] data) {
+    public CachedBeanData(Set<String> loadedProperties, Object[] data, int naturalKeyUpdate) {
         this.loadedProperties= loadedProperties;
         this.data = data;
+        this.naturalKeyUpdate = naturalKeyUpdate;
     }
     
-    public boolean containsProperty(String propName) {
+    public boolean isNaturalKeyUpdate() {
+    	return naturalKeyUpdate > -1;
+    }
+    
+    public Object getNaturalKey() {
+    	return data[naturalKeyUpdate];
+    }
+
+	public boolean containsProperty(String propName) {
         return loadedProperties == null || loadedProperties.contains(propName);
     }
     

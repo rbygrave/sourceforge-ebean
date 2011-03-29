@@ -77,7 +77,9 @@ public class CachedBeanDataToBean {
             	ebi.setLoadedProps(null);
         	} else {
             	HashSet<String> mergeProps = new HashSet<String>();
-        		mergeProps.addAll(excludeProps);
+            	if (excludeProps != null) {
+            		mergeProps.addAll(excludeProps);
+            	}
         		mergeProps.addAll(loadedProps);
             	ebi.setLoadedProps(mergeProps);
         	}   

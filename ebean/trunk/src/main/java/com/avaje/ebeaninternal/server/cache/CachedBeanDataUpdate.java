@@ -18,10 +18,14 @@ public class CachedBeanDataUpdate {
     	Object updateBean = updateRequest.getBean();
     	Set<String> updatedProperties = updateRequest.getUpdatedProperties();
     	
+    	int naturalKeyUpdate = -1;
     	boolean mergeProperties = false;
     	BeanProperty[] props = desc.propertiesNonMany();
     	for (int i = 0; i < props.length; i++) {
 	        if (updatedProperties.contains(props[i].getName())){
+	        	if (props[i].isNaturalKey()){
+	        		naturalKeyUpdate = i;
+	        	}
 	        	copyOfData[i] = props[i].getCacheDataValue(updateBean);
 	        	if (loadedProperties != null && !mergeProperties && !loadedProperties.contains(props[i].getName())){
 	        		mergeProperties = true;
@@ -36,7 +40,7 @@ public class CachedBeanDataUpdate {
     		loadedProperties = mergeProps;
     	}
     	
-    	return new CachedBeanData(loadedProperties, copyOfData);
+    	return new CachedBeanData(loadedProperties, copyOfData, naturalKeyUpdate);
         
     }
     

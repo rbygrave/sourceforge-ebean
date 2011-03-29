@@ -109,11 +109,6 @@ public final class EntityBeanIntercept implements Serializable {
 	 * The state of the Bean (DEFAULT,UDPATE,READONLY,SHARED).
 	 */
 	private boolean readOnly;
-	
-	/**
-	 * set to true if the lazy loading should use the L2 cache.
-	 */
-	private boolean useCache;
 
 	/**
 	 * The bean as it was before it was modified. Null if no non-transient
@@ -143,24 +138,6 @@ public final class EntityBeanIntercept implements Serializable {
 	public EntityBeanIntercept(Object owner) {
 		this.owner = (EntityBean)owner;
 	}
-    
-//	/**
-//	 * Set the state of the bean (DEFAULT,UPDATE,READONLY,SHARED).
-//	 * <p>
-//	 * Note that UPDATE is really only to force readOnly = false
-//	 * when the default cache setting has readOnly = true.
-//	 * </p>
-//	 */
-//	public void setState(int parentState){
-//	    this.state = parentState;
-//	}
-//	
-//	/**
-//	 * Return the state of the bean (DEFAULT,UPDATE,READONLY,SHARED).
-//	 */
-//	public int getState() {
-//        return state;
-//    }
 	
 	/**
 	 * Copy the internal state of the intercept to another intercept.
@@ -324,20 +301,6 @@ public final class EntityBeanIntercept implements Serializable {
 		return oldValues;
 	}
 	
-	/**
-	 * Return true if this bean should use the cache when lazy loading.
-	 */
-	public boolean isUseCache() {
-		return useCache;
-	}
-
-	/**
-	 * Set to true if this bean should use the cache when lazy loading.
-	 */
-	public void setUseCache(boolean loadFromCache) {
-		this.useCache = loadFromCache;
-	}
-
 	/**
 	 * Return true if the bean should be treated as readOnly. If a setter method
 	 * is called when it is readOnly an Exception is thrown.

@@ -19,6 +19,13 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.Query;
@@ -28,7 +35,6 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebeaninternal.server.core.DefaultSqlUpdate;
-import com.avaje.ebeaninternal.server.core.ReferenceOptions;
 import com.avaje.ebeaninternal.server.deploy.id.IdBinder;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedId;
 import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanPropertyAssocOne;
@@ -38,12 +44,6 @@ import com.avaje.ebeaninternal.server.query.SplitName;
 import com.avaje.ebeaninternal.server.query.SqlBeanLoad;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
-
-import javax.persistence.PersistenceException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Property mapped to a joined bean.
@@ -386,9 +386,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     		if (embedded){
         		throw new RuntimeException();
     		} else {
-		    	Object[] vals = (Object[])cacheData;
 		    	boolean vanillaMode = false;
-		    	T ref  = targetDescriptor.createReference(vanillaMode, vals[0], null, null);
+		    	T ref  = targetDescriptor.createReference(vanillaMode, cacheData, null);
 		    	setValue(bean, ref);
 		    	if (oldValues != null){
 		    		setValue(oldValues, ref);
@@ -643,7 +642,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                     destRef = refDesc.createCopy(value, ctx, maxDepth - 1);
                     
                 } else {
-                    destRef = refDesc.createReference(ctx.isVanillaMode(), refId, destBean, null);
+                    destRef = refDesc.createReference(ctx.isVanillaMode(), refId, destBean);
                 }
                 setValue(destBean, destRef);
             }
@@ -719,10 +718,10 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private final class Reference extends LocalHelp {
 
-        private final BeanPropertyAssocOne<?> beanProp;
+        //private final BeanPropertyAssocOne<?> beanProp;
 
         Reference(BeanPropertyAssocOne<?> beanProp) {
-            this.beanProp = beanProp;
+//            this.beanProp = beanProp;
         }
 
         void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
@@ -778,14 +777,14 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             // parent always null for this case (but here to document)
             Object parent = null;
             boolean vanillaMode = ctx.isVanillaMode();
-            ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
+            //ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
             
             Object ref;
             if (targetInheritInfo != null) {
 				// for inheritance hierarchy create the correct type for this row...
-                ref = rowDescriptor.createReference(vanillaMode, id, parent, options);
+                ref = rowDescriptor.createReference(vanillaMode, id, parent);
             } else {
-                ref = targetDescriptor.createReference(vanillaMode, id, parent, options);
+                ref = targetDescriptor.createReference(vanillaMode, id, parent);
             }
             
             Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
@@ -877,7 +876,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             } 
             boolean vanillaMode = ctx.isVanillaMode();
             Object parent = null;
-            Object ref = targetDescriptor.createReference(vanillaMode, id, parent, null);
+            Object ref = targetDescriptor.createReference(vanillaMode, id, parent);
             
             if (!vanillaMode){
                 EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 

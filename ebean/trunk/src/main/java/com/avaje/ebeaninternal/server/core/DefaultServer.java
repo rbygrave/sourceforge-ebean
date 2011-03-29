@@ -124,6 +124,7 @@ import com.avaje.ebeaninternal.server.query.SqlQueryFutureList;
 import com.avaje.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import com.avaje.ebeaninternal.server.querydefn.DefaultOrmUpdate;
 import com.avaje.ebeaninternal.server.querydefn.DefaultRelationalQuery;
+import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
 import com.avaje.ebeaninternal.server.text.csv.TCsvReader;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
@@ -688,7 +689,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
             } else {
                 // use the default reference options
-                ref = desc.createReference(vanillaRefMode, id, null, desc.getReferenceOptions());
+                ref = desc.createReference(vanillaRefMode, id, null);
             }
 
             if (ctx != null && (ref instanceof EntityBean)) {
@@ -1217,8 +1218,9 @@ public final class DefaultServer implements SpiEbeanServer {
             return null;
         }
         
+        boolean readOnly = beanDescriptor.calculateReadOnly(query.isReadOnly());
     	boolean vanilla = query.isVanillaMode(vanillaMode);
-        Object cachedBean = beanDescriptor.cacheGetBean(query.getId(), vanilla, query.isReadOnly());
+        Object cachedBean = beanDescriptor.cacheGetBean(query.getId(), vanilla, readOnly);
         if (cachedBean != null){
         	if (context == null){
         		context = new DefaultPersistenceContext();
@@ -1273,6 +1275,22 @@ public final class DefaultServer implements SpiEbeanServer {
             return findId(query, t);
         }
 
+    	BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(q.getBeanType());
+    	
+    	if (desc.calculateUseNaturalKeyCache(q.isUseBeanCache())) {
+    		// check if it is a find by unique id
+            NaturalKeyBindParam keyBindParam = q.getNaturalKeyBindParam();
+            if (keyBindParam != null && desc.cacheIsNaturalKey(keyBindParam.getName())){
+        		Object id2 = desc.cacheGetNaturalKeyId(keyBindParam.getValue());
+        		if (id2 != null){
+        			SpiQuery<T> copy = q.copy();
+        			copy.convertWhereNaturalKeyToId(id2);
+        			return findId(copy, t);
+        		}
+            }
+        }
+        
+        
         // a query that is expected to return either 0 or 1 rows
         List<T> list = findList(query, t);
 
