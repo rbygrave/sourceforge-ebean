@@ -382,7 +382,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	public void convertWhereNaturalKeyToId(Object idValue) {
 		whereExpressions = new DefaultExpressionList<T>(this, null);
-		where().idEq(idValue);
+		setId(idValue);
 	}
 	
 	public NaturalKeyBindParam getNaturalKeyBindParam() {

@@ -259,6 +259,7 @@ public class BeanDescriptor<T> {
      * checking.
      */
     private final BeanProperty[] propertiesVersion;
+    private final BeanProperty propertiesNaturalKey;
 
     /**
      * Properties local to this type (not from a super type).
@@ -486,6 +487,7 @@ public class BeanDescriptor<T> {
         this.propertiesBaseScalar = listHelper.getBaseScalar();
         this.propertiesBaseCompound = listHelper.getBaseCompound();
         this.propertiesId = listHelper.getId();
+        this.propertiesNaturalKey = listHelper.getNaturalKey();
         this.propertiesVersion = listHelper.getVersion();
         this.propertiesEmbedded = listHelper.getEmbedded();
         this.propertiesLocal = listHelper.getLocal();
@@ -1149,7 +1151,10 @@ public class BeanDescriptor<T> {
         Object id = getId(bean);
         beanCache.put(id, beanData);
         if (beanData.isNaturalKeyUpdate() && naturalKeyCache != null){
-        	naturalKeyCache.put(beanData.getNaturalKey(), id);
+        	Object naturalKey = beanData.getNaturalKey();
+        	if (naturalKey != null) {
+        		naturalKeyCache.put(naturalKey, id);
+        	}
         }
     }
 
@@ -1215,7 +1220,14 @@ public class BeanDescriptor<T> {
         		CachedBeanData newCd = CachedBeanDataUpdate.update(this, cd, updateRequest);
         		beanCache.put(id, newCd);
         		if (newCd.isNaturalKeyUpdate() && naturalKeyCache != null){
-                	naturalKeyCache.put(newCd.getNaturalKey(), id);
+        			Object oldKey = propertiesNaturalKey.getValue(updateRequest.getOldValues());
+        			Object newKey = propertiesNaturalKey.getValue(updateRequest.getBean());
+        			if (oldKey != null){
+                    	naturalKeyCache.remove(oldKey);        				
+        			}
+        			if (newKey != null){
+        				naturalKeyCache.put(newKey, id);
+        			}
                 }
         	}
         }

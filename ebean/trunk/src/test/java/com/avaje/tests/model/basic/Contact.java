@@ -9,9 +9,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
+import com.avaje.ebean.annotation.CacheStrategy;
 import com.avaje.ebean.annotation.CreatedTimestamp;
 
 @Entity
+@CacheStrategy(useBeanCache=true,naturalKey="email")
 public class Contact {
 
     private static final long serialVersionUID = 1L;
