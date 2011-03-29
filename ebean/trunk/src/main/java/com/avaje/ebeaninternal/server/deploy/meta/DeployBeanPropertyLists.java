@@ -212,6 +212,14 @@ public class DeployBeanPropertyLists {
     public BeanPropertyCompound[] getBaseCompound() {
         return (BeanPropertyCompound[]) baseCompound.toArray(new BeanPropertyCompound[baseCompound.size()]);
     }
+    
+    public BeanProperty getNaturalKey() {
+    	String naturalKey = desc.getCacheOptions().getNaturalKey();
+    	if (naturalKey != null){
+    		return propertyMap.get(naturalKey);
+    	}
+    	return null;
+    }
 
     public BeanProperty[] getId() {
         return (BeanProperty[]) ids.toArray(new BeanProperty[ids.size()]);

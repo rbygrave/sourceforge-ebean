@@ -152,13 +152,19 @@ public class ResetBasicData {
         return o;
     }
 
+    private static int contactEmailNum = 1;
+    
 	private Customer insertCustomerFiona() {
 		
 		Customer c = createCustomer("Fiona", "12 Apple St", "West Coast Rd", 1, "2009-08-31");
 
 		c.setStatus(Customer.Status.ACTIVE);
-		c.addContact(new Contact("Fiona","Black"));
-		c.addContact(new Contact("Tracy","Red"));
+		Contact contact = new Contact("Fiona","Black");
+		contact.setEmail(contact.getLastName()+(contactEmailNum++)+"@test.com");
+		c.addContact(contact);
+		contact = new Contact("Tracy","Red");
+		contact.setEmail(contact.getLastName()+(contactEmailNum++)+"@test.com");
+		c.addContact(contact);
 
 		Ebean.save(c);
 		return c;
@@ -179,7 +185,9 @@ public class ResetBasicData {
 		Customer c = new Customer();
 		c.setName("Cust NoAddress");
 		c.setStatus(Customer.Status.NEW);
-		c.addContact(new Contact("Jack","Black"));
+		Contact contact = new Contact("Jack","Black");
+		contact.setEmail(contact.getLastName()+(contactEmailNum++)+"@othertest.com");
+		c.addContact(contact);
 
 		Ebean.save(c);
 		return c;

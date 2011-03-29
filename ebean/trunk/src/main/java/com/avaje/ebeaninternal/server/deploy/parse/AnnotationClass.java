@@ -40,6 +40,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
 import com.avaje.ebeaninternal.server.deploy.CompoundUniqueContraint;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedUpdate;
+import com.avaje.ebeaninternal.server.deploy.meta.DeployBeanProperty;
 
 /**
  * Read the class level deployment annotations.
@@ -172,8 +173,15 @@ public class AnnotationClass extends AnnotationParser {
 		CacheOptions cacheOptions = descriptor.getCacheOptions();
 		cacheOptions.setUseCache(cacheStrategy.useBeanCache());
 		cacheOptions.setReadOnly(cacheStrategy.readOnly());
-		cacheOptions.setNaturalKey(cacheStrategy.naturalKey());
 		cacheOptions.setWarmingQuery(cacheStrategy.warmingQuery());
+		if (cacheStrategy.naturalKey().length() > 0){
+			String propName = cacheStrategy.naturalKey().trim();
+			DeployBeanProperty beanProperty = descriptor.getBeanProperty(propName);
+			if (beanProperty != null){
+				beanProperty.setNaturalKey(true);
+				cacheOptions.setNaturalKey(propName);
+			}
+		}
 		
 		if (!UseIndex.DEFAULT.equals(cacheStrategy.useIndex())){
 		    // a specific Lucene index strategy has been defined
