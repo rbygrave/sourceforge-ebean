@@ -36,14 +36,17 @@ public class LoadManyRequest extends LoadRequest {
 
 	private final boolean onlyIds;
 	
+	private final boolean loadCache;
+	
 	public LoadManyRequest(LoadManyContext loadContext,
 			List<BeanCollection<?>> batch, Transaction transaction,
-			int batchSize, boolean lazy, boolean onlyIds) {
+			int batchSize, boolean lazy, boolean onlyIds, boolean loadCache) {
 
 		super(transaction, batchSize, lazy);
 		this.loadContext = loadContext;
 		this.batch = batch;
 		this.onlyIds = onlyIds;
+		this.loadCache = loadCache;
 	}
 
 	public String getDescription() {
@@ -80,4 +83,11 @@ public class LoadManyRequest extends LoadRequest {
 		return onlyIds;
 	}
 
+	/**
+	 * Return true if we should load the Collection ids into the cache.
+	 */
+	public boolean isLoadCache() {
+    	return loadCache;
+    }
+	
 }

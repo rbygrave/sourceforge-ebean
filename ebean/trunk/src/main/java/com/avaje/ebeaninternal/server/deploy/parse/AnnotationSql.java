@@ -26,7 +26,6 @@ import com.avaje.ebeaninternal.server.deploy.DRawSqlMeta;
 /**
  * Read the class level deployment annotations.
  */
-@SuppressWarnings("deprecation")
 public class AnnotationSql extends AnnotationParser {
 
 	public AnnotationSql(DeployBeanInfo<?> info) {

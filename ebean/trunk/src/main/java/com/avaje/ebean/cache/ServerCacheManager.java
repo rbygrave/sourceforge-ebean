@@ -37,6 +37,8 @@ public interface ServerCacheManager {
 	 */
 	public void init(EbeanServer server);
 
+	public void setCaching(Class<?> beanType, boolean useCache);
+	
 	/**
 	 * Return true if there is an active bean cache for this type of bean.
 	 */
@@ -51,6 +53,8 @@ public interface ServerCacheManager {
 	 * Return the cache for beans of a particular type.
 	 */
 	public ServerCache getBeanCache(Class<?> beanType);
+
+	public ServerCache getCollectionIdsCache(Class<?> beanType);
 
 	/**
 	 * Return the cache for query results of a particular type of bean.

@@ -341,8 +341,13 @@ public class CQueryEngine {
         String loadDesc = query.getLoadDescription();
         String lazyLoadProp = query.getLazyLoadProperty();
         ObjectGraphNode node = query.getParentNode();
-        String originKey = node == null ? null : node.getOriginQueryPoint().getKey();
-        
+        String originKey;
+        if (node == null || node.getOriginQueryPoint() == null) {
+        	originKey = null;
+        } else {
+            originKey = node.getOriginQueryPoint().getKey();
+        }
+
         StringBuilder msg = new StringBuilder(200);
         msg.append("FindBean ");
         if (loadMode != null) {
@@ -378,7 +383,13 @@ public class CQueryEngine {
         String loadDesc = query.getLoadDescription();
         String lazyLoadProp = query.getLazyLoadProperty();
         ObjectGraphNode node = query.getParentNode();
-        String originKey = node == null ? null : node.getOriginQueryPoint().getKey();
+        
+        String originKey;
+        if (node == null || node.getOriginQueryPoint() == null) {
+        	originKey = null;
+        } else {
+            originKey = node.getOriginQueryPoint().getKey();
+        }
         
 		StringBuilder msg = new StringBuilder(200);
         msg.append("FindMany ");

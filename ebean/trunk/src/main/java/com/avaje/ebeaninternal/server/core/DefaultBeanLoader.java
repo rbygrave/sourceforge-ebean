@@ -164,10 +164,14 @@ public class DefaultBeanLoader {
 		// check for BeanCollection's that where never processed
 		// in the +query or +lazy load due to no rows (predicates)
 		for (int i = 0; i < batch.size(); i++) {
-		    if (batch.get(i).checkEmptyLazyLoad()) {
+			BeanCollection<?> bc = batch.get(i);
+		    if (bc.checkEmptyLazyLoad()) {
 		        if (logger.isLoggable(Level.FINE)){
 	                logger.fine("BeanCollection after load was empty. Owner:"+batch.get(i).getOwnerBean());
 		        }
+		    } else if (loadRequest.isLoadCache()) {
+		    	Object parentId = desc.getId(bc.getOwnerBean());
+		    	desc.cachePutMany(many, bc, parentId);
 		    }
         }
 	}
@@ -230,6 +234,14 @@ public class DefaultBeanLoader {
             pc = new DefaultPersistenceContext();    
             pc.put(parentId, parentBean);
         }
+		
+		boolean useManyIdCache = !vanilla && beanCollection != null && parentDesc.cacheIsUseManyId();
+		if (useManyIdCache){
+			boolean readOnly = ebi == null ? false : ebi.isReadOnly();
+			if (parentDesc.cacheLoadMany(many, beanCollection, parentId, readOnly, false)) {
+				return;
+			}
+		}
 
         SpiQuery<?> query = (SpiQuery<?>) server.createQuery(parentDesc.getBeanType());
 
@@ -278,6 +290,8 @@ public class DefaultBeanLoader {
                 if (logger.isLoggable(Level.FINE)){
                     logger.fine("BeanCollection after load was empty. Owner:"+beanCollection.getOwnerBean());
                 }
+		    } else if (useManyIdCache){
+		    	parentDesc.cachePutMany(many, beanCollection, parentId);
 		    }
 		}
 	}

@@ -101,9 +101,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
         this.vanillaMode = query.isVanillaMode(server.isVanillaMode());
         this.readOnly = isReadOnly(query);
 
-        int defaultBatchSize = server.getLazyLoadBatchSize();
-        this.graphContext = new DLoadContext(ebeanServer, beanDescriptor, defaultBatchSize, readOnly, query);
-
+        this.graphContext = new DLoadContext(ebeanServer, beanDescriptor, readOnly, query);
         graphContext.registerSecondaryQueries(query);
     }
 

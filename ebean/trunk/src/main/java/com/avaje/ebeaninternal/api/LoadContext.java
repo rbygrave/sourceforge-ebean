@@ -52,20 +52,9 @@ public interface LoadContext {
 	public void registerSecondaryQueries(SpiQuery<?> query);
 	
 	/**
-	 * Return true if autofetch should be used for 
-	 */
-	public boolean isUseAutofetchManager();
-	
-	/**
 	 * Return the node for a given path which is used by autofetch profiling.
 	 */
 	public ObjectGraphNode getObjectGraphNode(String path);
-	
-	/**
-	 * Return the parent state which defines the sharedInstance and readOnly status
-	 * which needs to be propagated to other beans and collections.
-	 */
-	public boolean isReadOnly();
 
 	/**
 	 * Return the persistence context used by this query and future lazy loading.
@@ -87,13 +76,4 @@ public interface LoadContext {
 	 */
 	public void register(String path, BeanCollection<?> bc);
 
-	/**
-	 * Return the LoadBeanContext for a given path.
-	 */
-	public LoadBeanContext getBeanContext(String path);
-
-	/**
-	 * Return the LoadManyContext for a given path.
-	 */
-	public LoadManyContext getManyContext(String path);
 }

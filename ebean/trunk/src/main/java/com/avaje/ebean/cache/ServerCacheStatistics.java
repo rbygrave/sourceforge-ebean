@@ -40,6 +40,17 @@ public class ServerCacheStatistics {
 	
 	protected int missCount;
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(cacheName);
+		sb.append(" size:").append(size);
+		sb.append(" hitRatio:").append(getHitRatio());
+		sb.append(" hitCount:").append(hitCount);
+		sb.append(" missCount:").append(missCount);
+		sb.append(" maxSize:").append(maxSize);
+		return sb.toString();
+	}
+	
 	/**
 	 * Return the name of the cache.
 	 */
