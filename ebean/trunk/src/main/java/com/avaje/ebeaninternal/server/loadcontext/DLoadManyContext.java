@@ -136,26 +136,41 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 				
 		int position = bc.getLoaderIndex();
 			
-		List<BeanCollection<?>> loadBatch = weakList.getLoadBatch(position, batchSize);
-				
-		LoadManyRequest req = new LoadManyRequest(this, loadBatch, null, batchSize, true, onlyIds);
+		LoadManyRequest req;
+		synchronized (weakList) {
+			boolean hitCache = desc.isBeanCaching() && !onlyIds && !parent.isExcludeBeanCache();
+		    if (hitCache){
+		    	Object ownerBean = bc.getOwnerBean();
+		    	BeanDescriptor<? extends Object> parentDesc = desc.getBeanDescriptor(ownerBean.getClass());
+		    	Object parentId = parentDesc.getId(ownerBean);
+		    	if (parentDesc.cacheLoadMany(property, bc, parentId, parent.isReadOnly(), false)) {
+		    		// we loaded the bean from cache
+		    		weakList.removeEntry(position);
+		    		return;	    			    		
+		    	}	    	
+		    }
+		    
+			List<BeanCollection<?>> loadBatch = weakList.getLoadBatch(position, batchSize);
+			req = new LoadManyRequest(this, loadBatch, null, batchSize, true, onlyIds, hitCache);
+		}		
 		parent.getEbeanServer().loadMany(req);
 	}
 	
 	public void loadSecondaryQuery(OrmQueryRequest<?> parentRequest, int requestedBatchSize, boolean all){
 
 	    do {
-    		List<BeanCollection<?>> batch = weakList.getNextBatch(requestedBatchSize);
-    		if (batch.size() == 0){
-    		    // there are no rows to read
+	    	LoadManyRequest req;
+			synchronized (weakList) {
+				List<BeanCollection<?>> batch = weakList.getNextBatch(requestedBatchSize);
+				if (batch.size() == 0){
+					return;
+				}
+        		req = new LoadManyRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, false, false);
+			}
+    		parent.getEbeanServer().loadMany(req);
+    		if (!all){
+    		    // queryFirst(batch)
     		    break;
-    		} else {
-        		LoadManyRequest req = new LoadManyRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, false);
-        		parent.getEbeanServer().loadMany(req);
-        		if (!all){
-        		    // queryFirst(batch)
-        		    break;
-        		}
     		}
 	    } while (true);
 	}

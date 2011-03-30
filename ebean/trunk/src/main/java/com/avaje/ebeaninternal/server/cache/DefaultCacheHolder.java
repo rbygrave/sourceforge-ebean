@@ -73,6 +73,14 @@ public class DefaultCacheHolder {
 		}
 	}
 
+	public void clearCache(String cacheKey) {
+
+		ServerCache cache = concMap.get(cacheKey);
+		if (cache != null) {
+			cache.clear();
+		}
+	}
+	
 	/**
 	 * Return true if there is an active cache for this bean type.
 	 */

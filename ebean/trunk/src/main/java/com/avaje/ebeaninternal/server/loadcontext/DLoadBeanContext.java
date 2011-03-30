@@ -135,65 +135,74 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 	        return;
 	    }
 		int position = ebi.getBeanLoaderIndex();
-
 		boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCaching();
-	    if (hitCache){
-	    	if (desc.loadFromCache(ebi)) {
-	    		// we loaded the bean from cache
-	    		weakList.removeEntry(position);
-	    		return;
-	    	}
-	    }
 		
-		// determine the set of beans to lazy load
-		List<EntityBeanIntercept> batch = weakList.getLoadBatch(position, batchSize);
-		if (hitCache && batchSize > 1){
-			List<EntityBeanIntercept> actualLoadBatch = new ArrayList<EntityBeanIntercept>(batchSize);	
-			List<EntityBeanIntercept> batchToCheck = batch;
-			while (true) {	
-				for (int i = 0; i < batchToCheck.size(); i++) {
-		            if (!desc.loadFromCache(batchToCheck.get(i))){
-		            	actualLoadBatch.add(batchToCheck.get(i));
+		LoadBeanRequest req;
+		synchronized (weakList) {
+		    if (hitCache){
+		    	if (desc.loadFromCache(ebi)) {
+		    		// we loaded the bean from cache
+		    		weakList.removeEntry(position);
+		    		return;
+		    	}
+		    }
+			
+			// determine the set of beans to lazy load
+			List<EntityBeanIntercept> batch = weakList.getLoadBatch(position, batchSize);
+			if (hitCache && batchSize > 1){
+				// check each of the beans in the batch to see if they are in the cache
+				List<EntityBeanIntercept> actualLoadBatch = new ArrayList<EntityBeanIntercept>(batchSize);
+				List<EntityBeanIntercept> batchToCheck = batch;
+				int skip = 0;
+				while (true) {	
+					// check each bean (not already checked) to see if it is in the cache
+					for (int i = skip; i < batchToCheck.size(); i++) {
+			            if (!desc.loadFromCache(batchToCheck.get(i))){
+			            	actualLoadBatch.add(batchToCheck.get(i));
+			            }
 		            }
-	            }
-				if (batchToCheck.size() < batchSize) {
-					break;
-				}
-				int more = batchSize - actualLoadBatch.size(); 
-				if (more < 0){
-					break;
-				}
-				// get some more to check 
-				batchToCheck = weakList.getLoadBatch(0, more);
-			} 
-			batch = actualLoadBatch;
+					skip = actualLoadBatch.size();
+					if (batchToCheck.size() < batchSize) {
+						break;
+					}
+					int more = batchSize - actualLoadBatch.size(); 
+					if (more <= 0){
+						break;
+					}
+					// get some more to check 
+					batchToCheck = weakList.getLoadBatch(0, more);
+				} 
+				batch = actualLoadBatch;
+			}
+	
+			if (batch.isEmpty()){
+				// we must have since loaded the bean we missed earlier
+				return;
+			}
+			req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
 		}
-
-		if (batch.isEmpty()){
-			// we must have since loaded the bean we missed earlier
-			return;
-		}
-		
-		LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
 		parent.getEbeanServer().loadBean(req);
 	}
 	
 	public void loadSecondaryQuery(OrmQueryRequest<?> parentRequest, int requestedBatchSize, boolean all) {
 		
 	    do {
-    		List<EntityBeanIntercept> batch = weakList.getNextBatch(requestedBatchSize);
-    		if (batch.size() == 0){
-    		    // there are no beans to load
+	    	LoadBeanRequest req;
+	    	synchronized (weakList) {
+	    		List<EntityBeanIntercept> batch = weakList.getNextBatch(requestedBatchSize);
+	    		if (batch.size() == 0){
+	    		    // there are no beans to load
+	    		    return;
+	    		} 
+				boolean loadCache = false;
+	    		req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null, loadCache);
+	    	}
+    		parent.getEbeanServer().loadBean(req);
+    		if (!all){
+    		    // queryFirst(batch)
     		    break;
-    		} else {
-    			boolean loadCache = false;
-        		LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null, loadCache);
-        		parent.getEbeanServer().loadBean(req);
-        		if (!all){
-        		    // queryFirst(batch)
-        		    break;
-        		}
     		}
+		
 	    } while(true);
 	}
 	

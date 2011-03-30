@@ -57,45 +57,49 @@ public class DLoadContext implements LoadContext {
 	private final DLoadBeanContext rootBeanContext;
 	
 	private final boolean readOnly;
-	private final boolean excludeBeanCache;
-	
+	private final boolean excludeBeanCache;	
 	private final int defaultBatchSize;
-
-	private PersistenceContext persistenceContext;
 	
 	/**
 	 * The path relative to the root of the object graph.
 	 */
-	private String relativePath;
-	
-	private ObjectGraphOrigin origin;
-	
-	private Map<String,ObjectGraphNode> nodePathMap = new HashMap<String, ObjectGraphNode>();
-	
-	private boolean useAutofetchManager;
-	
+	private final String relativePath;	
+	private final ObjectGraphOrigin origin;
+	private final boolean useAutofetchManager;
+
+	private final Map<String,ObjectGraphNode> nodePathMap = new HashMap<String, ObjectGraphNode>();
+		
+	private PersistenceContext persistenceContext;
 	private List<OrmQueryProperties> secQuery;
 
-	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, int defaultBatchSize, boolean readOnly, SpiQuery<?> query) {
+	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, boolean readOnly, SpiQuery<?> query) {
+		this(ebeanServer, rootDescriptor, readOnly, 
+				Boolean.FALSE.equals(query.isUseBeanCache()), 
+				query.getParentNode(),
+				query.getAutoFetchManager() != null);
+	}
+	
+	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, boolean readOnly, 
+			boolean excludeBeanCache, ObjectGraphNode parentNode, boolean useAutofetchManager) {
 		
-		this.defaultBatchSize = defaultBatchSize;
 		this.ebeanServer = ebeanServer;
+		this.defaultBatchSize = ebeanServer.getLazyLoadBatchSize();
 		this.rootDescriptor = rootDescriptor;
 		this.rootBeanContext = new DLoadBeanContext(this, rootDescriptor, null, defaultBatchSize, null);
 		this.readOnly = readOnly;
-		this.excludeBeanCache = Boolean.FALSE.equals(query.isUseBeanCache());
-		
-		ObjectGraphNode node = query.getParentNode();
-		if (node != null){
-			this.origin = node.getOriginQueryPoint();
-			this.relativePath = node.getPath();			
+		this.excludeBeanCache = excludeBeanCache;
+		this.useAutofetchManager = useAutofetchManager;		
+				
+		if (parentNode != null){
+			this.origin = parentNode.getOriginQueryPoint();
+			this.relativePath = parentNode.getPath();
+		} else {
+			this.origin = null;
+			this.relativePath = null;
 		}
-		
-		useAutofetchManager = query.getAutoFetchManager() != null;		
 	}	
 
-	
-	public boolean isExcludeBeanCache() {
+	protected boolean isExcludeBeanCache() {
     	return excludeBeanCache;
     }
 
@@ -227,7 +231,11 @@ public class DLoadContext implements LoadContext {
 		return ebeanServer;
 	}
 	
-	public boolean isReadOnly() {
+	/**
+	 * Return the parent state which defines the sharedInstance and readOnly status
+	 * which needs to be propagated to other beans and collections.
+	 */
+	protected boolean isReadOnly() {
 		return readOnly;
 	}
 	
@@ -247,7 +255,7 @@ public class DLoadContext implements LoadContext {
 		getManyContext(path).register(bc);
 	}
 	
-	public DLoadBeanContext getBeanContext(String path) {
+	private DLoadBeanContext getBeanContext(String path) {
 		if (path == null){
 			return rootBeanContext;
 		}
@@ -274,7 +282,7 @@ public class DLoadContext implements LoadContext {
 		}
 	}
 
-	public DLoadManyContext getManyContext(String path) {
+	private DLoadManyContext getManyContext(String path) {
 		if (path == null){
 			throw new RuntimeException("path is null?");
 		}
