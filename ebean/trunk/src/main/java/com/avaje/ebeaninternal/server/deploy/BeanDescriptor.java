@@ -1061,14 +1061,17 @@ public class BeanDescriptor<T> {
     /**
      * Return true if the persist request needs to notify the cache.
      */
-    public boolean isCacheNotify(boolean isInsertRequest){
+    public boolean isCacheNotify(){
 
-    	if (isInsertRequest) {
-    		// only invalidates query cache
-	        return queryCache != null;
-    	} else {
-	        return isBeanCaching() || queryCache != null;
+    	if (isBeanCaching()){
+    		return true;
+    	}
+    	for (int i = 0; i < propertiesOneImported.length; i++) {
+	        if (propertiesOneImported[i].getTargetDescriptor().isBeanCaching()){
+	        	return true;
+	        }
         }
+    	return false;
     }
 
     /**
@@ -1136,15 +1139,6 @@ public class BeanDescriptor<T> {
     }
     
     /**
-     * Remove a bean from the cache given its Id.
-     */
-    public void cacheRemove(Object id) {
-    	if (beanCache != null) {
-            beanCache.remove(id);
-        }
-    }
-    
-    /**
      * Clear the bean cache.
      */
     public void cacheClear() {
@@ -1201,14 +1195,24 @@ public class BeanDescriptor<T> {
     	cachePutCachedManyIds(parentId, many.getName(), ids);
     }
     
+	public void cacheRemoveCachedManyIds(Object parentId, String propertyName) {
+	    ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType, propertyName);
+	    collectionIdsCache.remove(parentId);
+    }
+	
+	public void cacheClearCachedManyIds(String propertyName) {
+	    ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType, propertyName);
+	    collectionIdsCache.clear();
+    }
+	
 	public CachedManyIds cacheGetCachedManyIds(Object parentId, String propertyName) {
-	    ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType);
-	    return (CachedManyIds)collectionIdsCache.get(propertyName+":"+parentId);
+	    ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType, propertyName);
+	    return (CachedManyIds)collectionIdsCache.get(parentId);
     }
 
 	public void cachePutCachedManyIds(Object parentId, String propertyName, CachedManyIds ids) {
-		ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType);
-		collectionIdsCache.put(propertyName+":"+parentId, ids);
+		ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType, propertyName);
+		collectionIdsCache.put(parentId, ids);
     }
 	
     /**
@@ -1242,7 +1246,42 @@ public class BeanDescriptor<T> {
     	return null;
     }
     
-
+    /**
+     * Remove a bean from the cache given its Id.
+     */
+    public void cacheRemove(Object id) {
+    	if (beanCache != null) {
+            beanCache.remove(id);
+        }
+    	for (int i = 0; i < propertiesOneImported.length; i++) {
+    		propertiesOneImported[i].cacheClear();
+        }	
+    }
+    
+    /**
+     * Remove a bean from the cache given its Id.
+     */
+    public void cacheDelete(Object id, PersistRequestBean<T> deleteRequest) {
+    	if (beanCache != null) {
+            beanCache.remove(id);
+        }
+    	for (int i = 0; i < propertiesOneImported.length; i++) {
+    		BeanPropertyAssocMany<?> many = propertiesOneImported[i].getRelationshipProperty();
+    		if (many != null){
+        		propertiesOneImported[i].cacheDelete(true, deleteRequest);    			
+    		}
+        }	
+    }
+    
+    public void cacheInsert(Object id, PersistRequestBean<T> insertRequest) {
+    	if (queryCache != null){
+    		queryCache.clear();
+    	}
+    	for (int i = 0; i < propertiesOneImported.length; i++) {
+    		propertiesOneImported[i].cacheDelete(false, insertRequest.getBean());
+    	}
+    }
+    
     /**
      * Update the cached bean data.
      */

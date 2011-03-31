@@ -54,7 +54,7 @@ public interface ServerCacheManager {
 	 */
 	public ServerCache getBeanCache(Class<?> beanType);
 
-	public ServerCache getCollectionIdsCache(Class<?> beanType);
+	public ServerCache getCollectionIdsCache(Class<?> beanType, String propertyName);
 
 	/**
 	 * Return the cache for query results of a particular type of bean.

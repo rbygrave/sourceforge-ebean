@@ -197,7 +197,7 @@ public abstract class BeanPropertyAssoc<T> extends BeanProperty {
 	public BeanDescriptor<T> getTargetDescriptor() {
 		return targetDescriptor;
 	}
-
+	
 	public boolean isSaveRecurseSkippable(Object bean) {
 		if (!saveRecurseSkippable){
 			// we have to saveRecurse even if the bean is not dirty
