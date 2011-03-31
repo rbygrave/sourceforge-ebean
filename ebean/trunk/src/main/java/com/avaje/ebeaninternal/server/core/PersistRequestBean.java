@@ -220,15 +220,15 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
 	public void notifyCache() {
 		if (notifyCache) {
-			beanDescriptor.queryCacheClear();
 			switch (type) {
             case INSERT:
-	            break;
+				beanDescriptor.cacheInsert(idValue, this);
+				break;
             case UPDATE:
 				beanDescriptor.cacheUpdate(idValue, this);
 	            break;
             case DELETE:
-				beanDescriptor.cacheRemove(idValue);
+				beanDescriptor.cacheDelete(idValue, this);
 	            break;
             default:
 	            throw new IllegalStateException("Invalid type "+type);
@@ -356,14 +356,12 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	@Override
 	public void setType(Type type) {
 		this.type = type;
+		notifyCache = beanDescriptor.isCacheNotify();
 		if (type == Type.DELETE || type == Type.UPDATE) {
 			if (oldValues == null) {
 				oldValues = bean;
 			}
-			notifyCache = beanDescriptor.isCacheNotify(false);
-		} else {
-			notifyCache = beanDescriptor.isCacheNotify(true);
-		}
+		} 
 	}
 
 	public BeanManager<T> getBeanManager() {

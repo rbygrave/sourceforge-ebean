@@ -66,8 +66,8 @@ public class DefaultServerCacheManager implements ServerCacheManager {
 	}
 
 	
-    public ServerCache getCollectionIdsCache(Class<?> beanType) {
-	    return collectionIdsCache.getCache(beanType.getName());
+    public ServerCache getCollectionIdsCache(Class<?> beanType, String propertyName) {
+	    return collectionIdsCache.getCache(beanType.getName()+"."+propertyName);
     }
 
 	public boolean isCollectionIdsCaching(Class<?> beanType) {

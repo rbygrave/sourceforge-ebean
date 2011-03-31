@@ -73,7 +73,8 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
     
     private String deleteByParentIdSql;
     private String deleteByParentIdInSql;
-    
+    BeanPropertyAssocMany<?> relationshipProperty;
+
     /**
      * Create based on deploy information of an EmbeddedId.
      */
@@ -135,9 +136,37 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         }
     }
 
-
+    public void setRelationshipProperty(BeanPropertyAssocMany<?> relationshipProperty){
+    	this.relationshipProperty = relationshipProperty;
+    }
     
-    public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
+    public BeanPropertyAssocMany<?> getRelationshipProperty() {
+    	return relationshipProperty;
+    }
+
+	public void cacheClear() {
+		if (targetDescriptor.isBeanCaching() && relationshipProperty != null) {
+			targetDescriptor.cacheClearCachedManyIds(relationshipProperty.getName());
+		}
+	}
+	
+	public void cacheDelete(boolean clearOnNull, Object bean) {
+		if (targetDescriptor.isBeanCaching() && relationshipProperty != null) {
+			Object assocBean = getValue(bean);
+			if (assocBean != null) {
+    			Object parentId = targetDescriptor.getId(assocBean);
+    			if (parentId != null) {
+    				targetDescriptor.cacheRemoveCachedManyIds(parentId, relationshipProperty.getName());
+    				return;
+    			}
+			}
+			if (clearOnNull) {
+				targetDescriptor.cacheClearCachedManyIds(relationshipProperty.getName());
+			}
+		}
+	}
+
+	public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
         
         if (embedded){
             BeanProperty embProp = embeddedPropsMap.get(remainder);

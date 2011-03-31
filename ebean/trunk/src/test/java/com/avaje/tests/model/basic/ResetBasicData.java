@@ -157,37 +157,38 @@ public class ResetBasicData {
 	private Customer insertCustomerFiona() {
 		
 		Customer c = createCustomer("Fiona", "12 Apple St", "West Coast Rd", 1, "2009-08-31");
-
-		c.setStatus(Customer.Status.ACTIVE);
-		Contact contact = new Contact("Fiona","Black");
-		contact.setEmail(contact.getLastName()+(contactEmailNum++)+"@test.com");
-		c.addContact(contact);
-		contact = new Contact("Tracy","Red");
-		contact.setEmail(contact.getLastName()+(contactEmailNum++)+"@test.com");
-		c.addContact(contact);
+		c.setStatus(Customer.Status.ACTIVE);		
+		
+		c.addContact(createContact("Fiona","Black"));
+		c.addContact(createContact("Tracy","Red"));
 
 		Ebean.save(c);
 		return c;
 	}
 	
-	   private Customer insertCustomerNoContacts(String name) {
-	        
-	        Customer c = createCustomer("Roger", "15 Kumera Way", "Bos town", 1, "2010-04-10");
-	        c.setName(name);
-	        c.setStatus(Customer.Status.ACTIVE);
+	public static Contact createContact(String firstName, String lastName) {
+		Contact contact = new Contact(firstName,lastName);
+		String email = contact.getLastName()+(contactEmailNum++)+"@test.com";
+		contact.setEmail(email.toLowerCase());
+		return contact;
+	}
+	
+	private Customer insertCustomerNoContacts(String name) {
 
-	        Ebean.save(c);
-	        return c;
-	    }
+		Customer c = createCustomer("Roger", "15 Kumera Way", "Bos town", 1, "2010-04-10");
+		c.setName(name);
+		c.setStatus(Customer.Status.ACTIVE);
+
+		Ebean.save(c);
+		return c;
+	}
 	
 	private Customer insertCustomerNoAddress() {
 		
 		Customer c = new Customer();
 		c.setName("Cust NoAddress");
 		c.setStatus(Customer.Status.NEW);
-		Contact contact = new Contact("Jack","Black");
-		contact.setEmail(contact.getLastName()+(contactEmailNum++)+"@othertest.com");
-		c.addContact(contact);
+		c.addContact(createContact("Jack","Black"));
 
 		Ebean.save(c);
 		return c;

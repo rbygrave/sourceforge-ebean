@@ -95,7 +95,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
     /**
      * Property on the 'child' bean that links back to the 'master'.
      */
-    BeanProperty childMasterProperty;
+    BeanPropertyAssocOne<?> childMasterProperty;
 
     boolean embeddedExportedProperties;
 
@@ -141,6 +141,9 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 				// find the property in the many that matches
 				// back to the master (Order in the OrderDetail bean)
 				childMasterProperty = initChildMasterProperty();
+				if (childMasterProperty != null){
+					childMasterProperty.setRelationshipProperty(this);
+				}
 			}
 
 			if (mapKey != null){
@@ -689,7 +692,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 	 * a ManyToOne bean association.
 	 * </p>
 	 */
-	private BeanProperty initChildMasterProperty() {
+	private BeanPropertyAssocOne<?> initChildMasterProperty() {
 
 		if (unidirectional){
 			return null;
@@ -701,8 +704,7 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
 
 		BeanPropertyAssocOne<?>[] ones = targetDesc.propertiesOne();
 		for (int i = 0; i < ones.length; i++) {
-
-			BeanPropertyAssocOne<?> prop = (BeanPropertyAssocOne<?>) ones[i];
+			BeanPropertyAssocOne<?> prop = ones[i];
 			if (mappedBy != null){
 				// match using mappedBy as property name
 				if (mappedBy.equalsIgnoreCase(prop.getName())) {
