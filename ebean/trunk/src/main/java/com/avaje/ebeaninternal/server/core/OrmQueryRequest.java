@@ -66,7 +66,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
 
     private final LoadContext graphContext;
 
-    private final boolean readOnly;
+    private final Boolean readOnly;
 
     private final RawSql rawSql;
 
@@ -99,20 +99,10 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
         this.queryEngine = queryEngine;
         this.query = query;
         this.vanillaMode = query.isVanillaMode(server.isVanillaMode());
-        this.readOnly = isReadOnly(query);
+        this.readOnly = query.isReadOnly();
 
         this.graphContext = new DLoadContext(ebeanServer, beanDescriptor, readOnly, query);
         graphContext.registerSecondaryQueries(query);
-    }
-
-    private boolean isReadOnly(SpiQuery<T> query) {
-        
-        Boolean queryReadOnly = query.isReadOnly();
-        if (queryReadOnly != null) {
-        	return queryReadOnly;
-        }
-
-        return false;
     }
 
     public void executeSecondaryQueries(int defaultQueryBatch) {
@@ -134,7 +124,7 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
     /**
      * Return the Normal, sharedInstance, ReadOnly state of this query.
      */
-    public boolean isReadOnly() {
+    public Boolean isReadOnly() {
         return readOnly;
     }
 

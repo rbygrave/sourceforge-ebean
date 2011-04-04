@@ -689,7 +689,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
             } else {
                 // use the default reference options
-                ref = desc.createReference(vanillaRefMode, id, null);
+                ref = desc.createReference(vanillaRefMode, null, id, null);
             }
 
             if (ctx != null && (ref instanceof EntityBean)) {
@@ -788,13 +788,15 @@ public final class DefaultServer implements SpiEbeanServer {
             return true;
 
         case MANDATORY:
-            if (t == null)
+            if (t == null) {
                 throw new PersistenceException("Transaction missing when MANDATORY");
+            }
             return true;
 
         case NEVER:
-            if (t != null)
+            if (t != null) {
                 throw new PersistenceException("Transaction exists for Transactional NEVER");
+            }
             return false;
 
         case SUPPORTS:
@@ -1218,9 +1220,9 @@ public final class DefaultServer implements SpiEbeanServer {
             return null;
         }
         
-        boolean readOnly = beanDescriptor.calculateReadOnly(query.isReadOnly());
+        //boolean readOnly = beanDescriptor.calculateReadOnly(query.isReadOnly());
     	boolean vanilla = query.isVanillaMode(vanillaMode);
-        Object cachedBean = beanDescriptor.cacheGetBean(query.getId(), vanilla, readOnly);
+        Object cachedBean = beanDescriptor.cacheGetBean(query.getId(), vanilla, query.isReadOnly());
         if (cachedBean != null){
         	if (context == null){
         		context = new DefaultPersistenceContext();

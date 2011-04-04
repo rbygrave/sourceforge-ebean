@@ -237,7 +237,10 @@ public class DefaultBeanLoader {
 		
 		boolean useManyIdCache = !vanilla && beanCollection != null && parentDesc.cacheIsUseManyId();
 		if (useManyIdCache){
-			boolean readOnly = ebi == null ? false : ebi.isReadOnly();
+			Boolean readOnly = null;
+			if (ebi != null && ebi.isReadOnly()) {
+				readOnly = Boolean.TRUE;
+			}
 			if (parentDesc.cacheLoadMany(many, beanCollection, parentId, readOnly, false)) {
 				return;
 			}
@@ -460,8 +463,5 @@ public class DefaultBeanLoader {
 			throw new PersistenceException(msg);
 		}
 		
-		if (!vanilla && desc.calculateUseCache(null)){
-			desc.cachePutBeanData(dbBean);	
-		}
 	}
 }

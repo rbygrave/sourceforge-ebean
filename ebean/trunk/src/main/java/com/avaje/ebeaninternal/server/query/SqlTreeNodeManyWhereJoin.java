@@ -105,7 +105,7 @@ public class SqlTreeNodeManyWhereJoin implements SqlTreeNode {
         // nothing to do here
     }
 
-    public void load(DbReadContext ctx, Object parentBean, boolean readOnly) throws SQLException {
+    public void load(DbReadContext ctx, Object parentBean) throws SQLException {
         // nothing to do here
     }
 

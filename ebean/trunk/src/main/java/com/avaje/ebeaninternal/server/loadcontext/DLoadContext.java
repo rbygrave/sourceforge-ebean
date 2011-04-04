@@ -56,7 +56,7 @@ public class DLoadContext implements LoadContext {
 	
 	private final DLoadBeanContext rootBeanContext;
 	
-	private final boolean readOnly;
+	private final Boolean readOnly;
 	private final boolean excludeBeanCache;	
 	private final int defaultBatchSize;
 	
@@ -72,14 +72,14 @@ public class DLoadContext implements LoadContext {
 	private PersistenceContext persistenceContext;
 	private List<OrmQueryProperties> secQuery;
 
-	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, boolean readOnly, SpiQuery<?> query) {
+	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, Boolean readOnly, SpiQuery<?> query) {
 		this(ebeanServer, rootDescriptor, readOnly, 
 				Boolean.FALSE.equals(query.isUseBeanCache()), 
 				query.getParentNode(),
 				query.getAutoFetchManager() != null);
 	}
 	
-	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, boolean readOnly, 
+	public DLoadContext(SpiEbeanServer ebeanServer, BeanDescriptor<?> rootDescriptor, Boolean readOnly, 
 			boolean excludeBeanCache, ObjectGraphNode parentNode, boolean useAutofetchManager) {
 		
 		this.ebeanServer = ebeanServer;
@@ -235,7 +235,7 @@ public class DLoadContext implements LoadContext {
 	 * Return the parent state which defines the sharedInstance and readOnly status
 	 * which needs to be propagated to other beans and collections.
 	 */
-	protected boolean isReadOnly() {
+	protected Boolean isReadOnly() {
 		return readOnly;
 	}
 	

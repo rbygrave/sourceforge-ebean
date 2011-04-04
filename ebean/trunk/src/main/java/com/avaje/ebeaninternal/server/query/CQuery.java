@@ -236,7 +236,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 	
 	private int executionTimeMicros;
 	
-	private final boolean readOnly;
+	private final Boolean readOnly;
 	
 	private final SpiExpressionList<?> filterMany;
 	
@@ -314,12 +314,12 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		}
 	}
 		
-	public boolean isReadOnly() {
+	public Boolean isReadOnly() {
         return readOnly;
     }
 
     public void propagateState(Object e) {
-        if (readOnly){
+        if (Boolean.TRUE.equals(readOnly)){
             if (e instanceof EntityBean){
                 ((EntityBean)e)._ebean_getIntercept().setReadOnly(true);
             }
@@ -547,7 +547,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 			    dataReader.incrementPos(1);
 			}
 	
-			rootNode.load(this, null, readOnly);
+			rootNode.load(this, null);
 	
 			return true;
 		}

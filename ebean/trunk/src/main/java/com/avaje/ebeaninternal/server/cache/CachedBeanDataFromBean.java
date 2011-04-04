@@ -70,13 +70,33 @@ public class CachedBeanDataFromBean {
             }
         }
         
+        Object sharableBean = null;
+        if (desc.isCacheSharableBeans() && ebi != null && loadedProps == null){
+        	if (ebi.isReadOnly()){
+        		sharableBean = bean;
+        	} else {
+        		// create a readOnly sharable instance by copying the data
+        		sharableBean = desc.createBean(false);
+        		BeanProperty[] propertiesId = desc.propertiesId();
+        		for (int i = 0; i < propertiesId.length; i++) {
+        			Object v = propertiesId[i].getValue(bean);
+        			propertiesId[i].setValue(sharableBean, v);
+                }
+        		BeanProperty[] propertiesNonTransient = desc.propertiesNonTransient();
+        		for (int i = 0; i < propertiesNonTransient.length; i++) {
+        			Object v = propertiesNonTransient[i].getValue(bean);
+        			propertiesNonTransient[i].setValue(sharableBean, v);
+                }
+        		EntityBeanIntercept ebi = ((EntityBean)sharableBean)._ebean_intercept();
+        		ebi.setReadOnly(true);
+        		ebi.setLoaded();
+        	}
+        }
         
-        return new CachedBeanData(extractProps, data, naturalKeyUpdate);
+        return new CachedBeanData(sharableBean, extractProps, data, naturalKeyUpdate);
     }
     
-    
     private boolean includeNonManyProperty(String name) {
-        
     	return loadedProps == null || loadedProps.contains(name);
     }
     
