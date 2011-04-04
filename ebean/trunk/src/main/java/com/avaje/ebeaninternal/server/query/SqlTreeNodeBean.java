@@ -196,7 +196,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 	/**
 	 * read the properties from the resultSet.
 	 */
-	public void load(DbReadContext ctx, Object parentBean, boolean readOnly) throws SQLException {
+	public void load(DbReadContext ctx, Object parentBean) throws SQLException {
 
 		// bean already existing in the persistence context
 		Object contextBean = null;
@@ -305,7 +305,7 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 		for (int i = 0; i < children.length; i++) {
 			// read each child... and let them set their
 			// values back to this localBean
-			children[i].load(ctx, localBean, readOnly);
+			children[i].load(ctx, localBean);
 		}
 
 		if (lazyLoadMany){

@@ -416,7 +416,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         		throw new RuntimeException();
     		} else {
 		    	boolean vanillaMode = false;
-		    	T ref  = targetDescriptor.createReference(vanillaMode, cacheData, null);
+		    	T ref  = targetDescriptor.createReference(vanillaMode, Boolean.FALSE, cacheData, null);
 		    	setValue(bean, ref);
 		    	if (oldValues != null){
 		    		setValue(oldValues, ref);
@@ -671,7 +671,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                     destRef = refDesc.createCopy(value, ctx, maxDepth - 1);
                     
                 } else {
-                    destRef = refDesc.createReference(ctx.isVanillaMode(), refId, destBean);
+                    destRef = refDesc.createReference(ctx.isVanillaMode(), null, refId, destBean);
                 }
                 setValue(destBean, destRef);
             }
@@ -808,12 +808,13 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             boolean vanillaMode = ctx.isVanillaMode();
             //ReferenceOptions options = ctx.getReferenceOptionsFor(beanProp);
             
+            Boolean readOnly = ctx.isReadOnly();
             Object ref;
             if (targetInheritInfo != null) {
 				// for inheritance hierarchy create the correct type for this row...
-                ref = rowDescriptor.createReference(vanillaMode, id, parent);
+                ref = rowDescriptor.createReference(vanillaMode, readOnly, id, parent);
             } else {
-                ref = targetDescriptor.createReference(vanillaMode, id, parent);
+                ref = targetDescriptor.createReference(vanillaMode, readOnly, id, parent);
             }
             
             Object existingBean = ctx.getPersistenceContext().putIfAbsent(id, ref);
@@ -905,11 +906,11 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
             } 
             boolean vanillaMode = ctx.isVanillaMode();
             Object parent = null;
-            Object ref = targetDescriptor.createReference(vanillaMode, id, parent);
+            Object ref = targetDescriptor.createReference(vanillaMode, ctx.isReadOnly(), id, parent);
             
             if (!vanillaMode){
                 EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept(); 
-                if (ctx.isReadOnly()) {
+                if (Boolean.TRUE.equals(ctx.isReadOnly())) {
                     ebi.setReadOnly(true);
                 }
                 persistCtx.put(id, ref);

@@ -167,7 +167,7 @@ public class BeanDescriptor<T> {
     /**
      * Flag indicating this bean has no relationships.
      */
-    private final boolean lookupReferenceBean;
+    private final boolean cacheSharableBeans;
 
     private final String lazyFetchIncludes;
 
@@ -507,8 +507,9 @@ public class BeanDescriptor<T> {
         this.propertiesManySave = listHelper.getManySave();
         this.propertiesManyDelete = listHelper.getManyDelete();
         this.propertiesManyToMany = listHelper.getManyToMany();
-        this.lookupReferenceBean = propertiesOne.length + propertiesMany.length == 0;
-
+        boolean noRelationships = propertiesOne.length + propertiesMany.length == 0;
+        this.cacheSharableBeans = noRelationships && cacheOptions.isReadOnly();
+        
         this.namesOfManyProps = deriveManyPropNames();
         this.namesOfManyPropsHash = namesOfManyProps.hashCode();
 
@@ -950,14 +951,6 @@ public class BeanDescriptor<T> {
         	return cacheOptions.isUseCache();
         }
     }
-    
-    public boolean calculateReadOnly(Boolean readOnly) {
-        if (readOnly != null) {
-            return readOnly;
-        } else {
-        	return cacheOptions.isReadOnly();
-        }
-    }
 
     /**
      * Return the cache options.
@@ -1164,7 +1157,7 @@ public class BeanDescriptor<T> {
         }
     }
 
-    public boolean cacheLoadMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId, boolean readOnly, boolean vanilla) {
+    public boolean cacheLoadMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId, Boolean readOnly, boolean vanilla) {
 	    CachedManyIds ids = cacheGetCachedManyIds(parentId, many.getName());
 		if (ids != null){
 			BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
@@ -1174,7 +1167,7 @@ public class BeanDescriptor<T> {
 			bc.checkEmptyLazyLoad();
 			for (int i = 0; i < idList.size(); i++) {
 				Object id = idList.get(i);
-				Object refBean = targetDescriptor.createReference(vanilla, id, null);
+				Object refBean = targetDescriptor.createReference(vanilla, readOnly, id, null);
 				loadContext.register(null, ((EntityBean)refBean)._ebean_getIntercept());
 				many.add(bc, refBean);
 	        }
@@ -1219,15 +1212,22 @@ public class BeanDescriptor<T> {
      * Return a bean from the bean cache.
      */
     @SuppressWarnings("unchecked")
-    public T cacheGetBean(Object id, boolean vanilla, boolean readOnly) {
+    public T cacheGetBean(Object id, boolean vanilla, Boolean readOnly) {
 
     	CachedBeanData d = (CachedBeanData) getBeanCache().get(id);
         if (d == null){
         	return null;
         }
+        if (cacheSharableBeans && !vanilla && !Boolean.FALSE.equals(readOnly)){
+        	Object bean = d.getSharableBean();
+        	if (bean != null){
+        		return (T)bean;
+        	}
+        }
+        
         T bean = (T)createBean(vanilla);
         convertSetId(id, bean);
-        if (!vanilla && readOnly){
+        if (!vanilla && Boolean.TRUE.equals(readOnly)){
         	((EntityBean)bean)._ebean_getIntercept().setReadOnly(true);
         }
         
@@ -1665,8 +1665,17 @@ public class BeanDescriptor<T> {
      * Create a reference bean based on the id.
      */
     @SuppressWarnings("unchecked")
-    public T createReference(boolean vanillaMode, Object id, Object parent) {
+    public T createReference(boolean vanillaMode, Boolean readOnly, Object id, Object parent) {
 
+    	if (cacheSharableBeans && !vanillaMode && !Boolean.FALSE.equals(readOnly)){
+			CachedBeanData d = (CachedBeanData) getBeanCache().get(id);
+	        if (d != null){
+	        	Object shareableBean = d.getSharableBean();
+	        	if (shareableBean != null){
+	        		return (T)shareableBean;
+	        	}
+	        }
+    	}
         try {
             Object bean = createBean(vanillaMode);
 
@@ -2093,13 +2102,14 @@ public class BeanDescriptor<T> {
     }
 
     /**
-     * Return true if this bean has no relationships.
+     * Return true if this bean can cache sharable instances.
      * <p>
-     * This means a readOnly instance is sharable.
+     * This means is has no relationships and has readOnly=true in
+     * its cache options.
      * </p>
      */
-    public boolean isLookupReferenceBean() {
-    	return lookupReferenceBean;
+    public boolean isCacheSharableBeans() {
+    	return cacheSharableBeans;
     }
 
 	/**

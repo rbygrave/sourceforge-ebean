@@ -40,7 +40,7 @@ public class CachedBeanDataUpdate {
     		loadedProperties = mergeProps;
     	}
     	
-    	return new CachedBeanData(loadedProperties, copyOfData, naturalKeyUpdate);
+    	return new CachedBeanData(null, loadedProperties, copyOfData, naturalKeyUpdate);
         
     }
     

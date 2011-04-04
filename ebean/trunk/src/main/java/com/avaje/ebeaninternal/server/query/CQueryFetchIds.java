@@ -286,8 +286,8 @@ public class CQueryFetchIds {
             return false;
         }
 
-		public boolean isReadOnly() {
-			return false;
+		public Boolean isReadOnly() {
+			return Boolean.FALSE;
 		}
 		
 		public boolean isRawSql() {

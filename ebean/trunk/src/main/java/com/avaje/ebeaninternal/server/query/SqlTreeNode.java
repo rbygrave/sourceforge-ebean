@@ -50,6 +50,6 @@ public interface SqlTreeNode {
 	 * </p>
 	 * 
 	 */
-	public void load(DbReadContext ctx, Object parentBean, boolean readOnly) throws SQLException;
+	public void load(DbReadContext ctx, Object parentBean) throws SQLException;
 
 }
