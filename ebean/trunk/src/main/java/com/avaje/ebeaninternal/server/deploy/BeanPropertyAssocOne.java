@@ -826,7 +826,7 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
                 
             } else if (!vanillaMode){
                 EntityBeanIntercept ebi = ((EntityBean) ref)._ebean_getIntercept();
-                if (ctx.isReadOnly()){
+                if (Boolean.TRUE.equals(ctx.isReadOnly())){
                     ebi.setReadOnly(true);
                 }
                 ctx.register(name, ebi);
