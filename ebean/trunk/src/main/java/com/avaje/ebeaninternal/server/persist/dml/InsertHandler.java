@@ -255,7 +255,6 @@ public class InsertHandler extends DmlHandler {
 		}
 	}
 
-	@Override
     public void registerDerivedRelationship(DerivedRelationshipData derivedRelationship) {
 	    persistRequest.getTransaction().registerDerivedRelationship(derivedRelationship);
     }
