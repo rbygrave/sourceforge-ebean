@@ -103,7 +103,7 @@ public class ImportedIdEmbedded implements ImportedId {
 		return !ValueUtil.areEqual(id, oldId);
 	}
 	
-	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
+	public Object bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 
         Object embeddedId = null;
 
@@ -126,6 +126,8 @@ public class ImportedIdEmbedded implements ImportedId {
 			    }
 			}
 		}
+		// hmmm, not worrying about this just yet
+		return null;
 	}
 
 	public void buildImport(IntersectionRow row, Object other){

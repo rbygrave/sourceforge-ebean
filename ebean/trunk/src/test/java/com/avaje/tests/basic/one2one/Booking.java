@@ -14,7 +14,7 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 
 @Entity
-@Table(name = "booking")
+@Table(name = "drel_booking")
 public class Booking {
 
 	@Id @GeneratedValue(strategy = GenerationType.SEQUENCE)

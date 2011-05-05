@@ -388,7 +388,7 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void insert(PersistRequestBean<?> request) {
 
-		if (request.isRegisteredVanillaBean()){
+		if (request.isRegisteredBean()){
 			// skip as already inserted/updated in this transaction
 			return;
 		}
@@ -402,7 +402,6 @@ public final class DefaultPersister implements Persister {
 		// set the IDGenerated value if required
 		setIdGenValue(request);
 		request.executeOrQueue();
-		request.registerVanillaBean();
 		
 		if (request.isPersistCascade()) {
 			// save any associated List held beans
@@ -415,7 +414,7 @@ public final class DefaultPersister implements Persister {
 	 */
 	private void update(PersistRequestBean<?> request) {
 
-		if (request.isRegisteredVanillaBean()){
+		if (request.isRegisteredBean()){
 			// skip as already inserted/updated in this transaction
 			return;
 		}
@@ -428,7 +427,6 @@ public final class DefaultPersister implements Persister {
 
 		if (request.isDirty()) {
 			request.executeOrQueue();
-			request.registerVanillaBean();
 
 		} else {
 			// skip validation on unchanged bean
@@ -449,7 +447,7 @@ public final class DefaultPersister implements Persister {
 	public void delete(Object bean, Transaction t) {
 
 		PersistRequestBean<?> req = createRequest(bean, t, null);
-		if (req.isRegistered()) {
+		if (req.isRegisteredBean()) {
 			// skip deleting bean. Used where cascade is on
 			// both sides of a relationship
 			if (logger.isLoggable(Level.FINE)) {
@@ -637,11 +635,8 @@ public final class DefaultPersister implements Persister {
 		}
 
 		if (request.isPersistCascade()) {
-			// delete children first ... register the
-			// bean to handle bi-directional cascading
-			request.registerBean();
+			// delete children first 
 			deleteAssocMany(request);
-			request.unregisterBean();
 
 			unloadedForeignKeys = getDeleteUnloadedForeignKeys(request);
 			if (unloadedForeignKeys != null) {

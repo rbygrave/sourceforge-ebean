@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 
 @Entity
-@Table(name="invoice")
+@Table(name="drel_invoice")
 public class Invoice {
 
 	@Id @GeneratedValue(strategy = GenerationType.SEQUENCE)

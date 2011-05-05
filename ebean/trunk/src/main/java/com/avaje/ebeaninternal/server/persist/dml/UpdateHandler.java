@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
 
+import com.avaje.ebeaninternal.api.DerivedRelationshipData;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.SpiUpdatePlan;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
@@ -114,4 +115,9 @@ public class UpdateHandler extends DmlHandler {
 		return prop.isDbUpdatable() && (updatedProperties == null || updatedProperties.contains(prop.getName()));
 	}
 
+	@Override
+    public void registerDerivedRelationship(DerivedRelationshipData derivedRelationship) {
+	    persistRequest.getTransaction().registerDerivedRelationship(derivedRelationship);
+    }
+	
 }

@@ -58,7 +58,7 @@ public interface ImportedId {
 	/**
 	 * Bind the value from the bean.
 	 */
-	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException;
+	public Object bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException;
 
 	/**
 	 * For inserting into ManyToMany intersection.

@@ -141,13 +141,14 @@ public final class ImportedIdSimple implements ImportedId, Comparable<ImportedId
 		return true;
 	}
 
-	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
+	public Object bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 
 		Object value = null;
 		if (bean != null){
 			value = getIdValue(bean);
 		}
 		request.bind(value, foreignProperty, localDbColumn, bindNull);
+		return value;
 	}
 
 	public BeanProperty findMatchImport(String matchDbColumn) {

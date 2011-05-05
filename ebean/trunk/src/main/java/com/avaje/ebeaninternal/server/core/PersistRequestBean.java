@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.core;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.OptimisticLockException;
@@ -31,6 +32,7 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanPersistRequest;
+import com.avaje.ebeaninternal.api.DerivedRelationshipData;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEvent;
@@ -274,24 +276,6 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 		return o == parentBean;
 	}
 
-	/**
-	 * The hash used to register the bean with the transaction.
-	 * <p>
-	 * Takes into account the class type and id value.
-	 * </p>
-	 */
-	private Integer getBeanHash() {
-		if (beanHash == null) {
-			Object id = beanDescriptor.getId(bean);
-			int hc = 31 * bean.getClass().getName().hashCode();
-			if (id != null) {
-				hc += id.hashCode();
-			}
-			beanHash = Integer.valueOf(hc);
-		}
-		return beanHash;
-	}
-
 	private Integer getBeanIdentityHash() {
 		if (beanIdentityHash == null) {
 			beanIdentityHash = Integer.valueOf(System.identityHashCode(bean));
@@ -300,53 +284,16 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	}
 
 	/**
-	 * Register this bean as having been inserted/updated in this transaction
-	 * (so as not to insert/update twice).
-	 * <p>
-	 * Only need to register non entity beans.
-	 * </p>
+	 * Return true if this bean has been already been persisted 
+	 * (inserted/updated or deleted) in this transaction.
 	 */
-	public void registerVanillaBean() {
-		if (intercept == null) {
-			transaction.registerBean(getBeanIdentityHash());
+	public boolean isRegisteredBean() {
+		Integer hash = getBeanIdentityHash();
+		boolean registered = transaction.isRegisteredBean(hash);
+		if (!registered){
+			transaction.registerBean(hash);
 		}
-	}
-
-	/**
-	 * Return true if this bean has been already inserted/updated in this
-	 * transaction.
-	 */
-	public boolean isRegisteredVanillaBean() {
-		if (intercept == null) {
-			return transaction.isRegisteredBean(getBeanIdentityHash());
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Register this bean with the transaction. Used to detect Cascade delete on
-	 * both sides of a relationship.
-	 */
-	public void registerBean() {
-		transaction.registerBean(getBeanHash());
-	}
-
-	/**
-	 * Unregister the bean from the transaction.
-	 */
-	public void unregisterBean() {
-		transaction.unregisterBean(getBeanHash());
-	}
-
-	/**
-	 * Return true if this bean has been registered with the transaction.
-	 */
-	public boolean isRegistered() {
-		if (transaction == null) {
-			return false;
-		}
-		return transaction.isRegisteredBean(getBeanHash());
+		return registered;
 	}
 
 	/**
@@ -732,5 +679,9 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 
 		return changedProps.contains(prop.getName());
 	}
+
+	public List<DerivedRelationshipData> getDerivedRelationships() {
+	    return transaction.getDerivedRelationship(bean);
+    }
 
 }

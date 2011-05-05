@@ -85,7 +85,7 @@ public class ImportedIdMultiple implements ImportedId {
 	}
 
 	
-	public void bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
+	public Object bind(BindableRequest request, Object bean, boolean bindNull) throws SQLException {
 		
 		for (int i = 0; i < imported.length; i++) {
 		    if (imported[i].owner.isUpdateable()) {
@@ -93,6 +93,8 @@ public class ImportedIdMultiple implements ImportedId {
     			request.bind(scalarValue, imported[i].foreignProperty, imported[i].localDbColumn, true);
 		    }
 		}
+		// hmmm, not worrying about this just yet
+		return null;
 	}
 	
 	public void buildImport(IntersectionRow row, Object other){
