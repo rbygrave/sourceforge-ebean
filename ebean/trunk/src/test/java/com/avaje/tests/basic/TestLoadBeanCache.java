@@ -27,15 +27,6 @@ public class TestLoadBeanCache extends TestCase {
 		// this will hit the cache
 		Country nz = Ebean.find(Country.class, "NZ");
 		
-		Assert.assertTrue(loadedNz != nz);
-		
-		Map<?, Country> map2 = Ebean.find(Country.class)
-			.setLoadBeanCache(true)
-			.setUseQueryCache(true)
-			.setReadOnly(true)
-			.order("name")
-			.findMap();
-		
-		Assert.assertTrue("same instance", map == map2);
+		Assert.assertTrue(loadedNz == nz);
 	}
 }
