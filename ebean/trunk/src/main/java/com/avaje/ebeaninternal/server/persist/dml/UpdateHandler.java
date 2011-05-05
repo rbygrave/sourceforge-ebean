@@ -115,7 +115,6 @@ public class UpdateHandler extends DmlHandler {
 		return prop.isDbUpdatable() && (updatedProperties == null || updatedProperties.contains(prop.getName()));
 	}
 
-	@Override
     public void registerDerivedRelationship(DerivedRelationshipData derivedRelationship) {
 	    persistRequest.getTransaction().registerDerivedRelationship(derivedRelationship);
     }

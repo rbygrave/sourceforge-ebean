@@ -174,7 +174,6 @@ public class JdbcTransaction implements SpiTransaction {
     	return derivedRelMap.get(key);
     }
     
-	@Override
     public void registerDerivedRelationship(DerivedRelationshipData derivedRelationship) {
 	    if (derivedRelMap == null){
 	    	derivedRelMap = new HashMap<Integer, List<DerivedRelationshipData>>();

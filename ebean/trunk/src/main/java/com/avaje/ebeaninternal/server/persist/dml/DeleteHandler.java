@@ -92,7 +92,6 @@ public class DeleteHandler extends DmlHandler {
         return prop.isDbUpdatable() && (loadedProps == null || loadedProps.contains(prop.getName()));    
     }
 
-	@Override
     public void registerDerivedRelationship(DerivedRelationshipData assocBean) {
 	    throw new RuntimeException("Never called on delete");
     }
