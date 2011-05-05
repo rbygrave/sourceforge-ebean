@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.transaction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -34,6 +35,7 @@ import javax.persistence.RollbackException;
 import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.config.lucene.IndexUpdateFuture;
+import com.avaje.ebeaninternal.api.DerivedRelationshipData;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.server.lucene.LIndexUpdateFuture;
@@ -136,6 +138,8 @@ public class JdbcTransaction implements SpiTransaction {
 		
 	List<LIndexUpdateFuture> indexUpdateFutures;
 	
+	HashMap<Integer,List<DerivedRelationshipData>> derivedRelMap;
+
 	/**
 	 * Create a new JdbcTransaction.
 	 */
@@ -162,6 +166,29 @@ public class JdbcTransaction implements SpiTransaction {
 	}
 
 	
+    public List<DerivedRelationshipData> getDerivedRelationship(Object bean) {
+    	if (derivedRelMap == null){
+    		return null;
+    	}
+    	Integer key = Integer.valueOf(System.identityHashCode(bean));
+    	return derivedRelMap.get(key);
+    }
+    
+	@Override
+    public void registerDerivedRelationship(DerivedRelationshipData derivedRelationship) {
+	    if (derivedRelMap == null){
+	    	derivedRelMap = new HashMap<Integer, List<DerivedRelationshipData>>();
+	    }
+	    Integer key = Integer.valueOf(System.identityHashCode(derivedRelationship.getAssocBean()));
+	   
+	    List<DerivedRelationshipData> list = derivedRelMap.get(key);
+	    if (list == null){
+	    	list = new ArrayList<DerivedRelationshipData>();
+	    	derivedRelMap.put(key, list);
+	    }
+	    list.add(derivedRelationship);
+    }
+
 	public void addIndexUpdateFuture(LIndexUpdateFuture future) {
         if (indexUpdateFutures == null){
             indexUpdateFutures = new ArrayList<LIndexUpdateFuture>();

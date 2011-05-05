@@ -24,11 +24,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebeaninternal.api.DerivedRelationshipData;
 import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.core.Message;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
@@ -164,8 +168,26 @@ public class InsertHandler extends DmlHandler {
 
 		checkRowCount(rc);
 		setAdditionalProperties();
+		executeDerivedRelationships();
 	}
 	
+    protected void executeDerivedRelationships() {
+    	List<DerivedRelationshipData> derivedRelationships = persistRequest.getDerivedRelationships();
+    	if (derivedRelationships != null) {
+    		for (int i = 0; i < derivedRelationships.size(); i++) {
+    			DerivedRelationshipData derivedRelationshipData = derivedRelationships.get(i);
+    			
+    			Integer hash = Integer.valueOf(System.identityHashCode(derivedRelationshipData.getBean()));
+    			transaction.unregisterBean(hash);
+    			
+    			EbeanServer ebeanServer = persistRequest.getEbeanServer();
+    			HashSet<String> updateProps = new HashSet<String>();
+    			updateProps.add(derivedRelationshipData.getLogicalName());
+    			ebeanServer.update(derivedRelationshipData.getBean(), updateProps, transaction, false, true);
+            }
+    	}
+    }
+    
 	/**
 	 * For non batch insert with generated keys.
 	 */
@@ -232,4 +254,10 @@ public class InsertHandler extends DmlHandler {
 			}
 		}
 	}
+
+	@Override
+    public void registerDerivedRelationship(DerivedRelationshipData derivedRelationship) {
+	    persistRequest.getTransaction().registerDerivedRelationship(derivedRelationship);
+    }
+	
 }

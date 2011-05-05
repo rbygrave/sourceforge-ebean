@@ -21,6 +21,7 @@ package com.avaje.ebeaninternal.server.persist.dmlbind;
 
 import java.sql.SQLException;
 
+import com.avaje.ebeaninternal.api.DerivedRelationshipData;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 
@@ -92,4 +93,6 @@ public interface BindableRequest {
 	 * Return the original PersistRequest.
 	 */
 	public PersistRequestBean<?> getPersistRequest();
+
+	public void registerDerivedRelationship(DerivedRelationshipData assocBean);
 }

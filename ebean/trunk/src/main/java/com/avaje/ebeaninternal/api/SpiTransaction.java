@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.api;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.PersistenceContext;
@@ -60,6 +61,16 @@ public interface SpiTransaction extends Transaction {
      * Return the buffer containing transaction log messages.
      */
     public TransactionLogBuffer getLogBuffer();
+    
+    /**
+     * Register a "Derived Relationship" (that requires an additional update).
+     */
+	public void registerDerivedRelationship(DerivedRelationshipData assocBean);
+    
+	/**
+	 * Return the list of "Derived Relationships" that must be maintained after insert.
+	 */
+	public List<DerivedRelationshipData> getDerivedRelationship(Object bean);
     
 	/**
 	 * Add a bean to the registed list.
