@@ -1056,7 +1056,7 @@ public class BeanDescriptor<T> {
      */
     public boolean isCacheNotify(){
 
-    	if (isBeanCaching()){
+    	if (isBeanCaching() || isQueryCaching()){
     		return true;
     	}
     	for (int i = 0; i < propertiesOneImported.length; i++) {
