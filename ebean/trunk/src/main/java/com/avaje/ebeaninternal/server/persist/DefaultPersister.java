@@ -447,7 +447,7 @@ public final class DefaultPersister implements Persister {
 	public void delete(Object bean, Transaction t) {
 
 		PersistRequestBean<?> req = createRequest(bean, t, null);
-		if (req.isRegisteredBean()) {
+		if (req.isRegisteredForDeleteBean()) {
 			// skip deleting bean. Used where cascade is on
 			// both sides of a relationship
 			if (logger.isLoggable(Level.FINE)) {
@@ -455,7 +455,6 @@ public final class DefaultPersister implements Persister {
 			}
 			return;
 		}
-
 		req.setType(PersistRequest.Type.DELETE);
 		try {
 			req.initTransIfRequired();
@@ -635,8 +634,11 @@ public final class DefaultPersister implements Persister {
 		}
 
 		if (request.isPersistCascade()) {
-			// delete children first 
+			// delete children first ... register the
+			// bean to handle bi-directional cascading
+			request.registerDeleteBean();
 			deleteAssocMany(request);
+			request.unregisterDeleteBean();
 
 			unloadedForeignKeys = getDeleteUnloadedForeignKeys(request);
 			if (unloadedForeignKeys != null) {

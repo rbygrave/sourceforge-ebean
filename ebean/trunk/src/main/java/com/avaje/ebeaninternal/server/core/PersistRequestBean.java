@@ -295,6 +295,43 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 		}
 		return registered;
 	}
+	
+	/**
+	 * The hash used to register the bean with the transaction.
+	 * <p>
+	 * Takes into account the class type and id value.
+	 * </p>
+	 */
+	private Integer getBeanHash() {
+		if (beanHash == null) {
+			Object id = beanDescriptor.getId(bean);
+			int hc = 31 * bean.getClass().getName().hashCode();
+			if (id != null) {
+				hc += id.hashCode();
+			}
+			beanHash = Integer.valueOf(hc);
+		}
+		return beanHash;
+	}
+	
+	public void registerDeleteBean() {
+		Integer hash = getBeanHash();
+		transaction.registerBean(hash);
+	}
+	
+	public void unregisterDeleteBean() {
+		Integer hash = getBeanHash();
+		transaction.unregisterBean(hash);
+	}
+	
+	public boolean isRegisteredForDeleteBean() {
+		if (transaction == null){
+			return false;
+		} else {
+			Integer hash = getBeanHash();
+			return transaction.isRegisteredBean(hash);
+		}
+	}
 
 	/**
 	 * Set the type of this request. One of INSERT, UPDATE, DELETE, UPDATESQL or
