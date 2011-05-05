@@ -50,7 +50,7 @@ public class TestCarWheelIud extends TestCase {
 		Ebean.save(car);
 
 		// And I'm trying to delete this entry with code:
-		Car car2 = Ebean.find(Car.class, 1);
+		Car car2 = Ebean.find(Car.class, car.getId());
 
 		Ebean.delete(car2);
 

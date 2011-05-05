@@ -18,27 +18,25 @@ public class TestQueryCacheInsert extends TestCase {
 		EBasicVer account = new EBasicVer();
 		server.save(account);
 
-		List<EBasicVer> accounts =
+		List<EBasicVer> alist0 =
 		        server.find(EBasicVer.class)
 		                .setUseQueryCache(true)
 		                .findList();
 
-		int sizeOne = accounts.size();
+		
 
-		account = new EBasicVer();
-		server.save(account);
+		EBasicVer a2 = new EBasicVer();
+		server.save(a2);
 
-		accounts = server.find(EBasicVer.class)
+		List<EBasicVer>  alist1 = server.find(EBasicVer.class)
 		        .setUseQueryCache(true)
 		        .findList();
 
-		List<EBasicVer> noQueryCacheList = server.find(EBasicVer.class)
-	        .setUseQueryCache(false)
-	        .findList();
 		
-		int sizeTwo = accounts.size();
-		
-		Assert.assertTrue(sizeOne != sizeTwo);
-		Assert.assertTrue(sizeOne != noQueryCacheList.size());
+		Assert.assertEquals(alist0.size()+1,alist1.size());
+//		List<EBasicVer> noQueryCacheList = server.find(EBasicVer.class)
+//        .setUseQueryCache(false)
+//        .findList();
+//		Assert.assertTrue(sizeOne != noQueryCacheList.size());
 	}
 }
