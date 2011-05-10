@@ -389,25 +389,29 @@ public final class DefaultPersister implements Persister {
 	private void insert(PersistRequestBean<?> request) {
 
 		if (request.isRegisteredBean()){
-			// skip as already inserted/updated in this transaction
+			// skip as already inserted/updated in this request (recursive cascading)
 			return;
 		}
-		request.setType(PersistRequest.Type.INSERT);
-
-		if (request.isPersistCascade()) {
-			// save associated One beans recursively first
-			saveAssocOne(request);
-		}
-
-		// set the IDGenerated value if required
-		setIdGenValue(request);
-		request.executeOrQueue();
 		
-		if (request.isPersistCascade()) {
-			// save any associated List held beans
-			saveAssocMany(true, request);
+		try {
+			request.setType(PersistRequest.Type.INSERT);
+	
+			if (request.isPersistCascade()) {
+				// save associated One beans recursively first
+				saveAssocOne(request);
+			}
+	
+			// set the IDGenerated value if required
+			setIdGenValue(request);
+			request.executeOrQueue();
+			
+			if (request.isPersistCascade()) {
+				// save any associated List held beans
+				saveAssocMany(true, request);
+			}
+		} finally {
+			request.unRegisterBean();
 		}
-		request.unRegisterBean();
 	}
 
 	/**
@@ -416,31 +420,35 @@ public final class DefaultPersister implements Persister {
 	private void update(PersistRequestBean<?> request) {
 
 		if (request.isRegisteredBean()){
-			// skip as already inserted/updated in this transaction
+			// skip as already inserted/updated in this request (recursive cascading)
 			return;
 		}
-		// we have determined that it is an update
-		request.setType(PersistRequest.Type.UPDATE);
-		if (request.isPersistCascade()) {
-			// save associated One beans recursively first
-			saveAssocOne(request);
-		}
-
-		if (request.isDirty()) {
-			request.executeOrQueue();
-
-		} else {
-			// skip validation on unchanged bean
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine(Message.msg("persist.update.skipped", request.getBean()));
+		
+		try {
+			// we have determined that it is an update
+			request.setType(PersistRequest.Type.UPDATE);
+			if (request.isPersistCascade()) {
+				// save associated One beans recursively first
+				saveAssocOne(request);
 			}
+	
+			if (request.isDirty()) {
+				request.executeOrQueue();
+	
+			} else {
+				// skip validation on unchanged bean
+				if (logger.isLoggable(Level.FINE)) {
+					logger.fine(Message.msg("persist.update.skipped", request.getBean()));
+				}
+			}
+	
+			if (request.isPersistCascade()) {
+				// save all the beans in assocMany's after
+				saveAssocMany(false, request);
+			}
+		} finally {
+			request.unRegisterBean();
 		}
-
-		if (request.isPersistCascade()) {
-			// save all the beans in assocMany's after
-			saveAssocMany(false, request);
-		}
-		request.unRegisterBean();
 	}
 
 	/**
