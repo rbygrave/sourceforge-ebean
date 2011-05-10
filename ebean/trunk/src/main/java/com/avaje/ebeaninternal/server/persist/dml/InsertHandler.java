@@ -176,10 +176,7 @@ public class InsertHandler extends DmlHandler {
     	if (derivedRelationships != null) {
     		for (int i = 0; i < derivedRelationships.size(); i++) {
     			DerivedRelationshipData derivedRelationshipData = derivedRelationships.get(i);
-    			
-    			Integer hash = Integer.valueOf(System.identityHashCode(derivedRelationshipData.getBean()));
-    			transaction.unregisterBean(hash);
-    			
+    						
     			EbeanServer ebeanServer = persistRequest.getEbeanServer();
     			HashSet<String> updateProps = new HashSet<String>();
     			updateProps.add(derivedRelationshipData.getLogicalName());

@@ -276,24 +276,16 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 		return o == parentBean;
 	}
 
-	private Integer getBeanIdentityHash() {
-		if (beanIdentityHash == null) {
-			beanIdentityHash = Integer.valueOf(System.identityHashCode(bean));
-		}
-		return beanIdentityHash;
-	}
-
 	/**
 	 * Return true if this bean has been already been persisted 
 	 * (inserted/updated or deleted) in this transaction.
 	 */
 	public boolean isRegisteredBean() {
-		Integer hash = getBeanIdentityHash();
-		boolean registered = transaction.isRegisteredBean(hash);
-		if (!registered){
-			transaction.registerBean(hash);
-		}
-		return registered;
+		return transaction.isRegisteredBean(bean);
+	}
+	
+	public void unRegisterBean() {
+		transaction.unregisterBean(bean);
 	}
 	
 	/**
@@ -316,12 +308,12 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	
 	public void registerDeleteBean() {
 		Integer hash = getBeanHash();
-		transaction.registerBean(hash);
+		transaction.registerDeleteBean(hash);
 	}
 	
 	public void unregisterDeleteBean() {
 		Integer hash = getBeanHash();
-		transaction.unregisterBean(hash);
+		transaction.unregisterDeleteBean(hash);
 	}
 	
 	public boolean isRegisteredForDeleteBean() {
@@ -329,7 +321,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 			return false;
 		} else {
 			Integer hash = getBeanHash();
-			return transaction.isRegisteredBean(hash);
+			return transaction.isRegisteredDeleteBean(hash);
 		}
 	}
 
