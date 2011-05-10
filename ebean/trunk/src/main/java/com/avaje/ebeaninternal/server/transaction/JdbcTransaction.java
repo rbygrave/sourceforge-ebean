@@ -132,7 +132,8 @@ public class JdbcTransaction implements SpiTransaction {
 	 */
 	int depth = 0;
 
-	HashSet<Integer> persistingBeans;
+	HashSet<Object> persistingBeans = new HashSet<Object>();
+	HashSet<Integer> deletingBeansHash;
 	
 	TransactionLogBuffer logBuffer;
 		
@@ -216,31 +217,46 @@ public class JdbcTransaction implements SpiTransaction {
 	 * both sides Cascade.
 	 * </p>
 	 */
-	public void registerBean(Integer persistingBean) {
-		if (persistingBeans == null){
-			persistingBeans = new HashSet<Integer>();
+	public void registerDeleteBean(Integer persistingBean) {
+		if (deletingBeansHash == null){
+			deletingBeansHash = new HashSet<Integer>();
 		}
-		persistingBeans.add(persistingBean);
+		deletingBeansHash.add(persistingBean);
 	}
 
 	/**
 	 * Unregister the persisted bean.
 	 */
-	public void unregisterBean(Integer persistedBean) {
-		if (persistingBeans != null){
-			persistingBeans.remove(persistedBean);
+	public void unregisterDeleteBean(Integer persistedBean) {
+		if (deletingBeansHash != null){
+			deletingBeansHash.remove(persistedBean);
 		}
 	}
 	
 	/**
 	 * Return true if this is a bean that has already been saved/deleted.
 	 */
-	public boolean isRegisteredBean(Integer persistingBean) {
-		if (persistingBeans == null){
+	public boolean isRegisteredDeleteBean(Integer persistingBean) {
+		if (deletingBeansHash == null){
 			return false;
 		} else {
-			return persistingBeans.contains(persistingBean);
+			return deletingBeansHash.contains(persistingBean);
 		}
+	}
+
+	/**
+	 * Unregister the persisted bean.
+	 */
+	public void unregisterBean(Object bean) {
+		persistingBeans.remove(bean);
+	}
+	
+	/**
+	 * Return true if this is a bean that has already been saved.
+	 * This will register the bean if it is not already.
+	 */
+	public boolean isRegisteredBean(Object bean) {
+		return !persistingBeans.add(bean);
 	}
 
 	/**

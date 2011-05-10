@@ -407,6 +407,7 @@ public final class DefaultPersister implements Persister {
 			// save any associated List held beans
 			saveAssocMany(true, request);
 		}
+		request.unRegisterBean();
 	}
 
 	/**
@@ -439,6 +440,7 @@ public final class DefaultPersister implements Persister {
 			// save all the beans in assocMany's after
 			saveAssocMany(false, request);
 		}
+		request.unRegisterBean();
 	}
 
 	/**
