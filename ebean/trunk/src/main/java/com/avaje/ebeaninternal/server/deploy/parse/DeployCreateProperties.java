@@ -166,20 +166,25 @@ public class DeployCreateProperties {
             		Method setter = findSetter(field, initFieldName, declaredMethods, scalaObject);
             		
 	                DeployBeanProperty prop = createProp(level, desc, field, beanType, getter, setter);
-	                // set a order that gives priority to inherited properties
-	                // push Id/EmbeddedId up and CreatedTimestamp/UpdatedTimestamp down
-	                int sortOverride = prop.getSortOverride();
-	                prop.setSortOrder((level*10000+100-i + sortOverride));
-	                
-	                DeployBeanProperty replaced = desc.addBeanProperty(prop);
-	                if (replaced != null){
-	                	if (replaced.isTransient()) {
-	                		// expected for inheritance...
-	                	} else {
-	                		String msg = "Huh??? property "+prop.getFullBeanName()+" being defined twice";
-	                		msg += " but replaced property was not transient? This is not expected?";
-	                		logger.warning(msg);
-	                	}
+	                if (prop == null){
+	                	// transient annotation on unsupported type
+	                	
+	                } else {
+		                // set a order that gives priority to inherited properties
+		                // push Id/EmbeddedId up and CreatedTimestamp/UpdatedTimestamp down
+		                int sortOverride = prop.getSortOverride();
+		                prop.setSortOrder((level*10000+100-i + sortOverride));
+		                
+		                DeployBeanProperty replaced = desc.addBeanProperty(prop);
+		                if (replaced != null){
+		                	if (replaced.isTransient()) {
+		                		// expected for inheritance...
+		                	} else {
+		                		String msg = "Huh??? property "+prop.getFullBeanName()+" being defined twice";
+		                		msg += " but replaced property was not transient? This is not expected?";
+		                		logger.warning(msg);
+		                	}
+		                }
 	                }
             	}
             }
@@ -321,7 +326,12 @@ public class DeployCreateProperties {
             // List, Set or Map based object
             Class<?> targetType = determineTargetType(field);
             if (targetType == null){
-                logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
+            	Transient transAnnotation = field.getAnnotation(Transient.class);
+            	if (transAnnotation != null) {
+            		// not supporting this field (generic type used)
+            		return null;
+            	}
+        		logger.warning("Could not find parameter type (via reflection) on "+desc.getFullName()+" "+field.getName());
             }
             return createManyType(desc, targetType, manyType);
         } 
@@ -375,20 +385,21 @@ public class DeployCreateProperties {
 	private DeployBeanProperty createProp(int level, DeployBeanDescriptor<?> desc, Field field, Class<?> beanType, Method getter, Method setter) {
     	
         DeployBeanProperty prop = createProp(desc, field);
-
-        //field.setAccessible(true);        
-        prop.setOwningType(beanType);
-        prop.setName(field.getName());
-        
-        // the getter or setter could be null if we are using
-        // javaagent type enhancement. If we are using subclass
-        // generation then we do need to find the getter and setter
-        prop.setReadMethod(getter);
-        prop.setWriteMethod(setter);
-
-        prop.setField(field);
-        
-        return prop;
+        if (prop == null){
+        	// transient annotation on unsupported type
+        	return null;
+        } else {
+	        prop.setOwningType(beanType);
+	        prop.setName(field.getName());
+	        
+	        // the getter or setter could be null if we are using
+	        // javaagent type enhancement. If we are using subclass
+	        // generation then we do need to find the getter and setter
+	        prop.setReadMethod(getter);
+	        prop.setWriteMethod(setter);
+	        prop.setField(field);
+	        return prop;
+        }
     }
 
 	/**
@@ -411,6 +422,10 @@ public class DeployCreateProperties {
 			}
 			if (typeArgs.length == 2) {
 				// this is probably a Map
+				if (typeArgs[1] instanceof ParameterizedType) {
+					// not supporting ParameterizedType on Map.
+					return null;
+				}
 				return (Class<?>) typeArgs[1];
 			}
 		}
