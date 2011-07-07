@@ -1377,6 +1377,7 @@ public class ServerConfig {
             packages = getSearchJarsPackages(packagesProp);
         }
 
+        validateOnSave = p.getBoolean("validateOnSave", true);
         vanillaMode = p.getBoolean("vanillaMode", false);
         vanillaRefMode = p.getBoolean("vanillaRefMode", false);
         updateChangesOnly = p.getBoolean("updateChangesOnly", true);
