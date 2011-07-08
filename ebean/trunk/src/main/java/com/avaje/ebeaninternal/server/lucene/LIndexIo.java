@@ -517,12 +517,9 @@ public class LIndexIo {
             
             IndexWriter w = new IndexWriter(directory, config);
             w.commit();
-            
-            //IndexReader reader = IndexReader.open(directory);
-            
+                        
             return w;
-            // boolean create = true;
-            //return new IndexWriter(directory, analyzer, create, commitDeletionPolicy, maxFieldLength);
+            
         } catch (IOException e) {
             String msg = "Error getting Lucene IndexWriter for " + indexDir;
             throw new PersistenceLuceneException(msg, e);
