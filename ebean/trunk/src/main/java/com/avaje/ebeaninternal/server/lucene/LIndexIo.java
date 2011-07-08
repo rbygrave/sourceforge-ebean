@@ -34,14 +34,16 @@ import javax.persistence.PersistenceException;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 import com.avaje.ebean.Junction;
-import com.avaje.ebean.QueryListener;
 import com.avaje.ebean.Query.UseIndex;
+import com.avaje.ebean.QueryListener;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -61,7 +63,7 @@ public class LIndexIo {
     
     private final Analyzer analyzer;
     
-    private final MaxFieldLength maxFieldLength;
+    //private final MaxFieldLength maxFieldLength;
     
     private final Class<?> beanType;
     
@@ -105,7 +107,7 @@ public class LIndexIo {
         this.index = index;
         this.updateProps = updateProps;
         this.analyzer = index.getAnalyzer();
-        this.maxFieldLength = index.getMaxFieldLength();
+        //this.maxFieldLength = index.getMaxFieldLength();
         this.beanType = index.getBeanType();
         this.ormQueryDetail = index.getOrmQueryDetail();
         this.directory = createDirectory();
@@ -508,8 +510,19 @@ public class LIndexIo {
     
     private IndexWriter createIndexWriter() {
         try {
-            boolean create = true;
-            return new IndexWriter(directory, analyzer, create, commitDeletionPolicy, maxFieldLength);
+            
+            IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, analyzer);
+            config.setOpenMode(OpenMode.CREATE_OR_APPEND);
+            config.setIndexDeletionPolicy(commitDeletionPolicy);
+            
+            IndexWriter w = new IndexWriter(directory, config);
+            w.commit();
+            
+            //IndexReader reader = IndexReader.open(directory);
+            
+            return w;
+            // boolean create = true;
+            //return new IndexWriter(directory, analyzer, create, commitDeletionPolicy, maxFieldLength);
         } catch (IOException e) {
             String msg = "Error getting Lucene IndexWriter for " + indexDir;
             throw new PersistenceLuceneException(msg, e);

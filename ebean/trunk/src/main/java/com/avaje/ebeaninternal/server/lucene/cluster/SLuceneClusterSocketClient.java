@@ -60,8 +60,6 @@ public class SLuceneClusterSocketClient implements SLuceneSocketMessageTypes {
         this.master = SocketClient.parseHostPort(masterHost);
        
         LIndexVersion localVersion = index.getLastestVersion();
-        System.out.println("-- Got localVersion "+localVersion);
-        
         SocketClient client = new SocketClient(master);
         
         String serverName = index.getBeanDescriptor().getServerName();

@@ -74,10 +74,7 @@ public final class LIndexFieldNumeric extends LIndexFieldBase {
             Object value = property.elGetValue(bean);
             if (value == null){
                 
-            } else {
-                
-                System.out.println("- write "+field.name()+" "+value);
-                
+            } else {                
                 value = scalarType.luceneToIndexValue(value);
                 setValueToField(value);
                 document.add(field);
