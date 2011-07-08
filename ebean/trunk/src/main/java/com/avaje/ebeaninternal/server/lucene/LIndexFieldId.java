@@ -99,8 +99,6 @@ public final class LIndexFieldId extends LIndexFieldBase {
             if (value == null){
                 
             } else {
-                System.out.println("- write "+field.name()+" "+value);
-                
                 String writeTerm = idBinder.writeTerm(value);
                 field.setValue(writeTerm);
                 document.add(field);

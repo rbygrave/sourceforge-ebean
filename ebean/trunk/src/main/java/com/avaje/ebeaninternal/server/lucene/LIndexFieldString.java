@@ -97,8 +97,6 @@ public final class LIndexFieldString extends LIndexFieldBase {
             if (value == null){
                 
             } else {
-                System.out.println("- write "+field.name()+" "+value);
-                
                 String s = (String)scalarType.luceneToIndexValue(value);
                 if (indexAnalyzer == null){
                     field.setValue(s);

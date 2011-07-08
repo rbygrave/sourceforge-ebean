@@ -27,7 +27,6 @@ import java.util.Set;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.queryParser.QueryParser.Operator;
 
@@ -47,8 +46,6 @@ public class LIndex implements LuceneIndex {
     
     private final Analyzer analyzer;
     
-    private final MaxFieldLength maxFieldLength;
-    
     private final LIndexFields fieldDefn;
     
     private final BeanDescriptor<?> desc;
@@ -66,12 +63,11 @@ public class LIndex implements LuceneIndex {
     private LIndexSync queuedSync;
     
     public LIndex(DefaultLuceneIndexManager manager, String indexName, String indexDir, Analyzer analyzer, 
-            MaxFieldLength maxFieldLength, BeanDescriptor<?> desc, LIndexFields fieldDefn, String[] updateProps) throws IOException {
+            BeanDescriptor<?> desc, LIndexFields fieldDefn, String[] updateProps) throws IOException {
         
         this.manager = manager;
         this.name = desc.getFullName();
         this.analyzer = analyzer;
-        this.maxFieldLength = maxFieldLength;
         this.desc = desc;
         this.fieldDefn = fieldDefn;
         this.idField = fieldDefn.getIdField();
@@ -209,10 +205,6 @@ public class LIndex implements LuceneIndex {
     
     public Analyzer getAnalyzer() {
         return analyzer;
-    }
-    
-    public MaxFieldLength getMaxFieldLength() {
-        return maxFieldLength;
     }
 
     public QueryParser createQueryParser(String fieldName) {

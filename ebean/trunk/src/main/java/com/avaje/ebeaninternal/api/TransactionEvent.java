@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
@@ -41,6 +42,8 @@ import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
  */
 public class TransactionEvent implements Serializable {
 
+    private static final Logger logger = Logger.getLogger(TransactionEvent.class.getName());
+    
 	private static final long serialVersionUID = 7230903304106097120L;
 
 	/**
@@ -109,7 +112,7 @@ public class TransactionEvent implements Serializable {
 	 */
 	public void addIndexInvalidate(IndexInvalidate indexEvent){
 	    if (pauseIndexInvalidate != null && pauseIndexInvalidate.contains(indexEvent.getIndexName())){
-	        System.out.println("--- IGNORE Invalidate on "+indexEvent.getIndexName());
+	        logger.fine("--- IGNORE Invalidate on "+indexEvent.getIndexName());
 	        return;
 	    }
 	    if (indexInvalidations == null){

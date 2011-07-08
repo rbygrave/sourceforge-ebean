@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.config.lucene.IndexFieldDefn;
@@ -89,15 +88,11 @@ public class LIndexFactory {
             if (analyzer == null){
                 analyzer = defaultAnalyzer;
             }
-            MaxFieldLength maxFieldLength = indexDefn.getMaxFieldLength();
-            if (maxFieldLength == null){
-                maxFieldLength = MaxFieldLength.UNLIMITED;
-            }
             
             String indexName = indexDefn.getClass().getName();
             String indexDir = manager.getIndexDirectory(indexName);
             
-            return new LIndex(manager, indexName, indexDir, analyzer, maxFieldLength, descriptor, fieldGroup, indexDefn.getUpdateSinceProperties());
+            return new LIndex(manager, indexName, indexDir, analyzer, descriptor, fieldGroup, indexDefn.getUpdateSinceProperties());
         }
 
         private ElPropertyValue getProperty(String name) {

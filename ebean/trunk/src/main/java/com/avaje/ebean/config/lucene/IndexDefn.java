@@ -22,7 +22,6 @@ package com.avaje.ebean.config.lucene;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 
 /**
  * Defines a Lucene Index for a given entity type.
@@ -71,11 +70,6 @@ public interface IndexDefn<T> {
      * Return the default Analyzer to use for this index.
      */
     public Analyzer getAnalyzer();
-
-    /**
-     * Return the max field length to use for this index.
-     */
-    public MaxFieldLength getMaxFieldLength();
 
     /**
      * Return the max buffered documents for this index.

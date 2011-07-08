@@ -97,8 +97,7 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         
         if (clusterIndexSync != null && clusterIndexSync.isMaster()) {
             // we are the master, notify the slaves 
-            System.out.println("-- notifyCluster commit ... ");
-            
+            logger.info("-- notifyCluster commit ... ");
             RemoteTransactionEvent e = new RemoteTransactionEvent(serverName);
             e.addIndexEvent(event);
             clusterManager.broadcast(e);
