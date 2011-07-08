@@ -219,8 +219,8 @@ public interface Transaction {
 	 * supported by the underlying jdbc driver and database.
 	 * </p>
 	 * <p>
-	 * You want wish to turn this off for inserting very large numbers of
-	 * objects when you don't care about getting back the ids.
+	 * You may want to turn getGeneratedKeys off when you are inserting a large 
+	 * number of objects and you don't care about getting back the ids.
 	 * </p>
 	 */
 	public void setBatchGetGeneratedKeys(boolean getGeneratedKeys);
