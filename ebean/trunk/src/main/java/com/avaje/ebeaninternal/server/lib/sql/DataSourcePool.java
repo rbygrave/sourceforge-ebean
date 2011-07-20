@@ -32,7 +32,6 @@ import javax.sql.DataSource;
 
 import com.avaje.ebean.config.DataSourceConfig;
 import com.avaje.ebeaninternal.api.ClassUtil;
-import com.avaje.ebeaninternal.server.lib.cron.CronManager;
 
 /**
  * A robust DataSource.
@@ -304,14 +303,7 @@ public class DataSourcePool implements DataSource {
 
     private void notifyDataSourceIsDown(SQLException ex) {
 
-        if (isExpectedToBeDownNow()) {
-            if (dataSourceUp) {
-                String msg = "DataSourcePool [" + name + "] is down but in downtime!";
-                logger.log(Level.WARNING, msg, ex);
-            }
-
-        } else if (!dataSourceDownAlertSent) {
-
+        if (!dataSourceDownAlertSent) {
             String msg = "FATAL: DataSourcePool [" + name + "] is down!!!";
             logger.log(Level.SEVERE, msg, ex);
             if (notify != null) {
@@ -373,14 +365,6 @@ public class DataSourcePool implements DataSource {
                 logger.log(Level.WARNING, "Can't close connection in checkDataSource!");
             }
         }
-    }
-
-    private boolean isExpectedToBeDownNow() {
-        // downtime as controlled as a scheduled task
-        // for example, if the database is down as 23.50 every night
-        // for 10 minutes schedule the ...lib.cron.Downtime to run
-        // at that time for that duration.
-        return CronManager.isDowntime();
     }
 
     /**
