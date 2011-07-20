@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.transaction;
 
 import com.avaje.ebeaninternal.api.SpiTransaction;
+import com.avaje.ebeaninternal.server.transaction.TransactionMap.State;
 
 /**
  * Used by EbeanMgr to store its Transactions in a ThreadLocal.
@@ -45,58 +46,15 @@ public final class DefaultTransactionThreadLocal {
      * This is for the local thread of course.
      */
     private static TransactionMap.State getState(String serverName){
-        return local.get().getState(serverName);
+        return local.get().getStateWithCreate(serverName);
     }
-    
-    /**
-     * Return the current Transaction for this serverName and Thread.
-     */
-    public static SpiTransaction get(String serverName) {
-        return getState(serverName).transaction;
-    }
+
 
     /**
      * Set a new Transaction for this serverName and Thread.
      */
     public static void set(String serverName, SpiTransaction trans) {
         getState(serverName).set(trans);
-    }
-    
-    /**
-     * Commit the current transaction.
-     */
-    public static void commit(String serverName) {
-        getState(serverName).commit();
-    }
-
-    /**
-     * Rollback the current transaction.
-     */
-    public static void rollback(String serverName) {
-        getState(serverName).rollback();
-    }
-
-    /**
-     * If the transaction has not been committed then roll it back.
-     * <p>
-     * Designed to be put in a finally block instead of a rollback()
-     * in each catch block.
-     * <pre><code>
-     * EbeanMgr.startTransaction();
-     * try {
-     *     //... perform some actions in a single transaction
-     *     
-     *     EbeanMgr.commitTransaction();
-     *     
-     * } finally {
-     *     // ensure transaction ended.  If some error occurred then rollback() 
-     *     EbeanMgr.endTransaction();
-     * }
-     * </code></pre>
-     * </p>
-     */
-    public static void end(String serverName) {
-        getState(serverName).end();
     }
     
     /**
@@ -111,4 +69,80 @@ public final class DefaultTransactionThreadLocal {
     public static void replace(String serverName, SpiTransaction trans) {
         getState(serverName).replace(trans);
     }
+    
+    
+    /**
+     * Return the current Transaction for this serverName and Thread.
+     */
+    public static SpiTransaction get(String serverName) {
+    	TransactionMap map = local.get();
+    	State state = map.getState(serverName);
+    	SpiTransaction t = (state == null) ? null : state.transaction;
+    	if (map.isEmpty()){
+    		local.remove();
+    	}
+    	return t;
+    }
+    
+    /**
+     * Commit the current transaction.
+     */
+    public static void commit(String serverName) {
+    	TransactionMap map = local.get();
+    	State state = map.removeState(serverName);
+    	if (state == null){
+    		throw new IllegalStateException("No current transaction for ["+serverName+"]");
+    	}
+    	state.commit();
+    	if (map.isEmpty()){
+    		local.remove();
+    	}
+    }
+
+    /**
+     * Rollback the current transaction.
+     */
+    public static void rollback(String serverName) {
+        TransactionMap map = local.get();
+    	State state = map.removeState(serverName);
+    	if (state == null){
+    		throw new IllegalStateException("No current transaction for ["+serverName+"]");
+    	}
+    	state.rollback();
+    	if (map.isEmpty()){
+    		local.remove();
+    	}
+    }
+
+    /**
+     * If the transaction has not been committed then roll it back.
+     * <p>
+     * Designed to be put in a finally block instead of a rollback()
+     * in each catch block.
+     * <pre>
+     * Ebean.startTransaction();
+     * try {
+     *     //... perform some actions in a single transaction
+     *     
+     *     Ebean.commitTransaction();
+     *     
+     * } finally {
+     *     // ensure transaction ended.  If some error occurred then rollback() 
+     *     Ebean.endTransaction();
+     * }
+     * </pre>
+     * </p>
+     */
+    public static void end(String serverName) {
+        
+        TransactionMap map = local.get();
+    	State state = map.removeState(serverName);
+    	if (state != null){
+        	state.rollback();
+    	}
+    	if (map.isEmpty()){
+    		local.remove();
+    	}
+    }
+
 }

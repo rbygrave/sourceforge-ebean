@@ -17,6 +17,9 @@
  */
 package com.avaje.ebeaninternal.server.lib;
 
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -181,6 +184,11 @@ public final class ShutdownManager {
 				ThreadPoolManager.shutdown();
 
 				DataSourceGlobalManager.shutdown();
+				
+				boolean dereg = GlobalProperties.getBoolean("datasource.deregisterAllDrivers", false);
+				if (dereg){
+					deregisterAllJdbcDrivers();
+				}
 
 			} catch (Exception ex) {
 				String msg = "Shutdown Exception: "+ ex.getMessage();
@@ -197,6 +205,20 @@ public final class ShutdownManager {
 		}
 	}
 
+	private static void deregisterAllJdbcDrivers() {
+	    // This manually deregisters JDBC driver, which prevents Tomcat 7 from complaining about memory leaks wrto this class
+	    Enumeration<Driver> drivers = DriverManager.getDrivers();
+	    while (drivers.hasMoreElements()) {
+	        Driver driver = drivers.nextElement();
+	        try {
+	            DriverManager.deregisterDriver(driver);
+	            logger.log(Level.INFO, String.format("Deregistering jdbc driver: %s", driver));
+	        } catch (SQLException e) {
+	        	logger.log(Level.SEVERE, String.format("Error deregistering driver %s", driver), e);
+	        }
+	    }
+	}
+	
 	/**
 	 * Register a runnable to be executed when the system is shutdown. Note that
 	 * runnables registered here are shutdown before any thread pools or

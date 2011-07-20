@@ -21,7 +21,7 @@ package com.avaje.ebeaninternal.server.core;
 
 import java.util.concurrent.TimeUnit;
 
-import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebeaninternal.api.SpiBackgroundExecutor;
 import com.avaje.ebeaninternal.server.lib.DaemonScheduleThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 
@@ -30,7 +30,7 @@ import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
  * 
  * @author rbygrave
  */
-public class TraditionalBackgroundExecutor implements BackgroundExecutor {
+public class TraditionalBackgroundExecutor implements SpiBackgroundExecutor {
 
 	private final ThreadPool pool;
 	
@@ -55,5 +55,9 @@ public class TraditionalBackgroundExecutor implements BackgroundExecutor {
 		schedulePool.scheduleWithFixedDelay(r, delay, delay, unit);
 	}
 
+	public void shutdown() {
+		// the pool is shutdown automatically by the ThreadPoolManager
+		schedulePool.shutdown();
+	}
 	
 }

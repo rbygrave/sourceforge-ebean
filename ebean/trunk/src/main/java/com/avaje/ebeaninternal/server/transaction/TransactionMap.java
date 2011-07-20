@@ -34,14 +34,30 @@ public class TransactionMap {
     /**
      * Map of State by serverName. 
      */
-    HashMap<String,State> map = new HashMap<String, State>();
+    private HashMap<String,State> map = new HashMap<String, State>();
+    
+    public String toString() {
+    	return map.toString();
+    }
+    
+    public boolean isEmpty() {
+    	return map.isEmpty();
+    }
     
     /**
      * Return the State for a given serverName.
      */
     public State getState(String serverName) {
         
-        State state = (State)map.get(serverName);
+        return map.get(serverName);
+    }
+    
+    /**
+     * Return the State for a given serverName.
+     */
+    public State getStateWithCreate(String serverName) {
+        
+        State state = map.get(serverName);
         if (state == null){
         	state = new State();
             map.put(serverName, state);
@@ -50,11 +66,22 @@ public class TransactionMap {
     }
     
     /**
+     * Remove and return the State for a given serverName.
+     */
+    public State removeState(String serverName) {
+        return map.remove(serverName);
+    }
+    
+    /**
      * The transaction and whether it is active.
      */
     public static class State {
 
         SpiTransaction transaction;
+        
+        public String toString() {
+        	return "txn["+transaction+"]";
+        }
         
         public SpiTransaction get() {
             return transaction;
