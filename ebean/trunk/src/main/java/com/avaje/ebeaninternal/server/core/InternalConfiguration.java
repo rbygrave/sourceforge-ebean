@@ -21,7 +21,6 @@ package com.avaje.ebeaninternal.server.core;
 
 import java.util.logging.Logger;
 
-import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ExternalTransactionManager;
@@ -32,6 +31,7 @@ import com.avaje.ebean.config.ldap.LdapContextFactory;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.api.ClassUtil;
+import com.avaje.ebeaninternal.api.SpiBackgroundExecutor;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManagerFactory;
@@ -111,7 +111,7 @@ public class InternalConfiguration {
 	
 	private final ExpressionFactory expressionFactory;
 	
-	private final BackgroundExecutor backgroundExecutor;
+	private final SpiBackgroundExecutor backgroundExecutor;
 
 	private final PstmtBatch pstmtBatch;
 	
@@ -120,7 +120,7 @@ public class InternalConfiguration {
 	private final LuceneIndexManager luceneIndexManager;
 	
 	public InternalConfiguration(XmlConfig xmlConfig, ClusterManager clusterManager, ServerCacheManager cacheManager, 
-			BackgroundExecutor backgroundExecutor, ServerConfig serverConfig, 
+			SpiBackgroundExecutor backgroundExecutor, ServerConfig serverConfig, 
 			BootupClasses bootupClasses, PstmtBatch pstmtBatch) {
 		
 	    this.xmlConfig = xmlConfig;
@@ -312,7 +312,7 @@ public class InternalConfiguration {
 		return debugLazyLoad;
 	}
 
-	public BackgroundExecutor getBackgroundExecutor() {
+	public SpiBackgroundExecutor getBackgroundExecutor() {
 		return backgroundExecutor;
 	}
 

@@ -85,6 +85,7 @@ import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.LoadBeanRequest;
 import com.avaje.ebeaninternal.api.LoadManyRequest;
 import com.avaje.ebeaninternal.api.ScopeTrans;
+import com.avaje.ebeaninternal.api.SpiBackgroundExecutor;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
@@ -201,7 +202,7 @@ public final class DefaultServer implements SpiEbeanServer {
 
     private final ExpressionFactory expressionFactory;
 
-    private final BackgroundExecutor backgroundExecutor;
+    private final SpiBackgroundExecutor backgroundExecutor;
 
     private final DefaultBeanLoader beanLoader;
 
@@ -426,6 +427,7 @@ public final class DefaultServer implements SpiEbeanServer {
             // shutdown services
             transactionManager.shutdown();
             autoFetchManager.shutdown();
+            backgroundExecutor.shutdown();
             //luceneIndexManager.shutdown();
         }
     }

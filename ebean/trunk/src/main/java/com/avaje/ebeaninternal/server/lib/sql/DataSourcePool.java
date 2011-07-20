@@ -235,7 +235,7 @@ public class DataSourcePool implements DataSource {
         }
 
         String transIsolation = TransactionIsolation.getLevelDescription(transactionIsolation);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("DataSourcePool [").append(name);
         sb.append("] autoCommit[").append(autoCommit);
         sb.append("] transIsolation[").append(transIsolation);
@@ -799,6 +799,20 @@ public class DataSourcePool implements DataSource {
         return queue.getStatus(reset);
     }
 
+    /**
+     * Deregister the JDBC driver.
+     */
+	public void deregisterDriver() {
+	    try {
+	    	DriverManager.deregisterDriver(DriverManager.getDriver(this.databaseUrl));
+	    	String msg = "Deregistered the JDBC driver "+this.databaseDriver;
+	    	logger.log(Level.FINE, msg);
+	    } catch (SQLException e) {
+	    	String msg = "Error trying to deregister the JDBC driver "+this.databaseDriver;
+	    	logger.log(Level.WARNING, msg, e);
+	    }
+    }    
+
     public static class Status {
 
         private final String name;
@@ -898,4 +912,5 @@ public class DataSourcePool implements DataSource {
         }
 
     }
+
 }

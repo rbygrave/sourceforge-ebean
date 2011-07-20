@@ -34,7 +34,6 @@ import javax.management.MBeanServerFactory;
 import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 
-import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.cache.ServerCacheFactory;
 import com.avaje.ebean.cache.ServerCacheManager;
@@ -46,6 +45,7 @@ import com.avaje.ebean.config.PstmtDelegate;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.UnderscoreNamingConvention;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebeaninternal.api.SpiBackgroundExecutor;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.cache.DefaultServerCacheFactory;
 import com.avaje.ebeaninternal.server.cache.DefaultServerCacheManager;
@@ -125,7 +125,7 @@ public class DefaultServerFactory implements BootupEbeanManager {
 		return createServer(config);
 	}
 	
-	private BackgroundExecutor createBackgroundExecutor(ServerConfig serverConfig, int uniqueServerId) {
+	private SpiBackgroundExecutor createBackgroundExecutor(ServerConfig serverConfig, int uniqueServerId) {
 		
 		String namePrefix = "Ebean-"+serverConfig.getName();
 		
@@ -204,7 +204,7 @@ public class DefaultServerFactory implements BootupEbeanManager {
     		ServerCacheManager cacheManager  = getCacheManager(serverConfig);
     
     		int uniqueServerId = serverId.incrementAndGet();
-    		BackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
+    		SpiBackgroundExecutor bgExecutor = createBackgroundExecutor(serverConfig, uniqueServerId);
     			
     		InternalConfiguration c = new InternalConfiguration(xmlConfig, clusterManager, cacheManager, 
     		        bgExecutor, serverConfig, bootupClasses, pstmtBatch);

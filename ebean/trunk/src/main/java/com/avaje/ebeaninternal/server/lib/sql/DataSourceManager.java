@@ -18,6 +18,7 @@
 package com.avaje.ebeaninternal.server.lib.sql;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -73,6 +74,8 @@ public class DataSourceManager implements DataSourceNotify {
      */
     private boolean shuttingDown;
     	
+    private boolean deregisterDriver;
+    
 	/** 
 	 * Construct with explicit ConfigProperties.
 	 */
@@ -84,6 +87,7 @@ public class DataSourceManager implements DataSourceNotify {
         this.dbUpFreqInSecs = GlobalProperties.getInt("datasource.heartbeatfreq",30);
         this.dbDownFreqInSecs = GlobalProperties.getInt("datasource.deadbeatfreq",10);        
         this.dbChecker = new BackgroundRunnable(new Checker(), dbUpFreqInSecs);
+		this.deregisterDriver = GlobalProperties.getBoolean("datasource.deregisterDriver", true);
         
 		try {
 	        BackgroundThread.add(dbChecker);
@@ -160,16 +164,19 @@ public class DataSourceManager implements DataSourceNotify {
 			
 			this.shuttingDown = true;
 			
-			Iterator<DataSourcePool> it = dsMap.values().iterator();
-			while (it.hasNext()) {
+			Collection<DataSourcePool> values = dsMap.values();
+			for (DataSourcePool ds : values) {
 				try {					
-					DataSourcePool ds = it.next();
 					ds.shutdown();
-
 				} catch (DataSourceException e) {
 					// should never be thrown as the DataSources are all created...
 					logger.log(Level.SEVERE, null, e);
 				}
+            }
+			if (deregisterDriver){
+				for (DataSourcePool ds : values) {
+	                ds.deregisterDriver();
+                }
 			}
 		}
 	}
