@@ -22,20 +22,13 @@ package com.avaje.ebean.config.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.Field.TermVector;
 
 public class IndexFieldDefn {
 
     public enum Sortable {
-        /**
-         * Make sure the field is sortable.
-         */
-        YES,
-        
-        /**
-         * Depends on the type and whether it is Analysed.
-         * Text fields that are Analyzed/Tokenized are not sortable.
-         */
-        DEFAULT
+    	YES,
+    	DEFAULT
     }
     
     protected final String name;
@@ -45,6 +38,10 @@ public class IndexFieldDefn {
     protected Index index;
     
     protected Store store;
+    
+    protected TermVector termVector;
+    
+    protected boolean omitTermFreqAndPositions;
     
     protected Sortable sortable;
     
@@ -64,9 +61,15 @@ public class IndexFieldDefn {
     }
     
     public IndexFieldDefn(String name, Store store, Index index, Sortable sortable) {
+        this(name, store, index, sortable, TermVector.NO, true);
+    }
+    
+    public IndexFieldDefn(String name, Store store, Index index, Sortable sortable, TermVector termVector, boolean omitTermFreqAndPositions) {
         this(name);
         this.store = store;
         this.index = index;
+        this.termVector = termVector;
+        this.omitTermFreqAndPositions = omitTermFreqAndPositions;
         this.sortable = sortable;
     }
     
@@ -82,7 +85,7 @@ public class IndexFieldDefn {
      *            the name of the new IndexFieldDefn
      */
     public IndexFieldDefn copyField(String name){
-        IndexFieldDefn copy = new IndexFieldDefn(name, store, index, sortable);
+        IndexFieldDefn copy = new IndexFieldDefn(name, store, index, sortable, termVector, omitTermFreqAndPositions);
         copy.setPropertyName(name);
         //copy.setPropertyNames(properties);
         copy.setIndexAnalyzer(indexAnalyzer);
@@ -139,8 +142,17 @@ public class IndexFieldDefn {
         this.index = index;
         return this;
     }
+    
+    public TermVector getTermVector() {
+    	return termVector;
+    }
 
-    /**
+	public IndexFieldDefn setTermVector(TermVector termVector) {
+    	this.termVector = termVector;
+    	return this;
+    }
+
+	/**
      * Return the Store option for this field.
      */
     public Store getStore() {
@@ -170,7 +182,16 @@ public class IndexFieldDefn {
         return this;
     }
     
-    /**
+    public boolean isOmitTermFreqAndPositions() {
+    	return omitTermFreqAndPositions;
+    }
+
+	public IndexFieldDefn setOmitTermFreqAndPositions(boolean omitTermFreqAndPositions) {
+    	this.omitTermFreqAndPositions = omitTermFreqAndPositions;
+    	return this;
+    }
+
+	/**
      * Return the precision step for this field.
      */
     public int getPrecisionStep() {
