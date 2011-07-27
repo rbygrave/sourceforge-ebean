@@ -71,8 +71,6 @@ public class LIndexDeltaHandler {
     
     private final List<BeanDelta> deltaBeans;
 
-    private final Document document = new Document();
-
     private Set<Object> deltaBeanKeys;
     private int deltaCount;
     private int insertCount;
@@ -148,6 +146,7 @@ public class LIndexDeltaHandler {
                 try {
                     Object id = beanDescriptor.getId(bean);
                     Term term = index.createIdTerm(id);
+                    Document document = new Document();
                     docFieldWriter.writeValue(bean, document);
                     indexWriter.updateDocument(term, document);
                     
@@ -170,6 +169,7 @@ public class LIndexDeltaHandler {
         for (int i = 0; i < list.size(); i++) {
             Object bean = list.get(i);
             try {
+            	Document document = new Document();
                 docFieldWriter.writeValue(bean, document);
                 indexWriter.addDocument(document);
                 
@@ -213,6 +213,7 @@ public class LIndexDeltaHandler {
                     throw new PersistenceLuceneException("Unmatched bean " + deltaBean.getId());
                 }
                 deltaBean.apply(bean);    
+                Document document = new Document();
                 docFieldWriter.writeValue(bean, document);
                 try {
                     Term term = index.createIdTerm(id);

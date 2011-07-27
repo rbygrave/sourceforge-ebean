@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.lucene;
 
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.document.NumericField;
 import org.apache.lucene.document.Field.Index;
@@ -32,24 +33,27 @@ public class FieldFactory {
 
     private final Store store;
     private final Index index;
-    
+    private final TermVector termVector;
+    private final boolean omitTermFreqAndPositions;
     private final float boost;
     
     private final int precisionStep;
 
     public static FieldFactory numeric(String fieldName, Store store, Index index, float boost, int precisionStep) {
-        return new FieldFactory(true, fieldName, store, index, boost, precisionStep);
+        return new FieldFactory(true, fieldName, store, index, TermVector.NO, true, boost, precisionStep);
     }
     
-    public static FieldFactory normal(String fieldName, Store store, Index index, float boost) {
-        return new FieldFactory(false, fieldName, store, index, boost, 0);
+    public static FieldFactory normal(String fieldName, Store store, Index index, TermVector termVector, boolean omitTermFreqAndPositions, float boost) {
+        return new FieldFactory(false, fieldName, store, index, termVector, omitTermFreqAndPositions, boost, 0);
     }
     
-    private FieldFactory(boolean numericField, String fieldName, Store store, Index index, float boost, int precisionStep) {
+    private FieldFactory(boolean numericField, String fieldName, Store store, Index index, TermVector termVector, boolean omitTermFreqAndPositions, float boost, int precisionStep) {
         this.numericField = numericField;
         this.fieldName = fieldName;
         this.store = store;
         this.index = index;
+        this.termVector = termVector;
+        this.omitTermFreqAndPositions = omitTermFreqAndPositions;
         this.boost = boost;
         this.precisionStep = precisionStep;
     }
@@ -59,9 +63,12 @@ public class FieldFactory {
     }
     
     private Fieldable createNormalField() {
-        Field f = new Field(fieldName, "", store, index);
+        Field f = new Field(fieldName, "", store, index, termVector);
         if (boost > 0){
             f.setBoost(boost);
+        }
+        if (omitTermFreqAndPositions){
+        	f.setOmitTermFreqAndPositions(omitTermFreqAndPositions);
         }
         return f;
     }

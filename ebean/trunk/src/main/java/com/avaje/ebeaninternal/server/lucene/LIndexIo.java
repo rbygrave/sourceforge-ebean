@@ -539,7 +539,6 @@ public class LIndexIo {
         private final BeanDescriptor beanDescriptor;
         private final IndexWriter indexWriter;
         private final DocFieldWriter docFieldWriter;
-        private final Document document = new Document();
         private int count;
         
         private WriteListener(LIndex index,IndexWriter indexWriter, boolean updateMode) {
@@ -557,6 +556,7 @@ public class LIndexIo {
                     Term term = index.createIdTerm(id);
                     indexWriter.deleteDocuments(term);
                 }
+                Document document = new Document();
                 docFieldWriter.writeValue(bean, document);
                 indexWriter.addDocument(document);
                 count++;

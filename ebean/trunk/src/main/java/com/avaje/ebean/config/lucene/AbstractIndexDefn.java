@@ -21,7 +21,6 @@ package com.avaje.ebean.config.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 
 /**
  * Provides default implementations for IndexDefn settings.
@@ -42,9 +41,9 @@ public abstract class AbstractIndexDefn<T> implements IndexDefn<T> {
         return 0;
     }
 
-    public MaxFieldLength getMaxFieldLength() {
-        return MaxFieldLength.UNLIMITED;
-    }
+//    public MaxFieldLength getMaxFieldLength() {
+//        return MaxFieldLength.UNLIMITED;
+//    }
 
     public double getRAMBufferSizeMB() {
         // Use system default

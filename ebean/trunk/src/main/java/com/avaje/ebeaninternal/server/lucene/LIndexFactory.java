@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.Field.TermVector;
 
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.config.lucene.IndexFieldDefn;
@@ -112,6 +113,8 @@ public class LIndexFactory {
             
             Store store = fieldDefn.getStore();
             Index index = fieldDefn.getIndex();
+            TermVector termVector = fieldDefn.getTermVector();
+            boolean omitTermFreqAndPositions = fieldDefn.isOmitTermFreqAndPositions();
             
             int luceneType = LLuceneTypes.STRING;
             
@@ -126,7 +129,7 @@ public class LIndexFactory {
                     props[i] = getProperty(propertyNames[i]);
                 }
                 
-                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, boost);
+                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, termVector, omitTermFreqAndPositions, boost);
                 return new LIndexFieldStringConcat(queryAnalyzer, fieldName, fieldFactory, props, indexAnalyzer);
             } 
 
@@ -137,16 +140,16 @@ public class LIndexFactory {
             
             if (beanProperty.isId()){
                 IdBinder idBinder = beanProperty.getBeanDescriptor().getIdBinder();
-                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, boost);
+                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, TermVector.NO, true, boost);
                 return new LIndexFieldId(queryAnalyzer, fieldName, fieldFactory, prop, idBinder);
             }
 
             if (luceneType == LLuceneTypes.BINARY) {
-                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, boost);
+                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, TermVector.NO, true, boost);
                 return new LIndexFieldBinary(queryAnalyzer, fieldName, fieldFactory, prop);
 
             } else if (luceneType == LLuceneTypes.STRING) {
-                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, boost);
+                FieldFactory fieldFactory = FieldFactory.normal(fieldName, store, index, termVector, omitTermFreqAndPositions, boost);
                 return new LIndexFieldString(queryAnalyzer, fieldName, fieldFactory, prop, indexAnalyzer);
 
             } else {

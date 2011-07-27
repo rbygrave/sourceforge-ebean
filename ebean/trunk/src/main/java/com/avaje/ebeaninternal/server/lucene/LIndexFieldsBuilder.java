@@ -104,7 +104,7 @@ public class LIndexFieldsBuilder implements SpiIndexDefnHelper {
             }
         }
         
-        IndexFieldDefn fieldDefn = new IndexFieldDefn(fieldName, store, index, null);
+        IndexFieldDefn fieldDefn = new IndexFieldDefn(fieldName, store, index, Sortable.YES);
         fieldDefn.setPropertyNames(propertyNames);
         
         fieldDefnMap.put(fieldName, fieldDefn);
@@ -227,6 +227,7 @@ public class LIndexFieldsBuilder implements SpiIndexDefnHelper {
             parent.addField(fieldDefn);
             return fieldDefn;
         }
+        
         
         public IndexFieldDefn addField(String propertyName) {
             return addField(propertyName, null);
