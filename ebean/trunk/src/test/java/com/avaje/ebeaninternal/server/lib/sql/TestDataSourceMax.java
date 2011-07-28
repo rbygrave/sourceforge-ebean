@@ -14,6 +14,12 @@ public class TestDataSourceMax extends TestCase {
 
     public void test() {
         
+        boolean runThisManuallyNow = true;
+        
+        if (!runThisManuallyNow){
+            return;
+        }
+        
         String name = "h2";
         
         DataSourceConfig dsConfig = new DataSourceConfig();

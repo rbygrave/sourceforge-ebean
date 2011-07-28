@@ -11,6 +11,11 @@ public class TestConnectionCloseOnSqlerr extends TestCase {
 
     public void test() {
 
+        boolean runManuallyNow = true;
+        if (!runManuallyNow){
+            return;
+        }
+        
         try {
             for (int i = 0; i < 100; i++) {
                 try {
@@ -34,6 +39,11 @@ public class TestConnectionCloseOnSqlerr extends TestCase {
 
     public void testTransactional() {
 
+        boolean runManuallyNow = true;
+        if (!runManuallyNow){
+            return;
+        }
+        
         try {
             for (int i = 0; i < 100; i++) {
                 try {

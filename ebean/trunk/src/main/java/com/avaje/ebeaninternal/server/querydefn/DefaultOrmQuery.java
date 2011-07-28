@@ -103,6 +103,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	private int firstRow;
 
+	private int totalHits;
+	
 	/**
 	 * The where clause from a parsed query string.
 	 */
@@ -258,7 +260,15 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
         }
 	}
 	
-	/**
+	public int getTotalHits() {
+        return totalHits;
+    }
+
+    public void setTotalHits(int totalHits) {
+        this.totalHits = totalHits;
+    }
+
+    /**
 	 * Set the BeanDescriptor for the root type of this query.
 	 */
 	public void setBeanDescriptor(BeanDescriptor<?> beanDescriptor) {
