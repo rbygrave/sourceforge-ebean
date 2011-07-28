@@ -73,20 +73,29 @@ public class LuceneIndexDataReader implements DataReader {
         this.searcher = indexSearch.getIndexSearcher();
 
         LuceneOrmQueryRequest luceneRequest = request.getLuceneOrmQueryRequest();
-        
+
+        int firstRow = request.getQuery().getFirstRow();
+        if (firstRow < 1){
+            firstRow = 0;
+        } else {
+            rowIndex = firstRow;
+        }
         int maxRows = request.getQuery().getMaxRows();
         if (maxRows < 1){
             maxRows = 100;
         }
+        int maxDocs = maxRows+firstRow;
         org.apache.lucene.search.Query luceneQuery = luceneRequest.getLuceneQuery();
         Sort luceneSort = luceneRequest.getLuceneSort();
         try {
             TopDocs topDocs;
             if (luceneSort == null){
-                topDocs = searcher.search(luceneQuery, null, maxRows);
+                topDocs = searcher.search(luceneQuery, null, maxDocs);
             } else {
-                topDocs = searcher.search(luceneQuery, null, maxRows, luceneSort);
+                topDocs = searcher.search(luceneQuery, null, maxDocs, luceneSort);
             }
+            
+            request.setTotalHits(topDocs.totalHits);
             
             scoreDocs = topDocs.scoreDocs;
             maxReadRows = scoreDocs.length;

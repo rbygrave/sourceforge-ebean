@@ -1154,4 +1154,9 @@ public interface Query<T> extends Serializable {
      * </p>
      */
     public String getGeneratedSql();
+    
+    /**
+     * Return the total hits matched for a lucene text search query.
+     */
+    public int getTotalHits();
 }
