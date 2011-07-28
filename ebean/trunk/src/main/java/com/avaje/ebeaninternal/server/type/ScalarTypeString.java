@@ -28,6 +28,7 @@ import java.sql.Types;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
 import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 /**
  * ScalarType for String.
@@ -75,7 +76,14 @@ public class ScalarTypeString extends ScalarTypeBase<String> {
 		return true;
 	}
 
+	
     @Override
+    public void jsonWrite(WriteJsonBuffer buffer, String value, JsonValueAdapter ctx) {
+	    String s = format(value);
+    	EscapeJson.escapeQuote(s, buffer);
+    }
+
+	@Override
     public String jsonFromString(String value, JsonValueAdapter ctx) {
         return value;
     }

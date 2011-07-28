@@ -43,8 +43,8 @@ public class TestTextJsonBeanReadVisitorWithCustomJson extends TestCase {
 
             public void visit(Customer bean, JsonWriter ctx) {
                 System.out.println("write visit customer: "+bean);
-                ctx.appendKeyValue("dummyCust", "34");
-                ctx.appendKeyValue("smallCustObject", "{\"a\":34,\"b\":\"asdasdasd\"}");
+                ctx.appendRawValue("dummyCust", "34");
+                ctx.appendRawValue("smallCustObject", "{\"a\":34,\"b\":\"asdasdasd\"}");
             }
         });
         
@@ -53,8 +53,8 @@ public class TestTextJsonBeanReadVisitorWithCustomJson extends TestCase {
 
             public void visit(Contact bean, JsonWriter ctx) {
                 System.out.println("write additional custom json on customer: "+bean);
-                ctx.appendKeyValue("dummy", "  3400"+bean.getId()+"");
-                ctx.appendKeyValue("smallObject", "{\"contactA\":34,\"contactB\":\"banana\"}");
+                ctx.appendRawValue("dummy", "  3400"+bean.getId()+"");
+                ctx.appendRawValue("smallObject", "{\"contactA\":34,\"contactB\":\"banana\"}");
             }
             
         });

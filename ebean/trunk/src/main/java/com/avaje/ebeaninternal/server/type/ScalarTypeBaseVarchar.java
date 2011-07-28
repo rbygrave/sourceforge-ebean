@@ -28,6 +28,7 @@ import java.sql.Types;
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 /**
  * Base ScalarType for types which converts to and from a VARCHAR database column.
@@ -104,7 +105,13 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
         return parse(value);
     }
 
-    public String toJsonString(Object value, JsonValueAdapter ctx) {
+    @Override
+    public void jsonWrite(WriteJsonBuffer buffer, T value, JsonValueAdapter ctx) {
+    	String s = format(value);
+    	EscapeJson.escapeQuote(s, buffer);
+    }
+
+	public String toJsonString(Object value, JsonValueAdapter ctx) {
         String s = format(value);
         return EscapeJson.escapeQuote(s);
     }

@@ -31,13 +31,17 @@ import com.avaje.ebean.text.json.JsonElement;
 
 public class ReadJsonRawReader {
 
-    private final ReadJsonContext ctx;
+	public static JsonElement readJsonElement(ReadJsonInterface ctx) {
+		return new ReadJsonRawReader(ctx).readJsonElement();
+	}
+	
+    private final ReadJsonInterface ctx;
     
-    public ReadJsonRawReader(ReadJsonContext ctx){
+    private ReadJsonRawReader(ReadJsonInterface ctx){
         this.ctx = ctx;
     }
 
-    public JsonElement readUnknownValue() {
+    private JsonElement readJsonElement() {
         return readValue();
     }
     
