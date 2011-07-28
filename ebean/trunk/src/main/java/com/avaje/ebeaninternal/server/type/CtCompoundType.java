@@ -270,8 +270,7 @@ public final class CtCompoundType<V> implements ScalarDataReader<V> {
                 ((CtCompoundType)propReaders[i]).jsonWrite(ctx, value, propName);
               
             } else {
-                String js = ((ScalarType)propReaders[i]).jsonToString(value, ctx.getValueAdapter());
-                ctx.appendKeyValue(propName, js);                    
+                ctx.appendNameValue(propName, (ScalarType)propReaders[i], value);
             }   
         }
         

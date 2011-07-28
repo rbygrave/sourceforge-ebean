@@ -33,7 +33,7 @@ public class TestTextJsonUtilDateFormat extends TestCase {
         o.setValueAdapter(new CustomDateFormatAdapter());
         
         String jsonString = context.toJsonString(v, true, o);
-        //System.out.println(jsonString);
+        System.out.println(jsonString);
         
         Assert.assertTrue(jsonString.contains("\"registrationDate\":'"));
     }

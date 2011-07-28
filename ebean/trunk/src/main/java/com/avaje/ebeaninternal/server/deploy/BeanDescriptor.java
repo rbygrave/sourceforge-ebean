@@ -2605,7 +2605,7 @@ public class BeanDescriptor<T> {
                 InheritInfo localInheritInfo = inheritInfo.readType(bean.getClass());
                 String discValue = localInheritInfo.getDiscriminatorStringValue();
                 String discColumn = localInheritInfo.getDiscriminatorColumn();
-                ctx.appendKeyValue(discColumn, "\""+discValue+"\"");
+                ctx.appendDiscriminator(discColumn, discValue);
 
                 BeanDescriptor<?> localDescriptor = localInheritInfo.getBeanDescriptor();
                 localDescriptor.jsonWriteProperties(ctx, bean);

@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.type;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 
 
@@ -84,6 +85,11 @@ public abstract class ScalarTypeBase<T> implements ScalarType<T> {
         list.addScalarType(propName, this);
     }
 
+    public void jsonWrite(WriteJsonBuffer buffer, T value, JsonValueAdapter ctx) {
+    	String v = jsonToString(value, ctx);
+    	buffer.append(v);
+    }
+    
     public String jsonToString(T value, JsonValueAdapter ctx) {
         return formatValue(value);
     }

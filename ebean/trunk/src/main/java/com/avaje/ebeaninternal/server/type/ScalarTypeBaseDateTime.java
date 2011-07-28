@@ -28,6 +28,7 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 /**
  * Base type for DateTime types.
@@ -81,6 +82,12 @@ public abstract class ScalarTypeBaseDateTime<T> extends ScalarTypeBase<T> {
     }
     
     @Override
+    public void jsonWrite(WriteJsonBuffer buffer, T value, JsonValueAdapter ctx) {
+    	String v = jsonToString(value, ctx);
+    	buffer.append(v);
+    }
+
+	@Override
     public String jsonToString(T value, JsonValueAdapter ctx) {
         Timestamp ts = convertToTimestamp(value);
         return ctx.jsonFromTimestamp(ts);

@@ -29,6 +29,8 @@ import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebean.text.json.JsonWriteBeanVisitor;
 import com.avaje.ebean.text.json.JsonWriteOptions;
 import com.avaje.ebean.text.json.JsonWriter;
+import com.avaje.ebeaninternal.server.type.EscapeJson;
+import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.server.util.ArrayStack;
 
 
@@ -79,7 +81,17 @@ public class WriteJsonContext implements JsonWriter {
         }
     }
     
-    public void end() {
+    public void appendRawValue(String key, String rawJsonValue) {
+    	appendKeyWithComma(key, true);
+    	buffer.append(rawJsonValue);
+    }
+    
+    public void appendQuoteEscapeValue(String key, String valueToEscape) {
+    	appendKeyWithComma(key, true);
+    	EscapeJson.escapeQuote(valueToEscape, buffer);
+    }
+	
+	public void end() {
         if (callback != null){
             buffer.append(")");
         }        
@@ -242,9 +254,17 @@ public class WriteJsonContext implements JsonWriter {
         appendKeyWithComma(key, false);
     }
 
-    public void appendKey(String key) {
-        appendKeyWithComma(key, true);
+    public <T> void appendNameValue(String key, ScalarType<T> scalarType, T value) {
+    	appendKeyWithComma(key, true);
+    	scalarType.jsonWrite(buffer, value, getValueAdapter());
     }
+
+	public void appendDiscriminator(String key, String discValue) {
+    	appendKeyWithComma(key, true);
+    	buffer.append("\"");
+    	buffer.append(discValue);
+    	buffer.append("\"");    	
+    }   
     
     private void appendKeyWithComma(String key, boolean withComma) {
         if (withComma){
@@ -261,13 +281,8 @@ public class WriteJsonContext implements JsonWriter {
         buffer.append("\":");
     }
 
-    public void appendKeyValue(String key, String escapedValue) {
-        appendKey(key);
-        buffer.append(escapedValue);
-    }
-
     public void appendNull(String key) {
-        appendKey(key);
+    	appendKeyWithComma(key, true);
         buffer.append("null");
     }
 

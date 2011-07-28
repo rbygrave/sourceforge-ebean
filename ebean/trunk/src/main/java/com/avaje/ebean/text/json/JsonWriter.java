@@ -40,5 +40,8 @@ public interface JsonWriter {
      * @param rawJsonValue
      *            raw json value
      */
-    public void appendKeyValue(String key, String rawJsonValue);
+    public void appendRawValue(String key, String rawJsonValue);
+
+    public void appendQuoteEscapeValue(String key, String rawJsonValue);
+
 }

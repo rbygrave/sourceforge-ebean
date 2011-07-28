@@ -1311,8 +1311,7 @@ public class BeanProperty implements ElPropertyValue {
         if (value == null) {
             ctx.appendNull(name);
         } else {
-            String jv = scalarType.jsonToString(value, ctx.getValueAdapter());
-            ctx.appendKeyValue(name, jv);
+            ctx.appendNameValue(name, scalarType, value);
         }
     }
 

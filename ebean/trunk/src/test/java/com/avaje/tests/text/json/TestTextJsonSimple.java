@@ -39,8 +39,7 @@ public class TestTextJsonSimple extends TestCase {
 
             public void visit(Customer bean, JsonWriter ctx) {
                 System.out.println("visiting "+bean);
-                ctx.appendKeyValue("dummy", "34");
-                //ctx.appendKeyValue("dummy", "{\"a\":34,\"b\":\"asdasdasd\"}");
+                ctx.appendRawValue("dummy", "34");
             }
             
         });

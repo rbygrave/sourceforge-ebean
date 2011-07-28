@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.text.json.JsonValueAdapter;
+import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 /**
  * A ScalarType that uses a ScalarTypeConverter to convert to and from another
@@ -179,7 +180,12 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
         return scalarType.jsonToString(sv, ctx);
     }
 
-    public B jsonFromString(String value, JsonValueAdapter ctx) {
+    public void jsonWrite(WriteJsonBuffer buffer, B value, JsonValueAdapter ctx) {
+    	S sv = converter.unwrapValue(value);
+        scalarType.jsonWrite(buffer, sv, ctx);
+    }
+
+	public B jsonFromString(String value, JsonValueAdapter ctx) {
         S s = scalarType.jsonFromString(value, ctx);
         return converter.wrapValue(s);
     }
