@@ -67,7 +67,7 @@ public class IndexUpdatesBuilder {
         if (tableIUDList != null) {
             for (int i = 0; i < tableIUDList.size(); i++) {
                 TableIUD tableIUD = tableIUDList.get(i);
-                List<BeanDescriptor<?>> descList = server.getBeanDescriptors(tableIUD.getTable());
+                List<BeanDescriptor<?>> descList = server.getBeanDescriptors(tableIUD.getTableName());
                 if (descList != null) {
                     for (int j = 0; j < descList.size(); j++) {
                         BeanDescriptor<?> d = descList.get(j);

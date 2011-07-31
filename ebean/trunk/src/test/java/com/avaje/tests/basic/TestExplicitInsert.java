@@ -6,15 +6,14 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.Update;
 import com.avaje.tests.model.basic.EBasic;
-import com.avaje.tests.model.ldap.LDPerson;
 
 public class TestExplicitInsert extends TestCase {
 
     public void test() {
         
-        GlobalProperties.put("ebean.classes", ""+LDPerson.class.toString()+","+EBasic.class.toString());
+        //GlobalProperties.put("ebean.classes", ""+LDPerson.class.toString()+","+EBasic.class.toString());
     	
         EBasic b = new EBasic();
         b.setName("exp insert");
@@ -55,6 +54,13 @@ public class TestExplicitInsert extends TestCase {
         } else {
         	assertTrue(list2.isEmpty());
         }
+        
+        Update<EBasic> update = Ebean.createUpdate(EBasic.class, "update ebasic set description = 'test'");
+        
+        int rows = update.execute();
+        
+        assertTrue(rows > 0);
+        Ebean.externalModification("e_basic", true, false, true);
     }
     
 }

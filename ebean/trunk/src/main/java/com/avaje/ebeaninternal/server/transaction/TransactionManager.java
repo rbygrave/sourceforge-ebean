@@ -123,6 +123,8 @@ public class TransactionManager {
 	
 	private int clusterDebugLevel;
 	
+	private final BulkEventListenerMap bulkEventListenerMap;
+	
 	/**
 	 * Create the TransactionManager
 	 */
@@ -138,6 +140,7 @@ public class TransactionManager {
 		this.transLogger = new TransactionLogManager(config);
 		this.backgroundExecutor = backgroundExecutor;		
 		this.dataSource = config.getDataSource();
+		this.bulkEventListenerMap = new BulkEventListenerMap(config.getBulkTableEventListeners());
 		
 		// log some transaction events using a java util logger          
         this.commitDebugLevel = GlobalProperties.getInt("ebean.commit.debuglevel", 0);
@@ -160,7 +163,11 @@ public class TransactionManager {
         return beanDescriptorManager;
     }
 
-    /**
+	public BulkEventListenerMap getBulkEventListenerMap() {
+    	return bulkEventListenerMap;
+    }
+
+	/**
 	 * Return the logging level for transactions.
 	 */
 	public LogLevel getTransactionLogLevel(){

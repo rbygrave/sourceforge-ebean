@@ -35,11 +35,13 @@ import javax.xml.bind.annotation.XmlType;
 import com.avaje.ebean.annotation.LdapDomain;
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.ScalarTypeConverter;
+import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebean.event.ServerConfigStartup;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.server.util.ClassPathSearchMatcher;
 
@@ -73,6 +75,9 @@ public class BootupClasses implements ClassPathSearchMatcher {
 
     private ArrayList<Class<?>> luceneIndexList = new ArrayList<Class<?>>();
 
+    private ArrayList<Class<?>> serverConfigStartupList = new ArrayList<Class<?>>();
+    private ArrayList<ServerConfigStartup> serverConfigStartupInstances = new ArrayList<ServerConfigStartup>();
+
     private List<BeanPersistController> persistControllerInstances = new ArrayList<BeanPersistController>();
     private List<BeanPersistListener<?>> persistListenerInstances = new ArrayList<BeanPersistListener<?>>();
     private List<BeanQueryAdapter> queryAdapterInstances = new ArrayList<BeanQueryAdapter>();
@@ -99,6 +104,7 @@ public class BootupClasses implements ClassPathSearchMatcher {
         this.beanListenerList.addAll(parent.beanListenerList);
         this.beanQueryAdapterList.addAll(parent.beanQueryAdapterList);
         this.luceneIndexList.addAll(parent.luceneIndexList);
+        this.serverConfigStartupList.addAll(parent.serverConfigStartupList);
     }
 
     private void process(Iterator<Class<?>> it) {
@@ -115,6 +121,23 @@ public class BootupClasses implements ClassPathSearchMatcher {
         return new BootupClasses(this);
     }
 
+    /**
+     * Run any ServerConfigStartup listeners.
+     */
+    public void runServerConfigStartup(ServerConfig serverConfig) {
+    	
+        for (Class<?> cls : serverConfigStartupList) {
+            try {
+            	ServerConfigStartup newInstance = (ServerConfigStartup) cls.newInstance();
+            	newInstance.onStart(serverConfig);
+            	
+            } catch (Exception e) {
+                String msg = "Error creating BeanQueryAdapter " + cls;
+                logger.log(Level.SEVERE, msg, e);
+            }
+        }
+    }
+    
     public void addIndexDefns(List<IndexDefn<?>> indexInstances) {
         if (indexInstances != null) {
             this.luceneIndexInstances.addAll(indexInstances);
@@ -123,7 +146,11 @@ public class BootupClasses implements ClassPathSearchMatcher {
     
     public void addQueryAdapters(List<BeanQueryAdapter> queryAdapterInstances) {
         if (queryAdapterInstances != null) {
-            this.queryAdapterInstances.addAll(queryAdapterInstances);
+            for (BeanQueryAdapter a : queryAdapterInstances) {
+            	this.queryAdapterInstances.add(a);
+            	// don't automatically instantiate
+            	this.beanQueryAdapterList.remove(a.getClass());
+            }
         }
     }
 
@@ -132,16 +159,34 @@ public class BootupClasses implements ClassPathSearchMatcher {
      */
     public void addPersistControllers(List<BeanPersistController> beanControllerInstances) {
         if (beanControllerInstances != null) {
-            this.persistControllerInstances.addAll(beanControllerInstances);
+        	for (BeanPersistController c : beanControllerInstances) {
+        		this.persistControllerInstances.add(c);
+        		// don't automatically instantiate
+        		this.beanControllerList.remove(c.getClass());
+            }
         }
     }
 
     public void addPersistListeners(List<BeanPersistListener<?>> listenerInstances) {
         if (listenerInstances != null) {
-            this.persistListenerInstances.addAll(listenerInstances);
+            for (BeanPersistListener<?> l : listenerInstances) {
+                this.persistListenerInstances.add(l);
+        		// don't automatically instantiate
+	            this.beanListenerList.remove(l.getClass());
+            }
+        }
+    }    
+
+    public void addServerConfigStartup(List<ServerConfigStartup> startupInstances) {
+        if (startupInstances != null) {
+            for (ServerConfigStartup l : startupInstances) {
+                this.serverConfigStartupInstances.add(l);
+        		// don't automatically instantiate
+	            this.serverConfigStartupList.remove(l.getClass());
+            }
         }
     }
-
+    
     public List<BeanQueryAdapter> getBeanQueryAdapters() {
         // add class registered BeanQueryAdapter to the
         // already created instances
@@ -348,6 +393,10 @@ public class BootupClasses implements ClassPathSearchMatcher {
         if (IndexDefn.class.isAssignableFrom(cls)) {
             luceneIndexList.add(cls);
             interesting = true;
+        }
+        if (ServerConfigStartup.class.isAssignableFrom(cls)){
+        	serverConfigStartupList.add(cls);
+        	interesting = true;
         }
         
         return interesting;
