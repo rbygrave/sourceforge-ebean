@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.avaje.ebean.event.BulkTableEvent;
 import com.avaje.ebeaninternal.server.cluster.BinaryMessage;
 import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
 
@@ -31,7 +32,7 @@ public final class TransactionEventTable implements Serializable {
     public void readBinaryMessage(DataInput dataInput) throws IOException {
         
         TableIUD tableIud = TableIUD.readBinaryMessage(dataInput);
-        map.put(tableIud.getTable(), tableIud);
+        map.put(tableIud.getTableName(), tableIud);
     }
 
     
@@ -51,7 +52,7 @@ public final class TransactionEventTable implements Serializable {
 	
 	public void add(TableIUD newTableIUD){
 
-		TableIUD existingTableIUD = map.put(newTableIUD.getTable(), newTableIUD);
+		TableIUD existingTableIUD = map.put(newTableIUD.getTableName(), newTableIUD);
 		if (existingTableIUD != null){
 			newTableIUD.add(existingTableIUD);
 		}
@@ -65,7 +66,7 @@ public final class TransactionEventTable implements Serializable {
 		return map.values();
 	}
 	
-	public static class TableIUD implements Serializable {
+	public static class TableIUD implements Serializable, BulkTableEvent {
 		
 		private static final long serialVersionUID = -1958317571064162089L;
 		
@@ -119,10 +120,9 @@ public final class TransactionEventTable implements Serializable {
 				delete = true;
 			}
 		}
-
-		public String getTable() {
-			return table;
-		}
+        public String getTableName() {
+	        return table;
+        }
 
 		public boolean isInsert() {
 			return insert;

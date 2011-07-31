@@ -65,7 +65,7 @@ public final class PostCommitProcessing {
 	private final RemoteTransactionEvent remoteTransactionEvent;
 
     private final DeleteByIdMap deleteByIdMap;
-	
+    
 	/**
 	 * Create for a TransactionManager and event.
 	 */
@@ -139,6 +139,13 @@ public final class PostCommitProcessing {
             for (int i = 0; i < persistBeanRequests.size(); i++) {
                 persistBeanRequests.get(i).notifyLocalPersistListener();
             }
+        }
+        TransactionEventTable eventTables = event.getEventTables();
+        if (eventTables != null && !eventTables.isEmpty()){
+        	BulkEventListenerMap map = manager.getBulkEventListenerMap();
+        	for (TableIUD tableIUD : eventTables.values()) {
+                map.process(tableIUD);
+            } 
         }
     }
 

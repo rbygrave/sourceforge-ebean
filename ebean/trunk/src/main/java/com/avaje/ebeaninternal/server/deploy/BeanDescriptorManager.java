@@ -319,7 +319,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
      */
     public void cacheNotify(TransactionEventTable.TableIUD tableIUD) {
 
-        List<BeanDescriptor<?>> list = getBeanDescriptors(tableIUD.getTable());
+        List<BeanDescriptor<?>> list = getBeanDescriptors(tableIUD.getTableName());
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 list.get(i).cacheNotify(tableIUD);

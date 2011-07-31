@@ -38,6 +38,8 @@ import com.avaje.ebean.config.lucene.LuceneConfig;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebean.event.BulkTableEventListener;
+import com.avaje.ebean.event.ServerConfigStartup;
 import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.core.DetectLucene;
 
@@ -224,7 +226,9 @@ public class ServerConfig {
     private List<BeanPersistController> persistControllers = new ArrayList<BeanPersistController>();
     private List<BeanPersistListener<?>> persistListeners = new ArrayList<BeanPersistListener<?>>();
     private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
-
+    private List<BulkTableEventListener> bulkTableEventListeners = new ArrayList<BulkTableEventListener>();
+    private List<ServerConfigStartup> configStartupListeners = new ArrayList<ServerConfigStartup>();
+    
     private EncryptKeyManager encryptKeyManager;
 
     private EncryptDeployManager encryptDeployManager;
@@ -1273,6 +1277,34 @@ public class ServerConfig {
         return persistListeners;
     }
 
+    /**
+     * Add a BulkTableEventListener
+     */
+    public void add(BulkTableEventListener bulkTableEventListener) {
+        bulkTableEventListeners.add(bulkTableEventListener);
+    }
+
+    /**
+     * Return the list of BulkTableEventListener instances.
+     */
+    public List<BulkTableEventListener> getBulkTableEventListeners() {
+        return bulkTableEventListeners;
+    }
+    
+    /**
+     * Add a ServerConfigStartup.
+     */
+    public void addServerConfigStartup(ServerConfigStartup  configStartupListener) {
+        configStartupListeners.add(configStartupListener);
+    }
+
+    /**
+     * Return the list of ServerConfigStartup instances.
+     */
+    public List<ServerConfigStartup> getServerConfigStartupListeners() {
+        return configStartupListeners;
+    }
+    
     /**
      * Register all the BeanPersistListener instances.
      * <p>

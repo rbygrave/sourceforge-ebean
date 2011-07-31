@@ -306,7 +306,12 @@ public class DefaultServerFactory implements BootupEbeanManager {
 		
 		BootupClasses bootupClasses = getBootupClasses1(serverConfig);
 		bootupClasses.addPersistControllers(serverConfig.getPersistControllers());
+		bootupClasses.addPersistListeners(serverConfig.getPersistListeners());
+		bootupClasses.addQueryAdapters(serverConfig.getQueryAdapters());
+		bootupClasses.addServerConfigStartup(serverConfig.getServerConfigStartupListeners());
 		
+		// run any ServerConfigStartup instances
+		bootupClasses.runServerConfigStartup(serverConfig);
 		return bootupClasses;
 	}
 	
