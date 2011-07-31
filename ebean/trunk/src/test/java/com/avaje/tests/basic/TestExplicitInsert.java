@@ -1,15 +1,21 @@
 package com.avaje.tests.basic;
 
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.tests.model.basic.EBasic;
+import com.avaje.tests.model.ldap.LDPerson;
 
 public class TestExplicitInsert extends TestCase {
 
     public void test() {
         
+        GlobalProperties.put("ebean.classes", ""+LDPerson.class.toString()+","+EBasic.class.toString());
+    	
         EBasic b = new EBasic();
         b.setName("exp insert");
         b.setDescription("explicit insert");
@@ -30,6 +36,25 @@ public class TestExplicitInsert extends TestCase {
         assertTrue(!b.getId().equals(b2.getId()));
         
         
+        List<EBasic> list = server.find(EBasic.class)
+        	.setMaxRows(10)
+        	.findList();
+        
+        assertTrue(list.size() >= 2);
+        
+        int firstRow = 1;
+        List<EBasic> list2 = server.find(EBasic.class)
+        .order().asc("id")
+        .setFirstRow(firstRow)
+    	.setMaxRows(10)
+    	.findList();
+    
+        int expectedCount = list.size() -firstRow;
+        if (expectedCount > 0){
+        	assertEquals(expectedCount, list2.size());
+        } else {
+        	assertTrue(list2.isEmpty());
+        }
     }
     
 }

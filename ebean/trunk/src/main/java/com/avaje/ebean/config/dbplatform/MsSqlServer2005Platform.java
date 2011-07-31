@@ -38,7 +38,9 @@ public class MsSqlServer2005Platform extends DatabasePlatform {
 
     public MsSqlServer2005Platform(){
         super();
-        this.name = "mssqlserver2005";   
+        this.name = "mssqlserver2005"; 
+        this.sqlLimiter = new MsSqlServer2005SqlLimiter();
+        this.dbDdlSyntax.setIdentity("identity(1,1)");
         this.dbIdentity.setIdType(IdType.IDENTITY);
         this.dbIdentity.setSupportsGetGeneratedKeys(true);
         this.dbIdentity.setSupportsIdentity(true);
