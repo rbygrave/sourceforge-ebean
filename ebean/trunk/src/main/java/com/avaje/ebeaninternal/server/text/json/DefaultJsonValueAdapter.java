@@ -22,6 +22,7 @@ package com.avaje.ebeaninternal.server.text.json;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 
@@ -30,11 +31,12 @@ public class DefaultJsonValueAdapter implements JsonValueAdapter {
     private final SimpleDateFormat dateTimeProto;
 
     public DefaultJsonValueAdapter(String dateTimeFormat){
-        this.dateTimeProto = new SimpleDateFormat(dateTimeFormat);        
+        this.dateTimeProto = new SimpleDateFormat(dateTimeFormat); 
+        this.dateTimeProto.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
     
     public DefaultJsonValueAdapter(){
-        this("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        this("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     }
     
     private SimpleDateFormat dtFormat() {
@@ -42,11 +44,11 @@ public class DefaultJsonValueAdapter implements JsonValueAdapter {
     }
     
     public String jsonFromDate(Date date) {
-        return date.toString();
+        return "\""+date.toString()+"\"";
     }
 
     public String jsonFromTimestamp(Timestamp date) {
-        return dtFormat().format(date);
+        return "\""+dtFormat().format(date)+"\"";
     }
 
     public Date jsonToDate(String jsonDate) {
