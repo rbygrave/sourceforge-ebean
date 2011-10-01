@@ -42,7 +42,10 @@ class PathPropertiesParser {
     
     private PathProperties.Props currentPathProps;
 
-    public static PathProperties parse(String source) {
+    /**
+     * Use {@link PathProperties#parse(String)}.
+     */
+    static PathProperties parse(String source) {
         return new PathPropertiesParser(source).pathProps;
     }
 

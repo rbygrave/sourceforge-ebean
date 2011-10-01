@@ -54,5 +54,23 @@ public class JsonElementNull implements JsonElement {
         return null;
     }
 
+    public Object eval(String exp){
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on null");
+    	}
+    	return null;
+    }
+
+    public int evalInt(String exp) {
+	    return 0;
+    }
+
+    public String evalString(String exp) {
+	    return null;
+    }
+
+    public boolean evalBoolean(String exp) {
+	    return false;
+    }
     
 }

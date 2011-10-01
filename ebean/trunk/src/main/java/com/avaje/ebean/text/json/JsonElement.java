@@ -45,4 +45,14 @@ public interface JsonElement {
      * </p>
      */
     public String toPrimitiveString();
+    
+    public Object eval(String exp);
+
+    public int evalInt(String exp);
+
+    public String evalString(String exp);
+
+    public boolean evalBoolean(String exp);
+
+
 }

@@ -38,13 +38,13 @@ public class JsonElementBoolean implements JsonElement {
     
     public static final JsonElementBoolean FALSE = new JsonElementBoolean(false);
     
-    private final boolean value;
+    private final Boolean value;
     
-    private JsonElementBoolean(boolean value) {
+    private JsonElementBoolean(Boolean value) {
         this.value = value;
     }
 
-    public boolean getValue() {
+    public Boolean getValue() {
         return value;
     }
     
@@ -57,8 +57,26 @@ public class JsonElementBoolean implements JsonElement {
     }
 
     public String toPrimitiveString() {
-        return Boolean.toString(value);
+        return value.toString();
     }
     
+    public Object eval(String exp){
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on boolean");
+    	}
+    	return value;
+    }
+
+    public int evalInt(String exp) {
+	    return value ? 1 : 0;
+    }
+
+    public String evalString(String exp) {
+	    return toString();
+    }
+
+    public boolean evalBoolean(String exp) {
+	    return value;
+    }
     
 }

@@ -136,7 +136,29 @@ public class ReadBasicJsonContext implements ReadJsonInterface {
             char ch = src.nextChar("EOF reading quoted value");
             if (escape) {
                 // in escape mode so just append the character
-                sb.append(ch);
+                escape = false;
+            	switch (ch) {
+                case 'n':
+                	sb.append('\n');
+                	break;
+                case 'r':
+                	sb.append('\r');
+                	break;
+                case 't':
+                	sb.append('\t');
+                	break;
+                case 'f':
+                	sb.append('\f');
+                	break;
+                case 'b':
+                	sb.append('\b');
+                	break;
+
+                default:
+                    sb.append('\\');
+                    sb.append(ch);
+	                break;
+                }
                 
             } else {
                 switch (ch) {

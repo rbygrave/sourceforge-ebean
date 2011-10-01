@@ -93,6 +93,19 @@ public class JsonWriteOptions {
     protected PathProperties pathProperties;
 
     /**
+     * Parse and return a PathProperties from nested string format like
+     * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
+     * path containing "g" and the root path contains "a","b","c" and "f".
+     */
+    public static JsonWriteOptions parsePath(String pathProperties) {
+    	
+    	PathProperties p  = PathProperties.parse(pathProperties);
+    	JsonWriteOptions o = new JsonWriteOptions();
+    	o.setPathProperties(p);
+    	return o;
+    }
+    
+    /**
      * This creates and returns a copy of these options.
      * <p>
      * Note that it assumes that the JsonWriteBeanVisitor (if defined) are

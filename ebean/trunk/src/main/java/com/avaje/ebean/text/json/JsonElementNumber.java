@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.text.json;
 
+
 /**
  * JSON number element.
  * <p>
@@ -54,5 +55,35 @@ public class JsonElementNumber implements JsonElement {
     public String toPrimitiveString() {
         return value;
     }
+
+    public Object eval(String exp){
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return Double.parseDouble(value);
+    }
+
+    public int evalInt(String exp) {
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return Integer.parseInt(value);
+    }
+
+    public String evalString(String exp) {
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return value;
+    }
+
+    public boolean evalBoolean(String exp) {
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return Boolean.parseBoolean(value);
+    }
+
+    
 
 }

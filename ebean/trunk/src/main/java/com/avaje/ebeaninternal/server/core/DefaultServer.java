@@ -82,6 +82,7 @@ import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.text.csv.CsvReader;
 import com.avaje.ebean.text.json.JsonContext;
+import com.avaje.ebean.text.json.JsonElement;
 import com.avaje.ebeaninternal.api.LoadBeanRequest;
 import com.avaje.ebeaninternal.api.LoadManyRequest;
 import com.avaje.ebeaninternal.api.ScopeTrans;
@@ -127,6 +128,7 @@ import com.avaje.ebeaninternal.server.querydefn.DefaultOrmUpdate;
 import com.avaje.ebeaninternal.server.querydefn.DefaultRelationalQuery;
 import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
 import com.avaje.ebeaninternal.server.text.csv.TCsvReader;
+import com.avaje.ebeaninternal.server.text.json.InternalJsonParser;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager;
@@ -2006,6 +2008,10 @@ public final class DefaultServer implements SpiEbeanServer {
         TypeInfo typeInfo = ParamTypeHelper.getTypeInfo(genericType);
         if (typeInfo == null){
             return false;
+        }
+        Class<?> beanType = typeInfo.getBeanType();
+        if (JsonElement.class.isAssignableFrom(beanType)){
+        	return true;
         }
         return getBeanDescriptor(typeInfo.getBeanType()) != null;
     }
