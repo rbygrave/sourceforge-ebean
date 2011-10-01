@@ -26,14 +26,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonContext;
+import com.avaje.ebean.text.json.JsonElement;
 import com.avaje.ebean.text.json.JsonReadOptions;
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebean.text.json.JsonWriteOptions;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.type.EscapeJson;
 import com.avaje.ebeaninternal.util.ParamTypeHelper;
 import com.avaje.ebeaninternal.util.ParamTypeHelper.ManyType;
 import com.avaje.ebeaninternal.util.ParamTypeHelper.TypeInfo;
@@ -133,6 +138,11 @@ public class DJsonContext implements JsonContext {
     public Object toObject(Type genericType, String json, JsonReadOptions options) {
         
         TypeInfo info = ParamTypeHelper.getTypeInfo(genericType);
+        Class<?> beanType = info.getBeanType();
+        if (JsonElement.class.isAssignableFrom(beanType)){
+        	return InternalJsonParser.parse(json);
+        }
+
         ManyType manyType = info.getManyType();
         switch (manyType) {
         case NONE:
@@ -148,8 +158,13 @@ public class DJsonContext implements JsonContext {
     }
     
     public Object toObject(Type genericType, Reader json, JsonReadOptions options) {
-        
+            	
         TypeInfo info = ParamTypeHelper.getTypeInfo(genericType);
+        Class<?> beanType = info.getBeanType();
+        if (JsonElement.class.isAssignableFrom(beanType)){
+        	return InternalJsonParser.parse(json);
+        }
+        
         ManyType manyType = info.getManyType();
         switch (manyType) {
         case NONE:
@@ -199,9 +214,23 @@ public class DJsonContext implements JsonContext {
         return b.getBufferOutput();
     }
 
+    @SuppressWarnings("unchecked")
     private void toJsonInternal(Object o, WriteJsonBuffer buffer, boolean pretty, JsonWriteOptions options, String requestCallback){
 
-        if (o instanceof Collection<?>){
+    	if (o == null){
+    		buffer.append("null");
+    	} else if (o instanceof Number) {
+    		buffer.append(o.toString());
+    	} else if (o instanceof Boolean) {
+    		buffer.append(o.toString());
+    	} else if (o instanceof String) {
+    		EscapeJson.escapeQuote(o.toString(), buffer);
+    	} else if (o instanceof JsonElement) {
+    	
+    	} else if (o instanceof Map<?,?>){
+            toJsonFromMap((Map<Object,Object>)o, buffer, pretty, options, requestCallback);
+            
+    	} else if (o instanceof Collection<?>){
             toJsonFromCollection((Collection<?>)o, buffer, pretty, options, requestCallback);
             
         } else {
@@ -213,12 +242,13 @@ public class DJsonContext implements JsonContext {
     }
    
 
-    private <T> String toJsonFromCollection(Collection<T> c, WriteJsonBuffer buffer, boolean pretty, 
+    private <T> void toJsonFromCollection(Collection<T> c, WriteJsonBuffer buffer, boolean pretty, 
             JsonWriteOptions options, String requestCallback){
         
         Iterator<T> it = c.iterator();
         if (!it.hasNext()){
-            return null;
+        	buffer.append("[]");
+            return;
         }
         
         WriteJsonContext ctx = new WriteJsonContext(buffer, pretty, dfltValueAdapter, options, requestCallback);
@@ -235,7 +265,54 @@ public class DJsonContext implements JsonContext {
         }
         ctx.appendArrayEnd();
         ctx.end();
-        return ctx.getJson();
+    }
+
+    private void toJsonFromMap(Map<Object,Object> map, WriteJsonBuffer buffer, boolean pretty, 
+            JsonWriteOptions options, String requestCallback){
+        
+        if (map.isEmpty()){
+        	buffer.append("{}");
+            return;
+        }
+        
+        WriteJsonContext ctx = new WriteJsonContext(buffer, pretty, dfltValueAdapter, options, requestCallback);
+
+        Set<Entry<Object,Object>> entrySet = map.entrySet();
+        Iterator<Entry<Object, Object>> it = entrySet.iterator();
+        
+        Entry<Object, Object> entry = it.next();
+
+        ctx.appendObjectBegin();
+        toJsonMapKey(buffer, false, entry.getKey());
+        toJsonMapValue(buffer, pretty, options, requestCallback, entry.getValue());
+        
+        while (it.hasNext()) {
+            entry = it.next();
+            ctx.appendComma();
+            toJsonMapKey(buffer, pretty, entry.getKey());
+            toJsonMapValue(buffer, pretty, options, requestCallback, entry.getValue());
+        }
+        ctx.appendObjectEnd();
+        ctx.end();
+    }
+
+	private void toJsonMapKey(WriteJsonBuffer buffer, boolean pretty, Object key) {
+		if (pretty){
+			buffer.append("\n");
+		}
+        buffer.append("\"");
+        buffer.append(key.toString());
+        buffer.append("\":");
+	}
+	
+	private void toJsonMapValue(WriteJsonBuffer buffer, boolean pretty, JsonWriteOptions options, String requestCallback,
+            Object value) {
+		
+        if (value == null){
+        	buffer.append("null");
+        } else {
+            toJsonInternal(value, buffer, pretty, options, requestCallback);        	
+        }
     }
     
     private <T> BeanDescriptor<T> getDecriptor(Class<T> cls) {

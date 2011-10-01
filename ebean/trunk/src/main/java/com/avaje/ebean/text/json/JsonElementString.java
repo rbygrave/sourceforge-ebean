@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean.text.json;
 
+
 /**
  * JSON string element.
  * <p>
@@ -55,4 +56,36 @@ public class JsonElementString implements JsonElement {
         return value;
     }
     
+    public Object eval(String exp){
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return value;
+    }
+
+    public int evalInt(String exp) {
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	try {
+    		return Integer.parseInt(value);
+    	} catch (NumberFormatException e){
+    		return 0;
+    	}
+    }
+
+    public String evalString(String exp) {
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return value;
+    }
+
+    public boolean evalBoolean(String exp) {
+    	if (exp != null){
+    		throw new IllegalArgumentException("expression ["+exp+"] not allowed on number");
+    	}
+    	return Boolean.parseBoolean(exp);
+    }
+
 }

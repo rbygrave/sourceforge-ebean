@@ -2654,7 +2654,7 @@ public class BeanDescriptor<T> {
         if (props != null){
             for (String prop : props) {
                 BeanProperty p = getBeanProperty(prop);
-                if (!p.isId()){
+                if (p != null && !p.isId()){
                     p.jsonWrite(ctx, bean);
                 }
             }

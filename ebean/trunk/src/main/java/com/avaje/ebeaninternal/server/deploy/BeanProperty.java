@@ -28,6 +28,7 @@ import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
 import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
+import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.validation.factory.Validator;
 import com.avaje.ebeaninternal.server.core.InternString;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor.EntityType;
@@ -1317,8 +1318,12 @@ public class BeanProperty implements ElPropertyValue {
 
     public void jsonRead(ReadJsonContext ctx, Object bean) {
 
-        String jsonValue = ctx.readScalarValue();
-
+    	String jsonValue;
+    	try {
+        	jsonValue = ctx.readScalarValue();
+    	} catch (TextException e){
+    		throw new TextException("Error reading property "+getFullBeanName(), e);
+    	}
         Object objValue;
         if (jsonValue == null) {
             objValue = null;
