@@ -153,6 +153,9 @@ public class ReadBasicJsonContext implements ReadJsonInterface {
                 case 'b':
                 	sb.append('\b');
                 	break;
+                case '"':
+                	sb.append('"');
+                	break;
 
                 default:
                     sb.append('\\');
