@@ -100,4 +100,8 @@ public class ArrayStack<E> {
     public int size(){
         return list.size();
     }
+    
+    public boolean contains(Object o){
+    	return list.contains(o);
+    }
 }
