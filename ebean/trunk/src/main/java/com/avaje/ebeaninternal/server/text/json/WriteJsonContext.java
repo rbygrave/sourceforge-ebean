@@ -320,7 +320,7 @@ public class WriteJsonContext implements JsonWriter {
         if (parentBeans.isEmpty()){
             return false;
         } else {
-            return bean == parentBeans.peek();
+        	return parentBeans.contains(bean);
         }
     }
     
