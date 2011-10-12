@@ -130,8 +130,6 @@ import com.avaje.ebean.text.json.JsonContext;
  * // save the contact back to the HR database 
  * hrDb.save(contact);
  * </pre>
- * 
- * @version 2.5
  */
 public final class Ebean {
 
@@ -140,7 +138,7 @@ public final class Ebean {
     /**
      * The version and date of build.
      */
-    private static final String EBVERSION = "2.7.3";
+    private static final String EBVERSION = "2.7.4";
 
     static {
         String version = System.getProperty("java.version");
