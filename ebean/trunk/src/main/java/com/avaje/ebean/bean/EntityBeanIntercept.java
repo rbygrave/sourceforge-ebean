@@ -44,27 +44,6 @@ import com.avaje.ebean.Ebean;
 public final class EntityBeanIntercept implements Serializable {	
 	
 	private static final long serialVersionUID = -3664031775464862648L;
-	
-//	    /**
-//     * The default state (CacheStrategy readOnly can be applied).
-//     */
-//    public static final int DEFAULT = 0;
-//    
-//    /**
-//     * Editable (used when the default results in a Read Only bean).
-//     */
-//    public static final int UPDATE = 1;
-//
-//    /**
-//     * Bean is READ ONLY (not editable).
-//     */
-//    public static final int READONLY = 2;
-    
-//    /**
-//     * Read Only immutable state and can't be made
-//     * editable (when in cache and sharable).
-//     */
-//    public static final int SHARED = 3;
     
 	private transient NodeUsageCollector nodeUsageCollector;
 
