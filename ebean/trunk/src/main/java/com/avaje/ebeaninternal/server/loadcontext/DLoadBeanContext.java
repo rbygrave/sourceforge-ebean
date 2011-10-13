@@ -21,6 +21,8 @@ package com.avaje.ebeaninternal.server.loadcontext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.avaje.ebean.bean.BeanLoader;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -40,6 +42,8 @@ import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
  */
 public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 
+	private static final Logger logger = Logger.getLogger(DLoadBeanContext.class.getName());
+	
 	protected final DLoadContext parent;
 
 	protected final BeanDescriptor<?> desc;
@@ -47,19 +51,19 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 	protected final String path;
 	protected final String fullPath;
 
-	private final DLoadWeakList<EntityBeanIntercept> weakList;
+	private final DLoadList<EntityBeanIntercept> weakList;
 
 	private final OrmQueryProperties queryProps;
 	
 	private int batchSize;
 
-	public DLoadBeanContext(DLoadContext parent, BeanDescriptor<?> desc, String path, int batchSize, OrmQueryProperties queryProps) {
+	public DLoadBeanContext(DLoadContext parent, BeanDescriptor<?> desc, String path, int batchSize, OrmQueryProperties queryProps, DLoadList<EntityBeanIntercept> weakList) {
 		this.parent = parent;
 		this.desc = desc;
 		this.path = path;
 		this.batchSize = batchSize;
 		this.queryProps = queryProps;
-		this.weakList = new DLoadWeakList<EntityBeanIntercept>();
+		this.weakList = weakList;//new DLoadWeakList<EntityBeanIntercept>();
 		
 		if (parent.getRelativePath() == null){
 			this.fullPath = path;
@@ -136,15 +140,18 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 	        // lazy load property was a Many
 	        return;
 	    }
-		int position = ebi.getBeanLoaderIndex();
-		boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCaching();
-		
-		LoadBeanRequest req;
 		synchronized (weakList) {
-		    if (hitCache){
+
+			int position = ebi.getBeanLoaderIndex();
+			boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCaching();
+
+			if (hitCache){
 		    	if (desc.loadFromCache(ebi)) {
 		    		// we loaded the bean from cache
 		    		weakList.removeEntry(position);
+					if (logger.isLoggable(Level.FINEST)) {
+	    				logger.log(Level.FINEST,"Loading path:"+fullPath+" - bean loaded from L2 cache, position["+position+"]");
+	    			}
 		    		return;
 		    	}
 		    }
@@ -159,20 +166,25 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 				while (true) {	
 					// check each bean (not already checked) to see if it is in the cache
 					for (int i = skip; i < batchToCheck.size(); i++) {
-			            if (!desc.loadFromCache(batchToCheck.get(i))){
+			            if (desc.loadFromCache(batchToCheck.get(i))){
+							if (logger.isLoggable(Level.FINEST)) {
+			    				logger.log(Level.FINEST,"Loading path:"+fullPath+" - bean loaded from L2 cache(batch)");
+			    			}	
+			            } else {
 			            	actualLoadBatch.add(batchToCheck.get(i));
 			            }
 		            }
 					skip = actualLoadBatch.size();
 					if (batchToCheck.size() < batchSize) {
+						// we have exhausted all the beans that need lazy loading
 						break;
 					}
 					int more = batchSize - actualLoadBatch.size(); 
 					if (more <= 0){
 						break;
 					}
-					// get some more to check 
-					batchToCheck = weakList.getLoadBatch(0, more);
+					// get some more to check as we loaded some from L2 cache  
+					batchToCheck = weakList.getNextBatch(more);
 				} 
 				batch = actualLoadBatch;
 			}
@@ -181,31 +193,38 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 				// we must have since loaded the bean we missed earlier
 				return;
 			}
-			req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
+			
+			LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
+			parent.getEbeanServer().loadBean(req);
 		}
-		parent.getEbeanServer().loadBean(req);
 	}
 	
 	public void loadSecondaryQuery(OrmQueryRequest<?> parentRequest, int requestedBatchSize, boolean all) {
 		
-	    do {
-	    	LoadBeanRequest req;
-	    	synchronized (weakList) {
+    	synchronized (weakList) {
+    		do {
 	    		List<EntityBeanIntercept> batch = weakList.getNextBatch(requestedBatchSize);
 	    		if (batch.size() == 0){
 	    		    // there are no beans to load
+	    			if (logger.isLoggable(Level.FINEST)) {
+	    				logger.log(Level.FINEST,"Loading path:"+fullPath+" - no more beans to load");
+	    			}
 	    		    return;
 	    		} 
 				boolean loadCache = false;
-	    		req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null, loadCache);
-	    	}
-    		parent.getEbeanServer().loadBean(req);
-    		if (!all){
-    		    // queryFirst(batch)
-    		    break;
-    		}
-		
-	    } while(true);
+				LoadBeanRequest req = new LoadBeanRequest(this, batch, parentRequest.getTransaction(), requestedBatchSize, false, null, loadCache);
+
+				if (logger.isLoggable(Level.FINEST)) {
+    				logger.log(Level.FINEST,"Loading path:"+fullPath+" - secondary query batch load ["+batch.size()+"] beans");
+    			}
+		    	
+	    		parent.getEbeanServer().loadBean(req);
+	    		if (!all){
+	    		    break;
+	    		}
+			
+		    } while(true);
+    	}
 	}
 	
 }

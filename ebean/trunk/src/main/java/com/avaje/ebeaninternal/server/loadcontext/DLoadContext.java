@@ -28,6 +28,7 @@ import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.ObjectGraphOrigin;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebeaninternal.api.LoadContext;
 import com.avaje.ebeaninternal.api.LoadSecondaryQuery;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -66,7 +67,8 @@ public class DLoadContext implements LoadContext {
 	private final String relativePath;	
 	private final ObjectGraphOrigin origin;
 	private final boolean useAutofetchManager;
-
+	private final boolean hardRefs;
+	
 	private final Map<String,ObjectGraphNode> nodePathMap = new HashMap<String, ObjectGraphNode>();
 		
 	private PersistenceContext persistenceContext;
@@ -83,9 +85,10 @@ public class DLoadContext implements LoadContext {
 			boolean excludeBeanCache, ObjectGraphNode parentNode, boolean useAutofetchManager) {
 		
 		this.ebeanServer = ebeanServer;
+		this.hardRefs = GlobalProperties.getBoolean("ebean.hardrefs", false);
 		this.defaultBatchSize = ebeanServer.getLazyLoadBatchSize();
 		this.rootDescriptor = rootDescriptor;
-		this.rootBeanContext = new DLoadBeanContext(this, rootDescriptor, null, defaultBatchSize, null);
+		this.rootBeanContext = new DLoadBeanContext(this, rootDescriptor, null, defaultBatchSize, null, createBeanLoadList());
 		this.readOnly = readOnly;
 		this.excludeBeanCache = excludeBeanCache;
 		this.useAutofetchManager = useAutofetchManager;		
@@ -298,16 +301,32 @@ public class DLoadContext implements LoadContext {
 
 		BeanPropertyAssocMany<?> p = (BeanPropertyAssocMany<?>)getBeanProperty(rootDescriptor, path);
 
-		return new DLoadManyContext(this, p, path, batchSize, queryProps);
+		return new DLoadManyContext(this, p, path, batchSize, queryProps, createBeanCollectionLoadList());
 	}
 
 	
+	private DLoadList<EntityBeanIntercept> createBeanLoadList() {
+		if (hardRefs){
+			return new DLoadHardList<EntityBeanIntercept>();
+		} else {
+			return new DLoadWeakList<EntityBeanIntercept>();
+		}
+	}
+
+	private DLoadList<BeanCollection<?>> createBeanCollectionLoadList() {
+		if (hardRefs){
+			return new DLoadHardList<BeanCollection<?>>();
+		} else {
+			return new DLoadWeakList<BeanCollection<?>>();
+		}
+	}
+
 	private DLoadBeanContext createBeanContext(String path, int batchSize, OrmQueryProperties queryProps) {
 
 		BeanPropertyAssoc<?> p = (BeanPropertyAssoc<?>)getBeanProperty(rootDescriptor, path);
 		BeanDescriptor<?> targetDescriptor = p.getTargetDescriptor();
 
-		return new DLoadBeanContext(this, targetDescriptor, path, batchSize, queryProps);			
+		return new DLoadBeanContext(this, targetDescriptor, path, batchSize, queryProps, createBeanLoadList());			
 	}
 	
 	private BeanProperty getBeanProperty(BeanDescriptor<?> desc, String path){

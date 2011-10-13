@@ -49,10 +49,10 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 
 	private final OrmQueryProperties queryProps;
 	
-	private final DLoadWeakList<BeanCollection<?>> weakList;
+	private final DLoadList<BeanCollection<?>> weakList;
 	
 	public DLoadManyContext(DLoadContext parent, BeanPropertyAssocMany<?> p, 
-			String path, int batchSize, OrmQueryProperties queryProps) {
+			String path, int batchSize, OrmQueryProperties queryProps, DLoadList<BeanCollection<?>> weakList) {
 		
 		this.parent = parent;
 		this.property = p;
@@ -60,7 +60,7 @@ public class DLoadManyContext implements LoadManyContext, BeanCollectionLoader {
 		this.path = path;
 		this.batchSize = batchSize;
 		this.queryProps = queryProps;
-		this.weakList = new DLoadWeakList<BeanCollection<?>>();
+		this.weakList = weakList;//new DLoadWeakList<BeanCollection<?>>();
 
 		if (parent.getRelativePath() == null){
 			this.fullPath = path;
