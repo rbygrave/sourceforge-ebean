@@ -65,6 +65,9 @@ public class DLoadWeakList<T> implements DLoadList<T> {
 	}
 
 	public List<T> getNextBatch(int batchSize) {
+		if (removedFromTop >= list.size()){
+			return new ArrayList<T>(0);
+		}
 		return getLoadBatch(removedFromTop, batchSize, true);
 	}
 	
