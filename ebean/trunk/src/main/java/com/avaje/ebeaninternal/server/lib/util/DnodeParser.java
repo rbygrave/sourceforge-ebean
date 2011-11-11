@@ -43,7 +43,7 @@ public class DnodeParser extends DefaultHandler {
     /**
      * The nodeContent buffer.
      */
-    StringBuffer buffer;
+    StringBuilder buffer;
 
     /**
      * Used to stack the nodes.
@@ -138,7 +138,7 @@ public class DnodeParser extends DefaultHandler {
               
         } 
         
-        buffer = new StringBuffer();
+        buffer = new StringBuilder();
         Dnode node = createNewNode();
         node.setNodeName(localName);     
         for (int i = 0; i < attributes.getLength(); i++) {
@@ -199,6 +199,7 @@ public class DnodeParser extends DefaultHandler {
             return;
         }
         String content = buffer.toString();
+        buffer.setLength(0);
         if (content.length() > 0) {
             if (trimWhitespace) {
             	content = content.trim();

@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class Dnode {
 
-	int level = 0;
+	int level;
 
 	String nodeName;
 
@@ -52,6 +52,14 @@ public class Dnode {
 	public Dnode() {
 	}
 
+	/**
+	 * Parse the raw XML string.
+	 */
+	public static Dnode parse(String s){
+		DnodeReader r = new DnodeReader();
+		return r.parseXml(s);
+	}
+	
 	/**
 	 * Return the node as XML.
 	 */
