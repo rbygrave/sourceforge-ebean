@@ -19,6 +19,9 @@
  */
 package com.avaje.ebean.bean;
 
+import com.avaje.ebean.Ebean;
+
+import javax.persistence.PersistenceException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -28,10 +31,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.PersistenceException;
-
-import com.avaje.ebean.Ebean;
 
 
 /**
@@ -71,7 +70,7 @@ public final class EntityBeanIntercept implements Serializable {
 	 * true if the bean properties have been loaded. false if it is a reference
 	 * bean (will lazy load etc).
 	 */
-	private boolean loaded;
+	private volatile boolean loaded;
 	
 	/**
 	 * Flag set to disable lazy loading - typically for SQL "report" type entity beans.
@@ -98,7 +97,7 @@ public final class EntityBeanIntercept implements Serializable {
 	/**
 	 * Used when a bean is partially filled.
 	 */
-	private Set<String> loadedProps;
+	private volatile Set<String> loadedProps;
 
 	/**
 	 * Set of changed properties.
@@ -438,12 +437,12 @@ public final class EntityBeanIntercept implements Serializable {
 	protected void loadBean(String loadProperty) {
 
 		synchronized (this) {
-		  
+
 		  if (loaded && (loadedProps == null || loadedProps.contains(loadProperty))){
 		    // race condition where multiple threads calling preGetter concurrently
 		    return;
 		  }
-		  
+
 			if (disableLazyLoad){
 				loaded = true;
 				return;
