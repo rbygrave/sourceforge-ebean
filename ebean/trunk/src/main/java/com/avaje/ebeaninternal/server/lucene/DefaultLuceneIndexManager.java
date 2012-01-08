@@ -43,7 +43,9 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
 
     private static final Logger logger = Logger.getLogger(DefaultLuceneIndexManager.class.getName());
     
-    private final ConcurrentHashMap<String, LIndex> indexMap;
+    private final ConcurrentHashMap<String, LIndex> indexMap = new ConcurrentHashMap<String, LIndex>();
+    
+    private final Object mapMonitor = new Object();
     
     private final ClusterManager clusterManager;
     
@@ -87,7 +89,6 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         this.defaultUseIndex = defaultUseIndex;
         this.defaultAnalyzer = defaultAnalyzer;
         this.baseDir = baseDir + File.separator + serverName + File.separator;
-        this.indexMap = new ConcurrentHashMap<String, LIndex>();
         this.indexFactory = new LIndexFactory(this);
         
         this.thread = new Thread(this, "Ebean-"+serverName+"-LuceneManager");
@@ -179,7 +180,7 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
     }
 
     public void addIndex(LIndex index) throws IOException {
-        synchronized (indexMap) {
+        synchronized (mapMonitor) {
             indexMap.put(index.getName(), index);
         }
     }
@@ -233,7 +234,7 @@ public class DefaultLuceneIndexManager implements LuceneIndexManager, Runnable {
         fireOnStartup();
         
         while (!shutdown) {
-            synchronized (indexMap) {
+            synchronized (mapMonitor) {
                 long start = System.currentTimeMillis();
                 for (LIndex idx : indexMap.values()) {
                     idx.manage(this);
