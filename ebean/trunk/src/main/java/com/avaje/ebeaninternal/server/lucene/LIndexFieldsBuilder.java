@@ -100,7 +100,7 @@ public class LIndexFieldsBuilder implements SpiIndexDefnHelper {
 
         if (prefix != null){
             for (int i = 0; i < propertyNames.length; i++) {
-                propertyNames[i] = prefix+"."+propertyNames;
+                propertyNames[i] = prefix+"."+propertyNames[i];
             }
         }
         
