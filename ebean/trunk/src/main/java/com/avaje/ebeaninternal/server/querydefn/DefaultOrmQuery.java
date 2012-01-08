@@ -215,9 +215,9 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	
 	private transient PersistenceContext persistenceContext;
 
-    private ManyWhereJoins manyWhereJoins;
+  private ManyWhereJoins manyWhereJoins;
     
-    private RawSql rawSql;
+  private RawSql rawSql;
 	
 	public DefaultOrmQuery(Class<T> beanType, EbeanServer server, ExpressionFactory expressionFactory, String query) {
 		this.beanType = beanType;

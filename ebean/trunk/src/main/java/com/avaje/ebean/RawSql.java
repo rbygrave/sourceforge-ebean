@@ -19,6 +19,7 @@
  */
 package com.avaje.ebean;
 
+import java.io.Serializable;
 import java.util.Collections;
 
 import java.util.HashMap;
@@ -160,7 +161,9 @@ import java.util.Map;
  * @author rbygrave
  * 
  */
-public final class RawSql {
+public final class RawSql implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final Sql sql;
 
@@ -197,7 +200,9 @@ public final class RawSql {
      * up so that Ebean can insert extra WHERE and HAVING expressions into the
      * SQL.
      */
-    public static final class Sql {
+    public static final class Sql implements Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private final boolean parsed;
 
@@ -331,7 +336,9 @@ public final class RawSql {
     /**
      * Defines the column mapping for raw sql DB columns to bean properties.
      */
-    public static final class ColumnMapping {
+    public static final class ColumnMapping implements Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private final LinkedHashMap<String, Column> dbColumnMap;
 
@@ -493,8 +500,9 @@ public final class RawSql {
         /**
          * A Column of the RawSql that is mapped to a bean property (or ignored).
          */
-        public static class Column {
+        public static class Column implements Serializable {
 
+            private static final long serialVersionUID = 1L;
             private final int indexPos;
             private final String dbColumn;
 
