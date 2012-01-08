@@ -36,11 +36,13 @@ import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 public class ClusterManager {
 
 	private static final Logger logger = Logger.getLogger(ClusterManager.class.getName());
-        
-    private final ClusterBroadcast broadcast;
     
     private final ConcurrentHashMap<String, EbeanServer> serverMap = new ConcurrentHashMap<String, EbeanServer>();
 
+    private final Object monitor = new Object();
+    
+    private final ClusterBroadcast broadcast;
+    
     private LuceneClusterListener luceneListener;
 
     private LuceneClusterIndexSync luceneIndexSync;
@@ -90,7 +92,7 @@ public class ClusterManager {
     }
     
     public void registerServer(EbeanServer server){
-        synchronized (serverMap) {
+        synchronized (monitor) {
             if (!started){
                 startup();
             }
@@ -103,7 +105,7 @@ public class ClusterManager {
     }
     
     public EbeanServer getServer(String name){
-        synchronized (serverMap) {
+        synchronized (monitor) {
             return serverMap.get(name);
         }
     }
