@@ -1,5 +1,6 @@
 package com.avaje.tests.model.basic;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 import javax.persistence.Entity;
@@ -17,7 +18,9 @@ import com.avaje.ebean.validation.Length;
 @CacheStrategy(warmingQuery="order by name")
 @Entity
 @Table(name="o_product")
-public class Product {
+public class Product implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     Integer id;
