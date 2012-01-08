@@ -52,7 +52,7 @@ public class ROrderPK {
         if ((this.company == null) ? (other.company != null) : !this.company.equals(other.company)) {
             return false;
         }
-        if (this.orderNumber != other.orderNumber && (this.orderNumber == null || !this.orderNumber.equals(other.orderNumber))) {
+        if (this.orderNumber == null || !this.orderNumber.equals(other.orderNumber)) {
             return false;
         }
         return true;

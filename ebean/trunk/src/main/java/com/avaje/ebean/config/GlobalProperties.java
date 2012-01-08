@@ -12,7 +12,7 @@ import com.avaje.ebeaninternal.api.ClassUtil;
  */
 public final class GlobalProperties {
 	
-	private static PropertyMap globalMap;
+	private static volatile PropertyMap globalMap;
 	
 	private static boolean skipPrimaryServer;
 	
