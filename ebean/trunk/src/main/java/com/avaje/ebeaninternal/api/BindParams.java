@@ -368,9 +368,12 @@ public class BindParams implements Serializable {
 	/**
 	 * A In Out capable parameter for the CallableStatement.
 	 */
-	public static final class Param {
+	public static final class Param implements Serializable {
 
-        private boolean encryptionKey;
+    private static final long serialVersionUID = 1L;
+    
+    private boolean encryptionKey;
+    
 		private boolean isInParam;
 
 		private boolean isOutParam;

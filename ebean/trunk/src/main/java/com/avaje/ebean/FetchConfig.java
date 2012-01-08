@@ -19,6 +19,8 @@
  */
 package com.avaje.ebean;
 
+import java.io.Serializable;
+
 /**
  * Defines the configuration options for a "query fetch" or a
  * "lazy loading fetch". This gives you the ability to use multiple smaller
@@ -152,9 +154,11 @@ package com.avaje.ebean;
  * @author mario
  * @author rbygrave
  */
-public class FetchConfig {
+public class FetchConfig implements Serializable {
 
-	private int lazyBatchSize = -1;
+  private static final long serialVersionUID = 1L;
+
+  private int lazyBatchSize = -1;
 	
 	private int queryBatchSize = -1;
 	
