@@ -437,7 +437,13 @@ public final class EntityBeanIntercept implements Serializable {
 	 */
 	protected void loadBean(String loadProperty) {
 
-		synchronized (this) {			
+		synchronized (this) {
+		  
+		  if (loaded && (loadedProps == null || loadedProps.contains(loadProperty))){
+		    // race condition where multiple threads calling preGetter concurrently
+		    return;
+		  }
+		  
 			if (disableLazyLoad){
 				loaded = true;
 				return;
