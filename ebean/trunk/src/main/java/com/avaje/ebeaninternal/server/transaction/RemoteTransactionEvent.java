@@ -20,7 +20,6 @@
 package com.avaje.ebeaninternal.server.transaction;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,9 +29,7 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.BinaryMessageList;
 
-public class RemoteTransactionEvent implements Serializable, Runnable {
-
-    private static final long serialVersionUID = 757920022500956949L;
+public class RemoteTransactionEvent implements Runnable {
 
     private List<BeanPersistIds> beanPersistList = new ArrayList<BeanPersistIds>();
     
