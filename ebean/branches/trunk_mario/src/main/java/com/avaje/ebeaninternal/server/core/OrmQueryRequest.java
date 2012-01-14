@@ -19,12 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.QueryIterator;
 import com.avaje.ebean.QueryResultVisitor;
 import com.avaje.ebean.RawSql;
@@ -48,6 +42,11 @@ import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
 import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
+
+import javax.persistence.PersistenceException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Wraps the objects involved in executing a Query.
@@ -84,6 +83,11 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
     private boolean backgroundFetching;
 
     private LuceneOrmQueryRequest luceneQueryRequest;
+
+    /**
+     * flag indicates that the select should lock the record (if supported by the db)
+     */
+    private boolean forUpdate;
 
     /**
      * Create the InternalQueryRequest.

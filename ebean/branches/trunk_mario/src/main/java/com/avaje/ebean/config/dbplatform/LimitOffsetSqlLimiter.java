@@ -41,8 +41,10 @@ public class LimitOffsetSqlLimiter implements SqlLimiter {
 			sb.append(" ").append(OFFSET).append(" ");
 			sb.append(firstRow);
 		}
+
+        String sql = request.getDbPlatform().completeSql(sb.toString(), request.getOrmQuery());
 		
-		return new SqlLimitResponse(sb.toString(), false);
+		return new SqlLimitResponse(sql, false);
 	}
 
 	

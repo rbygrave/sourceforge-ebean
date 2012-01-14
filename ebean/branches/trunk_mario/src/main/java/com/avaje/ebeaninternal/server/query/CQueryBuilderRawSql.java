@@ -20,6 +20,7 @@
 package com.avaje.ebeaninternal.server.query;
 
 import com.avaje.ebean.RawSql;
+import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
 import com.avaje.ebeaninternal.api.BindParams;
@@ -32,9 +33,11 @@ import com.avaje.ebeaninternal.server.util.BindParamsParser;
 public class CQueryBuilderRawSql implements Constants {
 
     private final SqlLimiter sqlLimiter;
+    private final DatabasePlatform dbPlatform;
 
-    CQueryBuilderRawSql(SqlLimiter sqlLimiter) {
+    CQueryBuilderRawSql(SqlLimiter sqlLimiter, DatabasePlatform dbPlatform) {
         this.sqlLimiter = sqlLimiter;
+        this.dbPlatform = dbPlatform;
     }
     
     /**
@@ -61,7 +64,7 @@ public class CQueryBuilderRawSql implements Constants {
         SpiQuery<?> query = request.getQuery();
         if (query.hasMaxRowsOrFirstRow() && sqlLimiter != null) {
             // wrap with a limit offset or ROW_NUMBER() etc
-            return sqlLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query));
+            return sqlLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query, dbPlatform));
             
         } else {
             // add back select keyword (it was removed to support sqlQueryLimiter)

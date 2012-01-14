@@ -19,9 +19,6 @@
  */
 package com.avaje.ebeaninternal.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
@@ -36,9 +33,12 @@ import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
+import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
-import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Object Relational query - Internal extension to Query object.
@@ -271,6 +271,11 @@ public interface SpiQuery<T> extends Query<T> {
      * set so we use the default behaviour.
      */
     public Boolean isAutofetch();
+
+    /**
+     * Return explicit forUpdate setting or null.
+     */
+    public Boolean isForUpdate();
 
     /**
      * If return null then no autoFetch profiling for this query. If a

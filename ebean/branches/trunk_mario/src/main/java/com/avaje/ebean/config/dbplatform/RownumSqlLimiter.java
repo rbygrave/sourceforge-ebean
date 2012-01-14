@@ -70,8 +70,9 @@ public class RownumSqlLimiter implements SqlLimiter {
 			sb.append(rnum).append(" > ").append(firstRow);
 		}
 	
-		
-		return new SqlLimitResponse(sb.toString(), true);
+        String sql = request.getDbPlatform().completeSql(sb.toString(), request.getOrmQuery());
+
+		return new SqlLimitResponse(sql, true);
 	}
 
 }

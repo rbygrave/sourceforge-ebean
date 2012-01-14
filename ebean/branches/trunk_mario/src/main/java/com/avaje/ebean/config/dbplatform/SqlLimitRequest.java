@@ -1,5 +1,7 @@
 package com.avaje.ebean.config.dbplatform;
 
+import com.avaje.ebeaninternal.api.SpiQuery;
+
 /**
  * The request object for the query that can have sql limiting 
  * applied to it (such as a LIMIT OFFSET clause).
@@ -32,5 +34,14 @@ public interface SqlLimitRequest {
 	 * Return the orderBy clause of the sql query.
 	 */
 	public String getDbOrderBy();
-	
+
+    /**
+     * return the query
+     */
+    public SpiQuery<?> getOrmQuery();
+
+    /**
+     * return the database platform
+     */
+    public DatabasePlatform getDbPlatform();
 }

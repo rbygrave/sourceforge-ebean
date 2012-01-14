@@ -19,12 +19,11 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
-
-import javax.sql.DataSource;
-
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.config.GlobalProperties;
+
+import javax.sql.DataSource;
+import java.sql.Types;
 
 
 /**
@@ -87,6 +86,8 @@ public class PostgresPlatform extends DatabasePlatform {
 		return new PostgresSequenceIdGenerator(be, ds, seqName, batchSize);
 	}
 
-    
-    
+    @Override
+    protected String withForUpdate(String sql) {
+        return sql + " for update";
+    }
 }
