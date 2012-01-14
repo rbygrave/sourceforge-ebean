@@ -19,11 +19,6 @@
  */
 package com.avaje.ebean.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.sql.DataSource;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.LogLevel;
@@ -40,8 +35,13 @@ import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.event.BulkTableEventListener;
 import com.avaje.ebean.event.ServerConfigStartup;
+import com.avaje.ebean.event.TransactionEventListener;
 import com.avaje.ebeaninternal.api.ClassUtil;
 import com.avaje.ebeaninternal.server.core.DetectLucene;
+
+import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -228,7 +228,8 @@ public class ServerConfig {
     private List<BeanQueryAdapter> queryAdapters = new ArrayList<BeanQueryAdapter>();
     private List<BulkTableEventListener> bulkTableEventListeners = new ArrayList<BulkTableEventListener>();
     private List<ServerConfigStartup> configStartupListeners = new ArrayList<ServerConfigStartup>();
-    
+    private List<TransactionEventListener> transactionEventListeners = new ArrayList<TransactionEventListener>();
+
     private EncryptKeyManager encryptKeyManager;
 
     private EncryptDeployManager encryptDeployManager;
@@ -1257,6 +1258,35 @@ public class ServerConfig {
      */
     public void setPersistControllers(List<BeanPersistController> persistControllers) {
         this.persistControllers = persistControllers;
+    }
+
+    /**
+     * Register a TransactionEventListener instance
+     * <p>
+     * Note alternatively you can use {@link #setTransactionEventListeners(List)} to
+     * set all the TransactionEventListener instances.
+     * </p>
+     */
+    public void add(TransactionEventListener listener ) {
+        transactionEventListeners.add(listener);
+    }
+
+    /**
+     * Return the TransactionEventListener instances.
+     */
+    public List<TransactionEventListener> getTransactionEventListeners() {
+        return transactionEventListeners;
+    }
+
+    /**
+     * Register all the TransactionEventListener instances.
+     * <p>
+     * Note alternatively you can use {@link #add(TransactionEventListener)} to add
+     * TransactionEventListener instances one at a time.
+     * </p>
+     */
+    public void setTransactionEventListeners(List<TransactionEventListener> transactionEventListeners) {
+        this.transactionEventListeners = transactionEventListeners;
     }
 
     /**

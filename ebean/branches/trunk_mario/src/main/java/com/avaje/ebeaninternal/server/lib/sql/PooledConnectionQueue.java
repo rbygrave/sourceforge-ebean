@@ -326,6 +326,10 @@ public class PooledConnectionQueue {
                 String msg = "Unsuccessfully waited ["+waitTimeoutMillis+"] millis for a connection to be returned."
                     + " No connections are free. You need to Increase the max connections of ["+maxSize+"]"
                     + " or look for a connection pool leak using datasource.xxx.capturestacktrace=true";
+                if (pool.isCaptureStackTrace()) {
+                    dumpBusyConnectionInformation();
+                }
+
                 throw new SQLException(msg);
             }
             

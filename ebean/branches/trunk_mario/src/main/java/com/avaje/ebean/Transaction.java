@@ -19,11 +19,10 @@
  */
 package com.avaje.ebean;
 
-import java.sql.Connection;
-
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
+import java.sql.Connection;
 
 /**
  * The Transaction object. Typically representing a JDBC or JTA transaction.
@@ -318,4 +317,15 @@ public interface Transaction {
 	 */
 	public void addModification(String tableName, boolean inserts, boolean updates, boolean deletes);
 
+
+    /**
+     * add an arbitrary user object to the transaction. The objects added have no impact on any internals of ebena
+     * and are solely meant as a convenient method push user information to e.g. the {@link com.avaje.ebean.event.TransactionEventListener}.
+     */
+    public void putUserObject(String name, Object value);
+
+    /**
+     * get an object added with {@link #putUserObject(String, Object)}.
+     */
+    public Object getUserObject(String name);
 }
