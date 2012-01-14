@@ -19,28 +19,29 @@
  */
 package com.avaje.ebeaninternal.server.transaction;
 
+import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebean.LogLevel;
+import com.avaje.ebean.TxIsolation;
+import com.avaje.ebean.config.GlobalProperties;
+import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.event.TransactionEventListener;
+import com.avaje.ebeaninternal.api.SpiTransaction;
+import com.avaje.ebeaninternal.api.TransactionEvent;
+import com.avaje.ebeaninternal.api.TransactionEventTable;
+import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
+import com.avaje.ebeaninternal.server.cluster.ClusterManager;
+import com.avaje.ebeaninternal.server.core.BootupClasses;
+import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
+import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
+
+import javax.persistence.PersistenceException;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.persistence.PersistenceException;
-import javax.sql.DataSource;
-
-import com.avaje.ebean.BackgroundExecutor;
-import com.avaje.ebean.LogLevel;
-import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.config.GlobalProperties;
-import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebeaninternal.api.SpiTransaction;
-import com.avaje.ebeaninternal.api.TransactionEvent;
-import com.avaje.ebeaninternal.api.TransactionEventTable;
-import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
-import com.avaje.ebeaninternal.server.cluster.ClusterManager;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
-import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 
 /**
  * Manages transactions.
@@ -124,12 +125,14 @@ public class TransactionManager {
 	private int clusterDebugLevel;
 	
 	private final BulkEventListenerMap bulkEventListenerMap;
-	
+
+    private TransactionEventListener[] transactionEventListeners;
+
 	/**
 	 * Create the TransactionManager
 	 */
-	public TransactionManager(ClusterManager clusterManager, LuceneIndexManager luceneIndexManager, 
-	        BackgroundExecutor backgroundExecutor, ServerConfig config, BeanDescriptorManager descMgr) {
+	public TransactionManager(ClusterManager clusterManager, LuceneIndexManager luceneIndexManager,
+                              BackgroundExecutor backgroundExecutor, ServerConfig config, BeanDescriptorManager descMgr, BootupClasses bootupClasses) {
 		
 		this.beanDescriptorManager = descMgr;
 		this.clusterManager = clusterManager;
@@ -141,6 +144,9 @@ public class TransactionManager {
 		this.backgroundExecutor = backgroundExecutor;		
 		this.dataSource = config.getDataSource();
 		this.bulkEventListenerMap = new BulkEventListenerMap(config.getBulkTableEventListeners());
+
+        List<TransactionEventListener> transactionEventListeners = bootupClasses.getTransactionEventListeners();
+        this.transactionEventListeners = transactionEventListeners.toArray(new TransactionEventListener[transactionEventListeners.size()]);
 		
 		// log some transaction events using a java util logger          
         this.commitDebugLevel = GlobalProperties.getInt("ebean.commit.debuglevel", 0);
@@ -370,6 +376,10 @@ public class TransactionManager {
 	public void notifyOfRollback(SpiTransaction transaction, Throwable cause) {
 		
 		try {
+            for (TransactionEventListener listener : transactionEventListeners) {
+                listener.postTransactionRollback(transaction, cause);
+            }
+
 			if (transaction.isLogSummary() || commitDebugLevel >= 1) {
 				String msg = "Rollback";
 				if (cause != null){
@@ -385,7 +395,6 @@ public class TransactionManager {
 			}
 			
 			log(transaction.getLogBuffer());
-			
 		} catch (Exception ex) {
 			String m = "Potentially Transaction Log incomplete due to error:";
 			logger.log(Level.SEVERE, m, ex);
@@ -463,7 +472,11 @@ public class TransactionManager {
 			
 			// cluster and text indexing
 	        backgroundExecutor.execute(postCommit.notifyPersistListeners());
-			
+
+            for (TransactionEventListener listener : transactionEventListeners) {
+                listener.postTransactionCommit(transaction);
+            }
+
 			if (commitDebugLevel >= 1){
 				logger.info("Transaction ["+transaction.getId()+"] commit");
 			}

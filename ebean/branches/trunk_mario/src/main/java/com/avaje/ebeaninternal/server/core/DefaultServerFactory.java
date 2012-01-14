@@ -19,21 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.persistence.PersistenceException;
-import javax.sql.DataSource;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.cache.ServerCacheFactory;
 import com.avaje.ebean.cache.ServerCacheManager;
@@ -57,6 +42,20 @@ import com.avaje.ebeaninternal.server.lib.sql.DataSourceGlobalManager;
 import com.avaje.ebeaninternal.server.lib.sql.DataSourcePool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPool;
 import com.avaje.ebeaninternal.server.lib.thread.ThreadPoolManager;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.persistence.PersistenceException;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Default Server side implementation of ServerFactory.
@@ -306,6 +305,7 @@ public class DefaultServerFactory implements BootupEbeanManager {
 		
 		BootupClasses bootupClasses = getBootupClasses1(serverConfig);
 		bootupClasses.addPersistControllers(serverConfig.getPersistControllers());
+        bootupClasses.addTransactionEventListeners(serverConfig.getTransactionEventListeners());
 		bootupClasses.addPersistListeners(serverConfig.getPersistListeners());
 		bootupClasses.addQueryAdapters(serverConfig.getQueryAdapters());
 		bootupClasses.addServerConfigStartup(serverConfig.getServerConfigStartupListeners());
