@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 
+    <!-- test commit -->
 <project name="ebean-ant-enhancement" default="bin-ormEnhance" basedir=".">
 
   <!-- ANT tasks for manually testing enhancement -->
