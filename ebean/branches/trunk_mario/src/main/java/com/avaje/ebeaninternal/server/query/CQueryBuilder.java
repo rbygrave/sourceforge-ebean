@@ -19,17 +19,12 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.BackgroundExecutor;
-import com.avaje.ebean.RawSql;
-import com.avaje.ebean.RawSqlBuilder;
 import com.avaje.ebean.Query.UseIndex;
+import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSql.ColumnMapping;
 import com.avaje.ebean.RawSql.ColumnMapping.Column;
+import com.avaje.ebean.RawSqlBuilder;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
@@ -48,6 +43,10 @@ import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
+
+import javax.persistence.PersistenceException;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Generates the SQL SELECT statements taking into account the physical
@@ -73,6 +72,8 @@ public class CQueryBuilder implements Constants {
 	private final boolean luceneAvailable;
 	
 	private final UseIndex defaultUseIndex;
+
+    private DatabasePlatform dbPlatform;
 	
 	/**
 	 * Create the SqlGenSelect.
@@ -89,9 +90,11 @@ public class CQueryBuilder implements Constants {
 		this.sqlSelectBuilder = new RawSqlSelectClauseBuilder(dbPlatform, binder);
 
 		this.sqlLimiter = dbPlatform.getSqlLimiter();
-		this.rawSqlHandler = new CQueryBuilderRawSql(sqlLimiter);
+		this.rawSqlHandler = new CQueryBuilderRawSql(sqlLimiter, dbPlatform);
 		
 		this.selectCountWithAlias = dbPlatform.isSelectCountWithAlias();
+
+        this.dbPlatform = dbPlatform;
 	}
 
 	protected String getOrderBy(String orderBy, BeanPropertyAssocMany<?> many, BeanDescriptor<?> desc,
@@ -486,12 +489,12 @@ public class CQueryBuilder implements Constants {
 
 		if (useSqlLimiter){
 			// use LIMIT/OFFSET, ROW_NUMBER() or rownum type SQL query limitation
-			SqlLimitRequest r = new OrmQueryLimitRequest(sb.toString(), dbOrderBy, query);
+			SqlLimitRequest r = new OrmQueryLimitRequest(sb.toString(), dbOrderBy, query, dbPlatform);
 			return sqlLimiter.limit(r);
 			
 		} else {
 
-			return new SqlLimitResponse(sb.toString(), false);
+			return new SqlLimitResponse(dbPlatform.completeSql(sb.toString(), query), false);
 		}
 		
 	}

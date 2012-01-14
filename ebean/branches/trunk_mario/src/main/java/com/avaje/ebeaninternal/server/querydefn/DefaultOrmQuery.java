@@ -1,13 +1,5 @@
 package com.avaje.ebeaninternal.server.querydefn;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
@@ -46,6 +38,13 @@ import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.expression.SimpleExpression;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
+
+import javax.persistence.PersistenceException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Default implementation of an Object Relational query.
@@ -195,6 +194,11 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 * Allow for explicit on off or null for default.
 	 */
 	private Boolean autoFetch;
+
+    /**
+     * Allow to fetc a record "for update" which should lock it on read
+     */
+    private Boolean forUpdate;
 	
 	/**
 	 * Set to true if this query has been tuned by autoFetch.
@@ -476,6 +480,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.usageProfiling = usageProfiling;
 		copy.autoFetch = autoFetch;
 		copy.parentNode = parentNode;
+        
+        copy.forUpdate = forUpdate;
 
 		return copy;
 	}
@@ -550,6 +556,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public Boolean isAutofetch() {
 		return sqlSelect ? Boolean.FALSE : autoFetch;
 	}
+    
+    public Boolean isForUpdate() {
+        return forUpdate;
+    }
 
 	public DefaultOrmQuery<T> setAutoFetch(boolean autoFetch) {
 		return setAutofetch(autoFetch);
@@ -560,6 +570,11 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return this;
 	}
 	
+    public DefaultOrmQuery<T> setForUpdate(boolean forUpdate) {
+        this.forUpdate = forUpdate;
+        return this;
+    }
+
 	public AutoFetchManager getAutoFetchManager() {
 		return autoFetchManager;
 	}
@@ -687,6 +702,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 			hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryPlanHash(request));
 		}
 		
+        hc = hc * 31 + (forUpdate == null ? 0 : forUpdate.hashCode());
+
 		return hc;
 	}
 	

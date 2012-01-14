@@ -19,10 +19,10 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import javax.sql.DataSource;
-
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.config.GlobalProperties;
+
+import javax.sql.DataSource;
 
 /**
  * H2 specific platform.
@@ -66,6 +66,10 @@ public class H2Platform extends DatabasePlatform {
 			DataSource ds, String seqName, int batchSize) {
 		
 		return new H2SequenceIdGenerator(be, ds, seqName, batchSize);
-	}    
-    
+	}
+
+    @Override
+    protected String withForUpdate(String sql) {
+        return sql + " for update";
+    }
 }
