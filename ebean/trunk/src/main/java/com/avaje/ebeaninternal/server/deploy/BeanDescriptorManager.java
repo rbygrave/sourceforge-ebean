@@ -180,6 +180,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     
     private final LuceneIndexManager luceneManager;
     
+    private final boolean allowSubclassing;
+    
     /**
      * Create for a given database dbConfig.
      */
@@ -219,6 +221,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
         this.reflectFactory = createReflectionFactory();
         this.transientProperties = new TransientProperties();
+        this.allowSubclassing = config.getServerConfig().isAllowSubclassing();
     }
 
     public BeanDescriptor<?> getBeanDescriptorById(String descriptorId) {
@@ -1499,7 +1502,11 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
             if (hasEntityBeanInterface(beanClass)) {
                 checkEnhanced(desc, beanClass);
             } else {
-                checkSubclass(desc, beanClass);
+                if (allowSubclassing) {
+                  checkSubclass(desc, beanClass);
+                } else {
+                  throw new PersistenceException("This configuration does not allow entity subclassing [" + beanClass + "]");
+                }                
             }
             return;
         }

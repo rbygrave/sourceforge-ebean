@@ -253,6 +253,12 @@ public class ServerConfig {
   private boolean vanillaRefMode;
 
   /**
+   * Set to false to require enhancement to be used. Defaults to true.
+   */
+  private boolean allowSubclassing = true;
+  
+  
+  /**
    * Construct a Server Configuration for programmatically creating an
    * EbeanServer.
    */
@@ -1183,6 +1189,21 @@ public class ServerConfig {
     this.updateChangesOnly = updateChangesOnly;
   }
 
+  
+  /**
+   * Set to false to require enhancement to be used. Defaults to true.
+   */
+  public void setAllowSubclassing(boolean allowSubclassing) {
+    this.allowSubclassing = allowSubclassing;
+  }
+
+  /**
+   * Returns whether this config supports subclassed entities.
+   */
+  public boolean isAllowSubclassing() {
+    return allowSubclassing;
+  }
+
   /**
    * Returns the resource directory.
    */
@@ -1434,6 +1455,7 @@ public class ServerConfig {
       packages = getSearchJarsPackages(packagesProp);
     }
 
+    allowSubclassing = p.getBoolean("allowSubclassing", true);
     validateOnSave = p.getBoolean("validateOnSave", true);
     vanillaMode = p.getBoolean("vanillaMode", false);
     vanillaRefMode = p.getBoolean("vanillaRefMode", false);
