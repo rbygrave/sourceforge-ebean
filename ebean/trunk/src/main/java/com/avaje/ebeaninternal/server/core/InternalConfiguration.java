@@ -19,8 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
-import java.util.logging.Logger;
-
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ExternalTransactionManager;
@@ -62,6 +60,8 @@ import com.avaje.ebeaninternal.server.transaction.TransactionManager;
 import com.avaje.ebeaninternal.server.transaction.TransactionScopeManager;
 import com.avaje.ebeaninternal.server.type.DefaultTypeManager;
 import com.avaje.ebeaninternal.server.type.TypeManager;
+
+import java.util.logging.Logger;
 
 /**
  * Used to extend the ServerConfig with additional objects used
@@ -151,7 +151,7 @@ public class InternalConfiguration {
 		
 		this.debugLazyLoad = new DebugLazyLoad(serverConfig.isDebugLazyLoad());
 		
-		this.transactionManager = new TransactionManager(clusterManager, luceneIndexManager, backgroundExecutor, serverConfig, beanDescriptorManager);
+		this.transactionManager = new TransactionManager(clusterManager, luceneIndexManager, backgroundExecutor, serverConfig, beanDescriptorManager, this.getBootupClasses());
 
 		this.logControl = new MAdminLogging(serverConfig, transactionManager);
 		

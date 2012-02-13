@@ -19,12 +19,12 @@
  */
 package com.avaje.ebean;
 
+import com.avaje.ebean.config.ServerConfig;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.avaje.ebean.config.ServerConfig;
 
 /**
  * Object relational query for finding a List, Set, Map or single entity bean.
@@ -1159,4 +1159,9 @@ public interface Query<T> extends Serializable {
      * Return the total hits matched for a lucene text search query.
      */
     public int getTotalHits();
+
+    /**
+     * executed the select with "for update" which should lock the record "on read"
+     */
+    public Query<T> setForUpdate(boolean forUpdate);
 }

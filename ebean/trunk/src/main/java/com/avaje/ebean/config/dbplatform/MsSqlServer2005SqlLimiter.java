@@ -73,8 +73,10 @@ public class MsSqlServer2005SqlLimiter implements SqlLimiter {
 		if (lastRow > 0) {
 			sb.append(" rn <= ").append(lastRow);
 		}
-		
-		return new SqlLimitResponse(sb.toString(), true);
+
+    String sql = request.getDbPlatform().completeSql(sb.toString(), request.getOrmQuery());
+
+    return new SqlLimitResponse(sql, true);
 	}
 
 }

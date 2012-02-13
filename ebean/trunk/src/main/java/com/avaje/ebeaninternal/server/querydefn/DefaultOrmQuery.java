@@ -1,13 +1,5 @@
 package com.avaje.ebeaninternal.server.querydefn;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
@@ -46,6 +38,13 @@ import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.expression.SimpleExpression;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
+
+import javax.persistence.PersistenceException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Default implementation of an Object Relational query.
@@ -145,11 +144,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 */
 	private boolean futureFetch;
 	
-//	/**
-//	 * Set to true when this is a lazy load for a sharedInstance.
-//	 */
-//	private boolean sharedInstance;
-	
 	private List<Object> partialIds;
 	
 	/**
@@ -195,6 +189,11 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	 * Allow for explicit on off or null for default.
 	 */
 	private Boolean autoFetch;
+
+  /**
+   * Allow to fetch a record "for update" which should lock it on read
+   */
+  private Boolean forUpdate;
 	
 	/**
 	 * Set to true if this query has been tuned by autoFetch.
@@ -476,7 +475,7 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.usageProfiling = usageProfiling;
 		copy.autoFetch = autoFetch;
 		copy.parentNode = parentNode;
-
+    copy.forUpdate = forUpdate;
 		return copy;
 	}
 
@@ -551,6 +550,10 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		return sqlSelect ? Boolean.FALSE : autoFetch;
 	}
 
+  public Boolean isForUpdate() {
+    return forUpdate;
+  }
+
 	public DefaultOrmQuery<T> setAutoFetch(boolean autoFetch) {
 		return setAutofetch(autoFetch);
 	}
@@ -559,7 +562,12 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		this.autoFetch = autoFetch;
 		return this;
 	}
-	
+
+  public DefaultOrmQuery<T> setForUpdate(boolean forUpdate) {
+    this.forUpdate = forUpdate;
+    return this;
+  }
+  
 	public AutoFetchManager getAutoFetchManager() {
 		return autoFetchManager;
 	}
@@ -567,28 +575,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 	public void setAutoFetchManager(AutoFetchManager autoFetchManager) {
 		this.autoFetchManager = autoFetchManager;
 	}
-	
-//	/**
-//	 * Check other combinations that can make this a sharedInstance query. 
-//	 */
-//	public void deriveSharedInstance() {
-//		if (!sharedInstance){
-//			if (Boolean.TRUE.equals(useQueryCache)
-//				|| (Boolean.TRUE.equals(readOnly) && 
-//						(Boolean.TRUE.equals(useBeanCache) || Boolean.TRUE.equals(loadBeanCache)))) {
-//				// these combinations also producing shared instance beans 
-//				sharedInstance = true;
-//			}
-//		}
-//	}
-//	
-//	public boolean isSharedInstance() {
-//		return sharedInstance;
-//	}
-//
-//	public void setSharedInstance() {
-//		this.sharedInstance = true;
-//	}
 
 	public Mode getMode() {
 		return mode;
@@ -652,41 +638,43 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		// can change between JVM restarts.
 		int hc = beanType.getName().hashCode();
 
-        hc = hc * 31 + (type == null ? 0 : type.ordinal());
-        hc = hc * 31 + (useIndex == null ? 0 : useIndex.hashCode());
+    hc = hc * 31 + (type == null ? 0 : type.ordinal());
+    hc = hc * 31 + (useIndex == null ? 0 : useIndex.hashCode());
 
-        hc = hc * 31 + (rawSql == null ? 0 : rawSql.queryHash());
+    hc = hc * 31 + (rawSql == null ? 0 : rawSql.queryHash());
 
-        hc = hc * 31 + (autoFetchTuned ? 31 : 0);
-		hc = hc * 31 + (distinct ? 31 : 0);
-        hc = hc * 31 + (query == null ? 0 : query.hashCode());
-        hc = hc * 31 + detail.queryPlanHash(request);
+    hc = hc * 31 + (autoFetchTuned ? 31 : 0);
+    hc = hc * 31 + (distinct ? 31 : 0);
+    hc = hc * 31 + (query == null ? 0 : query.hashCode());
+    hc = hc * 31 + detail.queryPlanHash(request);
 
-		hc = hc * 31 + (firstRow == 0 ? 0 : firstRow);
-		hc = hc * 31 + (maxRows == 0 ? 0 : maxRows);
-		hc = hc * 31 + (orderBy == null ? 0 : orderBy.hash());
-		hc = hc * 31 + (rawWhereClause == null ? 0 : rawWhereClause.hashCode());
+    hc = hc * 31 + (firstRow == 0 ? 0 : firstRow);
+    hc = hc * 31 + (maxRows == 0 ? 0 : maxRows);
+    hc = hc * 31 + (orderBy == null ? 0 : orderBy.hash());
+    hc = hc * 31 + (rawWhereClause == null ? 0 : rawWhereClause.hashCode());
 
-		hc = hc * 31 + (additionalWhere == null ? 0 : additionalWhere.hashCode());
-		hc = hc * 31 + (additionalHaving == null ? 0 : additionalHaving.hashCode());
-		hc = hc * 31 + (mapKey == null ? 0 : mapKey.hashCode());
-		hc = hc * 31 + (id == null ? 0 : 1);
+    hc = hc * 31 + (additionalWhere == null ? 0 : additionalWhere.hashCode());
+    hc = hc * 31 + (additionalHaving == null ? 0 : additionalHaving.hashCode());
+    hc = hc * 31 + (mapKey == null ? 0 : mapKey.hashCode());
+    hc = hc * 31 + (id == null ? 0 : 1);
 
-		if (bindParams != null) {
-		    hc = hc * 31 + bindParams.getQueryPlanHash();
-		}
-		
-		if (request == null){
-			// for AutoFetch...
-			hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryAutoFetchHash());
-			hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryAutoFetchHash());
-			
-		} else {
-			// for query plan...
-			hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryPlanHash(request));
-			hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryPlanHash(request));
-		}
-		
+    if (bindParams != null) {
+      hc = hc * 31 + bindParams.getQueryPlanHash();
+    }
+
+    if (request == null) {
+      // for AutoFetch...
+      hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryAutoFetchHash());
+      hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryAutoFetchHash());
+
+    } else {
+      // for query plan...
+      hc = hc * 31 + (whereExpressions == null ? 0 : whereExpressions.queryPlanHash(request));
+      hc = hc * 31 + (havingExpressions == null ? 0 : havingExpressions.queryPlanHash(request));
+    }
+
+    hc = hc * 31 + (forUpdate == null ? 0 : forUpdate.hashCode());
+
 		return hc;
 	}
 	

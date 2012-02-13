@@ -19,22 +19,21 @@
  */
 package com.avaje.ebeaninternal.server.query;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.persistence.PersistenceException;
-
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.DRawSqlSelect;
 import com.avaje.ebeaninternal.server.deploy.DeployNamedQuery;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
-import com.avaje.ebeaninternal.server.deploy.DRawSqlSelect;
 import com.avaje.ebeaninternal.server.persist.Binder;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryLimitRequest;
+
+import javax.persistence.PersistenceException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Factory for SqlSelectClause based on raw sql.
@@ -50,11 +49,13 @@ public class RawSqlSelectClauseBuilder {
     private final Binder binder;
 
     private final SqlLimiter dbQueryLimiter;
+    private final DatabasePlatform dbPlatform;
 
     public RawSqlSelectClauseBuilder(DatabasePlatform dbPlatform, Binder binder) {
 
         this.binder = binder;
         this.dbQueryLimiter = dbPlatform.getSqlLimiter();
+        this.dbPlatform = dbPlatform;
     }
 
     /**
@@ -89,7 +90,7 @@ public class RawSqlSelectClauseBuilder {
             sql = sqlSelect.buildSql(orderBy, predicates, request);
             if (query.hasMaxRowsOrFirstRow() && dbQueryLimiter != null) {
                 // wrap with a limit offset or ROW_NUMBER() etc
-                SqlLimitResponse limitSql = dbQueryLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query));
+                SqlLimitResponse limitSql = dbQueryLimiter.limit(new OrmQueryLimitRequest(sql, orderBy, query, dbPlatform));
                 includeRowNumColumn = limitSql.isIncludesRowNumberColumn();
 
                 sql = limitSql.getSql();

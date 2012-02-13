@@ -19,13 +19,13 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
+import com.avaje.ebean.BackgroundExecutor;
+import com.avaje.ebeaninternal.api.SpiQuery;
+
+import javax.sql.DataSource;
 import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.sql.DataSource;
-
-import com.avaje.ebean.BackgroundExecutor;
 
 /**
  * Database platform specific settings.
@@ -56,11 +56,11 @@ public class DatabasePlatform {
 	/** The JDBC type to map booleans to (by default). */
 	protected int booleanDbType = Types.BOOLEAN;
 
-	/** The JDBC type to map Blob to. */
-    protected int blobDbType = Types.BLOB;
+  /** The JDBC type to map Blob to. */
+  protected int blobDbType = Types.BLOB;
 
-    /** The JDBC type to map Clob to. */
-    protected int clobDbType = Types.CLOB;
+  /** The JDBC type to map Clob to. */
+  protected int clobDbType = Types.CLOB;
 
 	/** For Oracle treat empty strings as null. */
 	protected boolean treatEmptyStringsAsNull;
@@ -266,10 +266,27 @@ public class DatabasePlatform {
 		return dbName;
 	}
 
-	/**
-	 * Set to true if select count against anonymous view requires an alias.
-	 */
-	public boolean isSelectCountWithAlias() {
-	    return selectCountWithAlias;
+  /**
+   * Set to true if select count against anonymous view requires an alias.
+   */
+  public boolean isSelectCountWithAlias() {
+    return selectCountWithAlias;
+  }
+
+  public String completeSql(String sql, SpiQuery<?> query) {
+    if (Boolean.TRUE.equals(query.isForUpdate())) {
+      sql = withForUpdate(sql);
     }
+
+    return sql;
+  }
+
+  protected String withForUpdate(String sql) {
+    // silently assume the database does not support the "for update" clause.
+    if (logger.isLoggable(Level.INFO)) {
+      logger.log(Level.INFO, "it seems your database does not support the 'for update' clause");
+    }
+
+    return sql;
+  }
 }

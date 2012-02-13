@@ -19,19 +19,6 @@
  */
 package com.avaje.ebeaninternal.server.transaction;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.persistence.PersistenceException;
-import javax.persistence.RollbackException;
-
 import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.config.lucene.IndexUpdateFuture;
@@ -42,6 +29,20 @@ import com.avaje.ebeaninternal.server.lucene.LIndexUpdateFuture;
 import com.avaje.ebeaninternal.server.lucene.PersistenceLuceneException;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager.OnQueryOnly;
+
+import javax.persistence.PersistenceException;
+import javax.persistence.RollbackException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * JDBC Connection based transaction.
@@ -140,6 +141,8 @@ public class JdbcTransaction implements SpiTransaction {
 	List<LIndexUpdateFuture> indexUpdateFutures;
 	
 	HashMap<Integer,List<DerivedRelationshipData>> derivedRelMap;
+
+  private final Map<String, Object> userObjects = new ConcurrentHashMap<String, Object>();
 
 	/**
 	 * Create a new JdbcTransaction.
@@ -685,7 +688,15 @@ public class JdbcTransaction implements SpiTransaction {
 		getEvent().add(tableName, inserts, updates, deletes);
 	}
 
-	public final TransactionManager getTransactionManger(){
-		return manager;
-	}
+  public void putUserObject(String name, Object value) {
+    userObjects.put(name, value);
+  }
+
+  public Object getUserObject(String name) {
+    return userObjects.get(name);
+  }
+
+  public final TransactionManager getTransactionManger() {
+    return manager;
+  }
 }
