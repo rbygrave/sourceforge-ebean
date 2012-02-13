@@ -19,11 +19,10 @@
  */
 package com.avaje.ebean.config.dbplatform;
 
-import java.sql.Types;
+import com.avaje.ebean.BackgroundExecutor;
 
 import javax.sql.DataSource;
-
-import com.avaje.ebean.BackgroundExecutor;
+import java.sql.Types;
 
 
 
@@ -79,7 +78,9 @@ public class MySqlPlatform extends DatabasePlatform {
 		
 		return null;
 	}
-    
-    
 
+  @Override
+  protected String withForUpdate(String sql) {
+    return sql + " for update";
+  }
 }
