@@ -85,11 +85,6 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
     private LuceneOrmQueryRequest luceneQueryRequest;
 
     /**
-     * flag indicates that the select should lock the record (if supported by the db)
-     */
-    private boolean forUpdate;
-
-    /**
      * Create the InternalQueryRequest.
      */
     public OrmQueryRequest(SpiEbeanServer server, OrmQueryEngine queryEngine, SpiQuery<T> query,
