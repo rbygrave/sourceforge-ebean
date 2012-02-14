@@ -19,9 +19,6 @@
  */
 package com.avaje.ebean.bean;
 
-import com.avaje.ebean.Ebean;
-
-import javax.persistence.PersistenceException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -31,6 +28,11 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceException;
+
+import com.avaje.ebean.Ebean;
 
 
 /**
@@ -474,7 +476,7 @@ public final class EntityBeanIntercept implements Serializable {
 			}
       
 			if (lazyLoadFailure) {
-        throw new IllegalStateException("Bean has been deleted - lazy loading failed");
+        throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
       }
       
 			if (lazyLoadProperty == null){
@@ -498,7 +500,7 @@ public final class EntityBeanIntercept implements Serializable {
 				beanLoader.loadBean(this);
 				
 	      if (lazyLoadFailure) {
-	        throw new IllegalStateException("Bean has been deleted - lazy loading failed");
+	        throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
 	      }
 				
 				// bean should be loaded and intercepting now with
