@@ -76,6 +76,11 @@ public final class EntityBeanIntercept implements Serializable {
 	 * Flag set to disable lazy loading - typically for SQL "report" type entity beans.
 	 */
 	private boolean disableLazyLoad;
+	
+	/**
+	 * Flag set when lazy loading failed due to the underlying bean being deleted in the DB.
+	 */
+	private boolean lazyLoadFailure;
 
 	/**
 	 * Set true when loaded or reference. 
@@ -348,13 +353,33 @@ public final class EntityBeanIntercept implements Serializable {
      * When finished loading for lazy or refresh on an already partially
      * populated bean.
      */
-	public void setLoadedLazy() {
-        this.loaded = true;
-	    this.intercepting = true;
-        this.lazyLoadProperty = null;
+  public void setLoadedLazy() {
+    this.loaded = true;
+    this.intercepting = true;
+    this.lazyLoadProperty = null;
+  }
+
+  /**
+   * Mark this bean as having failed lazy loading due to the underlying row
+   * being deleted.
+   * <p>
+   * We mark the bean this way rather than immediately fail as we might be batch
+   * lazy loading and this bean might not be used by the client code at all.
+   * Instead we will fail as soon as the client code tries to use this bean.
+   * </p>
+   */
+	public void setLazyLoadFailure() {
+	  this.lazyLoadFailure = true;
 	}
 
 	/**
+	 * Return true if the bean is marked as having failed lazy loading.
+	 */
+	public boolean isLazyLoadFailure() {
+    return lazyLoadFailure;
+  }
+
+  /**
 	 * Return true if lazy loading is disabled.
 	 */
 	public boolean isDisableLazyLoad() {
@@ -447,7 +472,11 @@ public final class EntityBeanIntercept implements Serializable {
 				loaded = true;
 				return;
 			}
-			
+      
+			if (lazyLoadFailure) {
+        throw new IllegalStateException("Bean has been deleted - lazy loading failed");
+      }
+      
 			if (lazyLoadProperty == null){
 				if (beanLoader == null){
 					beanLoader = (BeanLoader)Ebean.getServer(ebeanServerName);
@@ -467,6 +496,10 @@ public final class EntityBeanIntercept implements Serializable {
 				}
 		
 				beanLoader.loadBean(this);
+				
+	      if (lazyLoadFailure) {
+	        throw new IllegalStateException("Bean has been deleted - lazy loading failed");
+	      }
 				
 				// bean should be loaded and intercepting now with
 				// setLoaded() called by code in internalEbean.lazyLoadBean(...)	

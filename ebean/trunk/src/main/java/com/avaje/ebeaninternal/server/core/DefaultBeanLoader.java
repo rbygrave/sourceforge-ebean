@@ -379,10 +379,19 @@ public class DefaultBeanLoader {
 		List<?> list = server.findList(query, loadRequest.getTransaction());
 		
 		if (loadRequest.isLoadCache()){
-			for (int i = 0; i < list.size(); i++) {
-	            desc.cachePutBeanData(list.get(i));	
-			}
+      for (int i = 0; i < list.size(); i++) {
+        desc.cachePutBeanData(list.get(i));
+      }
 		}
+		
+		for (int i = 0; i < ebis.length; i++) {
+		  if (ebis[i].isReference()) {
+		    // The underlying row in DB was deleted. Mark this bean as 'failed'
+		    // but allow processing to continue until it is accessed by client code
+		    ebis[i].setLazyLoadFailure();
+		  }
+    }
+		
 	}
 
 	public void refresh(Object bean) {
