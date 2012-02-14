@@ -49,6 +49,7 @@ import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebean.bean.PersistenceContext;
 import com.avaje.ebean.cache.ServerCache;
 import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.EncryptKey;
@@ -1157,36 +1158,45 @@ public class BeanDescriptor<T> {
         }
     }
 
-    public boolean cacheLoadMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId, Boolean readOnly, boolean vanilla) {
-	    CachedManyIds ids = cacheGetCachedManyIds(parentId, many.getName());
-		if (ids != null){
-			BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
-			DLoadContext loadContext = new DLoadContext(ebeanServer, targetDescriptor, readOnly, false, null, false);
-			
-			List<Object> idList = ids.getIdList();
-			bc.checkEmptyLazyLoad();
-			for (int i = 0; i < idList.size(); i++) {
-				Object id = idList.get(i);
-				Object refBean = targetDescriptor.createReference(vanilla, readOnly, id, null);
-				loadContext.register(null, ((EntityBean)refBean)._ebean_getIntercept());
-				many.add(bc, refBean);
-	        }
-			return true;
-		}
-		return false;
-	}
+  public boolean cacheLoadMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId, Boolean readOnly, boolean vanilla) {
+    CachedManyIds ids = cacheGetCachedManyIds(parentId, many.getName());
+    if (ids != null) {
+      
+      Object ownerBean = bc.getOwnerBean();
+      EntityBeanIntercept ebi = ((EntityBean)ownerBean)._ebean_getIntercept();
+      PersistenceContext persistenceContext = ebi.getPersistenceContext();
+      
+      BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
+      //DLoadContext loadContext = new DLoadContext(ebeanServer, targetDescriptor, readOnly, false, null, false);
 
-    public void cachePutMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId) {
-    	BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
-    	Collection<?> actualDetails = bc.getActualDetails();
-    	ArrayList<Object> idList = new ArrayList<Object>();
-    	for (Object bean : actualDetails) {
-    		Object id = targetDescriptor.getId(bean);
-    		idList.add(id);
-        }
-    	CachedManyIds ids = new CachedManyIds(idList);
-    	cachePutCachedManyIds(parentId, many.getName(), ids);
+      List<Object> idList = ids.getIdList();
+      bc.checkEmptyLazyLoad();
+      for (int i = 0; i < idList.size(); i++) {
+        Object id = idList.get(i);
+        Object refBean = targetDescriptor.createReference(vanilla, readOnly, id, null);
+        EntityBeanIntercept refEbi = ((EntityBean) refBean)._ebean_getIntercept();
+        //loadContext.register(null, );
+
+        many.add(bc, refBean);
+        persistenceContext.put(id, refBean);
+        refEbi.setPersistenceContext(persistenceContext);
+      }
+      return true;
     }
+    return false;
+  }
+
+  public void cachePutMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId) {
+    BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
+    Collection<?> actualDetails = bc.getActualDetails();
+    ArrayList<Object> idList = new ArrayList<Object>();
+    for (Object bean : actualDetails) {
+      Object id = targetDescriptor.getId(bean);
+      idList.add(id);
+    }
+    CachedManyIds ids = new CachedManyIds(idList);
+    cachePutCachedManyIds(parentId, many.getName(), ids);
+  }
     
 	public void cacheRemoveCachedManyIds(Object parentId, String propertyName) {
 	    ServerCache collectionIdsCache = cacheManager.getCollectionIdsCache(beanType, propertyName);

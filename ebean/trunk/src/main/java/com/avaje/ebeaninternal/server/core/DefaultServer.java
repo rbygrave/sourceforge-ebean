@@ -111,6 +111,7 @@ import com.avaje.ebeaninternal.server.ldap.LdapOrmQueryEngine;
 import com.avaje.ebeaninternal.server.ldap.LdapOrmQueryRequest;
 import com.avaje.ebeaninternal.server.ldap.expression.LdapExpressionFactory;
 import com.avaje.ebeaninternal.server.lib.ShutdownManager;
+import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
 import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.query.CQuery;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
@@ -128,7 +129,6 @@ import com.avaje.ebeaninternal.server.querydefn.DefaultOrmUpdate;
 import com.avaje.ebeaninternal.server.querydefn.DefaultRelationalQuery;
 import com.avaje.ebeaninternal.server.querydefn.NaturalKeyBindParam;
 import com.avaje.ebeaninternal.server.text.csv.TCsvReader;
-import com.avaje.ebeaninternal.server.text.json.InternalJsonParser;
 import com.avaje.ebeaninternal.server.transaction.DefaultPersistenceContext;
 import com.avaje.ebeaninternal.server.transaction.RemoteTransactionEvent;
 import com.avaje.ebeaninternal.server.transaction.TransactionManager;
@@ -1230,8 +1230,19 @@ public final class DefaultServer implements SpiEbeanServer {
         if (cachedBean != null){
         	if (context == null){
         		context = new DefaultPersistenceContext();
+        		
         	}
         	context.put(query.getId(), cachedBean);
+        	if (!vanilla) {
+        	  
+        	  DLoadContext loadContext = new DLoadContext(this, beanDescriptor, query.isReadOnly(), false, null, false);
+        	  loadContext.setPersistenceContext(context);
+        	  
+        	  EntityBeanIntercept ebi = ((EntityBean)cachedBean)._ebean_getIntercept();
+            ebi.setPersistenceContext(context);
+            loadContext.register(null, ebi);
+            
+          }
         }
         
         return (T) cachedBean;

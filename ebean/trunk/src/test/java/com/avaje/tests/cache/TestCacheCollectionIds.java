@@ -70,18 +70,18 @@ public class TestCacheCollectionIds extends TestCase {
 		
 	}
 
-	private int fetchCustomer(Integer id) {
-	    Customer customer2 = Ebean.find(Customer.class)
-			.setId(id)
-			//.setUseCache(true)
-			.findUnique();
-		
-		List<Contact> contacts2 = customer2.getContacts();
-		contacts2.size();
-		for (Contact contact : contacts2) {
-			contact.getFirstName();
-			contact.getEmail();
-        }
-		return contacts2.size();
+  private int fetchCustomer(Integer id) {
+    
+    Customer customer2 = Ebean.find(Customer.class).setId(id)
+    // .setUseCache(true)
+        .findUnique();
+
+    List<Contact> contacts2 = customer2.getContacts();
+    contacts2.size();
+    for (Contact contact : contacts2) {
+      contact.getFirstName();
+      contact.getEmail();
     }
+    return contacts2.size();
+  }
 }
