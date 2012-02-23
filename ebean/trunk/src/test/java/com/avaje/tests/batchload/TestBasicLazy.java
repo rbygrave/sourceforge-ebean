@@ -177,23 +177,23 @@ public class TestBasicLazy extends TestCase
             .findList();
         assertTrue(orders.size() >= 4);
 
-        synchronized (mutex)
+        try
         {
-            try
-            {
-                MyTestDataSourcePoolListener.SLEEP_AFTER_BORROW = 2000;
+            MyTestDataSourcePoolListener.SLEEP_AFTER_BORROW = 2000;
 
+            synchronized (mutex)
+            {
                 mutex.notifyAll();
             }
-            finally
+
+            while(tg.activeCount() > 0)
             {
-                MyTestDataSourcePoolListener.SLEEP_AFTER_BORROW = 0;
+                Thread.sleep(100);
             }
         }
-
-        while(tg.activeCount() > 0)
+        finally
         {
-            Thread.sleep(100);
+            MyTestDataSourcePoolListener.SLEEP_AFTER_BORROW = 0;
         }
 
         if (exceptions.size() > 0)
