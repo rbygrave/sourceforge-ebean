@@ -204,14 +204,14 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
         return;
       }
 
-      if (logger.isLoggable(Level.FINE)) {
+      if (logger.isLoggable(Level.INFO)) {
         for (int i = 0; i < batch.size(); i++) {
           
           EntityBeanIntercept entityBeanIntercept = batch.get(i);
           EntityBean owner = entityBeanIntercept.getOwner();
           Object id = desc.getId(owner);
           
-          logger.fine("LoadBean type["+owner.getClass().getName()+"] id["+id+"] batchIndex["+i+"] beanLoaderIndex["+entityBeanIntercept.getBeanLoaderIndex()+"]");
+          logger.info("LoadBean type["+owner.getClass().getName()+"] fullPath["+fullPath+"] id["+id+"] batchIndex["+i+"] beanLoaderIndex["+entityBeanIntercept.getBeanLoaderIndex()+"]");
         }
       }
       
