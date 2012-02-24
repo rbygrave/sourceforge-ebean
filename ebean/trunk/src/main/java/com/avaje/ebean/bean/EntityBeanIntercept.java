@@ -224,17 +224,32 @@ public final class EntityBeanIntercept implements Serializable {
 		this.parentBean = parentBean;
 	}
 	
-	/**
-	 * Return the index position for batch loading via BeanLoader.
-	 */
-    public int getBeanLoaderIndex() {
-		return beanLoaderIndex;
-	}
+  /**
+   * Return the index position for batch loading via BeanLoader.
+   */
+  public int getBeanLoaderIndex() {
+    return beanLoaderIndex;
+  }
 
-	public void setBeanLoader(int index, BeanLoader ctx) {
+  /**
+   * Set Lazy Loading by ebeanServerName.
+   * <p>
+   * This is for reference beans created by themselves.
+   * </p> 
+   */
+  public void setBeanLoaderByServerName(String ebeanServerName) {
+    this.beanLoaderIndex = 0;
+    this.beanLoader = null;
+    this.ebeanServerName = ebeanServerName;
+  }
+  
+  /**
+   * Set the BeanLoader for general lazy loading.
+   */
+	public void setBeanLoader(int index, BeanLoader beanLoader) {
 		this.beanLoaderIndex = index;
-		this.beanLoader = ctx;
-		this.ebeanServerName = ctx.getName();
+		this.beanLoader = beanLoader;
+		this.ebeanServerName = beanLoader.getName();
 	}
 
 	/**
@@ -463,49 +478,62 @@ public final class EntityBeanIntercept implements Serializable {
 	 */
 	protected void loadBean(String loadProperty) {
 
-		synchronized (this) {
+    synchronized (this) {
+      if (beanLoader == null) {
+        beanLoader = (BeanLoader) Ebean.getServer(ebeanServerName);
+        if (beanLoader == null) {
+          throw new PersistenceException("Lazy loading but beanLoader is null?");
+        }
+        
+        // After deserialisation lazy load using the ebeanServer.
+        // This is not batch lazy loading - Synchronise only on the bean
+        loadBeanInternal(loadProperty);
+        return;
+      }
+    }
+    
+    synchronized (beanLoader) {
+      // Lazy loading using LoadBeanContext which supports batch loading
+      // Synchronise on the beanLoader (a 'node' of the LoadBeanContext 'tree')
+      loadBeanInternal(loadProperty);
+    }
+	}
+  
+	/**
+	 * Invoke the lazy loading. This method is synchronised externally.
+	 */
+	private void loadBeanInternal(String loadProperty) {
+	  
+	  if (loaded && (loadedProps == null || loadedProps.contains(loadProperty))){
+	    // race condition where multiple threads calling preGetter concurrently
+	    return;
+	  }
 
-		  if (loaded && (loadedProps == null || loadedProps.contains(loadProperty))){
-		    // race condition where multiple threads calling preGetter concurrently
-		    return;
-		  }
-
-			if (disableLazyLoad){
-				loaded = true;
-				return;
+		if (disableLazyLoad){
+			loaded = true;
+			return;
+		}
+    
+		if (lazyLoadFailure) {
+      throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
+    }
+    
+		if (lazyLoadProperty == null){
+		  
+			lazyLoadProperty = loadProperty;
+	
+			if (nodeUsageCollector != null){
+				nodeUsageCollector.setLoadProperty(lazyLoadProperty);
 			}
-      
-			if (lazyLoadFailure) {
+	
+			beanLoader.loadBean(this);
+			
+      if (lazyLoadFailure) {
         throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
       }
-      
-			if (lazyLoadProperty == null){
-				if (beanLoader == null){
-					beanLoader = (BeanLoader)Ebean.getServer(ebeanServerName);
-				}
-							
-				if (beanLoader == null){
-					String msg = "Lazy loading but InternalEbean is null?"
-						+" The InternalEbean needs to be set after deserialization"
-						+" to support lazy loading.";
-					throw new PersistenceException(msg);					
-				}
-				
-				lazyLoadProperty = loadProperty;
-		
-				if (nodeUsageCollector != null){
-					nodeUsageCollector.setLoadProperty(lazyLoadProperty);
-				}
-		
-				beanLoader.loadBean(this);
-				
-	      if (lazyLoadFailure) {
-	        throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
-	      }
-				
-				// bean should be loaded and intercepting now with
-				// setLoaded() called by code in internalEbean.lazyLoadBean(...)	
-			}
+			
+			// bean should be loaded and intercepting now. setLoaded() has 
+      // been called by the lazy loading mechanism
 		}
 	}
 
