@@ -306,7 +306,7 @@ public class DefaultBeanLoader {
 
     List<EntityBeanIntercept> batch = loadRequest.getBatch();
 
-    if (batch.size() == 0) {
+    if (batch.isEmpty()) {
       throw new RuntimeException("Nothing in batch?");
     }
 
