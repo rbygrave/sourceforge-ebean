@@ -45,14 +45,6 @@ public class BeanPropertySimpleCollection<T> extends BeanPropertyAssocMany<T> {
     }
     
     @Override
-    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-        
-        Object srcValue = getValueUnderlying(sourceBean);
-        Object dstValue = help.copyCollection(srcValue, ctx, maxDepth, destBean);
-        setValue(destBean, dstValue);
-    }
-    
-    @Override
     public Attribute createAttribute(Object bean) {
         Object v = getValue(bean);
         if (v == null){

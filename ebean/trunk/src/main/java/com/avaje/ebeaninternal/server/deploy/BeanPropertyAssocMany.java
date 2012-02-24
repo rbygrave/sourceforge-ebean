@@ -208,16 +208,6 @@ public class BeanPropertyAssocMany<T> extends BeanPropertyAssoc<T> {
     public ElPropertyValue buildElPropertyValue(String propName, String remainder, ElPropertyChainBuilder chain, boolean propertyDeploy) {
         return createElPropertyValue(propName, remainder, chain, propertyDeploy);
     }
-
-	@Override
-    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-        
-	    Object sourceCollection = getValueUnderlying(sourceBean);
-	    if (sourceCollection != null){
-	        Object copyCollection = help.copyCollection(sourceCollection, ctx, maxDepth, destBean);
-	        setValue(destBean, copyCollection);
-	    }	    
-    }
 	
     public SqlUpdate deleteByParentId(Object parentId, List<Object> parentIdist) {
         if (parentId != null){

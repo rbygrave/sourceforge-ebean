@@ -35,7 +35,6 @@ import com.avaje.ebeaninternal.api.SpiTransaction;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.avaje.ebeaninternal.server.deploy.BeanPropertyAssocMany;
-import com.avaje.ebeaninternal.server.deploy.CopyContext;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
 import com.avaje.ebeaninternal.server.deploy.DeployPropertyParserMap;
 import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
@@ -416,14 +415,17 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
             // additionally the return type (List/Set/Map) must be the same
             cacheKey = Integer.valueOf(31 * query.queryHash() + query.getType().hashCode());
         }
+        
+        //TODO: Sort out returning BeanCollection from L2 cache
+        return null;
 
-        BeanCollection<T> bc = beanDescriptor.queryCacheGet(cacheKey);
-        if (bc != null && Boolean.FALSE.equals(query.isReadOnly())) {
-            // Explicit readOnly=false for query cache
-            CopyContext ctx = new CopyContext(vanillaMode, false);
-            return new CopyBeanCollection<T>(bc, beanDescriptor, ctx, 5).copy();
-        }
-        return bc;
+//        BeanCollection<T> bc = beanDescriptor.queryCacheGet(cacheKey);
+//        if (bc != null && Boolean.FALSE.equals(query.isReadOnly())) {
+//            // Explicit readOnly=false for query cache
+//            CopyContext ctx = new CopyContext(vanillaMode, false);
+//            return new CopyBeanCollection<T>(bc, beanDescriptor, ctx, 5).copy();
+//        }
+//        return bc;
     }
 
     public void putToQueryCache(BeanCollection<T> queryResult) {

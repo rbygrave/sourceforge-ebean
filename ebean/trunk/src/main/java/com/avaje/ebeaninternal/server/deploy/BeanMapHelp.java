@@ -100,44 +100,7 @@ public final class BeanMapHelp<T> implements BeanCollectionHelp<T> {
 			map.put(keyValue, bean);
 		}
 	}
-	
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Object copyCollection(Object source, CopyContext ctx, int maxDepth, Object parentBean) {
-        if (source instanceof Map<?,?> == false){
-            return null;
-        }
-        Map<Object,Object> m = ctx.isVanillaMode() ? new LinkedHashMap() : new BeanMap();
-        
-        Map<?,?> sourceMap = (Map<?,?>)source;
-        if (source instanceof BeanMap<?,?> == false){
-            for (Entry<?, ?> entry: sourceMap.entrySet()) {
-                m.put(entry.getKey(), entry.getValue());
-            }
-            return m;
-        } 
-
-        BeanMap<?,?> bc = (BeanMap<?,?>)source;
-        if (!bc.isPopulated()) {
-            if (ctx.isVanillaMode() || parentBean == null){
-                return null;
-            } else {
-                return createReference(parentBean, many.getName());
-            }
-        }
-        
-        Map<?,?> actual = bc.getActualMap();
-        for (Entry<?, ?> entry: actual.entrySet()) {
-            Object sourceDetail = entry.getValue();
-            Object destDetail = targetDescriptor.createCopy(sourceDetail, ctx, maxDepth-1);
-            m.put(entry.getKey(), destDetail);
-        }
-        
-        return m;
-    }
-
-        
-    
 	@SuppressWarnings("rawtypes")
     public Object createEmpty(boolean vanilla) {
 		return vanilla ? new LinkedHashMap() : new BeanMap();

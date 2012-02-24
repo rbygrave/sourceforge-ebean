@@ -517,11 +517,6 @@ public class BeanProperty implements ElPropertyValue {
         setValue(destBean, value);
     }
 
-    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth) {
-        Object value = getValue(sourceBean);
-        setValue(destBean, value);
-    }
-
     /**
      * Return the encrypt key for the column matching this property.
      */
