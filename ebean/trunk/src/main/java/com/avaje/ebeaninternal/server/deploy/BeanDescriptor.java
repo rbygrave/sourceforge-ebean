@@ -597,7 +597,7 @@ public class BeanDescriptor<T> {
                 EntityBeanIntercept origEbi = ((EntityBean)source)._ebean_getIntercept();        
                 origEbi.copyStateTo(copyEbi);
             }
-            copyEbi.setBeanLoader(0, ebeanServer);
+            copyEbi.setBeanLoaderByServerName(ebeanServer.getName());
             copyEbi.setPersistenceContext(ctx.getPersistenceContext());
         }
 
@@ -1695,7 +1695,7 @@ public class BeanDescriptor<T> {
                 EntityBean eb = (EntityBean) bean;
     
                 EntityBeanIntercept ebi = eb._ebean_getIntercept();
-                ebi.setBeanLoader(0, ebeanServer);
+                ebi.setBeanLoaderByServerName(ebeanServer.getName());
     
                 if (parent != null) {
                     // Special case for a OneToOne ... parent
