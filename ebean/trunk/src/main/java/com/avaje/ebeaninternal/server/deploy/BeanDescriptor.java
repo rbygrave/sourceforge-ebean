@@ -88,7 +88,6 @@ import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.ldap.LdapPersistenceException;
-import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
 import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.persist.DmlUtil;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
@@ -564,48 +563,6 @@ public class BeanDescriptor<T> {
             // used for creating lazy loading lists etc
             propertiesMany[i].setLoader(ebeanServer);
         }
-    }
-
-    
-    /**
-     * Create a copy of this bean.
-     * <p>
-     * Originally for the purposes of returning a copy (rather than a shared
-     * instance) from the cache - where the app may want to change the data.
-     * </p>
-     */
-    @SuppressWarnings("unchecked")
-    public T createCopy(Object source, CopyContext ctx, int maxDepth) {
-        
-        Object destBean = createBean(ctx.isVanillaMode());
-        for (int j = 0; j < propertiesId.length; j++) {
-            propertiesId[j].copyProperty(source, destBean, ctx, maxDepth);                            
-        }
-        
-        Object destId = getId(destBean);
-        Object existing = ctx.putIfAbsent(destId, destBean);
-        if (existing != null) {
-            return (T)existing;
-        } 
-        for (int i = 0; i < propertiesNonTransient.length; i++) {
-            propertiesNonTransient[i].copyProperty(source, destBean, ctx, maxDepth);                
-        }
-        
-        if (destBean instanceof EntityBean){
-            EntityBeanIntercept copyEbi = ((EntityBean)destBean)._ebean_getIntercept();
-            if (source instanceof EntityBean){
-                EntityBeanIntercept origEbi = ((EntityBean)source)._ebean_getIntercept();        
-                origEbi.copyStateTo(copyEbi);
-            }
-            copyEbi.setBeanLoaderByServerName(ebeanServer.getName());
-            copyEbi.setPersistenceContext(ctx.getPersistenceContext());
-        }
-
-        return (T)destBean;
-    }
-
-    public T createCopy(Object orig, boolean vanilla) {
-        return createCopy(orig, new CopyContext(false, false), 3);
     }
 
     /**

@@ -82,35 +82,6 @@ public final class BeanSetHelp<T> implements BeanCollectionHelp<T> {
 	public void add(BeanCollection<?> collection, Object bean) {
 		collection.internalAdd(bean);
 	}
-
-    @SuppressWarnings("unchecked")
-    public Object copyCollection(Object source, CopyContext ctx, int maxDepth, Object parentBean) {
-        if (source instanceof Set<?> == false){
-            return null;
-        }
-        Set<T> s = ctx.isVanillaMode() ? new LinkedHashSet<T>() : new BeanSet<T>();
-
-        if (source instanceof BeanSet<?> == false){
-            s.addAll((Set<T>)source);
-            return s;
-            
-        } 
-        
-        BeanSet<?> bc = (BeanSet<?>)source;
-        if (!bc.isPopulated()) {
-            if (ctx.isVanillaMode() || parentBean == null){
-                return null;
-            } else {
-                return createReference(parentBean, many.getName());
-            }
-        }
-        Set<?> actual = bc.getActualSet();
-        for (Object sourceDetail : actual) {
-            Object destDetail = targetDescriptor.createCopy(sourceDetail, ctx, maxDepth-1);
-            s.add((T)destDetail);
-        }
-        return s;
-    }
     
     public Object createEmpty(boolean vanilla) {
 	    return vanilla ? new LinkedHashSet<T>() : new BeanSet<T>();

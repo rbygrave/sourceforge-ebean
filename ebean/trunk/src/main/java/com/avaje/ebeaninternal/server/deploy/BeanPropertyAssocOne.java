@@ -189,12 +189,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
         return encrypted ? elPlaceHolderEncrypted : elPlaceHolder;
     }
 
-    @Override
-    public void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-        
-        localHelp.copyProperty(sourceBean, destBean, ctx, maxDepth);
-    }
-
     public SqlUpdate deleteByParentId(Object parentId, List<Object> parentIdist) {
         if (parentId != null){
             return deleteByParentId(parentId);
@@ -645,8 +639,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private abstract class LocalHelp {
 
-        abstract void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth);
-        
         abstract void loadIgnore(DbReadContext ctx);
 
         abstract Object read(DbReadContext ctx) throws SQLException;
@@ -657,39 +649,9 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
         abstract void appendFrom(DbSqlContext ctx, boolean forceOuterJoin);
         
-        void copy(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-            Object value = getValue(sourceBean);
-            if (value != null){
-                Class<?> valueClass = value.getClass();
-                BeanDescriptor<?> refDesc = descriptor.getBeanDescriptor(valueClass);
-                Object refId = refDesc.getId(value);
-                Object destRef = ctx.get(valueClass, refId);
-                if (destRef != null){
-                    // use value from the persistence context
-                } else if (maxDepth > 1){
-                    // recursively copy ...
-                    destRef = refDesc.createCopy(value, ctx, maxDepth - 1);
-                    
-                } else {
-                    destRef = refDesc.createReference(ctx.isVanillaMode(), null, refId, destBean);
-                }
-                setValue(destBean, destRef);
-            }
-        }
     }
 
     private final class Embedded extends LocalHelp {
-
-        void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-            Object srcEmb = getValue(sourceBean);
-            if (srcEmb != null){
-                Object dstEmb = targetDescriptor.createBean(ctx.isVanillaMode());
-                for (int i = 0; i < embeddedProps.length; i++) {
-                    embeddedProps[i].copyProperty(srcEmb, dstEmb, ctx, maxDepth);
-                }
-                setValue(destBean, dstEmb);
-            }
-        }
 
         void loadIgnore(DbReadContext ctx) {
             for (int i = 0; i < embeddedProps.length; i++) {
@@ -751,10 +713,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
 
         Reference(BeanPropertyAssocOne<?> beanProp) {
 //            this.beanProp = beanProp;
-        }
-
-        void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-            copy(sourceBean, destBean, ctx, maxDepth);
         }
         
         void loadIgnore(DbReadContext ctx) {
@@ -865,10 +823,6 @@ public class BeanPropertyAssocOne<T> extends BeanPropertyAssoc<T> {
      */
     private final class ReferenceExported extends LocalHelp {
 
-        void copyProperty(Object sourceBean, Object destBean, CopyContext ctx, int maxDepth){
-            copy(sourceBean, destBean, ctx, maxDepth);
-        }
-        
         @Override
         void loadIgnore(DbReadContext ctx) {
             targetDescriptor.getIdBinder().loadIgnore(ctx);
