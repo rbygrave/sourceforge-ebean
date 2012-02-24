@@ -138,91 +138,114 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 		ebi.setBeanLoader(pos, this);
 	}
 
+	/**
+	 * Check if we can load the bean from L2 cache. If so avoid loading from the DB.
+	 */
+	private boolean loadBeanFromCache(EntityBeanIntercept ebi, int position) {
+	
+	  if (!desc.loadFromCache(ebi)) {
+	    return false;
+	  }
+    // we loaded the bean from cache
+    weakList.removeEntry(position);
+    if (logger.isLoggable(Level.FINEST)) {
+      logger.log(Level.FINEST, "Loading path:" + fullPath + " - bean loaded from L2 cache, position[" + position + "]");
+    }
+    return true;
+	}
+	
+	/**
+	 * Load this bean and potentially a batch of similar beans.
+	 */
   public void loadBean(EntityBeanIntercept ebi) {
+
+    // A synchronized (this) is effectively held by EntityBeanIntercept.loadBean()
 
     if (desc.lazyLoadMany(ebi)) {
       // lazy load property was a Many
       return;
     }
-    synchronized (weakList) {
+   
+    int position = ebi.getBeanLoaderIndex();
+    boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCacheActive();
 
-      int position = ebi.getBeanLoaderIndex();
-      boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCaching();
-
-      if (hitCache) {
-        if (desc.loadFromCache(ebi)) {
-          // we loaded the bean from cache
-          weakList.removeEntry(position);
-          if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Loading path:" + fullPath + " - bean loaded from L2 cache, position[" + position + "]");
-          }
-          return;
-        }
-      }
-
-      // determine the set of beans to lazy load
-      List<EntityBeanIntercept> batch = null;
-      try {
-        batch = weakList.getLoadBatch(position, batchSize);
-      } catch (IllegalStateException e) {
-        logger.log(Level.SEVERE, "type["+desc.getFullName()+"] fullPath[" + fullPath + "] batchSize["+batchSize+"]", e);
-      }
-      
-      if (hitCache && batchSize > 1) {
-        // check each of the beans in the batch to see if they are in the cache
-        List<EntityBeanIntercept> actualLoadBatch = new ArrayList<EntityBeanIntercept>(batchSize);
-        List<EntityBeanIntercept> batchToCheck = batch;
-        int skip = 0;
-        while (true) {
-          // check each bean (not already checked) to see if it is in the cache
-          for (int i = skip; i < batchToCheck.size(); i++) {
-            if (desc.loadFromCache(batchToCheck.get(i))) {
-              if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Loading path:" + fullPath + " - bean loaded from L2 cache(batch)");
-              }
-            } else {
-              actualLoadBatch.add(batchToCheck.get(i));
-            }
-          }
-          skip = actualLoadBatch.size();
-          if (batchToCheck.size() < batchSize) {
-            // we have exhausted all the beans that need lazy loading
-            break;
-          }
-          int more = batchSize - actualLoadBatch.size();
-          if (more <= 0) {
-            break;
-          }
-          // get some more to check as we loaded some from L2 cache
-          batchToCheck = weakList.getNextBatch(more);
-        }
-        batch = actualLoadBatch;
-      }
-
-      if (batch.isEmpty()) {
-        // we must have since loaded the bean we missed earlier
-        return;
-      }
-
-      if (logger.isLoggable(Level.INFO)) {
-        for (int i = 0; i < batch.size(); i++) {
-          
-          EntityBeanIntercept entityBeanIntercept = batch.get(i);
-          EntityBean owner = entityBeanIntercept.getOwner();
-          Object id = desc.getId(owner);
-          
-          logger.info("LoadBean type["+owner.getClass().getName()+"] fullPath["+fullPath+"] id["+id+"] batchIndex["+i+"] beanLoaderIndex["+entityBeanIntercept.getBeanLoaderIndex()+"]");
-        }
-      }
-      
-      LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
-      parent.getEbeanServer().loadBean(req);
+    if (hitCache && loadBeanFromCache(ebi, position)) {
+      // successfully hit the L2 cache so don't invoke DB lazy loading
+      return;
     }
+
+    // Get a batch of beans to lazy load
+    List<EntityBeanIntercept> batch = null;
+    try {
+      batch = weakList.getLoadBatch(position, batchSize);
+    } catch (IllegalStateException e) {
+      logger.log(Level.SEVERE, "type["+desc.getFullName()+"] fullPath[" + fullPath + "] batchSize["+batchSize+"]", e);
+    }
+    
+    if (hitCache && batchSize > 1) {
+      // Check each of the beans in the batch to see if they are in the L2 cache.
+      // Add more as necessary to make up our batch that will be loaded.
+      batch = loadBeanCheckBatch(batch);
+    }
+
+    if (logger.isLoggable(Level.FINER)) {
+      for (int i = 0; i < batch.size(); i++) {
+        
+        EntityBeanIntercept entityBeanIntercept = batch.get(i);
+        EntityBean owner = entityBeanIntercept.getOwner();
+        Object id = desc.getId(owner);
+        
+        logger.finer("LoadBean type["+owner.getClass().getName()+"] fullPath["+fullPath+"] id["+id+"] batchIndex["+i+"] beanLoaderIndex["+entityBeanIntercept.getBeanLoaderIndex()+"]");
+      }
+    }
+    
+    LoadBeanRequest req = new LoadBeanRequest(this, batch, null, batchSize, true, ebi.getLazyLoadProperty(), hitCache);
+    parent.getEbeanServer().loadBean(req);
+  
+  }
+
+  /**
+   * Check each of the beans in the batch to see if they are in the cache.
+   * Get more beans out as necessary to get our desired batch size.
+   */
+  private List<EntityBeanIntercept> loadBeanCheckBatch(List<EntityBeanIntercept> batch) {
+    
+    
+    List<EntityBeanIntercept> actualLoadBatch = new ArrayList<EntityBeanIntercept>(batchSize);
+    List<EntityBeanIntercept> batchToCheck = batch;
+    
+    int loadedFromCache = 0;
+   
+    while (true) {
+      // check each bean (not already checked) to see if it is in the cache
+      for (int i = 0; i < batchToCheck.size(); i++) {
+        if (!desc.loadFromCache(batchToCheck.get(i))) {
+          actualLoadBatch.add(batchToCheck.get(i));
+        } else {
+          loadedFromCache++;
+          if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "Loading path:" + fullPath + " - bean loaded from L2 cache(batch)");
+          }
+        } 
+      }
+
+      if (batchToCheck.isEmpty()) {
+        // we have exhausted all the beans that need lazy loading
+        break;
+      }
+      int more = batchSize - actualLoadBatch.size();
+      if (more <= 0 || loadedFromCache > 500) {
+        break;
+      }
+      // get some more to check as we loaded some from L2 cache
+      batchToCheck = weakList.getNextBatch(more);
+    }
+    return actualLoadBatch;
   }
 	
   public void loadSecondaryQuery(OrmQueryRequest<?> parentRequest, int requestedBatchSize, boolean all) {
 
-    synchronized (weakList) {
+    synchronized (this) {
       do {
         List<EntityBeanIntercept> batch = weakList.getNextBatch(requestedBatchSize);
         if (batch.size() == 0) {
