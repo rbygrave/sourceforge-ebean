@@ -480,14 +480,14 @@ public final class EntityBeanIntercept implements Serializable {
 
     synchronized (this) {
       if (beanLoader == null) {
-        beanLoader = (BeanLoader) Ebean.getServer(ebeanServerName);
-        if (beanLoader == null) {
-          throw new PersistenceException("Lazy loading but beanLoader is null?");
+        BeanLoader serverLoader = (BeanLoader) Ebean.getServer(ebeanServerName);
+        if (serverLoader == null) {
+          throw new PersistenceException("Server ["+ebeanServerName+"] was not found?");
         }
         
-        // After deserialisation lazy load using the ebeanServer.
-        // This is not batch lazy loading - Synchronise only on the bean
-        loadBeanInternal(loadProperty);
+        // For stand alone reference bean or after deserialisation lazy load 
+        // using the ebeanServer. Synchronise only on the bean.
+        loadBeanInternal(loadProperty, serverLoader);
         return;
       }
     }
@@ -495,14 +495,14 @@ public final class EntityBeanIntercept implements Serializable {
     synchronized (beanLoader) {
       // Lazy loading using LoadBeanContext which supports batch loading
       // Synchronise on the beanLoader (a 'node' of the LoadBeanContext 'tree')
-      loadBeanInternal(loadProperty);
+      loadBeanInternal(loadProperty, beanLoader);
     }
 	}
   
 	/**
 	 * Invoke the lazy loading. This method is synchronised externally.
 	 */
-	private void loadBeanInternal(String loadProperty) {
+	private void loadBeanInternal(String loadProperty, BeanLoader loader) {
 	  
 	  if (loaded && (loadedProps == null || loadedProps.contains(loadProperty))){
 	    // race condition where multiple threads calling preGetter concurrently
@@ -515,6 +515,7 @@ public final class EntityBeanIntercept implements Serializable {
 		}
     
 		if (lazyLoadFailure) {
+		  // failed when batch lazy loaded by another bean in the batch
       throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
     }
     
@@ -526,9 +527,10 @@ public final class EntityBeanIntercept implements Serializable {
 				nodeUsageCollector.setLoadProperty(lazyLoadProperty);
 			}
 	
-			beanLoader.loadBean(this);
+			loader.loadBean(this);
 			
       if (lazyLoadFailure) {
+        // failed when lazy loading this bean
         throw new EntityNotFoundException("Bean has been deleted - lazy loading failed");
       }
 			
