@@ -1004,6 +1004,13 @@ public class BeanDescriptor<T> {
     public boolean isBeanCaching() {
     	return cacheOptions.isUseCache();
     }
+
+  /**
+   * Return true if the bean cache has been used.
+   */
+  public boolean isBeanCacheActive() {
+    return beanCache != null;
+  }
     
 	public boolean cacheIsUseManyId() {
 	    return isBeanCaching();
