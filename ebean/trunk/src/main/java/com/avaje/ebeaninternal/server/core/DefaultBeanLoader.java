@@ -274,6 +274,7 @@ public class DefaultBeanLoader {
     }
 
     query.where().idEq(parentId);
+    query.setUseCache(false);
     query.setMode(Mode.LAZYLOAD_MANY);
     query.setLazyLoadManyPath(many.getName());
     query.setPersistenceContext(pc);
