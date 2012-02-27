@@ -32,7 +32,7 @@ public class TestBeanReferenceRefresh extends TestCase {
 		Ebean.refresh(order);
 		
 		Status statusRefresh = order.getStatus();
-		Assert.assertTrue(status == statusRefresh);
+		Assert.assertEquals(status,statusRefresh);
 		
 		System.out.println("done");
 		

@@ -458,7 +458,9 @@ public class DefaultBeanLoader {
     query.setMode(mode);
     query.setId(id);
     // make sure the query doesn't use the cache
-    // query.setUseCache(false);
+    if (mode.equals(SpiQuery.Mode.REFRESH_BEAN)) {
+      query.setUseCache(false);
+    }
     query.setVanillaMode(vanilla);
 
     if (ebi != null && ebi.isReadOnly()) {
