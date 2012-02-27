@@ -167,7 +167,7 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
     }
    
     int position = ebi.getBeanLoaderIndex();
-    boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCacheActive();
+    boolean hitCache = !parent.isExcludeBeanCache() && desc.isBeanCaching();
 
     if (hitCache && loadBeanFromCache(ebi, position)) {
       // successfully hit the L2 cache so don't invoke DB lazy loading

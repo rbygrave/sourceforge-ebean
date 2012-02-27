@@ -8,6 +8,7 @@ import junit.framework.TestCase;
 import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.cache.ServerCache;
 import com.avaje.tests.model.basic.Address;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
@@ -20,13 +21,11 @@ public class TestQueryJoin extends TestCase {
 		
 		ResetBasicData.reset();
 		
-//		Query<Order> query = Ebean.find(Order.class)
-//			.select("status, orderDate, shipDate")//, customer
-//			.join("customer","+query +lazy(20) name")//, billingAddress
-//			.join("customer.billingAddress","+query");
-//		
-//		List<Order> list = query.findList();
-
+		
+		// Need to make sure the customer cache is cleared for the later
+		// asserts on the lazy loading
+		ServerCache custCache = Ebean.getServerCacheManager().getBeanCache(Customer.class);
+		custCache.clear();
 		
 		Query<Order> query = Ebean.find(Order.class)
 			.select("status")
