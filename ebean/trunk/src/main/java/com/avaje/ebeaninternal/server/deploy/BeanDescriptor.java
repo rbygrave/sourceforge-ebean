@@ -1002,15 +1002,15 @@ public class BeanDescriptor<T> {
      * Return true if there is currently bean caching for this type of bean.
      */
     public boolean isBeanCaching() {
-    	return cacheOptions.isUseCache();
+    	return beanCache != null;
     }
 
-  /**
-   * Return true if the bean cache has been used.
-   */
-  public boolean isBeanCacheActive() {
-    return beanCache != null;
-  }
+//  /**
+//   * Return true if the bean cache has been used.
+//   */
+//  public boolean isBeanCacheActive() {
+//    return beanCache != null;
+//  }
     
 	public boolean cacheIsUseManyId() {
 	    return isBeanCaching();
