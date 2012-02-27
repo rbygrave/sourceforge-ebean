@@ -1101,29 +1101,30 @@ public class BeanDescriptor<T> {
   }
 
   public boolean cacheLoadMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId, Boolean readOnly, boolean vanilla) {
+    
     CachedManyIds ids = cacheGetCachedManyIds(parentId, many.getName());
-    if (ids != null) {
-
-      Object ownerBean = bc.getOwnerBean();
-      EntityBeanIntercept ebi = ((EntityBean) ownerBean)._ebean_getIntercept();
-      PersistenceContext persistenceContext = ebi.getPersistenceContext();
-
-      BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
-      
-      List<Object> idList = ids.getIdList();
-      bc.checkEmptyLazyLoad();
-      for (int i = 0; i < idList.size(); i++) {
-        Object id = idList.get(i);
-        Object refBean = targetDescriptor.createReference(vanilla, readOnly, id, null);
-        EntityBeanIntercept refEbi = ((EntityBean) refBean)._ebean_getIntercept();
-      
-        many.add(bc, refBean);
-        persistenceContext.put(id, refBean);
-        refEbi.setPersistenceContext(persistenceContext);
-      }
-      return true;
+    if (ids == null) {
+      return false;
     }
-    return false;
+
+    Object ownerBean = bc.getOwnerBean();
+    EntityBeanIntercept ebi = ((EntityBean) ownerBean)._ebean_getIntercept();
+    PersistenceContext persistenceContext = ebi.getPersistenceContext();
+
+    BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
+    
+    List<Object> idList = ids.getIdList();
+    bc.checkEmptyLazyLoad();
+    for (int i = 0; i < idList.size(); i++) {
+      Object id = idList.get(i);
+      Object refBean = targetDescriptor.createReference(vanilla, readOnly, id, null);
+      EntityBeanIntercept refEbi = ((EntityBean) refBean)._ebean_getIntercept();
+    
+      many.add(bc, refBean);
+      persistenceContext.put(id, refBean);
+      refEbi.setPersistenceContext(persistenceContext);
+    }
+    return true;
   }
 
   public void cachePutMany(BeanPropertyAssocMany<?> many, BeanCollection<?> bc, Object parentId) {
