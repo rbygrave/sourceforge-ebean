@@ -515,11 +515,9 @@ public class BeanDescriptor<T> {
     }
 
     // Check if there are no cascade save associated beans ( subject to change
-    // in initialiseOther()).
-    // Note that if we are in an inheritance hierarchy then we also need to
-    // check every
-    // BeanDescriptors in the InheritInfo as well. We do that later in
-    // initialiseOther().
+    // in initialiseOther()). Note that if we are in an inheritance hierarchy 
+    // then we also need to check every BeanDescriptors in the InheritInfo as 
+    // well. We do that later in initialiseOther().
 
     saveRecurseSkippable = (0 == (propertiesOneExportedSave.length + propertiesOneImportedSave.length + propertiesManySave.length));
 
@@ -891,19 +889,11 @@ public class BeanDescriptor<T> {
   }
 
   public boolean calculateUseCache(Boolean queryUseCache) {
-    if (queryUseCache != null) {
-      return queryUseCache;
-    } else {
-      return cacheOptions.isUseCache();
-    }
+    return (queryUseCache != null) ? queryUseCache.booleanValue() : isBeanCaching();
   }
 
   public boolean calculateUseNaturalKeyCache(Boolean queryUseCache) {
-    if (queryUseCache != null) {
-      return queryUseCache;
-    } else {
-      return cacheOptions.isUseCache();
-    }
+    return (queryUseCache != null) ? queryUseCache.booleanValue() :  isBeanCaching();
   }
 
   /**
@@ -1119,17 +1109,14 @@ public class BeanDescriptor<T> {
       PersistenceContext persistenceContext = ebi.getPersistenceContext();
 
       BeanDescriptor<?> targetDescriptor = many.getTargetDescriptor();
-      // DLoadContext loadContext = new DLoadContext(ebeanServer,
-      // targetDescriptor, readOnly, false, null, false);
-
+      
       List<Object> idList = ids.getIdList();
       bc.checkEmptyLazyLoad();
       for (int i = 0; i < idList.size(); i++) {
         Object id = idList.get(i);
         Object refBean = targetDescriptor.createReference(vanilla, readOnly, id, null);
         EntityBeanIntercept refEbi = ((EntityBean) refBean)._ebean_getIntercept();
-        // loadContext.register(null, );
-
+      
         many.add(bc, refBean);
         persistenceContext.put(id, refBean);
         refEbi.setPersistenceContext(persistenceContext);
