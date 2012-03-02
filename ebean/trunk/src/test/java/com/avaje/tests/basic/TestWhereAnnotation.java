@@ -25,6 +25,7 @@ public class TestWhereAnnotation extends TestCase {
 		
 		
 		Query<Customer> q1 = Ebean.find(Customer.class)
+		  .setUseCache(false)
 			.fetch("orders")
 			.where().idEq(1)
 			.query();
