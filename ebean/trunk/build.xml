@@ -18,7 +18,7 @@
 
 	<!-- on the bin for running in the IDE. Using Eclipse IDE Enhancement another option -->
 	<target name="bin-ormTransactionalEnhance">
-		<ebeanEnhance classSource="${bin.dir}" packages="com/avaje/tests/**" transformArgs="debug=2"/>
+		<ebeanEnhance classSource="${bin.dir}" packages="com/avaje/tests/model/basic/xtra**" transformArgs="debug=2"/>
 	</target>
 	
 	<!-- on the bin for running in the IDE. Using Eclipse IDE Enhancement another option -->
