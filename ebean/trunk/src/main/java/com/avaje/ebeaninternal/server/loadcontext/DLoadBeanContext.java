@@ -135,7 +135,7 @@ public class DLoadBeanContext implements LoadBeanContext, BeanLoader {
 
 	public void register(EntityBeanIntercept ebi){
 		int pos = weakList.add(ebi);
-		ebi.setBeanLoader(pos, this);
+		ebi.setBeanLoader(pos, this, parent.getPersistenceContext());
 	}
 
 	/**

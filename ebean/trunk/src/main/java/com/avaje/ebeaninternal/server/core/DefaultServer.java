@@ -1248,39 +1248,39 @@ public final class DefaultServer implements SpiEbeanServer {
         return (T) cachedBean;
     }
     
-    @SuppressWarnings("unchecked")
-    private <T> T findId(Query<T> query, Transaction t) {
-    	
-    	SpiQuery<T> spiQuery = (SpiQuery<T>)query;
-    	spiQuery.setType(Type.BEAN);
-    	
-    	BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(spiQuery.getBeanType());
-    	spiQuery.setBeanDescriptor(desc);
-        
-    	if (!spiQuery.isLoadBeanCache()){
-            // First have a look in the persistence context and then
-            // the bean cache (if we are using caching)
-    		T bean = findIdCheckPersistenceContextAndCache(t, desc, spiQuery);
-            if (bean != null) {
-                return bean;
-            }
-    	}
+  @SuppressWarnings("unchecked")
+  private <T> T findId(Query<T> query, Transaction t) {
 
-        SpiOrmQueryRequest<T> request = createQueryRequest(desc, spiQuery, t);
+    SpiQuery<T> spiQuery = (SpiQuery<T>) query;
+    spiQuery.setType(Type.BEAN);
 
-        try {
-            request.initTransIfRequired();
+    BeanDescriptor<T> desc = beanDescriptorManager.getBeanDescriptor(spiQuery.getBeanType());
+    spiQuery.setBeanDescriptor(desc);
 
-            T bean = (T) request.findId();
-            request.endTransIfRequired();
-
-            return bean;
-
-        } catch (RuntimeException ex) {
-            request.rollbackTransIfRequired();
-            throw ex;
-        }
+    if (SpiQuery.Mode.NORMAL.equals(spiQuery.getMode()) && !spiQuery.isLoadBeanCache()) {
+      // See if we can skip doing the fetch completely by getting the bean from the
+      // persistence context or the bean cache
+      T bean = findIdCheckPersistenceContextAndCache(t, desc, spiQuery);
+      if (bean != null) {
+        return bean;
+      }
     }
+
+    SpiOrmQueryRequest<T> request = createQueryRequest(desc, spiQuery, t);
+
+    try {
+      request.initTransIfRequired();
+
+      T bean = (T) request.findId();
+      request.endTransIfRequired();
+
+      return bean;
+
+    } catch (RuntimeException ex) {
+      request.rollbackTransIfRequired();
+      throw ex;
+    }
+  }
 
     public <T> T findUnique(Query<T> query, Transaction t) {
 
