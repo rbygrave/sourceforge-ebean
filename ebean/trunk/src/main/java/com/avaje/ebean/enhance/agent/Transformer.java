@@ -186,7 +186,7 @@ public class Transformer implements ClassFileTransformer {
 
         try {
 
-            cr.accept(ca, 0);
+            cr.accept(ca, ClassReader.EXPAND_FRAMES);
 
             if (ca.isLog(1)) {
                 ca.log("enhanced");
