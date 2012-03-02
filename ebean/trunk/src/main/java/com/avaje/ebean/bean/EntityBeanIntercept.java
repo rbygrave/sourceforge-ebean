@@ -246,9 +246,10 @@ public final class EntityBeanIntercept implements Serializable {
   /**
    * Set the BeanLoader for general lazy loading.
    */
-	public void setBeanLoader(int index, BeanLoader beanLoader) {
+	public void setBeanLoader(int index, BeanLoader beanLoader, PersistenceContext ctx) {
 		this.beanLoaderIndex = index;
 		this.beanLoader = beanLoader;
+		this.persistenceContext = ctx;
 		this.ebeanServerName = beanLoader.getName();
 	}
 
