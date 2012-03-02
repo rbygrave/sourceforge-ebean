@@ -1,9 +1,12 @@
 package com.avaje.tests.batchload;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.FetchConfig;
+import com.avaje.ebean.Transaction;
 import com.avaje.tests.basic.MyTestDataSourcePoolListener;
 import com.avaje.tests.model.basic.Address;
+import com.avaje.tests.model.basic.Contact;
 import com.avaje.tests.model.basic.Customer;
 import com.avaje.tests.model.basic.Order;
 import com.avaje.tests.model.basic.ResetBasicData;
@@ -37,6 +40,42 @@ public class TestBasicLazy extends TestCase
         Address address = customer.getBillingAddress();
         Assert.assertNotNull(address);
         Assert.assertNotNull(address.getCity());
+    }
+    
+    public void test_N1N()
+    {
+        ResetBasicData.reset();
+
+        // safety check to see if our customer we are going to use for the test has some contacts 
+        Customer c = Ebean.find(Customer.class).setId(1).findUnique();
+        assertNotNull(c.getContacts());
+        assertTrue("no contacts on test customer 1", c.getContacts().size() > 0);
+        
+        // start transaction so we have a "long running" persistence context
+        Transaction tx = Ebean.beginTransaction();
+        try
+        {
+            List<Order> order = Ebean.find(Order.class)
+                .where(Expr.eq("customer.id", 1))
+                .findList();
+
+            assertNotNull(order);
+            assertTrue(order.size() > 0);
+            
+            Customer customer = order.get(0).getCustomer();
+            assertNotNull(customer);
+            assertEquals(1, customer.getId().intValue());
+
+            // this should lazily fetch the contacts
+            List<Contact> contacts = customer.getContacts();
+            
+            assertNotNull(contacts);
+            assertTrue("contacts not lazily fetched", contacts.size() > 0);
+        }
+        finally
+        {
+            tx.commit();
+        }
     }
 
     public void testRaceCondition_Simple() throws Throwable
