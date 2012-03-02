@@ -1019,7 +1019,7 @@ public final class DefaultPersister implements Persister {
 
 		boolean vanillaCollection = (value instanceof BeanCollection<?> == false);
 
-		if (deleteMissingChildren) {
+		if (vanillaCollection || deleteMissingChildren) {
 			// delete all intersection rows and then treat all
 			// beans in the collection as additions
 			deleteAssocManyIntersection(saveManyPropRequest.getParentBean(), prop, t);
