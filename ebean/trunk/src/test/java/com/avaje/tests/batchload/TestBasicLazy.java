@@ -16,6 +16,7 @@ import org.junit.Assert;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TestBasicLazy extends TestCase
 {
@@ -155,7 +156,7 @@ public class TestBasicLazy extends TestCase
         }
     }
 
-    private final Object mutex = new Object();
+    private final AtomicBoolean mutex = new AtomicBoolean(false);
     private List<Order> orders;
     
     private List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
@@ -178,7 +179,10 @@ public class TestBasicLazy extends TestCase
                 System.err.println("** WAIT **");
                 try
                 {
-                    mutex.wait();
+                    while (!mutex.get())
+                    {
+                        mutex.wait(100);
+                    }
                 }
                 catch (InterruptedException e)
                 {
@@ -188,6 +192,7 @@ public class TestBasicLazy extends TestCase
 
             try
             {
+                System.err.println("** DO LAZY FETCH **");
                 orders.get(index).getCustomer().getName();
             }
             catch (Throwable e)
@@ -222,6 +227,7 @@ public class TestBasicLazy extends TestCase
 
             synchronized (mutex)
             {
+                mutex.set(true);
                 mutex.notifyAll();
             }
 
