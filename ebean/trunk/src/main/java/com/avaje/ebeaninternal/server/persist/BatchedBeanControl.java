@@ -54,10 +54,9 @@ public class BatchedBeanControl {
 		this.batchControl = batchControl;
 	}
 
-	public ArrayList<PersistRequest> getPersistList(PersistRequestBean<?> request) {
-        BatchedBeanHolder beanHolder = getBeanHolder(request);
-        return beanHolder.getList(request);
-    }
+  public ArrayList<PersistRequest> getPersistList(PersistRequestBean<?> request) {
+    return getBeanHolder(request).getList(request);
+  }
 	
 	/**
 	 * Return an entry for the given type description. The type description is
@@ -69,7 +68,6 @@ public class BatchedBeanControl {
 		BatchedBeanHolder batchBeanHolder = beanHoldMap.get(beanDescriptor.getFullName());
 		if (batchBeanHolder == null) {
 			int relativeDepth = transaction.depth(0);
-			
 			if (relativeDepth == 0){
 				topOrder++;
 			}
@@ -89,16 +87,11 @@ public class BatchedBeanControl {
 	}
 
 	/**
-	 * Return the held beans ready for sorting and executing.
-	 * <p>
-	 * This also has the effect of clearing the cache of beans held.
-	 * </p>
+	 * Return the BatchedBeanHolder's ready for sorting and executing.
 	 */
 	public BatchedBeanHolder[] getArray() {
 		BatchedBeanHolder[] bsArray = new BatchedBeanHolder[beanHoldMap.size()];
 		beanHoldMap.values().toArray(bsArray);
-		beanHoldMap.clear();
-		topOrder = 0;
 		return bsArray;
 	}
 
