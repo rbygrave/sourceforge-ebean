@@ -98,15 +98,15 @@ public class BatchedBeanHolder {
 
 		// Note updates and deletes can result in many PreparedStatements
 		// if their where clauses differ via use of IS NOT NULL.
-		if (inserts != null) {
+		if (inserts != null && !inserts.isEmpty()) {
 			control.executeNow(inserts);
 			inserts.clear();
 		}
-		if (updates != null) {
+		if (updates != null && !updates.isEmpty()) {
 			control.executeNow(updates);
 			updates.clear();
 		}
-		if (deletes != null) {
+		if (deletes != null && !deletes.isEmpty()) {
 			control.executeNow(deletes);
 			deletes.clear();
 		}
