@@ -1,5 +1,5 @@
-#Wed Mar 16 19:32:59 NZDT 2011
-activeProfiles=jdk1.6
+#Wed Mar 14 20:41:19 NZDT 2012
+activeProfiles=jdk1.5
 eclipse.preferences.version=1
 fullBuildGoals=process-test-resources
 includeModules=false
