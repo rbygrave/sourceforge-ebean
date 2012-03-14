@@ -138,7 +138,7 @@ public final class Ebean {
     /**
      * The version and date of build.
      */
-    private static final String EBVERSION = "2.7.4";
+    private static final String EBVERSION = "2.7.5";
 
     static {
         String version = System.getProperty("java.version");
