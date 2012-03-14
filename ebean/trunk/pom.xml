@@ -159,7 +159,7 @@
         <profile>
             <id>jdk1.5</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>jdk</name>
                     <value>1.5</value>
@@ -172,7 +172,7 @@
         <profile>
             <id>jdk1.6</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>jdk</name>
                     <value>1.6</value>
