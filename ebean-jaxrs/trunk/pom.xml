@@ -12,7 +12,7 @@
 	<name>ebean-jaxrs</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<ebean.version>2.7.4</ebean.version>
+		<ebean.version>2.7.5</ebean.version>
 	</properties>
 	<url>http://www.avaje.org</url>
 	<licenses>
@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>org.avaje</groupId>
 			<artifactId>ebean</artifactId>
-			<version>[2,3)</version>
+			<version>2.7.5</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
