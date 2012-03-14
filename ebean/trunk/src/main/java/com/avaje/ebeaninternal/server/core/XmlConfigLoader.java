@@ -179,7 +179,7 @@ public class XmlConfigLoader {
                 InputStream is = module.getInputStream(entry); 
                 processInputStream(xmlList, is);
             }
-        } catch (java.util.zip.ZipException e) {
+        } catch (Exception e) {
             logger.info("Unable to check jar file "+fileName+" for ebean-orm.xml");
         } finally {
             if (module != null){
