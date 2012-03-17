@@ -19,6 +19,16 @@
  */
 package com.avaje.ebeaninternal.server.transaction;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.persistence.PersistenceException;
+import javax.sql.DataSource;
+
 import com.avaje.ebean.BackgroundExecutor;
 import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.TxIsolation;
@@ -32,16 +42,6 @@ import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cluster.ClusterManager;
 import com.avaje.ebeaninternal.server.core.BootupClasses;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager;
-import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
-
-import javax.persistence.PersistenceException;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Manages transactions.
@@ -74,8 +74,6 @@ public class TransactionManager {
 		 */
 		COMMIT
 	}
-	
-	private final LuceneIndexManager luceneIndexManager;
     
 	private final BeanDescriptorManager beanDescriptorManager;
 	
@@ -131,12 +129,11 @@ public class TransactionManager {
 	/**
 	 * Create the TransactionManager
 	 */
-	public TransactionManager(ClusterManager clusterManager, LuceneIndexManager luceneIndexManager,
-                              BackgroundExecutor backgroundExecutor, ServerConfig config, BeanDescriptorManager descMgr, BootupClasses bootupClasses) {
+	public TransactionManager(ClusterManager clusterManager, BackgroundExecutor backgroundExecutor, ServerConfig config, 
+	      BeanDescriptorManager descMgr, BootupClasses bootupClasses) {
 		
 		this.beanDescriptorManager = descMgr;
 		this.clusterManager = clusterManager;
-		this.luceneIndexManager = luceneIndexManager;
 		this.serverName = config.getName();
 		
 		this.logLevel = config.getLoggingLevel();
@@ -465,7 +462,7 @@ public class TransactionManager {
 		    
       log(transaction.getLogBuffer());
 
-      PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, transaction,
+      PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, transaction,
           transaction.getEvent());
 
       postCommit.notifyLocalCacheIndex();
@@ -502,7 +499,7 @@ public class TransactionManager {
 		TransactionEvent event = new TransactionEvent();
 		event.add(tableEvents);
 		
-		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, luceneIndexManager, this, null, event);
+		PostCommitProcessing postCommit = new PostCommitProcessing(clusterManager, this, null, event);
         
 		// invalidate parts of local cache and index
 		postCommit.notifyLocalCacheIndex();
@@ -520,8 +517,6 @@ public class TransactionManager {
             logger.info("Cluster Received: "+remoteEvent.toString());
         }
 
-        luceneIndexManager.processEvent(remoteEvent, null);
-        
         List<TableIUD> tableIUDList = remoteEvent.getTableIUDList();
         if (tableIUDList != null){
             for (int i = 0; i < tableIUDList.size(); i++) {
@@ -535,14 +530,6 @@ public class TransactionManager {
             for (int i = 0; i < beanPersistList.size(); i++) {
                 BeanPersistIds beanPersist = beanPersistList.get(i);
                 beanPersist.notifyCacheAndListener();
-            }
-        }
-        
-        List<IndexEvent> indexEventList = remoteEvent.getIndexEventList();
-        if (indexEventList != null){
-            for (int i = 0; i < indexEventList.size(); i++) {
-                IndexEvent indexEvent = indexEventList.get(i);
-                luceneIndexManager.processEvent(indexEvent);
             }
         }
         

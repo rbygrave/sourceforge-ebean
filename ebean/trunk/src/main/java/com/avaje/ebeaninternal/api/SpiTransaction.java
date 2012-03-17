@@ -24,7 +24,6 @@ import java.util.List;
 
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.bean.PersistenceContext;
-import com.avaje.ebeaninternal.server.lucene.LIndexUpdateFuture;
 import com.avaje.ebeaninternal.server.persist.BatchControl;
 import com.avaje.ebeaninternal.server.transaction.TransactionLogBuffer;
 
@@ -53,11 +52,6 @@ public interface SpiTransaction extends Transaction {
 	 * always be an external LogLevel check prior to calling this method.
 	 */
 	public void logInternal(String msg);
-
-	/**
-	 * Add a IndexUpdateFuture.
-	 */
-	public void addIndexUpdateFuture(LIndexUpdateFuture future);
 
 	/**
 	 * Return the buffer containing transaction log messages.

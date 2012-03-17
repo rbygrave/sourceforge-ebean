@@ -77,7 +77,6 @@ import com.avaje.ebean.config.EncryptKeyManager;
 import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.ldap.LdapConfig;
-import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.text.csv.CsvReader;
@@ -112,7 +111,6 @@ import com.avaje.ebeaninternal.server.ldap.LdapOrmQueryRequest;
 import com.avaje.ebeaninternal.server.ldap.expression.LdapExpressionFactory;
 import com.avaje.ebeaninternal.server.lib.ShutdownManager;
 import com.avaje.ebeaninternal.server.loadcontext.DLoadContext;
-import com.avaje.ebeaninternal.server.lucene.LuceneIndexManager;
 import com.avaje.ebeaninternal.server.query.CQuery;
 import com.avaje.ebeaninternal.server.query.CQueryEngine;
 import com.avaje.ebeaninternal.server.query.CallableQueryIds;
@@ -212,8 +210,6 @@ public final class DefaultServer implements SpiEbeanServer {
 
   private final JsonContext jsonContext;
 
-  private final LuceneIndexManager luceneIndexManager;
-
   /**
    * The MBean name used to register Ebean.
    */
@@ -288,18 +284,7 @@ public final class DefaultServer implements SpiEbeanServer {
       this.ldapQueryEngine = new LdapOrmQueryEngine(ldapConfig.isVanillaMode(), ldapConfig.getContextFactory());
     }
 
-    this.luceneIndexManager = config.getLuceneIndexManager();
-    luceneIndexManager.setServer(this);
-
     ShutdownManager.register(new Shutdown());
-  }
-
-  public LuceneIndexManager getLuceneIndexManager() {
-    return luceneIndexManager;
-  }
-
-  public LuceneIndex getLuceneIndex(Class<?> beanType) {
-    return luceneIndexManager.getIndex(beanType.getName());
   }
 
   public boolean isDefaultDeleteMissingChildren() {
@@ -368,7 +353,6 @@ public final class DefaultServer implements SpiEbeanServer {
    * Start any services after registering with the ClusterManager.
    */
   public void start() {
-    luceneIndexManager.start();
   }
 
   public void registerMBeans(MBeanServer mbeanServer, int uniqueServerId) {

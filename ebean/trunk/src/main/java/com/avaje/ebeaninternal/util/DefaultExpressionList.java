@@ -24,9 +24,7 @@ import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionList;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
-import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Default implementation of ExpressionList.
@@ -77,25 +75,6 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
   public List<SpiExpression> internalList() {
     return list;
-  }
-
-  public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-    for (int i = 0; i < list.size(); i++) {
-      if (!list.get(i).isLuceneResolvable(req)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request, SpiLuceneExpr.ExprOccur occur) {
-
-    LuceneQueryList queryList = new LuceneQueryList(occur);
-    for (int i = 0; i < list.size(); i++) {
-      SpiLuceneExpr query = list.get(i).createLuceneExpr(request);
-      queryList.add(query);
-    }
-    return queryList;
   }
 
   /**
@@ -371,11 +350,6 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
 
   public ExpressionList<T> contains(String propertyName, String value) {
     add(expr.contains(propertyName, value));
-    return this;
-  }
-
-  public ExpressionList<T> lucene(String propertyName, String value) {
-    add(expr.lucene(propertyName, value));
     return this;
   }
 

@@ -19,6 +19,11 @@
  */
 package com.avaje.ebean.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
+
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.LogLevel;
@@ -29,7 +34,6 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
 import com.avaje.ebean.config.ldap.LdapConfig;
 import com.avaje.ebean.config.ldap.LdapContextFactory;
-import com.avaje.ebean.config.lucene.LuceneConfig;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
 import com.avaje.ebean.event.BeanQueryAdapter;
@@ -37,11 +41,6 @@ import com.avaje.ebean.event.BulkTableEventListener;
 import com.avaje.ebean.event.ServerConfigStartup;
 import com.avaje.ebean.event.TransactionEventListener;
 import com.avaje.ebeaninternal.api.ClassUtil;
-import com.avaje.ebeaninternal.server.core.DetectLucene;
-
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The configuration used for creating a EbeanServer.
@@ -236,8 +235,6 @@ public class ServerConfig {
   private DbEncrypt dbEncrypt;
 
   private LdapConfig ldapConfig;
-
-  private LuceneConfig luceneConfig;
 
   /**
    * Set this to true when by default vanilla objects should be returned from
@@ -1036,20 +1033,6 @@ public class ServerConfig {
   }
 
   /**
-   * Return the Lucene Configuration.
-   */
-  public LuceneConfig getLuceneConfig() {
-    return luceneConfig;
-  }
-
-  /**
-   * Set the Lucene Configuration.
-   */
-  public void setLuceneConfig(LuceneConfig luceneConfig) {
-    this.luceneConfig = luceneConfig;
-  }
-
-  /**
    * Programmatically add classes (typically entities) that this server should
    * use.
    * <p>
@@ -1428,12 +1411,6 @@ public class ServerConfig {
         ldapConfig = new LdapConfig();
         ldapConfig.setContextFactory(ctxFact);
         ldapConfig.setVanillaMode(p.getBoolean("ldapVanillaMode", false));
-      }
-    }
-    if (luceneConfig == null) {
-      if (DetectLucene.isPresent()) {
-        luceneConfig = new LuceneConfig();
-        luceneConfig.loadSettings(name);
       }
     }
 

@@ -2,9 +2,7 @@ package com.avaje.ebeaninternal.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
-import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
 /**
@@ -20,20 +18,6 @@ class NullExpression extends AbstractExpression {
 		super(pathPrefix, propertyName);
 		this.notNull = notNull;
 	}
-	
-    @Override
-    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-        return false;
-    }
-
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
-
-        return null;
-//        String propertyName = getPropertyName();
-//        QueryParser queryParser = request.createQueryParser(propertyName);
-//        Query q = queryParser.parse("-[* TO *]");
-//        return q;
-    }
     
 	public void addBindValues(SpiExpressionRequest request) {
 		

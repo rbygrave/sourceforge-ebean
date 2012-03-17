@@ -20,9 +20,7 @@ import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
-import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
 
 /**
@@ -30,414 +28,389 @@ import com.avaje.ebeaninternal.util.DefaultExpressionList;
  */
 abstract class JunctionExpression<T> implements Junction<T>, SpiExpression, ExpressionList<T> {
 
-	private static final long serialVersionUID = -7422204102750462676L;
+  private static final long serialVersionUID = -7422204102750462676L;
 
-    private static final String OR = " or ";
+  private static final String OR = " or ";
 
-    private static final String AND = " and ";
+  private static final String AND = " and ";
 
-	static class Conjunction<T> extends JunctionExpression<T> {
+  static class Conjunction<T> extends JunctionExpression<T> {
 
-		private static final long serialVersionUID = -645619859900030678L;
+    private static final long serialVersionUID = -645619859900030678L;
 
-		Conjunction(com.avaje.ebean.Query<T> query, ExpressionList<T> parent){
-			super(AND, query, parent);
-		}
-	}
-	
-	static class Disjunction<T> extends JunctionExpression<T> {
-		
-        private static final long serialVersionUID = -8464470066692221413L;
+    Conjunction(com.avaje.ebean.Query<T> query, ExpressionList<T> parent) {
+      super(AND, query, parent);
+    }
+  }
 
-		Disjunction(com.avaje.ebean.Query<T> query, ExpressionList<T> parent){
-			super(OR, query, parent);
-		}
-	}
-	
-	//private final ArrayList<SpiExpression> list = new ArrayList<SpiExpression>();
-	private final DefaultExpressionList<T> exprList;
-	
-	private final String joinType;
+  static class Disjunction<T> extends JunctionExpression<T> {
 
-	
-	JunctionExpression(String joinType, com.avaje.ebean.Query<T> query, ExpressionList<T> parent) {
-		this.joinType = joinType;
-		this.exprList = new DefaultExpressionList<T>(query, parent);
-	}
-	
-    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-        
-        List<SpiExpression> list = exprList.internalList();
-        
-        for (int i = 0; i < list.size(); i++) {
-            if (!list.get(i).isLuceneResolvable(req)){
-                return false;
-            }
+    private static final long serialVersionUID = -8464470066692221413L;
+
+    Disjunction(com.avaje.ebean.Query<T> query, ExpressionList<T> parent) {
+      super(OR, query, parent);
+    }
+  }
+
+  // private final ArrayList<SpiExpression> list = new
+  // ArrayList<SpiExpression>();
+  private final DefaultExpressionList<T> exprList;
+
+  private final String joinType;
+
+  JunctionExpression(String joinType, com.avaje.ebean.Query<T> query, ExpressionList<T> parent) {
+    this.joinType = joinType;
+    this.exprList = new DefaultExpressionList<T>(query, parent);
+  }
+
+  public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+
+    List<SpiExpression> list = exprList.internalList();
+
+    for (int i = 0; i < list.size(); i++) {
+      list.get(i).containsMany(desc, manyWhereJoin);
+    }
+  }
+
+  public Junction<T> add(Expression item) {
+    SpiExpression i = (SpiExpression) item;
+    exprList.add(i);
+    return this;
+  }
+
+  public void addBindValues(SpiExpressionRequest request) {
+
+    List<SpiExpression> list = exprList.internalList();
+
+    for (int i = 0; i < list.size(); i++) {
+      SpiExpression item = list.get(i);
+      item.addBindValues(request);
+    }
+  }
+
+  public void addSql(SpiExpressionRequest request) {
+
+    List<SpiExpression> list = exprList.internalList();
+
+    if (!list.isEmpty()) {
+      request.append("(");
+
+      for (int i = 0; i < list.size(); i++) {
+        SpiExpression item = list.get(i);
+        if (i > 0) {
+          request.append(joinType);
         }
-        return true;
+        item.addSql(request);
+      }
+
+      request.append(") ");
     }
+  }
 
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
+  /**
+   * Based on Junction type and all the expression contained.
+   */
+  public int queryAutoFetchHash() {
+    int hc = JunctionExpression.class.getName().hashCode();
+    hc = hc * 31 + joinType.hashCode();
 
-        boolean disjunction = OR.equals(joinType);
-        return new JunctionExpressionLucene().createLuceneExpr(request,  exprList.internalList(), disjunction);
-    }
-    
-	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
-		
-        List<SpiExpression> list = exprList.internalList();
-
-		for (int i = 0; i < list.size(); i++) {
-			list.get(i).containsMany(desc, manyWhereJoin);
-		}
-	}
-
-	public Junction<T> add(Expression item){
-		SpiExpression i = (SpiExpression)item;
-		exprList.add(i);
-		return this;
-	}
-	
-	public void addBindValues(SpiExpressionRequest request) {
-		
-        List<SpiExpression> list = exprList.internalList();
-
-		for (int i = 0; i < list.size(); i++) {
-			SpiExpression item = list.get(i);
-			item.addBindValues(request);
-		}
-	}
-	
-	public void addSql(SpiExpressionRequest request) {
-	
-        List<SpiExpression> list = exprList.internalList();
-
-		if (!list.isEmpty()){
-			request.append("(");
-			
-			for (int i = 0; i < list.size(); i++) {
-				SpiExpression item = list.get(i);
-				if (i > 0){
-					request.append(joinType);
-				}
-				item.addSql(request);
-			}
-			
-			request.append(") ");
-		}
-	}
-
-	/**
-	 * Based on Junction type and all the expression contained.
-	 */
-	public int queryAutoFetchHash() {
-		int hc = JunctionExpression.class.getName().hashCode();
-		hc = hc * 31 + joinType.hashCode();
-		
-        List<SpiExpression> list = exprList.internalList();
-		for (int i = 0; i < list.size(); i++) {
-			hc = hc * 31 + list.get(i).queryAutoFetchHash();
-		}
-		
-		return hc;
-	}
-	
-	public int queryPlanHash(BeanQueryRequest<?> request) {
-		int hc = JunctionExpression.class.getName().hashCode();
-		hc = hc * 31 + joinType.hashCode();
-		
-        List<SpiExpression> list = exprList.internalList();
-		for (int i = 0; i < list.size(); i++) {
-			hc = hc * 31 + list.get(i).queryPlanHash(request);
-		}
-		
-		return hc;
-	}
-
-	public int queryBindHash() {
-		int hc = JunctionExpression.class.getName().hashCode();
-		
-        List<SpiExpression> list = exprList.internalList();
-		for (int i = 0; i < list.size(); i++) {
-			hc = hc * 31 + list.get(i).queryBindHash();
-		}
-		
-		return hc;
-	}
-
-		
-    public ExpressionList<T> endJunction() {
-        return exprList.endJunction();
+    List<SpiExpression> list = exprList.internalList();
+    for (int i = 0; i < list.size(); i++) {
+      hc = hc * 31 + list.get(i).queryAutoFetchHash();
     }
 
-    public ExpressionList<T> allEq(Map<String, Object> propertyMap) {
-        return exprList.allEq(propertyMap);
-    }
+    return hc;
+  }
 
-    public ExpressionList<T> and(Expression expOne, Expression expTwo) {
-        return exprList.and(expOne, expTwo);
-    }
+  public int queryPlanHash(BeanQueryRequest<?> request) {
+    int hc = JunctionExpression.class.getName().hashCode();
+    hc = hc * 31 + joinType.hashCode();
 
-    public ExpressionList<T> between(String propertyName, Object value1, Object value2) {
-        return exprList.between(propertyName, value1, value2);
+    List<SpiExpression> list = exprList.internalList();
+    for (int i = 0; i < list.size(); i++) {
+      hc = hc * 31 + list.get(i).queryPlanHash(request);
     }
 
-    public ExpressionList<T> betweenProperties(String lowProperty, String highProperty, Object value) {
-        return exprList.betweenProperties(lowProperty, highProperty, value);
-    }
+    return hc;
+  }
 
-    public Junction<T> conjunction() {
-        return exprList.conjunction();
-    }
+  public int queryBindHash() {
+    int hc = JunctionExpression.class.getName().hashCode();
 
-    public ExpressionList<T> contains(String propertyName, String value) {
-        return exprList.contains(propertyName, value);
+    List<SpiExpression> list = exprList.internalList();
+    for (int i = 0; i < list.size(); i++) {
+      hc = hc * 31 + list.get(i).queryBindHash();
     }
 
-    public Junction<T> disjunction() {
-        return exprList.disjunction();
-    }
+    return hc;
+  }
 
-    public ExpressionList<T> endsWith(String propertyName, String value) {
-        return exprList.endsWith(propertyName, value);
-    }
+  public ExpressionList<T> endJunction() {
+    return exprList.endJunction();
+  }
 
-    public ExpressionList<T> eq(String propertyName, Object value) {
-        return exprList.eq(propertyName, value);
-    }
+  public ExpressionList<T> allEq(Map<String, Object> propertyMap) {
+    return exprList.allEq(propertyMap);
+  }
 
-    public ExpressionList<T> exampleLike(Object example) {
-        return exprList.exampleLike(example);
-    }
+  public ExpressionList<T> and(Expression expOne, Expression expTwo) {
+    return exprList.and(expOne, expTwo);
+  }
 
-    public ExpressionList<T> filterMany(String prop) {
-        throw new RuntimeException("filterMany not allowed on Junction expression list");
-    }
+  public ExpressionList<T> between(String propertyName, Object value1, Object value2) {
+    return exprList.between(propertyName, value1, value2);
+  }
 
-    public FutureIds<T> findFutureIds() {
-        return exprList.findFutureIds();
-    }
+  public ExpressionList<T> betweenProperties(String lowProperty, String highProperty, Object value) {
+    return exprList.betweenProperties(lowProperty, highProperty, value);
+  }
 
-    public FutureList<T> findFutureList() {
-        return exprList.findFutureList();
-    }
+  public Junction<T> conjunction() {
+    return exprList.conjunction();
+  }
 
-    public FutureRowCount<T> findFutureRowCount() {
-        return exprList.findFutureRowCount();
-    }
-    
-    public List<Object> findIds() {
-        return exprList.findIds();
-    }
+  public ExpressionList<T> contains(String propertyName, String value) {
+    return exprList.contains(propertyName, value);
+  }
 
-    public void findVisit(QueryResultVisitor<T> visitor) {
-        exprList.findVisit(visitor);
-    }
+  public Junction<T> disjunction() {
+    return exprList.disjunction();
+  }
 
-    public QueryIterator<T> findIterate() {
-        return exprList.findIterate();
-    }
-    
-    public List<T> findList() {
-        return exprList.findList();
-    }
+  public ExpressionList<T> endsWith(String propertyName, String value) {
+    return exprList.endsWith(propertyName, value);
+  }
 
-    public Map<?, T> findMap() {
-        return exprList.findMap();
-    }
-    
-    public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType) {
-        return exprList.findMap(keyProperty, keyType);
-    }
+  public ExpressionList<T> eq(String propertyName, Object value) {
+    return exprList.eq(propertyName, value);
+  }
 
-    public PagingList<T> findPagingList(int pageSize) {
-        return exprList.findPagingList(pageSize);
-    }
+  public ExpressionList<T> exampleLike(Object example) {
+    return exprList.exampleLike(example);
+  }
 
-    public int findRowCount() {
-        return exprList.findRowCount();
-    }
+  public ExpressionList<T> filterMany(String prop) {
+    throw new RuntimeException("filterMany not allowed on Junction expression list");
+  }
 
-    public Set<T> findSet() {
-        return exprList.findSet();
-    }
+  public FutureIds<T> findFutureIds() {
+    return exprList.findFutureIds();
+  }
 
-    public T findUnique() {
-        return exprList.findUnique();
-    }
+  public FutureList<T> findFutureList() {
+    return exprList.findFutureList();
+  }
 
-    public ExpressionList<T> ge(String propertyName, Object value) {
-        return exprList.ge(propertyName, value);
-    }
+  public FutureRowCount<T> findFutureRowCount() {
+    return exprList.findFutureRowCount();
+  }
 
-    public ExpressionList<T> gt(String propertyName, Object value) {
-        return exprList.gt(propertyName, value);
-    }
+  public List<Object> findIds() {
+    return exprList.findIds();
+  }
 
-    public ExpressionList<T> having() {
-        throw new RuntimeException("having() not allowed on Junction expression list");
-    }
+  public void findVisit(QueryResultVisitor<T> visitor) {
+    exprList.findVisit(visitor);
+  }
 
-    public ExpressionList<T> icontains(String propertyName, String value) {
-        return exprList.icontains(propertyName, value);
-    }
+  public QueryIterator<T> findIterate() {
+    return exprList.findIterate();
+  }
 
-    public ExpressionList<T> idEq(Object value) {
-        return exprList.idEq(value);
-    }
+  public List<T> findList() {
+    return exprList.findList();
+  }
 
-    public ExpressionList<T> idIn(List<?> idValues) {
-        return exprList.idIn(idValues);
-    }
+  public Map<?, T> findMap() {
+    return exprList.findMap();
+  }
 
-    public ExpressionList<T> iendsWith(String propertyName, String value) {
-        return exprList.iendsWith(propertyName, value);
-    }
+  public <K> Map<K, T> findMap(String keyProperty, Class<K> keyType) {
+    return exprList.findMap(keyProperty, keyType);
+  }
 
-    public ExpressionList<T> ieq(String propertyName, String value) {
-        return exprList.ieq(propertyName, value);
-    }
+  public PagingList<T> findPagingList(int pageSize) {
+    return exprList.findPagingList(pageSize);
+  }
 
-    public ExpressionList<T> iexampleLike(Object example) {
-        return exprList.iexampleLike(example);
-    }
+  public int findRowCount() {
+    return exprList.findRowCount();
+  }
 
-    public ExpressionList<T> ilike(String propertyName, String value) {
-        return exprList.ilike(propertyName, value);
-    }
+  public Set<T> findSet() {
+    return exprList.findSet();
+  }
 
-    public ExpressionList<T> in(String propertyName, Collection<?> values) {
-        return exprList.in(propertyName, values);
-    }
+  public T findUnique() {
+    return exprList.findUnique();
+  }
 
-    public ExpressionList<T> in(String propertyName, Object... values) {
-        return exprList.in(propertyName, values);
-    }
+  public ExpressionList<T> ge(String propertyName, Object value) {
+    return exprList.ge(propertyName, value);
+  }
 
-    public ExpressionList<T> in(String propertyName, com.avaje.ebean.Query<?> subQuery) {
-        return exprList.in(propertyName, subQuery);
-    }
+  public ExpressionList<T> gt(String propertyName, Object value) {
+    return exprList.gt(propertyName, value);
+  }
 
-    public ExpressionList<T> isNotNull(String propertyName) {
-        return exprList.isNotNull(propertyName);
-    }
+  public ExpressionList<T> having() {
+    throw new RuntimeException("having() not allowed on Junction expression list");
+  }
 
-    public ExpressionList<T> isNull(String propertyName) {
-        return exprList.isNull(propertyName);
-    }
+  public ExpressionList<T> icontains(String propertyName, String value) {
+    return exprList.icontains(propertyName, value);
+  }
 
-    public ExpressionList<T> istartsWith(String propertyName, String value) {
-        return exprList.istartsWith(propertyName, value);
-    }
+  public ExpressionList<T> idEq(Object value) {
+    return exprList.idEq(value);
+  }
 
-    public com.avaje.ebean.Query<T> join(String assocProperty, String assocProperties) {
-        return exprList.join(assocProperty, assocProperties);
-    }
+  public ExpressionList<T> idIn(List<?> idValues) {
+    return exprList.idIn(idValues);
+  }
 
-    public com.avaje.ebean.Query<T> join(String assocProperties) {
-        return exprList.join(assocProperties);
-    }
+  public ExpressionList<T> iendsWith(String propertyName, String value) {
+    return exprList.iendsWith(propertyName, value);
+  }
 
-    public ExpressionList<T> le(String propertyName, Object value) {
-        return exprList.le(propertyName, value);
-    }
+  public ExpressionList<T> ieq(String propertyName, String value) {
+    return exprList.ieq(propertyName, value);
+  }
 
-    public ExpressionList<T> like(String propertyName, String value) {
-        return exprList.like(propertyName, value);
-    }
+  public ExpressionList<T> iexampleLike(Object example) {
+    return exprList.iexampleLike(example);
+  }
 
-    public ExpressionList<T> lt(String propertyName, Object value) {
-        return exprList.lt(propertyName, value);
-    }
+  public ExpressionList<T> ilike(String propertyName, String value) {
+    return exprList.ilike(propertyName, value);
+  }
 
-    public ExpressionList<T> lucene(String propertyName, String value) {
-        return exprList.lucene(propertyName, value);
-    }
+  public ExpressionList<T> in(String propertyName, Collection<?> values) {
+    return exprList.in(propertyName, values);
+  }
 
-    public ExpressionList<T> ne(String propertyName, Object value) {
-        return exprList.ne(propertyName, value);
-    }
+  public ExpressionList<T> in(String propertyName, Object... values) {
+    return exprList.in(propertyName, values);
+  }
 
-    public ExpressionList<T> not(Expression exp) {
-        return exprList.not(exp);
-    }
+  public ExpressionList<T> in(String propertyName, com.avaje.ebean.Query<?> subQuery) {
+    return exprList.in(propertyName, subQuery);
+  }
 
-    public ExpressionList<T> or(Expression expOne, Expression expTwo) {
-        return exprList.or(expOne, expTwo);
-    }
+  public ExpressionList<T> isNotNull(String propertyName) {
+    return exprList.isNotNull(propertyName);
+  }
 
-    public OrderBy<T> order() {
-        return exprList.order();
-    }
+  public ExpressionList<T> isNull(String propertyName) {
+    return exprList.isNull(propertyName);
+  }
 
-    public com.avaje.ebean.Query<T> order(String orderByClause) {
-        return exprList.order(orderByClause);
-    }
+  public ExpressionList<T> istartsWith(String propertyName, String value) {
+    return exprList.istartsWith(propertyName, value);
+  }
 
-    public OrderBy<T> orderBy() {
-        return exprList.orderBy();
-    }
+  public com.avaje.ebean.Query<T> join(String assocProperty, String assocProperties) {
+    return exprList.join(assocProperty, assocProperties);
+  }
 
-    public com.avaje.ebean.Query<T> orderBy(String orderBy) {
-        return exprList.orderBy(orderBy);
-    }
+  public com.avaje.ebean.Query<T> join(String assocProperties) {
+    return exprList.join(assocProperties);
+  }
 
-    public com.avaje.ebean.Query<T> query() {
-        return exprList.query();
-    }
+  public ExpressionList<T> le(String propertyName, Object value) {
+    return exprList.le(propertyName, value);
+  }
 
-    public ExpressionList<T> raw(String raw, Object value) {
-        return exprList.raw(raw, value);
-    }
+  public ExpressionList<T> like(String propertyName, String value) {
+    return exprList.like(propertyName, value);
+  }
 
-    public ExpressionList<T> raw(String raw, Object[] values) {
-        return exprList.raw(raw, values);
-    }
+  public ExpressionList<T> lt(String propertyName, Object value) {
+    return exprList.lt(propertyName, value);
+  }
 
-    public ExpressionList<T> raw(String raw) {
-        return exprList.raw(raw);
-    }
+  public ExpressionList<T> ne(String propertyName, Object value) {
+    return exprList.ne(propertyName, value);
+  }
 
-    public com.avaje.ebean.Query<T> select(String properties) {
-        return exprList.select(properties);
-    }
+  public ExpressionList<T> not(Expression exp) {
+    return exprList.not(exp);
+  }
 
-    public com.avaje.ebean.Query<T> setBackgroundFetchAfter(int backgroundFetchAfter) {
-        return exprList.setBackgroundFetchAfter(backgroundFetchAfter);
-    }
+  public ExpressionList<T> or(Expression expOne, Expression expTwo) {
+    return exprList.or(expOne, expTwo);
+  }
 
-    public com.avaje.ebean.Query<T> setFirstRow(int firstRow) {
-        return exprList.setFirstRow(firstRow);
-    }
+  public OrderBy<T> order() {
+    return exprList.order();
+  }
 
-    public com.avaje.ebean.Query<T> setListener(QueryListener<T> queryListener) {
-        return exprList.setListener(queryListener);
-    }
+  public com.avaje.ebean.Query<T> order(String orderByClause) {
+    return exprList.order(orderByClause);
+  }
 
-    public com.avaje.ebean.Query<T> setMapKey(String mapKey) {
-        return exprList.setMapKey(mapKey);
-    }
+  public OrderBy<T> orderBy() {
+    return exprList.orderBy();
+  }
 
-    public com.avaje.ebean.Query<T> setMaxRows(int maxRows) {
-        return exprList.setMaxRows(maxRows);
-    }
+  public com.avaje.ebean.Query<T> orderBy(String orderBy) {
+    return exprList.orderBy(orderBy);
+  }
 
-    public com.avaje.ebean.Query<T> setOrderBy(String orderBy) {
-        return exprList.setOrderBy(orderBy);
-    }
+  public com.avaje.ebean.Query<T> query() {
+    return exprList.query();
+  }
 
-    public com.avaje.ebean.Query<T> setUseCache(boolean useCache) {
-        return exprList.setUseCache(useCache);
-    }
+  public ExpressionList<T> raw(String raw, Object value) {
+    return exprList.raw(raw, value);
+  }
 
-    public ExpressionList<T> startsWith(String propertyName, String value) {
-        return exprList.startsWith(propertyName, value);
-    }
+  public ExpressionList<T> raw(String raw, Object[] values) {
+    return exprList.raw(raw, values);
+  }
 
-    public ExpressionList<T> where() {
-        return exprList.where();
-    }
-	
-	
-	
+  public ExpressionList<T> raw(String raw) {
+    return exprList.raw(raw);
+  }
+
+  public com.avaje.ebean.Query<T> select(String properties) {
+    return exprList.select(properties);
+  }
+
+  public com.avaje.ebean.Query<T> setBackgroundFetchAfter(int backgroundFetchAfter) {
+    return exprList.setBackgroundFetchAfter(backgroundFetchAfter);
+  }
+
+  public com.avaje.ebean.Query<T> setFirstRow(int firstRow) {
+    return exprList.setFirstRow(firstRow);
+  }
+
+  public com.avaje.ebean.Query<T> setListener(QueryListener<T> queryListener) {
+    return exprList.setListener(queryListener);
+  }
+
+  public com.avaje.ebean.Query<T> setMapKey(String mapKey) {
+    return exprList.setMapKey(mapKey);
+  }
+
+  public com.avaje.ebean.Query<T> setMaxRows(int maxRows) {
+    return exprList.setMaxRows(maxRows);
+  }
+
+  public com.avaje.ebean.Query<T> setOrderBy(String orderBy) {
+    return exprList.setOrderBy(orderBy);
+  }
+
+  public com.avaje.ebean.Query<T> setUseCache(boolean useCache) {
+    return exprList.setUseCache(useCache);
+  }
+
+  public ExpressionList<T> startsWith(String propertyName, String value) {
+    return exprList.startsWith(propertyName, value);
+  }
+
+  public ExpressionList<T> where() {
+    return exprList.where();
+  }
+
 }

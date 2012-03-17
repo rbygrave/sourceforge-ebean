@@ -2,69 +2,55 @@ package com.avaje.ebeaninternal.server.expression;
 
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
-import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
-
 
 class CaseInsensitiveEqualExpression extends AbstractExpression implements LuceneAwareExpression {
 
-	private static final long serialVersionUID = -6406036750998971064L;
-	
-	private final String value;
-	
-	CaseInsensitiveEqualExpression(FilterExprPath pathPrefix, String propertyName, String value) {
-		super(pathPrefix, propertyName);
-		this.value = value.toLowerCase();
-	}
-	    
-    @Override
-    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-        return true;
+  private static final long serialVersionUID = -6406036750998971064L;
+
+  private final String value;
+
+  CaseInsensitiveEqualExpression(FilterExprPath pathPrefix, String propertyName, String value) {
+    super(pathPrefix, propertyName);
+    this.value = value.toLowerCase();
+  }
+
+  public void addBindValues(SpiExpressionRequest request) {
+
+    ElPropertyValue prop = getElProp(request);
+    if (prop != null && prop.isDbEncrypted()) {
+      // bind the key as well as the value
+      String encryptKey = prop.getBeanProperty().getEncryptKey().getStringValue();
+      request.addBindValue(encryptKey);
     }
 
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
-        
-        String propertyName = getPropertyName();
-        return new CaseInsensitiveEqualExpressionLucene().createLuceneExpr(request, propertyName, value);
+    request.addBindValue(value);
+  }
+
+  public void addSql(SpiExpressionRequest request) {
+
+    String propertyName = getPropertyName();
+    String pname = propertyName;
+
+    ElPropertyValue prop = getElProp(request);
+    if (prop != null && prop.isDbEncrypted()) {
+      pname = prop.getBeanProperty().getDecryptProperty(propertyName);
     }
 
-	public void addBindValues(SpiExpressionRequest request) {
-        
-	    ElPropertyValue prop = getElProp(request);
-        if (prop != null && prop.isDbEncrypted()) {
-            // bind the key as well as the value
-            String encryptKey = prop.getBeanProperty().getEncryptKey().getStringValue();
-            request.addBindValue(encryptKey);
-        }
-          
-        request.addBindValue(value);  
-	}
+    request.append("lower(").append(pname).append(") =? ");
+  }
 
-	public void addSql(SpiExpressionRequest request) {
-	    
-        String propertyName = getPropertyName();
-	    String pname = propertyName;
-        
-        ElPropertyValue prop = getElProp(request);
-        if (prop != null && prop.isDbEncrypted()){
-            pname = prop.getBeanProperty().getDecryptProperty(propertyName);
-        }
-        
-		request.append("lower(").append(pname).append(") =? ");
-	}
+  public int queryAutoFetchHash() {
+    int hc = CaseInsensitiveEqualExpression.class.getName().hashCode();
+    hc = hc * 31 + propName.hashCode();
+    return hc;
+  }
 
-	public int queryAutoFetchHash() {
-		int hc = CaseInsensitiveEqualExpression.class.getName().hashCode();
-		hc = hc * 31 + propName.hashCode();
-		return hc;
-	}
+  public int queryPlanHash(BeanQueryRequest<?> request) {
+    return queryAutoFetchHash();
+  }
 
-	public int queryPlanHash(BeanQueryRequest<?> request) {
-		return queryAutoFetchHash();
-	}
-	
-	public int queryBindHash() {
-		return value.hashCode();
-	}
+  public int queryBindHash() {
+    return value.hashCode();
+  }
 }

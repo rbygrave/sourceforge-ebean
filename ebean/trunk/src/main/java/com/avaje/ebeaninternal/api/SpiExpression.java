@@ -3,17 +3,12 @@ package com.avaje.ebeaninternal.api;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 
 /**
  * An expression that becomes part of a Where clause or Having clause.
  */
 public interface SpiExpression extends Expression {
-
-    public boolean isLuceneResolvable(LuceneResolvableRequest req);
-
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request);
 
 	/**
 	 * Process "Many" properties populating ManyWhereJoins.

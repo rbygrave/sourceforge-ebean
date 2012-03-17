@@ -472,8 +472,6 @@ public interface ExpressionList<T> extends Serializable {
      */
     public ExpressionList<T> contains(String propertyName, String value);
 
-    public ExpressionList<T> lucene(String propertyName, String value);
-
     /**
      * Case insensitive Contains - property like %value%. Typically uses a
      * lower() function to make the expression case insensitive.

@@ -1,10 +1,7 @@
 package com.avaje.ebeaninternal.server.expression;
 
-import java.util.Set;
-
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
-import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 
 
 class BetweenExpression extends AbstractExpression {
@@ -22,14 +19,6 @@ class BetweenExpression extends AbstractExpression {
 		this.valueLow = valLo;
 		this.valueHigh = valHigh;
 	}
-	
-    public boolean isLuceneResolvable(Set<String> indexedProperties) {
-        return indexedProperties.contains(getPropertyName());
-    }
-	   
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
-        return null;
-    }
 
 	public void addBindValues(SpiExpressionRequest request) {
 		request.addBindValue(valueLow);

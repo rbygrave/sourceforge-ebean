@@ -4,23 +4,17 @@ import java.util.ArrayList;
 
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.lucene.LIndex;
 
 /**
  * Request object used for gathering expression sql and bind values.
  */
 public interface SpiExpressionRequest {
 
-    /**
-     * Return the associated Lucene Index.
-     */
-    public LIndex getLuceneIndex();
+  /**
+   * Parse the logical property name to the deployment name.
+   */
+  public String parseDeploy(String logicalProp);
 
-    /**
-     * Parse the logical property name to the deployment name.
-     */
-    public String parseDeploy(String logicalProp);
-    
 	/**
 	 * Return the bean descriptor for the root type.
 	 */

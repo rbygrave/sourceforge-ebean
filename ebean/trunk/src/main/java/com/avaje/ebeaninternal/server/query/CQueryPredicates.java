@@ -129,16 +129,6 @@ public class CQueryPredicates {
 		this.bindParams = query.getBindParams();
 		this.idValue = query.getId();
 	}
-
-    /**
-     * Return true if the predicates in this query can be resolved via a lucene
-     * index.
-     */
-    public boolean isLuceneResolvable() {
-        
-        CQueryPredicatesLuceneResolve luceneResolve = new CQueryPredicatesLuceneResolve(request);
-        return luceneResolve.isLuceneResolvable();
-    }
     
 	public String bind(DataBind dataBind) throws SQLException {
 
