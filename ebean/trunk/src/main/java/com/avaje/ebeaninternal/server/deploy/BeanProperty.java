@@ -19,13 +19,28 @@
  */
 package com.avaje.ebeaninternal.server.deploy;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.InvalidValue;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.DbEncryptFunction;
 import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.ldap.LdapAttributeAdapter;
-import com.avaje.ebean.config.lucene.LuceneIndex;
 import com.avaje.ebean.text.StringFormatter;
 import com.avaje.ebean.text.StringParser;
 import com.avaje.ebean.text.TextException;
@@ -46,21 +61,6 @@ import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.util.ValueUtil;
-
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.persistence.PersistenceException;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Description of a property of a bean. Includes its deployment information such
@@ -1160,18 +1160,18 @@ public class BeanProperty implements ElPropertyValue {
         return value;
     }
 
-    private ArrayList<LuceneIndex> luceneIndexes;
-
-    public void registerLuceneIndex(LuceneIndex luceneIndex) {
-        if (luceneIndexes == null) {
-            luceneIndexes = new ArrayList<LuceneIndex>();
-        }
-        luceneIndexes.add(luceneIndex);
-    }
-
-    public boolean isDeltaRequired() {
-        return luceneIndexes != null;
-    }
+//    private ArrayList<LuceneIndex> luceneIndexes;
+//
+//    public void registerLuceneIndex(LuceneIndex luceneIndex) {
+//        if (luceneIndexes == null) {
+//            luceneIndexes = new ArrayList<LuceneIndex>();
+//        }
+//        luceneIndexes.add(luceneIndex);
+//    }
+//
+//    public boolean isDeltaRequired() {
+//        return true;//luceneIndexes != null;
+//    }
 
     /**
      * Return true if by default this property is set to fetch eager.

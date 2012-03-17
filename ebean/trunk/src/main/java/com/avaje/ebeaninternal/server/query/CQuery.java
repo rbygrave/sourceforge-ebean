@@ -378,34 +378,29 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
 		
 			startNano = System.nanoTime();
 			
-			if (request.isLuceneQuery()){
-			    // this is a Lucene Index query
-                dataReader = queryPlan.createDataReader(null);
-			    
-			} else {
-    			// prepare
-    			SpiTransaction t = request.getTransaction();
-    			Connection conn = t.getInternalConnection();
-    			pstmt = conn.prepareStatement(sql);
-    	
-    			if (query.getTimeout() > 0){
-    				pstmt.setQueryTimeout(query.getTimeout());
-    			}
-    			if (query.getBufferFetchSizeHint() > 0){
-    				pstmt.setFetchSize(query.getBufferFetchSizeHint());
-    			}
-    			
-    			DataBind dataBind = new DataBind(pstmt);
-    			
-    			// bind keys for encrypted properties
-    			queryPlan.bindEncryptedProperties(dataBind);
-    			
-    			bindLog = predicates.bind(dataBind);
-    	
-    			// executeQuery
-    			ResultSet rset = pstmt.executeQuery();
-    			dataReader = queryPlan.createDataReader(rset);
+			// prepare
+			SpiTransaction t = request.getTransaction();
+			Connection conn = t.getInternalConnection();
+			pstmt = conn.prepareStatement(sql);
+	
+			if (query.getTimeout() > 0){
+				pstmt.setQueryTimeout(query.getTimeout());
 			}
+			if (query.getBufferFetchSizeHint() > 0){
+				pstmt.setFetchSize(query.getBufferFetchSizeHint());
+			}
+			
+			DataBind dataBind = new DataBind(pstmt);
+			
+			// bind keys for encrypted properties
+			queryPlan.bindEncryptedProperties(dataBind);
+			
+			bindLog = predicates.bind(dataBind);
+	
+			// executeQuery
+			ResultSet rset = pstmt.executeQuery();
+			dataReader = queryPlan.createDataReader(rset);
+			
 			return true;
 		}
 	}

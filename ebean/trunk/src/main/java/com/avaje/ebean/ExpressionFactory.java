@@ -172,16 +172,6 @@ public interface ExpressionFactory {
 	public Expression contains(String propertyName, String value);
 
 	/**
-	 * Add a Lucene query expression using the default field for this index.
-	 */
-    public Expression lucene(String value);
-
-    /**
-     * Add a Lucene query expression with the propertyName as the default field.
-     */
-    public Expression lucene(String propertyName, String value);
-
-	/**
 	 * Case insensitive Contains - property like %value%. Typically uses a
 	 * lower() function to make the expression case insensitive.
 	 */

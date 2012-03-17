@@ -55,7 +55,6 @@ import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.EncryptKey;
 import com.avaje.ebean.config.dbplatform.IdGenerator;
 import com.avaje.ebean.config.dbplatform.IdType;
-import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
@@ -66,7 +65,6 @@ import com.avaje.ebean.validation.factory.Validator;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiUpdatePlan;
-import com.avaje.ebeaninternal.api.TransactionEvent;
 import com.avaje.ebeaninternal.api.TransactionEventTable.TableIUD;
 import com.avaje.ebeaninternal.server.cache.CachedBeanData;
 import com.avaje.ebeaninternal.server.cache.CachedBeanDataFromBean;
@@ -88,7 +86,6 @@ import com.avaje.ebeaninternal.server.el.ElPropertyChainBuilder;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
 import com.avaje.ebeaninternal.server.ldap.LdapPersistenceException;
-import com.avaje.ebeaninternal.server.lucene.LIndex;
 import com.avaje.ebeaninternal.server.persist.DmlUtil;
 import com.avaje.ebeaninternal.server.query.CQueryPlan;
 import com.avaje.ebeaninternal.server.query.SplitName;
@@ -98,7 +95,6 @@ import com.avaje.ebeaninternal.server.text.json.ReadJsonContext;
 import com.avaje.ebeaninternal.server.text.json.ReadJsonContext.ReadBeanState;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonContext.WriteBeanState;
-import com.avaje.ebeaninternal.server.transaction.IndexInvalidate;
 import com.avaje.ebeaninternal.server.type.DataBind;
 import com.avaje.ebeaninternal.server.type.TypeManager;
 import com.avaje.ebeaninternal.util.SortByClause;
@@ -234,8 +230,6 @@ public class BeanDescriptor<T> {
    * If set overrides the find implementation. Server side only.
    */
   private final BeanFinder<T> beanFinder;
-
-  private final IndexDefn<?> luceneIndexDefn;
 
   /**
    * The table joins for this bean.
@@ -411,10 +405,6 @@ public class BeanDescriptor<T> {
   private ServerCache naturalKeyCache;
   private ServerCache queryCache;
 
-  private LIndex luceneIndex;
-
-  private Set<IndexInvalidate> luceneIndexInvalidations;
-
   /**
    * Construct the BeanDescriptor.
    */
@@ -423,7 +413,6 @@ public class BeanDescriptor<T> {
     this.owner = owner;
     this.cacheManager = owner.getCacheManager();
     this.serverName = owner.getServerName();
-    this.luceneIndexDefn = deploy.getIndexDefn();
     this.entityType = deploy.getEntityType();
     this.name = InternString.intern(deploy.getName());
     this.baseTableAlias = "t0";
@@ -636,48 +625,11 @@ public class BeanDescriptor<T> {
   }
 
   /**
-   * Return the Lucene Index Definition.
-   */
-  public IndexDefn<?> getLuceneIndexDefn() {
-    return luceneIndexDefn;
-  }
-
-  /**
    * Return the default strategy for using a lucene index (if an index is
    * defined on this bean type).
    */
   public UseIndex getUseIndex() {
     return useIndex;
-  }
-
-  /**
-   * Return the Lucene Index for this bean type (can be null).
-   */
-  public LIndex getLuceneIndex() {
-    return luceneIndex;
-  }
-
-  /**
-   * Sets the Lucene Index once it has been created.
-   */
-  public void setLuceneIndex(LIndex luceneIndex) {
-    this.luceneIndex = luceneIndex;
-  }
-
-  public void addIndexInvalidate(IndexInvalidate e) {
-    if (luceneIndexInvalidations == null) {
-      luceneIndexInvalidations = new HashSet<IndexInvalidate>();
-    }
-    luceneIndexInvalidations.add(e);
-  }
-
-  public boolean isNotifyLucene(TransactionEvent txnEvent) {
-    if (luceneIndexInvalidations != null) {
-      for (IndexInvalidate invalidate : luceneIndexInvalidations) {
-        txnEvent.addIndexInvalidate(invalidate);
-      }
-    }
-    return luceneIndex != null;
   }
 
   /**
@@ -1014,14 +966,7 @@ public class BeanDescriptor<T> {
    * type.
    */
   public boolean isUsingL2Cache() {
-    return isBeanCaching() || luceneIndex != null;
-  }
-
-  /**
-   * Return true if there is a Lucene Index on this bean type.
-   */
-  public boolean isLuceneIndexed() {
-    return luceneIndex != null;
+    return isBeanCaching();
   }
 
   /**

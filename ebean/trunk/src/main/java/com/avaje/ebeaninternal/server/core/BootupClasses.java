@@ -19,11 +19,23 @@
  */
 package com.avaje.ebeaninternal.server.core;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 import com.avaje.ebean.annotation.LdapDomain;
 import com.avaje.ebean.config.CompoundType;
 import com.avaje.ebean.config.ScalarTypeConverter;
 import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebean.config.lucene.IndexDefn;
 import com.avaje.ebean.event.BeanFinder;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanPersistListener;
@@ -32,18 +44,6 @@ import com.avaje.ebean.event.ServerConfigStartup;
 import com.avaje.ebean.event.TransactionEventListener;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 import com.avaje.ebeaninternal.server.util.ClassPathSearchMatcher;
-
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Interesting classes for a EbeanServer such as Embeddable, Entity,
@@ -83,7 +83,6 @@ public class BootupClasses implements ClassPathSearchMatcher {
     private List<BeanPersistController> persistControllerInstances = new ArrayList<BeanPersistController>();
     private List<BeanPersistListener<?>> persistListenerInstances = new ArrayList<BeanPersistListener<?>>();
     private List<BeanQueryAdapter> queryAdapterInstances = new ArrayList<BeanQueryAdapter>();
-    private List<IndexDefn<?>> luceneIndexInstances = new ArrayList<IndexDefn<?>>();
     private List<TransactionEventListener> transactionEventListenerInstances = new ArrayList<TransactionEventListener>();
 
     public BootupClasses() {
@@ -141,13 +140,7 @@ public class BootupClasses implements ClassPathSearchMatcher {
             }
         }
     }
-    
-    public void addIndexDefns(List<IndexDefn<?>> indexInstances) {
-        if (indexInstances != null) {
-            this.luceneIndexInstances.addAll(indexInstances);
-        }
-    }
-    
+        
     public void addQueryAdapters(List<BeanQueryAdapter> queryAdapterInstances) {
         if (queryAdapterInstances != null) {
             for (BeanQueryAdapter a : queryAdapterInstances) {
@@ -266,24 +259,6 @@ public class BootupClasses implements ClassPathSearchMatcher {
         }
 
         return transactionEventListenerInstances;
-    }
-
-    /**
-     * Return already constructed Lucene Index definitions.
-     */
-    public List<IndexDefn<?>> getLuceneIndexInstances() {
-        
-        for (Class<?> cls: luceneIndexList) {
-            try {
-                IndexDefn<?> indexDefn = (IndexDefn<?>)cls.newInstance();
-                luceneIndexInstances.add(indexDefn);
-            } catch (Exception e) {
-                String msg = "Error creating BeanPersistController " + cls;
-                logger.log(Level.SEVERE, msg, e);
-            }
-        }
-        
-        return luceneIndexInstances;
     }
     
     /**
@@ -435,10 +410,6 @@ public class BootupClasses implements ClassPathSearchMatcher {
             interesting = true;
         }
         
-        if (IndexDefn.class.isAssignableFrom(cls)) {
-            luceneIndexList.add(cls);
-            interesting = true;
-        }
         if (ServerConfigStartup.class.isAssignableFrom(cls)){
         	serverConfigStartupList.add(cls);
         	interesting = true;

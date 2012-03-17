@@ -25,7 +25,6 @@ import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
 import com.avaje.ebeaninternal.server.el.ElPropertyValue;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Base class for simple expressions.
@@ -58,10 +57,6 @@ public abstract class AbstractExpression implements SpiExpression {
 	    }
 	}
 	
-    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-        return false;
-    }
-
 	public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
 
 	    String propertyName = getPropertyName();

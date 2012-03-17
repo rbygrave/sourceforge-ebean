@@ -23,10 +23,8 @@ import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiExpression;
 import com.avaje.ebeaninternal.api.SpiExpressionRequest;
-import com.avaje.ebeaninternal.api.SpiLuceneExpr;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.el.ElPropertyDeploy;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Between expression where a value is between two properties.
@@ -35,80 +33,69 @@ import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
  */
 class BetweenPropertyExpression implements SpiExpression {
 
-    private static final long serialVersionUID = 2078918165221454910L;
+  private static final long serialVersionUID = 2078918165221454910L;
 
-    private static final String BETWEEN = " between ";
+  private static final String BETWEEN = " between ";
 
-    private final FilterExprPath pathPrefix;
-    private final String lowProperty;
-    private final String highProperty;
-    private final Object value;
+  private final FilterExprPath pathPrefix;
+  private final String lowProperty;
+  private final String highProperty;
+  private final Object value;
 
-    BetweenPropertyExpression(FilterExprPath pathPrefix, String lowProperty, String highProperty, Object value) {
-        this.pathPrefix = pathPrefix;
-        this.lowProperty = lowProperty;
-        this.highProperty = highProperty;
-        this.value = value;
+  BetweenPropertyExpression(FilterExprPath pathPrefix, String lowProperty, String highProperty, Object value) {
+    this.pathPrefix = pathPrefix;
+    this.lowProperty = lowProperty;
+    this.highProperty = highProperty;
+    this.value = value;
+  }
+
+  protected String name(String propName) {
+    if (pathPrefix == null) {
+      return propName;
+    } else {
+      String path = pathPrefix.getPath();
+      if (path == null || path.length() == 0) {
+        return propName;
+      } else {
+        return path + "." + propName;
+      }
+    }
+  }
+
+  public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+
+    ElPropertyDeploy elProp = desc.getElPropertyDeploy(name(lowProperty));
+    if (elProp != null && elProp.containsMany()) {
+      manyWhereJoin.add(elProp);
     }
 
-    public boolean isLuceneResolvable(LuceneResolvableRequest req) {
-        return false;
+    elProp = desc.getElPropertyDeploy(name(highProperty));
+    if (elProp != null && elProp.containsMany()) {
+      manyWhereJoin.add(elProp);
     }
-    
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request) {
-        return null;
-    }
+  }
 
-    protected String name(String propName) {
-        if (pathPrefix == null){
-            return propName;
-        } else {
-            String path = pathPrefix.getPath();
-            if (path == null || path.length() == 0){
-                return propName;
-            } else {
-                return path+"."+propName;
-            }
-        }
-    }
+  public void addBindValues(SpiExpressionRequest request) {
+    request.addBindValue(value);
+  }
 
-    public void containsMany(BeanDescriptor<?> desc, ManyWhereJoins manyWhereJoin) {
+  public void addSql(SpiExpressionRequest request) {
 
-        
-        ElPropertyDeploy elProp = desc.getElPropertyDeploy(name(lowProperty));
-        if (elProp != null && elProp.containsMany()) {
-            manyWhereJoin.add(elProp);
-        }
+    request.append(" ? ").append(BETWEEN).append(name(lowProperty)).append(" and ").append(name(highProperty));
+  }
 
-        elProp = desc.getElPropertyDeploy(name(highProperty));
-        if (elProp != null && elProp.containsMany()) {
-            manyWhereJoin.add(elProp);
-        }
-    }
+  public int queryAutoFetchHash() {
+    int hc = BetweenPropertyExpression.class.getName().hashCode();
+    hc = hc * 31 + lowProperty.hashCode();
+    hc = hc * 31 + highProperty.hashCode();
+    return hc;
+  }
 
-    public void addBindValues(SpiExpressionRequest request) {
-        request.addBindValue(value);
-    }
+  public int queryPlanHash(BeanQueryRequest<?> request) {
+    return queryAutoFetchHash();
+  }
 
-    public void addSql(SpiExpressionRequest request) {
-
-        request.append(" ? ").append(BETWEEN)
-            .append(name(lowProperty))
-            .append(" and ").append(name(highProperty));
-    }
-
-    public int queryAutoFetchHash() {
-        int hc = BetweenPropertyExpression.class.getName().hashCode();
-        hc = hc * 31 + lowProperty.hashCode();
-        hc = hc * 31 + highProperty.hashCode();
-        return hc;
-    }
-
-    public int queryPlanHash(BeanQueryRequest<?> request) {
-        return queryAutoFetchHash();
-    }
-
-    public int queryBindHash() {
-        return value.hashCode();
-    }
+  public int queryBindHash() {
+    return value.hashCode();
+  }
 }

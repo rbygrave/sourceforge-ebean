@@ -209,7 +209,7 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	}
 
 	public boolean isNotify(TransactionEvent txnEvent) {
-		return notifyCache || isNotifyPersistListener() || beanDescriptor.isNotifyLucene(txnEvent);
+		return notifyCache || isNotifyPersistListener();
 	}
 
 	public boolean isNotifyCache() {
@@ -236,14 +236,6 @@ public class PersistRequestBean<T> extends PersistRequest implements BeanPersist
 	            throw new IllegalStateException("Invalid type "+type);
             }
 		}
-	}
-
-	public void pauseIndexInvalidate() {
-		transaction.getEvent().pauseIndexInvalidate(beanDescriptor.getBeanType());
-	}
-
-	public void resumeIndexInvalidate() {
-		transaction.getEvent().resumeIndexInvalidate(beanDescriptor.getBeanType());
 	}
 
 	public void addToPersistMap(BeanPersistIdMap beanPersistMap) {

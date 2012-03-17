@@ -6,88 +6,81 @@ import com.avaje.ebeaninternal.api.SpiExpressionRequest;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.DeployParser;
-import com.avaje.ebeaninternal.server.lucene.LIndex;
 
 public class DefaultExpressionRequest implements SpiExpressionRequest {
 
-	private final SpiOrmQueryRequest<?> queryRequest;
-	
-	private final BeanDescriptor<?> beanDescriptor;
-	
-	private final StringBuilder sb = new StringBuilder();
-	
-	private final ArrayList<Object> bindValues = new ArrayList<Object>();
-	
-	private final DeployParser deployParser;
-	
-	private int paramIndex;
-	
-	private LIndex luceneIndex;
-	
-	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, DeployParser deployParser) {
-		this.queryRequest = queryRequest;
-		this.beanDescriptor = queryRequest.getBeanDescriptor();
-		this.deployParser = deployParser;
-	}
+  private final SpiOrmQueryRequest<?> queryRequest;
 
-	public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, LIndex index) {
-	    this.queryRequest = queryRequest;
-	    this.beanDescriptor = queryRequest.getBeanDescriptor();
-	    this.deployParser = null;
-	    this.luceneIndex = index;
-	}
-	
-	public DefaultExpressionRequest(BeanDescriptor<?> beanDescriptor) {
-		this.beanDescriptor = beanDescriptor;
-		this.queryRequest = null;
-		this.deployParser = null;
-	}
-	
-	public LIndex getLuceneIndex() {
-        return luceneIndex;
-    }
-	
-    public String parseDeploy(String logicalProp) {
-        
-        String s = deployParser.getDeployWord(logicalProp);
-        return s == null ? logicalProp : s;
-    }
+  private final BeanDescriptor<?> beanDescriptor;
 
-    /**
-	 * Increments the parameter index and returns that value.
-	 */
-    public int nextParameter() {
-        return ++paramIndex;
-    }
+  private final StringBuilder sb = new StringBuilder();
 
-    public BeanDescriptor<?> getBeanDescriptor(){
-		return beanDescriptor;
-	}
-	
-	public SpiOrmQueryRequest<?> getQueryRequest() {
-		return queryRequest;
-	}
+  private final ArrayList<Object> bindValues = new ArrayList<Object>();
 
-	public SpiExpressionRequest append(String sql) {
-		sb.append(sql);
-		return this;
-	}
+  private final DeployParser deployParser;
 
-	public void addBindValue(Object bindValue) {
-		bindValues.add(bindValue);
-	}
+  private int paramIndex;
 
-	public boolean includeProperty(String propertyName) {
-		return true;
-	}
+  public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, DeployParser deployParser) {
+    this.queryRequest = queryRequest;
+    this.beanDescriptor = queryRequest.getBeanDescriptor();
+    this.deployParser = deployParser;
+  }
 
-	public String getSql() {
-		return sb.toString();
-	}
+  // public DefaultExpressionRequest(SpiOrmQueryRequest<?> queryRequest, LIndex
+  // index) {
+  // this.queryRequest = queryRequest;
+  // this.beanDescriptor = queryRequest.getBeanDescriptor();
+  // this.deployParser = null;
+  // this.luceneIndex = index;
+  // }
 
-	public ArrayList<Object> getBindValues() {
-		return bindValues;
-	}
-	
-	
+  public DefaultExpressionRequest(BeanDescriptor<?> beanDescriptor) {
+    this.beanDescriptor = beanDescriptor;
+    this.queryRequest = null;
+    this.deployParser = null;
+  }
+
+  public String parseDeploy(String logicalProp) {
+
+    String s = deployParser.getDeployWord(logicalProp);
+    return s == null ? logicalProp : s;
+  }
+
+  /**
+   * Increments the parameter index and returns that value.
+   */
+  public int nextParameter() {
+    return ++paramIndex;
+  }
+
+  public BeanDescriptor<?> getBeanDescriptor() {
+    return beanDescriptor;
+  }
+
+  public SpiOrmQueryRequest<?> getQueryRequest() {
+    return queryRequest;
+  }
+
+  public SpiExpressionRequest append(String sql) {
+    sb.append(sql);
+    return this;
+  }
+
+  public void addBindValue(Object bindValue) {
+    bindValues.add(bindValue);
+  }
+
+  public boolean includeProperty(String propertyName) {
+    return true;
+  }
+
+  public String getSql() {
+    return sb.toString();
+  }
+
+  public ArrayList<Object> getBindValues() {
+    return bindValues;
+  }
+
 }

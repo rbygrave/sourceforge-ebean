@@ -6,16 +6,11 @@ import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.event.BeanQueryRequest;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.query.LuceneResolvableRequest;
 
 /**
  * Internal extension of ExpressionList.
  */
 public interface SpiExpressionList<T> extends ExpressionList<T> {
-
-    public boolean isLuceneResolvable(LuceneResolvableRequest req);
-    
-    public SpiLuceneExpr createLuceneExpr(SpiExpressionRequest request, SpiLuceneExpr.ExprOccur occur);
 
     /**
      * Trim the path for filterMany() expressions.
