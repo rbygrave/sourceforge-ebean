@@ -656,6 +656,9 @@ public final class DefaultTypeManager implements TypeManager, KnownImmutable {
       // boolean mapping to Types.Integer, Types.VARCHAR or Types.Boolean
     }
 
+    ScalarTypeScalaDouble scalaDoubleType = new ScalarTypeScalaDouble();
+    typeMap.put(scala.Double.class, scalaDoubleType);
+
     typeMap.put(Locale.class, localeType);
     typeMap.put(Currency.class, currencyType);
     typeMap.put(TimeZone.class, timeZoneType);

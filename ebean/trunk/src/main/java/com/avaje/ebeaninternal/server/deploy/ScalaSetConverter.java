@@ -39,7 +39,7 @@ public class ScalaSetConverter implements CollectionTypeConverter {
     
     public Object toWrapped(Object wrapped) {
         if (wrapped instanceof java.util.Set<?>){
-            return  JavaConversions.asSet((java.util.Set<?>)wrapped);
+            return  JavaConversions.asScalaSet((java.util.Set<?>)wrapped);
         }
         return wrapped;
     }

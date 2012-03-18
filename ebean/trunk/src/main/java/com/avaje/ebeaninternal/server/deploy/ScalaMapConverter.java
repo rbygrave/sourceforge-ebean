@@ -39,7 +39,7 @@ public class ScalaMapConverter implements CollectionTypeConverter {
     
     public Object toWrapped(Object wrapped) {
         if (wrapped instanceof java.util.Map<?,?>){
-            return  JavaConversions.asMap((java.util.Map<?,?>)wrapped);
+            return  JavaConversions.mapAsScalaMap((java.util.Map<?,?>)wrapped);
         }
         return wrapped;
     }

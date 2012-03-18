@@ -17,31 +17,31 @@
  * along with Ebean; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA  
  */
-package com.avaje.ebeaninternal.server.deploy;
+package com.avaje.ebeaninternal.server.type;
 
-import scala.collection.JavaConversions;
+import scala.Double;
 
-/**
- * Converts between Java List and Scala mutable Buffer.
- *
- * @author rbygrave
- */
-public class ScalaBufferConverter implements CollectionTypeConverter {
+import com.avaje.ebean.config.ScalarTypeConverter;
 
-    @SuppressWarnings({ "rawtypes" })
-    public Object toUnderlying(Object wrapped) {
-        
-        if (wrapped instanceof JavaConversions.JListWrapper){
-            return ((JavaConversions.JListWrapper)wrapped).underlying();
-        }
+public class ScalarTypeScalaDouble extends ScalarTypeWrapper<Object, java.lang.Double> {
+
+    public ScalarTypeScalaDouble() {
+        super(Object.class, new ScalarTypeDouble(), new Converter());
+    }
+    
+    static class Converter implements ScalarTypeConverter<Object, java.lang.Double> {
+
+      public Double getNullValue() {
         return null;
+      }
+
+      public Object wrapValue(java.lang.Double scalarType) {
+        return scalarType;
+      }
+
+      public java.lang.Double unwrapValue(Object beanType) {
+        return ((scala.Double)beanType).toDouble();
+      }
+      
     }
-    
-    public Object toWrapped(Object wrapped) {
-        if (wrapped instanceof java.util.List<?>){
-            return  JavaConversions.asScalaBuffer((java.util.List<?>)wrapped);
-        }
-        return wrapped;
-    }
-    
 }
