@@ -85,6 +85,11 @@ abstract class LdJunctionExpression<T> implements Junction<T>, SpiExpression {
     return this;
   }
 
+  public Junction<T> addAll(ExpressionList<T> addList) {
+    exprList.addAll(addList);
+    return this;
+  }
+  
   public void addBindValues(SpiExpressionRequest request) {
 
     List<SpiExpression> list = exprList.internalList();

@@ -306,8 +306,6 @@ public interface ExpressionList<T> extends Serializable {
      */
     public ExpressionList<T> where();
 
-
-
     /**
      * Add an Expression to the list.
      * <p>
@@ -324,6 +322,11 @@ public interface ExpressionList<T> extends Serializable {
      * </pre>
      */
     public ExpressionList<T> add(Expression expr);
+    
+    /**
+     * Add a list of Expressions to this ExpressionList.s
+     */
+    public ExpressionList<T> addAll(ExpressionList<T> exprList);
 
     /**
      * Equal To - property is equal to a given value.

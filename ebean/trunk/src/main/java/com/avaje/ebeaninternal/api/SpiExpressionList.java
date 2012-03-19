@@ -1,6 +1,7 @@
 package com.avaje.ebeaninternal.api;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.ExpressionList;
@@ -12,6 +13,11 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
  */
 public interface SpiExpressionList<T> extends ExpressionList<T> {
 
+  /**
+   * Return the underlying list of expressions.
+   */
+  public List<SpiExpression> getUnderlyingList();
+  
     /**
      * Trim the path for filterMany() expressions.
      */
