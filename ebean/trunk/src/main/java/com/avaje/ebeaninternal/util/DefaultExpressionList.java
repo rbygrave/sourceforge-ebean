@@ -242,6 +242,16 @@ public class DefaultExpressionList<T> implements SpiExpressionList<T> {
     return this;
   }
 
+  public ExpressionList<T> addAll(ExpressionList<T> exprList) {
+    SpiExpressionList<T> spiList = (SpiExpressionList<T>)exprList;
+    list.addAll(spiList.getUnderlyingList());
+    return this;
+  }
+  
+  public List<SpiExpression> getUnderlyingList() {
+    return list;
+  }
+  
   public boolean isEmpty() {
     return list.isEmpty();
   }
