@@ -20,6 +20,7 @@ import com.avaje.ebean.config.dbplatform.DbType;
 import com.avaje.ebean.config.dbplatform.DbTypeMap;
 import com.avaje.ebean.config.dbplatform.DbDdlSyntax;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
+import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 import com.avaje.ebeaninternal.server.type.ScalarType;
 
 /**
@@ -244,4 +245,15 @@ public class DdlGenContext {
 	public int incrementIxCount() {
 		return ++ixCount;
 	}
+
+	/**
+	 * Strips off the Database Platform specific quoted identifier characters.
+	 */
+  public String removeQuotes(String dbColumn) {
+    
+    dbColumn = StringHelper.replaceString(dbColumn, dbPlatform.getOpenQuote(), "");
+    dbColumn = StringHelper.replaceString(dbColumn, dbPlatform.getCloseQuote(), "");
+    
+    return dbColumn;
+  }
 }
