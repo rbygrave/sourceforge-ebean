@@ -13,6 +13,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanPropertyCompound;
 import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.deploy.TableJoinColumn;
 import com.avaje.ebeaninternal.server.deploy.id.ImportedId;
+import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 
 /**
  * Used as part of CreateTableVisitor to generated the create table DDL script.
@@ -79,6 +80,9 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
         if (uqConstraintName.length() > ddl.getMaxConstraintNameLength()){
             uqConstraintName = uqConstraintName.substring(0, ddl.getMaxConstraintNameLength());
         }
+        
+        uqConstraintName = ctx.removeQuotes(uqConstraintName);
+        uqConstraintName = StringHelper.replaceString(uqConstraintName, " ", "_");
         
         StringBuilder constraintExpr = new StringBuilder();
         constraintExpr.append("constraint ")
@@ -180,6 +184,7 @@ public class CreateTableColumnVisitor extends BaseTablePropertyVisitor {
 	private String createUniqueConstraint(BeanProperty p) {
 	    
 	    StringBuilder expr = createUniqueConstraintBuffer(p.getBeanDescriptor().getBaseTable(), p.getDbColumn());
+	    
 	    expr.append(p.getDbColumn()).append(")");
         
         return expr.toString();
