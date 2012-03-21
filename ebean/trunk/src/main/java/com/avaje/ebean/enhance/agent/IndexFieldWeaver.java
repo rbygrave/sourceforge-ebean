@@ -62,21 +62,15 @@ public class IndexFieldWeaver implements Opcodes {
 			}
 			return;
 		}
-		if (classMeta.isInheritEqualsFromSuper()){
-			// will inherit implementation from super class
-			if (classMeta.isLog(1)) {
-				classMeta.log("... skipping add equals() ... will inherit this from super class");
-			}
-			return;
-		}
 
 		// search for the id field...
 		int idIndex = -1;
 		FieldMeta idFieldMeta = null;
 
+		// find id field only local to this class
 		for (int i = 0; i < fields.size(); i++) {
 			FieldMeta fieldMeta = fields.get(i);
-			if (fieldMeta.isId()) {
+			if (fieldMeta.isId() && fieldMeta.isLocalField(classMeta)) {
 				if (idIndex == -1) {
 					// we have found an id field
 					idIndex = i;
@@ -95,9 +89,9 @@ public class IndexFieldWeaver implements Opcodes {
 			}
 
 		} else if (idIndex == -1) {
-			// there are no id fields
+			// there are no id fields local to this type
 			if (classMeta.isLog(1)) {
-				classMeta.log("has no id fields. Not adding equals() method.");
+				classMeta.log("has no id fields on this type. Not adding equals() method. Expected when Id property on superclass.");
 			}
 
 		} else {

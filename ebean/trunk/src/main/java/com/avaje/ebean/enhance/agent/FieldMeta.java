@@ -281,7 +281,7 @@ public class FieldMeta implements Opcodes, EnhanceConstants {
 	 * Return true if the field is local to this class. Returns false if the field is actually
 	 * on a super class.
 	 */
-	private boolean isLocalField(ClassMeta classMeta) {
+	public boolean isLocalField(ClassMeta classMeta) {
 		return fieldClass.equals(classMeta.getClassName());
 	}
 	
