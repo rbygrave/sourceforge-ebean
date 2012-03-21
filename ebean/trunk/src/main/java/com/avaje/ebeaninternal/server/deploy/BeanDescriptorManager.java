@@ -1450,11 +1450,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
       if (hasEntityBeanInterface(beanClass)) {
         checkEnhanced(desc, beanClass);
       } else {
-        if (allowSubclassing) {
-          checkSubclass(desc, beanClass);
-        } else {
-          throw new PersistenceException("This configuration does not allow entity subclassing [" + beanClass + "]");
-        }
+        checkSubclass(desc, beanClass);
       }
       return;
     }
@@ -1514,12 +1510,15 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     checkInheritedClasses(false, beanClass);
     desc.checkReadAndWriteMethods();
 
-    subclassClassCount++;
-
     EntityType entityType = desc.getEntityType();
     if (EntityType.XMLELEMENT.equals(entityType)) {
       desc.setFactoryType(beanClass);
+      
     } else {
+      if (!allowSubclassing) {
+        throw new PersistenceException("This configuration does not allow entity subclassing [" + beanClass + "]");
+      }
+      subclassClassCount++;      
       Class<?> subClass = subClassManager.resolve(beanClass.getName());
       desc.setFactoryType(subClass);
       subclassedEntities.add(desc.getName());
