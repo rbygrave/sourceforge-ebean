@@ -17,7 +17,7 @@ public class TestBeanReferenceRefresh extends TestCase {
 	
 		Order order = Ebean.getReference(Order.class, 1);
 		
-		Assert.assertTrue(Ebean.getBeanState(order).isReference());
+		Assert.assertTrue("isReference",Ebean.getBeanState(order).isReference());
 		
 		order.getOrderDate();
 		

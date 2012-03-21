@@ -18,7 +18,11 @@ public class SimpleTextParser {
 		this.eof = oql.length();
 	}
 
-	public String getOql() {
+	public int getPos() {
+    return pos;
+  }
+
+  public String getOql() {
 		return oql;
 	}
 
