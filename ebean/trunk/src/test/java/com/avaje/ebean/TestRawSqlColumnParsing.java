@@ -17,17 +17,17 @@ public class TestRawSqlColumnParsing extends TestCase {
         
         assertEquals("a",c.getDbColumn());
         assertEquals(0, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("a",c.getPropertyName());
 
         c = mapping.get("b");
         assertEquals("b",c.getDbColumn());
         assertEquals(1, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("b",c.getPropertyName());
 
         c = mapping.get("c");
         assertEquals("c",c.getDbColumn());
         assertEquals(2, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("c",c.getPropertyName());
 
     }
 
@@ -39,17 +39,17 @@ public class TestRawSqlColumnParsing extends TestCase {
         
         assertEquals("a",c.getDbColumn());
         assertEquals(0, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("a", c.getPropertyName());
 
         c = mapping.get("b");
         assertEquals("b",c.getDbColumn());
         assertEquals(1, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("b",c.getPropertyName());
 
         c = mapping.get("c");
         assertEquals("c",c.getDbColumn());
         assertEquals(2, c.getIndexPos());
-        assertNull(c.getPropertyName());
+        assertEquals("c",c.getPropertyName());
 
     }
    

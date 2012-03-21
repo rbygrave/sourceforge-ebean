@@ -68,7 +68,8 @@ public class CQueryBuilderRawSql implements Constants {
             
         } else {
             // add back select keyword (it was removed to support sqlQueryLimiter)
-            sql = "select " + sql;
+            String prefix = "select "+ (rsql.isDistinct() ? "distinct " : "");
+            sql = prefix + sql;
             return new SqlLimitResponse(sql, false);
         }
     }

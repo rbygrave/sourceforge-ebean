@@ -59,6 +59,7 @@ final class DRawSqlColumnsParser {
 		}
 		
 		if (split.length == 1){
+		  // default to column the same name as the property
 		    return new ColumnMapping.Column(indexPos++, split[0], null);
 		}
 		if (split.length == 2){
