@@ -58,6 +58,9 @@ public class MRole {
 	public void setUsers(List<MUser> users) {
 		this.users = users;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "MRole [roleName=" + roleName + "]";
+	}
 }
