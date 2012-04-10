@@ -57,20 +57,26 @@ class ModifyHolder<E> implements Serializable {
 	 */
 	void modifyAdditionAll(Collection<? extends E> c) {
 		if (c != null) {
-			modifyAdditions.addAll(c);
+			for (E e:c){
+				modifyAddition(e);
+			}
 		}
 	}
 
 	void modifyAddition(E bean) {
 		if (bean != null) {
-			modifyAdditions.add(bean);
+			if (!modifyDeletions.remove(bean)){
+				modifyAdditions.add(bean);
+			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	void modifyRemoval(Object bean) {
 		if (bean != null) {
-			modifyDeletions.add((E)bean);
+			if (!modifyAdditions.remove((E)bean)){
+				modifyDeletions.add((E)bean);
+			}
 		}
 	}
 
