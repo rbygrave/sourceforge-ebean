@@ -43,6 +43,8 @@ public class TestM2MModifyTest extends TestCase {
 
 		roles.clear();
 		roles.add(r0);
+		roles.add(r1);
+		roles.remove(r1);
 
 		Ebean.save(u0);
 

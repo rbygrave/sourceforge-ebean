@@ -63,4 +63,33 @@ public class MRole {
 	public String toString() {
 		return "MRole [roleName=" + roleName + "]";
 	}
+	@Override
+	public boolean equals(Object other) {
+		if (this == other){
+			return true;
+		}
+
+		// Make sure other is not null and has the same class as this
+		if (other != null && getClass().equals(other.getClass())){
+			final MRole rhs = (MRole)other; 
+			if ( roleid.equals(rhs.roleid)){
+				if (roleid == 0){
+					return false;
+				}else{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		if (roleid != null && roleid != 0){
+			int rid = roleid;
+			return (int)( rid ^ (rid >>> 32) );
+		}
+		return super.hashCode();
+	}
+	
 }
