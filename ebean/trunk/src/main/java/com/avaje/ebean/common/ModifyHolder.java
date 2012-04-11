@@ -65,7 +65,9 @@ class ModifyHolder<E> implements Serializable {
 
 	void modifyAddition(E bean) {
 		if (bean != null) {
+			// If it is to delete then just remove the deletion 
 			if (!modifyDeletions.remove(bean)){
+				// Insert
 				modifyAdditions.add(bean);
 			}
 		}
@@ -74,6 +76,7 @@ class ModifyHolder<E> implements Serializable {
 	@SuppressWarnings("unchecked")
 	void modifyRemoval(Object bean) {
 		if (bean != null) {
+			// If it is to be added then just remove the addition
 			if (!modifyAdditions.remove((E)bean)){
 				modifyDeletions.add((E)bean);
 			}
