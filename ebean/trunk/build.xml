@@ -23,7 +23,7 @@
 	
 	<!-- on the bin for running in the IDE. Using Eclipse IDE Enhancement another option -->
 	<target name="bin-ormEnhance">
-		<ebeanEnhance classSource="${bin.dir}" packages="**" transformArgs="debug=1;transientInternalFields=false;checkNullManyFields=true"/>
+		<ebeanEnhance classSource="${bin.dir}" packages="com/avaje/**" transformArgs="debug=5;transientInternalFields=false;checkNullManyFields=true"/>
 	</target>
 	
 	<target name="bin-enhance" depends="bin-ormEnhance,bin-ormTransactionalEnhance">
