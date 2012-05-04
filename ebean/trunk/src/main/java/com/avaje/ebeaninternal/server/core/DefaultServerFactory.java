@@ -268,35 +268,28 @@ public class DefaultServerFactory implements BootupEbeanManager {
    */
   private ServerCacheManager getCacheManager(ServerConfig serverConfig) {
 
-    // TODO: External configuration of ServerCacheFactory + options.
-
-    ServerCacheOptions beanOptions = null;// serverConfig.getDefaultBeanCacheOptions();
-    if (beanOptions == null) {
-      // these settings are for a cache per bean type
-      beanOptions = new ServerCacheOptions();
-      beanOptions.setMaxSize(GlobalProperties.getInt("cache.maxSize", 1000));
-      beanOptions.setMaxIdleSecs(GlobalProperties.getInt("cache.maxIdleTime", 60 * 10));// 10
-                                                                                        // minutes
-      beanOptions.setMaxSecsToLive(GlobalProperties.getInt("cache.maxTimeToLive", 60 * 60 * 6));// 6
-                                                                                                // hrs
-      // beanOptions.setTrimFrequency(GlobalProperties.getInt("cache.trimFrequency",
-      // 1000*60));//1 minute
+    ServerCacheManager serverCacheManager = serverConfig.getServerCacheManager();
+    if (serverCacheManager != null) {
+      return serverCacheManager;
     }
 
-    ServerCacheOptions queryOptions = null;// serverConfig.getDefaultQueryCacheOptions();
-    if (queryOptions == null) {
-      // these settings are for a cache per bean type
-      queryOptions = new ServerCacheOptions();
-      queryOptions.setMaxSize(GlobalProperties.getInt("querycache.maxSize", 100));
-      queryOptions.setMaxIdleSecs(GlobalProperties.getInt("querycache.maxIdleTime", 60 * 10));// 10
-                                                                                              // minutes
-      queryOptions.setMaxSecsToLive(GlobalProperties.getInt("querycache.maxTimeToLive", 60 * 60 * 6));// 6
-                                                                                                      // hrs
-      // queryOptions.setTrimFrequency(GlobalProperties.getInt("querycache.trimFrequency",
-      // 1000*60));//1 minute
-    }
+    // reasonable default settings are for a cache per bean type
+    ServerCacheOptions beanOptions = new ServerCacheOptions();
+    beanOptions.setMaxSize(GlobalProperties.getInt("cache.maxSize", 1000));
+    // maxIdleTime 10 minutes
+    beanOptions.setMaxIdleSecs(GlobalProperties.getInt("cache.maxIdleTime", 60 * 10));
+    // maxTimeToLive 6 hrs
+    beanOptions.setMaxSecsToLive(GlobalProperties.getInt("cache.maxTimeToLive", 60 * 60 * 6));
 
-    ServerCacheFactory cacheFactory = null;// serverConfig.getServerCacheFactory();
+    // reasonable default settings for the query cache per bean type
+    ServerCacheOptions queryOptions = new ServerCacheOptions();
+    queryOptions.setMaxSize(GlobalProperties.getInt("querycache.maxSize", 100));
+    // maxIdleTime 10 minutes
+    queryOptions.setMaxIdleSecs(GlobalProperties.getInt("querycache.maxIdleTime", 60 * 10));
+    // maxTimeToLive 6 hours
+    queryOptions.setMaxSecsToLive(GlobalProperties.getInt("querycache.maxTimeToLive", 60 * 60 * 6));
+
+    ServerCacheFactory cacheFactory = serverConfig.getServerCacheFactory();
     if (cacheFactory == null) {
       cacheFactory = new DefaultServerCacheFactory();
     }

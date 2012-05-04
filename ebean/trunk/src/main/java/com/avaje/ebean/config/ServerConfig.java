@@ -29,6 +29,8 @@ import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.LogLevel;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Encrypted;
+import com.avaje.ebean.cache.ServerCacheFactory;
+import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.GlobalProperties.PropertySource;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.DbEncrypt;
@@ -235,6 +237,10 @@ public class ServerConfig {
   private DbEncrypt dbEncrypt;
 
   private LdapConfig ldapConfig;
+  
+  private ServerCacheFactory serverCacheFactory;
+
+  private ServerCacheManager serverCacheManager;
 
   /**
    * Set this to true when by default vanilla objects should be returned from
@@ -459,6 +465,34 @@ public class ServerConfig {
    */
   public void setExternalTransactionManager(ExternalTransactionManager externalTransactionManager) {
     this.externalTransactionManager = externalTransactionManager;
+  }
+  
+  /**
+   * Return the ServerCacheFactory.
+   */
+  public ServerCacheFactory getServerCacheFactory() {
+    return serverCacheFactory;
+  }
+
+  /**
+   * Set the ServerCacheFactory to use.
+   */
+  public void setServerCacheFactory(ServerCacheFactory serverCacheFactory) {
+    this.serverCacheFactory = serverCacheFactory;
+  }
+
+  /**
+   * Return the ServerCacheManager.
+   */
+  public ServerCacheManager getServerCacheManager() {
+    return serverCacheManager;
+  }
+
+  /**
+   * Set the ServerCacheManager to use.
+   */
+  public void setServerCacheManager(ServerCacheManager serverCacheManager) {
+    this.serverCacheManager = serverCacheManager;
   }
 
   /**
@@ -1421,6 +1455,8 @@ public class ServerConfig {
     encryptDeployManager = createInstance(p, EncryptDeployManager.class, "encryptDeployManager");
     encryptor = createInstance(p, Encryptor.class, "encryptor");
     dbEncrypt = createInstance(p, DbEncrypt.class, "dbEncrypt");
+    serverCacheFactory = createInstance(p, ServerCacheFactory.class, "serverCacheFactory");
+    serverCacheManager = createInstance(p, ServerCacheManager.class, "serverCacheManager");
 
     String jarsProp = p.get("search.jars", p.get("jars", null));
     if (jarsProp != null) {
