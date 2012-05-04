@@ -2512,9 +2512,11 @@ public class BeanDescriptor<T> {
     }
 
     if (!explicitAllProps && props == null) {
+      // just render the loaded properties
       props = ctx.getLoadedProps();
     }
     if (props != null) {
+      // render only the appropriate properties (when not all properties)
       for (String prop : props) {
         BeanProperty p = getBeanProperty(prop);
         if (p != null && !p.isId()) {
@@ -2522,7 +2524,8 @@ public class BeanDescriptor<T> {
         }
       }
     } else {
-      if (!referenceBean) {
+      if (explicitAllProps || !referenceBean) {
+        // render all the properties and invoke lazy loading if required
         for (int j = 0; j < propertiesNonTransient.length; j++) {
           propertiesNonTransient[j].jsonWrite(ctx, bean);
         }
