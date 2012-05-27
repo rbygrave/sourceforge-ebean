@@ -23,7 +23,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -202,6 +205,14 @@ public class DataSourcePool implements DataSource {
         this.connectionProps = new Properties();
         this.connectionProps.setProperty("user", un);
         this.connectionProps.setProperty("password", pw);
+        
+        Map<String, String> customProperties = params.getCustomProperties();
+        if (customProperties != null){
+          Set<Entry<String,String>> entrySet = customProperties.entrySet();
+          for (Entry<String, String> entry : entrySet) {
+            this.connectionProps.setProperty(entry.getKey(), entry.getValue());
+          }
+        }
 
         try {
             initialise();

@@ -1,7 +1,10 @@
 package com.avaje.ebean.config;
 
+import java.util.Map;
+
 import com.avaje.ebean.Transaction;
 import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
+import com.avaje.ebeaninternal.server.lib.util.StringHelper;
 
 /**
  * Used to config a DataSource when using the internal Ebean
@@ -46,6 +49,8 @@ public class DataSourceConfig {
 	private String poolListener;
 
 	private boolean offline;
+	
+	Map<String,String> customProperties;
 
 	/**
 	 * Return the connection URL.
@@ -332,6 +337,22 @@ public class DataSourceConfig {
     public void setOffline(boolean offline) {
         this.offline = offline;
     }
+    
+    
+    /**
+     * Return a map of custom properties for the jdbc driver connection.
+     */
+    public Map<String, String> getCustomProperties() {
+      return customProperties;
+    }
+
+    /**
+     * Set custom properties for the jdbc driver connection.
+     * @param customProperties
+     */
+    public void setCustomProperties(Map<String, String> customProperties) {
+      this.customProperties = customProperties;
+    }
 
     /**
 	 * Load the settings from ebean.properties.
@@ -370,5 +391,12 @@ public class DataSourceConfig {
 
 		String isoLevel = GlobalProperties.get(prefix+"isolationlevel", "READ_COMMITTED");
 		this.isolationLevel = TransactionIsolation.getLevel(isoLevel);
+		
+		String customProperties = GlobalProperties.get(prefix+"customProperties", null);
+    if (customProperties != null && customProperties.length() > 0) {
+      Map<String, String> custProps = StringHelper.delimitedToMap(customProperties, ";", "=");
+      this.customProperties = custProps;
+    }
+		
 	}
 }
