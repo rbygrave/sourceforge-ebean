@@ -273,8 +273,8 @@ public class DefaultAutoFetchManager implements AutoFetchManager, Serializable {
 	 * </p>
 	 */
 	public void shutdown() {
-		collectUsageViaGC(-1);
 		if (useFileLogging) {
+		    collectUsageViaGC(-1);
 		    serialize();
 		}
 	}
