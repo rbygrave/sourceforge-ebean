@@ -73,11 +73,13 @@ import com.avaje.ebean.text.PathProperties;
  */
 public final class UriOptions {
 
+    private static final List<String> EMPTY_IDS = new ArrayList<String>(0);
+  
     private final String source;
 
     private PathProperties pathProperties;
 
-    private List<String> idList;
+    private List<String> idList = EMPTY_IDS;
 
     private String sort;
 
