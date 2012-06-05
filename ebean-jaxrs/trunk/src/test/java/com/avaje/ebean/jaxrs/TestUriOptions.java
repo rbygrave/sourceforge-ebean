@@ -25,6 +25,20 @@ public class TestUriOptions extends TestCase {
         assertTrue(u.getPathProperties().getPaths().contains(null));
         assertTrue(u.getPathProperties().getPaths().contains("c"));
         assertEquals("a desc,b asc",u.getSort());
-        
+
+        u  = UriOptions.parse(":(a,b,c(d,e)):sort(a desc,b asc)");
+        assertEquals(0, u.getIdList().size());
+    
+        assertNull(u.getUnknownSegments());
+        assertEquals(2,u.getPathProperties().getPaths().size());
+        assertTrue(u.getPathProperties().getPaths().contains(null));
+        assertTrue(u.getPathProperties().getPaths().contains("c"));
+        assertEquals("a desc,b asc",u.getSort());
+
+        u  = UriOptions.parse(":sort(a desc,b asc)");
+        assertEquals(0, u.getIdList().size());
+        assertNull(u.getUnknownSegments());
+        assertNull(u.getPathProperties());
+        assertEquals("a desc,b asc",u.getSort());
     }
 }
