@@ -136,16 +136,6 @@ public final class Ebean {
     private static final Logger logger = Logger.getLogger(Ebean.class.getName());
 
     /**
-     * The version and date of build.
-     */
-    private static final String EBVERSION = "2.7.5";
-
-    static {
-        String version = System.getProperty("java.version");
-        logger.info("Ebean Version[" + EBVERSION + "] Java Version[" + version + "]");
-    }
-
-    /**
      * Manages creation and cache of EbeanServers.
      */
     private static final Ebean.ServerManager serverMgr = new Ebean.ServerManager();
