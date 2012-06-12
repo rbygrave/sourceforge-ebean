@@ -75,7 +75,7 @@ public @interface CacheStrategy {
 	String warmingQuery() default "";
 
 	/**
-	 * Default setting for using a lucene index if it has been defined on this
+	 * Default setting for using a text index if it has been defined on this
 	 * bean type.
 	 */
 	UseIndex useIndex() default UseIndex.DEFAULT;
