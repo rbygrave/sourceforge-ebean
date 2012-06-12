@@ -1347,7 +1347,7 @@ public final class Ebean {
      * </p>
      * <p>
      * This information is used to invalidate objects out of the cache and
-     * potentially the lucene text indexes. This information is also
+     * potentially text indexes. This information is also
      * automatically broadcast across the cluster.
      * </p>
      * <p>
