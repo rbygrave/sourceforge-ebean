@@ -120,7 +120,7 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
 	 * <p>
 	 * This notifies this instance of the framework that beans have been
 	 * committed externally to it. Either by another framework or clustered
-	 * server. It uses this to maintain its cache and lucene indexes
+	 * server. It uses this to maintain its cache and text indexes
 	 * appropriately.
 	 * </p>
 	 */

@@ -139,7 +139,7 @@ public interface SpiTransaction extends Transaction {
 	/**
 	 * Get the object that holds the event details.
 	 * <p>
-	 * This information is used maintain the table state, cache and lucene
+	 * This information is used maintain the table state, cache and text
 	 * indexes. On commit the Table modifications this generates is broadcast
 	 * around the cluster (if you have a cluster).
 	 * </p>

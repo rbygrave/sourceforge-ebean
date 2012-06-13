@@ -184,8 +184,8 @@ public class AnnotationClass extends AnnotationParser {
 		}
 		
 		if (!UseIndex.DEFAULT.equals(cacheStrategy.useIndex())){
-		    // a specific Lucene index strategy has been defined
-	        descriptor.setUseIndex(cacheStrategy.useIndex());
+		    // a specific text index strategy has been defined
+	      descriptor.setUseIndex(cacheStrategy.useIndex());
 		}
 	}
 	
