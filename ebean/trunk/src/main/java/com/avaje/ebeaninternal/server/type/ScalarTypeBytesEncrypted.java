@@ -134,16 +134,4 @@ public class ScalarTypeBytesEncrypted implements ScalarType<byte[]> {
         dataOutput.write(value);
     }
     
-    public int getLuceneType() {
-        return baseType.getLuceneType();
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return baseType.luceneFromIndexValue(value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return baseType.luceneToIndexValue(value);
-    }
-    
 }

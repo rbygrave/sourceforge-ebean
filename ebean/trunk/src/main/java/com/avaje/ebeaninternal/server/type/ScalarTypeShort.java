@@ -27,7 +27,6 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Short and short.
@@ -74,18 +73,6 @@ public class ScalarTypeShort extends ScalarTypeBase<Short> {
 	public boolean isDateTimeCapable() {
 		return false;
 	}
-
-    public int getLuceneType() {
-        return LLuceneTypes.INT;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return Short.valueOf(value.toString());
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return ((Short)value).intValue();
-    }
 	
     public Object readData(DataInput dataInput) throws IOException {
         if (!dataInput.readBoolean()) {

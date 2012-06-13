@@ -27,7 +27,6 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebean.text.json.JsonValueAdapter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 /**
@@ -114,20 +113,6 @@ public abstract class ScalarTypeBaseVarchar<T> extends ScalarTypeBase<T> {
 	public String toJsonString(Object value, JsonValueAdapter ctx) {
         String s = format(value);
         return EscapeJson.escapeQuote(s);
-    }
-    
-    public Object luceneFromIndexValue(Object value) {
-        String v = (String)value;
-        return convertFromDbString(v);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Object luceneToIndexValue(Object value) {
-        return convertToDbString((T)value);
-    }   
-    
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
     }
     
     public Object readData(DataInput dataInput) throws IOException {

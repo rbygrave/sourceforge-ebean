@@ -8,7 +8,6 @@ import javax.persistence.EntityNotFoundException;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import com.avaje.ebean.BeanState;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.FetchConfig;
 import com.avaje.tests.model.basic.UUOne;

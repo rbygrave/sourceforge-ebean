@@ -365,16 +365,6 @@ public interface Query<T> extends Serializable {
     public Query<T> setAutofetch(boolean autofetch);
 
     /**
-     * Deprecated in favour of {@link EbeanServer#createQuery(Class, String)}.
-     * <p>
-     * Set the query using the query language.
-     * </p>
-     * 
-     * @deprecated
-     */
-    public Query<T> setQuery(String oql);
-
-    /**
      * Explicitly set a comma delimited list of the properties to fetch on the
      * 'main' entity bean (aka partial object). Note that '*' means all
      * properties.
@@ -443,28 +433,10 @@ public interface Query<T> extends Serializable {
     public Query<T> fetch(String path, String fetchProperties);
 
     /**
-     * Same as {@link #fetch(String, String)}.
-     * <p>
-     * This will eventually be deprecated in favour of the matching "fetch"
-     * method.
-     * </p>
-     * @deprecated Deprecated in favour of {@link #fetch(String, String)}
-     */
-    public Query<T> join(String assocProperty, String fetchProperties);
-
-    /**
      * Additionally specify a FetchConfig to use a separate query or lazy
      * loading to load this path.
      */
     public Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig);
-
-    /**
-     * Additionally specify a JoinConfig to specify a "query join" and or define
-     * the lazy loading query.
-     * 
-     * @deprecated Deprecated in favour of {@link #fetch(String, String, FetchConfig)}
-     */
-    public Query<T> join(String assocProperty, String fetchProperties, JoinConfig joinConfig);
 
     /**
      * Specify a path to load including all its properties.
@@ -479,24 +451,10 @@ public interface Query<T> extends Serializable {
     public Query<T> fetch(String path);
 
     /**
-     * Deprecated in favour of {@link #fetch(String)}
-     * 
-     * @deprecated in favour of {@link #fetch(String)}
-     */
-    public Query<T> join(String path);
-
-    /**
      * Additionally specify a JoinConfig to specify a "query join" and or define
      * the lazy loading query.
      */
     public Query<T> fetch(String path, FetchConfig joinConfig);
-
-    /**
-     * Deprecated in favour of {@link #fetch(String, FetchConfig)}
-     * 
-     * @deprecated in favour of {@link #fetch(String, FetchConfig)}
-     */
-    public Query<T> join(String path, JoinConfig joinConfig);
 
     /**
      * Execute the query returning the list of Id's.

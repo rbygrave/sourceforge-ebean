@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for java.math.BigInteger.
@@ -79,18 +78,6 @@ public class ScalarTypeMathBigInteger extends ScalarTypeBase<BigInteger> {
 	public boolean isDateTimeCapable() {
 		return true;
 	}
-	
-    public int getLuceneType() {
-        return LLuceneTypes.LONG;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return BigInteger.valueOf((Long)value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return ((BigInteger)value).longValue();
-    }
     
     public Object readData(DataInput dataInput) throws IOException {
         if (!dataInput.readBoolean()) {

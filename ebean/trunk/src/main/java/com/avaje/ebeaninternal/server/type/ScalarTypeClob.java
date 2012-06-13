@@ -24,7 +24,6 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for String.
@@ -93,15 +92,4 @@ public class ScalarTypeClob extends ScalarTypeBaseVarchar<String> {
         return EscapeJson.escapeQuote(value);
     }
     
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return value;
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return value;
-    }
 }
