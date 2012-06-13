@@ -109,14 +109,14 @@
             <version>5.1.15</version>
             <scope>test</scope>
         </dependency>
-<!--         
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>oracle</artifactId>
-            <version>10.2.0.2.0</version>
-            <scope>test</scope>
-        </dependency>
- -->        
+<!-- 
+     <dependency>
+      <groupId>com.oracle</groupId>
+      <artifactId>ojdbc5</artifactId>
+      <version>11.1.0.7.0</version>
+      <scope>test</scope>
+    </dependency>
+ -->
     </dependencies>
     <reporting>
         <plugins>
