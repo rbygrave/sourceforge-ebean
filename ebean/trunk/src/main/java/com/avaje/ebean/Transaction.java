@@ -312,7 +312,7 @@ public interface Transaction {
 	 * <p>
 	 * If you use raw JDBC then you can use this method to inform Ebean for the
 	 * tables that have been modified. Ebean uses this information to keep its
-	 * caches in synch and maintain lucene text indexes.
+	 * caches in synch and maintain text indexes.
 	 * </p>
 	 */
 	public void addModification(String tableName, boolean inserts, boolean updates, boolean deletes);

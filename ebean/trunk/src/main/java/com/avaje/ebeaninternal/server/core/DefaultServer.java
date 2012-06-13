@@ -412,7 +412,6 @@ public final class DefaultServer implements SpiEbeanServer {
       transactionManager.shutdown();
       autoFetchManager.shutdown();
       backgroundExecutor.shutdown();
-      // luceneIndexManager.shutdown();
     }
   }
 
@@ -562,7 +561,7 @@ public final class DefaultServer implements SpiEbeanServer {
    * <p>
    * This notifies this instance of the framework that beans have been committed
    * externally to it. Either by another framework or clustered server. It needs
-   * to maintain its cache and lucene indexes appropriately.
+   * to maintain its cache and text indexes appropriately.
    * </p>
    */
   public void externalModification(TransactionEventTable tableEvent) {
