@@ -1,5 +1,13 @@
 package com.avaje.ebeaninternal.server.querydefn;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.PersistenceException;
+
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionFactory;
@@ -8,7 +16,6 @@ import com.avaje.ebean.FetchConfig;
 import com.avaje.ebean.FutureIds;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.FutureRowCount;
-import com.avaje.ebean.JoinConfig;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.OrderBy.Property;
 import com.avaje.ebean.PagingList;
@@ -38,13 +45,6 @@ import com.avaje.ebeaninternal.server.deploy.TableJoin;
 import com.avaje.ebeaninternal.server.expression.SimpleExpression;
 import com.avaje.ebeaninternal.server.query.CancelableQuery;
 import com.avaje.ebeaninternal.util.DefaultExpressionList;
-
-import javax.persistence.PersistenceException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Default implementation of an Object Relational query.
@@ -856,37 +856,6 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
 	public DefaultOrmQuery<T> select(String columns) {
 		detail.select(columns);
-		return this;
-	}
-
-	public DefaultOrmQuery<T> join(String property) {
-		return join(property, null, null);
-	}
-	
-	public DefaultOrmQuery<T> join(String property, JoinConfig joinConfig) {
-		return join(property, null, joinConfig);
-	}
-
-	public DefaultOrmQuery<T> join(String property, String columns) {
-		return join(property, columns, null);
-	}
-	
-	public DefaultOrmQuery<T> join(String property, String columns, JoinConfig joinConfig) {
-
-        FetchConfig c;
-        if (joinConfig == null){
-            c = null;
-        } else {
-            c = new FetchConfig();
-            c.lazy(joinConfig.getLazyBatchSize());
-            if (joinConfig.isQueryAll()){
-                c.query(joinConfig.getQueryBatchSize());                
-            } else {
-                c.queryFirst(joinConfig.getQueryBatchSize());
-            }
-        }
-        
-	    detail.addFetch(property, columns, c);
 		return this;
 	}
 

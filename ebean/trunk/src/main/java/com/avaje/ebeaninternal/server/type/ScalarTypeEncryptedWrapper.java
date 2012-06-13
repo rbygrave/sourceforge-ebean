@@ -134,18 +134,5 @@ public class ScalarTypeEncryptedWrapper<T> implements ScalarType<T> {
 	public T jsonFromString(String value, JsonValueAdapter ctx) {
         return wrapped.jsonFromString(value, ctx);
     }
-
-    public int getLuceneType() {
-        return wrapped.getLuceneType();
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return wrapped.luceneFromIndexValue(value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return wrapped.luceneToIndexValue(value);
-    }
-    
     
 }

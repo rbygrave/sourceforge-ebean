@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import com.avaje.ebean.text.TextException;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * Base type for binary types.
@@ -76,18 +75,6 @@ public abstract class ScalarTypeBytesBase extends ScalarTypeBase<byte[]> {
 	public boolean isDateTimeCapable() {
 		return false;
 	}
-	
-    public int getLuceneType() {
-        return LLuceneTypes.BINARY;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return value;
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return value;
-    }
 
     public Object readData(DataInput dataInput) throws IOException {
         if (!dataInput.readBoolean()) {

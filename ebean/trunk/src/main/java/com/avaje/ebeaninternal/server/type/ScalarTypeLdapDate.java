@@ -157,17 +157,4 @@ public class ScalarTypeLdapDate<T> implements ScalarType<T> {
         baseType.writeData(dataOutput, v);
     }
     
-    public int getLuceneType() {
-        return baseType.getLuceneType();
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return baseType.luceneFromIndexValue(value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return baseType.luceneToIndexValue(value);
-    }
-    
-    
 }

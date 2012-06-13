@@ -157,16 +157,4 @@ public class ScalarTypeLdapTimestamp<T> implements ScalarType<T> {
     public void writeData(DataOutput dataOutput, Object v) throws IOException {
         baseType.writeData(dataOutput, v);
     }
-    
-    public int getLuceneType() {
-        return baseType.getLuceneType();
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return baseType.luceneFromIndexValue(value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return baseType.luceneToIndexValue(value);
-    }
 }

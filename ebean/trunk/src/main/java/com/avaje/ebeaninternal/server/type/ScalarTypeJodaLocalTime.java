@@ -30,7 +30,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.LocalTime;
 
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Joda LocalTime. This maps to a JDBC Time.
@@ -89,18 +88,6 @@ public class ScalarTypeJodaLocalTime extends ScalarTypeBase<LocalTime> {
 	public boolean isDateTimeCapable() {
 		return true;
 	}
-
-    public int getLuceneType() {
-        return LLuceneTypes.STRING;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        return parse((String)value);
-    }
-
-    public Object luceneToIndexValue(Object value) {
-        return format(value);
-    }
     
     public Object readData(DataInput dataInput) throws IOException {
         if (!dataInput.readBoolean()) {

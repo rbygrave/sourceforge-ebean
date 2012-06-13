@@ -27,7 +27,6 @@ import java.sql.Types;
 
 import com.avaje.ebean.text.TextException;
 import com.avaje.ebeaninternal.server.core.BasicTypeConverter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 
 /**
  * ScalarType for Boolean and boolean.
@@ -285,18 +284,6 @@ public class ScalarTypeBoolean {
         
         public boolean isDateTimeCapable() {
             return false;
-        }
-        
-        public int getLuceneType() {
-            return LLuceneTypes.STRING;
-        }
-
-        public Object luceneFromIndexValue(Object value) {
-            return parse((String)value);
-        }
-
-        public Object luceneToIndexValue(Object value) {
-            return format(value);
         }
 
         public Object readData(DataInput dataInput) throws IOException {

@@ -189,21 +189,5 @@ public class ScalarTypeWrapper<B, S> implements ScalarType<B> {
         S s = scalarType.jsonFromString(value, ctx);
         return converter.wrapValue(s);
     }
-
-    @SuppressWarnings("unchecked")
-    public Object luceneFromIndexValue(Object value) {
-        S s = (S)scalarType.luceneFromIndexValue(value);
-        return converter.wrapValue(s);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Object luceneToIndexValue(Object value) {
-        S sv = converter.unwrapValue((B)value);
-        return scalarType.luceneToIndexValue(sv);
-    }
-
-    public int getLuceneType() {
-        return scalarType.getLuceneType();
-    }
     
 }

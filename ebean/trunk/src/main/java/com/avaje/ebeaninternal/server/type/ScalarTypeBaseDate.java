@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.avaje.ebean.text.json.JsonValueAdapter;
-import com.avaje.ebeaninternal.server.lucene.LLuceneTypes;
 import com.avaje.ebeaninternal.server.text.json.WriteJsonBuffer;
 
 /**
@@ -97,22 +96,6 @@ public abstract class ScalarTypeBaseDate<T> extends ScalarTypeBase<T> {
     public T jsonFromString(String value, JsonValueAdapter ctx) {
         Date ts = ctx.jsonToDate(value);
         return convertFromDate(ts);
-    }
-    
-    public int getLuceneType() {
-        return LLuceneTypes.DATE;
-    }
-
-    public Object luceneFromIndexValue(Object value) {
-        Long l = (Long)value;
-        Date date = new Date(l);
-        return convertFromDate(date);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Object luceneToIndexValue(Object value) {
-        Date date = convertToDate((T)value);
-        return date.getTime();
     }
 
     public Object readData(DataInput dataInput) throws IOException {
