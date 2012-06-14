@@ -26,6 +26,7 @@ import com.avaje.ebeaninternal.server.core.ConcurrencyMode;
 import com.avaje.ebeaninternal.server.core.PersistRequestBean;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.persist.dmlbind.Bindable;
+import com.avaje.ebeaninternal.server.persist.dmlbind.BindableId;
 
 /**
  * Meta data for delete handler. The meta data is for a particular bean type. It
@@ -33,130 +34,132 @@ import com.avaje.ebeaninternal.server.persist.dmlbind.Bindable;
  */
 public final class DeleteMeta {
 
-	private final String sqlVersion;
+  private final String sqlVersion;
 
-	private final String sqlNone;
+  private final String sqlNone;
 
-	private final Bindable id;
+  private final BindableId id;
 
-	private final Bindable version;
+  private final Bindable version;
 
-	private final Bindable all;
+  private final Bindable all;
 
-	private final String tableName;
+  private final String tableName;
 
-	private final boolean emptyStringAsNull;
-	
-	public DeleteMeta(boolean emptyStringAsNull, BeanDescriptor<?> desc, Bindable id, Bindable version, Bindable all) {
-		this.emptyStringAsNull = emptyStringAsNull;
-	    this.tableName = desc.getBaseTable();
-		this.id = id;
-		this.version = version;
-		this.all = all;
+  private final boolean emptyStringAsNull;
 
-		sqlNone = genSql(ConcurrencyMode.NONE);
-		sqlVersion = genSql(ConcurrencyMode.VERSION);
-	}
-	
-	public boolean isEmptyStringAsNull() {
-        return emptyStringAsNull;
+  public DeleteMeta(boolean emptyStringAsNull, BeanDescriptor<?> desc, BindableId id, Bindable version, Bindable all) {
+    this.emptyStringAsNull = emptyStringAsNull;
+    this.tableName = desc.getBaseTable();
+    this.id = id;
+    this.version = version;
+    this.all = all;
+
+    sqlNone = genSql(ConcurrencyMode.NONE);
+    sqlVersion = genSql(ConcurrencyMode.VERSION);
+  }
+
+  public boolean isEmptyStringAsNull() {
+    return emptyStringAsNull;
+  }
+
+  /**
+   * Return the table name.
+   */
+  public String getTableName() {
+    return tableName;
+  }
+
+  /**
+   * Bind the request based on the concurrency mode.
+   */
+  public void bind(PersistRequestBean<?> persist, DmlHandler bind) throws SQLException {
+
+    Object bean = persist.getBean();
+
+    id.dmlBind(bind, false, bean);
+
+    switch (persist.getConcurrencyMode()) {
+    case VERSION:
+      version.dmlBind(bind, false, bean);
+      break;
+
+    case ALL:
+      Object oldBean = persist.getOldValues();
+      all.dmlBindWhere(bind, true, oldBean);
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  /**
+   * get or generate the sql based on the concurrency mode.
+   */
+  public String getSql(PersistRequestBean<?> request) throws SQLException {
+
+    if (id.isEmpty()) {
+      throw new IllegalStateException("Can not deleteById on " + request.getFullName() + " as no @Id property");
     }
 
-    /**
-	 * Return the table name.
-	 */
-	public String getTableName() {
-		return tableName;
-	}
+    switch (request.determineConcurrencyMode()) {
+    case NONE:
+      return sqlNone;
 
-	/**
-	 * Bind the request based on the concurrency mode.
-	 */
-	public void bind(PersistRequestBean<?> persist, DmlHandler bind)
-			throws SQLException {
+    case VERSION:
+      return sqlVersion;
 
-		Object bean = persist.getBean();
+    case ALL:
+      return genDynamicWhere(request.getLoadedProperties(), request.getOldValues());
 
-		id.dmlBind(bind, false, bean);
+    default:
+      throw new RuntimeException("Invalid mode " + request.determineConcurrencyMode());
+    }
+  }
 
-		switch (persist.getConcurrencyMode()) {
-		case VERSION:
-			version.dmlBind(bind, false, bean);
-			break;
+  private String genSql(ConcurrencyMode conMode) {
 
-		case ALL:
-			Object oldBean = persist.getOldValues();
-			all.dmlBindWhere(bind, true, oldBean);
-			break;
+    // delete ... where bcol=? and bc1=? and bc2 is null and ...
 
-		default:
-			break;
-		}
-	}
+    GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull);
 
-	/**
-	 * get or generate the sql based on the concurrency mode.
-	 */
-	public String getSql(PersistRequestBean<?> request) throws SQLException {
+    request.append("delete from ").append(tableName);
+    request.append(" where ");
 
-		
-		switch (request.determineConcurrencyMode()) {
-		case NONE:
-			return sqlNone;
-		
-		case VERSION:
-			return sqlVersion;
-			
-		case ALL:
-			return genDynamicWhere(request.getLoadedProperties(), request.getOldValues());
+    request.setWhereIdMode();
+    id.dmlAppend(request, false);
 
-		default:
-			throw new RuntimeException("Invalid mode " + request.determineConcurrencyMode());
-		}
-	}
+    if (ConcurrencyMode.VERSION.equals(conMode)) {
+      if (version == null) {
+        return null;
+      }
+      version.dmlAppend(request, false);
 
-	private String genSql(ConcurrencyMode conMode) {
+    } else if (ConcurrencyMode.ALL.equals(conMode)) {
+      throw new RuntimeException("Never called for ConcurrencyMode.ALL");
+    }
 
-		// delete ... where bcol=? and bc1=? and bc2 is null and ...
+    return request.toString();
+  }
 
-		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull);
-				
-		request.append("delete from ").append(tableName);
-		request.append(" where ");
+  /**
+   * Generate the sql dynamically for where using IS NULL for binding null
+   * values.
+   */
+  private String genDynamicWhere(Set<String> includedProps, Object oldBean) throws SQLException {
 
-		request.setWhereIdMode();
-		id.dmlAppend(request, false);
+    // always has a preceding id property(s) so the first
+    // option is always ' and ' and not blank.
 
-		if (ConcurrencyMode.VERSION.equals(conMode)) {
-			if (version == null) {
-				return null;
-			}
-			version.dmlAppend(request, false);
+    GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull, includedProps, oldBean);
 
-		} else if (ConcurrencyMode.ALL.equals(conMode)) {
-			throw new RuntimeException("Never called for ConcurrencyMode.ALL");
-		}
+    request.append(sqlNone);
 
-		return request.toString();
-	}
+    request.setWhereMode();
+    all.dmlWhere(request, true, oldBean);
 
-	/**
-	 * Generate the sql dynamically for where using IS NULL for binding null
-	 * values.
-	 */
-	private String genDynamicWhere(Set<String> includedProps, Object oldBean) throws SQLException {
-
-		// always has a preceding id property(s) so the first
-		// option is always ' and ' and not blank.
-		
-		GenerateDmlRequest request = new GenerateDmlRequest(emptyStringAsNull, includedProps, oldBean);
-
-		request.append(sqlNone);
-
-		request.setWhereMode();
-		all.dmlWhere(request, true, oldBean);
-
-		return request.toString();
-	}
+    return request.toString();
+  }
 
 }

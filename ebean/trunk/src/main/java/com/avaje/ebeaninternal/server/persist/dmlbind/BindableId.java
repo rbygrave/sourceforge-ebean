@@ -34,6 +34,11 @@ import com.avaje.ebeaninternal.server.core.PersistRequestBean;
  */
 public interface BindableId extends Bindable {
 
+  /**
+   * Return true if there is no Id properties at all.
+   */
+  public boolean isEmpty();
+  
 	/**
 	 * Return true if this is a concatenated key.
 	 */
