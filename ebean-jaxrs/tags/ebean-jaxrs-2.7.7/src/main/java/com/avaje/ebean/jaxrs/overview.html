@@ -1,0 +1,74 @@
+<html>
+<head>
+	<title>Ebean JAX-RS Module</title>
+</head>
+<body BGCOLOR="#ffffff">
+Provides integration with using Ebean with JAX-RS.
+
+<h3>Ebean JAX-RS Module</h3>
+<p>
+Provides integration with using Ebean with JAX-RS.
+</p>
+<p>
+Specifically it integrates Ebean's JSON and XML marshalling and unmarshalling support
+and provides some integration to make it easier to use Entity Beans with JAX-RS.
+ 
+</p>
+<p>
+Generally you need to:
+</p>
+<ul>
+<li>Register com.avaje.ebean.jaxrs with JAX-RS</li>
+<li>Create JAX-RS Resources that extend AbstractEntityResource</li>
+</ul>
+<p>
+The com.avaje.ebean.jaxrs package needs to be registered with
+JAX-RS so that it finds Ebean's JaxrsJsonProvider. This provides
+the JSON Marshalling and Unmarshalling of entity beans.
+</p>
+<p>
+If you use custom Media types then you might need to subclass
+the JaxrsJsonProvider and register it with those media types.
+</p>
+<p>
+Typically developers will extend the AbstractEntityResource object which has built
+in support for many typical functions such as find by id, find all, insert, update, delete
+and delete many by ids.
+</p>
+<div id="overviewexamples">
+<h3>
+EXAMPLE 1: Simple fetch
+</h3>
+<pre class="code">
+...
+&#64;Path("/customer{uriOptions:(:[^/]+?)?}/")
+&#64;Produces({MediaType.APPLICATION_JSON, "text/json"})
+public class CustomerJsonResource extends AbstractEntityResource<Customer> {
+
+    public CustomerJsonResource() {
+        super(Customer.class);
+    }
+
+    /**
+     * Return the customer but with more related information including its
+     * shippingAddress, billingAddress and list of contacts.
+     */
+    &#64;GET 
+    &#64;Path("{id}/full")
+    public Customer findFull(&#64;PathParam("id") String id) {
+        
+        return server.find(Customer.class)
+            .select("id, name")
+            .fetch("shippingAddress")
+            .fetch("billingAddress")
+            .fetch("contacts", "firstName, lastName, phone")
+            .setId(id)
+            .findUnique();
+    }
+...        
+</pre>
+
+</div>
+
+</body>
+</html>
