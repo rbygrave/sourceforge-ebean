@@ -41,108 +41,106 @@ import com.avaje.ebeaninternal.server.persist.dmlbind.FactoryVersion;
  */
 public class MetaFactory {
 
-    private final FactoryBaseProperties baseFact;
-    private final FactoryEmbedded embeddedFact;
-	private final FactoryVersion versionFact = new FactoryVersion();
-	private final FactoryAssocOnes assocOneFact = new FactoryAssocOnes();
+  private final FactoryBaseProperties baseFact;
+  private final FactoryEmbedded embeddedFact;
+  private final FactoryVersion versionFact = new FactoryVersion();
+  private final FactoryAssocOnes assocOneFact = new FactoryAssocOnes();
 
-	private final FactoryId idFact = new FactoryId();
+  private final FactoryId idFact = new FactoryId();
 
-	/**
-	 * Include Lobs in the base statement. Generally true. Oracle9 used to
-	 * require a separate statement for Clobs and Blobs.
-	 */
-	private static final boolean includeLobs = true;
+  /**
+   * Include Lobs in the base statement. Generally true. Oracle9 used to require
+   * a separate statement for Clobs and Blobs.
+   */
+  private static final boolean includeLobs = true;
 
-	private final DatabasePlatform dbPlatform;
-	
-	private final boolean emptyStringAsNull;
-	
-	public MetaFactory(DatabasePlatform dbPlatform) {
-		this.dbPlatform = dbPlatform;
-		this.emptyStringAsNull = dbPlatform.isTreatEmptyStringsAsNull();
-		
-		// to bind encryption data before or after the encryption key
-		DbEncrypt dbEncrypt = dbPlatform.getDbEncrypt();
-		boolean bindEncryptDataFirst = dbEncrypt == null ? true : dbEncrypt.isBindEncryptDataFirst();
-		
-		this.baseFact = new FactoryBaseProperties(bindEncryptDataFirst);
-		this.embeddedFact = new FactoryEmbedded(bindEncryptDataFirst);
-	}
+  private final DatabasePlatform dbPlatform;
 
-	/**
-	 * Create the UpdateMeta for the given bean type.
-	 */
-	public UpdateMeta createUpdate(BeanDescriptor<?> desc) {
+  private final boolean emptyStringAsNull;
 
-		List<Bindable> setList = new ArrayList<Bindable>();
+  public MetaFactory(DatabasePlatform dbPlatform) {
+    this.dbPlatform = dbPlatform;
+    this.emptyStringAsNull = dbPlatform.isTreatEmptyStringsAsNull();
 
-		baseFact.create(setList, desc, DmlMode.UPDATE, includeLobs);
-		embeddedFact.create(setList, desc, DmlMode.UPDATE, includeLobs);
-		assocOneFact.create(setList, desc, DmlMode.UPDATE);
+    // to bind encryption data before or after the encryption key
+    DbEncrypt dbEncrypt = dbPlatform.getDbEncrypt();
+    boolean bindEncryptDataFirst = dbEncrypt == null ? true : dbEncrypt.isBindEncryptDataFirst();
 
-		Bindable id = idFact.createId(desc);
+    this.baseFact = new FactoryBaseProperties(bindEncryptDataFirst);
+    this.embeddedFact = new FactoryEmbedded(bindEncryptDataFirst);
+  }
 
-		Bindable ver = versionFact.create(desc);
+  /**
+   * Create the UpdateMeta for the given bean type.
+   */
+  public UpdateMeta createUpdate(BeanDescriptor<?> desc) {
 
-		
-		List<Bindable> allList = new ArrayList<Bindable>();
+    List<Bindable> setList = new ArrayList<Bindable>();
 
-		baseFact.create(allList, desc, DmlMode.WHERE, false);
-		embeddedFact.create(allList, desc, DmlMode.WHERE, false);
-		assocOneFact.create(allList, desc, DmlMode.WHERE);
-		
-		
-		Bindable setBindable = new BindableList(setList);
-		Bindable allBindable = new BindableList(allList);
+    baseFact.create(setList, desc, DmlMode.UPDATE, includeLobs);
+    embeddedFact.create(setList, desc, DmlMode.UPDATE, includeLobs);
+    assocOneFact.create(setList, desc, DmlMode.UPDATE);
 
-		return new UpdateMeta(emptyStringAsNull, desc, setBindable, id, ver, allBindable);
-	}
+    BindableId id = idFact.createId(desc);
 
-	/**
-	 * Create the DeleteMeta for the given bean type.
-	 */
-	public DeleteMeta createDelete(BeanDescriptor<?> desc) {
+    Bindable ver = versionFact.create(desc);
 
-		Bindable id = idFact.createId(desc);
+    List<Bindable> allList = new ArrayList<Bindable>();
 
-		Bindable ver = versionFact.create(desc);
+    baseFact.create(allList, desc, DmlMode.WHERE, false);
+    embeddedFact.create(allList, desc, DmlMode.WHERE, false);
+    assocOneFact.create(allList, desc, DmlMode.WHERE);
 
-		List<Bindable> allList = new ArrayList<Bindable>();
-		
-		baseFact.create(allList, desc, DmlMode.WHERE, false);
-		embeddedFact.create(allList, desc, DmlMode.WHERE, false);
-		assocOneFact.create(allList, desc, DmlMode.WHERE);
+    Bindable setBindable = new BindableList(setList);
+    Bindable allBindable = new BindableList(allList);
 
-		Bindable allBindable = new BindableList(allList);
-		
-		return new DeleteMeta(emptyStringAsNull, desc, id, ver, allBindable);
-	}
+    return new UpdateMeta(emptyStringAsNull, desc, setBindable, id, ver, allBindable);
+  }
 
-	/**
-	 * Create the InsertMeta for the given bean type.
-	 */
-	public InsertMeta createInsert(BeanDescriptor<?> desc) {
+  /**
+   * Create the DeleteMeta for the given bean type.
+   */
+  public DeleteMeta createDelete(BeanDescriptor<?> desc) {
 
-		BindableId id = idFact.createId(desc);
+    BindableId id = idFact.createId(desc);
 
-		List<Bindable> allList = new ArrayList<Bindable>();
+    Bindable ver = versionFact.create(desc);
 
-		baseFact.create(allList, desc, DmlMode.INSERT, includeLobs);
-		embeddedFact.create(allList, desc, DmlMode.INSERT, includeLobs);
-		assocOneFact.create(allList, desc, DmlMode.INSERT);
+    List<Bindable> allList = new ArrayList<Bindable>();
 
-		Bindable allBindable = new BindableList(allList);
-		
-		BeanPropertyAssocOne<?> unidirectional = desc.getUnidirectional();
-		
-		Bindable shadowFkey;
-		if (unidirectional == null){
-			shadowFkey = null;
-		} else {
-			shadowFkey = new BindableUnidirectional(desc, unidirectional);
-		}
-		
-		return new InsertMeta(dbPlatform, desc, shadowFkey, id, allBindable);
-	}
+    baseFact.create(allList, desc, DmlMode.WHERE, false);
+    embeddedFact.create(allList, desc, DmlMode.WHERE, false);
+    assocOneFact.create(allList, desc, DmlMode.WHERE);
+
+    Bindable allBindable = new BindableList(allList);
+
+    return new DeleteMeta(emptyStringAsNull, desc, id, ver, allBindable);
+  }
+
+  /**
+   * Create the InsertMeta for the given bean type.
+   */
+  public InsertMeta createInsert(BeanDescriptor<?> desc) {
+
+    BindableId id = idFact.createId(desc);
+
+    List<Bindable> allList = new ArrayList<Bindable>();
+
+    baseFact.create(allList, desc, DmlMode.INSERT, includeLobs);
+    embeddedFact.create(allList, desc, DmlMode.INSERT, includeLobs);
+    assocOneFact.create(allList, desc, DmlMode.INSERT);
+
+    Bindable allBindable = new BindableList(allList);
+
+    BeanPropertyAssocOne<?> unidirectional = desc.getUnidirectional();
+
+    Bindable shadowFkey;
+    if (unidirectional == null) {
+      shadowFkey = null;
+    } else {
+      shadowFkey = new BindableUnidirectional(desc, unidirectional);
+    }
+
+    return new InsertMeta(dbPlatform, desc, shadowFkey, id, allBindable);
+  }
 }

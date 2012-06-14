@@ -21,5 +21,21 @@ public class TestNoIdEntityType {
       // expecting this exception
       Assert.assertTrue(true);
     }
+    
+    NoIdEntityType noId = new NoIdEntityType();
+    noId.setName("foo");
+    
+    Ebean.save(noId);
+        
+    try {
+      // this should fail as no @Id property
+      Ebean.delete(noId);
+      Assert.assertTrue(false);
+      
+    } catch (IllegalStateException e){
+      // expecting this exception
+      Assert.assertTrue(true);      
+    }
+    
   }
 }
