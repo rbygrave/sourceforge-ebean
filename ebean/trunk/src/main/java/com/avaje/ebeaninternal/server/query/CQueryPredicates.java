@@ -412,7 +412,7 @@ public class CQueryPredicates {
 		// check for default ordering on the many property...
 		String manyOrderBy = manyProp.getFetchOrderBy();
 		if (manyOrderBy != null) {
-			orderBy = orderBy + " , " + CQueryBuilder.prefixOrderByFields(manyProp.getName(), manyOrderBy);
+			orderBy = orderBy + ", " + CQueryBuilder.prefixOrderByFields(manyProp.getName(), manyOrderBy);
 		}
 		
 		if (request.isFindById()) {
@@ -432,9 +432,16 @@ public class CQueryPredicates {
 		int idPos = orderBy.indexOf(" "+orderById);
 		
 		if (manyPos == -1){
-			// no ordering of the many... so fine.
+			// no ordering of the many
+		  if (idPos == -1) {
+		    // append the orderById so that master level objects are ordered
+		    // even if the orderBy is not unique for the master object
+		    return orderBy + ", "+orderById;
+		  }
+		  // orderById is already in the order by clause
 			return orderBy;
 		}
+		
 		if (idPos > -1 && idPos < manyPos){
 			// its all ok, id property appears before a many property
 		 
