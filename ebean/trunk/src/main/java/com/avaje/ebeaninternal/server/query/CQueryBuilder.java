@@ -363,6 +363,10 @@ public class CQueryBuilder implements Constants {
 
       BeanDescriptor<?> desc = request.getBeanDescriptor();
       String idSql = desc.getIdBinderIdSql();
+      if (idSql.isEmpty()) {
+        throw new IllegalStateException("Executing FindById query on entity bean " + desc.getName()
+            + " that doesn't have an @Id property??");
+      }
       sb.append(idSql).append(" ");
       hasWhere = true;
     }
