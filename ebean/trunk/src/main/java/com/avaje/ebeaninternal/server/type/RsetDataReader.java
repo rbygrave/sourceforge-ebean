@@ -81,6 +81,9 @@ public class RsetDataReader implements DataReader {
         return rset.getAsciiStream(pos());
     }
 
+    public Object getObject() throws SQLException {
+      return rset.getObject(pos());
+    }
 
     public BigDecimal getBigDecimal() throws SQLException {
         return rset.getBigDecimal(pos());
