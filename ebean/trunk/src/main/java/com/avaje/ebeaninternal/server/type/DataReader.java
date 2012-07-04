@@ -67,6 +67,8 @@ public interface DataReader {
 
     public BigDecimal getBigDecimal() throws SQLException;
 
-    Array getArray() throws SQLException;
+    public Array getArray() throws SQLException;
+    
+    public Object getObject() throws SQLException;
 
 }
