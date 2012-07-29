@@ -55,7 +55,7 @@ import java.util.Iterator;
  * @param <T>
  *            the type of entity bean in the iteration
  */
-public interface QueryIterator<T> extends Iterator<T> {
+public interface QueryIterator<T> extends Iterator<T>, java.io.Closeable {
 
     /**
      * Returns <tt>true</tt> if the iteration has more elements.
