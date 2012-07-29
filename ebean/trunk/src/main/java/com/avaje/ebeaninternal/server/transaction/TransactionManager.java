@@ -339,6 +339,7 @@ public class TransactionManager {
 			return t;
 
 		} catch (SQLException ex) {
+		  // close connection on failed creation
 		  try {
 		    if (c != null){
 		      c.close();
@@ -351,9 +352,10 @@ public class TransactionManager {
 	}
 	
 	public SpiTransaction createQueryTransaction() {
+	  Connection c = null;
 		try {
-			long id = transactionCounter.incrementAndGet();
-			Connection c = dataSource.getConnection();
+      c = dataSource.getConnection();
+		  long id = transactionCounter.incrementAndGet();
 
 			JdbcTransaction t = new JdbcTransaction(prefix + id, false, logLevel, c, this);
 			
@@ -368,8 +370,20 @@ public class TransactionManager {
 			}
 			
 			return t;
-
+			
+		} catch (PersistenceException ex) {
+		  // close the connection and re-throw the exception
+      try {
+        if (c != null) {
+          c.close();
+        }
+      } catch (SQLException e) {
+        logger.log(Level.SEVERE,"Error closing failed connection", e);
+      }
+      throw ex;
+      
 		} catch (SQLException ex) {
+		  // don't need to close connection in this case 
 			throw new PersistenceException(ex);
 		}
 	}
