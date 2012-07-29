@@ -311,10 +311,10 @@ public class TransactionManager {
 	 * Create a new Transaction.
 	 */
 	public SpiTransaction createTransaction(boolean explicit, int isolationLevel) {
+	  Connection c = null;
 		try {
-			long id = transactionCounter.incrementAndGet();
-			
-			Connection c = dataSource.getConnection();
+		  c = dataSource.getConnection();
+		  long id = transactionCounter.incrementAndGet();
 
 			JdbcTransaction t = new JdbcTransaction(prefix + id, explicit, logLevel, c, this);
 
@@ -339,6 +339,13 @@ public class TransactionManager {
 			return t;
 
 		} catch (SQLException ex) {
+		  try {
+		    if (c != null){
+		      c.close();
+		    }
+		  } catch (SQLException e) {
+		    logger.log(Level.SEVERE,"Error closing failed connection", e);
+		  }
 			throw new PersistenceException(ex);
 		}
 	}
