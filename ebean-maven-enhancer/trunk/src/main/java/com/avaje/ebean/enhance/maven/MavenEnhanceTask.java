@@ -20,7 +20,7 @@ import com.avaje.ebean.enhance.ant.TransformationListener;
  * The parameters are:
  * <ul>
  * <li><b>classSource</b> This is the root directory where the .class files are
- * found.</li>
+ * found. If this is left out then this defaults to ${project.build.outputDirectory}.</li>
  * <li><b>classDestination</b> This is the root directory where the .class files
  * are written to. If this is left out then this defaults to the
  * <b>classSource</b>.</li>
@@ -37,7 +37,7 @@ import com.avaje.ebean.enhance.ant.TransformationListener;
  *    &lt;plugin&gt;
  *      &lt;groupId&gt;org.avaje&lt;/groupId&gt;
  *      &lt;artifactId&gt;ebean-maven-enhancement-plugin&lt;/artifactId&gt;
- *      &lt;version&gt;2.5&lt;/version&gt;
+ *      &lt;version&gt;2.7.7&lt;/version&gt;
  *      &lt;executions&gt;
  *        &lt;execution&gt;
  *          &lt;id&gt;main&lt;/id&gt;
@@ -61,7 +61,7 @@ import com.avaje.ebean.enhance.ant.TransformationListener;
  * </code>
  * </p>
  * 
- * @author Paul Mendelson
+ * @author Paul Mendelson, Vaughn Butt
  * @version $Revision$, $Date: 2010-03-18 06:13:51 +1300 (Thu, 18 Mar
  *          2010) $
  * @since 2.5, Mar, 2009
@@ -71,7 +71,7 @@ import com.avaje.ebean.enhance.ant.TransformationListener;
  */
 public class MavenEnhanceTask extends AbstractMojo {
   /**
-   * the classpath used to search for e.g. inerited classes
+   * the classpath used to search for e.g. inherited classes
    * 
    * @parameter
    */
@@ -80,7 +80,7 @@ public class MavenEnhanceTask extends AbstractMojo {
   /**
    * Set the directory holding the class files we want to transform.
    * 
-   * @parameter
+   * @parameter default-value="${project.build.outputDirectory}"
    */
   private String classSource;
 
@@ -148,6 +148,7 @@ public class MavenEnhanceTask extends AbstractMojo {
       }
 
       public void logError(String msg) {
+    	  log.error(msg);
       }
     });
     ft.process(packages);
