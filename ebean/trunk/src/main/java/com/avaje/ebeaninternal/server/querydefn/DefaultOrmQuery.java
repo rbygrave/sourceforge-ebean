@@ -476,6 +476,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 		copy.autoFetch = autoFetch;
 		copy.parentNode = parentNode;
     copy.forUpdate = forUpdate;
+    copy.rawSql = rawSql;
+    copy.rawWhereClause = rawWhereClause;
 		return copy;
 	}
 

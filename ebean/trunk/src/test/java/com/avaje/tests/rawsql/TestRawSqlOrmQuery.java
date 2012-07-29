@@ -6,6 +6,8 @@ import junit.framework.TestCase;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.FetchConfig;
+import com.avaje.ebean.Page;
+import com.avaje.ebean.PagingList;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSqlBuilder;
@@ -34,5 +36,26 @@ public class TestRawSqlOrmQuery extends TestCase {
         
         List<Customer> list = query.findList();
         assertNotNull(list);
+    }
+    
+    public void testPaging() {
+      
+      ResetBasicData.reset();
+      
+      RawSql rawSql = 
+          RawSqlBuilder
+              .parse("select r.id, r.name from o_customer r ")
+              .columnMapping("r.id", "id")
+              .columnMapping("r.name", "name")
+              .create();
+                  
+      Query<Customer> query = Ebean.find(Customer.class);
+      query.setRawSql(rawSql);
+      PagingList<Customer> pagingList = query.findPagingList(10);
+      Page<Customer> page = pagingList.getPage(0);
+      List<Customer> list = page.getList();
+      
+      System.out.println(page);
+      System.out.println(list);
     }
 }
