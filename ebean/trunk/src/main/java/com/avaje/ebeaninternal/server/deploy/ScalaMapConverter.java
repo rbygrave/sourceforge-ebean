@@ -28,20 +28,21 @@ import scala.collection.JavaConversions;
  */
 public class ScalaMapConverter implements CollectionTypeConverter {
 
-    @SuppressWarnings({ "rawtypes" })
+//    @SuppressWarnings({ "rawtypes" })
     public Object toUnderlying(Object wrapped) {
-        
-        if (wrapped instanceof JavaConversions.JMapWrapper){
-            return ((JavaConversions.JMapWrapper)wrapped).underlying();
-        }
-        return null;
+      throw new IllegalArgumentException("Scala types not supported in this build");
+//        if (wrapped instanceof JavaConversions.JMapWrapper){
+//            return ((JavaConversions.JMapWrapper)wrapped).underlying();
+//        }
+//        return null;
     }
     
     public Object toWrapped(Object wrapped) {
-        if (wrapped instanceof java.util.Map<?,?>){
-            return  JavaConversions.mapAsScalaMap((java.util.Map<?,?>)wrapped);
-        }
-        return wrapped;
+      throw new IllegalArgumentException("Scala types not supported in this build");
+//        if (wrapped instanceof java.util.Map<?,?>){
+//            return  JavaConversions.mapAsScalaMap((java.util.Map<?,?>)wrapped);
+//        }
+//        return wrapped;
     }
     
 }
