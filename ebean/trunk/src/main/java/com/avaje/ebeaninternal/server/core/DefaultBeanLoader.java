@@ -426,7 +426,8 @@ public class DefaultBeanLoader {
     }
 
     if (ebi != null) {
-      if (SpiQuery.Mode.LAZYLOAD_BEAN.equals(mode)) {
+      if (SpiQuery.Mode.LAZYLOAD_BEAN.equals(mode) && desc.isBeanCaching()) {
+        // lazy loading and the bean cache is active 
         if (desc.loadFromCache(bean, ebi, id)) {
           return;
         }
